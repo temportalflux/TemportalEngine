@@ -1,56 +1,46 @@
-#include <iostream>
-#include <GLFW/glfw3.h>
+#include <dependency/Dependency.h>
+#include <Window.h>
 #include "Log.h"
+#include "dependency/GLFW.h"
+#include <GLFW/glfw3.h>
 
 using namespace std;
 
 #define LogEngine "TemportalEngine"
 
-void error_callback(int error, const char* description)
-{
-	logging::log(LogEngine, logging::ECategory::ERROR, description);
-}
-
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void key_callback(Window* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
+	{
+		window->markShouldClose();
+	}
 }
 
 int main()
 {
 	logging::log(LogEngine, logging::ECategory::INFO, "Hello World!");
 
-	glfwSetErrorCallback(error_callback);
-	if (!glfwInit())
+	GLFW pDepGlfw[1];
+	*pDepGlfw = GLFW();
+
+	if (!pDepGlfw->initialize()) return 1;
+
+	Window pWindow[1];
+	*pWindow = Window(640, 480, "Temportal Engine");
+	if (!pWindow->isValid())
 	{
-		logging::log(LogEngine, logging::ECategory::ERROR, "Failed to initialize GLFW");
+		pDepGlfw->terminate();
 		return 1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(640, 480, "Temportal Engine", nullptr, nullptr);
-	if (!window)
-	{
-		// Window or OpenGL context creation failed
-		logging::log(LogEngine, logging::ECategory::ERROR, "Failed to create GLFW window");
-		glfwTerminate();
-		return 1;
-	}
+	pWindow->setKeyCallback(key_callback);
 
-	glfwSetKeyCallback(window, key_callback);
+	pWindow->initializeRenderContext(1);;
 
-	glfwMakeContextCurrent(window);
-	//gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-	glfwSwapInterval(1);
+	while (!pWindow->isClosePending()) pWindow->update();
 
-	while (!glfwWindowShouldClose(window))
-	{
-		glfwSwapBuffers(window);
-		glfwPollEvents();
-	}
-
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	pWindow->destroy();
+	pDepGlfw->terminate();
 
 	return 0;
 }
