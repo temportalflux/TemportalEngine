@@ -1,9 +1,10 @@
-#ifndef GENERAL_NAMESPACE_H
-#define GENERAL_NAMESPACE_H
+// Copyright [2019] <Dustin Yost>
+#ifndef INCLUDE_NAMESPACE_H_
+#define INCLUDE_NAMESPACE_H_
 
 #define NS_END };
 #define NS_UTILITY namespace utility {
 #define NS_LOGGING namespace logging {
 #define NS_TYPES namespace types {
 
-#endif //GENERAL_NAMESPACE_H
+#endif  // INCLUDE_NAMESPACE_H_

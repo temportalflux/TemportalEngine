@@ -5,7 +5,8 @@
 
 #define LogGlfw "GLFW"
 
-#define LogGlfwError(message, ...) logging::log(LogGlfw, logging::ECategory::ERROR, message, __VA_ARGS__);
+//#define LogGlfwError(message, ...)
+//	logging::log(LogGlfw, logging::ECategory::ERROR, message, __VA_ARGS__);
 
 class GLFW : public Dependency
 {
@@ -16,4 +17,4 @@ public:
 	void terminate() override;
 };
 
-#endif //DEPENDENCY_GLFW_H
+#endif  // DEPENDENCY_GLFW_H

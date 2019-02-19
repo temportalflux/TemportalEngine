@@ -1,3 +1,4 @@
+// Copyright [2019] <Dustin Yost>
 #include "Log.h"
 
 #include <stdio.h>

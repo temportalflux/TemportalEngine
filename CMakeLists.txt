@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.13)
-project(TemportalEngine)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+project(TemportalEngine CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -13,6 +13,7 @@ add_subdirectory("libs/glfw")
 file(GLOB_RECURSE TemportalEngine_Source "source/*")
 
 add_executable(TemportalEngine ${TemportalEngine_Source})
+
 target_link_libraries(TemportalEngine glfw)
 target_include_directories(TemportalEngine PUBLIC ${CMAKE_SOURCE_DIR}/include)
 target_sources(TemportalEngine PRIVATE ${TemportalEngine_Source})

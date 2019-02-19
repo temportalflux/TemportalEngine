@@ -1,13 +1,13 @@
 #include "dependency/GLFW.h"
 #include <GLFW/glfw3.h>
-#include <dependency/GLFW.h>
 #include "Log.h"
 
 using namespace logging;
 
 void glfwErrorCallback(int error, const char* description)
 {
-	LogGlfwError("%i - %s", error, description);
+	logging::log(LogGlfw, logging::ECategory::ERROR,
+			"%i - %s", error, description);
 }
 
 GLFW::GLFW()
@@ -29,7 +29,8 @@ bool GLFW::initialize()
 	glfwSetErrorCallback(&glfwErrorCallback);
 	if (!glfwInit())
 	{
-		LogGlfwError("Failed to initialize");
+		logging::log(LogGlfw, logging::ECategory::ERROR,
+					 "Failed to initialize");
 		return false;
 	}
 

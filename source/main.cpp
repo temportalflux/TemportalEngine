@@ -1,8 +1,9 @@
-#include <dependency/Dependency.h>
-#include <Window.h>
-#include "Log.h"
-#include "dependency/GLFW.h"
 #include <GLFW/glfw3.h>
+#include "dependency/Dependency.h"
+#include "dependency/GLFW.h"
+#include "Window.h"
+#include "Log.h"
+#include "Thread.h"
 
 using namespace std;
 
@@ -14,6 +15,11 @@ static void key_callback(Window* window, int key, int scancode, int action, int 
 	{
 		window->markShouldClose();
 	}
+}
+
+static void updateWindow(Window* pWindow)
+{
+	while (!pWindow->isClosePending()) pWindow->update();
 }
 
 int main()
@@ -37,7 +43,11 @@ int main()
 
 	pWindow->initializeRenderContext(1);;
 
-	while (!pWindow->isClosePending()) pWindow->update();
+	//Thread<Window*> pThread[1];
+	//*pThread = Thread<Window*>("Window Updater");
+	//pThread->start(&updateWindow, pWindow);
+	//pThread->join();
+	updateWindow(pWindow);
 
 	pWindow->destroy();
 	pDepGlfw->terminate();

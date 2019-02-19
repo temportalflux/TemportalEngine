@@ -1,5 +1,6 @@
-#ifndef UTILITY_LOG_H
-#define UTILITY_LOG_H
+// Copyright [2019] <Dustin Yost>
+#ifndef INCLUDE_LOG_H_
+#define INCLUDE_LOG_H_
 
 #include "Namespace.h"
 
@@ -26,4 +27,4 @@ void log(Owner logger, ECategory category, Message str, ...);
 
 NS_END
 
-#endif //UTILITY_LOG_H
+#endif  // INCLUDE_LOG_H_

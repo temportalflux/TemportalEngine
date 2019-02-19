@@ -21,7 +21,8 @@ Window::Window(types::size width, types::size height, char const * title)
 	this->mpHandle = glfwCreateWindow(mWidth, mHeight, mpTitle, nullptr, nullptr);
 	if (!this->isValid())
 	{
-		LogGlfwError("Failed to create window");
+		logging::log(LogGlfw, logging::ECategory::ERROR,
+				"Failed to create window");
 	}
 
 	glfwSetWindowUserPointer(this->mpHandle, this);

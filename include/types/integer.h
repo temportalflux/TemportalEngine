@@ -1,8 +1,11 @@
 #ifndef TYPES_INTEGER_H
 #define TYPES_INTEGER_H
 
+#include <stdio.h>
+
 #include "arch.h"
 #include "Namespace.h"
+
 
 NS_TYPES
 
