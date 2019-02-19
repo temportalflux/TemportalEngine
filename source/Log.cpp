@@ -30,9 +30,10 @@ void printPrefix(ECategory category, Owner logger)
 	}
 
 	time_t currentTime = time(nullptr);
-	struct tm * timeinfo = localtime(&currentTime);
+	struct tm timeinfo;
+	localtime_s(&timeinfo, &currentTime);
 	char timeStr[70];
-	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", timeinfo);
+	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", &timeinfo);
 
 	printf("[%s][%s] %s> ", timeStr, categoryStr, logger);
 }

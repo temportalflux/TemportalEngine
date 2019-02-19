@@ -43,11 +43,10 @@ int main()
 
 	pWindow->initializeRenderContext(1);;
 
-	//Thread<Window*> pThread[1];
-	//*pThread = Thread<Window*>("Window Updater");
-	//pThread->start(&updateWindow, pWindow);
-	//pThread->join();
-	updateWindow(pWindow);
+	Thread<Window*> pThread[1];
+	*pThread = Thread<Window*>("Window Updater");
+	pThread->start(&updateWindow, pWindow);
+	pThread->join();
 
 	pWindow->destroy();
 	pDepGlfw->terminate();

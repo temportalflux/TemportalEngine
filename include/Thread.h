@@ -11,7 +11,7 @@ public:
 
 private:
 	char const* mpName;
-	//std::thread mpHandle[1];
+	std::thread mpHandle[1];
 
 public:
 	Thread() {}
@@ -21,12 +21,12 @@ public:
 
 	void start(DelegateUpdate update, TArgs... args)
 	{
-		//*mpHandle = std::thread(update, args...);
+		*mpHandle = std::thread(update, args...);
 	}
 
 	void join()
 	{
-		//this->mpHandle->join();
+		this->mpHandle->join();
 	}
 
 };
