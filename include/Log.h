@@ -23,8 +23,6 @@ enum class ECategory
 
 void log(Owner logger, ECategory category, Message str, ...);
 
-#define log_info(logger, str, ...) a3_log(INFO, logger, format, __VA_ARGS__)
-
 NS_END
 
 #endif  // INCLUDE_LOG_H_

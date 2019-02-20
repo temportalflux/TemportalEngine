@@ -9,8 +9,16 @@
 void _keyCallbackInternal(GLFWwindow *pWindowHandle,
 						  int key, int scancode, int action, int mods)
 {
-	auto *pWindow = (Window *)glfwGetWindowUserPointer(pWindowHandle);
+	auto *pWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(pWindowHandle));
 	pWindow->executeKeyCallback(key, scancode, action, mods);
+}
+
+void Window::renderUntilClose(Window * pWindow)
+{
+	while (pWindow->isValid() && !pWindow->isClosePending())
+	{
+		pWindow->render();
+	}
 }
 
 Window::Window(uSize width, uSize height, char const * title)
@@ -57,10 +65,14 @@ bool Window::isClosePending()
 	return glfwWindowShouldClose(this->mpHandle) > 0;
 }
 
-void Window::update()
+void Window::pollInput()
+{
+	glfwPollEvents();
+}
+
+void Window::render()
 {
 	glfwSwapBuffers(this->mpHandle);
-	//glfwPollEvents();
 }
 
 void Window::destroy()

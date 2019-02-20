@@ -7,5 +7,6 @@
 #define NS_LOGGING namespace logging {
 #define NS_TYPES namespace types {
 #define NS_INPUT namespace input {
+#define NS_ENGINE namespace engine {
 
 #endif  // INCLUDE_NAMESPACE_H_

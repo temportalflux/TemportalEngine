@@ -142,23 +142,25 @@
   <ItemGroup>
     <ClCompile Include="source\dependency\Dependency.cpp" />
     <ClCompile Include="source\dependency\GLFW.cpp" />
+    <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\input\Queue.cpp" />
-    <ClCompile Include="source\Mutex.c" />
     <ClCompile Include="source\Log.cpp" />
     <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\Mutex.cpp" />
-    <ClCompile Include="source\ThreadId.c" />
+    <ClCompile Include="source\thread\Mutex.c" />
+    <ClCompile Include="source\thread\MutexLock.cpp" />
+    <ClCompile Include="source\thread\ThreadId.c" />
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\dependency\Dependency.h" />
     <ClInclude Include="include\dependency\GLFW.h" />
-    <ClInclude Include="include\Mutex.h" />
+    <ClInclude Include="include\Engine.hpp" />
     <ClInclude Include="include\Log.h" />
-    <ClInclude Include="include\Mutex.hpp" />
     <ClInclude Include="include\Namespace.h" />
-    <ClInclude Include="include\Thread.h" />
-    <ClInclude Include="include\ThreadId.h" />
+    <ClInclude Include="include\thread\Mutex.h" />
+    <ClInclude Include="include\thread\MutexLock.hpp" />
+    <ClInclude Include="include\thread\Thread.h" />
+    <ClInclude Include="include\thread\ThreadId.h" />
     <ClInclude Include="include\types\arch.h" />
     <ClInclude Include="include\types\integer.h" />
     <ClInclude Include="include\Window.h" />

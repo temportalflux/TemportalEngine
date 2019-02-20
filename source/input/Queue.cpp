@@ -6,7 +6,7 @@ using namespace input;
 Queue::Queue(DelegateListener listener)
 	: mpListener(listener)
 {
-	*mpMutex = MutexLock();
+	*mpMutex = TE_MutexLock();
 	memset(mpBuffer, 0, MAX_COUNT_PENDING * sizeof(Event));
 	mIndexHead = 0;
 	mIndexTail = 0;
@@ -16,7 +16,7 @@ Queue::Queue() : Queue(nullptr)
 {
 }
 
-inline bool Queue::hasPending() const
+bool Queue::hasPending() const
 {
 	return mIndexHead != mIndexTail;
 }
@@ -38,10 +38,10 @@ bool Queue::enqueueRaw(Event const &evt)
 	return true;
 }
 
-inline bool Queue::enqueue(Event const& evt)
+bool Queue::enqueue(Event const& evt)
 {
 	this->mpMutex->lock();
-	bool ret = this->enqueue(evt);
+	bool ret = this->enqueueRaw(evt);
 	this->mpMutex->unlock();
 	return ret;
 }
@@ -57,7 +57,7 @@ void Queue::dispatchRaw()
 	}
 }
 
-inline void Queue::dispatch()
+void Queue::dispatch()
 {
 	// If there are no pending requests, do nothing.
 	if (mIndexHead == mIndexTail) return;
@@ -66,7 +66,7 @@ inline void Queue::dispatch()
 	mpMutex->unlock();
 }
 
-inline void Queue::dispatchAll()
+void Queue::dispatchAll()
 {
 	while (this->hasPending())
 		this->dispatch();

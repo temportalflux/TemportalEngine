@@ -28,6 +28,12 @@
     <Filter Include="Source Files\input">
       <UniqueIdentifier>{14ac66f1-961f-48b6-a306-f681fc87b63f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\thread">
+      <UniqueIdentifier>{32459001-d5e2-4b06-a315-577e76a0f96c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\thread">
+      <UniqueIdentifier>{edf9e426-afc1-4b6d-90f8-3d0d506e85d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Log.cpp">
@@ -45,17 +51,20 @@
     <ClCompile Include="source\dependency\GLFW.cpp">
       <Filter>Source Files\dependency</Filter>
     </ClCompile>
-    <ClCompile Include="source\ThreadId.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Mutex.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\Mutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\input\Queue.cpp">
       <Filter>Source Files\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\thread\Mutex.c">
+      <Filter>Source Files\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="source\thread\MutexLock.cpp">
+      <Filter>Source Files\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="source\thread\ThreadId.c">
+      <Filter>Source Files\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Engine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,9 +72,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Namespace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Window.h">
@@ -89,13 +95,19 @@
     <ClInclude Include="source\input\Event.hpp">
       <Filter>Header Files\input</Filter>
     </ClInclude>
-    <ClInclude Include="include\ThreadId.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\thread\Mutex.h">
+      <Filter>Header Files\thread</Filter>
     </ClInclude>
-    <ClInclude Include="include\Mutex.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="include\thread\MutexLock.hpp">
+      <Filter>Header Files\thread</Filter>
     </ClInclude>
-    <ClInclude Include="include\Mutex.h">
+    <ClInclude Include="include\thread\Thread.h">
+      <Filter>Header Files\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="include\thread\ThreadId.h">
+      <Filter>Header Files\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

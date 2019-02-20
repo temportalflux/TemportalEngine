@@ -3,12 +3,12 @@
 
 #include "Mutex.h"
 
-class MutexLock
+class TE_MutexLock
 {
 private:
-	Mutex mMutex;
+	TE_Mutex mMutex;
 public:
-	MutexLock();
+	TE_MutexLock();
 	inline bool isValid() const;
 	inline bool isLocked() const;
 	void lock();

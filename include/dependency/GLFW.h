@@ -3,10 +3,7 @@
 
 #include "Dependency.h"
 
-#define LogGlfw "GLFW"
-
-//#define LogGlfwError(message, ...)
-//	logging::log(LogGlfw, logging::ECategory::ERROR, message, __VA_ARGS__);
+#define LogGlfw "LogGLFW"
 
 class GLFW : public Dependency
 {

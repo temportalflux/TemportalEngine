@@ -7,7 +7,10 @@ NS_INPUT
 
 struct Event
 {
-
+	i32 key;
+	i32 scanCode;
+	i32 action;
+	i32 mods;
 };
 
 NS_END

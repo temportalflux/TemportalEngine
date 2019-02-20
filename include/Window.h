@@ -10,6 +10,8 @@ class Window
 public:
 	typedef void (*DelegateKeyCallback)(Window *pWindow, int key, int scancode, int action, int mods);
 
+	static void renderUntilClose(Window *pWindow);
+
 private:
 	uSize mWidth, mHeight;
 	char const * mpTitle;
@@ -29,7 +31,8 @@ public:
 	void markShouldClose();
 	bool isClosePending();
 
-	void update();
+	void pollInput();
+	void render();
 	void destroy();
 
 private:

@@ -1,58 +1,28 @@
-#include <GLFW/glfw3.h>
-#include "dependency/Dependency.h"
-#include "dependency/GLFW.h"
-#include "Window.h"
 #include "Log.h"
-#include "Thread.h"
+#include "Engine.hpp"
 
 using namespace std;
 
 #define LogEngine "TemportalEngine"
 
-static void key_callback(Window* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		window->markShouldClose();
-	}
-}
-
-static void updateWindow(Window* pWindow)
-{
-	while (!pWindow->isClosePending())
-	{
-		pWindow->update();
-	}
-}
-
 int main()
 {
-	logging::log(LogEngine, logging::ECategory::INFO, "Hello World!");
+	LogEngineInfo("Hello World!");
 
-	GLFW pDepGlfw[1];
-	*pDepGlfw = GLFW();
+	engine::Engine *pEngine = engine::Engine::Create();
+	
+	if (!pEngine->initializeDependencies()) return 1;
 
-	if (!pDepGlfw->initialize()) return 1;
-
-	Window pWindow[1];
-	*pWindow = Window(640, 480, "Temportal Engine");
-	if (!pWindow->isValid())
+	if (!pEngine->createWindow())
 	{
-		pDepGlfw->terminate();
+		engine::Engine::Destroy();
 		return 1;
 	}
 
-	pWindow->setKeyCallback(key_callback);
+	pEngine->run();
 
-	pWindow->initializeRenderContext(1);
+	engine::Engine::Destroy();
 
-	Thread<Window*> pThread[1];
-	*pThread = Thread<Window*>("Window Updater", &updateWindow);
-	pThread->start(pWindow);
-	pThread->join();
-
-	pWindow->destroy();
-	pDepGlfw->terminate();
-
+	//system("pause");
 	return 0;
 }

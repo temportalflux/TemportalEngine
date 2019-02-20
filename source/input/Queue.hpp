@@ -1,10 +1,10 @@
-#ifndef INPUT_QUEUE_HPP
-#define INPUT_QUEUE_HPP
+#ifndef TE_INPUT_QUEUE_HPP
+#define TE_INPUT_QUEUE_HPP
 
 #include "Namespace.h"
 #include "types/integer.h"
 #include "Event.hpp"
-#include "Mutex.hpp"
+#include "thread/MutexLock.hpp"
 
 NS_INPUT
 
@@ -18,7 +18,7 @@ private:
 	typedef ui8 TMaxSize;
 	static const TMaxSize MAX_COUNT_PENDING = 255;
 	
-	MutexLock mpMutex[1];
+	TE_MutexLock mpMutex[1];
 	Event mpBuffer[MAX_COUNT_PENDING];
 	TMaxSize mIndexHead, mIndexTail;
 
@@ -32,13 +32,13 @@ public:
 	Queue(DelegateListener listener);
 	Queue();
 
-	inline bool hasPending() const;
-	inline bool enqueue(Event const& evt);
-	inline void dispatch();
-	inline void dispatchAll();
+	bool hasPending() const;
+	bool enqueue(Event const& evt);
+	void dispatch();
+	void dispatchAll();
 
 };
 
 NS_END
 
-#endif // INPUT_QUEUE_HPP
+#endif // TE_INPUT_QUEUE_HPP

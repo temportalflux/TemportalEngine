@@ -1,8 +1,6 @@
 #ifndef TYPES_INTEGER_H
 #define TYPES_INTEGER_H
 
-#include <stdio.h>
-
 #include "arch.h"
 
 // signed integer types:
