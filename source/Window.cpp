@@ -60,7 +60,7 @@ bool Window::isClosePending()
 void Window::update()
 {
 	glfwSwapBuffers(this->mpHandle);
-	glfwPollEvents();
+	//glfwPollEvents();
 }
 
 void Window::destroy()

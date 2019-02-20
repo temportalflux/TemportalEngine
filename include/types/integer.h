@@ -6,7 +6,6 @@
 #include "arch.h"
 #include "Namespace.h"
 
-
 NS_TYPES
 
 // signed integer types:

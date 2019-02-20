@@ -2,6 +2,7 @@
 #define INCLUDE_THREAD_H_
 
 #include <thread>
+#include "Log.h"
 
 template <typename... TArgs>
 class Thread
@@ -12,16 +13,31 @@ public:
 private:
 	char const* mpName;
 	std::thread mpHandle[1];
+	DelegateUpdate mpDelegateUpdate;
+
+	void updateInternal(TArgs... args)
+	{
+		logging::log(mpName, logging::ECategory::INFO, "Starting thread");
+		(*mpDelegateUpdate)(args...);
+		logging::log(mpName, logging::ECategory::INFO, "Stopping thread");
+	}
+
+	static void updateInternalStatic(Thread<TArgs...> *pThread, TArgs... args)
+	{
+		pThread->updateInternal(args...);
+	}
 
 public:
 	Thread() {}
-	Thread(char const* name) : mpName(name)
+	Thread(char const* name, DelegateUpdate update)
+		: mpName(name)
+		, mpDelegateUpdate(update)
 	{
 	}
 
-	void start(DelegateUpdate update, TArgs... args)
+	void start(TArgs... args)
 	{
-		*mpHandle = std::thread(update, args...);
+		*mpHandle = std::thread(&updateInternalStatic, this, args...);
 	}
 
 	void join()

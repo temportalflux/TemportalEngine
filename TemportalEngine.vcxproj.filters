@@ -22,6 +22,9 @@
     <Filter Include="Header Files\dependency">
       <UniqueIdentifier>{679e3cc7-44a9-4795-8751-fbc6a6ff0340}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\input">
+      <UniqueIdentifier>{523d1543-2aad-4f36-8d48-1c6ad20976f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Log.cpp">
@@ -64,6 +67,12 @@
     </ClInclude>
     <ClInclude Include="include\dependency\GLFW.h">
       <Filter>Header Files\dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="source\input\Queue.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\input\Event.hpp">
+      <Filter>Header Files\input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

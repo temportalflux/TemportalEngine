@@ -6,5 +6,6 @@
 #define NS_UTILITY namespace utility {
 #define NS_LOGGING namespace logging {
 #define NS_TYPES namespace types {
+#define NS_INPUT namespace input {
 
 #endif  // INCLUDE_NAMESPACE_H_

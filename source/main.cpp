@@ -4,6 +4,7 @@
 #include "Window.h"
 #include "Log.h"
 #include "Thread.h"
+#include "input/Event.h"
 
 using namespace std;
 
@@ -19,7 +20,10 @@ static void key_callback(Window* window, int key, int scancode, int action, int 
 
 static void updateWindow(Window* pWindow)
 {
-	while (!pWindow->isClosePending()) pWindow->update();
+	while (!pWindow->isClosePending())
+	{
+		pWindow->update();
+	}
 }
 
 int main()
@@ -41,11 +45,11 @@ int main()
 
 	pWindow->setKeyCallback(key_callback);
 
-	pWindow->initializeRenderContext(1);;
+	pWindow->initializeRenderContext(1);
 
 	Thread<Window*> pThread[1];
-	*pThread = Thread<Window*>("Window Updater");
-	pThread->start(&updateWindow, pWindow);
+	*pThread = Thread<Window*>("Window Updater", &updateWindow);
+	pThread->start(pWindow);
 	pThread->join();
 
 	pWindow->destroy();
