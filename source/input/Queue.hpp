@@ -2,20 +2,40 @@
 #define INPUT_QUEUE_HPP
 
 #include "Namespace.h"
-#include "Event.hpp"
 #include "types/integer.h"
+#include "Event.hpp"
+#include "Mutex.hpp"
 
 NS_INPUT
 
 // http://gameprogrammingpatterns.com/event-queue.html
 class Queue
 {
+public:
+	typedef void(*DelegateListener)(Event const &evt);
+
 private:
-	typedef types::ui8 TMaxSize;
-	static const TMaxSize MAX_PENDING = 255;
+	typedef ui8 TMaxSize;
+	static const TMaxSize MAX_COUNT_PENDING = 255;
 	
-	Event buffer[MAX_PENDING];
+	MutexLock mpMutex[1];
+	Event mpBuffer[MAX_COUNT_PENDING];
 	TMaxSize mIndexHead, mIndexTail;
+
+	DelegateListener mpListener;
+
+	Event const dequeueRaw();
+	bool enqueueRaw(Event const &evt);
+	void dispatchRaw();
+
+public:
+	Queue(DelegateListener listener);
+	Queue();
+
+	inline bool hasPending() const;
+	inline bool enqueue(Event const& evt);
+	inline void dispatch();
+	inline void dispatchAll();
 
 };
 

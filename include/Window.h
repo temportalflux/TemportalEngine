@@ -11,7 +11,7 @@ public:
 	typedef void (*DelegateKeyCallback)(Window *pWindow, int key, int scancode, int action, int mods);
 
 private:
-	types::size mWidth, mHeight;
+	uSize mWidth, mHeight;
 	char const * mpTitle;
 
 	GLFWwindow *mpHandle;
@@ -19,7 +19,7 @@ private:
 
 public:
 	Window() = default;
-	Window(types::size width, types::size height, char const * title);
+	Window(uSize width, uSize height, char const * title);
 
 	bool isValid();
 

@@ -4,7 +4,6 @@
 #include "Window.h"
 #include "Log.h"
 #include "Thread.h"
-#include "input/Event.h"
 
 using namespace std;
 

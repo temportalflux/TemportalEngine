@@ -4,9 +4,6 @@
 #include <stdio.h>
 
 #include "arch.h"
-#include "Namespace.h"
-
-NS_TYPES
 
 // signed integer types:
 typedef __int8				i8;
@@ -28,7 +25,7 @@ typedef a3i128				hugeinteger;
 typedef a3ui128				hugeindex;
 #endif	// __SIZEOF_INT128__
 
-typedef ui32 size;
+typedef ui32 uSize;
 
 // "pointer" as integer type
 #if BIT_32
@@ -39,6 +36,4 @@ typedef ui64	ptr;
 typedef i64		ptrDiff;
 #endif	// A3_32_BIT
 
-NS_END
-
-#endif //TYPES_INTEGER_H
+#endif // TYPES_INTEGER_H

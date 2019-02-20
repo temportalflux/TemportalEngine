@@ -25,6 +25,9 @@
     <Filter Include="Header Files\input">
       <UniqueIdentifier>{523d1543-2aad-4f36-8d48-1c6ad20976f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\input">
+      <UniqueIdentifier>{14ac66f1-961f-48b6-a306-f681fc87b63f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Log.cpp">
@@ -41,6 +44,18 @@
     </ClCompile>
     <ClCompile Include="source\dependency\GLFW.cpp">
       <Filter>Source Files\dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ThreadId.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Mutex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Mutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\Queue.cpp">
+      <Filter>Source Files\input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +88,15 @@
     </ClInclude>
     <ClInclude Include="source\input\Event.hpp">
       <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ThreadId.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mutex.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Mutex.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

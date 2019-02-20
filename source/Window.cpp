@@ -13,7 +13,7 @@ void _keyCallbackInternal(GLFWwindow *pWindowHandle,
 	pWindow->executeKeyCallback(key, scancode, action, mods);
 }
 
-Window::Window(types::size width, types::size height, char const * title)
+Window::Window(uSize width, uSize height, char const * title)
 	: mWidth(width)
 	, mHeight(height)
 	, mpTitle(title)
