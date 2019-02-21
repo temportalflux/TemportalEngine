@@ -31,7 +31,7 @@ Event const Queue::dequeueRaw()
 
 bool Queue::enqueueRaw(Event const &evt)
 {
-	if ((mIndexTail + 1) % MAX_COUNT_PENDING != mIndexHead) return false;
+	if ((mIndexTail + 1) % MAX_COUNT_PENDING == mIndexHead) return false;
 	// Add to the end of the list.
 	memcpy_s(mpBuffer + mIndexTail, sizeof(Event), &evt, sizeof(Event));
 	mIndexTail = (mIndexTail + 1) % MAX_COUNT_PENDING;

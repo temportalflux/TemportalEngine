@@ -9,7 +9,8 @@
 void _keyCallbackInternal(GLFWwindow *pWindowHandle,
 						  int key, int scancode, int action, int mods)
 {
-	auto *pWindow = reinterpret_cast<Window *>(glfwGetWindowUserPointer(pWindowHandle));
+	void* userPtr = glfwGetWindowUserPointer(pWindowHandle);
+	auto *pWindow = reinterpret_cast<Window *>(userPtr);
 	pWindow->executeKeyCallback(key, scancode, action, mods);
 }
 

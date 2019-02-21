@@ -32,7 +32,7 @@ private:
 
 	GLFW mpDepGlfw[1];
 
-	Window mpWindowGame[1];
+	Window *mpWindowGame;
 	Thread<Window*> mpThreadRender[1];
 
 	input::Queue mpInputQueue[1];

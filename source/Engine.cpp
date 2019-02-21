@@ -68,7 +68,7 @@ void Engine::terminateDependencies()
 
 bool Engine::createWindow()
 {
-	*mpWindowGame = Window(640, 480, "Temportal Engine");
+	mpWindowGame = new Window(640, 480, "Temportal Engine");
 	if (!mpWindowGame->isValid()) return false;
 
 	mpWindowGame->setKeyCallback(&windowKeyInputCallback);
@@ -82,6 +82,8 @@ void Engine::destroyWindow()
 	if (mpWindowGame->isValid())
 	{
 		mpWindowGame->destroy();
+		delete mpWindowGame;
+		mpWindowGame = nullptr;
 	}
 }
 
