@@ -1,13 +1,11 @@
-#include "Log.h"
+#include "logging/Logger.hpp"
 #include "Engine.hpp"
 
 using namespace std;
 
-#define LogEngine "TemportalEngine"
-
 int main()
 {
-	LogEngineInfo("Hello World!");
+	engine::Engine::LOG_SYSTEM.open("TemportalEngine.log");
 
 	engine::Engine *pEngine = engine::Engine::Create();
 	
@@ -23,6 +21,6 @@ int main()
 
 	engine::Engine::Destroy();
 
-	//system("pause");
+	engine::Engine::LOG_SYSTEM.close();
 	return 0;
 }

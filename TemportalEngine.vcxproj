@@ -140,11 +140,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\dependency\Dependency.cpp" />
     <ClCompile Include="source\dependency\GLFW.cpp" />
     <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\input\Queue.cpp" />
-    <ClCompile Include="source\Log.cpp" />
+    <ClCompile Include="source\logging\Logger.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
@@ -152,20 +151,20 @@
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dependency\Dependency.h" />
-    <ClInclude Include="include\dependency\GLFW.h" />
+    <ClInclude Include="include\dependency\Dependency.hpp" />
+    <ClInclude Include="include\dependency\GLFW.hpp" />
     <ClInclude Include="include\Engine.hpp" />
-    <ClInclude Include="include\Log.h" />
+    <ClInclude Include="include\input\Event.hpp" />
+    <ClInclude Include="include\input\Queue.hpp" />
+    <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
-    <ClInclude Include="include\thread\Thread.h" />
+    <ClInclude Include="include\thread\Thread.hpp" />
     <ClInclude Include="include\thread\ThreadId.h" />
     <ClInclude Include="include\types\arch.h" />
     <ClInclude Include="include\types\integer.h" />
     <ClInclude Include="include\Window.h" />
-    <ClInclude Include="source\input\Event.hpp" />
-    <ClInclude Include="source\input\Queue.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

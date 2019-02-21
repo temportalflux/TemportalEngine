@@ -1,10 +1,9 @@
 #include "Engine.hpp"
-#include "Log.h"
 #include <GLFW/glfw3.h> // TODO: Encapsulation Leak (GLFW key_callback)
 
 using namespace engine;
 
-char const * Engine::Log = "LogEngine";
+logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 void* Engine::spInstance = nullptr;
 
 void windowKeyInputCallback(Window* window, int key, int scancode, int action, int mods);
@@ -35,13 +34,14 @@ void Engine::Destroy()
 {
 	if (spInstance != nullptr)
 	{
-		delete spInstance;
+		delete (Engine*)spInstance;
 		spInstance = nullptr;
 	}
 }
 
 Engine::Engine()
 {
+	LogEngineInfo("Creating Engine");
 	*mpInputQueue = input::Queue(&inputQueueListener);
 }
 
@@ -49,6 +49,7 @@ Engine::~Engine()
 {
 	this->destroyWindow();
 	this->terminateDependencies();
+	LogEngineInfo("Engine Destroyed");
 }
 
 bool Engine::initializeDependencies()
@@ -86,7 +87,7 @@ void Engine::destroyWindow()
 
 void Engine::run()
 {
-	*mpThreadRender = Thread<Window*>("ThreadRender", &Window::renderUntilClose);
+	*mpThreadRender = Thread<Window*>("ThreadRender", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
 	while (mpWindowGame->isValid() && !mpWindowGame->isClosePending())

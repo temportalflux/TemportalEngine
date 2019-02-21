@@ -34,19 +34,19 @@
     <Filter Include="Source Files\thread">
       <UniqueIdentifier>{edf9e426-afc1-4b6d-90f8-3d0d506e85d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\logging">
+      <UniqueIdentifier>{b10faedb-f018-43e9-8fb5-162661941ad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\logging">
+      <UniqueIdentifier>{89910545-7cf9-4740-80db-e2dc5b2f12cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\Log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\Window.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\dependency\Dependency.cpp">
-      <Filter>Source Files\dependency</Filter>
     </ClCompile>
     <ClCompile Include="source\dependency\GLFW.cpp">
       <Filter>Source Files\dependency</Filter>
@@ -66,11 +66,11 @@
     <ClCompile Include="source\Engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\logging\Logger.cpp">
+      <Filter>Source Files\logging</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Namespace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -83,25 +83,10 @@
     <ClInclude Include="include\types\integer.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
-    <ClInclude Include="include\dependency\Dependency.h">
-      <Filter>Header Files\dependency</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dependency\GLFW.h">
-      <Filter>Header Files\dependency</Filter>
-    </ClInclude>
-    <ClInclude Include="source\input\Queue.hpp">
-      <Filter>Header Files\input</Filter>
-    </ClInclude>
-    <ClInclude Include="source\input\Event.hpp">
-      <Filter>Header Files\input</Filter>
-    </ClInclude>
     <ClInclude Include="include\thread\Mutex.h">
       <Filter>Header Files\thread</Filter>
     </ClInclude>
     <ClInclude Include="include\thread\MutexLock.hpp">
-      <Filter>Header Files\thread</Filter>
-    </ClInclude>
-    <ClInclude Include="include\thread\Thread.h">
       <Filter>Header Files\thread</Filter>
     </ClInclude>
     <ClInclude Include="include\thread\ThreadId.h">
@@ -109,6 +94,24 @@
     </ClInclude>
     <ClInclude Include="include\Engine.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\logging\Logger.hpp">
+      <Filter>Header Files\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dependency\GLFW.hpp">
+      <Filter>Header Files\dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dependency\Dependency.hpp">
+      <Filter>Header Files\dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="include\thread\Thread.hpp">
+      <Filter>Header Files\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Queue.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Event.hpp">
+      <Filter>Header Files\input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

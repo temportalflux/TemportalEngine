@@ -1,9 +1,7 @@
 #ifndef DEPENDENCY_GLFW_H
 #define DEPENDENCY_GLFW_H
 
-#include "Dependency.h"
-
-#define LogGlfw "LogGLFW"
+#include "Dependency.hpp"
 
 class GLFW : public Dependency
 {

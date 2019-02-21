@@ -22,5 +22,5 @@ void TE_MutexLock::lock()
 
 bool TE_MutexLock::unlock()
 {
-	return false;// (bool)mutexUnlock(&mMutex);
+	return (bool)mutexUnlock(&mMutex);
 }

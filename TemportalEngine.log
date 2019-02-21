@@ -1,0 +1,8 @@
+[2019.02.20 19:29:08][INFO] Engine> Creating Engine
+[2019.02.20 19:29:08][INFO] Glfw> Initializing
+[2019.02.20 19:29:08][INFO] Glfw> Compiled against 3.2.1
+[2019.02.20 19:29:08][INFO] Glfw> Running against 3.2.1
+[2019.02.20 19:29:09][INFO] ThreadRender> Starting thread
+[2019.02.20 19:29:15][INFO] ThreadRender> Stopping thread
+[2019.02.20 19:29:15][INFO] Glfw> Terminating
+[2019.02.20 19:29:15][INFO] Engine> Engine Destroyed

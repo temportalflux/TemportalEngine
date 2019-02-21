@@ -1,10 +1,10 @@
 #include <Window.h>
 
-#include <GLFW/glfw3.h>
 #include <functional>
+#include <GLFW/glfw3.h>
 
-#include "dependency/GLFW.h"
-#include "Log.h"
+#include "logging/Logger.hpp"
+#include "Engine.hpp"
 
 void _keyCallbackInternal(GLFWwindow *pWindowHandle,
 						  int key, int scancode, int action, int mods)
@@ -29,7 +29,7 @@ Window::Window(uSize width, uSize height, char const * title)
 	this->mpHandle = glfwCreateWindow(mWidth, mHeight, mpTitle, nullptr, nullptr);
 	if (!this->isValid())
 	{
-		logging::log(LogGlfw, logging::ECategory::ERROR,
+		DeclareLog("Window").log(logging::ECategory::ERROR,
 				"Failed to create window");
 	}
 

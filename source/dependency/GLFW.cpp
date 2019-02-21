@@ -1,13 +1,15 @@
-#include "dependency/GLFW.h"
+#include "dependency/GLFW.hpp"
 #include <GLFW/glfw3.h>
-#include "Log.h"
+#include "logging/Logger.hpp"
+#include "Engine.hpp"
+
+#define LogGlfw(cate, ...) logging::Logger("Glfw", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
 
 using namespace logging;
 
 void glfwErrorCallback(int error, const char* description)
 {
-	logging::log(LogGlfw, logging::ECategory::ERROR,
-			"%i - %s", error, description);
+	LogGlfw(logging::ECategory::ERROR, "%i - %s", error, description);
 }
 
 GLFW::GLFW()
@@ -18,9 +20,9 @@ GLFW::GLFW()
 
 bool GLFW::initialize()
 {
-	log(LogGlfw, ECategory::INFO, "Initializing");
+	LogGlfw(ECategory::INFO, "Initializing");
 
-	log(LogGlfw, ECategory::INFO,
+	LogGlfw(ECategory::INFO,
 				 "Compiled against %i.%i.%i",
 				 GLFW_VERSION_MAJOR,
 				 GLFW_VERSION_MINOR,
@@ -29,14 +31,13 @@ bool GLFW::initialize()
 	glfwSetErrorCallback(&glfwErrorCallback);
 	if (!glfwInit())
 	{
-		logging::log(LogGlfw, logging::ECategory::ERROR,
-					 "Failed to initialize");
+		LogGlfw(ECategory::ERROR, "Failed to initialize");
 		return false;
 	}
 
 	int major, minor, revision;
 	glfwGetVersion(&major, &minor, &revision);
-	log(LogGlfw, ECategory::INFO,
+	LogGlfw(ECategory::INFO,
 				 "Running against %i.%i.%i", major, minor, revision);
 
 	this->setInitialized(true);
@@ -45,7 +46,7 @@ bool GLFW::initialize()
 
 void GLFW::terminate()
 {
-	log(LogGlfw, ECategory::INFO, "Terminating");
+	LogGlfw(ECategory::INFO, "Terminating");
 	glfwTerminate();
 	this->setInitialized(false);
 }
