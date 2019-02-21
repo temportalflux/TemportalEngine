@@ -53,7 +53,7 @@ Engine::~Engine()
 
 bool Engine::initializeDependencies()
 {
-	*mpDepGlfw = GLFW();
+	*mpDepGlfw = SDL();
 	if (!mpDepGlfw->initialize()) return false;
 
 	return true;
@@ -70,7 +70,7 @@ bool Engine::createWindow()
 	mpWindowGame = new Window(640, 480, "Temportal Engine");
 	if (!mpWindowGame->isValid()) return false;
 
-	mpWindowGame->setKeyCallback(&windowKeyInputCallback);
+	mpWindowGame->setInputCallback(&windowKeyInputCallback);
 	mpWindowGame->initializeRenderContext(1);
 
 	return true;
@@ -91,7 +91,7 @@ void Engine::run()
 	*mpThreadRender = Thread("ThreadRender", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
-	while (mpWindowGame->isValid() && !mpWindowGame->isClosePending())
+	while (mpWindowGame->isValid())
 	{
 		this->pollInput();
 		mpInputQueue->dispatchAll();
@@ -130,7 +130,11 @@ void Engine::enqueueInput(input::Event const & evt)
 
 void Engine::processInput(input::Event const & evt)
 {
-	LogEngineInfo("Received Input Event");
+	LogEngineInfo("Received Input Event: %i", (i32)evt.type);
+
+	if (evt.type == input::EInputType::QUIT)
+		mpWindowGame->markShouldClose();
+
 	if (evt.type == input::EInputType::KEY
 		&& evt.inputKey.action == input::EAction::PRESS
 		&& evt.inputKey.key == input::EKey::ESCAPE)

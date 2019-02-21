@@ -1,55 +1,15 @@
 #include <Window.hpp>
 
 #include <functional>
-#include <GLFW/glfw3.h>
+#include <SDL.h>
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
 
-void _callbackInternalKey(GLFWwindow *pWindowHandle,
-	int key, int scancode, int action, int modifiers)
-{
-	void* userPtr = glfwGetWindowUserPointer(pWindowHandle);
-	auto *pWindow = reinterpret_cast<Window *>(userPtr);
-
-	auto evt = input::Event{ input::EInputType::KEY };
-	evt.inputKey = {
-		(input::EAction)action,
-		(input::EKeyModifier)modifiers,
-		(input::EKey)key,
-	};
-	pWindow->executeInputCallback(evt);
-}
-
-void _callbackInternalMouseButton(GLFWwindow *pWindowHandle,
-	int mouseButton, int action, int modifiers)
-{
-	void* userPtr = glfwGetWindowUserPointer(pWindowHandle);
-	auto *pWindow = reinterpret_cast<Window *>(userPtr);
-
-	auto evt = input::Event{ input::EInputType::MOUSE_BUTTON };
-	evt.inputMouseButton = {
-		(input::EAction)action,
-		(input::EKeyModifier)modifiers,
-		(input::EMouseButton)mouseButton,
-	};
-	pWindow->executeInputCallback(evt);
-}
-
-void _callbackInternalScroll(GLFWwindow *pWindowHandle, double x, double y)
-{
-	void* userPtr = glfwGetWindowUserPointer(pWindowHandle);
-	auto *pWindow = reinterpret_cast<Window *>(userPtr);
-
-	auto evt = input::Event{ input::EInputType::SCROLL };
-	evt.inputScroll = { x, y };
-	pWindow->executeInputCallback(evt);
-}
-
 void Window::renderUntilClose(void* ptr)
 {
 	Window* pWindow = reinterpret_cast<Window*>(ptr);
-	while (pWindow->isValid() && !pWindow->isClosePending())
+	while (pWindow->isValid())
 	{
 		pWindow->render();
 	}
@@ -60,65 +20,86 @@ Window::Window(uSize width, uSize height, char const * title)
 	, mHeight(height)
 	, mpTitle(title)
 {
-	this->mpHandle = glfwCreateWindow(mWidth, mHeight, mpTitle, nullptr, nullptr);
+	this->mIsPendingClose = false;
+	this->mpHandle = SDL_CreateWindow(mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, mWidth, mHeight, 0);
 	if (!this->isValid())
 	{
 		DeclareLog("Window").log(logging::ECategory::ERROR,
 				"Failed to create window");
 	}
-
-	glfwSetWindowUserPointer(this->mpHandle, this);
-	glfwSetKeyCallback(this->mpHandle, &_callbackInternalKey);
-	glfwSetMouseButtonCallback(this->mpHandle, &_callbackInternalMouseButton);
-	glfwSetScrollCallback(this->mpHandle, &_callbackInternalScroll);
 }
 
 bool Window::isValid()
 {
-	return this->mpHandle != nullptr;
+	return this->mpHandle != nullptr && !this->isPendingClose();
 }
 
-void Window::setKeyCallback(DelegateKeyCallback callback)
+void Window::setInputCallback(DelegateKeyCallback callback)
 {
-	this->mpDelegateKeyCallback = callback;
+	this->mpDelegateInputCallback = callback;
 }
 
 void Window::executeInputCallback(input::Event const &input)
 {
-	if (this->mpDelegateKeyCallback != nullptr)
+	if (this->mpDelegateInputCallback != nullptr)
 	{
-		(*this->mpDelegateKeyCallback)(this, input);
+		(*this->mpDelegateInputCallback)(this, input);
 	}
 }
 
 void Window::markShouldClose()
 {
-	glfwSetWindowShouldClose(this->mpHandle, GLFW_TRUE);
+	this->mIsPendingClose = true;
 }
 
-bool Window::isClosePending()
+bool Window::isPendingClose()
 {
-	return glfwWindowShouldClose(this->mpHandle) > 0;
+	return this->mIsPendingClose;
 }
 
 void Window::pollInput()
 {
-	glfwPollEvents();
+	SDL_Event sdlEvent;
+	input::Event evt;
+	while (SDL_PollEvent(&sdlEvent))
+	{
+		switch (sdlEvent.type)
+		{
+		case SDL_KEYDOWN:
+		case SDL_KEYUP:
+		case SDL_MOUSEMOTION:
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+		case SDL_MOUSEWHEEL:
+		{
+			break;
+		}
+		case SDL_QUIT:
+		{
+			evt.type = input::EInputType::QUIT;
+			this->executeInputCallback(evt);
+			break;
+		}
+		default:
+			break;
+		}
+	}
 }
 
 void Window::render()
 {
-	glfwSwapBuffers(this->mpHandle);
+	//glfwSwapBuffers(this->mpHandle);
 }
 
 void Window::destroy()
 {
-	glfwDestroyWindow(this->mpHandle);
+	SDL_DestroyWindow(this->mpHandle);
+	this->mpHandle = nullptr;
 }
 
 void Window::initializeRenderContext(int bufferSwapInterval)
 {
-	glfwMakeContextCurrent(this->mpHandle);
+	//glfwMakeContextCurrent(this->mpHandle);
 	//gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-	glfwSwapInterval(bufferSwapInterval);
+	//glfwSwapInterval(bufferSwapInterval);
 }

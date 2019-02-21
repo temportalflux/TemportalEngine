@@ -45,9 +45,6 @@
     <ClCompile Include="source\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\dependency\GLFW.cpp">
-      <Filter>Source Files\dependency</Filter>
-    </ClCompile>
     <ClCompile Include="source\input\Queue.cpp">
       <Filter>Source Files\input</Filter>
     </ClCompile>
@@ -68,6 +65,9 @@
     </ClCompile>
     <ClCompile Include="source\thread\Thread.cpp">
       <Filter>Source Files\thread</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dependency\SDL.cpp">
+      <Filter>Source Files\dependency</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -94,9 +94,6 @@
     </ClInclude>
     <ClInclude Include="include\logging\Logger.hpp">
       <Filter>Header Files\logging</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dependency\GLFW.hpp">
-      <Filter>Header Files\dependency</Filter>
     </ClInclude>
     <ClInclude Include="include\dependency\Dependency.hpp">
       <Filter>Header Files\dependency</Filter>
@@ -127,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="include\Window.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dependency\SDL.hpp">
+      <Filter>Header Files\dependency</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

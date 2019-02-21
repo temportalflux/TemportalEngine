@@ -15,9 +15,11 @@ enum class TEMPORTALENGINE_API EInputType : i32
 {
 	INVALID = -1,
 
+	QUIT,
 	KEY,
+	MOUSE_MOVE,
 	MOUSE_BUTTON,
-	SCROLL,
+	MOUSE_SCROLL,
 
 };
 

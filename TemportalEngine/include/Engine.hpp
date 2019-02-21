@@ -4,7 +4,7 @@
 #include "Api.h"
 
 #include "Namespace.h"
-#include "dependency/GLFW.hpp"
+#include "dependency/SDL.hpp"
 #include "Window.hpp"
 #include "thread/Thread.hpp"
 #include "input/Queue.hpp"
@@ -32,7 +32,7 @@ public:
 
 private:
 
-	GLFW mpDepGlfw[1];
+	SDL mpDepGlfw[1];
 
 	Window *mpWindowGame;
 	Thread mpThreadRender[1];

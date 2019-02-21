@@ -6,8 +6,6 @@
 #include "types/integer.h"
 #include "input/Event.hpp"
 
-struct GLFWwindow;
-
 class TEMPORTALENGINE_API Window
 {
 public:
@@ -19,8 +17,10 @@ private:
 	uSize mWidth, mHeight;
 	char const * mpTitle;
 
-	GLFWwindow *mpHandle;
-	DelegateKeyCallback mpDelegateKeyCallback;
+	struct SDL_Window *mpHandle;
+	bool mIsPendingClose;
+
+	DelegateKeyCallback mpDelegateInputCallback;
 
 public:
 	Window() = default;
@@ -28,11 +28,11 @@ public:
 
 	bool isValid();
 
-	void setKeyCallback(DelegateKeyCallback callback);
+	void setInputCallback(DelegateKeyCallback callback);
 	void initializeRenderContext(int i);
 
 	void markShouldClose();
-	bool isClosePending();
+	bool isPendingClose();
 
 	void pollInput();
 	void render();
@@ -41,11 +41,6 @@ public:
 private:
 
 	void executeInputCallback(input::Event const &evt);
-	friend void _callbackInternalKey(GLFWwindow *pWindowHandle,
-		int key, int scancode, int action, int mods);
-	friend void _callbackInternalMouseButton(GLFWwindow *pWindowHandle,
-		int mouseButton, int action, int modifiers);
-	friend void _callbackInternalScroll(GLFWwindow *pWindowHandle, double x, double y);
 
 };
 
