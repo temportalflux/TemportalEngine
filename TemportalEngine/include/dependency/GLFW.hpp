@@ -1,9 +1,11 @@
 #ifndef DEPENDENCY_GLFW_H
 #define DEPENDENCY_GLFW_H
 
+#include "Api.h"
+
 #include "Dependency.hpp"
 
-class GLFW : public Dependency
+class TEMPORTALENGINE_API GLFW : public Dependency
 {
 public:
 

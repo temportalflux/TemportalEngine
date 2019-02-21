@@ -1,6 +1,8 @@
 #ifndef TE_INPUT_QUEUE_HPP
 #define TE_INPUT_QUEUE_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "types/integer.h"
 #include "Event.hpp"
@@ -9,7 +11,7 @@
 NS_INPUT
 
 // http://gameprogrammingpatterns.com/event-queue.html
-class Queue
+class TEMPORTALENGINE_API Queue
 {
 public:
 	typedef void(*DelegateListener)(Event const &evt);

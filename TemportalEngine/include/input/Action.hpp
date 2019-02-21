@@ -1,12 +1,14 @@
 #ifndef INPUT_ACTION_HPP
 #define INPUT_ACTION_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "types/integer.h"
 
 NS_INPUT
 
-enum class EAction : i32
+enum class TEMPORTALENGINE_API EAction : i32
 {
 	INVALID = -1,
 	RELEASE = 0,

@@ -88,7 +88,7 @@ void Engine::destroyWindow()
 
 void Engine::run()
 {
-	*mpThreadRender = Thread<Window*>("ThreadRender", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
+	*mpThreadRender = Thread("ThreadRender", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
 	while (mpWindowGame->isValid() && !mpWindowGame->isClosePending())

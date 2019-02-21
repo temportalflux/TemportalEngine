@@ -1,9 +1,11 @@
 #ifndef TE_ENGINE_HPP
 #define TE_ENGINE_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "dependency/GLFW.hpp"
-#include "Window.h"
+#include "Window.hpp"
 #include "thread/Thread.hpp"
 #include "input/Queue.hpp"
 
@@ -15,7 +17,7 @@ NS_ENGINE
 #define LogEngine(cate, ...) logging::Logger("Engine", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(logging::ECategory::INFO, __VA_ARGS__)
 
-class Engine
+class TEMPORTALENGINE_API Engine
 {
 private:
 	static void* spInstance;
@@ -33,7 +35,7 @@ private:
 	GLFW mpDepGlfw[1];
 
 	Window *mpWindowGame;
-	Thread<Window*> mpThreadRender[1];
+	Thread mpThreadRender[1];
 
 	input::Queue mpInputQueue[1];
 

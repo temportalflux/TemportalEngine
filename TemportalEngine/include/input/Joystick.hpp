@@ -1,12 +1,14 @@
 #ifndef INPUT_JOYSTICK_HPP
 #define INPUT_JOYSTICK_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 
 NS_INPUT
 
 // TODO: Joystick https://www.glfw.org/docs/latest/input_guide.html#joystick
-enum class EJoystick
+enum class TEMPORTALENGINE_API EJoystick
 {
 	JOYSTICK_1 = 0,
 	JOYSTICK_2 = 1,

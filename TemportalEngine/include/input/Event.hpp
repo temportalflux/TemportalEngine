@@ -1,6 +1,8 @@
 #ifndef INPUT_EVENT_HPP
 #define INPUT_EVENT_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "types/integer.h"
 #include "Action.hpp"
@@ -9,7 +11,7 @@
 
 NS_INPUT
 
-enum class EInputType : i32
+enum class TEMPORTALENGINE_API EInputType : i32
 {
 	INVALID = -1,
 
@@ -19,7 +21,7 @@ enum class EInputType : i32
 
 };
 
-struct Event
+struct TEMPORTALENGINE_API Event
 {
 	EInputType type;
 

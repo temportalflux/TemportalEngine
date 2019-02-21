@@ -1,4 +1,4 @@
-#include <Window.h>
+#include <Window.hpp>
 
 #include <functional>
 #include <GLFW/glfw3.h>
@@ -46,8 +46,9 @@ void _callbackInternalScroll(GLFWwindow *pWindowHandle, double x, double y)
 	pWindow->executeInputCallback(evt);
 }
 
-void Window::renderUntilClose(Window * pWindow)
+void Window::renderUntilClose(void* ptr)
 {
+	Window* pWindow = reinterpret_cast<Window*>(ptr);
 	while (pWindow->isValid() && !pWindow->isClosePending())
 	{
 		pWindow->render();

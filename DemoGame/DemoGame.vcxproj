@@ -18,10 +18,18 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TemportalEngine\TemportalEngine.vcxproj">
+      <Project>{6ada9583-3474-44e7-b31c-ad0880763338}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{6ADA9583-3474-44E7-B31C-AD0880763338}</ProjectGuid>
-    <RootNamespace>TemportalEngine</RootNamespace>
+    <ProjectGuid>{564A4C23-CFA2-4E97-8DA0-B3AA9357E473}</ProjectGuid>
+    <RootNamespace>DemoGame</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -87,12 +95,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/glfw-3.2.1/WIN32/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/glfw-3.2.1/WIN32/lib-vc2015/glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -101,10 +109,10 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/glfw-3.2.1/WIN64/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libs/glfw-3.2.1/WIN64/lib-vc2015/glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\TemportalEngine.dll;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,14 +123,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/glfw-3.2.1/WIN32/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/glfw-3.2.1/WIN32/lib-vc2015/glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\TemportalEngine.dll;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -133,43 +141,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(SolutionDir)$(Configuration)\TemportalEngine.dll;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="source\dependency\GLFW.cpp" />
-    <ClCompile Include="source\Engine.cpp" />
-    <ClCompile Include="source\input\Queue.cpp" />
-    <ClCompile Include="source\logging\Logger.cpp" />
-    <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\thread\Mutex.c" />
-    <ClCompile Include="source\thread\MutexLock.cpp" />
-    <ClCompile Include="source\thread\ThreadId.c" />
-    <ClCompile Include="source\Window.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="include\dependency\Dependency.hpp" />
-    <ClInclude Include="include\dependency\GLFW.hpp" />
-    <ClInclude Include="include\Engine.hpp" />
-    <ClInclude Include="include\input\Action.hpp" />
-    <ClInclude Include="include\input\Event.hpp" />
-    <ClInclude Include="include\input\Joystick.hpp" />
-    <ClInclude Include="include\input\Key.hpp" />
-    <ClInclude Include="include\input\Mouse.hpp" />
-    <ClInclude Include="include\input\Queue.hpp" />
-    <ClInclude Include="include\logging\Logger.hpp" />
-    <ClInclude Include="include\Namespace.h" />
-    <ClInclude Include="include\thread\Mutex.h" />
-    <ClInclude Include="include\thread\MutexLock.hpp" />
-    <ClInclude Include="include\thread\Thread.hpp" />
-    <ClInclude Include="include\thread\ThreadId.h" />
-    <ClInclude Include="include\types\arch.h" />
-    <ClInclude Include="include\types\integer.h" />
-    <ClInclude Include="include\Window.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

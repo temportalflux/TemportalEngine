@@ -1,12 +1,14 @@
 #ifndef INPUT_KEY_HPP
 #define INPUT_KEY_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "types/integer.h"
 
 NS_INPUT
 
-enum class EKey : i32
+enum class TEMPORTALENGINE_API EKey : i32
 {
 	INVALID = -1,
 

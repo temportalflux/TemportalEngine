@@ -1,12 +1,14 @@
 #ifndef INPUT_MOUSE_HPP
 #define INPUT_MOUSE_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "types/integer.h"
 
 NS_INPUT
 
-enum class EMouseButton : i32
+enum class TEMPORTALENGINE_API EMouseButton : i32
 {
 	INVALID = -1,
 	BUTTON_1 = 0,

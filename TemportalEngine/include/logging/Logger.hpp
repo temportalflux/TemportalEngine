@@ -1,12 +1,14 @@
 #ifndef TE_LOGGING_LOGGER_HPP
 #define TE_LOGGING_LOGGER_HPP
 
+#include "Api.h"
+
 #include "Namespace.h"
 #include "thread/MutexLock.hpp"
 
 NS_LOGGING
 
-enum class ECategory
+enum class TEMPORTALENGINE_API ECategory
 {
 	INVALID = -1,
 
@@ -21,7 +23,7 @@ enum class ECategory
 typedef char const * Message;
 
 // handles logic and locking of console and file output
-class LogSystem
+class TEMPORTALENGINE_API LogSystem
 {
 	TE_MutexLock mpLock[1];
 	void* mpFileStream;
@@ -39,7 +41,7 @@ public:
 };
 
 // Other folks can log from me
-class Logger
+class TEMPORTALENGINE_API Logger
 {
 	friend class LogSystem;
 

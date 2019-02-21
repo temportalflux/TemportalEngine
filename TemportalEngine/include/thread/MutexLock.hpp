@@ -1,9 +1,11 @@
 #ifndef TE_THREAD_MUTEX_HPP
 #define TE_THREAD_MUTEX_HPP
 
+#include "Api.h"
+
 #include "Mutex.h"
 
-class TE_MutexLock
+class TEMPORTALENGINE_API TE_MutexLock
 {
 private:
 	TE_Mutex mMutex;

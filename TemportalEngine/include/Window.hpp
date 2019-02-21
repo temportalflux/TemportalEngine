@@ -1,17 +1,19 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include "Api.h"
+
 #include "types/integer.h"
 #include "input/Event.hpp"
 
 struct GLFWwindow;
 
-class Window
+class TEMPORTALENGINE_API Window
 {
 public:
 	typedef void (*DelegateKeyCallback)(Window *pWindow, struct input::Event const &evt);
 
-	static void renderUntilClose(Window *pWindow);
+	static void renderUntilClose(void* ptr);
 
 private:
 	uSize mWidth, mHeight;

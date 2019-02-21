@@ -1,7 +1,9 @@
 #ifndef DEPENDENCY_H
 #define DEPENDENCY_H
 
-class Dependency
+#include "Api.h"
+
+class TEMPORTALENGINE_API Dependency
 {
 private:
 	bool mHasBeenInitialized;
