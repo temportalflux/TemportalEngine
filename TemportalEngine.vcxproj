@@ -154,7 +154,11 @@
     <ClInclude Include="include\dependency\Dependency.hpp" />
     <ClInclude Include="include\dependency\GLFW.hpp" />
     <ClInclude Include="include\Engine.hpp" />
+    <ClInclude Include="include\input\Action.hpp" />
     <ClInclude Include="include\input\Event.hpp" />
+    <ClInclude Include="include\input\Joystick.hpp" />
+    <ClInclude Include="include\input\Key.hpp" />
+    <ClInclude Include="include\input\Mouse.hpp" />
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\Namespace.h" />

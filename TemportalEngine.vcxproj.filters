@@ -113,5 +113,17 @@
     <ClInclude Include="include\input\Event.hpp">
       <Filter>Header Files\input</Filter>
     </ClInclude>
+    <ClInclude Include="include\input\Key.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Joystick.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Mouse.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\Action.hpp">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

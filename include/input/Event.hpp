@@ -2,6 +2,7 @@
 #define INPUT_EVENT_HPP
 
 #include "Namespace.h"
+#include "Key.hpp"
 
 NS_INPUT
 
