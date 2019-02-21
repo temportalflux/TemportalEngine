@@ -1,12 +1,11 @@
 #include "Engine.hpp"
-#include <GLFW/glfw3.h> // TODO: Encapsulation Leak (GLFW key_callback)
 
 using namespace engine;
 
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 void* Engine::spInstance = nullptr;
 
-void windowKeyInputCallback(Window* window, int key, int scancode, int action, int mods);
+void windowKeyInputCallback(Window* window, input::Event const &inputEvt);
 void inputQueueListener(input::Event const & evt);
 
 Engine* Engine::Create()
@@ -106,12 +105,12 @@ void Engine::pollInput()
 	mpWindowGame->pollInput();
 }
 
-void windowKeyInputCallback(Window* window, int key, int scancode, int action, int mods)
+void windowKeyInputCallback(Window* window, input::Event const &inputEvt)
 {
 	Engine* pEngine;
 	if (Engine::GetChecked(pEngine))
 	{
-		pEngine->enqueueInput(input::Event{ key, scancode, action, mods });
+		pEngine->enqueueInput(inputEvt);
 	}
 }
 
@@ -132,8 +131,8 @@ void Engine::enqueueInput(input::Event const & evt)
 void Engine::processInput(input::Event const & evt)
 {
 	LogEngineInfo("Received Input Event");
-	if (evt.key == GLFW_KEY_ESCAPE && evt.action == GLFW_PRESS)
-	{
+	if (evt.type == input::EInputType::KEY
+		&& evt.inputKey.action == input::EAction::PRESS
+		&& evt.inputKey.key == input::EKey::ESCAPE)
 		mpWindowGame->markShouldClose();
-	}
 }

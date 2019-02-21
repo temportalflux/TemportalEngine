@@ -2,13 +2,14 @@
 #define WINDOW_H
 
 #include "types/integer.h"
+#include "input/Event.hpp"
 
 struct GLFWwindow;
 
 class Window
 {
 public:
-	typedef void (*DelegateKeyCallback)(Window *pWindow, int key, int scancode, int action, int mods);
+	typedef void (*DelegateKeyCallback)(Window *pWindow, struct input::Event const &evt);
 
 	static void renderUntilClose(Window *pWindow);
 
@@ -37,9 +38,12 @@ public:
 
 private:
 
-	void executeKeyCallback(int key, int scancode, int action, int mods);
-	friend void _keyCallbackInternal(GLFWwindow *pWindowHandle,
-									 int key, int scancode, int action, int mods);
+	void executeInputCallback(input::Event const &evt);
+	friend void _callbackInternalKey(GLFWwindow *pWindowHandle,
+		int key, int scancode, int action, int mods);
+	friend void _callbackInternalMouseButton(GLFWwindow *pWindowHandle,
+		int mouseButton, int action, int modifiers);
+	friend void _callbackInternalScroll(GLFWwindow *pWindowHandle, double x, double y);
 
 };
 

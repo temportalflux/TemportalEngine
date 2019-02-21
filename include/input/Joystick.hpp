@@ -1,6 +1,10 @@
 #ifndef INPUT_JOYSTICK_HPP
 #define INPUT_JOYSTICK_HPP
 
+#include "Namespace.h"
+
+NS_INPUT
+
 // TODO: Joystick https://www.glfw.org/docs/latest/input_guide.html#joystick
 enum class EJoystick
 {
@@ -21,5 +25,7 @@ enum class EJoystick
 	JOYSTICK_15 = 14,
 	JOYSTICK_16 = 15,
 };
+
+NS_END
 
 #endif // INPUT_JOYSTICK_HPP

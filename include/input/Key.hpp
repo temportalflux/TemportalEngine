@@ -1,7 +1,12 @@
 #ifndef INPUT_KEY_HPP
 #define INPUT_KEY_HPP
 
-enum class EKey
+#include "Namespace.h"
+#include "types/integer.h"
+
+NS_INPUT
+
+enum class EKey : i32
 {
 	INVALID = -1,
 
@@ -131,5 +136,15 @@ enum class EKey
 	RIGHT_SUPER = 347,
 	MENU = 348,
 };
+
+enum class EKeyModifier : i32
+{
+	NONE = 0x0000,
+	SHIFT = 0x0001,
+	CTRL = 0x0002,
+	ALT = 0x0004,
+};
+
+NS_END
 
 #endif // INPUT_KEY_HPP
