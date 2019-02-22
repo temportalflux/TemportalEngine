@@ -110,6 +110,10 @@
       </AdditionalLibraryDirectories>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -123,6 +127,10 @@
     <Link>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -142,6 +150,10 @@
       </AdditionalLibraryDirectories>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -159,6 +171,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\SDL2.dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\dependency\SDL.cpp" />

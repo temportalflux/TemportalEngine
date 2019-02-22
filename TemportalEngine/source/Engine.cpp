@@ -67,7 +67,7 @@ void Engine::terminateDependencies()
 
 bool Engine::createWindow()
 {
-	mpWindowGame = new Window(640, 480, "Temportal Engine");
+	mpWindowGame = new Window(800, 600, "Temportal Engine");
 	if (!mpWindowGame->isValid()) return false;
 
 	mpWindowGame->setInputCallback(&windowKeyInputCallback);
@@ -130,7 +130,31 @@ void Engine::enqueueInput(input::Event const & evt)
 
 void Engine::processInput(input::Event const & evt)
 {
-	LogEngineInfo("Received Input Event: %i", (i32)evt.type);
+	//LogEngineDebug("Received Input Event| Type:%i", (i32)evt.type);
+	if (evt.type == input::EInputType::KEY)
+	{
+		if (evt.inputKey.action == input::EAction::PRESS)
+			LogEngineDebug("%i Press", (i32)evt.inputKey.key);
+		if (evt.inputKey.action == input::EAction::REPEAT)
+			LogEngineDebug("%i Repeat", (i32)evt.inputKey.key);
+		if (evt.inputKey.action == input::EAction::RELEASE)
+			LogEngineDebug("%i Release", (i32)evt.inputKey.key);
+	}
+	else if (evt.type == input::EInputType::MOUSE_MOVE)
+	{
+		//LogEngineDebug("MOVE by (%i, %i) to (%i, %i)", evt.inputMouseMove.xDelta, evt.inputMouseMove.yDelta, evt.inputMouseMove.xCoord, evt.inputMouseMove.yCoord);
+	}
+	else if (evt.type == input::EInputType::MOUSE_BUTTON)
+	{
+		if (evt.inputMouseButton.action == input::EAction::PRESS)
+			LogEngineDebug("Mouse %i Press (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.xCoord, evt.inputMouseButton.yCoord);
+		if (evt.inputKey.action == input::EAction::RELEASE)
+			LogEngineDebug("Mouse %i Release (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.xCoord, evt.inputMouseButton.yCoord);
+	}
+	else if (evt.type == input::EInputType::MOUSE_SCROLL)
+	{
+		LogEngineDebug("Scroll by (%i, %i)", evt.inputScroll.xDelta, evt.inputScroll.yDelta);
+	}
 
 	if (evt.type == input::EInputType::QUIT)
 		mpWindowGame->markShouldClose();

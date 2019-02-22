@@ -16,6 +16,7 @@ NS_ENGINE
 #define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
 #define LogEngine(cate, ...) logging::Logger("Engine", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(logging::ECategory::INFO, __VA_ARGS__)
+#define LogEngineDebug(...) LogEngine(logging::ECategory::DEBUG, __VA_ARGS__)
 
 class TEMPORTALENGINE_API Engine
 {

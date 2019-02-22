@@ -27,7 +27,7 @@ struct TEMPORTALENGINE_API Event
 {
 	EInputType type;
 
-	union
+	union // MAX: 17B (17 bytes)
 	{
 		// Keyboard: key (4B), action (4B), modifiers (4B)
 		struct // 12B
@@ -37,19 +37,26 @@ struct TEMPORTALENGINE_API Event
 			EKey key;
 		} inputKey;
 
-		// Mouse Btn: key (4B), action (4B), modifiers (4B)
-		struct // 12B
-		{
-			EAction action;
-			EKeyModifier modifierMask;
-			EMouseButton button;
-		} inputMouseButton;
-
-		// Scroll: x-offset (8B), y-offset (8B)
+		// Mouse Btn: x, y, x relative, y relative (each 4B)
 		struct // 16B
 		{
-			double offsetX;
-			double offsetY;
+			i32 xDelta, yDelta;
+			i32 xCoord, yCoord;
+		} inputMouseMove;
+
+		// Mouse Btn: key (4B), action (4B), clickCount (1B), x & y coord on screen (8B)
+		struct // 17B
+		{
+			EAction action;
+			EMouseButton button;
+			ui8 clickCount;
+			i32 xCoord, yCoord;
+		} inputMouseButton;
+
+		// Scroll: x-offset (4B), y-offset (4B)
+		struct // 8B
+		{
+			i32 xDelta, yDelta;
 		} inputScroll;
 
 	};
