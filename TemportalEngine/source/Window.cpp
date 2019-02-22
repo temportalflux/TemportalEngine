@@ -26,7 +26,15 @@ Window::Window(uSize width, uSize height, char const * title)
 	{
 		DeclareLog("Window").log(logging::ECategory::ERROR,
 				"Failed to create window");
+		return;
 	}
+
+	SDL_JoystickEventState(SDL_ENABLE);
+
+	// TODO: Refactor input into a component
+	// https://www.libsdl.org/release/SDL-1.2.15/docs/html/guideinput.html
+	mpJoystick = SDL_JoystickOpen(0);
+
 }
 
 bool Window::isValid()
@@ -90,10 +98,15 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 {
 	switch (evtIn.type)
 	{
+
+#pragma region Keyboard
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
 		makeEventKey(evtIn, evtOut);
 		return true;
+#pragma endregion
+
+#pragma region Mouse
 	case SDL_MOUSEMOTION:
 	{
 		evtOut.type = input::EInputType::MOUSE_MOVE;
@@ -115,9 +128,44 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 		evtOut.inputScroll.yDelta = evtIn.wheel.y * directionMultiplier;
 		return true;
 	}
+#pragma endregion
+
+#pragma region Joystick
+	case SDL_JOYDEVICEADDED:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Joystick added");
+		break;
+	case SDL_JOYDEVICEREMOVED:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Joystick removed");
+		break;
+	case SDL_JOYAXISMOTION:
+	case SDL_JOYBUTTONDOWN:
+	case SDL_JOYBUTTONUP:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Joystick input");
+		break;
+#pragma endregion
+
+#pragma region Controller
+	case SDL_CONTROLLERDEVICEADDED:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Controller added");
+		break;
+	case SDL_CONTROLLERDEVICEREMOVED:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Controller removed");
+		break;
+	case SDL_CONTROLLERDEVICEREMAPPED:
+	case SDL_CONTROLLERAXISMOTION:
+	case SDL_CONTROLLERBUTTONDOWN:
+	case SDL_CONTROLLERBUTTONUP:
+		//DeclareLog("Window").log(logging::ECategory::DEBUG, "Controller input");
+		break;
+#pragma endregion
+
+
+#pragma region Other
 	case SDL_QUIT:
 		evtOut.type = input::EInputType::QUIT;
 		return true;
+#pragma endregion
+
 	default:
 		return false;
 	}
@@ -141,8 +189,10 @@ void Window::render()
 
 void Window::destroy()
 {
-	SDL_DestroyWindow(this->mpHandle);
+	SDL_DestroyWindow((SDL_Window*)this->mpHandle);
 	this->mpHandle = nullptr;
+
+	SDL_JoystickClose((SDL_Joystick*)mpJoystick);
 }
 
 void Window::initializeRenderContext(int bufferSwapInterval)

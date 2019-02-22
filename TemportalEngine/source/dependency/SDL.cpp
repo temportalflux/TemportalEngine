@@ -29,9 +29,40 @@ bool SDL::initialize()
 		"Compiled against %i.%i.%i", version.major, version.minor, version.patch
 	);
 
+	/*
+	SDL_INIT_TIMER
+	SDL_INIT_AUDIO
+	SDL_INIT_VIDEO
+	SDL_INIT_JOYSTICK
+	SDL_INIT_HAPTIC
+	SDL_INIT_GAMECONTROLLER
+	SDL_INIT_EVENTS
+	SDL_INIT_SENSOR
+	SDL_INIT_NOPARACHUTE
+	*/
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize");
+		LogSDL(ECategory::ERROR, "Failed to initialize SDL::VIDEO");
+		return false;
+	}
+	if (SDL_Init(SDL_INIT_AUDIO) != 0)
+	{
+		LogSDL(ECategory::ERROR, "Failed to initialize SDL::AUDIO");
+		return false;
+	}
+	if (SDL_Init(SDL_INIT_JOYSTICK) != 0)
+	{
+		LogSDL(ECategory::ERROR, "Failed to initialize SDL::JOYSTICK");
+		return false;
+	}
+	if (SDL_Init(SDL_INIT_HAPTIC) != 0)
+	{
+		LogSDL(ECategory::ERROR, "Failed to initialize SDL::HAPTIC");
+		return false;
+	}
+	if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
+	{
+		LogSDL(ECategory::ERROR, "Failed to initialize SDL::GAMECONTROLLER");
 		return false;
 	}
 

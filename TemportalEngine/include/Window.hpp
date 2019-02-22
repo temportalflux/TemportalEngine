@@ -17,7 +17,8 @@ private:
 	uSize mWidth, mHeight;
 	char const * mpTitle;
 
-	struct SDL_Window *mpHandle;
+	void* mpHandle;
+	void* mpJoystick;
 	bool mIsPendingClose;
 
 	DelegateKeyCallback mpDelegateInputCallback;
