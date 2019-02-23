@@ -8,6 +8,7 @@
 #include "Action.hpp"
 #include "Key.hpp"
 #include "Mouse.hpp"
+#include "math/Vector.hpp"
 
 NS_INPUT
 
@@ -40,8 +41,16 @@ struct TEMPORTALENGINE_API Event
 		// Mouse Btn: x, y, x relative, y relative (each 4B)
 		struct // 16B
 		{
-			i32 xDelta, yDelta;
-			i32 xCoord, yCoord;
+			union
+			{
+				struct { i32 xDelta, yDelta; };
+				math::Vector2Int delta;
+			};
+			union
+			{
+				struct { i32 xCoord, yCoord; };
+				math::Vector2Int coord;
+			};
 		} inputMouseMove;
 
 		// Mouse Btn: key (4B), action (4B), clickCount (1B), x & y coord on screen (8B)
@@ -50,16 +59,31 @@ struct TEMPORTALENGINE_API Event
 			EAction action;
 			EMouseButton button;
 			ui8 clickCount;
-			i32 xCoord, yCoord;
+			union
+			{
+				struct { i32 xCoord, yCoord; };
+				math::Vector2Int coord;
+			};
 		} inputMouseButton;
 
 		// Scroll: x-offset (4B), y-offset (4B)
 		struct // 8B
 		{
-			i32 xDelta, yDelta;
+			union
+			{
+				struct { i32 xDelta, yDelta; };
+				math::Vector2Int delta;
+			};
 		} inputScroll;
 
 	};
+
+	Event() {}
+	Event(Event const &other)
+	{
+		memcpy(this, &other, sizeof(*this));
+	}
+
 };
 
 NS_END

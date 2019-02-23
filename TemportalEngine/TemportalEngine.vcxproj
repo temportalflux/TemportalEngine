@@ -179,9 +179,10 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
   <ItemGroup>
     <ClCompile Include="source\dependency\SDL.cpp" />
     <ClCompile Include="source\Engine.cpp" />
+    <ClCompile Include="source\input\InputWatcher.cpp" />
     <ClCompile Include="source\input\Queue.cpp" />
     <ClCompile Include="source\logging\Logger.cpp" />
-    <ClCompile Include="source\math\Vector2.cpp" />
+    <ClCompile Include="source\math\Vector.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -194,13 +195,14 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\Engine.hpp" />
     <ClInclude Include="include\input\Action.hpp" />
     <ClInclude Include="include\input\Event.hpp" />
+    <ClInclude Include="include\input\InputWatcher.hpp" />
     <ClInclude Include="include\input\Joystick.hpp" />
     <ClInclude Include="include\input\Key.hpp" />
     <ClInclude Include="include\input\Mouse.hpp" />
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\math\Vector.h" />
-    <ClInclude Include="include\math\Vector2.hpp" />
+    <ClInclude Include="include\math\Vector.hpp" />
     <ClInclude Include="include\math\VectorType.hpp" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\Api.h" />

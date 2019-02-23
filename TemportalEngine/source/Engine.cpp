@@ -1,11 +1,13 @@
 #include "Engine.hpp"
+#include "Window.hpp"
+#include "math/Vector.hpp"
 
 using namespace engine;
 
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 void* Engine::spInstance = nullptr;
 
-void windowKeyInputCallback(Window* window, input::Event const &inputEvt);
+void windowKeyInputCallback(input::Event const &inputEvt);
 void inputQueueListener(input::Event const & evt);
 
 Engine* Engine::Create()
@@ -70,8 +72,9 @@ bool Engine::createWindow()
 	mpWindowGame = new Window(800, 600, "Temportal Engine");
 	if (!mpWindowGame->isValid()) return false;
 
-	mpWindowGame->setInputCallback(&windowKeyInputCallback);
 	mpWindowGame->initializeRenderContext(1);
+	
+	mpInputWatcher->setCallback(&windowKeyInputCallback);
 
 	return true;
 }
@@ -102,10 +105,10 @@ void Engine::run()
 
 void Engine::pollInput()
 {
-	mpWindowGame->pollInput();
+	mpInputWatcher->pollInput();
 }
 
-void windowKeyInputCallback(Window* window, input::Event const &inputEvt)
+void windowKeyInputCallback(input::Event const &inputEvt)
 {
 	Engine* pEngine;
 	if (Engine::GetChecked(pEngine))
@@ -147,13 +150,13 @@ void Engine::processInput(input::Event const & evt)
 	else if (evt.type == input::EInputType::MOUSE_BUTTON)
 	{
 		if (evt.inputMouseButton.action == input::EAction::PRESS)
-			LogEngineDebug("Mouse %i Press (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.xCoord, evt.inputMouseButton.yCoord);
+			LogEngineDebug("Mouse %i Press (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
 		if (evt.inputKey.action == input::EAction::RELEASE)
-			LogEngineDebug("Mouse %i Release (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.xCoord, evt.inputMouseButton.yCoord);
+			LogEngineDebug("Mouse %i Release (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
 	}
 	else if (evt.type == input::EInputType::MOUSE_SCROLL)
 	{
-		LogEngineDebug("Scroll by (%i, %i)", evt.inputScroll.xDelta, evt.inputScroll.yDelta);
+		LogEngineDebug("Scroll by (%i, %i)", evt.inputScroll.delta[0], evt.inputScroll.delta[1]);
 	}
 
 	if (evt.type == input::EInputType::QUIT)

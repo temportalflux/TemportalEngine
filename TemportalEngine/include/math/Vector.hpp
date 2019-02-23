@@ -2,17 +2,19 @@
 #define MATH_VECTOR2_HPP
 
 #include "Namespace.h"
+#include "Api.h"
 #include "math/Vector.h"
 #include "math/VectorType.hpp"
 
 #include <string.h> // memset/memcpy
 #include <type_traits>
 #include <cmath>
+#include <cassert>
 
 NS_MATH
 
 template <typename TValue, ui32 TValueCount>
-class Vector
+class TEMPORTALENGINE_API Vector
 {
 	static_assert(
 		std::is_same<TValue, f32>::value
@@ -52,6 +54,18 @@ public:
 	Vector(Vector<TValue, TValueCount> const &other)
 		: Vector(other.mValues)
 	{ }
+
+	TValue& operator[](ui32 const i)
+	{
+		assert(i < TValueCount);
+		return mValues[i];
+	}
+
+	TValue const & operator[](ui32 const i) const
+	{
+		assert(i < TValueCount);
+		return mValues[i];
+	}
 
 	static TValue const dot(Self const &a, Self const &b)
 	{

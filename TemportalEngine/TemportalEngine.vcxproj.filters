@@ -75,8 +75,11 @@
     <ClCompile Include="source\dependency\SDL.cpp">
       <Filter>Source Files\dependency</Filter>
     </ClCompile>
-    <ClCompile Include="source\math\Vector2.cpp">
+    <ClCompile Include="source\math\Vector.cpp">
       <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="source\input\InputWatcher.cpp">
+      <Filter>Source Files\input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,11 +146,14 @@
     <ClInclude Include="include\types\real.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
-    <ClInclude Include="include\math\Vector2.hpp">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
     <ClInclude Include="include\math\VectorType.hpp">
       <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\Vector.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\input\InputWatcher.hpp">
+      <Filter>Header Files\input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

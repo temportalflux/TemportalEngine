@@ -5,11 +5,13 @@
 
 #include "Namespace.h"
 #include "dependency/SDL.hpp"
-#include "Window.hpp"
 #include "thread/Thread.hpp"
 #include "input/Queue.hpp"
+#include "input/InputWatcher.hpp"
 
 #include "logging/Logger.hpp"
+
+class Window;
 
 NS_ENGINE
 
@@ -36,6 +38,8 @@ private:
 	SDL mpDepGlfw[1];
 
 	Window *mpWindowGame;
+	input::InputWatcher mpInputWatcher[1];
+
 	Thread mpThreadRender[1];
 
 	input::Queue mpInputQueue[1];
