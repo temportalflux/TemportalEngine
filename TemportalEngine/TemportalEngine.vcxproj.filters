@@ -40,6 +40,12 @@
     <Filter Include="Source Files\logging">
       <UniqueIdentifier>{89910545-7cf9-4740-80db-e2dc5b2f12cc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{931bc5aa-30e3-44f2-a189-59ed1f356de9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{ea6bc59a-e67e-4660-8324-0351b11119ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -68,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="source\dependency\SDL.cpp">
       <Filter>Source Files\dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="source\math\Vector2.cpp">
+      <Filter>Source Files\math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +136,18 @@
     </ClInclude>
     <ClInclude Include="include\dependency\SDL.hpp">
       <Filter>Header Files\dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\Vector.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\types\real.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\Vector2.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\VectorType.hpp">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

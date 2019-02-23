@@ -8,5 +8,6 @@
 #define NS_TYPES namespace types {
 #define NS_INPUT namespace input {
 #define NS_ENGINE namespace engine {
+#define NS_MATH namespace math {
 
 #endif  // INCLUDE_NAMESPACE_H_

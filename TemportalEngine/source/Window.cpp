@@ -169,6 +169,8 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 	default:
 		return false;
 	}
+
+	return false;
 }
 
 void Window::pollInput()

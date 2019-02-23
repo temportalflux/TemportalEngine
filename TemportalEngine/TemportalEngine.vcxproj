@@ -181,6 +181,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\input\Queue.cpp" />
     <ClCompile Include="source\logging\Logger.cpp" />
+    <ClCompile Include="source\math\Vector2.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -198,6 +199,9 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\input\Mouse.hpp" />
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
+    <ClInclude Include="include\math\Vector.h" />
+    <ClInclude Include="include\math\Vector2.hpp" />
+    <ClInclude Include="include\math\VectorType.hpp" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\thread\Mutex.h" />
@@ -206,6 +210,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\thread\ThreadId.h" />
     <ClInclude Include="include\types\arch.h" />
     <ClInclude Include="include\types\integer.h" />
+    <ClInclude Include="include\types\real.h" />
     <ClInclude Include="include\Window.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
