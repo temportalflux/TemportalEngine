@@ -187,6 +187,9 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClCompile Include="source\input\Queue.cpp" />
     <ClCompile Include="source\logging\Logger.cpp" />
     <ClCompile Include="source\math\Vector.cpp" />
+    <ClCompile Include="source\memory\alloc.cpp" />
+    <ClCompile Include="source\memory\MemoryManager.c" />
+    <ClCompile Include="source\memory\Pool.c" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -205,9 +208,13 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\input\Mouse.hpp" />
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
+    <ClInclude Include="include\math\compare.h" />
     <ClInclude Include="include\math\Vector.h" />
     <ClInclude Include="include\math\Vector.hpp" />
     <ClInclude Include="include\math\VectorType.hpp" />
+    <ClInclude Include="include\memory\alloc.h" />
+    <ClInclude Include="include\memory\MemoryManager.h" />
+    <ClInclude Include="include\memory\Pool.h" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\thread\Mutex.h" />

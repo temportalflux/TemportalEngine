@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "math/Vector.hpp"
+#include "memory/MemoryManager.h"
 
 using namespace engine;
 
@@ -14,8 +15,15 @@ Engine* Engine::Create()
 {
 	if (spInstance == nullptr)
 	{
-		spInstance = new Engine();
-		return Engine::Get();
+		void* memoryManager = malloc(MAX_MEMORY_SIZE);
+		if (a3_mem_manager_init(memoryManager, MAX_MEMORY_SIZE))
+		{
+			if (a3_mem_manager_alloc(memoryManager, sizeof(Engine), &spInstance))
+			{
+				new (spInstance) Engine(memoryManager);
+				return Engine::Get();
+			}
+		}
 	}
 	return nullptr;
 }
@@ -35,12 +43,17 @@ void Engine::Destroy()
 {
 	if (spInstance != nullptr)
 	{
-		delete (Engine*)spInstance;
+		Engine *pEngine = static_cast<Engine*>(spInstance);
+		void* memoryManager = pEngine->getMemoryManager();
+		pEngine->~Engine();
+		a3_mem_manager_dealloc(memoryManager, pEngine);
 		spInstance = nullptr;
+		free(memoryManager);
 	}
 }
 
-Engine::Engine()
+Engine::Engine(void* memoryManager)
+	: mpMemoryManager(memoryManager)
 {
 	LogEngineInfo("Creating Engine");
 	*mpInputQueue = input::Queue(&inputQueueListener);
@@ -51,6 +64,28 @@ Engine::~Engine()
 	this->destroyWindow();
 	this->terminateDependencies();
 	LogEngineInfo("Engine Destroyed");
+}
+
+void * Engine::getMemoryManager()
+{
+	return mpMemoryManager;
+}
+
+void* Engine::alloc(uSize size)
+{
+	void* ptr = nullptr;
+	this->mpLockMemoryManager->lock();
+	a3_mem_manager_alloc(getMemoryManager(), size, &ptr);
+	this->mpLockMemoryManager->unlock();
+	return ptr;
+}
+
+void Engine::dealloc(void** ptr)
+{
+	this->mpLockMemoryManager->lock();
+	a3_mem_manager_dealloc(getMemoryManager(), ptr);
+	this->mpLockMemoryManager->unlock();
+	ptr = nullptr;
 }
 
 bool Engine::initializeDependencies()

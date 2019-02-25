@@ -20,6 +20,8 @@ NS_ENGINE
 #define LogEngineInfo(...) LogEngine(logging::ECategory::INFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(logging::ECategory::DEBUG, __VA_ARGS__)
 
+#define MAX_MEMORY_SIZE 2097152 // 8^7
+
 class TEMPORTALENGINE_API Engine
 {
 private:
@@ -35,6 +37,9 @@ public:
 
 private:
 
+	TE_MutexLock mpLockMemoryManager[1];
+	void* mpMemoryManager;
+
 	SDL mpDepGlfw[1];
 
 	Window *mpWindowGame;
@@ -44,10 +49,14 @@ private:
 
 	input::Queue mpInputQueue[1];
 
-	Engine();
+	Engine(void* memoryManager);
 
 public:
 	~Engine();
+
+	void* getMemoryManager();
+	void* alloc(uSize size);
+	void dealloc(void** ptr);
 
 	bool initializeDependencies();
 	void terminateDependencies();

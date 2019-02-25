@@ -46,6 +46,12 @@
     <Filter Include="Source Files\math">
       <UniqueIdentifier>{ea6bc59a-e67e-4660-8324-0351b11119ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\memory">
+      <UniqueIdentifier>{5989e6cb-5a1c-4af2-9531-50ea8dffed10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\memory">
+      <UniqueIdentifier>{87a9a840-be02-4e54-a91d-d7d5aabecf01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -80,6 +86,15 @@
     </ClCompile>
     <ClCompile Include="source\input\InputWatcher.cpp">
       <Filter>Source Files\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\memory\alloc.cpp">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\memory\MemoryManager.c">
+      <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\memory\Pool.c">
+      <Filter>Source Files\memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +169,18 @@
     </ClInclude>
     <ClInclude Include="include\input\InputWatcher.hpp">
       <Filter>Header Files\input</Filter>
+    </ClInclude>
+    <ClInclude Include="include\memory\alloc.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\memory\MemoryManager.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\memory\Pool.h">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\compare.h">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
