@@ -104,6 +104,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
@@ -123,6 +124,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -142,6 +144,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -165,6 +168,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

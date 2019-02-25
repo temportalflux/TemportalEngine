@@ -81,19 +81,23 @@
     <SourcePath>$(VC_SourcePath);source</SourcePath>
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <SourcePath>$(VC_SourcePath);source</SourcePath>
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <SourcePath>$(VC_SourcePath);source</SourcePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,6 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
@@ -120,6 +125,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -138,6 +144,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -160,6 +167,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
