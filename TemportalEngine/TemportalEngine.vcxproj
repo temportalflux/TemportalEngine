@@ -102,14 +102,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
@@ -122,12 +122,12 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
@@ -142,7 +142,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
@@ -151,7 +151,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
@@ -166,14 +166,14 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\$(ProjectName).dll"
@@ -190,6 +190,9 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClCompile Include="source\memory\alloc.cpp" />
     <ClCompile Include="source\memory\MemoryManager.c" />
     <ClCompile Include="source\memory\Pool.c" />
+    <ClCompile Include="source\network\NetworkInterface.cpp" />
+    <ClCompile Include="source\network\Packet.cpp" />
+    <ClCompile Include="source\network\PacketQueue.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -217,6 +220,11 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\memory\Pool.h" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\Api.h" />
+    <ClInclude Include="include\network\interface.h" />
+    <ClInclude Include="include\network\NetworkInterface.hpp" />
+    <ClInclude Include="include\network\Packet.hpp" />
+    <ClInclude Include="include\network\PacketQueue.hpp" />
+    <ClInclude Include="include\network\RakNet.hpp" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
     <ClInclude Include="include\thread\Thread.hpp" />

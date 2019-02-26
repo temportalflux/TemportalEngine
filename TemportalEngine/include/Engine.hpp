@@ -8,6 +8,7 @@
 #include "thread/Thread.hpp"
 #include "input/Queue.hpp"
 #include "input/InputWatcher.hpp"
+#include "network/NetworkInterface.hpp"
 
 #include "logging/Logger.hpp"
 
@@ -45,7 +46,9 @@ private:
 	Window *mpWindowGame;
 	input::InputWatcher mpInputWatcher[1];
 
-	Thread mpThreadRender[1];
+	network::NetworkInterface mpNetworkInterface[1];
+	Thread *mpThreadRender;
+	Thread *mpThreadNetwork;
 
 	input::Queue mpInputQueue[1];
 
@@ -55,8 +58,24 @@ public:
 	~Engine();
 
 	void* getMemoryManager();
+
 	void* alloc(uSize size);
 	void dealloc(void** ptr);
+
+	template <typename TAlloc, typename... TArgs>
+	TAlloc* alloc(TArgs... args)
+	{
+		TAlloc *ptr = (TAlloc*)this->alloc(sizeof(TAlloc));
+		new (ptr) TAlloc(args...);
+		return ptr;
+	}
+
+	template <typename TDealloc>
+	void dealloc(TDealloc **ptrRef)
+	{
+		(*ptrRef)->TDealloc::~TDealloc();
+		this->dealloc(ptrRef);
+	}
 
 	bool initializeDependencies();
 	void terminateDependencies();
@@ -65,6 +84,7 @@ public:
 	void destroyWindow();
 
 	void run();
+	bool isActive() const;
 
 	void pollInput();
 	void enqueueInput(struct input::Event const &evt);

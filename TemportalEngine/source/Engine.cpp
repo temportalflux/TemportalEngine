@@ -126,16 +126,26 @@ void Engine::destroyWindow()
 
 void Engine::run()
 {
-	*mpThreadRender = Thread("ThreadRender", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
+	mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
-	while (mpWindowGame->isValid())
+	mpThreadNetwork = this->alloc<Thread>("Thread-Network", &Engine::LOG_SYSTEM, &network::NetworkInterface::runThread);
+	mpThreadNetwork->start(mpNetworkInterface);
+
+	while (this->isActive())
 	{
 		this->pollInput();
 		mpInputQueue->dispatchAll();
 	}
+
+	mpThreadNetwork->join();
 	mpThreadRender->join();
 
+}
+
+bool Engine::isActive() const
+{
+	return mpWindowGame->isValid();
 }
 
 void Engine::pollInput()

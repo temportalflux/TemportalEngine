@@ -52,6 +52,12 @@
     <Filter Include="Source Files\memory">
       <UniqueIdentifier>{87a9a840-be02-4e54-a91d-d7d5aabecf01}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\network">
+      <UniqueIdentifier>{9f64ec13-7049-4bbb-a34a-93d05b744029}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network">
+      <UniqueIdentifier>{925621ff-0a51-40b9-9fc5-0ae877aa7b5d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -95,6 +101,15 @@
     </ClCompile>
     <ClCompile Include="source\memory\Pool.c">
       <Filter>Source Files\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\NetworkInterface.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\PacketQueue.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\Packet.cpp">
+      <Filter>Source Files\network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +196,21 @@
     </ClInclude>
     <ClInclude Include="include\math\compare.h">
       <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\interface.h">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\NetworkInterface.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\RakNet.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\Packet.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\PacketQueue.hpp">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
