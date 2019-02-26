@@ -20,6 +20,7 @@ enum class TEMPORTALENGINE_API ECategory
 	COUNT
 };
 
+class Logger;
 typedef char const * Message;
 
 // handles logic and locking of console and file output
@@ -30,7 +31,6 @@ class TEMPORTALENGINE_API LogSystem
 
 	void printLog(char const *const format, char *args);
 	void printLog(char const *const format, ...);
-	void printPrefix(class Logger *pLogger, ECategory category);
 
 public:
 	LogSystem();

@@ -30,26 +30,31 @@ void LogSystem::printLog(char const *const format, ...)
 	va_end(args);
 }
 
-void LogSystem::printPrefix(Logger *pLogger, ECategory category)
+void LogSystem::open(char const * const filePath)
+{
+	fopen_s((FILE**)&mpFileStream, filePath, "w");
+}
+
+void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 {
 	const char* categoryStr;
 	switch (category)
 	{
-		case ECategory::INFO:
-			categoryStr = "INFO";
-			break;
-		case ECategory::WARN:
-			categoryStr = "WARNING";
-			break;
-		case ECategory::ERROR:
-			categoryStr = "ERROR";
-			break;
-		case ECategory::DEBUG:
-			categoryStr = "DEBUG";
-			break;
-		default:
-			categoryStr = "";
-			break;
+	case ECategory::INFO:
+		categoryStr = "INFO";
+		break;
+	case ECategory::WARN:
+		categoryStr = "WARNING";
+		break;
+	case ECategory::ERROR:
+		categoryStr = "ERROR";
+		break;
+	case ECategory::DEBUG:
+		categoryStr = "DEBUG";
+		break;
+	default:
+		categoryStr = "";
+		break;
 	}
 
 	time_t currentTime = time(nullptr);
@@ -58,45 +63,16 @@ void LogSystem::printPrefix(Logger *pLogger, ECategory category)
 	char timeStr[70];
 	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", &timeinfo);
 
-	this->printLog("[%s][%s] %s> ", timeStr, categoryStr, pLogger->mpTitle);
-}
-
-char *convert(unsigned int num, int base)
-{
-	static char Representation[] = "0123456789ABCDEF";
-	static char buffer[50];
-	char *ptr;
-
-	ptr = &buffer[49];
-	*ptr = '\0';
-
-	do
-	{
-		*--ptr = Representation[num%base];
-		num /= base;
-	} while (num != 0);
-
-	return(ptr);
-}
-
-void LogSystem::open(char const * const filePath)
-{
-	fopen_s((FILE**)&mpFileStream, filePath, "w");
-}
-
-void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
-{
-	mpLock->lock();
-
-	this->printPrefix(pLogger, category);
-
 	va_list args;
 	va_start(args, format);
+
+	mpLock->lock();
+	printLog("[%s][%s] %s> ", timeStr, categoryStr, pLogger->mpTitle);
 	printLog(format, args);
 	printLog("\n");
-	va_end(args);
-
 	mpLock->unlock();
+
+	va_end(args);
 }
 
 bool LogSystem::close()
