@@ -3,6 +3,8 @@
 
 #include "network/RakNet.hpp"
 
+const uSize SIZE_OF_TIMESTAMPS = sizeof(char) + sizeof(RakNet::Time) + sizeof(RakNet::Time);
+
 using namespace network;
 
 typedef RakNet::RakPeerInterface * Interface;
@@ -13,11 +15,7 @@ void NetworkInterface::runThread(void* pInterface)
 	engine::Engine *pEngine = nullptr;
 	while (engine::Engine::GetChecked(pEngine) && pEngine->isActive())
 	{
-		NetworkInterface *pNetInterface = (NetworkInterface *)pInterface;
-		if (pNetInterface->getPacketCount() > 0)
-		{
-			//pNetInterface->getNextPacket();
-		}
+		((NetworkInterface *)pInterface)->fetchPacket();
 	}
 }
 
@@ -58,28 +56,129 @@ void NetworkInterface::connectToServer(char const *address, const int port)
 }
 
 // Fetch the address the peer is bound to
-void NetworkInterface::queryAddress()
+void NetworkInterface::queryAddress() const
 {
 	auto address = GetInterface(mpPeerInterface)->GetMyBoundAddress();
 	//address.address;
 }
 
 // Return the IP string from the peer
-char const * NetworkInterface::getIP()
+char const * NetworkInterface::getIP() const
 {
 	return GetInterface(mpPeerInterface)->GetLocalIP(0); // note: this can be finicky if there are multiple network addapters
 }
 
 // Returns true if the network interface (RakNet thread) is active
-bool NetworkInterface::isActive()
+bool NetworkInterface::isActive() const
 {
 	return GetInterface(mpPeerInterface)->IsActive();
 }
 
-int NetworkInterface::getPacketCount() const
+i32 readTimestamps(const ui8 *buffer, ui64 &time1, ui64 &time2)
 {
-	//return this->mpPackets->getCount();
+	if (buffer)
+	{
+		i8 tag;
+		tag = *(buffer++);
+		if (tag == (i8)ID_TIMESTAMP)
+		{
+			const ui64 *tPtr = (RakNet::Time *)buffer;
+			time1 = *(tPtr++);
+			time2 = *(tPtr++);
+			if (*(buffer + 4) < 0)
+				// RakNet seems to be subtracting this number for some stupid reason... and only half the time... what is it doing (Dan Buckstein)
+				time1 += 4311744512;
+			return SIZE_OF_TIMESTAMPS;
+		}
+	}
 	return 0;
+}
+
+i32 writeTimestamps(ui8 *buffer, const ui64 &time1, const ui64 &time2)
+{
+	if (buffer)
+	{
+		*(buffer++) = (char)(ID_TIMESTAMP);
+		RakNet::Time *tPtr = (RakNet::Time *)buffer;
+		*(tPtr++) = time1;
+		*(tPtr++) = time2;
+		return SIZE_OF_TIMESTAMPS;
+	}
+	return 0;
+}
+
+void NetworkInterface::fetchPacket()
+{
+	Interface pInterface = GetInterface(mpPeerInterface);
+
+	RakNet::Packet *pRakPak = pInterface->Receive();
+
+	// No packet in buffer
+	if (pRakPak == nullptr) return;
+	
+	// Copy out the addresss
+	Packet::DataPtr address = {};
+	auto addressData = pRakPak->systemAddress.ToString();
+	address.length = std::strlen(addressData);
+	assert(address.length <= MAX_PACKET_ADDRESS_LENGTH);
+	memcpy_s(address.data, address.length * sizeof(i8), pRakPak->systemAddress.ToString(), sizeof(address.length));
+
+	const i32 lastPing = pInterface->GetLastPing(pRakPak->systemAddress);
+
+	// sentTime_local - The local time that the packet was sent at
+	// sentTime_remote - The remote time the packet was sent at
+	// sentToReadDiff_local - The local time difference between when the packet was sent and when it was read
+	// sentToRead_remote - The local time spent to read the packet (when packet had a pitstop on server)
+	// sendToRead_other - The remote time the packet was sent at originally
+	RakNet::Time sentTime_local, sentTime_remote, sentToReadDiff_local, sentToRead_remote, sendToRead_other;
+
+	// Time in local clock that the message was read
+	RakNet::Time readTime_local = RakNet::GetTime();
+
+	Packet::TimestampInfo timestampInfo;
+	timestampInfo.timesLoaded = false;
+
+	uSize sizeOfTimestamps = 0;
+
+	// Try to read off the sent times
+	int sizeReadSent = readTimestamps(pRakPak->data + sizeOfTimestamps, sentTime_local, sentTime_remote);
+
+	// sizeRead > 0 when there are timestamps to read
+	if (sizeReadSent > 0)
+	{
+		sentToReadDiff_local = (readTime_local - sentTime_local);
+		// compensate for timestamps by removing the size
+		sizeOfTimestamps += sizeReadSent;
+
+		int sizeReadAlt = readTimestamps(pRakPak->data + sizeOfTimestamps, sentToRead_remote, sendToRead_other);
+		if (sizeReadAlt > 0)
+		{
+			// compensate for timestamps by removing the size
+			sizeOfTimestamps += sizeReadAlt;
+
+			timestampInfo.timesLoaded = true;
+			timestampInfo.packetReadTime_local = readTime_local;
+			timestampInfo.readDiff_local = sentToReadDiff_local;
+			timestampInfo.sentTime_remote = sentToRead_remote;
+			timestampInfo.totalTransferTime_local = sentToReadDiff_local + sentToRead_remote;
+
+		}
+	}
+
+	// Copy out the packet data
+	Packet::DataPacket data;
+	data.length = pRakPak->length - sizeOfTimestamps;
+	assert(data.length <= MAX_PACKET_DATA_LENGTH);
+	memcpy_s(data.data, data.length * sizeof(ui8), pRakPak->data + sizeOfTimestamps, data.length * sizeof(ui8));
+
+	// Send address, and packet data to copy, to a packet wrapper
+	auto packet = Packet(address, data);
+	packet.mTimestampInfo = timestampInfo;
+
+	// Save packet for processing later
+	mpQueue->enqueue(packet);
+
+	pInterface->DeallocatePacket(pRakPak);
 }
 
 // Shutdown the peer interface
@@ -134,126 +233,14 @@ void Network::sendTo(Data data, DataSize size,
 
 	this->mpPeerInterface->Send(msg, totalSize, *priority, *reliability, channel, *address, broadcast);
 }
-
-// Cache all incoming packets (should be run regularly)
-void Network::fetchAllPackets()
-{
-	// RakNet Packet pointer
-	RakNet::Packet *packet;
-	// Wrapper Packet pointer
-	ChampNet::Packet* pCurrentPacket;
-
-	// Iterate over all packets in the interface
-	for (packet = mpPeerInterface->Receive();
-		packet;
-		// DEALLOCATE PACKET WHEN FINISHED ITERATION
-		mpPeerInterface->DeallocatePacket(packet), packet = mpPeerInterface->Receive())
-	{
-		// Process the packet
-
-		// Copy out the addresss
-		const char* address = packet->systemAddress.ToString();
-		unsigned int addressLength = (unsigned int)std::strlen(address);
-
-		char *data = (char *)packet->data;
-		unsigned int dataSize = packet->length;
-		const int lastPing = mpPeerInterface->GetLastPing(packet->systemAddress);
-
-		// sentTime_local - The local time that the packet was sent at
-		// sentTime_remote - The remote time the packet was sent at
-		// sentToReadDiff_local - The local time difference between when the packet was sent and when it was read
-		// sentToRead_remote - The local time spent to read the packet (when packet had a pitstop on server)
-		// sendToRead_other - The remote time the packet was sent at originally
-		// Added By Jake
-		RakNet::Time sentTime_local, sentTime_remote, sentToReadDiff_local, sentToRead_remote, sendToRead_other;
-
-		// Time in local clock that the message was read
-		// Added By Jake
-		RakNet::Time readTime_local = RakNet::GetTime();
-
-		ChampNet::TimeStamp timestampInfo;
-		timestampInfo.timesLoaded = false;
-
-		// Try to read off the sent times
-		int sizeReadSent = this->readTimestamps(data, sentTime_local, sentTime_remote);
-
-		// sizeRead > 0 when there are timestamps to read
-		if (sizeReadSent > 0)
-		{
-			// Added By Jake
-			sentToReadDiff_local = (readTime_local - sentTime_local);
-			// compensate for timestamps by removing the size
-			dataSize -= sizeReadSent;
-
-			// Added By Jake
-			int sizeReadAlt = this->readTimestamps(data, sentToRead_remote, sendToRead_other);
-			if (sizeReadAlt > 0)
-			{
-				// compensate for timestamps by removing the size
-				dataSize -= sizeReadAlt;
-
-				//printf("Read time (local) = %I64d | (last pring = %d) \n", readTime_local, lastPing);
-				//printf("Sent time (local) = %I64d | Sent time (remote) = %I64d \n", sentTime_local, sentTime_remote);
-				//printf("Sent->Read time diff = %I64d | Clock diff = %I64d \n", sentToReadDiff_local, (sentTime_local - sentTime_remote));
-				// Dustin
-				timestampInfo.timesLoaded = true;
-				timestampInfo.packetReadTime_local = readTime_local;
-				timestampInfo.readDiff_local = sentToReadDiff_local;
-				timestampInfo.sentTime_remote = sentToRead_remote;
-				timestampInfo.totalTransferTime_local = sentToReadDiff_local + sentToRead_remote;
-
-			}
-		}
-
-		// Send address, and packet data to copy, to a packet wrapper
-		pCurrentPacket = new ChampNet::Packet(addressLength, address, dataSize, packet->data + (packet->length - dataSize));
-		pCurrentPacket->timestampInfo = timestampInfo;
-
-		// Save packet for processing later
-
-		mpPackets->enqueue(pCurrentPacket);
-	}
-}
 //*/
 
+/*
 // Poll the next cached packet
 // Returns true if a packet was found;
-/*
 bool NetworkInterface::pollPackets(Packet *&nextPacket)
 {
 	mpPackets->dequeue(nextPacket);
 	return nextPacket != NULL;
-}
-
-int Network::writeTimestamps(char *buffer, const RakNet::Time &time1, const RakNet::Time &time2)
-{
-	if (buffer)
-	{
-		*(buffer++) = (char)(ID_TIMESTAMP);
-		RakNet::Time *tPtr = (RakNet::Time *)buffer;
-		*(tPtr++) = time1;
-		*(tPtr++) = time2;
-		return SIZE_OF_TIMESTAMPS;
-	}
-	return 0;
-}
-
-int Network::readTimestamps(const char *buffer, RakNet::Time &time1, RakNet::Time &time2)
-{
-	if (buffer)
-	{
-		char tag;
-		tag = *(buffer++);
-		if (tag == (char)ID_TIMESTAMP)
-		{
-			const RakNet::Time *tPtr = (RakNet::Time *)buffer;
-			time1 = *(tPtr++);
-			time2 = *(tPtr++);
-			if (*(buffer + 4) < 0)
-				time1 += 4311744512;    // RakNet seems to be subtracting this number for some stupid reason... and only half the time... what is it doing (Dan Buckstein)
-			return SIZE_OF_TIMESTAMPS;
-		}
-	}
-	return 0;
 }
 //*/

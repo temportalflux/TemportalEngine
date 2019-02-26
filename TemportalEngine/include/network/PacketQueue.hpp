@@ -5,6 +5,7 @@
 #include "Api.h"
 #include "network/Packet.hpp"
 #include "types/integer.h"
+#include "thread/MutexLock.hpp"
 
 NS_NETWORK
 
@@ -16,6 +17,7 @@ class TEMPORTALENGINE_API PacketQueue
 {
 
 private:
+	TE_MutexLock mpMutex[1];
 	Packet mpRoundQueue[MAX_PACKET_COUNT];
 
 	uSize mIndexHead;

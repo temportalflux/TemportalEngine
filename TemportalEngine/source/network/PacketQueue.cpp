@@ -20,18 +20,22 @@ PacketQueue::~PacketQueue()
 bool PacketQueue::enqueue(Packet const data)
 {
 	if ((mIndexTail + 1) % MAX_PACKET_COUNT == mIndexHead) return false;
+	mpMutex->lock();
 	// Add to the end of the list.
 	memcpy_s(mpRoundQueue + mIndexTail, sizeof(Packet), &data, sizeof(Packet));
 	mIndexTail = (mIndexTail + 1) % MAX_PACKET_COUNT;
+	mpMutex->unlock();
 	return true;
 }
 
 bool PacketQueue::dequeue(Packet &data)
 {
 	if ((mIndexTail + 1) % MAX_PACKET_COUNT == mIndexHead) return false;
+	mpMutex->lock();
 	data = mpRoundQueue[mIndexHead];
 	memset(mpRoundQueue + mIndexHead, 0, sizeof(Packet));
 	mIndexHead = (mIndexHead + 1) % MAX_PACKET_COUNT;
+	mpMutex->unlock();
 	return true;
 }
 

@@ -3,6 +3,7 @@
 
 #include "Namespace.h"
 #include "Api.h"
+#include "network/PacketQueue.hpp"
 
 NS_ENGINE
 class Engine;
@@ -17,8 +18,11 @@ class TEMPORTALENGINE_API NetworkInterface
 private:
 	
 	void* mpPeerInterface;
+	PacketQueue mpQueue[1];
 	
 	NetworkInterface();
+
+#pragma region RunOps
 
 	// Startup the server interface
 	void initServer(const int port, const int maxClients);
@@ -29,19 +33,28 @@ private:
 	// Connect the interface to its destination
 	void connectToServer(char const *address, const int port);
 
-	// Return the IP string from the peer
-	char const * getIP();
-
-	// Returns true if the network interface (RakNet thread) is active
-	bool isActive();
-
-	// Returns the total number of packets currently cached
-	int getPacketCount() const;
-
-	void queryAddress();
-
 	// Shutdown the peer interface
 	void disconnect();
+
+#pragma endregion
+
+#pragma region Status
+
+	// Return the IP string from the peer
+	char const * getIP() const;
+
+	void queryAddress() const;
+
+	// Returns true if the network interface (RakNet thread) is active
+	bool isActive() const;
+
+#pragma endregion
+
+#pragma region Packets
+
+	void fetchPacket();
+
+#pragma endregion
 
 	/*
 	//! Send packet data over RakNet
