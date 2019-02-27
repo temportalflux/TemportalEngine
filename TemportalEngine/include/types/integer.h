@@ -23,7 +23,11 @@ typedef a3i128				hugeinteger;
 typedef a3ui128				hugeindex;
 #endif	// __SIZEOF_INT128__
 
+#ifdef _WIN64
+typedef ui64 uSize;
+#else
 typedef ui32 uSize;
+#endif
 
 // "pointer" as integer type
 #if BIT_32

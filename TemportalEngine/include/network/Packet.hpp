@@ -19,7 +19,7 @@ class TEMPORTALENGINE_API Packet
 	struct DataPtr
 	{
 		i8 data[MAX_PACKET_ADDRESS_LENGTH];
-		uSize length;
+		ui64 length;
 	};
 
 	struct DataPacket

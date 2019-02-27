@@ -83,6 +83,8 @@ public:
 	bool createWindow();
 	void destroyWindow();
 
+	void createServer(ui16 const port, ui16 maxClients);
+	void createClient(char const *address, ui16 port);
 	void run();
 	bool isActive() const;
 

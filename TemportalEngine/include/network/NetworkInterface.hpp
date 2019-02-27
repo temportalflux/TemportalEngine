@@ -25,13 +25,13 @@ private:
 #pragma region RunOps
 
 	// Startup the server interface
-	void initServer(const int port, const int maxClients);
+	void initServer(const ui16 port, const ui16 maxClients);
 
 	// Startup the client interface
 	void initClient();
 
 	// Connect the interface to its destination
-	void connectToServer(char const *address, const int port);
+	void connectToServer(char const *address, const ui16 port);
 
 	// Shutdown the peer interface
 	void disconnect();

@@ -124,13 +124,27 @@ void Engine::destroyWindow()
 	}
 }
 
+void Engine::createClient(char const *address, ui16 port)
+{
+	this->mpNetworkInterface->initClient();
+	this->mpNetworkInterface->connectToServer(address, port);
+}
+
+void Engine::createServer(ui16 const port, ui16 maxClients)
+{
+	this->mpNetworkInterface->initServer(port, maxClients);
+}
+
 void Engine::run()
 {
 	mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
-	mpThreadNetwork = this->alloc<Thread>("Thread-Network", &Engine::LOG_SYSTEM, &network::NetworkInterface::runThread);
-	mpThreadNetwork->start(mpNetworkInterface);
+	if (this->mpNetworkInterface->isActive())
+	{
+		mpThreadNetwork = this->alloc<Thread>("Thread-Network", &Engine::LOG_SYSTEM, &network::NetworkInterface::runThread);
+		mpThreadNetwork->start(mpNetworkInterface);
+	}
 
 	while (this->isActive())
 	{
@@ -138,7 +152,8 @@ void Engine::run()
 		mpInputQueue->dispatchAll();
 	}
 
-	mpThreadNetwork->join();
+	if (this->mpNetworkInterface->isActive())
+		mpThreadNetwork->join();
 	mpThreadRender->join();
 
 }

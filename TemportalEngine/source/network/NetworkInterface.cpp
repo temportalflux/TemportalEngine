@@ -31,7 +31,7 @@ NetworkInterface::~NetworkInterface()
 }
 
 // Startup the server interface
-void NetworkInterface::initServer(const int port, const int maxClients)
+void NetworkInterface::initServer(const ui16 port, const ui16 maxClients)
 {
 	// Startup the server by reserving a port
 	RakNet::SocketDescriptor sd = RakNet::SocketDescriptor(port, 0);
@@ -49,7 +49,7 @@ void NetworkInterface::initClient()
 }
 
 // Connect the interface to its destination
-void NetworkInterface::connectToServer(char const *address, const int port)
+void NetworkInterface::connectToServer(char const *address, const ui16 port)
 {
 	// Connect to the server using the specified address and port
 	GetInterface(mpPeerInterface)->Connect(address, port, 0, 0);

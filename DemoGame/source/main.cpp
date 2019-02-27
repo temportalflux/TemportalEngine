@@ -17,6 +17,8 @@ int main()
 		return 1;
 	}
 
+	pEngine->createServer(425, 2);
+
 	pEngine->run();
 
 	engine::Engine::Destroy();
