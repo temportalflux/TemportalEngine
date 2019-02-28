@@ -4,6 +4,7 @@
 #include "Namespace.h"
 #include "Api.h"
 #include "network/PacketQueue.hpp"
+#include "network/Event.hpp"
 
 NS_ENGINE
 class Engine;
@@ -14,13 +15,12 @@ NS_NETWORK
 class TEMPORTALENGINE_API NetworkInterface
 {
 	friend class engine::Engine;
-
+	
 private:
 	
+	bool mIsServer;
 	void* mpPeerInterface;
 	PacketQueue mpQueue[1];
-	
-	NetworkInterface();
 
 #pragma region RunOps
 
@@ -48,11 +48,17 @@ private:
 	// Returns true if the network interface (RakNet thread) is active
 	bool isActive() const;
 
+	bool isServer() const;
+
 #pragma endregion
 
 #pragma region Packets
 
-	void fetchPacket();
+	bool fetchPacket();
+	// Cache all incoming packets (should be run regularly)
+	void fetchAllPackets();
+	void processAllPackets();
+	void processPacket(Packet const &packet);
 
 #pragma endregion
 
@@ -90,9 +96,6 @@ private:
 	}
 	//*/
 
-	// Cache all incoming packets (should be run regularly)
-	void fetchAllPackets();
-
 	// Poll the next cached packet
 	// Returns true if a packet was found;
 	//bool pollPackets(Packet *&nextPacket);
@@ -102,8 +105,18 @@ private:
 	// Read the time stamp from a buffer
 	//int readTimestamps(const char *buffer, RakNet::Time &time1, RakNet::Time &time2);
 
+protected:
+
+	NetworkInterface();
+
 public:
 	~NetworkInterface();
+
+	/*template <typename TData>
+	void registerPacket(ui16 id)
+	{
+		sizeof(TData);
+	}*/
 
 	static void runThread(void* pInterface);
 

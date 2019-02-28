@@ -1,5 +1,6 @@
 #include "network/NetworkInterface.hpp"
 #include "Engine.hpp"
+#include "network/Packet.hpp"
 
 #include "network/RakNet.hpp"
 
@@ -15,12 +16,15 @@ void NetworkInterface::runThread(void* pInterface)
 	engine::Engine *pEngine = nullptr;
 	while (engine::Engine::GetChecked(pEngine) && pEngine->isActive())
 	{
-		((NetworkInterface *)pInterface)->fetchPacket();
+		NetworkInterface *pNetInterface = (NetworkInterface *)pInterface;
+		pNetInterface->fetchAllPackets();
+		pNetInterface->processAllPackets();
 	}
 }
 
 NetworkInterface::NetworkInterface()
 {
+	mIsServer = false;
 	mpPeerInterface = RakNet::RakPeerInterface::GetInstance();
 }
 
@@ -33,6 +37,8 @@ NetworkInterface::~NetworkInterface()
 // Startup the server interface
 void NetworkInterface::initServer(const ui16 port, const ui16 maxClients)
 {
+	mIsServer = true;
+	
 	// Startup the server by reserving a port
 	RakNet::SocketDescriptor sd = RakNet::SocketDescriptor(port, 0);
 	Interface pInterface = GetInterface(mpPeerInterface);
@@ -74,6 +80,11 @@ bool NetworkInterface::isActive() const
 	return GetInterface(mpPeerInterface)->IsActive();
 }
 
+bool NetworkInterface::isServer() const
+{
+	return this->mIsServer;
+}
+
 i32 readTimestamps(const ui8 *buffer, ui64 &time1, ui64 &time2)
 {
 	if (buffer)
@@ -107,14 +118,14 @@ i32 writeTimestamps(ui8 *buffer, const ui64 &time1, const ui64 &time2)
 	return 0;
 }
 
-void NetworkInterface::fetchPacket()
+bool NetworkInterface::fetchPacket()
 {
 	Interface pInterface = GetInterface(mpPeerInterface);
 
 	RakNet::Packet *pRakPak = pInterface->Receive();
 
 	// No packet in buffer
-	if (pRakPak == nullptr) return;
+	if (pRakPak == nullptr) return false;
 	
 	// Copy out the addresss
 	Packet::DataPtr address = {};
@@ -138,23 +149,23 @@ void NetworkInterface::fetchPacket()
 	Packet::TimestampInfo timestampInfo;
 	timestampInfo.timesLoaded = false;
 
-	uSize sizeOfTimestamps = 0;
+	uSize sizeOfHeader = 0;
 
 	// Try to read off the sent times
-	int sizeReadSent = readTimestamps(pRakPak->data + sizeOfTimestamps, sentTime_local, sentTime_remote);
+	int sizeReadSent = readTimestamps(pRakPak->data + sizeOfHeader, sentTime_local, sentTime_remote);
 
 	// sizeRead > 0 when there are timestamps to read
 	if (sizeReadSent > 0)
 	{
 		sentToReadDiff_local = (readTime_local - sentTime_local);
 		// compensate for timestamps by removing the size
-		sizeOfTimestamps += sizeReadSent;
+		sizeOfHeader += sizeReadSent;
 
-		int sizeReadAlt = readTimestamps(pRakPak->data + sizeOfTimestamps, sentToRead_remote, sendToRead_other);
+		int sizeReadAlt = readTimestamps(pRakPak->data + sizeOfHeader, sentToRead_remote, sendToRead_other);
 		if (sizeReadAlt > 0)
 		{
 			// compensate for timestamps by removing the size
-			sizeOfTimestamps += sizeReadAlt;
+			sizeOfHeader += sizeReadAlt;
 
 			timestampInfo.timesLoaded = true;
 			timestampInfo.packetReadTime_local = readTime_local;
@@ -167,9 +178,9 @@ void NetworkInterface::fetchPacket()
 
 	// Copy out the packet data
 	Packet::DataPacket data;
-	data.length = pRakPak->length - sizeOfTimestamps;
+	data.length = pRakPak->length - sizeOfHeader;
 	assert(data.length <= MAX_PACKET_DATA_LENGTH);
-	memcpy_s(data.data, data.length * sizeof(ui8), pRakPak->data + sizeOfTimestamps, data.length * sizeof(ui8));
+	memcpy_s(data.data, data.length * sizeof(ui8), pRakPak->data + sizeOfHeader, data.length * sizeof(ui8));
 
 	// Send address, and packet data to copy, to a packet wrapper
 	auto packet = Packet(address, data);
@@ -179,6 +190,62 @@ void NetworkInterface::fetchPacket()
 	mpQueue->enqueue(packet);
 
 	pInterface->DeallocatePacket(pRakPak);
+
+	return true;
+}
+
+void NetworkInterface::fetchAllPackets()
+{
+	// Fetch all pending packets
+	while (fetchPacket());
+}
+
+void NetworkInterface::processAllPackets()
+{
+	Packet packet;
+	while (!this->mpQueue->isEmpty() && this->mpQueue->dequeue(packet))
+	{
+		this->processPacket(packet);
+	}
+}
+
+template <typename T>
+T getData(void* &pBuffer)
+{
+	T *pData = (T*)pBuffer;
+	pBuffer = (void*)(pData + 1);
+	return *pData;
+}
+
+void NetworkInterface::processPacket(Packet const &packet)
+{
+	void* pData = (void*)packet.mData.data;
+	ui8 mId;
+	switch (mId = getData<ui8>(pData))
+	{
+		// Server: We are expecting a client to connect
+	case ID_NEW_INCOMING_CONNECTION:
+		LogEngine(logging::ECategory::INFO, "Found client, looking forward to handshake");
+		break;
+		// Client: We have connected to the server
+	case ID_CONNECTION_REQUEST_ACCEPTED:
+		LogEngine(logging::ECategory::INFO, "Connection to server was successful");
+		break;
+		// Client: We were unable to connect to the server
+	case ID_CONNECTION_ATTEMPT_FAILED:
+		LogEngine(logging::ECategory::INFO, "Connection to server was rejected");
+		break;
+		// Non-RakNet packet
+	case ID_USER_PACKET_ENUM:
+	{
+
+		break;
+	}
+	default:
+		LogEngine(logging::ECategory::DEBUG, "Found raknet packet with ID %i", mId);
+		break;
+	}
+
 }
 
 // Shutdown the peer interface
@@ -232,15 +299,5 @@ void Network::sendTo(Data data, DataSize size,
 	}
 
 	this->mpPeerInterface->Send(msg, totalSize, *priority, *reliability, channel, *address, broadcast);
-}
-//*/
-
-/*
-// Poll the next cached packet
-// Returns true if a packet was found;
-bool NetworkInterface::pollPackets(Packet *&nextPacket)
-{
-	mpPackets->dequeue(nextPacket);
-	return nextPacket != NULL;
 }
 //*/

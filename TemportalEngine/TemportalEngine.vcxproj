@@ -190,6 +190,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClCompile Include="source\memory\alloc.cpp" />
     <ClCompile Include="source\memory\MemoryManager.c" />
     <ClCompile Include="source\memory\Pool.c" />
+    <ClCompile Include="source\network\Event.cpp" />
     <ClCompile Include="source\network\NetworkInterface.cpp" />
     <ClCompile Include="source\network\Packet.cpp" />
     <ClCompile Include="source\network\PacketQueue.cpp" />
@@ -220,6 +221,7 @@ copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL
     <ClInclude Include="include\memory\Pool.h" />
     <ClInclude Include="include\Namespace.h" />
     <ClInclude Include="include\Api.h" />
+    <ClInclude Include="include\network\Event.hpp" />
     <ClInclude Include="include\network\interface.h" />
     <ClInclude Include="include\network\NetworkInterface.hpp" />
     <ClInclude Include="include\network\Packet.hpp" />

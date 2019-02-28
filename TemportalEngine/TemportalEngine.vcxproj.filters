@@ -111,6 +111,9 @@
     <ClCompile Include="source\network\Packet.cpp">
       <Filter>Source Files\network</Filter>
     </ClCompile>
+    <ClCompile Include="source\network\Event.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Namespace.h">
@@ -210,6 +213,9 @@
       <Filter>Header Files\network</Filter>
     </ClInclude>
     <ClInclude Include="include\network\PacketQueue.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\Event.hpp">
       <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include "Window.hpp"
 #include "math/Vector.hpp"
 #include "memory/MemoryManager.h"
+#include <string>
 
 using namespace engine;
 
@@ -104,7 +105,14 @@ void Engine::terminateDependencies()
 
 bool Engine::createWindow()
 {
-	mpWindowGame = new Window(800, 600, "Temportal Engine");
+	std::string title = "Temportal Engine";
+	if (this->mpNetworkInterface->isActive())
+		if (this->mpNetworkInterface->isServer())
+			title += " (Server)";
+		else
+			title += " (Client)";
+
+	mpWindowGame = new Window(800, 600, title.c_str());
 	if (!mpWindowGame->isValid()) return false;
 
 	mpWindowGame->initializeRenderContext(1);
@@ -126,12 +134,14 @@ void Engine::destroyWindow()
 
 void Engine::createClient(char const *address, ui16 port)
 {
+	LogEngine(logging::ECategory::INFO, "Initializing network client");
 	this->mpNetworkInterface->initClient();
 	this->mpNetworkInterface->connectToServer(address, port);
 }
 
 void Engine::createServer(ui16 const port, ui16 maxClients)
 {
+	LogEngine(logging::ECategory::INFO, "Initializing network server");
 	this->mpNetworkInterface->initServer(port, maxClients);
 }
 
