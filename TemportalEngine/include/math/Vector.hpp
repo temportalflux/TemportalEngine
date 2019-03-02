@@ -173,6 +173,11 @@ public:
 		return std::sqrt(this->magnitudeSq());
 	}
 
+	Self operator=(Self const &other)
+	{
+		other.getValues(mValues);
+	}
+
 	Self operator+(Self const &other) const
 	{
 		Self ret = Self(*this);

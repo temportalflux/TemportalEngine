@@ -6,13 +6,16 @@
 #include "Namespace.h"
 #include "dependency/SDL.hpp"
 #include "thread/Thread.hpp"
-#include "input/Queue.hpp"
 #include "input/InputWatcher.hpp"
 #include "network/NetworkInterface.hpp"
 
 #include "logging/Logger.hpp"
 
 class Window;
+namespace input
+{
+	class Queue;
+}
 
 NS_ENGINE
 
@@ -50,7 +53,7 @@ private:
 	Thread *mpThreadRender;
 	Thread *mpThreadNetwork;
 
-	input::Queue mpInputQueue[1];
+	input::Queue *mpInputQueue;
 
 	Engine(void* memoryManager);
 

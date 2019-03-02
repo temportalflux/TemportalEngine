@@ -3,6 +3,7 @@
 #include "math/Vector.hpp"
 #include "memory/MemoryManager.h"
 #include <string>
+#include "input/Queue.hpp"
 
 using namespace engine;
 
@@ -57,7 +58,7 @@ Engine::Engine(void* memoryManager)
 	: mpMemoryManager(memoryManager)
 {
 	LogEngineInfo("Creating Engine");
-	*mpInputQueue = input::Queue(&inputQueueListener);
+	mpInputQueue = this->alloc<input::Queue>(&inputQueueListener);
 }
 
 Engine::~Engine()
