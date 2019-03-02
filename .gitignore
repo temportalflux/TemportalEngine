@@ -3,3 +3,5 @@ Debug/
 Release/
 libs/glfw-3.2.1/WIN*/docs
 *.log
+packages
+TestResults
