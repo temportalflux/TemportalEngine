@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{a2c3e46a-cddf-4337-9f4e-fbd9ab5916b1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -32,11 +32,27 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="Vector_UnitTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -45,12 +61,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\TemportalEngine\TemportalEngine.vcxproj">
       <Project>{6ada9583-3474-44e7-b31c-ad0880763338}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -67,11 +83,18 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.lib"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -83,11 +106,18 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.lib"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -97,13 +127,20 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.lib"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -113,13 +150,20 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalDependencies>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.lib" "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.lib"
+copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2-2.0.9\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

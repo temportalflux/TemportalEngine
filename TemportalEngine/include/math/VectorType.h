@@ -1,5 +1,5 @@
-#ifndef MATH_VECTOR_TYPE_HPP
-#define MATH_VECTOR_TYPE_HPP
+#ifndef MATH_VECTOR_TYPE_H
+#define MATH_VECTOR_TYPE_H
 
 #include "Namespace.h"
 

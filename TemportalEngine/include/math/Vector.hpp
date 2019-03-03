@@ -1,10 +1,11 @@
-#ifndef MATH_VECTOR2_HPP
-#define MATH_VECTOR2_HPP
+#ifndef MATH_VECTOR_HPP
+#define MATH_VECTOR_HPP
 
 #include "Namespace.h"
 #include "Api.h"
-#include "math/Vector.h"
-#include "math/VectorType.hpp"
+#include "math/VectorType.h"
+#include "types/integer.h"
+#include "types/real.h"
 
 #include <string.h> // memset/memcpy
 #include <type_traits>

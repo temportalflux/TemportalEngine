@@ -173,17 +173,8 @@
     <ClInclude Include="include\dependency\SDL.hpp">
       <Filter>Header Files\dependency</Filter>
     </ClInclude>
-    <ClInclude Include="include\math\Vector.h">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
     <ClInclude Include="include\types\real.h">
       <Filter>Header Files\types</Filter>
-    </ClInclude>
-    <ClInclude Include="include\math\VectorType.hpp">
-      <Filter>Header Files\math</Filter>
-    </ClInclude>
-    <ClInclude Include="include\math\Vector.hpp">
-      <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="include\input\InputWatcher.hpp">
       <Filter>Header Files\input</Filter>
@@ -217,6 +208,12 @@
     </ClInclude>
     <ClInclude Include="include\network\Event.hpp">
       <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\VectorType.h">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\Vector.hpp">
+      <Filter>Header Files\math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

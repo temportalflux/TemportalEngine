@@ -213,9 +213,8 @@
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\math\compare.h" />
-    <ClInclude Include="include\math\Vector.h" />
     <ClInclude Include="include\math\Vector.hpp" />
-    <ClInclude Include="include\math\VectorType.hpp" />
+    <ClInclude Include="include\math\VectorType.h" />
     <ClInclude Include="include\memory\alloc.h" />
     <ClInclude Include="include\memory\MemoryManager.h" />
     <ClInclude Include="include\memory\Pool.h" />
