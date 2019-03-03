@@ -4,6 +4,8 @@
 #include "memory/MemoryManager.h"
 #include <string>
 #include "input/Queue.hpp"
+#include "network/ServiceClient.hpp"
+#include "network/ServiceServer.hpp"
 
 using namespace engine;
 
@@ -58,6 +60,7 @@ Engine::Engine(void* memoryManager)
 	: mpMemoryManager(memoryManager)
 {
 	LogEngineInfo("Creating Engine");
+	this->mpNetworkService = nullptr;
 	mpInputQueue = this->alloc<input::Queue>(&inputQueueListener);
 }
 
@@ -107,8 +110,8 @@ void Engine::terminateDependencies()
 bool Engine::createWindow()
 {
 	std::string title = "Temportal Engine";
-	if (this->mpNetworkInterface->isActive())
-		if (this->mpNetworkInterface->isServer())
+	if (this->hasNetwork())
+		if (this->mpNetworkService->isServer())
 			title += " (Server)";
 		else
 			title += " (Client)";
@@ -135,15 +138,19 @@ void Engine::destroyWindow()
 
 void Engine::createClient(char const *address, ui16 port)
 {
-	LogEngine(logging::ECategory::INFO, "Initializing network client");
-	this->mpNetworkInterface->initClient();
-	this->mpNetworkInterface->connectToServer(address, port);
+	LogEngine(logging::ECategory::LOGINFO, "Initializing network client");
+	auto client = this->alloc<network::ServiceClient>();
+	client->initialize();
+	client->connectToServer(address, port);
+	this->mpNetworkService = client;
 }
 
 void Engine::createServer(ui16 const port, ui16 maxClients)
 {
-	LogEngine(logging::ECategory::INFO, "Initializing network server");
-	this->mpNetworkInterface->initServer(port, maxClients);
+	LogEngine(logging::ECategory::LOGINFO, "Initializing network server");
+	auto server = this->alloc<network::ServiceServer>();
+	server->initialize(port, maxClients);
+	this->mpNetworkService = server;
 }
 
 void Engine::run()
@@ -151,10 +158,9 @@ void Engine::run()
 	mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
 	mpThreadRender->start(mpWindowGame);
 
-	if (this->mpNetworkInterface->isActive())
+	if (this->hasNetwork())
 	{
-		mpThreadNetwork = this->alloc<Thread>("Thread-Network", &Engine::LOG_SYSTEM, &network::NetworkInterface::runThread);
-		mpThreadNetwork->start(mpNetworkInterface);
+		this->mpNetworkService->startThread(this);
 	}
 
 	while (this->isActive())
@@ -163,8 +169,8 @@ void Engine::run()
 		mpInputQueue->dispatchAll();
 	}
 
-	if (this->mpNetworkInterface->isActive())
-		mpThreadNetwork->join();
+	if (this->hasNetwork())
+		this->mpNetworkService->joinThread();
 	mpThreadRender->join();
 
 }
@@ -172,6 +178,18 @@ void Engine::run()
 bool Engine::isActive() const
 {
 	return mpWindowGame->isValid();
+}
+
+bool const Engine::hasNetwork() const
+{
+	return this->mpNetworkService != nullptr;
+}
+
+std::optional<network::Service* const> Engine::getNetworkService() const
+{
+	if (this->hasNetwork())
+		return this->mpNetworkService;
+	return std::nullopt;
 }
 
 void Engine::pollInput()

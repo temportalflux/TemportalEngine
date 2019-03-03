@@ -68,7 +68,7 @@ int main()
 	engine::Engine *pEngine = engine::Engine::Create();
 	if (!pEngine->initializeDependencies()) return 1;
 	
-	LogEngine(logging::ECategory::INFO, "Saving log to %s", logFile.c_str());
+	LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFile.c_str());
 
 	initializeNetwork(pEngine);
 

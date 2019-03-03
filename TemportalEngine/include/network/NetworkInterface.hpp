@@ -5,21 +5,28 @@
 #include "Api.h"
 #include "network/PacketQueue.hpp"
 #include "network/Event.hpp"
-
-NS_ENGINE
-class Engine;
-NS_END
+#include <optional>
 
 NS_NETWORK
 
+class Service;
+class ServiceClient;
+class ServiceServer;
+
 class TEMPORTALENGINE_API NetworkInterface
 {
-	friend class engine::Engine;
+	friend class network::Service;
+	friend class network::ServiceClient;
+	friend class network::ServiceServer;
 	
+public:
+
 private:
 	
 	bool mIsServer;
+	
 	void* mpPeerInterface;
+
 	PacketQueue mpQueue[1];
 
 #pragma region RunOps
@@ -57,8 +64,7 @@ private:
 	bool fetchPacket();
 	// Cache all incoming packets (should be run regularly)
 	void fetchAllPackets();
-	void processAllPackets();
-	void processPacket(Packet const &packet);
+	std::optional<Packet::Id const> retrievePacketId(void* packetData) const;
 
 #pragma endregion
 
@@ -111,14 +117,6 @@ protected:
 
 public:
 	~NetworkInterface();
-
-	/*template <typename TData>
-	void registerPacket(ui16 id)
-	{
-		sizeof(TData);
-	}*/
-
-	static void runThread(void* pInterface);
 
 };
 

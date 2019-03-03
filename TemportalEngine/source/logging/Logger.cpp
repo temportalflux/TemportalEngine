@@ -40,16 +40,16 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 	const char* categoryStr;
 	switch (category)
 	{
-	case ECategory::INFO:
+	case ECategory::LOGINFO:
 		categoryStr = "INFO";
 		break;
-	case ECategory::WARN:
+	case ECategory::LOGWARN:
 		categoryStr = "WARNING";
 		break;
-	case ECategory::ERROR:
+	case ECategory::LOGERROR:
 		categoryStr = "ERROR";
 		break;
-	case ECategory::DEBUG:
+	case ECategory::LOGDEBUG:
 		categoryStr = "DEBUG";
 		break;
 	default:

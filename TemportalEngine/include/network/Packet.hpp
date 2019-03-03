@@ -8,6 +8,7 @@
 
 NS_NETWORK
 
+#define MAX_PACKET_COUNT 65536 // 2^16
 //#define MAX_PACKET_SIZE 2147483648 // 2^31
 #define MAX_PACKET_DATA_LENGTH 512 // 2^31
 #define MAX_PACKET_ADDRESS_LENGTH 39 // ###.###.###.### OR 8 hex numbers w/ 7 colors
@@ -15,6 +16,7 @@ NS_NETWORK
 class TEMPORTALENGINE_API Packet
 {
 	friend class NetworkInterface;
+	friend class Service;
 
 	struct DataPtr
 	{
@@ -59,6 +61,8 @@ private:
 	}
 
 public:
+	typedef ui16 Id;
+
 	Packet();
 
 };

@@ -3,9 +3,9 @@
 
 void Thread::updateInternal(void * params)
 {
-	mLogger.log(logging::ECategory::INFO, "Starting thread");
+	mLogger.log(logging::ECategory::LOGINFO, "Starting thread");
 	(*mpDelegateUpdate)(params);
-	mLogger.log(logging::ECategory::INFO, "Stopping thread");
+	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread");
 }
 
 void Thread::updateInternalStatic(Thread * pThread, void * params)

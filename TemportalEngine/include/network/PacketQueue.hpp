@@ -9,8 +9,6 @@
 
 NS_NETWORK
 
-#define MAX_PACKET_COUNT 255
-
 // A class to handle a queue of Packets (wrapped RakNet packets).
 // Operates as a true queue (sub-structure of LinkedList).
 class TEMPORTALENGINE_API PacketQueue

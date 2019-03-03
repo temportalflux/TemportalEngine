@@ -105,6 +105,7 @@
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
@@ -125,6 +126,7 @@
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -145,6 +147,7 @@
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -169,6 +172,7 @@
       <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -192,8 +196,12 @@
     <ClCompile Include="source\memory\Pool.c" />
     <ClCompile Include="source\network\Event.cpp" />
     <ClCompile Include="source\network\NetworkInterface.cpp" />
+    <ClCompile Include="source\network\NetworkService.cpp" />
     <ClCompile Include="source\network\Packet.cpp" />
+    <ClCompile Include="source\network\PacketExecutorRegistry.cpp" />
     <ClCompile Include="source\network\PacketQueue.cpp" />
+    <ClCompile Include="source\network\ServiceClient.cpp" />
+    <ClCompile Include="source\network\ServiceServer.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -223,9 +231,14 @@
     <ClInclude Include="include\network\Event.hpp" />
     <ClInclude Include="include\network\interface.h" />
     <ClInclude Include="include\network\NetworkInterface.hpp" />
+    <ClInclude Include="include\network\NetworkService.hpp" />
     <ClInclude Include="include\network\Packet.hpp" />
+    <ClInclude Include="include\network\PacketExecutorRegistry.hpp" />
     <ClInclude Include="include\network\PacketQueue.hpp" />
+    <ClInclude Include="include\network\PacketType.hpp" />
     <ClInclude Include="include\network\RakNet.hpp" />
+    <ClInclude Include="include\network\ServiceClient.hpp" />
+    <ClInclude Include="include\network\ServiceServer.hpp" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
     <ClInclude Include="include\thread\Thread.hpp" />

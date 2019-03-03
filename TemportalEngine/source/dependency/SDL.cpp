@@ -9,7 +9,7 @@ using namespace logging;
 
 void glfwErrorCallback(int error, const char* description)
 {
-	LogSDL(logging::ECategory::ERROR, "%i - %s", error, description);
+	LogSDL(logging::ECategory::LOGERROR, "%i - %s", error, description);
 }
 
 SDL::SDL() : Dependency()
@@ -19,13 +19,13 @@ SDL::SDL() : Dependency()
 
 bool SDL::initialize()
 {
-	LogSDL(ECategory::INFO, "Initializing");
+	LogSDL(ECategory::LOGINFO, "Initializing");
 
 	SDL_version version;
 
 	SDL_VERSION(&version);
 
-	LogSDL(ECategory::INFO,
+	LogSDL(ECategory::LOGINFO,
 		"Compiled against %i.%i.%i", version.major, version.minor, version.patch
 	);
 
@@ -42,32 +42,32 @@ bool SDL::initialize()
 	*/
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize SDL::VIDEO");
+		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::VIDEO");
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_AUDIO) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize SDL::AUDIO");
+		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::AUDIO");
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_JOYSTICK) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize SDL::JOYSTICK");
+		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::JOYSTICK");
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_HAPTIC) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize SDL::HAPTIC");
+		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::HAPTIC");
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		LogSDL(ECategory::ERROR, "Failed to initialize SDL::GAMECONTROLLER");
+		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::GAMECONTROLLER");
 		return false;
 	}
 
 	SDL_GetVersion(&version);
-	LogSDL(ECategory::INFO,
+	LogSDL(ECategory::LOGINFO,
 		"Running against %i.%i.%i", version.major, version.minor, version.patch);
 
 	this->setInitialized(true);
@@ -76,7 +76,7 @@ bool SDL::initialize()
 
 void SDL::terminate()
 {
-	LogSDL(ECategory::INFO, "Terminating");
+	LogSDL(ECategory::LOGINFO, "Terminating");
 	SDL_Quit();
 	this->setInitialized(false);
 }

@@ -1,6 +1,7 @@
 #include "network/NetworkInterface.hpp"
 #include "Engine.hpp"
 #include "network/Packet.hpp"
+#include "network/PacketType.hpp"
 
 #include "network/RakNet.hpp"
 
@@ -10,17 +11,6 @@ using namespace network;
 
 typedef RakNet::RakPeerInterface * Interface;
 #define GetInterface(ptr) static_cast<Interface>(ptr)
-
-void NetworkInterface::runThread(void* pInterface)
-{
-	engine::Engine *pEngine = nullptr;
-	while (engine::Engine::GetChecked(pEngine) && pEngine->isActive())
-	{
-		NetworkInterface *pNetInterface = (NetworkInterface *)pInterface;
-		pNetInterface->fetchAllPackets();
-		pNetInterface->processAllPackets();
-	}
-}
 
 NetworkInterface::NetworkInterface()
 {
@@ -200,15 +190,6 @@ void NetworkInterface::fetchAllPackets()
 	while (fetchPacket());
 }
 
-void NetworkInterface::processAllPackets()
-{
-	Packet packet;
-	while (!this->mpQueue->isEmpty() && this->mpQueue->dequeue(packet))
-	{
-		this->processPacket(packet);
-	}
-}
-
 template <typename T>
 T getData(void* &pBuffer)
 {
@@ -217,35 +198,35 @@ T getData(void* &pBuffer)
 	return *pData;
 }
 
-void NetworkInterface::processPacket(Packet const &packet)
+std::optional<Packet::Id const> NetworkInterface::retrievePacketId(void* packetData) const
 {
-	void* pData = (void*)packet.mData.data;
-	ui8 mId;
-	switch (mId = getData<ui8>(pData))
+	ui8 mRakNetId;
+	std::optional<Packet::Id> packetId = std::nullopt;
+	switch (mRakNetId = getData<ui8>(packetData))
 	{
 		// Server: We are expecting a client to connect
 	case ID_NEW_INCOMING_CONNECTION:
-		LogEngine(logging::ECategory::INFO, "Found client, looking forward to handshake");
+		packetId = packets::server::NewIncomingConnection;
 		break;
 		// Client: We have connected to the server
 	case ID_CONNECTION_REQUEST_ACCEPTED:
-		LogEngine(logging::ECategory::INFO, "Connection to server was successful");
+		packetId = packets::client::ConnectionRequestAccepted;
 		break;
 		// Client: We were unable to connect to the server
 	case ID_CONNECTION_ATTEMPT_FAILED:
-		LogEngine(logging::ECategory::INFO, "Connection to server was rejected");
+		packetId = packets::client::ConnectionRequestRejected;
 		break;
 		// Non-RakNet packet
 	case ID_USER_PACKET_ENUM:
 	{
-
+		packetId = getData<Packet::Id>(packetData);
 		break;
 	}
 	default:
-		LogEngine(logging::ECategory::DEBUG, "Found raknet packet with ID %i", mId);
+		LogEngine(logging::ECategory::LOGDEBUG, "Found raknet packet with ID %i", mRakNetId);
 		break;
 	}
-
+	return packetId;
 }
 
 // Shutdown the peer interface

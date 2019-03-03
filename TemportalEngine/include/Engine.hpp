@@ -7,7 +7,8 @@
 #include "dependency/SDL.hpp"
 #include "thread/Thread.hpp"
 #include "input/InputWatcher.hpp"
-#include "network/NetworkInterface.hpp"
+#include "network/NetworkService.hpp"
+#include <optional>
 
 #include "logging/Logger.hpp"
 
@@ -21,8 +22,8 @@ NS_ENGINE
 
 #define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
 #define LogEngine(cate, ...) logging::Logger("Engine", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
-#define LogEngineInfo(...) LogEngine(logging::ECategory::INFO, __VA_ARGS__)
-#define LogEngineDebug(...) LogEngine(logging::ECategory::DEBUG, __VA_ARGS__)
+#define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
+#define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
 
 #define MAX_MEMORY_SIZE 2097152 // 8^7
 
@@ -49,9 +50,8 @@ private:
 	Window *mpWindowGame;
 	input::InputWatcher mpInputWatcher[1];
 
-	network::NetworkInterface mpNetworkInterface[1];
+	network::Service *mpNetworkService;
 	Thread *mpThreadRender;
-	Thread *mpThreadNetwork;
 
 	input::Queue *mpInputQueue;
 
@@ -90,6 +90,9 @@ public:
 	void createClient(char const *address, ui16 port);
 	void run();
 	bool isActive() const;
+
+	bool const hasNetwork() const;
+	std::optional<network::Service* const> getNetworkService() const;
 
 	void pollInput();
 	void enqueueInput(struct input::Event const &evt);

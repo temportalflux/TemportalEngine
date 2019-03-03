@@ -114,6 +114,18 @@
     <ClCompile Include="source\network\Event.cpp">
       <Filter>Source Files\network</Filter>
     </ClCompile>
+    <ClCompile Include="source\network\PacketExecutorRegistry.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\NetworkService.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\ServiceClient.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="source\network\ServiceServer.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Namespace.h">
@@ -214,6 +226,21 @@
     </ClInclude>
     <ClInclude Include="include\math\Vector.hpp">
       <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\PacketExecutorRegistry.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\PacketType.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\NetworkService.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\ServiceClient.hpp">
+      <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\ServiceServer.hpp">
+      <Filter>Header Files\network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
