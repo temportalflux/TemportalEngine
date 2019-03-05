@@ -12,7 +12,7 @@ Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRa
 Quaternion const QuaternionConjugate(Quaternion const quat)
 {
 	// <-x, -y, -z, w>
-	return Quaternion(-quat.subvector<3>())
+	return Quaternion(-quat.createSubvector<3>())
 		+ QuaternionIdentity * quat.w();
 }
 
@@ -23,8 +23,8 @@ Quaternion const QuaternionInverse(Quaternion const quat)
 
 Quaternion const QuaternionConcatenate(Quaternion const left, Quaternion const right)
 {
-	Vector3 lVec = left.subvector<3>();
-	Vector3 rVec = right.subvector<3>();
+	Vector3 lVec = left.createSubvector<3>();
+	Vector3 rVec = right.createSubvector<3>();
 	float w = left.w() * right.w() - Vector3::dot(lVec, rVec);
 	Vector3 vec = lVec * w + rVec * w + Vector3::cross(lVec, rVec);
 	return Quaternion(vec) + QuaternionIdentity * w;
@@ -37,9 +37,9 @@ Vector3 const RotateVector(Vector3 const vector, Quaternion const rotation)
 	// r = quaternion vector
 	// vPrime = v + 2r x (r x v + wv)
 	return vector + Vector3::cross(
-		rotation.subvector<3>() * 2,
+		rotation.createSubvector<3>() * 2,
 		Vector3::cross(
-			rotation.subvector<3>(), vector
+			rotation.createSubvector<3>(), vector
 		) * rotation.w() * vector
 	);
 }
@@ -49,9 +49,9 @@ Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat)
 	// r = quat vector3
 	// q* = < vxr + wv, -dot(v, r) >
 	return Quaternion(
-		Vector3::cross(vector, quat.subvector<3>())
+		Vector3::cross(vector, quat.createSubvector<3>())
 		+ vector * quat.w()
-	) + QuaternionIdentity * -Vector3::dot(vector, quat.subvector<3>());
+	) + QuaternionIdentity * -Vector3::dot(vector, quat.createSubvector<3>());
 }
 
 Quaternion const IntegrateKinematic(Quaternion const rotation,
@@ -76,22 +76,22 @@ NS_END
 
 using namespace math;
 
-Vector2 const Vector2::zero = Vector2{ 0, 0 };
+Vector2 const Vector2::ZERO = Vector2{ 0, 0 };
 Vector2 const Vector2unitX = Vector2{ 1, 0 };
 Vector2 const Vector2unitY = Vector2{ 0, 1 };
-Vector3 const Vector3::zero = Vector3{ 0, 0, 0 };
+Vector3 const Vector3::ZERO = Vector3{ 0, 0, 0 };
 Vector3 const Vector3unitX = Vector3{ 1, 0, 0 };
 Vector3 const Vector3unitY = Vector3{ 0, 1, 0 };
 Vector3 const Vector3unitZ = Vector3{ 0, 0, 1 };
-Vector4 const Vector4::zero = Vector4{ 0, 0, 0, 0 };
+Vector4 const Vector4::ZERO = Vector4{ 0, 0, 0, 0 };
 Vector4 const Vector4unitX = Vector4{ 1, 0, 0, 0 };
 Vector4 const Vector4unitY = Vector4{ 0, 1, 0, 0 };
 Vector4 const Vector4unitZ = Vector4{ 0, 0, 1, 0 };
 Vector4 const Vector4unitW = Vector4{ 0, 0, 0, 1 };
 Quaternion const QuaternionIdentity = math::Vector4unitW;
 
-Vector2Int const Vector2Int::zero = Vector2Int{ 0, 0 };
-Vector3Int const Vector3Int::zero = Vector3Int{ 0, 0, 0 };
+Vector2Int const Vector2Int::ZERO = Vector2Int{ 0, 0 };
+Vector3Int const Vector3Int::ZERO = Vector3Int{ 0, 0, 0 };
 
-Vector2UInt const Vector2UInt::zero = Vector2UInt{ 0, 0 };
-Vector3UInt const Vector3UInt::zero = Vector3UInt{ 0, 0, 0 };
+Vector2UInt const Vector2UInt::ZERO = Vector2UInt{ 0, 0 };
+Vector3UInt const Vector3UInt::ZERO = Vector3UInt{ 0, 0, 0 };

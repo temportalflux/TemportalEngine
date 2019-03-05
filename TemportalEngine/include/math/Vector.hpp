@@ -1,23 +1,32 @@
 #ifndef MATH_VECTOR_HPP
 #define MATH_VECTOR_HPP
 
+// PCH ------------------------------------------------------------------------
 #include "TemportalEnginePCH.hpp"
 
-// TODO: Organize Headers
+// Libraries ------------------------------------------------------------------
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <string.h> // memset/memcpy
+#include <type_traits>
 
+// Engine ---------------------------------------------------------------------
 #include "math/VectorType.hpp"
 #include "types/integer.h"
 #include "types/real.h"
 
-#include <string.h> // memset/memcpy
-#include <type_traits>
-#include <cmath>
-#include <cassert>
-#include <algorithm>
-
+// ----------------------------------------------------------------------------
 NS_MATH
 
-template <typename TValue, ui32 TValueCount>
+/**
+* Helper class for vector math. Staticly defined constant memory using a given
+* numerical data type and given dimension
+* (traditional vectors are 3-dimensional float vectors - Vector<float, 3>).
+* @param TValue The data type (floats and signed/unsigned ints supported).
+* @param TDimension The number of components.
+*/
+template <typename TValue, ui32 TDimension>
 class TEMPORTALENGINE_API Vector
 {
 	static_assert(
@@ -30,135 +39,229 @@ class TEMPORTALENGINE_API Vector
 		"Invalid Vector value type"
 	);
 
-	typedef Vector<TValue, TValueCount> Self;
+	/** The format of this vector class, composed of the value and dimension. */
+	typedef Vector<TValue, TDimension> VectorFormat;
 
 private:
 
-	TValue mValues[TValueCount];
+	// NOTE: Not using std::array due to linker issues.
+	/** The actual components/data of the vector. */
+	TValue mValues[TDimension];
 
 public:
-	static Vector const zero;
 
-	Vector(TValue values[TValueCount])
+	/** The zero vector for this format. */
+	static Vector const ZERO;
+
+	constexpr Vector()
 	{
-		memcpy_s(mValues, TValueCount, values, TValueCount);
+		memset(mValues, 0, TDimension);
 	}
 
-	Vector()
+	/**
+	* @param values The array of the literal values of the vector.
+	*	Length must match dimension of the vector.
+	* Inverse of toArray(TValue[]).
+	*/
+	constexpr Vector(TValue values[TDimension])
 	{
-		memset(mValues, 0, TValueCount);
+		memcpy_s(mValues, TDimension, values, TDimension);
 	}
 
-	Vector(std::initializer_list<TValue> values)
+	/**
+	* Initialized using the standard initializer list format
+	*/
+	constexpr Vector(std::initializer_list<TValue> values)
 	{
 		std::copy(values.begin(), values.end(), mValues);
 	}
 
-	Vector(Self const &other)
+	/**
+	* Copy constructor to duplicate a vector of the same format.
+	*/
+	constexpr Vector(VectorFormat const &other)
 	{
-		memcpy_s(mValues, TValueCount, other.mValues, TValueCount);
+		memcpy_s(mValues, TDimension, other.mValues, TDimension);
 	}
 
-	template <ui32 TValueCountOther>
-	Vector(Vector<TValue, TValueCountOther> const &other)
+	/**
+	* Copy constructor to duplicate a vector
+	*	of the same data type but a different dimension.
+	* If TDimensionOther < TDimension, then this vector will contain
+	*	all of the other vector, with 0 padding in the remaining dimensions.
+	* If TDimensionOther > TDimension, then this vector will contain
+	*	the first TDimension values of the other vector.
+	* Otherwise this is a copy equivalent to Vector(VectorFormat).
+	*	(It wont cause a compiler error because this constructor
+	*	takes the TDimensionOther parameter.
+	* Inverse of createSubvector().
+	* @param TDimensionResult The dimension of the vector being copied.
+	*/
+	template <ui32 TDimensionOther>
+	constexpr Vector(Vector<TValue, TDimensionOther> const &other)
 	{
-		memset(mValues, 0, TValueCount);
-		other.getValues(mValues);
+		memset(mValues, 0, TDimension);
+		other.toArray(mValues);
 	}
 
-	void getValues(TValue out[TValueCount]) const
+	// Operations: General ----------------------------------------------------
+
+	/**
+	* Copies this vector into a new vector with a different dimension count.
+	* If TDimensionResult < TDimension, then the new vector will contain
+	*	all of this vector, with 0 padding in the remaining dimensions.
+	* If TDimensionResult > TDimension, then the new vector will contain
+	*	the first TDimension values of this vector.
+	* Otherwise this is a copy equivalent to Vector(VectorFormat).
+	* Inverse of Vector(Vector<TValue, TDimensionResult>).
+	* This is literally calling the copy constructor.
+	* @param TDimensionResult The dimension of the vector being copied.
+	*/
+	template <ui8 TDimensionResult>
+	constexpr Vector<TValue, TDimensionResult> const createSubvector() const
 	{
-		memcpy_s(out, TValueCount, mValues, TValueCount);
+		return Vector<TValue, TDimensionResult>(*this);
 	}
 
-	TValue& operator[](ui32 const i)
+	/**
+	* Copies data to an array with length equal to dimension count.
+	* Inverse of Vector(TValue[]) constructor.
+	*/
+	constexpr void toArray(TValue out[TDimension]) const
 	{
-		assert(i < TValueCount);
+		memcpy_s(out, TDimension, mValues, TDimension);
+	}
+
+	/**
+	* Set a value at a given dimension index. Can modify this value
+	*	and the change will be reflected in the vector.
+	*/
+	constexpr TValue& operator[](ui32 const i)
+	{
+		assert(i < TDimension);
 		return mValues[i];
 	}
 
-	TValue const & operator[](ui32 const i) const
+	/**
+	* Get a value at a given dimension index. Cannot modify the value.
+	*/
+	constexpr TValue const & operator[](ui32 const i) const
 	{
-		assert(i < TValueCount);
+		assert(i < TDimension);
 		return mValues[i];
 	}
 
-	// ------------------------------------------------------------------------
-	// Properties
+	// Dimension getter/setters -----------------------------------------------
 
-	TValue const x() const
+	/**
+	* Get the value at the first dimension (x).
+	* Cannot modify this value.
+	* Equivalent to vector[0].
+	*/
+	constexpr TValue const & x() const
 	{
-		static_assert(TValueCount >= 1, "Cannot get X component of vector size < 1");
+		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
 		return mValues[0];
 	}
 
-	TValue const x(TValue const &value)
+	/**
+	* Get the value at the second dimension (y).
+	* Cannot modify this value.
+	* Equivalent to vector[1].
+	*/
+	constexpr TValue const & y() const
 	{
-		static_assert(TValueCount >= 1, "Cannot get X component of vector size < 1");
+		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
+		return mValues[1];
+	}
+
+	/**
+	* Get the value at the third dimension (z).
+	* Cannot modify this value.
+	* Equivalent to vector[2].
+	*/
+	constexpr TValue const & z() const
+	{
+		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
+		return mValues[2];
+	}
+
+	/**
+	* Get the value at the fourth dimension (w).
+	* Cannot modify this value.
+	* Equivalent to vector[3].
+	*/
+	constexpr TValue const & w() const
+	{
+		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
+		return mValues[3];
+	}
+
+	/**
+	* Set the value at the first dimension (x).
+	* Can modify this value.
+	* Equivalent to vector[0].
+	*/
+	constexpr TValue& x(TValue const &value)
+	{
+		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
 		mValues[0] = value;
 		return mValues[0];
 	}
 
-	TValue const y() const
+	/**
+	* Set the value at the second dimension (y).
+	* Can modify this value.
+	* Equivalent to vector[1].
+	*/
+	constexpr TValue& y(TValue const &value)
 	{
-		static_assert(TValueCount >= 2, "Cannot get Y component of vector size < 2");
-		return mValues[1];
-	}
-
-	TValue const y(TValue const &value)
-	{
-		static_assert(TValueCount >= 2, "Cannot get Y component of vector size < 2");
+		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
 		mValues[1] = value;
 		return mValues[1];
 	}
 
-	TValue const z() const
+	/**
+	* Set the value at the third dimension (z).
+	* Can modify this value.
+	* Equivalent to vector[2].
+	*/
+	constexpr TValue& z(TValue const &value)
 	{
-		static_assert(TValueCount >= 3, "Cannot get Z component of vector size < 3");
-		return mValues[2];
-	}
-
-	TValue const z(TValue const &value)
-	{
-		static_assert(TValueCount >= 3, "Cannot get Z component of vector size < 3");
+		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
 		mValues[2] = value;
 		return mValues[2];
 	}
 
-	TValue const w() const
+	/**
+	* Set the value at the fourth dimension (w).
+	* Can modify this value.
+	* Equivalent to vector[3].
+	*/
+	constexpr TValue& w(TValue const &value)
 	{
-		static_assert(TValueCount >= 4, "Cannot get W component of vector size < 4");
-		return mValues[3];
-	}
-
-	TValue const w(TValue const &value)
-	{
-		static_assert(TValueCount >= 4, "Cannot get W component of vector size < 4");
+		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
 		mValues[3] = value;
 		return mValues[3];
-	}
-
-	template <ui8 TSubCount>
-	Vector<TValue, TSubCount> const subvector() const
-	{
-		return Vector<TValue, TSubCount>(*this);
 	}
 
 	// ------------------------------------------------------------------------
 	// Generic Properties
 
-	static TValue const dot(Self const &a, Self const &b)
+	// TODO: Document and constexpr remaining vector functions
+
+	static TValue const dot(VectorFormat const &a, VectorFormat const &b)
 	{
 		TValue sum = 0;
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			sum += a.mValues[i] * b.mValues[1];
 		return sum;
 	}
 
-	static Self cross(Self const &a, Self const &b)
+	static VectorFormat cross(VectorFormat const &a, VectorFormat const &b)
 	{
-		Self ret = Self();
-		if (TValueCount != 3) return ret;
+		VectorFormat ret = VectorFormat();
+		if (TDimension != 3) return ret;
 		ret.mValues[0] = a.mValues[1] * b.mValues[2] - a.mValues[2] * b.mValues[1];
 		ret.mValues[1] = a.mValues[2] * b.mValues[0] - a.mValues[0] * b.mValues[2];
 		ret.mValues[2] = a.mValues[0] * b.mValues[1] - a.mValues[1] * b.mValues[0];
@@ -167,7 +270,7 @@ public:
 
 	TValue const magnitudeSq() const
 	{
-		return Self::dot(*this, *this);
+		return VectorFormat::dot(*this, *this);
 	}
 
 	TValue const magnitude() const
@@ -176,76 +279,76 @@ public:
 		return std::sqrt(this->magnitudeSq());
 	}
 
-	Self operator=(Self const &other)
+	VectorFormat operator=(VectorFormat const &other)
 	{
-		other.getValues(mValues);
+		other.toArray(mValues);
 	}
 
-	Self operator+(Self const &other) const
+	VectorFormat operator+(VectorFormat const &other) const
 	{
-		Self ret = Self(*this);
+		VectorFormat ret = VectorFormat(*this);
 		ret += other;
 		return ret;
 	}
 
-	void operator+=(Self const &other)
+	void operator+=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] += other.mValues[i];
 	}
 
-	Self operator-(Self const &other) const
+	VectorFormat operator-(VectorFormat const &other) const
 	{
-		Self ret = Self(*this);
+		VectorFormat ret = VectorFormat(*this);
 		ret -= other;
 		return ret;
 	}
 
-	void operator-=(Self const &other)
+	void operator-=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] -= other.mValues[i];
 	}
 
-	Self operator*(Self const &other) const
+	VectorFormat operator*(VectorFormat const &other) const
 	{
-		Self ret = Self(*this);
+		VectorFormat ret = VectorFormat(*this);
 		ret *= other;
 		return ret;
 	}
 
-	void operator*=(Self const &other)
+	void operator*=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] *= other.mValues[i];
 	}
 
-	Self operator*(TValue const other) const
+	VectorFormat operator*(TValue const other) const
 	{
-		Self ret = *this;
+		VectorFormat ret = *this;
 		//ret *= other;
 		return ret;
 	}
 
 	void operator*=(TValue const other)
 	{
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] *= other;
 	}
 
-	friend Self operator*(TValue const scalar, Self const vector)
+	friend VectorFormat operator*(TValue const scalar, VectorFormat const vector)
 	{
 		return vector * scalar;
 	}
 
-	Self operator-() const
+	VectorFormat operator-() const
 	{
 		return inverse();
 	}
 
-	Self inverse() const
+	VectorFormat inverse() const
 	{
-		Self ret = Self(*this);
+		VectorFormat ret = VectorFormat(*this);
 		ret.invert();
 		return ret;
 	}
@@ -253,13 +356,13 @@ public:
 	void invert()
 	{
 		// NOTE: Potentially expensive operation
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] = 1 / mValues[i];
 	}
 
-	Self normalized() const
+	VectorFormat normalized() const
 	{
-		Self ret = Self(*this);
+		VectorFormat ret = VectorFormat(*this);
 		ret.normalize();
 		return ret;
 	}
@@ -268,7 +371,7 @@ public:
 	{
 		// NOTE: Potentially expensive operation
 		TValue magnitude = this->magnitude();
-		for (ui8 i = 0; i < TValueCount; ++i)
+		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] = mValues[i] / magnitude;
 	}
 
