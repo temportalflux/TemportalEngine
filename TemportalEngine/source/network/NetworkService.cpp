@@ -20,6 +20,7 @@ Service::Service()
 {
 	mpThread = nullptr;
 
+
 	if (!registerPacket(network::packets::server::NewIncomingConnection, 0))
 	{
 		LogEngine(logging::ECategory::LOGERROR, "Could not register packet server::NewIncomingConnection");
@@ -92,7 +93,6 @@ void Service::processPacket(Packet const &packet)
 			(*executor)(packetId.value(), pData);
 		}
 	}
-
 }
 
 bool const Service::isActive() const

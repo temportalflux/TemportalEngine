@@ -110,6 +110,12 @@ i32 writeTimestamps(ui8 *buffer, const ui64 &time1, const ui64 &time2)
 
 bool NetworkInterface::fetchPacket()
 {
+	if (!mpQueue->canEnqueue())
+	{
+		LogEngine(logging::ECategory::LOGWARN, "Packet Queue Full: Cannot enqueue more packets to network::NetworkInterface's packet queue.");
+		return false;
+	}
+
 	Interface pInterface = GetInterface(mpPeerInterface);
 
 	RakNet::Packet *pRakPak = pInterface->Receive();

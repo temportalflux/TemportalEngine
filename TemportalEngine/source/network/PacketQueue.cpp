@@ -44,3 +44,8 @@ bool PacketQueue::isEmpty()
 {
 	return mIndexHead == mIndexTail;
 }
+
+bool const PacketQueue::canEnqueue() const
+{
+	return (mIndexTail + 1) % MAX_PACKET_COUNT != mIndexHead;
+}

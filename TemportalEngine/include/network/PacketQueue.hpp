@@ -35,6 +35,8 @@ public:
 	// Returns true if there are no packets in the queue (count == 0)
 	bool isEmpty();
 
+	bool const canEnqueue() const;
+
 };
 
 NS_END

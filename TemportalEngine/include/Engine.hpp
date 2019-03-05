@@ -9,6 +9,7 @@
 #include "input/InputWatcher.hpp"
 #include "network/NetworkService.hpp"
 #include <optional>
+#include <typeinfo>
 
 #include "logging/Logger.hpp"
 
@@ -25,7 +26,7 @@ NS_ENGINE
 #define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
 
-#define MAX_MEMORY_SIZE 2097152 // 8^7
+//#define MAX_MEMORY_SIZE 2097152 // 8^7
 
 class TEMPORTALENGINE_API Engine
 {
@@ -35,6 +36,7 @@ private:
 public:
 	static logging::LogSystem LOG_SYSTEM;
 
+	static constexpr uSize getMaxMemorySize();
 	static Engine* Create();
 	static Engine* Get();
 	static bool GetChecked(Engine* &instance);
@@ -69,15 +71,24 @@ public:
 	TAlloc* alloc(TArgs... args)
 	{
 		TAlloc *ptr = (TAlloc*)this->alloc(sizeof(TAlloc));
-		new (ptr) TAlloc(args...);
+		if (ptr != nullptr)
+			new (ptr) TAlloc(args...);
+		else
+		{
+			type_info const &info = typeid(TAlloc);
+			LogEngine(logging::ECategory::LOGERROR, "Could not allocate object %s", info.name());
+		}
 		return ptr;
 	}
 
 	template <typename TDealloc>
 	void dealloc(TDealloc **ptrRef)
 	{
-		(*ptrRef)->TDealloc::~TDealloc();
-		this->dealloc(ptrRef);
+		if (*ptrRef != nullptr)
+		{
+			(*ptrRef)->TDealloc::~TDealloc();
+			this->dealloc(ptrRef);
+		}
 	}
 
 	bool initializeDependencies();

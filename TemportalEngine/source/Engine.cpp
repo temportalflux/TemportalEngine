@@ -15,12 +15,17 @@ void* Engine::spInstance = nullptr;
 void windowKeyInputCallback(input::Event const &inputEvt);
 void inputQueueListener(input::Event const & evt);
 
+constexpr uSize Engine::getMaxMemorySize()
+{
+	return 1 << 22; // 2^22
+}
+
 Engine* Engine::Create()
 {
 	if (spInstance == nullptr)
 	{
-		void* memoryManager = malloc(MAX_MEMORY_SIZE);
-		if (a3_mem_manager_init(memoryManager, MAX_MEMORY_SIZE))
+		void* memoryManager = malloc(getMaxMemorySize());
+		if (a3_mem_manager_init(memoryManager, getMaxMemorySize()))
 		{
 			if (a3_mem_manager_alloc(memoryManager, sizeof(Engine), &spInstance))
 			{

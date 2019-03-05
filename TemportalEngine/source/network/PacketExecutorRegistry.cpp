@@ -4,6 +4,7 @@ using namespace network;
 
 PacketExecutorRegistry::PacketExecutorRegistry()
 {
+	mPacketTypeCount = 0;
 	memset(mPacketExecutors, 0, MAX_PACKET_COUNT * sizeof(DelegatePacketExecutor));
 }
 
