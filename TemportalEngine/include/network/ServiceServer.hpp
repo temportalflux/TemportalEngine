@@ -1,8 +1,10 @@
-#ifndef NETWORK_SERVICE_Server_HPP
-#define NETWORK_SERVICE_Server_HPP
+#ifndef NETWORK_SERVICE_SERVER_HPP
+#define NETWORK_SERVICE_SERVER_HPP
 
-#include "Namespace.h"
-#include "Api.h"
+#include "TemportalEnginePCH.hpp"
+
+// TODO: Organize Headers
+
 #include "network/NetworkService.hpp"
 
 NS_NETWORK

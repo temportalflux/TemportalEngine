@@ -1,8 +1,10 @@
 #ifndef NETWORK_PACKETTYPE_HPP
 #define NETWORK_PACKETTYPE_HPP
 
-#include "Namespace.h"
-#include "Api.h"
+#include "TemportalEnginePCH.hpp"
+
+// TODO: Organize Headers
+
 #include "network/Packet.hpp"
 
 NS_NETWORK

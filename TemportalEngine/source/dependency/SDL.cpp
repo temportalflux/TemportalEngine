@@ -1,18 +1,28 @@
 #include "dependency/SDL.hpp"
-#include <SDL.h>
-#include "logging/Logger.hpp"
-#include "Engine.hpp"
 
+// Libraries ------------------------------------------------------------------
+#include <SDL.h>
+
+// Engine ---------------------------------------------------------------------
+#include "Engine.hpp"
+#include "logging/Logger.hpp"
+
+// Logging --------------------------------------------------------------------
 #define LogSDL(cate, ...) logging::Logger("SDL", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
 
+// Namespace ------------------------------------------------------------------
 using namespace logging;
+using namespace dependency;
 
+// Statics --------------------------------------------------------------------
 void glfwErrorCallback(int error, const char* description)
 {
 	LogSDL(logging::ECategory::LOGERROR, "%i - %s", error, description);
 }
 
-SDL::SDL() : Dependency()
+// SDL ------------------------------------------------------------------------
+
+SDL::SDL() : Module()
 {
 
 }
@@ -70,14 +80,13 @@ bool SDL::initialize()
 	LogSDL(ECategory::LOGINFO,
 		"Running against %i.%i.%i", version.major, version.minor, version.patch);
 
-	this->setInitialized(true);
-	return true;
+	return this->markAsInitialized(true);
 }
 
 void SDL::terminate()
 {
 	LogSDL(ECategory::LOGINFO, "Terminating");
 	SDL_Quit();
-	this->setInitialized(false);
+	this->markAsInitialized(false);
 }
 

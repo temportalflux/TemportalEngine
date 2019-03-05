@@ -1,17 +1,34 @@
-#ifndef DEPENDENCY_GLFW_H
-#define DEPENDENCY_GLFW_H
+#ifndef TE_DEPENDENCY_SDL_HPP
+#define TE_DEPENDENCY_SDL_HPP
 
-#include "Api.h"
+// Parents --------------------------------------------------------------------
+#include "dependency/Module.hpp"
 
-#include "Dependency.hpp"
+// ----------------------------------------------------------------------------
+NS_DEPENDENCY
 
-class TEMPORTALENGINE_API SDL : public Dependency
+/**
+* Module to initialize the SDL library as a dependency for the engine.
+*/
+class TEMPORTALENGINE_API SDL : public Module
 {
 public:
 
 	SDL();
+
+	/**
+	* Initializes and sets up SDL as a depencency module.
+	*/
 	bool initialize() override;
+
+	/**
+	* Deconstructs and terminates SDL as a depencency module.
+	*/
 	void terminate() override;
+
 };
 
-#endif  // DEPENDENCY_GLFW_H
+NS_END
+// ----------------------------------------------------------------------------
+
+#endif

@@ -1,8 +1,10 @@
 #ifndef NETWORK_PACKETQUEUE_HPP
 #define NETWORK_PACKETQUEUE_HPP
 
-#include "Namespace.h"
-#include "Api.h"
+#include "TemportalEnginePCH.hpp"
+
+// TODO: Organize Headers
+
 #include "network/Packet.hpp"
 #include "types/integer.h"
 #include "thread/MutexLock.hpp"
@@ -15,7 +17,7 @@ class TEMPORTALENGINE_API PacketQueue
 {
 
 private:
-	TE_MutexLock mpMutex[1];
+	thread::MutexLock mpMutex[1];
 	Packet mpRoundQueue[MAX_PACKET_COUNT];
 
 	uSize mIndexHead;

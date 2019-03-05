@@ -106,6 +106,8 @@
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
@@ -127,6 +129,8 @@
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -148,6 +152,8 @@
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -173,6 +179,8 @@
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -185,6 +193,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\dependency\Module.cpp" />
     <ClCompile Include="source\dependency\SDL.cpp" />
     <ClCompile Include="source\Engine.cpp" />
     <ClCompile Include="source\input\InputWatcher.cpp" />
@@ -209,7 +218,7 @@
     <ClCompile Include="source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\dependency\Dependency.hpp" />
+    <ClInclude Include="include\dependency\Module.hpp" />
     <ClInclude Include="include\dependency\SDL.hpp" />
     <ClInclude Include="include\Engine.hpp" />
     <ClInclude Include="include\input\Action.hpp" />
@@ -222,14 +231,13 @@
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\math\compare.h" />
     <ClInclude Include="include\math\Vector.hpp" />
-    <ClInclude Include="include\math\VectorType.h" />
+    <ClInclude Include="include\math\VectorType.hpp" />
     <ClInclude Include="include\memory\alloc.h" />
     <ClInclude Include="include\memory\MemoryManager.h" />
     <ClInclude Include="include\memory\Pool.h" />
-    <ClInclude Include="include\Namespace.h" />
+    <ClInclude Include="include\Namespace.hpp" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\network\Event.hpp" />
-    <ClInclude Include="include\network\interface.h" />
     <ClInclude Include="include\network\NetworkInterface.hpp" />
     <ClInclude Include="include\network\NetworkService.hpp" />
     <ClInclude Include="include\network\Packet.hpp" />
@@ -239,6 +247,7 @@
     <ClInclude Include="include\network\RakNet.hpp" />
     <ClInclude Include="include\network\ServiceClient.hpp" />
     <ClInclude Include="include\network\ServiceServer.hpp" />
+    <ClInclude Include="include\TemportalEnginePCH.hpp" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
     <ClInclude Include="include\thread\Thread.hpp" />

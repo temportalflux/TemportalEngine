@@ -1,9 +1,11 @@
 #ifndef MATH_VECTOR_HPP
 #define MATH_VECTOR_HPP
 
-#include "Namespace.h"
-#include "Api.h"
-#include "math/VectorType.h"
+#include "TemportalEnginePCH.hpp"
+
+// TODO: Organize Headers
+
+#include "math/VectorType.hpp"
 #include "types/integer.h"
 #include "types/real.h"
 

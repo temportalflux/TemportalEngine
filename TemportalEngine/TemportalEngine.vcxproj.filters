@@ -126,11 +126,11 @@
     <ClCompile Include="source\network\ServiceServer.cpp">
       <Filter>Source Files\network</Filter>
     </ClCompile>
+    <ClCompile Include="source\dependency\Module.cpp">
+      <Filter>Source Files\dependency</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Namespace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\types\arch.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
@@ -151,9 +151,6 @@
     </ClInclude>
     <ClInclude Include="include\logging\Logger.hpp">
       <Filter>Header Files\logging</Filter>
-    </ClInclude>
-    <ClInclude Include="include\dependency\Dependency.hpp">
-      <Filter>Header Files\dependency</Filter>
     </ClInclude>
     <ClInclude Include="include\thread\Thread.hpp">
       <Filter>Header Files\thread</Filter>
@@ -203,9 +200,6 @@
     <ClInclude Include="include\math\compare.h">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="include\network\interface.h">
-      <Filter>Header Files\network</Filter>
-    </ClInclude>
     <ClInclude Include="include\network\NetworkInterface.hpp">
       <Filter>Header Files\network</Filter>
     </ClInclude>
@@ -220,9 +214,6 @@
     </ClInclude>
     <ClInclude Include="include\network\Event.hpp">
       <Filter>Header Files\network</Filter>
-    </ClInclude>
-    <ClInclude Include="include\math\VectorType.h">
-      <Filter>Header Files\math</Filter>
     </ClInclude>
     <ClInclude Include="include\math\Vector.hpp">
       <Filter>Header Files\math</Filter>
@@ -241,6 +232,18 @@
     </ClInclude>
     <ClInclude Include="include\network\ServiceServer.hpp">
       <Filter>Header Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TemportalEnginePCH.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Namespace.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\VectorType.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\dependency\Module.hpp">
+      <Filter>Header Files\dependency</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,9 +1,8 @@
 #ifndef TE_ENGINE_HPP
 #define TE_ENGINE_HPP
 
-#include "Api.h"
+#include "TemportalEnginePCH.hpp"
 
-#include "Namespace.h"
 #include "dependency/SDL.hpp"
 #include "thread/Thread.hpp"
 #include "input/InputWatcher.hpp"
@@ -44,10 +43,10 @@ public:
 
 private:
 
-	TE_MutexLock mpLockMemoryManager[1];
+	thread::MutexLock mpLockMemoryManager[1];
 	void* mpMemoryManager;
 
-	SDL mpDepGlfw[1];
+	dependency::SDL mpDepGlfw[1];
 
 	Window *mpWindowGame;
 	input::InputWatcher mpInputWatcher[1];

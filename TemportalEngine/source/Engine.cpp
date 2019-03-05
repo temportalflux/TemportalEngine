@@ -100,7 +100,7 @@ void Engine::dealloc(void** ptr)
 
 bool Engine::initializeDependencies()
 {
-	*mpDepGlfw = SDL();
+	*mpDepGlfw = dependency::SDL();
 	if (!mpDepGlfw->initialize()) return false;
 
 	return true;
@@ -108,7 +108,7 @@ bool Engine::initializeDependencies()
 
 void Engine::terminateDependencies()
 {
-	if (mpDepGlfw->hasBeenInitialized())
+	if (mpDepGlfw->isInitialized())
 		mpDepGlfw->terminate();
 }
 

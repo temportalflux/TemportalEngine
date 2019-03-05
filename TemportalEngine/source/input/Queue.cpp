@@ -6,7 +6,7 @@ using namespace input;
 Queue::Queue(DelegateListener listener)
 	: mpListener(listener)
 {
-	*mpMutex = TE_MutexLock();
+	*mpMutex = thread::MutexLock();
 	memset(mpBuffer, 0, MAX_COUNT_PENDING * sizeof(Event));
 	mIndexHead = 0;
 	mIndexTail = 0;

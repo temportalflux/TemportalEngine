@@ -1,8 +1,10 @@
 #ifndef NETWORK_PACKET_HPP
 #define NETWORK_PACKET_HPP
 
-#include "Namespace.h"
-#include "Api.h"
+#include "TemportalEnginePCH.hpp"
+
+// TODO: Organize Headers
+
 #include "types/integer.h"
 #include <string.h> // memcpy
 

@@ -1,26 +1,28 @@
 #include "thread/MutexLock.hpp"
 
-TE_MutexLock::TE_MutexLock()
+using namespace thread;
+
+MutexLock::MutexLock()
 {
 	mMutex = 0;
 }
 
-inline bool TE_MutexLock::isValid() const
+inline bool MutexLock::isValid() const
 {
 	return (bool)mutexIsValid(mMutex);
 }
 
-inline bool TE_MutexLock::isLocked() const
+inline bool MutexLock::isLocked() const
 {
 	return (bool)mutexIsLocked(mMutex);
 }
 
-void TE_MutexLock::lock()
+void MutexLock::lock()
 {
 	mutexLock(&mMutex);
 }
 
-bool TE_MutexLock::unlock()
+bool MutexLock::unlock()
 {
 	return (bool)mutexUnlock(&mMutex);
 }

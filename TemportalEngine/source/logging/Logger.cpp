@@ -1,16 +1,24 @@
-// Copyright [2019] <Dustin Yost>
 #include "logging/Logger.hpp"
 
-#include <stdarg.h>
-#include <time.h>
-#include <string.h>
+// Libraries ------------------------------------------------------------------
+#include <cassert>
 #include <fstream>
+#include <stdarg.h>
+#include <string>
+#include <time.h>
 
+// Engine ---------------------------------------------------------------------
+#include "math/compare.h"
+
+// Namespaces -----------------------------------------------------------------
 using namespace logging;
+
+// Log System -----------------------------------------------------------------
 
 LogSystem::LogSystem()
 {
-	*mpLock = TE_MutexLock();
+	mpFileStream = nullptr;
+	*mpLock = thread::MutexLock();
 }
 
 void LogSystem::printLog(char const *const format, char * args)
@@ -77,13 +85,16 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 
 bool LogSystem::close()
 {
+	assert(mpFileStream != 0);
 	return fclose((FILE*)mpFileStream) == 0;
 }
 
+// Logger ---------------------------------------------------------------------
+
 Logger::Logger(char const * title, LogSystem *pLogSystem)
+	: mpLogSystem(pLogSystem)
 {
-	strncpy_s(mpTitle, title, strlen(title));
-	mpLogSystem = pLogSystem;
+	strncpy_s(mpTitle, title, minimum(strlen(title), LOGGER_MAX_TITLE_LENGTH));
 }
 
 Logger::Logger() : Logger("", 0)

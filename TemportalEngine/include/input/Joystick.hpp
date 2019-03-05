@@ -1,9 +1,7 @@
 #ifndef INPUT_JOYSTICK_HPP
 #define INPUT_JOYSTICK_HPP
 
-#include "Api.h"
-
-#include "Namespace.h"
+#include "TemportalEnginePCH.hpp"
 
 NS_INPUT
 
