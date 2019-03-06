@@ -245,121 +245,210 @@ public:
 		return mValues[3];
 	}
 
-	// ------------------------------------------------------------------------
-	// Generic Properties
+	// Operators --------------------------------------------------------------
 
-	// TODO: Document and constexpr remaining vector functions
-
-	static TValue const dot(VectorFormat const &a, VectorFormat const &b)
-	{
-		TValue sum = 0;
-		for (ui8 i = 0; i < TDimension; ++i)
-			sum += a.mValues[i] * b.mValues[1];
-		return sum;
-	}
-
-	static VectorFormat cross(VectorFormat const &a, VectorFormat const &b)
-	{
-		VectorFormat ret = VectorFormat();
-		if (TDimension != 3) return ret;
-		ret.mValues[0] = a.mValues[1] * b.mValues[2] - a.mValues[2] * b.mValues[1];
-		ret.mValues[1] = a.mValues[2] * b.mValues[0] - a.mValues[0] * b.mValues[2];
-		ret.mValues[2] = a.mValues[0] * b.mValues[1] - a.mValues[1] * b.mValues[0];
-		return ret;
-	}
-
-	TValue const magnitudeSq() const
-	{
-		return VectorFormat::dot(*this, *this);
-	}
-
-	TValue const magnitude() const
-	{
-		// NOTE: This is an expensive operation
-		return std::sqrt(this->magnitudeSq());
-	}
-
-	VectorFormat operator=(VectorFormat const &other)
+	/**
+	* Copy values from another vector of the same format.
+	* If you want to copy values from a vector with a different dimension size,
+	*	use a copy constructor.
+	* Equivalent to using toArray(this)
+	*/
+	constexpr void operator=(VectorFormat const &other)
 	{
 		other.toArray(mValues);
 	}
 
-	VectorFormat operator+(VectorFormat const &other) const
+	/**
+	* Component wise adds another vector from this vector.
+	*/
+	constexpr void operator+=(VectorFormat const &other)
+	{
+		for (ui8 i = 0; i < TDimension; ++i)
+			mValues[i] += other.mValues[i];
+	}
+
+	/**
+	* Component wise adds another vector to this vector
+	*	and returns the result.
+	*/
+	constexpr VectorFormat const operator+(VectorFormat const &other) const
 	{
 		VectorFormat ret = VectorFormat(*this);
 		ret += other;
 		return ret;
 	}
 
-	void operator+=(VectorFormat const &other)
+	/**
+	* Component wise subtracts another vector from this vector.
+	*/
+	constexpr void operator-=(VectorFormat const &other)
 	{
 		for (ui8 i = 0; i < TDimension; ++i)
-			mValues[i] += other.mValues[i];
+			mValues[i] -= other.mValues[i];
 	}
 
-	VectorFormat operator-(VectorFormat const &other) const
+	/**
+	* Component wise subtracts another vector from this vector
+	*	and returns the result.
+	*/
+	constexpr VectorFormat const operator-(VectorFormat const &other) const
 	{
 		VectorFormat ret = VectorFormat(*this);
 		ret -= other;
 		return ret;
 	}
 
-	void operator-=(VectorFormat const &other)
+	/**
+	* Component wise multiplies another vector and this vector.
+	*/
+	constexpr void operator*=(VectorFormat const &other)
 	{
 		for (ui8 i = 0; i < TDimension; ++i)
-			mValues[i] -= other.mValues[i];
+			mValues[i] *= other.mValues[i];
 	}
 
-	VectorFormat operator*(VectorFormat const &other) const
+	/**
+	* Component wise multiplies another vector and this vector
+	*	and returns the result.
+	*/
+	constexpr VectorFormat const operator*(VectorFormat const &other) const
 	{
 		VectorFormat ret = VectorFormat(*this);
 		ret *= other;
 		return ret;
 	}
 
-	void operator*=(VectorFormat const &other)
-	{
-		for (ui8 i = 0; i < TDimension; ++i)
-			mValues[i] *= other.mValues[i];
-	}
-
-	VectorFormat operator*(TValue const other) const
-	{
-		VectorFormat ret = *this;
-		//ret *= other;
-		return ret;
-	}
-
-	void operator*=(TValue const other)
+	/**
+	* Multiplies this vector by a scalar.
+	*/
+	constexpr void operator*=(TValue const other)
 	{
 		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] *= other;
 	}
 
-	friend VectorFormat operator*(TValue const scalar, VectorFormat const vector)
+	/**
+	* Multiplies this vector by a scalar and returns the result.
+	*/
+	constexpr VectorFormat const operator*(TValue const other) const
+	{
+		VectorFormat ret = *this;
+		ret *= other;
+		return ret;
+	}
+
+	/**
+	* Multiplies a vector by a scalar and returns the result.
+	*/
+	friend constexpr VectorFormat const operator*(
+		TValue const scalar, VectorFormat const vector)
 	{
 		return vector * scalar;
 	}
 
-	VectorFormat operator-() const
+	/**
+	* Calculates the scalar (dot) product of two vectors of the same format.
+	*/
+	static constexpr TValue const dot(VectorFormat const &a, VectorFormat const &b)
+	{
+		return a.dot(b);
+	}
+
+	/**
+	* Calculates the scale (dot) product of this and another vector of the same format.
+	*/
+	constexpr TValue const dot(VectorFormat const &other) const
+	{
+		TValue scalarProduct = 0;
+		for (ui8 i = 0; i < TDimension; ++i)
+			scalarProduct += mValues[i] * other.mValues[1];
+		return scalarProduct;
+	}
+
+	/**
+	* Calculates the cross product of two vectors of the same format.
+	* @return l x r
+	*/
+	static constexpr VectorFormat const cross(VectorFormat const &l, VectorFormat const &r)
+	{
+		return l.crossRight(r);
+	}
+
+	/**
+	* Calculates the cross product of this and another vector of the same format.
+	* @param other The other vector
+	* @return this x other
+	*/
+	constexpr VectorFormat const crossRight(VectorFormat const &other) const
+	{
+		VectorFormat ret = VectorFormat::ZERO;
+		if (TDimension != 3) return ret;
+		ret.mValues[0] = mValues[1] * other.mValues[2] - mValues[2] * other.mValues[1];
+		ret.mValues[1] = mValues[2] * other.mValues[0] - mValues[0] * other.mValues[2];
+		ret.mValues[2] = mValues[0] * other.mValues[1] - mValues[1] * other.mValues[0];
+		return ret;
+	}
+
+	/**
+	* Calculates the cross product of this and another vector of the same format.
+	* @param other The other vector
+	* @return other x this
+	*/
+	constexpr VectorFormat const crossLeft(VectorFormat const &other) const
+	{
+		return other.crossRight(*this);
+	}
+
+	/**
+	* Calculates the square magnitude of a vector (length * length).
+	* This is preferable to magnitude() as it does not perform a square root.
+	*/
+	constexpr TValue const magnitudeSq() const
+	{
+		return VectorFormat::dot(*this, *this);
+	}
+
+	/**
+	* Calculates the magnitude of a vector (its length).
+	*/
+	constexpr TValue const magnitude() const
+	{
+		// NOTE: This is an expensive operation
+		return std::sqrt(this->magnitudeSq());
+	}
+	
+	/**
+	* Calculates the component-wise negation of this vector and returns the result.
+	* Equivalent to calling inverse().
+	*/
+	constexpr VectorFormat const operator-() const
 	{
 		return inverse();
 	}
 
-	VectorFormat inverse() const
+	/**
+	* Calculates the component-wise negation of this vector and returns the result.
+	*/
+	constexpr VectorFormat const inverse() const
 	{
 		VectorFormat ret = VectorFormat(*this);
 		ret.invert();
 		return ret;
 	}
 
+	/**
+	* Component-wise negates this vector.
+	*/
 	void invert()
 	{
 		// NOTE: Potentially expensive operation
 		for (ui8 i = 0; i < TDimension; ++i)
-			mValues[i] = 1 / mValues[i];
+			mValues[i] = -mValues[i];
 	}
 
+	/**
+	* Calculates this vector as a unit vector and returns the result.
+	*/
 	VectorFormat normalized() const
 	{
 		VectorFormat ret = VectorFormat(*this);
@@ -367,10 +456,13 @@ public:
 		return ret;
 	}
 
+	/**
+	* Turns this vector into a unit vector with the same direction (magnitude will equal 1).
+	*/
 	void normalize()
 	{
 		// NOTE: Potentially expensive operation
-		TValue magnitude = this->magnitude();
+		TValue const magnitude = this->magnitude();
 		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] = mValues[i] / magnitude;
 	}
