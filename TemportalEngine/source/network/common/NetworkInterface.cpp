@@ -1,13 +1,18 @@
-#include "network/NetworkInterface.hpp"
+#include "network/common/NetworkInterface.hpp"
+
+// Engine ---------------------------------------------------------------------
 #include "Engine.hpp"
-#include "network/Packet.hpp"
+#include "network/PacketInternal.hpp"
 #include "network/PacketType.hpp"
+#include "network/common/RakNet.hpp"
 
-#include "network/RakNet.hpp"
-
-const uSize SIZE_OF_TIMESTAMPS = sizeof(char) + sizeof(RakNet::Time) + sizeof(RakNet::Time);
+// ----------------------------------------------------------------------------
 
 using namespace network;
+
+// ----------------------------------------------------------------------------
+
+const uSize SIZE_OF_TIMESTAMPS = sizeof(char) + sizeof(RakNet::Time) + sizeof(RakNet::Time);
 
 typedef RakNet::RakPeerInterface * Interface;
 #define GetInterface(ptr) static_cast<Interface>(ptr)
@@ -124,7 +129,7 @@ bool NetworkInterface::fetchPacket()
 	if (pRakPak == nullptr) return false;
 	
 	// Copy out the addresss
-	Packet::DataPtr address = {};
+	PacketInternal::DataPtr address = {};
 	auto addressData = pRakPak->systemAddress.ToString();
 	address.length = std::strlen(addressData);
 	assert(address.length <= MAX_PACKET_ADDRESS_LENGTH);
@@ -142,7 +147,7 @@ bool NetworkInterface::fetchPacket()
 	// Time in local clock that the message was read
 	RakNet::Time readTime_local = RakNet::GetTime();
 
-	Packet::TimestampInfo timestampInfo;
+	PacketInternal::TimestampInfo timestampInfo;
 	timestampInfo.timesLoaded = false;
 
 	uSize sizeOfHeader = 0;
@@ -173,13 +178,13 @@ bool NetworkInterface::fetchPacket()
 	}
 
 	// Copy out the packet data
-	Packet::DataPacket data;
+	PacketInternal::DataPacket data;
 	data.length = pRakPak->length - sizeOfHeader;
 	assert(data.length <= MAX_PACKET_DATA_LENGTH);
 	memcpy_s(data.data, data.length * sizeof(ui8), pRakPak->data + sizeOfHeader, data.length * sizeof(ui8));
 
 	// Send address, and packet data to copy, to a packet wrapper
-	auto packet = Packet(address, data);
+	auto packet = PacketInternal(address, data);
 	packet.mTimestampInfo = timestampInfo;
 
 	// Save packet for processing later
@@ -204,10 +209,10 @@ T getData(void* &pBuffer)
 	return *pData;
 }
 
-std::optional<Packet::Id const> NetworkInterface::retrievePacketId(void* packetData) const
+RegistryIdentifier const NetworkInterface::retrievePacketId(void* packetData) const
 {
 	ui8 mRakNetId;
-	std::optional<Packet::Id> packetId = std::nullopt;
+	RegistryIdentifier packetId = std::nullopt;
 	switch (mRakNetId = getData<ui8>(packetData))
 	{
 		// Server: We are expecting a client to connect
@@ -225,7 +230,7 @@ std::optional<Packet::Id const> NetworkInterface::retrievePacketId(void* packetD
 		// Non-RakNet packet
 	case ID_USER_PACKET_ENUM:
 	{
-		packetId = getData<Packet::Id>(packetData);
+		packetId = getData<uSize>(packetData);
 		break;
 	}
 	default:

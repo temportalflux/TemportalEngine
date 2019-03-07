@@ -1,9 +1,15 @@
-#include "network/NetworkService.hpp"
+#include "network/common/Service.hpp"
+
+// Engine ---------------------------------------------------------------------
 #include "Engine.hpp"
 #include "network/PacketType.hpp"
-#include "network/Packet.hpp"
+#include "network/PacketInternal.hpp"
+
+// ----------------------------------------------------------------------------
 
 using namespace network;
+
+// ----------------------------------------------------------------------------
 
 void Service::runThread(void* pInterface)
 {
@@ -19,36 +25,6 @@ void Service::runThread(void* pInterface)
 Service::Service()
 {
 	mpThread = nullptr;
-
-
-	if (!registerPacket(network::packets::server::NewIncomingConnection, 0))
-	{
-		LogEngine(logging::ECategory::LOGERROR, "Could not register packet server::NewIncomingConnection");
-	}
-	if (!registerPacket(network::packets::client::ConnectionRequestAccepted, 0))
-	{
-		LogEngine(logging::ECategory::LOGERROR, "Could not register packet client::ConnectionRequestAccepted");
-	}
-	if (!registerPacket(network::packets::client::ConnectionRequestRejected, 0))
-	{
-		LogEngine(logging::ECategory::LOGERROR, "Could not register packet client::ConnectionRequestRejected");
-	}
-}
-
-std::optional<Packet::Id> Service::registerPacket(PacketExecutorRegistry::DelegatePacketExecutor callback)
-{
-	return this->mpPacketExecutorRegistry->registerPacket(callback);
-}
-
-bool Service::registerPacket(Packet::Id & idOut, PacketExecutorRegistry::DelegatePacketExecutor callback)
-{
-	std::optional<Packet::Id> id = this->registerPacket(callback);
-	if (id.has_value())
-	{
-		idOut = id.value();
-		return true;
-	}
-	return false;
 }
 
 void Service::startThread(engine::Engine * const pEngine)
@@ -65,7 +41,7 @@ void Service::joinThread()
 
 void Service::processAllPackets()
 {
-	Packet packet;
+	PacketInternal packet;
 	while (!this->mpNetworkInterface->mpQueue->isEmpty()
 		&& this->mpNetworkInterface->mpQueue->dequeue(packet))
 	{
@@ -81,16 +57,19 @@ T getData(void* &pBuffer)
 	return *pData;
 }
 
-void Service::processPacket(Packet const &packet)
+void Service::processPacket(PacketInternal const &packet)
 {
 	void* pData = (void*)packet.mData.data;
 	auto packetId = this->mpNetworkInterface->retrievePacketId(pData);
 	if (packetId.has_value())
 	{
-		auto executor = mpPacketExecutorRegistry->getPacketExecutor(packetId.value());
+		auto executor = mpPacketExecutorRegistry->getPacketFrom(packetId, pData);
 		if (executor.has_value())
 		{
-			(*executor)(packetId.value(), pData);
+			Packet* packet = executor.value();
+			packet->execute();
+			// TODO: Use memory manager
+			delete packet;
 		}
 	}
 }

@@ -80,6 +80,8 @@ int main()
 
 	pEngine->run();
 
+	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
+
 	engine::Engine::Destroy();
 
 	engine::Engine::LOG_SYSTEM.close();

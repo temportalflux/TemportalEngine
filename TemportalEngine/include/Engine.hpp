@@ -6,7 +6,7 @@
 #include "dependency/SDL.hpp"
 #include "thread/Thread.hpp"
 #include "input/InputWatcher.hpp"
-#include "network/NetworkService.hpp"
+#include "network/common/Service.hpp"
 #include <optional>
 #include <typeinfo>
 
@@ -47,6 +47,8 @@ private:
 	void* mpMemoryManager;
 
 	dependency::SDL mpDepGlfw[1];
+
+	bool mIsRunning;
 
 	Window *mpWindowGame;
 	input::InputWatcher mpInputWatcher[1];
@@ -93,13 +95,16 @@ public:
 	bool initializeDependencies();
 	void terminateDependencies();
 
-	bool createWindow();
+	bool const createWindow();
 	void destroyWindow();
+	bool const hasWindow() const;
 
 	void createServer(ui16 const port, ui16 maxClients);
 	void createClient(char const *address, ui16 port);
+	
 	void run();
-	bool isActive() const;
+	bool const isActive() const;
+	void markShouldStop();
 
 	bool const hasNetwork() const;
 	std::optional<network::Service* const> getNetworkService() const;

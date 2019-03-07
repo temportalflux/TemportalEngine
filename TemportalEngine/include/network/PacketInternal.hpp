@@ -1,21 +1,20 @@
-#ifndef NETWORK_PACKET_HPP
-#define NETWORK_PACKET_HPP
+#ifndef TE_NETWORK_PACKETINT_HPP
+#define TE_NETWORK_PACKETINT_HPP
 
+// PCH ------------------------------------------------------------------------
 #include "TemportalEnginePCH.hpp"
 
-// TODO: Organize Headers
-
-#include "types/integer.h"
+// Libraries ------------------------------------------------------------------
 #include <string.h> // memcpy
 
+// Engine ---------------------------------------------------------------------
+#include "network/NetworkBudget.hpp"
+#include "types/integer.h"
+
+// ----------------------------------------------------------------------------
 NS_NETWORK
 
-// TODO: Make a constexpr function for these magic numbers
-#define MAX_PACKET_COUNT 16 // 2^16
-#define MAX_PACKET_DATA_LENGTH 512 // 2^31
-#define MAX_PACKET_ADDRESS_LENGTH 39 // ###.###.###.### OR 8 hex numbers w/ 7 colors
-
-class TEMPORTALENGINE_API Packet
+class TEMPORTALENGINE_API PacketInternal
 {
 	friend class NetworkInterface;
 	friend class Service;
@@ -52,7 +51,7 @@ private:
 	DataPacket mData;
 	TimestampInfo mTimestampInfo;
 
-	Packet(DataPtr const address, DataPacket const packetData);
+	PacketInternal(DataPtr const address, DataPacket const packetData);
 
 	template <typename T>
 	T getData() const
@@ -65,10 +64,11 @@ private:
 public:
 	typedef ui16 Id;
 
-	Packet();
+	PacketInternal();
 
 };
 
 NS_END
+// ----------------------------------------------------------------------------
 
 #endif
