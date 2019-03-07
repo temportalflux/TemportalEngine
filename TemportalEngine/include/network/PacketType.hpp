@@ -5,7 +5,7 @@
 
 // TODO: Organize Headers
 
-#include "network/Packet.hpp"
+#include "network/PacketInternal.hpp"
 
 NS_NETWORK
 
@@ -13,12 +13,12 @@ namespace packets
 {
 	namespace server
 	{
-		static Packet::Id NewIncomingConnection;
+		static PacketInternal::Id NewIncomingConnection;
 	};
 	namespace client
 	{
-		static Packet::Id ConnectionRequestAccepted;
-		static Packet::Id ConnectionRequestRejected;
+		static PacketInternal::Id ConnectionRequestAccepted;
+		static PacketInternal::Id ConnectionRequestRejected;
 	};
 };
 

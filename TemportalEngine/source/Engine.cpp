@@ -4,8 +4,8 @@
 #include "memory/MemoryManager.h"
 #include <string>
 #include "input/Queue.hpp"
-#include "network/ServiceClient.hpp"
-#include "network/ServiceServer.hpp"
+#include "network/client/ServiceClient.hpp"
+#include "network/server/ServiceServer.hpp"
 
 using namespace engine;
 
@@ -63,6 +63,8 @@ void Engine::Destroy()
 
 Engine::Engine(void* memoryManager)
 	: mpMemoryManager(memoryManager)
+	, mIsRunning(false)
+	, mpWindowGame(nullptr)
 {
 	LogEngineInfo("Creating Engine");
 	this->mpNetworkService = nullptr;
@@ -112,7 +114,7 @@ void Engine::terminateDependencies()
 		mpDepGlfw->terminate();
 }
 
-bool Engine::createWindow()
+bool const Engine::createWindow()
 {
 	std::string title = "Temportal Engine";
 	if (this->hasNetwork())
@@ -121,7 +123,7 @@ bool Engine::createWindow()
 		else
 			title += " (Client)";
 
-	mpWindowGame = new Window(800, 600, title.c_str());
+	mpWindowGame = this->alloc<Window>(800, 600, title.c_str());
 	if (!mpWindowGame->isValid()) return false;
 
 	mpWindowGame->initializeRenderContext(1);
@@ -133,12 +135,16 @@ bool Engine::createWindow()
 
 void Engine::destroyWindow()
 {
-	if (mpWindowGame->isValid())
+	if (this->hasWindow() && mpWindowGame->isValid())
 	{
 		mpWindowGame->destroy();
-		delete mpWindowGame;
-		mpWindowGame = nullptr;
+		this->dealloc(&mpWindowGame);
 	}
+}
+
+bool const Engine::hasWindow() const
+{
+	return mpWindowGame != nullptr;
 }
 
 void Engine::createClient(char const *address, ui16 port)
@@ -160,8 +166,13 @@ void Engine::createServer(ui16 const port, ui16 maxClients)
 
 void Engine::run()
 {
-	mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
-	mpThreadRender->start(mpWindowGame);
+	mIsRunning = true;
+
+	if (this->hasWindow())
+	{
+		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
+		mpThreadRender->start(mpWindowGame);
+	}
 
 	if (this->hasNetwork())
 	{
@@ -180,9 +191,16 @@ void Engine::run()
 
 }
 
-bool Engine::isActive() const
+bool const Engine::isActive() const
 {
-	return mpWindowGame->isValid();
+	return mIsRunning;
+}
+
+void Engine::markShouldStop()
+{
+	mIsRunning = false;
+	if (this->hasWindow())
+		mpWindowGame->markShouldClose();
 }
 
 bool const Engine::hasNetwork() const
@@ -254,10 +272,15 @@ void Engine::processInput(input::Event const & evt)
 	}
 
 	if (evt.type == input::EInputType::QUIT)
-		mpWindowGame->markShouldClose();
+	{
+		this->markShouldStop();
+	}
 
 	if (evt.type == input::EInputType::KEY
 		&& evt.inputKey.action == input::EAction::PRESS
 		&& evt.inputKey.key == input::EKey::ESCAPE)
-		mpWindowGame->markShouldClose();
+	{
+		this->markShouldStop();
+	}
+
 }

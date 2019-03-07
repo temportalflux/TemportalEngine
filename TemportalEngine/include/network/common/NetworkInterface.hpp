@@ -1,14 +1,17 @@
-#ifndef NETWORK_INTERFACE_HPP
-#define NETWORK_INTERFACE_HPP
+#ifndef TE_NETWORK_INTERFACE_HPP
+#define TE_NETWORK_INTERFACE_HPP
 
+// PCH ------------------------------------------------------------------------
 #include "TemportalEnginePCH.hpp"
 
-// TODO: Organize Headers
-
-#include "network/PacketQueue.hpp"
-#include "network/Event.hpp"
+// Libraries ------------------------------------------------------------------
 #include <optional>
 
+// Engine ---------------------------------------------------------------------
+#include "network/common/PacketQueue.hpp"
+#include "registry/RegistryItem.hpp"
+
+// ----------------------------------------------------------------------------
 NS_NETWORK
 
 class Service;
@@ -21,8 +24,6 @@ class TEMPORTALENGINE_API NetworkInterface
 	friend class network::ServiceClient;
 	friend class network::ServiceServer;
 	
-public:
-
 private:
 	
 	bool mIsServer;
@@ -66,7 +67,7 @@ private:
 	bool fetchPacket();
 	// Cache all incoming packets (should be run regularly)
 	void fetchAllPackets();
-	std::optional<Packet::Id const> retrievePacketId(void* packetData) const;
+	RegistryIdentifier const retrievePacketId(void* packetData) const;
 
 #pragma endregion
 
@@ -123,5 +124,6 @@ public:
 };
 
 NS_END
+// ----------------------------------------------------------------------------
 
 #endif
