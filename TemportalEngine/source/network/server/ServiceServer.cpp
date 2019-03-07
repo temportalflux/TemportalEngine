@@ -3,7 +3,6 @@
 // Engine ---------------------------------------------------------------------
 #include "Engine.hpp"
 #include "network/PacketType.hpp"
-#include "network/server/PacketNewIncomingConnection.hpp"
 
 // ----------------------------------------------------------------------------
 
@@ -17,10 +16,6 @@ ServiceServer::ServiceServer() : Service()
 
 void ServiceServer::initialize(ui16 const port, ui16 const maxClients)
 {
+	this->registerPackets();
 	this->mpNetworkInterface->initServer(port, maxClients);
-
-	if (!registerPacket(PacketNewIncomingConnection::Identification, PacketNewIncomingConnection()))
-	{
-		LogEngine(logging::ECategory::LOGERROR, "Could not register packet server::NewIncomingConnection");
-	}
 }

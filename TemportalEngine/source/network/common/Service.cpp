@@ -4,6 +4,9 @@
 #include "Engine.hpp"
 #include "network/PacketType.hpp"
 #include "network/PacketInternal.hpp"
+#include "network/client/PacketConnectionAccepted.hpp"
+#include "network/client/PacketConnectionRejected.hpp"
+#include "network/server/PacketNewIncomingConnection.hpp"
 
 // ----------------------------------------------------------------------------
 
@@ -25,6 +28,40 @@ void Service::runThread(void* pInterface)
 Service::Service()
 {
 	mpThread = nullptr;
+}
+
+void Service::registerPackets()
+{
+	this->registerServerPackets();
+	this->registerClientPackets();
+	this->registerCommonPackets();
+}
+
+void Service::registerServerPackets()
+{
+	if (!registerPacket(PacketNewIncomingConnection::Identification, PacketNewIncomingConnection()))
+	{
+		LogEngine(logging::ECategory::LOGERROR, "Could not register packet server::NewIncomingConnection");
+	}
+}
+
+void Service::registerClientPackets()
+{
+
+	if (!registerPacket(PacketConnectionAccepted::Identification, PacketConnectionAccepted()))
+	{
+		LogEngine(logging::ECategory::LOGERROR, "Could not register packet client::ConnectionRequestAccepted");
+	}
+
+	if (!registerPacket(PacketConnectionRejected::Identification, PacketConnectionRejected()))
+	{
+		LogEngine(logging::ECategory::LOGERROR, "Could not register packet client::ConnectionRequestRejected");
+	}
+
+}
+
+void Service::registerCommonPackets()
+{
 }
 
 void Service::startThread(engine::Engine * const pEngine)

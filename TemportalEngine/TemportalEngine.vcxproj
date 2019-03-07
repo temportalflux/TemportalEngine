@@ -204,6 +204,7 @@
     <ClCompile Include="source\memory\MemoryManager.c" />
     <ClCompile Include="source\memory\Pool.c" />
     <ClCompile Include="source\network\client\PacketConnectionAccepted.cpp" />
+    <ClCompile Include="source\network\client\PacketConnectionRejected.cpp" />
     <ClCompile Include="source\network\client\ServiceClient.cpp" />
     <ClCompile Include="source\network\common\NetworkInterface.cpp" />
     <ClCompile Include="source\network\common\Packet.cpp" />
@@ -240,6 +241,7 @@
     <ClInclude Include="include\Namespace.hpp" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\network\client\PacketConnectionAccepted.hpp" />
+    <ClInclude Include="include\network\client\PacketConnectionRejected.hpp" />
     <ClInclude Include="include\network\client\ServiceClient.hpp" />
     <ClInclude Include="include\network\common\NetworkInterface.hpp" />
     <ClInclude Include="include\network\common\Packet.hpp" />

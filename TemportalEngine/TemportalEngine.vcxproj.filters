@@ -156,6 +156,9 @@
     <ClCompile Include="source\network\client\PacketConnectionAccepted.cpp">
       <Filter>Source Files\network\client</Filter>
     </ClCompile>
+    <ClCompile Include="source\network\client\PacketConnectionRejected.cpp">
+      <Filter>Source Files\network\client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\types\arch.h">
@@ -285,6 +288,9 @@
       <Filter>Header Files\registry</Filter>
     </ClInclude>
     <ClInclude Include="include\network\client\PacketConnectionAccepted.hpp">
+      <Filter>Header Files\network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="include\network\client\PacketConnectionRejected.hpp">
       <Filter>Header Files\network\client</Filter>
     </ClInclude>
   </ItemGroup>

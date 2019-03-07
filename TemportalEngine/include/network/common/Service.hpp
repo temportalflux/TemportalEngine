@@ -37,6 +37,11 @@ protected:
 
 	Service();
 
+	void registerPackets();
+	void registerServerPackets();
+	void registerClientPackets();
+	void registerCommonPackets();
+
 public:
 
 	// TODO: move to cpp
