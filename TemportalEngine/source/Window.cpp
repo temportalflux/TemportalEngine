@@ -21,12 +21,24 @@ Window::Window(uSize width, uSize height, char const * title)
 	, mpTitle(title)
 {
 	this->mIsPendingClose = false;
+
 	this->mpHandle = SDL_CreateWindow(mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)mWidth, (int)mHeight, 0);
 	if (!this->isValid())
 	{
 		DeclareLog("Window").log(logging::ECategory::LOGERROR,
 				"Failed to create window");
 		return;
+	}
+
+}
+
+void Window::destroy()
+{
+	
+	if (this->mpHandle != nullptr)
+	{
+		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
+		this->mpHandle = nullptr;
 	}
 
 }
@@ -46,20 +58,14 @@ bool Window::isPendingClose()
 	return this->mIsPendingClose;
 }
 
-void Window::render()
-{
-	//glfwSwapBuffers(this->mpHandle);
-}
-
-void Window::destroy()
-{
-	SDL_DestroyWindow((SDL_Window*)this->mpHandle);
-	this->mpHandle = nullptr;
-}
-
 void Window::initializeRenderContext(int bufferSwapInterval)
 {
 	//glfwMakeContextCurrent(this->mpHandle);
 	//gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 	//glfwSwapInterval(bufferSwapInterval);
+}
+
+void Window::render()
+{
+	//glfwSwapBuffers(this->mpHandle);
 }

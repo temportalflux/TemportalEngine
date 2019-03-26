@@ -1,1 +1,4 @@
 
+[submodule "TemportalEngine/libs/Vulkan-Headers"]
+	path = TemportalEngine/libs/Vulkan-Headers
+	url = git@github.com:KhronosGroup/Vulkan-Headers.git

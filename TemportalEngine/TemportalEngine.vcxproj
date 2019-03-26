@@ -102,7 +102,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -125,7 +125,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -148,7 +148,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -175,7 +175,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -214,6 +214,7 @@
     <ClCompile Include="source\network\PacketInternal.cpp" />
     <ClCompile Include="source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="source\network\server\ServiceServer.cpp" />
+    <ClCompile Include="source\render\Renderer.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -256,6 +257,7 @@
     <ClInclude Include="include\network\server\ServiceServer.hpp" />
     <ClInclude Include="include\registry\Registry.hpp" />
     <ClInclude Include="include\registry\RegistryItem.hpp" />
+    <ClInclude Include="include\render\Renderer.hpp" />
     <ClInclude Include="include\TemportalEnginePCH.hpp" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
