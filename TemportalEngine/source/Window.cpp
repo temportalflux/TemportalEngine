@@ -5,6 +5,7 @@
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
+#include "render/Renderer.hpp"
 
 void Window::renderUntilClose(void* ptr)
 {
@@ -30,6 +31,8 @@ Window::Window(uSize width, uSize height, char const * title)
 		return;
 	}
 
+	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>();
+
 }
 
 void Window::destroy()
@@ -40,6 +43,8 @@ void Window::destroy()
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
 		this->mpHandle = nullptr;
 	}
+
+	engine::Engine::Get()->dealloc(&mpRenderer);
 
 }
 
@@ -58,14 +63,12 @@ bool Window::isPendingClose()
 	return this->mIsPendingClose;
 }
 
-void Window::initializeRenderContext(int bufferSwapInterval)
+void Window::initializeRenderContext()
 {
-	//glfwMakeContextCurrent(this->mpHandle);
-	//gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-	//glfwSwapInterval(bufferSwapInterval);
+	this->mpRenderer->initializeWindow();
 }
 
 void Window::render()
 {
-	//glfwSwapBuffers(this->mpHandle);
+	this->mpRenderer->render();
 }

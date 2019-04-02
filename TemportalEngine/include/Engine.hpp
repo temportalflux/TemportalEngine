@@ -65,15 +65,33 @@ public:
 
 	void* getMemoryManager();
 
-	void* alloc(uSize size);
-	void dealloc(void** ptr);
+	void* allocRaw(uSize size);
+	void deallocRaw(void** ptr);
 
 	template <typename TAlloc, typename... TArgs>
 	TAlloc* alloc(TArgs... args)
 	{
-		TAlloc *ptr = (TAlloc*)this->alloc(sizeof(TAlloc));
+		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc));
 		if (ptr != nullptr)
 			new (ptr) TAlloc(args...);
+		else
+		{
+			type_info const &info = typeid(TAlloc);
+			LogEngine(logging::ECategory::LOGERROR, "Could not allocate object %s", info.name());
+		}
+		return ptr;
+	}
+
+	template <typename TAlloc, typename... TArgs>
+	TAlloc* allocArray(uSize const count, TArgs... args)
+	{
+		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc) * count);
+		if (ptr != nullptr)
+		{
+			// TODO: Use std::array::fill
+			for (uSize i = 0; i < count; ++i)
+				new (&(ptr[i])) TAlloc(args...);
+		}
 		else
 		{
 			type_info const &info = typeid(TAlloc);
@@ -88,7 +106,22 @@ public:
 		if (*ptrRef != nullptr)
 		{
 			(*ptrRef)->TDealloc::~TDealloc();
-			this->dealloc(ptrRef);
+			this->deallocRaw((void**)ptrRef);
+		}
+	}
+
+	template <typename TDealloc>
+	void deallocArray(uSize const count, TDealloc **ptrRef)
+	{
+		if (*ptrRef != nullptr)
+		{
+			for (uSize i = 0; i < count; ++i)
+			{
+				TDealloc element = (*ptrRef)[i];
+				(&element)->TDealloc::~TDealloc();
+			}
+
+			this->deallocRaw((void**)ptrRef);
 		}
 	}
 

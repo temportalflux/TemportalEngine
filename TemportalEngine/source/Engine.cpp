@@ -83,7 +83,7 @@ void * Engine::getMemoryManager()
 	return mpMemoryManager;
 }
 
-void* Engine::alloc(uSize size)
+void* Engine::allocRaw(uSize size)
 {
 	void* ptr = nullptr;
 	this->mpLockMemoryManager->lock();
@@ -92,7 +92,7 @@ void* Engine::alloc(uSize size)
 	return ptr;
 }
 
-void Engine::dealloc(void** ptr)
+void Engine::deallocRaw(void** ptr)
 {
 	this->mpLockMemoryManager->lock();
 	a3_mem_manager_dealloc(getMemoryManager(), ptr);
@@ -126,7 +126,7 @@ bool const Engine::createWindow()
 	mpWindowGame = this->alloc<Window>(800, 600, title.c_str());
 	if (!mpWindowGame->isValid()) return false;
 
-	mpWindowGame->initializeRenderContext(1);
+	mpWindowGame->initializeRenderContext();
 	
 	mpInputWatcher->setCallback(&windowKeyInputCallback);
 

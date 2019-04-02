@@ -9,6 +9,10 @@
 // TODO: Namespace
 // TODO: Organize Headers
 
+NS_RENDER
+class Renderer;
+NS_END
+
 class TEMPORTALENGINE_API Window
 {
 public:
@@ -22,13 +26,15 @@ private:
 	void* mpJoystick;
 	bool mIsPendingClose;
 
+	render::Renderer *mpRenderer;
+
 public:
 	Window() = default;
 	Window(uSize width, uSize height, char const * title);
 
 	bool isValid();
 
-	void initializeRenderContext(int i);
+	void initializeRenderContext();
 
 	void markShouldClose();
 	bool isPendingClose();

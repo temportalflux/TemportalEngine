@@ -8,8 +8,6 @@
 #include "types/integer.h"
 #include "input/Event.hpp"
 
-struct VkInstance;
-
 NS_RENDER
 
 class TEMPORTALENGINE_API Renderer
@@ -20,6 +18,9 @@ private:
 public:
 	Renderer();
 	~Renderer();
+
+	void initializeWindow();
+	void render();
 
 };
 
