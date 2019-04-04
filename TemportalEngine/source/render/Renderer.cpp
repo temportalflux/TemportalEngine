@@ -1,37 +1,46 @@
 #include "render/Renderer.hpp"
-#include <vulkan/vulkan.h>
-//#include <vulkan/vulkan.hpp>
 #include "Engine.hpp"
+#include "memory/UniquePtr.hpp"
 
 using namespace render;
 //using namespace vk;
 
 Renderer::Renderer()
+	: maRequiredExtensionNames({
+		"VK_KHR_surface",
+		"VK_KHR_win32_surface",
+	})
 {
 
-	VkInstance AppInstance;
-	VkInstanceCreateInfo InstanceCreateInfo;
-	VkApplicationInfo AppInfo;
+	mpInstanceInfo = memory::NewUnique<vk::InstanceCreateInfo>();
+	//mpInstanceInfo->setPpEnabledExtensionNames(maRequiredExtensionNames.data());
+	mpInstanceInfo->flags;
 
-	AppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	AppInfo.pNext = nullptr;
-	AppInfo.pApplicationName = "DemoGame";
-	AppInfo.pEngineName = "TemportalEngine";
-	AppInfo.engineVersion = 1;
-	AppInfo.applicationVersion = 1;
-	AppInfo.apiVersion = VK_API_VERSION_1_0;
+	//mpAppInstance = engine::Engine::Get()->alloc<vk::UniqueInstance>();
+	//*((vk::UniqueInstance*)mpAppInstance) = vk::createInstanceUnique(*instanceInfo);
 
-	InstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	InstanceCreateInfo.pNext = nullptr;
-	InstanceCreateInfo.enabledLayerCount = 0;
-	InstanceCreateInfo.enabledExtensionCount = 0;
-	InstanceCreateInfo.flags = 0;
-	InstanceCreateInfo.ppEnabledExtensionNames = nullptr;
-	InstanceCreateInfo.ppEnabledLayerNames = nullptr;
+	
+	
 
-	InstanceCreateInfo.pApplicationInfo = &AppInfo;
+	/*
+	mAppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	mAppInfo.pNext = nullptr;
+	mAppInfo.pApplicationName = "DemoGame";
+	mAppInfo.pEngineName = "TemportalEngine";
+	mAppInfo.engineVersion = 1;
+	mAppInfo.applicationVersion = 1;
+	mAppInfo.apiVersion = VK_API_VERSION_1_0;
 
-	VkResult success = vkCreateInstance(&InstanceCreateInfo, nullptr, &AppInstance);
+	mAppInstanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+	mAppInstanceInfo.pApplicationInfo = &mAppInfo;
+	mAppInstanceInfo.pNext = nullptr;
+	mAppInstanceInfo.enabledLayerCount = 0;
+	mAppInstanceInfo.ppEnabledLayerNames = nullptr;
+	mAppInstanceInfo.enabledExtensionCount = 2;
+	mAppInstanceInfo.ppEnabledExtensionNames = maRequiredExtensionNames.data();
+	mAppInstanceInfo.flags = 0;
+
+	VkResult success = vkCreateInstance(&mAppInstanceInfo, nullptr, &mAppInstance);
 
 	if (success == VK_SUCCESS)
 	{
@@ -43,28 +52,24 @@ Renderer::Renderer()
 		return;
 	}
 
-	ui32 physicalDeviceCount = 0;
-	vkEnumeratePhysicalDevices(AppInstance, &physicalDeviceCount, nullptr);
-	VkPhysicalDevice* physicalDevices = new VkPhysicalDevice[physicalDeviceCount];
-	//VkPhysicalDevice* physicalDevices = engine::Engine::Get()->allocArray<VkPhysicalDevice>(physicalDeviceCount);
-	vkEnumeratePhysicalDevices(AppInstance, &physicalDeviceCount, physicalDevices);
+	vkEnumeratePhysicalDevices(mAppInstance, &mPhysicalDeviceCount, nullptr);
+	assert(mPhysicalDeviceCount <= MAX_PHYSICAL_DEVICE_COUNT);
+	vkEnumeratePhysicalDevices(mAppInstance, &mPhysicalDeviceCount, maVulkanPhysicalDevices);
 
-	ui32 extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-	VkExtensionProperties *extensionsAvailable = new VkExtensionProperties[extensionCount];
-	//VkExtensionProperties *extensionsAvailable = engine::Engine::Get()->allocArray<VkExtensionProperties>(extensionCount);
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensionsAvailable);
+	vkEnumerateInstanceExtensionProperties(nullptr, &mExtensionCount, nullptr);
+	assert(mExtensionCount <= MAX_EXTENSION_COUNT);
+	vkEnumerateInstanceExtensionProperties(nullptr, &mExtensionCount, maVulkanAvailableExtensions);
+	*/
+	
+	
 
-	//engine::Engine::Get()->deallocArray(physicalDeviceCount, &physicalDevices);
-	delete[] physicalDevices;
-	//engine::Engine::Get()->deallocArray(extensionCount, &extensionsAvailable);
-	delete[] extensionsAvailable;
-
-	vkDestroyInstance(AppInstance, nullptr);
 }
 
 Renderer::~Renderer()
 {
+	//mPhysicalDeviceCount = 0;
+	//mExtensionCount = 0;
+	//vkDestroyInstance(mAppInstance, nullptr);
 }
 
 void Renderer::initializeWindow()

@@ -6,6 +6,7 @@
 #define NS_ENGINE namespace engine {
 #define NS_INPUT namespace input {
 #define NS_MATH namespace math {
+#define NS_MEMORY namespace memory {
 #define NS_NETWORK namespace network {
 #define NS_LOGGING namespace logging {
 #define NS_THREAD namespace thread {

@@ -29,6 +29,8 @@ typedef ui64 uSize;
 typedef ui32 uSize;
 #endif
 
+typedef uSize uIndex;
+
 // "pointer" as integer type
 #if BIT_32
 typedef ui32	ptr;
