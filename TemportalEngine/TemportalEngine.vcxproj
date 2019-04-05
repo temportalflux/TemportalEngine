@@ -244,7 +244,7 @@
     <ClInclude Include="include\memory\alloc.h" />
     <ClInclude Include="include\memory\MemoryManager.h" />
     <ClInclude Include="include\memory\Pool.h" />
-    <ClInclude Include="include\memory\UniquePtr.hpp" />
+    <ClInclude Include="include\memory\SharedPtr.hpp" />
     <ClInclude Include="include\Namespace.hpp" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\network\client\PacketConnectionAccepted.hpp" />

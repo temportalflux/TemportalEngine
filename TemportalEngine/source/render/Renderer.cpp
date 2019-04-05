@@ -1,6 +1,5 @@
 #include "render/Renderer.hpp"
 #include "Engine.hpp"
-#include "memory/UniquePtr.hpp"
 
 using namespace render;
 //using namespace vk;
@@ -12,64 +11,62 @@ Renderer::Renderer()
 	})
 {
 
-	mpInstanceInfo = memory::NewUnique<vk::InstanceCreateInfo>();
-	//mpInstanceInfo->setPpEnabledExtensionNames(maRequiredExtensionNames.data());
-	mpInstanceInfo->flags;
+	mpApplicationInfo->pApplicationName = "DemoGame";
+	mpApplicationInfo->applicationVersion = 1;
+	mpApplicationInfo->pEngineName = "TemportalEngine";
+	mpApplicationInfo->engineVersion = 1;
+	mpApplicationInfo->apiVersion = VK_API_VERSION_1_1;
 
-	//mpAppInstance = engine::Engine::Get()->alloc<vk::UniqueInstance>();
-	//*((vk::UniqueInstance*)mpAppInstance) = vk::createInstanceUnique(*instanceInfo);
+	mpInstanceInfo->pApplicationInfo = mpApplicationInfo;
+	mpInstanceInfo->setPpEnabledExtensionNames(maRequiredExtensionNames.data());
 
-	
-	
-
-	/*
-	mAppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	mAppInfo.pNext = nullptr;
-	mAppInfo.pApplicationName = "DemoGame";
-	mAppInfo.pEngineName = "TemportalEngine";
-	mAppInfo.engineVersion = 1;
-	mAppInfo.applicationVersion = 1;
-	mAppInfo.apiVersion = VK_API_VERSION_1_0;
-
-	mAppInstanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	mAppInstanceInfo.pApplicationInfo = &mAppInfo;
-	mAppInstanceInfo.pNext = nullptr;
-	mAppInstanceInfo.enabledLayerCount = 0;
-	mAppInstanceInfo.ppEnabledLayerNames = nullptr;
-	mAppInstanceInfo.enabledExtensionCount = 2;
-	mAppInstanceInfo.ppEnabledExtensionNames = maRequiredExtensionNames.data();
-	mAppInstanceInfo.flags = 0;
-
-	VkResult success = vkCreateInstance(&mAppInstanceInfo, nullptr, &mAppInstance);
-
-	if (success == VK_SUCCESS)
 	{
-		LogEngineInfo("Vulkan is up and running!");
+		auto appInstance = memory::NewUnique<vk::UniqueInstance>();
+		assert(appInstance.has_value());
+		mpAppInstance = appInstance.value();
 	}
-	else
-	{
-		LogEngineInfo("Vulkan didnt work...");
-		return;
-	}
+	*(mpAppInstance.GetRaw()) = vk::createInstanceUnique(*mpInstanceInfo);
 
-	vkEnumeratePhysicalDevices(mAppInstance, &mPhysicalDeviceCount, nullptr);
-	assert(mPhysicalDeviceCount <= MAX_PHYSICAL_DEVICE_COUNT);
-	vkEnumeratePhysicalDevices(mAppInstance, &mPhysicalDeviceCount, maVulkanPhysicalDevices);
+	auto layerProps = vk::enumerateInstanceLayerProperties();
+	auto physicalDevices = mpAppInstance->get().enumeratePhysicalDevices();
+	
+	std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevices[0].getQueueFamilyProperties();
 
-	vkEnumerateInstanceExtensionProperties(nullptr, &mExtensionCount, nullptr);
-	assert(mExtensionCount <= MAX_EXTENSION_COUNT);
-	vkEnumerateInstanceExtensionProperties(nullptr, &mExtensionCount, maVulkanAvailableExtensions);
-	*/
-	
-	
+	// Find the index of a queue family which supports graphics
+	size_t graphicsQueueFamilyIndex = std::distance(
+		queueFamilyProperties.begin(),
+		// Find the iterator for a family property which supports graphics
+		std::find_if(
+			queueFamilyProperties.begin(),
+			queueFamilyProperties.end(),
+			[](vk::QueueFamilyProperties const &familyProps) {
+				// Does the iterator have the graphics flag set
+				return familyProps.queueFlags & vk::QueueFlagBits::eGraphics;
+			}
+		)
+	);
+	// Ensure that there is at least 1
+	assert(graphicsQueueFamilyIndex < queueFamilyProperties.size());
+
+	float queuePriority = 0.0f;
+	vk::DeviceQueueCreateInfo deviceQueueCreateInfo(
+		vk::DeviceQueueCreateFlags(),
+		static_cast<ui32>(graphicsQueueFamilyIndex),
+		1,
+		&queuePriority
+	);
+	vk::UniqueDevice device = physicalDevices[0].createDeviceUnique(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), 1, &deviceQueueCreateInfo));
+
+	vk::UniqueCommandPool commandPool = device->createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), deviceQueueCreateInfo.queueFamilyIndex));
+
+	std::vector<vk::UniqueCommandBuffer> commandBuffers = device->allocateCommandBuffersUnique(
+		vk::CommandBufferAllocateInfo(commandPool.get(), vk::CommandBufferLevel::ePrimary, 1)
+	);
 
 }
 
 Renderer::~Renderer()
 {
-	//mPhysicalDeviceCount = 0;
-	//mExtensionCount = 0;
-	//vkDestroyInstance(mAppInstance, nullptr);
 }
 
 void Renderer::initializeWindow()

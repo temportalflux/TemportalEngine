@@ -308,7 +308,7 @@
     <ClInclude Include="include\math\pow.hpp">
       <Filter>Header Files\math</Filter>
     </ClInclude>
-    <ClInclude Include="include\memory\UniquePtr.hpp">
+    <ClInclude Include="include\memory\SharedPtr.hpp">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
   </ItemGroup>

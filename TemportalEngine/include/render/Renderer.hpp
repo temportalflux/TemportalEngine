@@ -13,7 +13,7 @@
 // Engine ---------------------------------------------------------------------
 #include "types/integer.h"
 #include "input/Event.hpp"
-#include "memory/UniquePtr.hpp"
+#include "memory/SharedPtr.hpp"
 //#include "math/pow.hpp"
 
 NS_RENDER
@@ -24,8 +24,9 @@ class TEMPORTALENGINE_API Renderer
 
 private:
 
-	memory::SharedPtrOpt<vk::InstanceCreateInfo> mpInstanceInfo;
-	void* mpAppInstance;
+	vk::ApplicationInfo mpApplicationInfo[1];
+	vk::InstanceCreateInfo mpInstanceInfo[1];
+	memory::AllocatedPtr<vk::UniqueInstance> mpAppInstance;
 
 	static ui8 const REQUIRED_EXTENSION_COUNT = 2;
 	std::array<CSTR, REQUIRED_EXTENSION_COUNT> maRequiredExtensionNames;

@@ -15,41 +15,58 @@ NS_MEMORY
 using PtrDealloc = std::function<void(void**)>;
 
 template <typename TValue>
-class SharedPtr;
+class AllocatedPtr;
 
 template <typename TValue>
-using SharedPtrOpt = std::optional<SharedPtr<TValue>>;
+using AllocatedPtrOpt = std::optional<AllocatedPtr<TValue>>;
 
 template <typename TValue>
-class TEMPORTALENGINE_API SharedPtr
+class TEMPORTALENGINE_API AllocatedPtr
 {
 	
 private:
+	bool mIsOwner;
 	TValue* mpRaw;
 	PtrDealloc mfDealloc;
 
 public:
 
-	SharedPtr()
-		: mpRaw(nullptr)
+	AllocatedPtr()
+		: mIsOwner(false)
+		, mpRaw(nullptr)
 		, mfDealloc(nullptr)
 	{
 	}
 
-	SharedPtr(TValue* raw, PtrDealloc dealloc)
-		: mpRaw(raw)
+	AllocatedPtr(TValue* raw, PtrDealloc dealloc)
+		: mIsOwner(true)
+		, mpRaw(raw)
 		, mfDealloc(dealloc)
 	{
 	}
 
-	~SharedPtr()
+	AllocatedPtr(const AllocatedPtr<TValue> &other)
 	{
-		mpRaw->TValue::~TValue();
-		mfDealloc((void**)&mpRaw);
-		mpRaw = nullptr;
+		mpRaw = other.mpRaw;
+		mIsOwner = false;
+	}
+
+	~AllocatedPtr()
+	{
+		if (mIsOwner)
+		{
+			mpRaw->TValue::~TValue();
+			mfDealloc((void**)&mpRaw);
+			mpRaw = nullptr;
+		}
 	}
 
 	TValue* operator->() const
+	{
+		return GetRaw();
+	}
+
+	TValue* GetRaw() const
 	{
 		return mpRaw;
 	}
@@ -57,7 +74,7 @@ public:
 };
 
 template <typename TAlloc, typename... TArgs>
-static SharedPtrOpt<TAlloc> NewUnique(TArgs... args)
+static AllocatedPtrOpt<TAlloc> NewUnique(TArgs... args)
 {
 	engine::Engine* pEngine;
 	if (engine::Engine::GetChecked(pEngine))
@@ -66,7 +83,7 @@ static SharedPtrOpt<TAlloc> NewUnique(TArgs... args)
 		if (rawPtr == nullptr) return std::nullopt;
 		new (rawPtr) TAlloc(args...);
 		auto dealloc = std::bind(&engine::Engine::deallocRaw, pEngine, std::placeholders::_1);
-		auto uniquePtr = SharedPtr<TAlloc>(rawPtr, dealloc);
+		auto uniquePtr = AllocatedPtr<TAlloc>(rawPtr, dealloc);
 		return std::make_optional(uniquePtr);
 	}
 	return std::nullopt;
