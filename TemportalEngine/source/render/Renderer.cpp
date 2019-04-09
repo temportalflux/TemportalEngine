@@ -4,12 +4,18 @@
 using namespace render;
 //using namespace vk;
 
-Renderer::Renderer()
+Renderer::Renderer(void* applicationHandle_win32, void* windowHandle_win32)
 	: maRequiredExtensionNames({
 		"VK_KHR_surface",
 		"VK_KHR_win32_surface",
 	})
 {
+
+  // Extensions ---------------------------------------------------------------
+
+  //auto extensionsAvailable = vk::enumerateInstanceExtensionProperties();
+
+  // Instance -----------------------------------------------------------------
 
 	mpApplicationInfo->pApplicationName = "DemoGame";
 	mpApplicationInfo->applicationVersion = 1;
@@ -26,6 +32,16 @@ Renderer::Renderer()
 		mpAppInstance = appInstance.value();
 	}
 	*(mpAppInstance.GetRaw()) = vk::createInstanceUnique(*mpInstanceInfo);
+
+  // Surface ------------------------------------------------------------------
+
+  vk::SurfaceKHR surface = mpAppInstance->get().createWin32SurfaceKHR(
+    vk::Win32SurfaceCreateInfoKHR()
+      .setHinstance((HINSTANCE)applicationHandle_win32)
+      .setHwnd((HWND)windowHandle_win32)
+  );
+
+  // Physical Device ----------------------------------------------------------
 
 	auto layerProps = vk::enumerateInstanceLayerProperties();
 	auto physicalDevices = mpAppInstance->get().enumeratePhysicalDevices();
@@ -48,18 +64,60 @@ Renderer::Renderer()
 	// Ensure that there is at least 1
 	assert(graphicsQueueFamilyIndex < queueFamilyProperties.size());
 
-	float queuePriority = 0.0f;
+  // Logical Device -----------------------------------------------------------
+
+  float quePriorities[] = { 1.0f };
 	vk::DeviceQueueCreateInfo deviceQueueCreateInfo(
 		vk::DeviceQueueCreateFlags(),
 		static_cast<ui32>(graphicsQueueFamilyIndex),
 		1,
-		&queuePriority
+		quePriorities
 	);
-	vk::UniqueDevice device = physicalDevices[0].createDeviceUnique(vk::DeviceCreateInfo(vk::DeviceCreateFlags(), 1, &deviceQueueCreateInfo));
 
-	vk::UniqueCommandPool commandPool = device->createCommandPoolUnique(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), deviceQueueCreateInfo.queueFamilyIndex));
+  const char *requiredGPUExtensions[] = { "VK_KHR_swapchain" };
 
-	std::vector<vk::UniqueCommandBuffer> commandBuffers = device->allocateCommandBuffersUnique(
+	vk::UniqueDevice logicalDevice = physicalDevices[0].createDeviceUnique(
+    vk::DeviceCreateInfo()
+      .setQueueCreateInfoCount(1)
+      .setPQueueCreateInfos(&deviceQueueCreateInfo)
+      .setEnabledExtensionCount(1)
+      .setPpEnabledExtensionNames(requiredGPUExtensions)
+  );
+
+  // Surface Capabilities -----------------------------------------------------
+
+  vk::SurfaceCapabilitiesKHR surfaceCapabilities =
+    physicalDevices[0].getSurfaceCapabilitiesKHR(surface);
+  
+  // Swap Chain ---------------------------------------------------------------
+
+  vk::SwapchainKHR swapchain = logicalDevice.get().createSwapchainKHR(
+    vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR())
+      // Surface info
+      .setSurface(surface)
+      // Double Buffering
+      .setMinImageCount(2)
+      // Image
+      // size of window
+      .setImageExtent(surfaceCapabilities.currentExtent)
+      // Standard RGBA format
+      .setImageFormat(vk::Format::eB8G8R8A8Unorm)
+      // RGB, but non-linear to support HDR
+      .setImageColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+      // Unknown
+      .setImageArrayLayers(1)
+      .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
+      .setImageSharingMode(vk::SharingMode::eExclusive)
+      .setPresentMode(vk::PresentModeKHR::eFifo)
+  );
+
+  // Command Pool -------------------------------------------------------------
+
+	vk::UniqueCommandPool commandPool = logicalDevice->createCommandPoolUnique(
+    vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), deviceQueueCreateInfo.queueFamilyIndex)
+  );
+
+	std::vector<vk::UniqueCommandBuffer> commandBuffers = logicalDevice->allocateCommandBuffersUnique(
 		vk::CommandBufferAllocateInfo(commandPool.get(), vk::CommandBufferLevel::ePrimary, 1)
 	);
 

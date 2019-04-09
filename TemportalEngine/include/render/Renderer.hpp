@@ -7,6 +7,7 @@
 #include "TemportalEnginePCH.hpp"
 
 // Libraries ------------------------------------------------------------------
+#define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 #include <array>
 
@@ -44,7 +45,7 @@ private:
 	//*/
 
 public:
-	Renderer();
+	Renderer(void* applicationHandle_win32, void* windowHandle_win32);
 	~Renderer();
 
 	void initializeWindow();
