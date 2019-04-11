@@ -10,6 +10,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.hpp>
 #include <array>
+#include <optional>
 
 // Engine ---------------------------------------------------------------------
 #include "types/integer.h"
@@ -25,12 +26,32 @@ class TEMPORTALENGINE_API Renderer
 
 private:
 
+#ifdef NDEBUG
+  const bool mUseValidationLayers = false;
+#else
+  const bool mUseValidationLayers = true;
+#endif
+
 	vk::ApplicationInfo mpApplicationInfo[1];
 	vk::InstanceCreateInfo mpInstanceInfo[1];
-	memory::AllocatedPtr<vk::UniqueInstance> mpAppInstance;
+	vk::UniqueInstance mpAppInstance;
 
 	static ui8 const REQUIRED_EXTENSION_COUNT = 2;
 	std::array<CSTR, REQUIRED_EXTENSION_COUNT> maRequiredExtensionNames;
+
+  std::optional<vk::PhysicalDevice> mPhysicalDevice;
+  std::optional<size_t> mQueueFamilyIndex;
+  vk::UniqueDevice mLogicalDevice;
+  vk::Queue mQueue;
+  vk::SurfaceKHR mSurface;
+  vk::SwapchainKHR mSwapchain;
+
+  void fetchAvailableExtensions();
+  void createInstance();
+  bool pickPhysicalDevice();
+  void createLogicalDevice();
+  void createSurface(void* applicationHandle_win32, void* windowHandle_win32);
+  void createSwapchain();
 
 	/*
 	static uSize const MAX_PHYSICAL_DEVICE_COUNT = 4; // Max GPUs

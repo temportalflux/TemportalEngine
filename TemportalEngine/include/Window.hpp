@@ -29,7 +29,7 @@ private:
 	render::Renderer *mpRenderer;
 
 public:
-	Window() = default;
+	Window();
 	Window(uSize width, uSize height, char const * title);
 
 	bool isValid();

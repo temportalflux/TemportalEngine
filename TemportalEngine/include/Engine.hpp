@@ -46,7 +46,7 @@ private:
 	thread::MutexLock mpLockMemoryManager[1];
 	void* mpMemoryManager;
 
-	dependency::SDL mpDepGlfw[1];
+	dependency::SDL mpDepSDL[1];
 
 	bool mIsRunning;
 

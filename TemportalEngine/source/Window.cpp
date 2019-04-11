@@ -17,6 +17,15 @@ void Window::renderUntilClose(void* ptr)
 	}
 }
 
+Window::Window()
+  : mWidth(0)
+  , mHeight(0)
+  , mpTitle(0)
+  , mpRenderer(0)
+{
+
+}
+
 Window::Window(uSize width, uSize height, char const * title)
 	: mWidth(width)
 	, mHeight(height)
