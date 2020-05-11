@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <SDL.h>
+#include <SDL_syswm.h>
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
@@ -33,20 +34,26 @@ Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const 
 		return;
 	}
 
-	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(appInfo, engine::Engine::Get()->getInfo());
+  SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
+  SDL_GetWindowWMInfo((SDL_Window*)this->mpHandle, &info);
+  void* windowHandle_win32 = info.info.win.window;
+  void* applicationHandle_win32 = GetModuleHandle(NULL);
+
+	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(applicationHandle_win32, windowHandle_win32);
 
 }
 
 void Window::destroy()
 {
+
+  engine::Engine::Get()->dealloc(&mpRenderer);
 	
 	if (this->mpHandle != nullptr)
 	{
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
 		this->mpHandle = nullptr;
 	}
-
-	engine::Engine::Get()->dealloc(&mpRenderer);
 
 }
 

@@ -110,16 +110,16 @@ void Engine::deallocRaw(void* ptr)
 
 bool Engine::initializeDependencies()
 {
-	*mpDepGlfw = dependency::SDL();
-	if (!mpDepGlfw->initialize()) return false;
+	*mpDepSDL = dependency::SDL();
+	if (!mpDepSDL->initialize()) return false;
 
 	return true;
 }
 
 void Engine::terminateDependencies()
 {
-	if (mpDepGlfw->isInitialized())
-		mpDepGlfw->terminate();
+	if (mpDepSDL->isInitialized())
+		mpDepSDL->terminate();
 }
 
 bool const Engine::createWindow(utility::SExecutableInfo const *const pAppInfo)
