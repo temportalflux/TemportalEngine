@@ -13,6 +13,10 @@ NS_RENDER
 class Renderer;
 NS_END
 
+NS_UTILITY
+struct SExecutableInfo;
+NS_END
+
 class TEMPORTALENGINE_API Window
 {
 public:
@@ -30,7 +34,10 @@ private:
 
 public:
 	Window() = default;
-	Window(uSize width, uSize height, char const * title);
+	Window(
+		uSize width, uSize height,
+		utility::SExecutableInfo const *const appInfo
+	);
 
 	bool isValid();
 

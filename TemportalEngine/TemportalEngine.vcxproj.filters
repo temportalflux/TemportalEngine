@@ -311,5 +311,8 @@
     <ClInclude Include="include\memory\SharedPtr.hpp">
       <Filter>Header Files\memory</Filter>
     </ClInclude>
+    <ClInclude Include="include\ExecutableInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

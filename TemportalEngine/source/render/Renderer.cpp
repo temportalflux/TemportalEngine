@@ -1,20 +1,24 @@
 #include "render/Renderer.hpp"
 #include "Engine.hpp"
+#include "ExecutableInfo.hpp"
 
 using namespace render;
 //using namespace vk;
 
-Renderer::Renderer()
+Renderer::Renderer(
+	utility::SExecutableInfo const *const appInfo,
+	utility::SExecutableInfo const *const engineInfo
+)
 	: maRequiredExtensionNames({
 		"VK_KHR_surface",
 		"VK_KHR_win32_surface",
 	})
 {
 
-	mpApplicationInfo->pApplicationName = "DemoGame";
-	mpApplicationInfo->applicationVersion = 1;
-	mpApplicationInfo->pEngineName = "TemportalEngine";
-	mpApplicationInfo->engineVersion = 1;
+	mpApplicationInfo->pApplicationName = appInfo->title;
+	mpApplicationInfo->applicationVersion = appInfo->version;
+	mpApplicationInfo->pEngineName = engineInfo->title;
+	mpApplicationInfo->engineVersion = engineInfo->version;
 	mpApplicationInfo->apiVersion = VK_API_VERSION_1_1;
 
 	mpInstanceInfo->pApplicationInfo = mpApplicationInfo;

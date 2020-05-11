@@ -7,6 +7,8 @@
 #include "Engine.hpp"
 #include "render/Renderer.hpp"
 
+#include "ExecutableInfo.hpp"
+
 void Window::renderUntilClose(void* ptr)
 {
 	Window* pWindow = reinterpret_cast<Window*>(ptr);
@@ -16,10 +18,10 @@ void Window::renderUntilClose(void* ptr)
 	}
 }
 
-Window::Window(uSize width, uSize height, char const * title)
+Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const appInfo)
 	: mWidth(width)
 	, mHeight(height)
-	, mpTitle(title)
+	, mpTitle(appInfo->title)
 {
 	this->mIsPendingClose = false;
 
@@ -31,7 +33,7 @@ Window::Window(uSize width, uSize height, char const * title)
 		return;
 	}
 
-	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>();
+	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(appInfo, engine::Engine::Get()->getInfo());
 
 }
 

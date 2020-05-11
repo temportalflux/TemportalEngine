@@ -29,7 +29,7 @@ Engine* Engine::Create()
 		{
 			if (a3_mem_manager_alloc(memoryManager, sizeof(Engine), &spInstance))
 			{
-				new (spInstance) Engine(memoryManager);
+				new (spInstance) Engine(/*version*/ 1, memoryManager);
 				return Engine::Get();
 			}
 		}
@@ -61,13 +61,16 @@ void Engine::Destroy()
 	}
 }
 
-Engine::Engine(void* memoryManager)
+Engine::Engine(ui32 const & version, void* memoryManager)
 	: mpMemoryManager(memoryManager)
 	, mIsRunning(false)
+	, mpThreadRender(nullptr)
+	, mpNetworkService(nullptr)
 	, mpWindowGame(nullptr)
 {
 	LogEngineInfo("Creating Engine");
-	this->mpNetworkService = nullptr;
+	mInfo.title = "TemportalEngine";
+	mInfo.version = version;
 	mpInputQueue = this->alloc<input::Queue>(&inputQueueListener);
 }
 
@@ -76,6 +79,11 @@ Engine::~Engine()
 	this->destroyWindow();
 	this->terminateDependencies();
 	LogEngineInfo("Engine Destroyed");
+}
+
+utility::SExecutableInfo const *const Engine::getInfo() const
+{
+	return &mInfo;
 }
 
 void * Engine::getMemoryManager()
@@ -92,7 +100,7 @@ void* Engine::allocRaw(uSize size)
 	return ptr;
 }
 
-void Engine::deallocRaw(void** ptr)
+void Engine::deallocRaw(void* ptr)
 {
 	this->mpLockMemoryManager->lock();
 	a3_mem_manager_dealloc(getMemoryManager(), ptr);
@@ -114,16 +122,9 @@ void Engine::terminateDependencies()
 		mpDepGlfw->terminate();
 }
 
-bool const Engine::createWindow()
+bool const Engine::createWindow(utility::SExecutableInfo const *const pAppInfo)
 {
-	std::string title = "Temportal Engine";
-	if (this->hasNetwork())
-		if (this->mpNetworkService->isServer())
-			title += " (Server)";
-		else
-			title += " (Client)";
-
-	mpWindowGame = this->alloc<Window>(800, 600, title.c_str());
+	mpWindowGame = this->alloc<Window>(800, 600, pAppInfo);
 	if (!mpWindowGame->isValid()) return false;
 
 	mpWindowGame->initializeRenderContext();

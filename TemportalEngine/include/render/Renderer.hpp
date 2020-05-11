@@ -16,6 +16,10 @@
 #include "memory/SharedPtr.hpp"
 //#include "math/pow.hpp"
 
+NS_UTILITY
+struct SExecutableInfo;
+NS_END
+
 NS_RENDER
 
 class TEMPORTALENGINE_API Renderer
@@ -44,7 +48,10 @@ private:
 	//*/
 
 public:
-	Renderer();
+	Renderer(
+		utility::SExecutableInfo const *const appInfo,
+		utility::SExecutableInfo const *const engineInfo
+	);
 	~Renderer();
 
 	void initializeWindow();

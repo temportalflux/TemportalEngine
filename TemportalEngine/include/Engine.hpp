@@ -11,12 +11,12 @@
 #include <typeinfo>
 
 #include "logging/Logger.hpp"
+#include "ExecutableInfo.hpp"
 
 class Window;
-namespace input
-{
-	class Queue;
-}
+NS_INPUT
+class Queue;
+NS_END
 
 NS_ENGINE
 
@@ -43,6 +43,8 @@ public:
 
 private:
 
+	utility::SExecutableInfo mInfo;
+
 	thread::MutexLock mpLockMemoryManager[1];
 	void* mpMemoryManager;
 
@@ -58,15 +60,16 @@ private:
 
 	input::Queue *mpInputQueue;
 
-	Engine(void* memoryManager);
+	Engine(ui32 const & version, void* memoryManager);
 
 public:
 	~Engine();
+	utility::SExecutableInfo const *const getInfo() const;
 
 	void* getMemoryManager();
 
 	void* allocRaw(uSize size);
-	void deallocRaw(void** ptr);
+	void deallocRaw(void* ptr);
 
 	template <typename TAlloc, typename... TArgs>
 	TAlloc* alloc(TArgs... args)
@@ -128,7 +131,7 @@ public:
 	bool initializeDependencies();
 	void terminateDependencies();
 
-	bool const createWindow();
+	bool const createWindow(utility::SExecutableInfo const *const pAppInfo);
 	void destroyWindow();
 	bool const hasWindow() const;
 

@@ -12,7 +12,7 @@
 
 NS_MEMORY
 
-using PtrDealloc = std::function<void(void**)>;
+using PtrDealloc = std::function<void(void*)>;
 
 template <typename TValue>
 class AllocatedPtr;
@@ -56,7 +56,7 @@ public:
 		if (mIsOwner)
 		{
 			mpRaw->TValue::~TValue();
-			mfDealloc((void**)&mpRaw);
+			mfDealloc((void*)mpRaw);
 			mpRaw = nullptr;
 		}
 	}

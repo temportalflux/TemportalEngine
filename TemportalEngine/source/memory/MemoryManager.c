@@ -442,7 +442,10 @@ ui8 a3_mem_manager_alloc(void* block, uSize size, void** requestedMemory)
 	allocatedNode->right = 0;
 	allocatedNode->height = 0;
 	
-	*requestedMemory = (char*)allocatedNode + sizeOfNodeHeader;
+	char* bodyAddress = (char*)allocatedNode + sizeOfNodeHeader;
+	*requestedMemory = bodyAddress;
+	// TODO: pass as parameter if the block should be preformatted
+	memset(bodyAddress, 0, allocatedNode->size);
 
 	return 1;
 }

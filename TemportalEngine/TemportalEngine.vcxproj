@@ -229,6 +229,7 @@
     <ClInclude Include="include\dependency\Module.hpp" />
     <ClInclude Include="include\dependency\SDL.hpp" />
     <ClInclude Include="include\Engine.hpp" />
+    <ClInclude Include="include\ExecutableInfo.hpp" />
     <ClInclude Include="include\input\Action.hpp" />
     <ClInclude Include="include\input\Event.hpp" />
     <ClInclude Include="include\input\InputWatcher.hpp" />

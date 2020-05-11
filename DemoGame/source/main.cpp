@@ -52,6 +52,9 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main()
 {
+	utility::SExecutableInfo appInfo;
+	appInfo.version = 1;
+
 	string logFile = "TemportalEngine_";
 	{
 		time_t currentTime = time(nullptr);
@@ -72,7 +75,25 @@ int main()
 
 	initializeNetwork(pEngine);
 
-	if (!pEngine->createWindow())
+	std::string title = "Temportal Engine";
+	if (pEngine->hasNetwork())
+	{
+		auto network = pEngine->getNetworkService();
+		if (network.has_value())
+		{
+			if (network.value()->isServer())
+			{
+				title += " (Server)";
+			}
+			else
+			{
+				title += " (Client)";
+			}
+		}
+	}			
+	appInfo.title = title.c_str();
+
+	if (!pEngine->createWindow(&appInfo))
 	{
 		engine::Engine::Destroy();
 		return 1;
