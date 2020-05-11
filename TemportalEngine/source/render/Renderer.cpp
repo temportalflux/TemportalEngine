@@ -2,18 +2,33 @@
 #include "Engine.hpp"
 #include "ExecutableInfo.hpp"
 
+
 using namespace render;
 //using namespace vk;
+
+VkDebugUtilsMessageSeverityFlagBitsEXT MIN_SEVERITY_TO_LOG = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+logging::ECategory LOG_CATEGORY = logging::ECategory::LOGINFO;
+static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(
+	VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+	VkDebugUtilsMessageTypeFlagsEXT messageTypes,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+	void* pUserData
+)
+{
+	if (severity >= MIN_SEVERITY_TO_LOG)
+	{
+		LogRenderer(LOG_CATEGORY, pCallbackData->pMessage);
+	}
+	return VK_FALSE;
+}
 
 Renderer::Renderer(
 	void* applicationHandle_win32, void* windowHandle_win32,
 	utility::SExecutableInfo const *const appInfo,
-	utility::SExecutableInfo const *const engineInfo
+	utility::SExecutableInfo const *const engineInfo,
+	std::vector<const char*> extensions
 )
-	: maRequiredExtensionNames({
-		"VK_KHR_surface",
-		"VK_KHR_win32_surface",
-		})
+	: maRequiredExtensionsSDL(extensions)
 {
 
 	// Extensions ---------------------------------------------------------------
@@ -22,7 +37,13 @@ Renderer::Renderer(
 
 	// Instance -----------------------------------------------------------------
 
-	createInstance();
+	createInstance(appInfo, engineInfo);
+
+#ifdef RENDERER_USE_VALIDATION_LAYERS
+	setupVulkanMessenger();
+#endif
+
+	return;
 
 	// Physical Device ----------------------------------------------------------
 
@@ -64,6 +85,7 @@ Renderer::Renderer(
 
 Renderer::~Renderer()
 {
+
 }
 
 void Renderer::fetchAvailableExtensions()
@@ -76,17 +98,95 @@ void Renderer::fetchAvailableExtensions()
 	}
 }
 
-void Renderer::createInstance()
+std::vector<const char*> Renderer::getRequiredExtensions() const
 {
-	mpApplicationInfo->pApplicationName = "DemoGame";
-	mpApplicationInfo->applicationVersion = 1;
-	mpApplicationInfo->pEngineName = "TemportalEngine";
-	mpApplicationInfo->engineVersion = 1;
+	auto exts = maRequiredExtensionsSDL;
+#ifdef RENDERER_USE_VALIDATION_LAYERS
+	exts.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+	return exts;
+}
+
+void Renderer::createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo)
+{
+	mpApplicationInfo->pApplicationName = appInfo->title;
+	mpApplicationInfo->applicationVersion = appInfo->version;
+	mpApplicationInfo->pEngineName = engineInfo->title;
+	mpApplicationInfo->engineVersion = engineInfo->version;
 	mpApplicationInfo->apiVersion = VK_API_VERSION_1_1;
 
+	// One day perhaps use https://en.cppreference.com/w/cpp/utility/format/format in a macro to get the string equivalent of a SemanticVersion
+	LogEngineInfo("Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
+		TE_GET_MAJOR_VERSION(VK_API_VERSION_1_1), TE_GET_MINOR_VERSION(VK_API_VERSION_1_1), TE_GET_PATCH_VERSION(VK_API_VERSION_1_1),
+		appInfo->title,
+		TE_GET_MAJOR_VERSION(appInfo->version), TE_GET_MINOR_VERSION(appInfo->version), TE_GET_PATCH_VERSION(appInfo->version),
+		engineInfo->title,
+		TE_GET_MAJOR_VERSION(engineInfo->version), TE_GET_MINOR_VERSION(engineInfo->version), TE_GET_PATCH_VERSION(engineInfo->version)
+	);
+
 	mpInstanceInfo->pApplicationInfo = mpApplicationInfo;
-	mpInstanceInfo->setPpEnabledExtensionNames(maRequiredExtensionNames.data());
+
+	const auto requiredExtensions = this->getRequiredExtensions();
+	mpInstanceInfo->setEnabledExtensionCount(requiredExtensions.size());
+	mpInstanceInfo->setPpEnabledExtensionNames(requiredExtensions.data());
+
+	if (checkValidationLayerSupport())
+	{
+		mpInstanceInfo->setEnabledLayerCount(mValidationLayers.size());
+		mpInstanceInfo->setPpEnabledLayerNames(mValidationLayers.data());
+	}
+#ifdef RENDERER_USE_VALIDATION_LAYERS
+	else
+	{
+		throw std::runtime_error("Vulkan validation layers requested, but there are none available.");
+	}
+#else
+	else
+	{
+		mpInstanceInfo->setEnabledLayerCount(0);
+	}
+#endif
+
+	// TODO: Route allocator callback through memory manager
 	mpAppInstance = vk::createInstanceUnique(*mpInstanceInfo);
+}
+
+bool Renderer::checkValidationLayerSupport() const
+{
+#ifndef RENDERER_USE_VALIDATION_LAYERS
+	return false;
+#else
+	for (const auto& availableLayer : vk::enumerateInstanceLayerProperties())
+	{
+		for (const auto& desiredLayer : mValidationLayers)
+		{
+			if (strcmp(availableLayer.layerName, desiredLayer) == 0)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+#endif
+}
+
+void Renderer::setupVulkanMessenger()
+{
+	auto& instance = this->mpAppInstance.get();
+	auto messenger = instance.createDebugUtilsMessengerEXTUnique(
+		vk::DebugUtilsMessengerCreateInfoEXT{
+			{},
+			vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
+			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+			| vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+			| vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
+			LogVulkanOutput
+		},
+		nullptr, vk::DispatchLoaderDynamic{ (VkInstance)instance, {} }
+	);
 }
 
 bool Renderer::pickPhysicalDevice()

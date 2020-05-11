@@ -3,6 +3,7 @@
 #include <functional>
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <SDL_vulkan.h>
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
@@ -29,8 +30,7 @@ Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const 
 	this->mpHandle = SDL_CreateWindow(mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)mWidth, (int)mHeight, 0);
 	if (!this->isValid())
 	{
-		DeclareLog("Window").log(logging::ECategory::LOGERROR,
-				"Failed to create window");
+		DeclareLog("Window").log(logging::ECategory::LOGERROR, "Failed to create window");
 		return;
 	}
 
@@ -40,9 +40,17 @@ Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const 
 	void* windowHandle_win32 = info.info.win.window;
 	void* applicationHandle_win32 = GetModuleHandle(NULL);
 
+	ui32 extCount;
+	std::vector<const char*> vulkanExtensionsForSDL = {};
+	if (!SDL_Vulkan_GetInstanceExtensions((SDL_Window*)this->mpHandle, &extCount, vulkanExtensionsForSDL.data()))
+	{
+		throw std::runtime_error("Failed to get required vulkan extensions for SDL.");
+	}
+
 	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(
 		applicationHandle_win32, windowHandle_win32,
-		appInfo, engine::Engine::Get()->getInfo()
+		appInfo, engine::Engine::Get()->getInfo(),
+		vulkanExtensionsForSDL
 	);
 
 }
@@ -50,8 +58,8 @@ Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const 
 void Window::destroy()
 {
 
-  engine::Engine::Get()->dealloc(&mpRenderer);
-	
+	engine::Engine::Get()->dealloc(&mpRenderer);
+
 	if (this->mpHandle != nullptr)
 	{
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);

@@ -22,6 +22,12 @@ NS_UTILITY
 struct SExecutableInfo;
 NS_END
 
+#ifndef NDEBUG
+#define RENDERER_USE_VALIDATION_LAYERS 1
+#endif
+
+#define LogRenderer(cate, ...) DeclareLog("Renderer").log(cate, __VA_ARGS__);
+
 NS_RENDER
 
 class TEMPORTALENGINE_API Renderer
@@ -30,18 +36,17 @@ class TEMPORTALENGINE_API Renderer
 
 private:
 
-#ifdef NDEBUG
-	const bool mUseValidationLayers = false;
-#else
-	const bool mUseValidationLayers = true;
+#ifdef RENDERER_USE_VALIDATION_LAYERS
+	const std::vector<const char*> mValidationLayers = {
+		"VK_LAYER_KHRONOS_validation"
+	};
 #endif
-
+	
 	vk::ApplicationInfo mpApplicationInfo[1];
 	vk::InstanceCreateInfo mpInstanceInfo[1];
 	vk::UniqueInstance mpAppInstance;
 
-	static ui8 const REQUIRED_EXTENSION_COUNT = 2;
-	std::array<CSTR, REQUIRED_EXTENSION_COUNT> maRequiredExtensionNames;
+	std::vector<CSTR> maRequiredExtensionsSDL;
 
 	std::optional<vk::PhysicalDevice> mPhysicalDevice;
 	std::optional<size_t> mQueueFamilyIndex;
@@ -51,7 +56,10 @@ private:
 	vk::SwapchainKHR mSwapchain;
 
 	void fetchAvailableExtensions();
-	void createInstance();
+	std::vector<const char*> getRequiredExtensions() const;
+	void createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo);
+	void setupVulkanMessenger();
+	bool checkValidationLayerSupport() const;
 	bool pickPhysicalDevice();
 	void createLogicalDevice();
 	void createSurface(void* applicationHandle_win32, void* windowHandle_win32);
@@ -73,7 +81,8 @@ public:
 	Renderer(
 		void* applicationHandle_win32, void* windowHandle_win32,
 		utility::SExecutableInfo const *const appInfo,
-		utility::SExecutableInfo const *const engineInfo
+		utility::SExecutableInfo const *const engineInfo,
+		std::vector<const char*> extensions
 	);
 	~Renderer();
 

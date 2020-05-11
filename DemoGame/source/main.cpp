@@ -53,7 +53,7 @@ void initializeNetwork(engine::Engine *pEngine)
 int main()
 {
 	utility::SExecutableInfo appInfo;
-	appInfo.version = 1;
+	appInfo.version = TE_MAKE_VERSION(0, 1, 0);
 
 	string logFile = "TemportalEngine_";
 	{
@@ -75,7 +75,7 @@ int main()
 
 	initializeNetwork(pEngine);
 
-	std::string title = "Temportal Engine";
+	std::string title = "Demo Game";
 	if (pEngine->hasNetwork())
 	{
 		auto network = pEngine->getNetworkService();

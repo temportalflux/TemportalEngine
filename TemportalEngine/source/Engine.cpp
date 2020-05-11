@@ -29,7 +29,7 @@ Engine* Engine::Create()
 		{
 			if (a3_mem_manager_alloc(memoryManager, sizeof(Engine), &spInstance))
 			{
-				new (spInstance) Engine(/*version*/ 1, memoryManager);
+				new (spInstance) Engine(TE_MAKE_VERSION(1, 0, 0), memoryManager);
 				return Engine::Get();
 			}
 		}
