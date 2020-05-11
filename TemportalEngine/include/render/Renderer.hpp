@@ -31,9 +31,9 @@ class TEMPORTALENGINE_API Renderer
 private:
 
 #ifdef NDEBUG
-  const bool mUseValidationLayers = false;
+	const bool mUseValidationLayers = false;
 #else
-  const bool mUseValidationLayers = true;
+	const bool mUseValidationLayers = true;
 #endif
 
 	vk::ApplicationInfo mpApplicationInfo[1];
@@ -43,19 +43,19 @@ private:
 	static ui8 const REQUIRED_EXTENSION_COUNT = 2;
 	std::array<CSTR, REQUIRED_EXTENSION_COUNT> maRequiredExtensionNames;
 
-  std::optional<vk::PhysicalDevice> mPhysicalDevice;
-  std::optional<size_t> mQueueFamilyIndex;
-  vk::UniqueDevice mLogicalDevice;
-  vk::Queue mQueue;
-  vk::SurfaceKHR mSurface;
-  vk::SwapchainKHR mSwapchain;
+	std::optional<vk::PhysicalDevice> mPhysicalDevice;
+	std::optional<size_t> mQueueFamilyIndex;
+	vk::UniqueDevice mLogicalDevice;
+	vk::Queue mQueue;
+	vk::SurfaceKHR mSurface;
+	vk::SwapchainKHR mSwapchain;
 
-  void fetchAvailableExtensions();
-  void createInstance();
-  bool pickPhysicalDevice();
-  void createLogicalDevice();
-  void createSurface(void* applicationHandle_win32, void* windowHandle_win32);
-  void createSwapchain();
+	void fetchAvailableExtensions();
+	void createInstance();
+	bool pickPhysicalDevice();
+	void createLogicalDevice();
+	void createSurface(void* applicationHandle_win32, void* windowHandle_win32);
+	void createSwapchain();
 
 	/*
 	static uSize const MAX_PHYSICAL_DEVICE_COUNT = 4; // Max GPUs
@@ -71,6 +71,7 @@ private:
 
 public:
 	Renderer(
+		void* applicationHandle_win32, void* windowHandle_win32,
 		utility::SExecutableInfo const *const appInfo,
 		utility::SExecutableInfo const *const engineInfo
 	);

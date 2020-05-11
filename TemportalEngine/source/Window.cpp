@@ -34,13 +34,16 @@ Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const 
 		return;
 	}
 
-  SDL_SysWMinfo info;
-  SDL_VERSION(&info.version);
-  SDL_GetWindowWMInfo((SDL_Window*)this->mpHandle, &info);
-  void* windowHandle_win32 = info.info.win.window;
-  void* applicationHandle_win32 = GetModuleHandle(NULL);
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	SDL_GetWindowWMInfo((SDL_Window*)this->mpHandle, &info);
+	void* windowHandle_win32 = info.info.win.window;
+	void* applicationHandle_win32 = GetModuleHandle(NULL);
 
-	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(applicationHandle_win32, windowHandle_win32);
+	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(
+		applicationHandle_win32, windowHandle_win32,
+		appInfo, engine::Engine::Get()->getInfo()
+	);
 
 }
 
