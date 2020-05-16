@@ -70,13 +70,11 @@ Window::Window(ui32 width, ui32 height, utility::SExecutableInfo const *const ap
 		appInfo, engine::Engine::Get()->getInfo(),
 		width, height,
 		vulkanExtensionsForSDL,
-		[&](VkInstance const *pInst) {
-			VkSurfaceKHR surface;
-			if (!SDL_Vulkan_CreateSurface((SDL_Window*)mpHandle, *pInst, &surface))
+		[&](VkInstance const *pInst, VkSurfaceKHR *pOutSurface) {
+			if (!SDL_Vulkan_CreateSurface((SDL_Window*)mpHandle, *pInst, pOutSurface))
 			{
 				LogWindow.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface");
 			}
-			return &surface;
 		}
 	);
 
@@ -112,10 +110,8 @@ bool Window::isPendingClose()
 
 void Window::initializeRenderContext()
 {
-	this->mpRenderer->initializeWindow();
 }
 
 void Window::render()
 {
-	this->mpRenderer->render();
 }

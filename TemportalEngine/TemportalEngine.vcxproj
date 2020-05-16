@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -139,7 +139,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -168,7 +168,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -201,7 +201,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan-Headers/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>

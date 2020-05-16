@@ -60,13 +60,14 @@ Renderer::Renderer(
 	// Surface ------------------------------------------------------------------
 
 	auto rawInstance = (VkInstance)mAppInstance.get();
-	auto rawSurface = createSurface(&rawInstance);
+	VkSurfaceKHR rawSurface;
+	createSurface(&rawInstance, &rawSurface);
 	if (rawSurface == nullptr)
 	{
 		LogRenderer(logging::ECategory::LOGERROR, "Failed to create an SDL KHR surface for Vulkan");
 		return;
 	}
-	mSurface = vk::UniqueSurfaceKHR(*rawSurface);
+	mSurface = vk::UniqueSurfaceKHR(rawSurface);
 
 	// Physical Device ----------------------------------------------------------
 
@@ -98,7 +99,7 @@ Renderer::Renderer(
 	
 	// Swap Chain ---------------------------------------------------------------
 
-	mSwapChainResolution = { width, height };
+	mSwapChainResolution = vk::Extent2D(width, height);
 	mSwapChain = createSwapchain(mSwapChainResolution, mSwapChainImageFormat);
 
 	mSwapChainImages = mLogicalDevice->getSwapchainImagesKHR(mSwapChain.get());
@@ -368,7 +369,7 @@ vk::SurfaceFormatKHR const & chooseSurfaceSwapChainFormat(std::vector<vk::Surfac
 	return availableFormats[0];
 }
 
-vk::PresentModeKHR const & chooseSurfaceSwapChainPresentationMode(std::vector<vk::PresentModeKHR> const &availableModes)
+vk::PresentModeKHR chooseSurfaceSwapChainPresentationMode(std::vector<vk::PresentModeKHR> const &availableModes)
 {
 	for (const auto& mode : availableModes) {
 		if (mode == vk::PresentModeKHR::eMailbox) {
