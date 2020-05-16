@@ -1,13 +1,24 @@
 #include "render/Renderer.hpp"
+
+#include <map>
+#include <cstdint> // Necessary for UINT32_MAX
+#include <algorithm> // Necessary for UINT32_MAX
+
 #include "Engine.hpp"
 #include "ExecutableInfo.hpp"
-
+#include "types/math.h"
 
 using namespace render;
-//using namespace vk;
 
+#define LogRenderer(cate, ...) DeclareLog("Renderer").log(cate, __VA_ARGS__);
+#define LogVulkan(cate, ...) DeclareLog("Vulkan").log(cate, __VA_ARGS__);
+
+#ifndef NDEBUG
 VkDebugUtilsMessageSeverityFlagBitsEXT MIN_SEVERITY_TO_LOG = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-logging::ECategory LOG_CATEGORY = logging::ECategory::LOGINFO;
+#else
+VkDebugUtilsMessageSeverityFlagBitsEXT MIN_SEVERITY_TO_LOG = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+#endif
+
 static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(
 	VkDebugUtilsMessageSeverityFlagBitsEXT severity,
 	VkDebugUtilsMessageTypeFlagsEXT messageTypes,
@@ -17,16 +28,17 @@ static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(
 {
 	if (severity >= MIN_SEVERITY_TO_LOG)
 	{
-		LogRenderer(LOG_CATEGORY, pCallbackData->pMessage);
+		LogVulkan(logging::ECategory::LOGINFO, pCallbackData->pMessage);
 	}
 	return VK_FALSE;
 }
 
 Renderer::Renderer(
-	void* applicationHandle_win32, void* windowHandle_win32,
 	utility::SExecutableInfo const *const appInfo,
 	utility::SExecutableInfo const *const engineInfo,
-	std::vector<const char*> extensions
+	ui32 width, ui32 height,
+	std::vector<const char*> extensions,
+	FuncCreateSurface createSurface
 )
 	: maRequiredExtensionsSDL(extensions)
 {
@@ -37,37 +49,60 @@ Renderer::Renderer(
 
 	// Instance -----------------------------------------------------------------
 
-	createInstance(appInfo, engineInfo);
+	mAppInstance = createInstance(appInfo, engineInfo);
 
 #ifdef RENDERER_USE_VALIDATION_LAYERS
 	setupVulkanMessenger();
 #endif
 
-	return;
-
-	// Physical Device ----------------------------------------------------------
-
-	if (!pickPhysicalDevice())
-	{
-		return;
-	}
-
-	// Logical Device -----------------------------------------------------------
-
-	createLogicalDevice();
+	
 
 	// Surface ------------------------------------------------------------------
 
-	createSurface(applicationHandle_win32, windowHandle_win32);
+	auto rawInstance = (VkInstance)mAppInstance.get();
+	auto rawSurface = createSurface(&rawInstance);
+	if (rawSurface == nullptr)
+	{
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to create an SDL KHR surface for Vulkan");
+		return;
+	}
+	mSurface = vk::UniqueSurfaceKHR(*rawSurface);
 
+	// Physical Device ----------------------------------------------------------
+
+	auto optPhysicalDevice = pickPhysicalDevice();
+	if (!optPhysicalDevice.has_value())
+	{
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to find a physical device for Vulkan");
+		return;
+	}
+	mPhysicalDevice = optPhysicalDevice.value();
+
+	// Logical Device -----------------------------------------------------------
+
+	auto queueFamilies = this->findQueueFamilies(this->mPhysicalDevice);
+	f32 graphicsQueuePriority = 1.0f;
+	
+	auto optLogicalDevice = this->createLogicalDevice(queueFamilies, &graphicsQueuePriority);
+	if (!optLogicalDevice.has_value())
+	{
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to create a logical device for Vulkan");
+		return;
+	}
+	mLogicalDevice.swap(optLogicalDevice.value());
+
+	// Queues -----------------------------------------------------------
+
+	mQueueGraphics = mLogicalDevice.get().getQueue(queueFamilies.idxGraphicsQueue.value(), /*queueIndex*/ 0);
+	mQueuePresentation = mLogicalDevice.get().getQueue(queueFamilies.idxPresentationQueue.value(), /*queueIndex*/ 0);
+	
 	// Swap Chain ---------------------------------------------------------------
 
-	createSwapchain();
+	mSwapChainResolution = { width, height };
+	mSwapChain = createSwapchain(mSwapChainResolution, mSwapChainImageFormat);
 
-	return;
-
-	// Surface Capabilities -----------------------------------------------------
-
+	mSwapChainImages = mLogicalDevice->getSwapchainImagesKHR(mSwapChain.get());
+	
 	/*
 
 	// Command Pool -------------------------------------------------------------
@@ -91,10 +126,10 @@ Renderer::~Renderer()
 void Renderer::fetchAvailableExtensions()
 {
 	auto availableExtensions = vk::enumerateInstanceExtensionProperties();
-	LogEngineDebug("Available Vulkan extensions:");
+	LogRenderer(logging::ECategory::LOGDEBUG, "Available Vulkan extensions:");
 	for (const auto& extension : availableExtensions)
 	{
-		LogEngineDebug("%s", extension.extensionName);
+		LogRenderer(logging::ECategory::LOGDEBUG, "%s", extension.extensionName);
 	}
 }
 
@@ -107,7 +142,7 @@ std::vector<const char*> Renderer::getRequiredExtensions() const
 	return exts;
 }
 
-void Renderer::createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo)
+vk::UniqueInstance Renderer::createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo)
 {
 	mpApplicationInfo->pApplicationName = appInfo->title;
 	mpApplicationInfo->applicationVersion = appInfo->version;
@@ -116,7 +151,7 @@ void Renderer::createInstance(utility::SExecutableInfo const *const appInfo, uti
 	mpApplicationInfo->apiVersion = VK_API_VERSION_1_1;
 
 	// One day perhaps use https://en.cppreference.com/w/cpp/utility/format/format in a macro to get the string equivalent of a SemanticVersion
-	LogEngineInfo("Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
+	LogRenderer(logging::ECategory::LOGINFO, "Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
 		TE_GET_MAJOR_VERSION(VK_API_VERSION_1_1), TE_GET_MINOR_VERSION(VK_API_VERSION_1_1), TE_GET_PATCH_VERSION(VK_API_VERSION_1_1),
 		appInfo->title,
 		TE_GET_MAJOR_VERSION(appInfo->version), TE_GET_MINOR_VERSION(appInfo->version), TE_GET_PATCH_VERSION(appInfo->version),
@@ -127,18 +162,18 @@ void Renderer::createInstance(utility::SExecutableInfo const *const appInfo, uti
 	mpInstanceInfo->pApplicationInfo = mpApplicationInfo;
 
 	const auto requiredExtensions = this->getRequiredExtensions();
-	mpInstanceInfo->setEnabledExtensionCount(requiredExtensions.size());
+	mpInstanceInfo->setEnabledExtensionCount((ui32)requiredExtensions.size());
 	mpInstanceInfo->setPpEnabledExtensionNames(requiredExtensions.data());
 
 	if (checkValidationLayerSupport())
 	{
-		mpInstanceInfo->setEnabledLayerCount(mValidationLayers.size());
+		mpInstanceInfo->setEnabledLayerCount((ui32)mValidationLayers.size());
 		mpInstanceInfo->setPpEnabledLayerNames(mValidationLayers.data());
 	}
 #ifdef RENDERER_USE_VALIDATION_LAYERS
 	else
 	{
-		throw std::runtime_error("Vulkan validation layers requested, but there are none available.");
+		LogRenderer(logging::ECategory::LOGERROR, "Vulkan validation layers requested, but there are none available.");
 	}
 #else
 	else
@@ -148,7 +183,7 @@ void Renderer::createInstance(utility::SExecutableInfo const *const appInfo, uti
 #endif
 
 	// TODO: Route allocator callback through memory manager
-	mpAppInstance = vk::createInstanceUnique(*mpInstanceInfo);
+	return vk::createInstanceUnique(*mpInstanceInfo);
 }
 
 bool Renderer::checkValidationLayerSupport() const
@@ -172,121 +207,228 @@ bool Renderer::checkValidationLayerSupport() const
 
 void Renderer::setupVulkanMessenger()
 {
-	auto& instance = this->mpAppInstance.get();
-	auto messenger = instance.createDebugUtilsMessengerEXTUnique(
-		vk::DebugUtilsMessengerCreateInfoEXT{
-			{},
-			vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
-			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
-			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
-			| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-			vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-			| vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
-			| vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
-			LogVulkanOutput
-		},
-		nullptr, vk::DispatchLoaderDynamic{ (VkInstance)instance, {} }
+	auto info = vk::DebugUtilsMessengerCreateInfoEXT(
+		{},
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+		| vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo
+		| vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+		| vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+		| vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance
+		| vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
+		&LogVulkanOutput
 	);
+	vk::Instance inst = this->mAppInstance.get();
+	VkInstance tmp = inst;
+	vk::DispatchLoaderDynamic dldi(tmp, vkGetInstanceProcAddr);
+	auto messenger = this->mAppInstance->createDebugUtilsMessengerEXTUnique(info, nullptr, dldi);
+
 }
 
-bool Renderer::pickPhysicalDevice()
+std::optional<vk::PhysicalDevice> Renderer::pickPhysicalDevice()
 {
-	mPhysicalDevice = std::nullopt;
-	mQueueFamilyIndex = std::nullopt;
-
-	auto physicalDevices = mpAppInstance->enumeratePhysicalDevices();
+	auto physicalDevices = this->mAppInstance->enumeratePhysicalDevices();
 
 	if (physicalDevices.size() == 0) {
-		LogEngine(logging::ECategory::LOGERROR, "Failed to find any GPUs with Vulkan support!");
-		return false;
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to find any GPUs with Vulkan support!");
+		return std::nullopt;
 	}
 
 	size_t deviceIndex = 0;
-	mPhysicalDevice = std::make_optional(physicalDevices[deviceIndex]);
-
-	std::vector<vk::QueueFamilyProperties> queueFamilyProperties = physicalDevices[deviceIndex].getQueueFamilyProperties();
-	// Find the index of a queue family which supports graphics
-	size_t graphicsQueueFamilyIndex = std::distance(
-		queueFamilyProperties.begin(),
-		// Find the iterator for a family property which supports graphics
-		std::find_if(
-			queueFamilyProperties.begin(),
-			queueFamilyProperties.end(),
-			[](vk::QueueFamilyProperties const &familyProps) {
-		// Does the iterator have the graphics flag set
-		return familyProps.queueFlags & vk::QueueFlagBits::eGraphics;
+	std::multimap<ui8, vk::PhysicalDevice> candidates;
+	for (const auto& physicalDevice : physicalDevices) {
+		auto suitabilityScore = this->getPhysicalDeviceSuitabilityScore(physicalDevice);
+		if (suitabilityScore.has_value())
+		{
+			candidates.insert(std::make_pair(suitabilityScore.value(), physicalDevice));
+		}
 	}
-		)
-	);
-
-	mQueueFamilyIndex = std::make_optional(graphicsQueueFamilyIndex);
-	return true;
+	// begin at the end of the sorted map to get the device with the highest store
+	if (candidates.size() > 0)
+	{
+		return candidates.rbegin()->second;
+	}
+	else
+	{
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device for vulkan renderer");
+		return std::nullopt;
+	}
 }
 
-void Renderer::createLogicalDevice()
+std::optional<ui8> Renderer::getPhysicalDeviceSuitabilityScore(vk::PhysicalDevice const &device) const
 {
-	float quePriorities[] = { 1.0f };
-	vk::DeviceQueueCreateInfo deviceQueueCreateInfo(
-		vk::DeviceQueueCreateFlags(),
-		static_cast<ui32>(mQueueFamilyIndex.value()),
-		1,
-		quePriorities
-	);
+	// Requires geometry shaders
+	auto bSupportsGeometryShaders = device.getFeatures().geometryShader;
+	if (!bSupportsGeometryShaders) return std::nullopt;
 
-	const char *requiredGPUExtensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	auto availableQueues = this->findQueueFamilies(device);
+	if (!availableQueues.hasFoundAllQueues()) return std::nullopt;
 
-	mLogicalDevice = mPhysicalDevice.value().createDeviceUnique(
-		vk::DeviceCreateInfo()
-		.setQueueCreateInfoCount(1)
-		.setPQueueCreateInfos(&deviceQueueCreateInfo)
-		.setEnabledExtensionCount(1)
-		.setPpEnabledExtensionNames(requiredGPUExtensions)
-	);
+	if (!this->checkDeviceExtensionSupport(device)) return std::nullopt;
 
-	mQueue = mLogicalDevice->getQueue(mQueueFamilyIndex.value(), 0);
+	auto swapChainSupport = this->querySwapChainSupport(device, mSurface);
+	bool bSwapChainIsAdequate = !swapChainSupport.surfaceFormats.empty() && !swapChainSupport.presentationModes.empty();
+	if (!bSwapChainIsAdequate) return std::nullopt;
+
+	ui8 score = 0;
+	
+	// Prefer dedicated GPUs
+	auto bIsDedicatedGPU = device.getProperties().deviceType == vk::PhysicalDeviceType::eDiscreteGpu;
+	score += bIsDedicatedGPU ? 1000 : 0;
+
+	return score;
 }
 
-void Renderer::createSurface(void* applicationHandle_win32, void* windowHandle_win32)
+bool Renderer::checkDeviceExtensionSupport(vk::PhysicalDevice const &device) const
 {
-	mSurface = mpAppInstance->createWin32SurfaceKHR(
-		vk::Win32SurfaceCreateInfoKHR()
-		.setHinstance((HINSTANCE)applicationHandle_win32)
-		.setHwnd((HWND)windowHandle_win32)
-	);
+	auto availableExtensions = device.enumerateDeviceExtensionProperties();
+	std::set<std::string> requiredExtensions(mDeviceExtensionNames.begin(), mDeviceExtensionNames.end());
+	for (const auto& extension : availableExtensions)
+	{
+		requiredExtensions.erase(extension.extensionName);
+	}
+	return requiredExtensions.empty();
 }
 
-void Renderer::createSwapchain()
+Renderer::QueueFamilyIndicies Renderer::findQueueFamilies(vk::PhysicalDevice const &device) const
 {
-	vk::SurfaceCapabilitiesKHR surfaceCapabilities =
-		mPhysicalDevice->getSurfaceCapabilitiesKHR(mSurface);
+	QueueFamilyIndicies indicies;
 
-	mSwapchain = mLogicalDevice->createSwapchainKHR(
-		vk::SwapchainCreateInfoKHR(vk::SwapchainCreateFlagsKHR())
-		// Surface info
-		.setSurface(mSurface)
-		// Double Buffering
-		.setMinImageCount(2)
-		// Image
-		// size of window
-		.setImageExtent(surfaceCapabilities.currentExtent)
-		// Standard RGBA format
-		.setImageFormat(vk::Format::eB8G8R8A8Unorm)
-		// RGB, but non-linear to support HDR
-		.setImageColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
-		// Unknown
-		.setImageArrayLayers(1)
+	auto familyProps = device.getQueueFamilyProperties();
+	ui32 idxQueue = 0;
+	for (auto& queueFamily : familyProps)
+	{
+		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+		{
+			indicies.idxGraphicsQueue = idxQueue;
+		}
+
+		if (device.getSurfaceSupportKHR(idxQueue, mSurface.get()))
+		{
+			indicies.idxPresentationQueue = idxQueue;
+		}		 
+
+		if (indicies.hasFoundAllQueues()) break;
+		idxQueue++;
+	}
+
+	return indicies;
+}
+
+std::optional<vk::UniqueDevice> Renderer::createLogicalDevice(QueueFamilyIndicies const &queueFamilies, f32 const *graphicsQueuePriority)
+{
+	
+	std::vector<vk::DeviceQueueCreateInfo> queueCreateInfo;
+	for (const auto& uniqueQueueFamily : queueFamilies.uniqueQueues())
+	{
+		queueCreateInfo.push_back(vk::DeviceQueueCreateInfo()
+			.setQueueCount(1)
+			.setQueueFamilyIndex(queueFamilies.idxGraphicsQueue.value())
+			.setPQueuePriorities(graphicsQueuePriority)
+		);
+	}
+
+	auto deviceFeatures = vk::PhysicalDeviceFeatures();
+	// STUB: Will need to eventually define this
+	
+	auto logicalDeviceInfo = vk::DeviceCreateInfo()
+		.setQueueCreateInfoCount((ui32)queueCreateInfo.size())
+		.setPQueueCreateInfos(queueCreateInfo.data())
+		.setPEnabledFeatures(&deviceFeatures)
+		.setEnabledExtensionCount((ui32)mDeviceExtensionNames.size())
+		.setPpEnabledExtensionNames(mDeviceExtensionNames.data())
+		;
+
+	#ifdef RENDERER_USE_VALIDATION_LAYERS
+	logicalDeviceInfo.setEnabledLayerCount((ui32)mValidationLayers.size());
+	logicalDeviceInfo.setPpEnabledLayerNames(mValidationLayers.data());
+	#endif
+	
+	return mPhysicalDevice.createDeviceUnique(logicalDeviceInfo);
+}
+
+Renderer::SwapChainSupport Renderer::querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const
+{
+	SwapChainSupport info;
+	info.capabilities = device.getSurfaceCapabilitiesKHR(surface.get());
+	info.surfaceFormats = device.getSurfaceFormatsKHR(surface.get());
+	info.presentationModes = device.getSurfacePresentModesKHR(surface.get());
+	return info;
+}
+
+vk::SurfaceFormatKHR const & chooseSurfaceSwapChainFormat(std::vector<vk::SurfaceFormatKHR> const &availableFormats)
+{
+	for (const auto& format : availableFormats)
+	{
+		if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+		{
+			return format;
+		}
+	}
+	return availableFormats[0];
+}
+
+vk::PresentModeKHR const & chooseSurfaceSwapChainPresentationMode(std::vector<vk::PresentModeKHR> const &availableModes)
+{
+	for (const auto& mode : availableModes) {
+		if (mode == vk::PresentModeKHR::eMailbox) {
+			return mode;
+		}
+	}
+	return vk::PresentModeKHR::eFifo;
+}
+
+vk::Extent2D chooseSurfaceSwapChainExtent(vk::SurfaceCapabilitiesKHR const &capabilities, vk::Extent2D resolution)
+{
+	if (capabilities.currentExtent.width != UINT32_MAX) return capabilities.currentExtent;
+	resolution.width = max(capabilities.minImageExtent.width, min(capabilities.maxImageExtent.width, resolution.width));
+	resolution.height = max(capabilities.minImageExtent.height, min(capabilities.maxImageExtent.height, resolution.height));
+	return resolution;
+}
+
+vk::UniqueSwapchainKHR Renderer::createSwapchain(vk::Extent2D &resolution, vk::Format &imageFormat)
+{
+	auto swapChainSupport = querySwapChainSupport(mPhysicalDevice, mSurface);
+
+	vk::SurfaceFormatKHR surfaceFormat = chooseSurfaceSwapChainFormat(swapChainSupport.surfaceFormats);
+	vk::PresentModeKHR presentMode = chooseSurfaceSwapChainPresentationMode(swapChainSupport.presentationModes);
+	resolution = chooseSurfaceSwapChainExtent(swapChainSupport.capabilities, resolution);
+
+	imageFormat = surfaceFormat.format;
+
+	// Adding at least 1 more to the chain will help avoid waiting on the GPU to complete internal ops before showing the next buffer.
+	// Ensure that the image count does not exceed the max, unless the max is == 0
+	ui32 imageCount = minUnless(swapChainSupport.capabilities.minImageCount + 1, swapChainSupport.capabilities.maxImageCount, 0);
+
+	auto info = vk::SwapchainCreateInfoKHR()
+		.setSurface(mSurface.get())
+		.setMinImageCount(imageCount)
+		.setImageFormat(imageFormat)
+		.setImageColorSpace(surfaceFormat.colorSpace)
+		.setPresentMode(presentMode)
+		.setImageExtent(resolution)
+		.setImageArrayLayers(1) // always 1 unless developing a stereoscopic 3D application
 		.setImageUsage(vk::ImageUsageFlagBits::eColorAttachment)
-		.setImageSharingMode(vk::SharingMode::eExclusive)
-		.setPresentMode(vk::PresentModeKHR::eFifo)
-	);
-}
+		.setPreTransform(swapChainSupport.capabilities.currentTransform)
+		.setCompositeAlpha(vk::CompositeAlphaFlagBitsKHR::eOpaque)
+		.setClipped(true)
+		.setOldSwapchain(nullptr) // swap chain must be recreated if the window is resized. this is not yet handled
+		;
 
-void Renderer::initializeWindow()
-{
+	auto queueFamilyIndicies = this->findQueueFamilies(mPhysicalDevice);
+	// if the families are different, use the concurrent image sharing (lower performance, but easier to set up)
+	if (queueFamilyIndicies.idxGraphicsQueue != queueFamilyIndicies.idxPresentationQueue)
+	{
+		info.setImageSharingMode(vk::SharingMode::eConcurrent);
+		info.setQueueFamilyIndexCount(2);
+		info.setPQueueFamilyIndices(queueFamilyIndicies.allQueues().data());
+	}
+	else
+	{
+		info.setImageSharingMode(vk::SharingMode::eExclusive);
+		info.setQueueFamilyIndexCount(0);
+		info.setPQueueFamilyIndices(nullptr);
+	}
 
-}
-
-void Renderer::render()
-{
-
+	return mLogicalDevice->createSwapchainKHRUnique(info);
 }

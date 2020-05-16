@@ -11,6 +11,8 @@
 
 #include "ExecutableInfo.hpp"
 
+auto LogWindow = DeclareLog("Window");
+
 void Window::renderUntilClose(void* ptr)
 {
 	Window* pWindow = reinterpret_cast<Window*>(ptr);
@@ -20,37 +22,62 @@ void Window::renderUntilClose(void* ptr)
 	}
 }
 
-Window::Window(uSize width, uSize height, utility::SExecutableInfo const *const appInfo)
+Window::Window(ui32 width, ui32 height, utility::SExecutableInfo const *const appInfo)
 	: mWidth(width)
 	, mHeight(height)
 	, mpTitle(appInfo->title)
 {
 	this->mIsPendingClose = false;
 
-	this->mpHandle = SDL_CreateWindow(mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)mWidth, (int)mHeight, 0);
+	this->mpHandle = SDL_CreateWindow(
+		mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		(int)mWidth, (int)mHeight,
+		SDL_WINDOW_VULKAN
+	);
 	if (!this->isValid())
 	{
-		DeclareLog("Window").log(logging::ECategory::LOGERROR, "Failed to create window");
+		LogWindow.log(logging::ECategory::LOGERROR, "Failed to create window");
 		return;
 	}
 
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
-	SDL_GetWindowWMInfo((SDL_Window*)this->mpHandle, &info);
+	if (!SDL_GetWindowWMInfo((SDL_Window*)this->mpHandle, &info))
+	{
+		LogWindow.log(logging::ECategory::LOGERROR, "Failed to fetch SDL window info");
+	}
 	void* windowHandle_win32 = info.info.win.window;
 	void* applicationHandle_win32 = GetModuleHandle(NULL);
 
-	ui32 extCount;
+	ui32 extCount = 0;
 	std::vector<const char*> vulkanExtensionsForSDL = {};
-	if (!SDL_Vulkan_GetInstanceExtensions((SDL_Window*)this->mpHandle, &extCount, vulkanExtensionsForSDL.data()))
+	auto result = SDL_Vulkan_GetInstanceExtensions((SDL_Window*)this->mpHandle, &extCount, NULL);
+	if (!result)
 	{
-		throw std::runtime_error("Failed to get required vulkan extensions for SDL.");
+		LogWindow.log(logging::ECategory::LOGERROR, "SDL-Vulkan: Failed to get required vulkan extension count.");
+	}
+	else
+	{
+		LogWindow.log(logging::ECategory::LOGDEBUG, "SDL-Vulkan: Found %i extensions", extCount);
+		vulkanExtensionsForSDL.resize(extCount);
+		if (!SDL_Vulkan_GetInstanceExtensions((SDL_Window*)this->mpHandle, &extCount, vulkanExtensionsForSDL.data()))
+		{
+			LogWindow.log(logging::ECategory::LOGERROR, "Failed to get required vulkan extensions for SDL.");
+		}
 	}
 
 	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(
-		applicationHandle_win32, windowHandle_win32,
 		appInfo, engine::Engine::Get()->getInfo(),
-		vulkanExtensionsForSDL
+		width, height,
+		vulkanExtensionsForSDL,
+		[&](VkInstance const *pInst) {
+			VkSurfaceKHR surface;
+			if (!SDL_Vulkan_CreateSurface((SDL_Window*)mpHandle, *pInst, &surface))
+			{
+				LogWindow.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface");
+			}
+			return &surface;
+		}
 	);
 
 }

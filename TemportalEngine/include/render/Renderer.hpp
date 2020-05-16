@@ -11,6 +11,8 @@
 #include <vulkan/vulkan.hpp>
 #include <array>
 #include <optional>
+#include <functional>
+#include <set>
 
 // Engine ---------------------------------------------------------------------
 #include "types/integer.h"
@@ -26,13 +28,16 @@ NS_END
 #define RENDERER_USE_VALIDATION_LAYERS 1
 #endif
 
-#define LogRenderer(cate, ...) DeclareLog("Renderer").log(cate, __VA_ARGS__);
-
 NS_RENDER
 
 class TEMPORTALENGINE_API Renderer
 {
 	typedef char const* CSTR;
+
+public:
+
+	//typedef std::function<VkSurfaceKHR&(VkInstance const *pInstance)> FuncCreateSurface;
+	typedef std::function<VkSurfaceKHR*(VkInstance const *pInstance)> FuncCreateSurface;
 
 private:
 
@@ -41,53 +46,89 @@ private:
 		"VK_LAYER_KHRONOS_validation"
 	};
 #endif
+	const std::vector<const char*> mDeviceExtensionNames = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	std::vector<CSTR> maRequiredExtensionsSDL;
 	
 	vk::ApplicationInfo mpApplicationInfo[1];
 	vk::InstanceCreateInfo mpInstanceInfo[1];
-	vk::UniqueInstance mpAppInstance;
+	vk::UniqueInstance mAppInstance;
 
-	std::vector<CSTR> maRequiredExtensionsSDL;
-
-	std::optional<vk::PhysicalDevice> mPhysicalDevice;
-	std::optional<size_t> mQueueFamilyIndex;
+	vk::PhysicalDevice mPhysicalDevice;
 	vk::UniqueDevice mLogicalDevice;
-	vk::Queue mQueue;
-	vk::SurfaceKHR mSurface;
-	vk::SwapchainKHR mSwapchain;
+	
+	vk::Queue mQueueGraphics;
+	vk::Queue mQueuePresentation;
+
+	vk::UniqueSurfaceKHR mSurface;
+	
+	vk::UniqueSwapchainKHR mSwapChain;
+	std::vector<vk::Image> mSwapChainImages;
+	vk::Extent2D mSwapChainResolution;
+	vk::Format mSwapChainImageFormat;
+
+private:
 
 	void fetchAvailableExtensions();
 	std::vector<const char*> getRequiredExtensions() const;
-	void createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo);
+
+	vk::UniqueInstance createInstance(utility::SExecutableInfo const *const appInfo, utility::SExecutableInfo const *const engineInfo);
+
 	void setupVulkanMessenger();
 	bool checkValidationLayerSupport() const;
-	bool pickPhysicalDevice();
-	void createLogicalDevice();
-	void createSurface(void* applicationHandle_win32, void* windowHandle_win32);
-	void createSwapchain();
+	
+	std::optional<vk::PhysicalDevice> pickPhysicalDevice();
+	/**
+		Returns a score for a physical device based on how suitable it is for this renderer.
+		Return `std::nullopt` to indicate the device is not suitable at all.
+	*/
+	std::optional<ui8> getPhysicalDeviceSuitabilityScore(vk::PhysicalDevice const &device) const;
 
-	/*
-	static uSize const MAX_PHYSICAL_DEVICE_COUNT = 4; // Max GPUs
-	uSize mPhysicalDeviceCount;
-	VkPhysicalDevice maVulkanPhysicalDevices[MAX_PHYSICAL_DEVICE_COUNT];
-	//*/
+	bool checkDeviceExtensionSupport(vk::PhysicalDevice const &device) const;
 
-	/*
-	constexpr static uSize const MAX_EXTENSION_COUNT = 512;// pow<ui32, 2, 32>::value - 1;
-	uSize mExtensionCount;
-	VkExtensionProperties maVulkanAvailableExtensions[MAX_EXTENSION_COUNT];
-	//*/
+	struct QueueFamilyIndicies
+	{
+		std::optional<ui32> idxGraphicsQueue;
+		std::optional<ui32> idxPresentationQueue;
+
+		bool hasFoundAllQueues() const
+		{
+			return idxGraphicsQueue.has_value() && idxPresentationQueue.has_value();
+		}
+
+		std::set<ui32> uniqueQueues() const
+		{
+			return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
+		}
+
+		std::vector<ui32> allQueues() const
+		{
+			return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
+		}
+	};
+	QueueFamilyIndicies findQueueFamilies(vk::PhysicalDevice const &device) const;
+	
+	std::optional<vk::UniqueDevice> createLogicalDevice(QueueFamilyIndicies const &queueFamilies, f32 const *graphicsQueuePriority);
+
+	struct SwapChainSupport {
+		vk::SurfaceCapabilitiesKHR capabilities;
+		std::vector<vk::SurfaceFormatKHR> surfaceFormats;
+		std::vector<vk::PresentModeKHR> presentationModes;
+	};
+	SwapChainSupport querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const;
+	vk::UniqueSwapchainKHR createSwapchain(vk::Extent2D &resolution, vk::Format &imageFormat);
 
 public:
 	Renderer(
-		void* applicationHandle_win32, void* windowHandle_win32,
 		utility::SExecutableInfo const *const appInfo,
 		utility::SExecutableInfo const *const engineInfo,
-		std::vector<const char*> extensions
+		ui32 width, ui32 height,
+		std::vector<const char*> extensions,
+		FuncCreateSurface createSurface
 	);
 	~Renderer();
-
-	void initializeWindow();
-	void render();
 
 };
 

@@ -314,5 +314,8 @@
     <ClInclude Include="include\ExecutableInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\types\math.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -23,7 +23,7 @@ public:
 	static void renderUntilClose(void* ptr);
 
 private:
-	uSize mWidth, mHeight;
+	ui32 mWidth, mHeight;
 	char const * mpTitle;
 
 	void* mpHandle;
@@ -35,7 +35,7 @@ private:
 public:
 	Window() = default;
 	Window(
-		uSize width, uSize height,
+		ui32 width, ui32 height,
 		utility::SExecutableInfo const *const appInfo
 	);
 
