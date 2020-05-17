@@ -65,9 +65,11 @@ private:
 	vk::UniqueSurfaceKHR mSurface;
 	
 	vk::UniqueSwapchainKHR mSwapChain;
-	std::vector<vk::Image> mSwapChainImages;
 	vk::Extent2D mSwapChainResolution;
 	vk::Format mSwapChainImageFormat;
+	std::vector<vk::Image> mSwapChainImages;
+	std::vector<vk::UniqueImageView> mSwapChainImageViews;
+
 
 private:
 
@@ -119,6 +121,7 @@ private:
 	};
 	SwapChainSupport querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const;
 	vk::UniqueSwapchainKHR createSwapchain(vk::Extent2D &resolution, vk::Format &imageFormat);
+	void instantiateImageViews();
 
 public:
 	Renderer(

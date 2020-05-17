@@ -128,6 +128,10 @@ Renderer::Renderer(
 		mSwapChainResolution.height
 	);
 
+	// Image Views ---------------------------------------------------------------
+
+	instantiateImageViews();
+
 	/*
 
 	// Command Pool -------------------------------------------------------------
@@ -456,4 +460,26 @@ vk::UniqueSwapchainKHR Renderer::createSwapchain(vk::Extent2D &resolution, vk::F
 	}
 
 	return mLogicalDevice->createSwapchainKHRUnique(info);
+}
+
+void Renderer::instantiateImageViews()
+{
+	mSwapChainImageViews.resize(mSwapChainImages.size());
+	for (uSize i = 0; i < mSwapChainImageViews.size(); ++i)
+	{
+		auto info = vk::ImageViewCreateInfo()
+			.setImage(this->mSwapChainImages[i])
+			.setViewType(vk::ImageViewType::e2D)
+			.setFormat(mSwapChainImageFormat)
+			.setComponents(vk::ComponentMapping(
+				// defaults to the identity mapping where each of RGBA is its own channel
+			))
+			.setSubresourceRange(vk::ImageSubresourceRange()
+				.setAspectMask(vk::ImageAspectFlagBits::eColor)
+				.setBaseMipLevel(0).setLevelCount(1)
+				.setBaseArrayLayer(0).setLayerCount(1)
+			)
+			;
+		mSwapChainImageViews[i] = mLogicalDevice->createImageViewUnique(info);
+	}
 }
