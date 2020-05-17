@@ -37,7 +37,7 @@ class TEMPORTALENGINE_API Renderer
 public:
 
 	//typedef std::function<VkSurfaceKHR&(VkInstance const *pInstance)> FuncCreateSurface;
-	typedef std::function<void(VkInstance const *pInstance, VkSurfaceKHR *pOutSurface)> FuncCreateSurface;
+	typedef std::function<bool(VkInstance const *pInstance, VkSurfaceKHR *pOutSurface)> FuncCreateSurface;
 
 private:
 

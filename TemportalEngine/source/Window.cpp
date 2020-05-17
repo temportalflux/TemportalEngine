@@ -74,7 +74,9 @@ Window::Window(ui32 width, ui32 height, utility::SExecutableInfo const *const ap
 			if (!SDL_Vulkan_CreateSurface((SDL_Window*)mpHandle, *pInst, pOutSurface))
 			{
 				LogWindow.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface");
+				return false;
 			}
+			return true;
 		}
 	);
 

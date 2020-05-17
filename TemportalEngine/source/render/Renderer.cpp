@@ -55,19 +55,16 @@ Renderer::Renderer(
 	setupVulkanMessenger();
 #endif
 
-	
-
 	// Surface ------------------------------------------------------------------
 
 	auto rawInstance = (VkInstance)mAppInstance.get();
 	VkSurfaceKHR rawSurface;
-	createSurface(&rawInstance, &rawSurface);
-	if (rawSurface == nullptr)
+	if (!createSurface(&rawInstance, &rawSurface))
 	{
 		LogRenderer(logging::ECategory::LOGERROR, "Failed to create an SDL KHR surface for Vulkan");
 		return;
 	}
-	mSurface = vk::UniqueSurfaceKHR(rawSurface);
+	mSurface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(rawSurface));
 
 	// Physical Device ----------------------------------------------------------
 
@@ -78,6 +75,22 @@ Renderer::Renderer(
 		return;
 	}
 	mPhysicalDevice = optPhysicalDevice.value();
+	
+	auto physDeviceProps = mPhysicalDevice.getProperties();
+	LogRenderer(logging::ECategory::LOGINFO,
+		"Loading Vulkan with physical device:\n"
+		"\t%s named %s\n"
+		"\tDriver Version: %i.%i.%i\n"
+		"\tApi Version: %i.%i.%i\n",
+		vk::to_string(physDeviceProps.deviceType).c_str(),
+		physDeviceProps.deviceName,
+		TE_GET_MAJOR_VERSION(physDeviceProps.driverVersion),
+		TE_GET_MINOR_VERSION(physDeviceProps.driverVersion),
+		TE_GET_PATCH_VERSION(physDeviceProps.driverVersion),
+		TE_GET_MAJOR_VERSION(physDeviceProps.apiVersion),
+		TE_GET_MINOR_VERSION(physDeviceProps.apiVersion),
+		TE_GET_PATCH_VERSION(physDeviceProps.apiVersion)
+	);
 
 	// Logical Device -----------------------------------------------------------
 
@@ -92,6 +105,11 @@ Renderer::Renderer(
 	}
 	mLogicalDevice.swap(optLogicalDevice.value());
 
+	LogRenderer(logging::ECategory::LOGINFO,
+		"Created logical device for %s",
+		physDeviceProps.deviceName
+	);
+
 	// Queues -----------------------------------------------------------
 
 	mQueueGraphics = mLogicalDevice.get().getQueue(queueFamilies.idxGraphicsQueue.value(), /*queueIndex*/ 0);
@@ -101,9 +119,15 @@ Renderer::Renderer(
 
 	mSwapChainResolution = vk::Extent2D(width, height);
 	mSwapChain = createSwapchain(mSwapChainResolution, mSwapChainImageFormat);
-
 	mSwapChainImages = mLogicalDevice->getSwapchainImagesKHR(mSwapChain.get());
 	
+	LogRenderer(logging::ECategory::LOGINFO,
+		"Created Vulkan SwapChain with %i images at %ix%i",
+		mSwapChainImages.size(),
+		mSwapChainResolution.width,
+		mSwapChainResolution.height
+	);
+
 	/*
 
 	// Command Pool -------------------------------------------------------------
@@ -220,7 +244,7 @@ void Renderer::setupVulkanMessenger()
 		&LogVulkanOutput
 	);
 	vk::Instance inst = this->mAppInstance.get();
-	VkInstance tmp = inst;
+	VkInstance tmp = (VkInstance)inst;
 	vk::DispatchLoaderDynamic dldi(tmp, vkGetInstanceProcAddr);
 	auto messenger = this->mAppInstance->createDebugUtilsMessengerEXTUnique(info, nullptr, dldi);
 
