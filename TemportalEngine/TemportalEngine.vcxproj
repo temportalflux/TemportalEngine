@@ -304,6 +304,10 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
     <ClInclude Include="include\types\real.h" />
     <ClInclude Include="include\Window.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="resource\shaders\triangle.frag" />
+    <None Include="resource\shaders\triangle.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

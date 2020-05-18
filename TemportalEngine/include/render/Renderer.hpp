@@ -36,8 +36,8 @@ class TEMPORTALENGINE_API Renderer
 
 public:
 
-	//typedef std::function<VkSurfaceKHR&(VkInstance const *pInstance)> FuncCreateSurface;
 	typedef std::function<bool(VkInstance const *pInstance, VkSurfaceKHR *pOutSurface)> FuncCreateSurface;
+	typedef std::vector<char> ShaderBinary;
 
 private:
 
@@ -70,6 +70,9 @@ private:
 	std::vector<vk::Image> mSwapChainImages;
 	std::vector<vk::UniqueImageView> mSwapChainImageViews;
 
+	vk::UniqueRenderPass mRenderPass;
+	vk::UniquePipeline mPipeline;
+	std::vector<vk::UniqueFramebuffer> mFrameBuffers;
 
 private:
 
@@ -122,6 +125,11 @@ private:
 	SwapChainSupport querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const;
 	vk::UniqueSwapchainKHR createSwapchain(vk::Extent2D &resolution, vk::Format &imageFormat);
 	void instantiateImageViews();
+
+	std::optional<vk::UniqueShaderModule> createShaderModule(std::string const &filePath) const;
+	vk::UniqueRenderPass createRenderPass();
+	vk::UniquePipeline createGraphicsPipeline();
+	void initializeFrameBuffers();
 
 public:
 	Renderer(

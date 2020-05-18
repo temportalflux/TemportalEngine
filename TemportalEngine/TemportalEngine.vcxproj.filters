@@ -85,6 +85,9 @@
     <Filter Include="Source Files\render">
       <UniqueIdentifier>{7416c384-aa3d-4943-a193-bb8c289f8023}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{01e9fa7f-ba27-49e1-a81d-c97d71b32617}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -317,5 +320,13 @@
     <ClInclude Include="include\types\math.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resource\shaders\triangle.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -3,6 +3,7 @@
 #include <map>
 #include <cstdint> // Necessary for UINT32_MAX
 #include <algorithm> // Necessary for UINT32_MAX
+#include <fstream>
 
 #include "Engine.hpp"
 #include "ExecutableInfo.hpp"
@@ -31,6 +32,23 @@ static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(
 		LogVulkan(logging::ECategory::LOGINFO, pCallbackData->pMessage);
 	}
 	return VK_FALSE;
+}
+
+static std::optional<std::vector<char>> readBinary(std::string const &filePath)
+{
+	std::ifstream file(filePath, std::ios::ate | std::ios::binary);
+	if (!file.is_open())
+	{
+		return std::nullopt;
+	}
+
+	uSize fileSize = (uSize)file.tellg();
+	std::vector<char> buffer(fileSize);
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+
+	file.close();
+	return buffer;
 }
 
 Renderer::Renderer(
@@ -131,6 +149,9 @@ Renderer::Renderer(
 	// Image Views ---------------------------------------------------------------
 
 	instantiateImageViews();
+	mRenderPass = createRenderPass();
+	mPipeline = createGraphicsPipeline();
+	initializeFrameBuffers();
 
 	/*
 
@@ -481,5 +502,173 @@ void Renderer::instantiateImageViews()
 			)
 			;
 		mSwapChainImageViews[i] = mLogicalDevice->createImageViewUnique(info);
+	}
+}
+
+std::optional<vk::UniqueShaderModule> Renderer::createShaderModule(std::string const &filePath) const
+{
+	auto binary = readBinary(filePath + ".spv");
+	if (!binary.has_value())
+	{
+		LogRenderer(logging::ECategory::LOGERROR, "Failed to read compiled SPIR-V shader: %s", filePath.c_str());
+		return std::nullopt;
+	}
+
+	auto info = vk::ShaderModuleCreateInfo()
+		.setCodeSize(binary.value().size())
+		.setPCode(reinterpret_cast<ui32 const *>(binary.value().data()))
+		;
+	return mLogicalDevice->createShaderModuleUnique(info);
+}
+
+vk::UniqueRenderPass Renderer::createRenderPass()
+{
+	auto colorAttachment = vk::AttachmentDescription()
+		.setFormat(mSwapChainImageFormat)
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setLoadOp(vk::AttachmentLoadOp::eClear)
+		.setStoreOp(vk::AttachmentStoreOp::eStore)
+		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+		.setInitialLayout(vk::ImageLayout::eUndefined)
+		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
+
+	// Attachs an image to a property in the shader:
+	// layout(location = 0) out vec4 outColor
+	auto refColorAttachment = vk::AttachmentReference()
+		.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+		// index of the attachment in the subpass attachments array
+		.setAttachment(0);
+
+	auto subpassDesc = vk::SubpassDescription()
+		.setColorAttachmentCount(0)
+		.setPColorAttachments(&refColorAttachment);
+
+	auto infoRenderPass = vk::RenderPassCreateInfo()
+		.setAttachmentCount(1)
+		.setPAttachments(&colorAttachment)
+		.setSubpassCount(1)
+		.setPSubpasses(&subpassDesc);
+
+	return mLogicalDevice->createRenderPassUnique(infoRenderPass);
+}
+
+vk::UniquePipeline Renderer::createGraphicsPipeline()
+{
+	auto triangleVert = createShaderModule("resource/shaders/triangle.vert");
+	assert(triangleVert.has_value());
+	auto triangleFrag = createShaderModule("resource/shaders/triangle.frag");
+	assert(triangleFrag.has_value());
+
+	auto infoStageTriangleVert = vk::PipelineShaderStageCreateInfo()
+		.setStage(vk::ShaderStageFlagBits::eVertex)
+		.setModule(triangleVert.value().get())
+		.setPName("main")
+		.setPSpecializationInfo(nullptr);
+
+	auto infoStageTriangleFrag = vk::PipelineShaderStageCreateInfo()
+		.setStage(vk::ShaderStageFlagBits::eFragment)
+		.setModule(triangleFrag.value().get())
+		.setPName("main")
+		.setPSpecializationInfo(nullptr);
+
+	vk::PipelineShaderStageCreateInfo stages[] = { infoStageTriangleVert, infoStageTriangleFrag };
+
+	auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
+		.setVertexBindingDescriptionCount(0)
+		.setPVertexBindingDescriptions(nullptr)
+		.setVertexAttributeDescriptionCount(0)
+		.setPVertexAttributeDescriptions(nullptr);
+
+	auto infoAssembly = vk::PipelineInputAssemblyStateCreateInfo()
+		.setTopology(vk::PrimitiveTopology::eTriangleList)
+		.setPrimitiveRestartEnable(false);
+
+	auto viewport = vk::Viewport()
+		.setX(0).setY(0)
+		.setWidth(this->mSwapChainResolution.width).setHeight(this->mSwapChainResolution.height)
+		.setMinDepth(0.0f).setMaxDepth(1.0f);
+
+	auto scissor = vk::Rect2D().setOffset({ 0, 0 }).setExtent(mSwapChainResolution);
+
+	auto infoViewportState = vk::PipelineViewportStateCreateInfo()
+		.setViewportCount(1)
+		.setPViewports(&viewport)
+		.setScissorCount(1)
+		.setPScissors(&scissor);
+
+	auto infoRasterization = vk::PipelineRasterizationStateCreateInfo()
+		.setDepthClampEnable(false)
+		.setRasterizerDiscardEnable(false)
+		.setPolygonMode(vk::PolygonMode::eFill)
+		.setLineWidth(1.0f)
+		.setCullMode(vk::CullModeFlagBits::eBack)
+		.setFrontFace(vk::FrontFace::eClockwise)
+		.setDepthBiasEnable(false)
+		.setDepthBiasConstantFactor(0.0f)
+		.setDepthBiasClamp(0.0f)
+		.setDepthBiasSlopeFactor(0.0f);
+
+	auto infoMultisampling = vk::PipelineMultisampleStateCreateInfo()
+		.setSampleShadingEnable(false)
+		.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+
+	auto infoColorBlendAttachment = vk::PipelineColorBlendAttachmentState()
+		.setColorWriteMask(
+			vk::ColorComponentFlagBits::eR
+			| vk::ColorComponentFlagBits::eG
+			| vk::ColorComponentFlagBits::eB
+			| vk::ColorComponentFlagBits::eA
+		)
+		.setBlendEnable(false);
+
+	auto infoColorBlendState = vk::PipelineColorBlendStateCreateInfo()
+		.setLogicOpEnable(false)
+		.setAttachmentCount(1)
+		.setPAttachments(&infoColorBlendAttachment);
+
+	vk::DynamicState dynamicStates[] = { vk::DynamicState::eViewport, vk::DynamicState::eLineWidth };
+	auto infoDynamicStates = vk::PipelineDynamicStateCreateInfo()
+		.setDynamicStateCount(2)
+		.setPDynamicStates(dynamicStates);
+
+	auto infoLayout = vk::PipelineLayoutCreateInfo();
+
+	auto layout = mLogicalDevice->createPipelineLayoutUnique(infoLayout);
+
+	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
+		.setStageCount(2).setPStages(stages)
+		.setPVertexInputState(&infoInputVertex)
+		.setPViewportState(&infoViewportState)
+		.setPRasterizationState(&infoRasterization)
+		.setPMultisampleState(&infoMultisampling)
+		.setPDepthStencilState(nullptr)
+		.setPColorBlendState(&infoColorBlendState)
+		.setPDynamicState(nullptr)
+		.setLayout(layout.get())
+		.setRenderPass(mRenderPass.get())
+		.setSubpass(0);
+
+	auto infoCache = vk::PipelineCacheCreateInfo();
+	auto cache = mLogicalDevice->createPipelineCacheUnique(infoCache);
+
+	return mLogicalDevice->createGraphicsPipelineUnique(cache.get(), infoPipeline);
+}
+
+void Renderer::initializeFrameBuffers()
+{
+	auto frameBufferCount = mSwapChainImageViews.size();
+	mFrameBuffers.resize(frameBufferCount);
+	for (uSize i = 0; i < frameBufferCount; ++i)
+	{
+		vk::ImageView imageViews[] = { mSwapChainImageViews[i].get() };
+		auto infoFrameBuffer = vk::FramebufferCreateInfo()
+			.setRenderPass(mRenderPass.get())
+			.setAttachmentCount(1)
+			.setPAttachments(imageViews)
+			.setWidth(mSwapChainResolution.width)
+			.setHeight(mSwapChainResolution.height)
+			.setLayers(1);
+		mFrameBuffers[i] = mLogicalDevice->createFramebufferUnique(infoFrameBuffer);
 	}
 }

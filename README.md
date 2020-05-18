@@ -15,4 +15,4 @@ Here are some resources for you (and myself) to get started with Vulkan!
 - Vulkan-HPP: https://github.com/KhronosGroup/Vulkan-Hpp
 - Vulkan SDK tutorial: https://vulkan-tutorial.com/en/Overview
 
-Next Vulkan Task: Image Views & Buffers. Pick up at https://vulkan-tutorial.com/en/Drawing_a_triangle/Presentation/Image_views
+Next Vulkan Task: Command Buffers https://vulkan-tutorial.com/en/Drawing_a_triangle/Drawing/Command_buffers
