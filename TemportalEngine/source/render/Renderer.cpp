@@ -59,6 +59,7 @@ Renderer::Renderer(
 	FuncCreateSurface createSurface
 )
 	: maRequiredExtensionsSDL(extensions)
+	, mCurrentFrame(0)
 {
 
 	// Extensions ---------------------------------------------------------------
@@ -153,18 +154,15 @@ Renderer::Renderer(
 	mPipeline = createGraphicsPipeline();
 	initializeFrameBuffers();
 
-	/*
 
 	// Command Pool -------------------------------------------------------------
 
-	  vk::UniqueCommandPool commandPool = logicalDevice->createCommandPoolUnique(
-	  vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlags(), deviceQueueCreateInfo.queueFamilyIndex)
-	);
+	mCommandPool = createCommandPool();
+	initializeCommandBuffers();
 
-	  std::vector<vk::UniqueCommandBuffer> commandBuffers = logicalDevice->allocateCommandBuffersUnique(
-		  vk::CommandBufferAllocateInfo(commandPool.get(), vk::CommandBufferLevel::ePrimary, 1)
-	  );
-	//*/
+	// Draw Frame prep -------------------------------------------------------------
+	
+	createSyncObjects();
 
 }
 
@@ -544,11 +542,19 @@ vk::UniqueRenderPass Renderer::createRenderPass()
 		.setColorAttachmentCount(0)
 		.setPColorAttachments(&refColorAttachment);
 
+	auto subpassDependency = vk::SubpassDependency()
+		.setSrcSubpass(VK_SUBPASS_EXTERNAL)
+		.setDstSubpass(0)
+		.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+		.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+
 	auto infoRenderPass = vk::RenderPassCreateInfo()
 		.setAttachmentCount(1)
 		.setPAttachments(&colorAttachment)
 		.setSubpassCount(1)
-		.setPSubpasses(&subpassDesc);
+		.setPSubpasses(&subpassDesc)
+		.setDependencyCount(1)
+		.setPDependencies(&subpassDependency);
 
 	return mLogicalDevice->createRenderPassUnique(infoRenderPass);
 }
@@ -586,7 +592,7 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 
 	auto viewport = vk::Viewport()
 		.setX(0).setY(0)
-		.setWidth(this->mSwapChainResolution.width).setHeight(this->mSwapChainResolution.height)
+		.setWidth((f32)this->mSwapChainResolution.width).setHeight((f32)this->mSwapChainResolution.height)
 		.setMinDepth(0.0f).setMaxDepth(1.0f);
 
 	auto scissor = vk::Rect2D().setOffset({ 0, 0 }).setExtent(mSwapChainResolution);
@@ -611,7 +617,8 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 
 	auto infoMultisampling = vk::PipelineMultisampleStateCreateInfo()
 		.setSampleShadingEnable(false)
-		.setRasterizationSamples(vk::SampleCountFlagBits::e1);
+		.setRasterizationSamples(vk::SampleCountFlagBits::e1)
+		.setPSampleMask(nullptr);
 
 	auto infoColorBlendAttachment = vk::PipelineColorBlendAttachmentState()
 		.setColorWriteMask(
@@ -634,18 +641,19 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 
 	auto infoLayout = vk::PipelineLayoutCreateInfo();
 
-	auto layout = mLogicalDevice->createPipelineLayoutUnique(infoLayout);
+	auto layout = mLogicalDevice->createPipelineLayout(infoLayout);
 
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount(2).setPStages(stages)
 		.setPVertexInputState(&infoInputVertex)
+		.setPInputAssemblyState(&infoAssembly)
 		.setPViewportState(&infoViewportState)
 		.setPRasterizationState(&infoRasterization)
 		.setPMultisampleState(&infoMultisampling)
 		.setPDepthStencilState(nullptr)
 		.setPColorBlendState(&infoColorBlendState)
 		.setPDynamicState(nullptr)
-		.setLayout(layout.get())
+		.setLayout(layout)
 		.setRenderPass(mRenderPass.get())
 		.setSubpass(0);
 
@@ -671,4 +679,104 @@ void Renderer::initializeFrameBuffers()
 			.setLayers(1);
 		mFrameBuffers[i] = mLogicalDevice->createFramebufferUnique(infoFrameBuffer);
 	}
+}
+
+vk::UniqueCommandPool Renderer::createCommandPool() const
+{
+	auto queueFamilies = this->findQueueFamilies(mPhysicalDevice);
+	auto info = vk::CommandPoolCreateInfo()
+		.setQueueFamilyIndex(queueFamilies.idxGraphicsQueue.value());
+	return mLogicalDevice->createCommandPoolUnique(info);
+}
+
+void Renderer::initializeCommandBuffers()
+{
+	ui32 bufferCount = (ui32)mFrameBuffers.size();
+	auto allocInfo = vk::CommandBufferAllocateInfo()
+		.setLevel(vk::CommandBufferLevel::ePrimary)
+		.setCommandPool(mCommandPool.get())
+		.setCommandBufferCount(bufferCount);
+	mCommandBuffers = mLogicalDevice->allocateCommandBuffersUnique(allocInfo);
+
+	for (uSize i = 0; i < bufferCount; ++i)
+	{
+		mCommandBuffers[i]->begin(vk::CommandBufferBeginInfo());
+		
+		std::array<f32, 4U> color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		auto clearValue = vk::ClearValue().setColor(vk::ClearColorValue(color));
+		auto infoPassBegin = vk::RenderPassBeginInfo()
+			.setRenderPass(mRenderPass.get())
+			.setFramebuffer(mFrameBuffers[i].get())
+			.setRenderArea(vk::Rect2D()
+				.setOffset({ 0, 0 })
+				.setExtent(mSwapChainResolution)
+			)
+			.setClearValueCount(1)
+			.setPClearValues(&clearValue);
+
+		mCommandBuffers[i]->beginRenderPass(infoPassBegin, vk::SubpassContents::eInline);
+		mCommandBuffers[i]->bindPipeline(vk::PipelineBindPoint::eGraphics, mPipeline.get());
+		mCommandBuffers[i]->draw(3, 1, 0, 0);
+		mCommandBuffers[i]->endRenderPass();
+
+		mCommandBuffers[i]->end();
+	}
+}
+
+void Renderer::createSyncObjects()
+{
+	mSemaphore_DrawPerFrame_ImageAvailable.resize(MAX_FRAMES_IN_FLIGHT);
+	mSemaphore_DrawPerFrame_RenderFinished.resize(MAX_FRAMES_IN_FLIGHT);
+	mFencesInFlight.resize(MAX_FRAMES_IN_FLIGHT);
+	mImagesInFlight.resize(mSwapChainImages.size(), VK_NULL_HANDLE);
+
+	auto infoSemaphore = vk::SemaphoreCreateInfo();
+	auto infoFence = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+	for (ui8 i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		mSemaphore_DrawPerFrame_ImageAvailable[i] = mLogicalDevice->createSemaphoreUnique(infoSemaphore);
+		mSemaphore_DrawPerFrame_RenderFinished[i] = mLogicalDevice->createSemaphoreUnique(infoSemaphore);
+		mFencesInFlight[i] = mLogicalDevice->createFenceUnique(infoFence);
+	}
+}
+
+void Renderer::drawFrame()
+{
+	mLogicalDevice->waitForFences(mFencesInFlight[mCurrentFrame].get(), /*wait for every fence in the list passed*/ true, UINT64_MAX);
+
+	auto idxImage = mLogicalDevice->acquireNextImageKHR(
+		mSwapChain.get(), UINT64_MAX,
+		mSemaphore_DrawPerFrame_ImageAvailable[mCurrentFrame].get(),
+		/*fence*/ {}
+	);
+
+	if (mImagesInFlight[idxImage.value] != VK_NULL_HANDLE)
+	{
+		mLogicalDevice->waitForFences((vk::Fence)mImagesInFlight[idxImage.value], /*wait for every fence in the list passed*/ true, UINT64_MAX);
+	}
+	mImagesInFlight[idxImage.value] = mFencesInFlight[mCurrentFrame].get();
+
+	auto cmdBuffer = mCommandBuffers[idxImage.value].get();
+
+	vk::Semaphore pendingSemaphores[] = { mSemaphore_DrawPerFrame_ImageAvailable[mCurrentFrame].get() };
+	vk::PipelineStageFlags pendingStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+	vk::Semaphore resultSemaphores[] = { mSemaphore_DrawPerFrame_RenderFinished[mCurrentFrame].get() };
+	auto infoSubmit = vk::SubmitInfo()
+		.setWaitSemaphoreCount(1).setPWaitSemaphores(pendingSemaphores)
+		.setPWaitDstStageMask(pendingStages)
+		.setCommandBufferCount(1).setPCommandBuffers(&cmdBuffer)
+		.setSignalSemaphoreCount(1).setPSignalSemaphores(resultSemaphores);
+
+	mLogicalDevice->resetFences(mFencesInFlight[mCurrentFrame].get());
+
+	mQueueGraphics.submit(infoSubmit, mFencesInFlight[mCurrentFrame].get());
+
+	vk::SwapchainKHR swapchains[] = { mSwapChain.get() };
+	auto infoPresent = vk::PresentInfoKHR()
+		.setWaitSemaphoreCount(1).setPWaitSemaphores(resultSemaphores)
+		.setSwapchainCount(1).setPSwapchains(swapchains)
+		.setPImageIndices(&idxImage.value);
+	mQueuePresentation.presentKHR(infoPresent);
+
+	mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }

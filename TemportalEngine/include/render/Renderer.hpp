@@ -74,6 +74,16 @@ private:
 	vk::UniquePipeline mPipeline;
 	std::vector<vk::UniqueFramebuffer> mFrameBuffers;
 
+	vk::UniqueCommandPool mCommandPool;
+	std::vector<vk::UniqueCommandBuffer> mCommandBuffers;
+
+	const ui8 MAX_FRAMES_IN_FLIGHT = 2;
+	ui32 mCurrentFrame;
+	std::vector<vk::UniqueSemaphore> mSemaphore_DrawPerFrame_ImageAvailable;
+	std::vector<vk::UniqueSemaphore> mSemaphore_DrawPerFrame_RenderFinished;
+	std::vector<vk::UniqueFence> mFencesInFlight;
+	std::vector<VkFence> mImagesInFlight;
+
 private:
 
 	void fetchAvailableExtensions();
@@ -131,6 +141,11 @@ private:
 	vk::UniquePipeline createGraphicsPipeline();
 	void initializeFrameBuffers();
 
+	vk::UniqueCommandPool createCommandPool() const;
+	void initializeCommandBuffers();
+
+	void createSyncObjects();
+
 public:
 	Renderer(
 		utility::SExecutableInfo const *const appInfo,
@@ -140,6 +155,8 @@ public:
 		FuncCreateSurface createSurface
 	);
 	~Renderer();
+
+	void drawFrame();
 
 };
 

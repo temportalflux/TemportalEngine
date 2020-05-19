@@ -306,7 +306,9 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
   </ItemGroup>
   <ItemGroup>
     <None Include="resource\shaders\triangle.frag" />
+    <None Include="resource\shaders\triangle.frag.spv" />
     <None Include="resource\shaders\triangle.vert" />
+    <None Include="resource\shaders\triangle.vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

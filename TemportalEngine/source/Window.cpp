@@ -116,4 +116,5 @@ void Window::initializeRenderContext()
 
 void Window::render()
 {
+	mpRenderer->drawFrame();
 }

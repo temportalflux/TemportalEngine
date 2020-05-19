@@ -88,6 +88,9 @@
     <Filter Include="Resource Files\shaders">
       <UniqueIdentifier>{01e9fa7f-ba27-49e1-a81d-c97d71b32617}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{4d831fc0-e63f-4f86-a90a-4bca65d97e60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -322,10 +325,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resource\shaders\triangle.frag">
+    <None Include="resource\shaders\triangle.frag.spv">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.vert.spv">
       <Filter>Resource Files\shaders</Filter>
     </None>
     <None Include="resource\shaders\triangle.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.frag">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
