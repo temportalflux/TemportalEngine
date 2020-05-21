@@ -483,22 +483,25 @@ vk::UniqueSwapchainKHR Renderer::createSwapchain(vk::Extent2D &resolution, vk::F
 
 void Renderer::instantiateImageViews()
 {
-	mSwapChainImageViews.resize(mSwapChainImages.size());
-	for (uSize i = 0; i < mSwapChainImageViews.size(); ++i)
+	uSize viewCount = mSwapChainImages.size();
+	mSwapChainImageViews.resize(viewCount);
+	for (uSize i = 0; i < viewCount; ++i)
 	{
 		auto info = vk::ImageViewCreateInfo()
 			.setImage(this->mSwapChainImages[i])
 			.setViewType(vk::ImageViewType::e2D)
 			.setFormat(mSwapChainImageFormat)
-			.setComponents(vk::ComponentMapping(
-				// defaults to the identity mapping where each of RGBA is its own channel
-			))
+			.setComponents(vk::ComponentMapping()
+				.setR(vk::ComponentSwizzle::eIdentity)
+				.setG(vk::ComponentSwizzle::eIdentity)
+				.setB(vk::ComponentSwizzle::eIdentity)
+				.setA(vk::ComponentSwizzle::eIdentity)
+			)
 			.setSubresourceRange(vk::ImageSubresourceRange()
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setBaseMipLevel(0).setLevelCount(1)
 				.setBaseArrayLayer(0).setLayerCount(1)
-			)
-			;
+			);
 		mSwapChainImageViews[i] = mLogicalDevice->createImageViewUnique(info);
 	}
 }
@@ -514,8 +517,7 @@ std::optional<vk::UniqueShaderModule> Renderer::createShaderModule(std::string c
 
 	auto info = vk::ShaderModuleCreateInfo()
 		.setCodeSize(binary.value().size())
-		.setPCode(reinterpret_cast<ui32 const *>(binary.value().data()))
-		;
+		.setPCode(reinterpret_cast<ui32 const *>(binary.value().data()));
 	return mLogicalDevice->createShaderModuleUnique(info);
 }
 
@@ -539,13 +541,14 @@ vk::UniqueRenderPass Renderer::createRenderPass()
 		.setAttachment(0);
 
 	auto subpassDesc = vk::SubpassDescription()
-		.setColorAttachmentCount(0)
+		.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
+		.setColorAttachmentCount(1)
 		.setPColorAttachments(&refColorAttachment);
 
 	auto subpassDependency = vk::SubpassDependency()
 		.setSrcSubpass(VK_SUBPASS_EXTERNAL)
 		.setDstSubpass(0)
-		.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
+		.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setSrcAccessMask({})
 		.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
 
 	auto infoRenderPass = vk::RenderPassCreateInfo()
@@ -631,15 +634,19 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 
 	auto infoColorBlendState = vk::PipelineColorBlendStateCreateInfo()
 		.setLogicOpEnable(false)
+		.setLogicOp(vk::LogicOp::eCopy)
 		.setAttachmentCount(1)
-		.setPAttachments(&infoColorBlendAttachment);
+		.setPAttachments(&infoColorBlendAttachment)
+		.setBlendConstants({ 0.0f, 0.0f, 0.0f, 0.0f });
 
 	vk::DynamicState dynamicStates[] = { vk::DynamicState::eViewport, vk::DynamicState::eLineWidth };
 	auto infoDynamicStates = vk::PipelineDynamicStateCreateInfo()
 		.setDynamicStateCount(2)
 		.setPDynamicStates(dynamicStates);
 
-	auto infoLayout = vk::PipelineLayoutCreateInfo();
+	auto infoLayout = vk::PipelineLayoutCreateInfo()
+		.setSetLayoutCount(0)
+		.setPushConstantRangeCount(0);
 
 	auto layout = mLogicalDevice->createPipelineLayout(infoLayout);
 
@@ -653,9 +660,11 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 		.setPDepthStencilState(nullptr)
 		.setPColorBlendState(&infoColorBlendState)
 		.setPDynamicState(nullptr)
+		//.setPDynamicState(&infoDynamicStates)
 		.setLayout(layout)
 		.setRenderPass(mRenderPass.get())
-		.setSubpass(0);
+		.setSubpass(0)
+		.setBasePipelineHandle({});
 
 	auto infoCache = vk::PipelineCacheCreateInfo();
 	auto cache = mLogicalDevice->createPipelineCacheUnique(infoCache);
