@@ -2,3 +2,6 @@
 [submodule "Editor/libs/imgui"]
 	path = Editor/libs/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "libs/Vulkan"]
+	path = libs/Vulkan
+	url = git@github.com:KhronosGroup/Vulkan-Headers.git

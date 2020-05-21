@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs/SDL2/include;$(SolutionDir)libs/Vulkan/include;libs/RakNet/include;</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -119,14 +119,13 @@
       <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib32/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget);libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;RakNet.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
-copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -139,7 +138,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs/SDL2/include;$(SolutionDir)libs/Vulkan/include;libs/RakNet/include;</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -148,12 +147,13 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;RakNet.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget);libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
-copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -168,7 +168,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs/SDL2/include;$(SolutionDir)libs/Vulkan/include;libs/RakNet/include;</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -179,14 +179,13 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
-      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib32/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget);libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;RakNet.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
-copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -201,7 +200,7 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs/SDL2/include;$(SolutionDir)libs/Vulkan/include;libs/RakNet/include;</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -212,12 +211,13 @@ copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\T
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;RakNet.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget);libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
-copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>

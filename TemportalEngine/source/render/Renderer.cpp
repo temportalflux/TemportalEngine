@@ -333,7 +333,7 @@ bool Renderer::checkDeviceExtensionSupport(vk::PhysicalDevice const &device) con
 	std::set<std::string> requiredExtensions(mDeviceExtensionNames.begin(), mDeviceExtensionNames.end());
 	for (const auto& extension : availableExtensions)
 	{
-		requiredExtensions.erase(extension.extensionName);
+		requiredExtensions.erase(std::string(extension.extensionName));
 	}
 	return requiredExtensions.empty();
 }

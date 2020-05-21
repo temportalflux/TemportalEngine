@@ -100,7 +100,7 @@
       <AdditionalOptions>-DSDL_MAIN_HANDLED -DVK_USE_PLATFORM_WIN32_KHR %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
     <Link>
       <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -119,7 +119,7 @@
       <AdditionalOptions>-DSDL_MAIN_HANDLED -DVK_USE_PLATFORM_WIN32_KHR %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
     <Link>
       <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -147,7 +147,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -170,7 +170,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"</Command>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
