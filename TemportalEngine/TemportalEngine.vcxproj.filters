@@ -79,6 +79,18 @@
     <Filter Include="Source Files\network\client">
       <UniqueIdentifier>{f3b53af8-50e5-4cc1-9a1d-7a829c52a746}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\render">
+      <UniqueIdentifier>{ac369738-989d-4e41-a516-fcb5d09fc7d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\render">
+      <UniqueIdentifier>{7416c384-aa3d-4943-a193-bb8c289f8023}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{01e9fa7f-ba27-49e1-a81d-c97d71b32617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{4d831fc0-e63f-4f86-a90a-4bca65d97e60}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\Window.cpp">
@@ -158,6 +170,9 @@
     </ClCompile>
     <ClCompile Include="source\network\client\PacketConnectionRejected.cpp">
       <Filter>Source Files\network\client</Filter>
+    </ClCompile>
+    <ClCompile Include="source\render\Renderer.cpp">
+      <Filter>Source Files\render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -293,5 +308,34 @@
     <ClInclude Include="include\network\client\PacketConnectionRejected.hpp">
       <Filter>Header Files\network\client</Filter>
     </ClInclude>
+    <ClInclude Include="include\render\Renderer.hpp">
+      <Filter>Header Files\render</Filter>
+    </ClInclude>
+    <ClInclude Include="include\math\pow.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="include\memory\SharedPtr.hpp">
+      <Filter>Header Files\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ExecutableInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\types\math.h">
+      <Filter>Header Files\types</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resource\shaders\triangle.frag.spv">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.vert.spv">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="resource\shaders\triangle.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

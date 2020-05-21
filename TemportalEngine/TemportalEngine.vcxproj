@@ -74,6 +74,8 @@
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <SourcePath>$(VC_SourcePath);source</SourcePath>
@@ -81,6 +83,8 @@
     <TargetExt>.dll</TargetExt>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
@@ -88,6 +92,8 @@
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <TargetExt>.dll</TargetExt>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
@@ -95,6 +101,8 @@
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <SourcePath>$(VC_SourcePath);source</SourcePath>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -102,22 +110,28 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib32/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -125,20 +139,26 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -148,24 +168,30 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib32/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -175,22 +201,28 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>libs/SDL2-2.0.9/include;libs/RakNet/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>libs/SDL2/include;libs/RakNet/include;libs/Vulkan/include</AdditionalIncludeDirectories>
       <AdditionalOptions>-DTEMPORTALENGINE_EXPORTS %(AdditionalOptions)</AdditionalOptions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>libs/SDL2-2.0.9/lib/$(PlatformTarget)/SDL2.lib;libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>./libs/SDL2/lib/$(PlatformTarget)/SDL2main.lib;./libs/SDL2/lib/$(PlatformTarget)/SDL2.lib;./libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/RakNet.lib;$(VULKAN_SDK)/Lib/vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)TemportalEngine\libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\SDL2.dll"
+copy /Y "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\TemportalEngine.dll" $(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\DemoGame\TemportalEngine.dll"</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\dependency\Module.cpp" />
@@ -214,6 +246,7 @@
     <ClCompile Include="source\network\PacketInternal.cpp" />
     <ClCompile Include="source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="source\network\server\ServiceServer.cpp" />
+    <ClCompile Include="source\render\Renderer.cpp" />
     <ClCompile Include="source\thread\Mutex.c" />
     <ClCompile Include="source\thread\MutexLock.cpp" />
     <ClCompile Include="source\thread\Thread.cpp" />
@@ -224,6 +257,7 @@
     <ClInclude Include="include\dependency\Module.hpp" />
     <ClInclude Include="include\dependency\SDL.hpp" />
     <ClInclude Include="include\Engine.hpp" />
+    <ClInclude Include="include\ExecutableInfo.hpp" />
     <ClInclude Include="include\input\Action.hpp" />
     <ClInclude Include="include\input\Event.hpp" />
     <ClInclude Include="include\input\InputWatcher.hpp" />
@@ -233,11 +267,13 @@
     <ClInclude Include="include\input\Queue.hpp" />
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\math\compare.h" />
+    <ClInclude Include="include\math\pow.hpp" />
     <ClInclude Include="include\math\Vector.hpp" />
     <ClInclude Include="include\math\VectorType.hpp" />
     <ClInclude Include="include\memory\alloc.h" />
     <ClInclude Include="include\memory\MemoryManager.h" />
     <ClInclude Include="include\memory\Pool.h" />
+    <ClInclude Include="include\memory\SharedPtr.hpp" />
     <ClInclude Include="include\Namespace.hpp" />
     <ClInclude Include="include\Api.h" />
     <ClInclude Include="include\network\client\PacketConnectionAccepted.hpp" />
@@ -256,6 +292,7 @@
     <ClInclude Include="include\network\server\ServiceServer.hpp" />
     <ClInclude Include="include\registry\Registry.hpp" />
     <ClInclude Include="include\registry\RegistryItem.hpp" />
+    <ClInclude Include="include\render\Renderer.hpp" />
     <ClInclude Include="include\TemportalEnginePCH.hpp" />
     <ClInclude Include="include\thread\Mutex.h" />
     <ClInclude Include="include\thread\MutexLock.hpp" />
@@ -263,8 +300,15 @@
     <ClInclude Include="include\thread\ThreadId.h" />
     <ClInclude Include="include\types\arch.h" />
     <ClInclude Include="include\types\integer.h" />
+    <ClInclude Include="include\types\math.h" />
     <ClInclude Include="include\types\real.h" />
     <ClInclude Include="include\Window.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resource\shaders\triangle.frag" />
+    <None Include="resource\shaders\triangle.frag.spv" />
+    <None Include="resource\shaders\triangle.vert" />
+    <None Include="resource\shaders\triangle.vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

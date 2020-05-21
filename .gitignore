@@ -6,3 +6,5 @@ libs/glfw-3.2.1/WIN*/docs
 packages
 TestResults
 libs
+TemportalEngine/libs
+*.spv

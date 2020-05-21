@@ -83,6 +83,7 @@ public:
 
 /**
 * Thread-safe wrapper class for writing output logs.
+* See http://www.cplusplus.com/reference/cstdio/vprintf/ for formatting.
 */
 class TEMPORTALENGINE_API Logger
 {

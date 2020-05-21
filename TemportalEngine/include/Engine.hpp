@@ -11,21 +11,26 @@
 #include <typeinfo>
 
 #include "logging/Logger.hpp"
+#include "ExecutableInfo.hpp"
 
 class Window;
-namespace input
-{
-	class Queue;
-}
+NS_INPUT
+class Queue;
+NS_END
 
 NS_ENGINE
 
 #define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
-#define LogEngine(cate, ...) logging::Logger("Engine", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
+#define LogEngine(cate, ...) DeclareLog("Engine").log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
 
-//#define MAX_MEMORY_SIZE 2097152 // 8^7
+// Creates a unique 32-bit integer version for a unique semantic version
+// NOTE: based on vulkan's VK_MAKE_VERSION
+#define TE_MAKE_VERSION(major, minor, patch) (((major) << 22) | ((minor) << 12) | (patch))
+#define TE_GET_MAJOR_VERSION(version) ((ui32)(version) >> 22)
+#define TE_GET_MINOR_VERSION(version) (((ui32)(version) >> 12) & 0x3ff)
+#define TE_GET_PATCH_VERSION(version) ((ui32)(version) & 0xfff)
 
 class TEMPORTALENGINE_API Engine
 {
@@ -43,10 +48,12 @@ public:
 
 private:
 
+	utility::SExecutableInfo mInfo;
+
 	thread::MutexLock mpLockMemoryManager[1];
 	void* mpMemoryManager;
 
-	dependency::SDL mpDepGlfw[1];
+	dependency::SDL mpDepSDL[1];
 
 	bool mIsRunning;
 
@@ -58,22 +65,41 @@ private:
 
 	input::Queue *mpInputQueue;
 
-	Engine(void* memoryManager);
+	Engine(ui32 const & version, void* memoryManager);
 
 public:
 	~Engine();
+	utility::SExecutableInfo const *const getInfo() const;
 
 	void* getMemoryManager();
 
-	void* alloc(uSize size);
-	void dealloc(void** ptr);
+	void* allocRaw(uSize size);
+	void deallocRaw(void* ptr);
 
 	template <typename TAlloc, typename... TArgs>
 	TAlloc* alloc(TArgs... args)
 	{
-		TAlloc *ptr = (TAlloc*)this->alloc(sizeof(TAlloc));
+		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc));
 		if (ptr != nullptr)
 			new (ptr) TAlloc(args...);
+		else
+		{
+			type_info const &info = typeid(TAlloc);
+			LogEngine(logging::ECategory::LOGERROR, "Could not allocate object %s", info.name());
+		}
+		return ptr;
+	}
+
+	template <typename TAlloc, typename... TArgs>
+	TAlloc* allocArray(uSize const count, TArgs... args)
+	{
+		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc) * count);
+		if (ptr != nullptr)
+		{
+			// TODO: Use std::array::fill
+			for (uSize i = 0; i < count; ++i)
+				new (&(ptr[i])) TAlloc(args...);
+		}
 		else
 		{
 			type_info const &info = typeid(TAlloc);
@@ -88,14 +114,29 @@ public:
 		if (*ptrRef != nullptr)
 		{
 			(*ptrRef)->TDealloc::~TDealloc();
-			this->dealloc(ptrRef);
+			this->deallocRaw((void**)ptrRef);
+		}
+	}
+
+	template <typename TDealloc>
+	void deallocArray(uSize const count, TDealloc **ptrRef)
+	{
+		if (*ptrRef != nullptr)
+		{
+			for (uSize i = 0; i < count; ++i)
+			{
+				TDealloc element = (*ptrRef)[i];
+				(&element)->TDealloc::~TDealloc();
+			}
+
+			this->deallocRaw((void**)ptrRef);
 		}
 	}
 
 	bool initializeDependencies();
 	void terminateDependencies();
 
-	bool const createWindow();
+	bool const createWindow(utility::SExecutableInfo const *const pAppInfo);
 	void destroyWindow();
 	bool const hasWindow() const;
 
