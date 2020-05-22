@@ -5,9 +5,14 @@
 
 #include "types/integer.h"
 #include "input/Event.hpp"
+#include "input/types.h"
 
 // TODO: Namespace
 // TODO: Organize Headers
+
+NS_INPUT
+class Queue;
+NS_END
 
 NS_RENDER
 class Renderer;
@@ -26,6 +31,7 @@ private:
 	void* mpHandle;
 	void* mpJoystick;
 	bool mIsPendingClose;
+	input::ListenerHandle mInputHandleQuit;
 
 	render::Renderer *mpRenderer;
 
@@ -37,14 +43,14 @@ public:
 	);
 
 	bool isValid();
+	void addInputListeners(input::Queue *pQueue);
 
-	void initializeRenderContext();
-
+	void onInputQuit(input::Event const &evt);
 	void markShouldClose();
 	bool isPendingClose();
 
 	bool renderUntilClose();
-	void render();
+	void waitForCleanup();
 	void destroy();
 
 };

@@ -1,5 +1,6 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
+#include "Window.hpp"
 
 #include <iostream>
 #include <string>
@@ -93,16 +94,19 @@ int main()
 	}			
 	appInfo.title = title.c_str();
 
-	if (!pEngine->createWindow(&appInfo))
+	auto window = pEngine->createWindow(&appInfo);
+	if (window == nullptr)
 	{
 		engine::Engine::Destroy();
 		return 1;
 	}
 
-	pEngine->run();
+	pEngine->run(window);
 
 	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
+	window->destroy();
+	engine::Engine::Get()->dealloc(&window);
 	engine::Engine::Destroy();
 
 	engine::Engine::LOG_SYSTEM.close();

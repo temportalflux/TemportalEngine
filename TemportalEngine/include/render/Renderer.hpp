@@ -39,6 +39,19 @@ public:
 	typedef std::function<bool(VkInstance const *pInstance, VkSurfaceKHR *pOutSurface)> FuncCreateSurface;
 	typedef std::vector<char> ShaderBinary;
 
+public:
+	Renderer(
+		utility::SExecutableInfo const *const appInfo,
+		utility::SExecutableInfo const *const engineInfo,
+		ui32 width, ui32 height,
+		std::vector<const char*> extensions,
+		FuncCreateSurface createSurface
+	);
+	~Renderer();
+
+	void drawFrame();
+	void waitUntilIdle();
+
 private:
 
 #ifdef RENDERER_USE_VALIDATION_LAYERS
@@ -55,8 +68,9 @@ private:
 	vk::ApplicationInfo mpApplicationInfo[1];
 	vk::InstanceCreateInfo mpInstanceInfo[1];
 	vk::UniqueInstance mAppInstance;
+	vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> mDebugMessenger;
 
-	vk::PhysicalDevice mPhysicalDevice;
+	std::optional<vk::PhysicalDevice> mPhysicalDevice;
 	vk::UniqueDevice mLogicalDevice;
 	
 	vk::Queue mQueueGraphics;
@@ -71,6 +85,7 @@ private:
 	std::vector<vk::UniqueImageView> mSwapChainImageViews;
 
 	vk::UniqueRenderPass mRenderPass;
+	vk::UniquePipelineLayout mPipelineLayout;
 	vk::UniquePipeline mPipeline;
 	std::vector<vk::UniqueFramebuffer> mFrameBuffers;
 
@@ -123,7 +138,7 @@ private:
 			return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
 		}
 	};
-	QueueFamilyIndicies findQueueFamilies(vk::PhysicalDevice const &device) const;
+	QueueFamilyIndicies findQueueFamilies(std::optional<vk::PhysicalDevice> const &device) const;
 	
 	std::optional<vk::UniqueDevice> createLogicalDevice(QueueFamilyIndicies const &queueFamilies, f32 const *graphicsQueuePriority);
 
@@ -132,7 +147,7 @@ private:
 		std::vector<vk::SurfaceFormatKHR> surfaceFormats;
 		std::vector<vk::PresentModeKHR> presentationModes;
 	};
-	SwapChainSupport querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const;
+	SwapChainSupport querySwapChainSupport(std::optional<vk::PhysicalDevice> const &device, vk::UniqueSurfaceKHR const &surface) const;
 	vk::UniqueSwapchainKHR createSwapchain(vk::Extent2D &resolution, vk::Format &imageFormat);
 	void instantiateImageViews();
 
@@ -145,18 +160,6 @@ private:
 	void initializeCommandBuffers();
 
 	void createSyncObjects();
-
-public:
-	Renderer(
-		utility::SExecutableInfo const *const appInfo,
-		utility::SExecutableInfo const *const engineInfo,
-		ui32 width, ui32 height,
-		std::vector<const char*> extensions,
-		FuncCreateSurface createSurface
-	);
-	~Renderer();
-
-	void drawFrame();
 
 };
 

@@ -21,16 +21,20 @@ Thread::~Thread()
 	}
 }
 
-void Thread::start(std::function<bool()> functor)
+void Thread::start(std::function<bool()> functor, std::optional<std::function<void()>> onComplete)
 {
-	mpThreadHandle = new std::thread(std::bind(&Thread::run, this, functor));
+	mpThreadHandle = new std::thread(std::bind(&Thread::run, this, functor, onComplete));
 }
 
-void Thread::run(std::function<bool()> functor)
+void Thread::run(std::function<bool()> functor, std::optional<std::function<void()>> onComplete)
 {
 	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName);
 	while (functor());
 	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName);
+	if (onComplete.has_value())
+	{
+		(onComplete.value())();
+	}
 }
 
 void Thread::join()

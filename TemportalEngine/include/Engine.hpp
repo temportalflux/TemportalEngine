@@ -59,7 +59,6 @@ private:
 
 	bool mIsRunning;
 
-	Window *mpWindowGame;
 	input::InputWatcher mpInputWatcher[1];
 
 	network::Service *mpNetworkService;
@@ -77,7 +76,7 @@ public:
 	void* getMemoryManager();
 
 	void* allocRaw(uSize size);
-	void deallocRaw(void* ptr);
+	void deallocRaw(void** ptr);
 
 	template <typename TAlloc, typename... TArgs>
 	TAlloc* alloc(TArgs... args)
@@ -139,14 +138,12 @@ public:
 	bool initializeDependencies();
 	void terminateDependencies();
 
-	bool const createWindow(utility::SExecutableInfo const *const pAppInfo);
-	void destroyWindow();
-	bool const hasWindow() const;
+	Window* createWindow(utility::SExecutableInfo const *const pAppInfo);
 
 	void createServer(ui16 const port, ui16 maxClients);
 	void createClient(char const *address, ui16 port);
 	
-	void run();
+	void run(Window* pWindow);
 	bool const isActive() const;
 	void markShouldStop();
 

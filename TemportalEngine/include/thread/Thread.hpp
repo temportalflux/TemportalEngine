@@ -4,6 +4,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include <functional>
+#include <optional>
 
 #include "logging/Logger.hpp"
 
@@ -17,7 +18,7 @@ private:
 	logging::Logger mLogger;
 	void* mpThreadHandle;
 
-	void run(std::function<bool()> functor);
+	void run(std::function<bool()> functor, std::optional<std::function<void()>> onComplete);
 
 public:
 	Thread();
@@ -29,7 +30,7 @@ public:
 		While `functor` returns true, the thread will continue.
 		If `functor` returns false, the thread will end.
 	*/
-	void start(std::function<bool()> functor);
+	void start(std::function<bool()> functor, std::optional<std::function<void()>> onComplete = std::nullopt);
 	void join();
 
 };

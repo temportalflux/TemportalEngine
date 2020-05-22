@@ -8,6 +8,7 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
 #include "render/Renderer.hpp"
+#include "input/Queue.hpp"
 
 #include "ExecutableInfo.hpp"
 
@@ -75,20 +76,31 @@ Window::Window(ui32 width, ui32 height, utility::SExecutableInfo const *const ap
 
 void Window::destroy()
 {
-
+	// TODO: Undo input listeners
 	engine::Engine::Get()->dealloc(&mpRenderer);
-
 	if (this->mpHandle != nullptr)
 	{
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
+		LogWindow.log(logging::ECategory::LOGDEBUG, "Destroyed window. Errors? %s", SDL_GetError());
 		this->mpHandle = nullptr;
 	}
-
 }
 
 bool Window::isValid()
 {
-	return this->mpHandle != nullptr && !this->isPendingClose();
+	return this->mpHandle != nullptr;
+}
+
+void Window::addInputListeners(input::Queue *pQueue)
+{
+	mInputHandleQuit = pQueue->addListener(input::EInputType::QUIT,
+		std::bind(&Window::onInputQuit, this, std::placeholders::_1)
+	);
+}
+
+void Window::onInputQuit(input::Event const &evt)
+{
+	markShouldClose();
 }
 
 void Window::markShouldClose()
@@ -101,17 +113,13 @@ bool Window::isPendingClose()
 	return this->mIsPendingClose;
 }
 
-void Window::initializeRenderContext()
-{
-}
-
 bool Window::renderUntilClose()
 {
-	this->render();
-	return this->isValid();
+	mpRenderer->drawFrame();
+	return this->isValid() && !this->isPendingClose();
 }
 
-void Window::render()
+void Window::waitForCleanup()
 {
-	mpRenderer->drawFrame();
+	mpRenderer->waitUntilIdle();
 }

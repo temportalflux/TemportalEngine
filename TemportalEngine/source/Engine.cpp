@@ -66,12 +66,12 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	, mIsRunning(false)
 	, mpThreadRender(nullptr)
 	, mpNetworkService(nullptr)
-	, mpWindowGame(nullptr)
 {
 	LogEngineInfo("Creating Engine");
 	mInfo.title = "TemportalEngine";
 	mInfo.version = version;
-	
+
+	mpInputWatcher->setCallback(&windowKeyInputCallback);
 	mpInputQueue = this->alloc<input::Queue>();
 	mInputHandle = mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
@@ -80,7 +80,6 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 
 Engine::~Engine()
 {
-	this->destroyWindow();
 	this->terminateDependencies();
 	this->dealloc(&mpInputQueue);
 	LogEngineInfo("Engine Destroyed");
@@ -105,10 +104,10 @@ void* Engine::allocRaw(uSize size)
 	return ptr;
 }
 
-void Engine::deallocRaw(void* ptr)
+void Engine::deallocRaw(void** ptr)
 {
 	this->mpLockMemoryManager->lock();
-	a3_mem_manager_dealloc(getMemoryManager(), ptr);
+	a3_mem_manager_dealloc(getMemoryManager(), *ptr);
 	this->mpLockMemoryManager->unlock();
 	ptr = nullptr;
 }
@@ -127,30 +126,11 @@ void Engine::terminateDependencies()
 		mpDepSDL->terminate();
 }
 
-bool const Engine::createWindow(utility::SExecutableInfo const *const pAppInfo)
+Window* Engine::createWindow(utility::SExecutableInfo const *const pAppInfo)
 {
-	mpWindowGame = this->alloc<Window>(800, 600, pAppInfo);
-	if (!mpWindowGame->isValid()) return false;
-
-	mpWindowGame->initializeRenderContext();
-	
-	mpInputWatcher->setCallback(&windowKeyInputCallback);
-
-	return true;
-}
-
-void Engine::destroyWindow()
-{
-	if (this->hasWindow() && mpWindowGame->isValid())
-	{
-		mpWindowGame->destroy();
-		this->dealloc(&mpWindowGame);
-	}
-}
-
-bool const Engine::hasWindow() const
-{
-	return mpWindowGame != nullptr;
+	auto window = this->alloc<Window>(800, 600, pAppInfo);
+	window->addInputListeners(mpInputQueue);
+	return window;
 }
 
 void Engine::createClient(char const *address, ui16 port)
@@ -170,14 +150,17 @@ void Engine::createServer(ui16 const port, ui16 maxClients)
 	this->mpNetworkService = server;
 }
 
-void Engine::run()
+void Engine::run(Window* pWindow)
 {
 	mIsRunning = true;
 
-	if (this->hasWindow())
+	if (pWindow != nullptr && pWindow->isValid())
 	{
 		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM);
-		mpThreadRender->start(std::bind(&Window::renderUntilClose, mpWindowGame));
+		mpThreadRender->start(
+			std::bind(&Window::renderUntilClose, pWindow),
+			std::bind(&Window::waitForCleanup, pWindow)
+		);
 	}
 
 	if (this->hasNetwork())
@@ -193,8 +176,8 @@ void Engine::run()
 
 	if (this->hasNetwork())
 		this->mpNetworkService->joinThread();
+	
 	mpThreadRender->join();
-
 }
 
 bool const Engine::isActive() const
@@ -205,8 +188,6 @@ bool const Engine::isActive() const
 void Engine::markShouldStop()
 {
 	mIsRunning = false;
-	if (this->hasWindow())
-		mpWindowGame->markShouldClose();
 }
 
 bool const Engine::hasNetwork() const

@@ -71,7 +71,7 @@ Renderer::Renderer(
 	mAppInstance = createInstance(appInfo, engineInfo);
 
 #ifdef RENDERER_USE_VALIDATION_LAYERS
-	setupVulkanMessenger();
+	//setupVulkanMessenger();
 #endif
 
 	// Surface ------------------------------------------------------------------
@@ -87,15 +87,14 @@ Renderer::Renderer(
 
 	// Physical Device ----------------------------------------------------------
 
-	auto optPhysicalDevice = pickPhysicalDevice();
-	if (!optPhysicalDevice.has_value())
+	mPhysicalDevice = pickPhysicalDevice();
+	if (!mPhysicalDevice.has_value())
 	{
 		LogRenderer(logging::ECategory::LOGERROR, "Failed to find a physical device for Vulkan");
 		return;
 	}
-	mPhysicalDevice = optPhysicalDevice.value();
 	
-	auto physDeviceProps = mPhysicalDevice.getProperties();
+	auto physDeviceProps = mPhysicalDevice->getProperties();
 	LogRenderer(logging::ECategory::LOGINFO,
 		"Loading Vulkan with physical device:\n"
 		"\t%s named %s\n"
@@ -131,8 +130,8 @@ Renderer::Renderer(
 
 	// Queues -----------------------------------------------------------
 
-	mQueueGraphics = mLogicalDevice.get().getQueue(queueFamilies.idxGraphicsQueue.value(), /*queueIndex*/ 0);
-	mQueuePresentation = mLogicalDevice.get().getQueue(queueFamilies.idxPresentationQueue.value(), /*queueIndex*/ 0);
+	mQueueGraphics = mLogicalDevice->getQueue(queueFamilies.idxGraphicsQueue.value(), /*queueIndex*/ 0);
+	mQueuePresentation = mLogicalDevice->getQueue(queueFamilies.idxPresentationQueue.value(), /*queueIndex*/ 0);
 	
 	// Swap Chain ---------------------------------------------------------------
 
@@ -168,7 +167,38 @@ Renderer::Renderer(
 
 Renderer::~Renderer()
 {
+	for (auto i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+	{
+		mSemaphore_DrawPerFrame_RenderFinished[i].reset();
+		mSemaphore_DrawPerFrame_ImageAvailable[i].reset();
+		mFencesInFlight[i].reset();
+	}
+	for (auto& cmdBuffer : mCommandBuffers)
+	{
+		cmdBuffer.reset();
+	}
+	mCommandPool.reset();
+	for (auto& frameBuffer : mFrameBuffers)
+	{
+		frameBuffer.reset();
+	}
+	mPipeline.reset();
+	mPipelineLayout.reset();
+	mRenderPass.reset();
+	for (auto& imgView : mSwapChainImageViews)
+	{
+		imgView.reset();
+	}
+	mSwapChain.reset();
+	mLogicalDevice.reset();
 
+	mPhysicalDevice = std::nullopt;
+
+	auto surface = mSurface.release();
+	mAppInstance->destroySurfaceKHR(surface);
+
+	mDebugMessenger.reset();
+	mAppInstance.reset();
 }
 
 void Renderer::fetchAvailableExtensions()
@@ -269,8 +299,7 @@ void Renderer::setupVulkanMessenger()
 	vk::Instance inst = this->mAppInstance.get();
 	VkInstance tmp = (VkInstance)inst;
 	vk::DispatchLoaderDynamic dldi(tmp, vkGetInstanceProcAddr);
-	auto messenger = this->mAppInstance->createDebugUtilsMessengerEXTUnique(info, nullptr, dldi);
-
+	mDebugMessenger = this->mAppInstance->createDebugUtilsMessengerEXTUnique(info, nullptr, dldi);
 }
 
 std::optional<vk::PhysicalDevice> Renderer::pickPhysicalDevice()
@@ -338,11 +367,11 @@ bool Renderer::checkDeviceExtensionSupport(vk::PhysicalDevice const &device) con
 	return requiredExtensions.empty();
 }
 
-Renderer::QueueFamilyIndicies Renderer::findQueueFamilies(vk::PhysicalDevice const &device) const
+Renderer::QueueFamilyIndicies Renderer::findQueueFamilies(std::optional<vk::PhysicalDevice> const &device) const
 {
 	QueueFamilyIndicies indicies;
 
-	auto familyProps = device.getQueueFamilyProperties();
+	auto familyProps = device->getQueueFamilyProperties();
 	ui32 idxQueue = 0;
 	for (auto& queueFamily : familyProps)
 	{
@@ -351,7 +380,7 @@ Renderer::QueueFamilyIndicies Renderer::findQueueFamilies(vk::PhysicalDevice con
 			indicies.idxGraphicsQueue = idxQueue;
 		}
 
-		if (device.getSurfaceSupportKHR(idxQueue, mSurface.get()))
+		if (device->getSurfaceSupportKHR(idxQueue, mSurface.get()))
 		{
 			indicies.idxPresentationQueue = idxQueue;
 		}		 
@@ -392,15 +421,15 @@ std::optional<vk::UniqueDevice> Renderer::createLogicalDevice(QueueFamilyIndicie
 	logicalDeviceInfo.setPpEnabledLayerNames(mValidationLayers.data());
 	#endif
 	
-	return mPhysicalDevice.createDeviceUnique(logicalDeviceInfo);
+	return mPhysicalDevice->createDeviceUnique(logicalDeviceInfo);
 }
 
-Renderer::SwapChainSupport Renderer::querySwapChainSupport(vk::PhysicalDevice const &device, vk::UniqueSurfaceKHR const &surface) const
+Renderer::SwapChainSupport Renderer::querySwapChainSupport(std::optional<vk::PhysicalDevice> const &device, vk::UniqueSurfaceKHR const &surface) const
 {
 	SwapChainSupport info;
-	info.capabilities = device.getSurfaceCapabilitiesKHR(surface.get());
-	info.surfaceFormats = device.getSurfaceFormatsKHR(surface.get());
-	info.presentationModes = device.getSurfacePresentModesKHR(surface.get());
+	info.capabilities = device->getSurfaceCapabilitiesKHR(surface.get());
+	info.surfaceFormats = device->getSurfaceFormatsKHR(surface.get());
+	info.presentationModes = device->getSurfacePresentModesKHR(surface.get());
 	return info;
 }
 
@@ -648,7 +677,7 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 		.setSetLayoutCount(0)
 		.setPushConstantRangeCount(0);
 
-	auto layout = mLogicalDevice->createPipelineLayout(infoLayout);
+	mPipelineLayout = mLogicalDevice->createPipelineLayoutUnique(infoLayout);
 
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount(2).setPStages(stages)
@@ -661,7 +690,7 @@ vk::UniquePipeline Renderer::createGraphicsPipeline()
 		.setPColorBlendState(&infoColorBlendState)
 		.setPDynamicState(nullptr)
 		//.setPDynamicState(&infoDynamicStates)
-		.setLayout(layout)
+		.setLayout(mPipelineLayout.get())
 		.setRenderPass(mRenderPass.get())
 		.setSubpass(0)
 		.setBasePipelineHandle({});
@@ -788,4 +817,9 @@ void Renderer::drawFrame()
 	mQueuePresentation.presentKHR(infoPresent);
 
 	mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+}
+
+void Renderer::waitUntilIdle()
+{
+	mLogicalDevice->waitIdle();
 }
