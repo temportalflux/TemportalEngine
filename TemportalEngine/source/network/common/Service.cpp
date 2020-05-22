@@ -14,17 +14,6 @@ using namespace network;
 
 // ----------------------------------------------------------------------------
 
-void Service::runThread(void* pInterface)
-{
-	engine::Engine *pEngine = nullptr;
-	while (engine::Engine::GetChecked(pEngine) && pEngine->isActive())
-	{
-		NetworkInterface *pNetInterface = (NetworkInterface *)pInterface;
-		pNetInterface->fetchAllPackets();
-		pEngine->getNetworkService().value()->processAllPackets();
-	}
-}
-
 Service::Service()
 {
 	mpThread = nullptr;
@@ -66,8 +55,21 @@ void Service::registerCommonPackets()
 
 void Service::startThread(engine::Engine * const pEngine)
 {
-	mpThread = pEngine->alloc<Thread>("Thread-Network", &engine::Engine::LOG_SYSTEM, &runThread);
-	mpThread->start(mpNetworkInterface);
+	// TODO: this isn't dealloced
+	mpThread = pEngine->alloc<Thread>("Thread-Network", &engine::Engine::LOG_SYSTEM);
+	mpThread->start(std::bind(&Service::runThread, this));
+}
+
+bool Service::runThread()
+{
+	engine::Engine *pEngine = nullptr;
+	bool isActive = engine::Engine::GetChecked(pEngine) && pEngine->isActive();
+	if (isActive)
+	{
+		mpNetworkInterface->fetchAllPackets();
+		pEngine->getNetworkService().value()->processAllPackets();
+	}
+	return isActive;
 }
 
 void Service::joinThread()
@@ -109,6 +111,11 @@ void Service::processPacket(PacketInternal const &packet)
 			delete packet;
 		}
 	}
+}
+
+bool Service::registerPacket(RegistryIdentifier &id, std::function<Packet*(void*)> packet)
+{
+	return mpPacketExecutorRegistry->registerType(id, packet);
 }
 
 bool const Service::isActive() const

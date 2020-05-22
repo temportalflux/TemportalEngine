@@ -3,12 +3,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
-// TODO: Namespace
-// TODO: Organize Headers
+#include <functional>
 
 #include "logging/Logger.hpp"
 
-class TEMPORTALENGINE_API Thread
+class Thread
 {
 public:
 	typedef void (*DelegateUpdate)(void*);
@@ -16,20 +15,21 @@ public:
 private:
 	char const* mpName;
 	logging::Logger mLogger;
-	DelegateUpdate mpDelegateUpdate;
 	void* mpThreadHandle;
 
-	void updateInternal(void* params);
-
-	static void updateInternalStatic(Thread *pThread, void* params);
+	void run(std::function<bool()> functor);
 
 public:
 	Thread();
-	Thread(char const* name, logging::LogSystem *pLogSystem, DelegateUpdate update);
+	Thread(char const* name, logging::LogSystem *pLogSystem);
 	~Thread();
 
-	void start(void* params);
-
+	/**
+		Starts the thread and runs the callable `functor`.
+		While `functor` returns true, the thread will continue.
+		If `functor` returns false, the thread will end.
+	*/
+	void start(std::function<bool()> functor);
 	void join();
 
 };

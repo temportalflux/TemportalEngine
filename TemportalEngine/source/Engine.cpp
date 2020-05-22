@@ -71,6 +71,7 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	LogEngineInfo("Creating Engine");
 	mInfo.title = "TemportalEngine";
 	mInfo.version = version;
+	
 	mpInputQueue = this->alloc<input::Queue>();
 	mInputHandle = mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
@@ -81,6 +82,7 @@ Engine::~Engine()
 {
 	this->destroyWindow();
 	this->terminateDependencies();
+	this->dealloc(&mpInputQueue);
 	LogEngineInfo("Engine Destroyed");
 }
 
@@ -174,8 +176,8 @@ void Engine::run()
 
 	if (this->hasWindow())
 	{
-		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM, &Window::renderUntilClose);
-		mpThreadRender->start(mpWindowGame);
+		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM);
+		mpThreadRender->start(std::bind(&Window::renderUntilClose, mpWindowGame));
 	}
 
 	if (this->hasNetwork())

@@ -20,13 +20,12 @@ class TEMPORTALENGINE_API Service
 	friend class engine::Engine;
 
 private:
-	static void runThread(void* pInterface);
-
 	PacketRegistry mpPacketExecutorRegistry[1];
 
 	Thread *mpThread;
 
 	void startThread(engine::Engine *const pEngine);
+	bool runThread();
 	void joinThread();
 
 	void processAllPackets();
@@ -44,11 +43,7 @@ protected:
 
 public:
 
-	// TODO: move to cpp
-	bool registerPacket(RegistryIdentifier &id, std::function<Packet*(void*)> packet)
-	{
-		return mpPacketExecutorRegistry->registerType(id, packet);
-	}
+	bool registerPacket(RegistryIdentifier &id, std::function<Packet*(void*)> packet);
 
 	bool const isActive() const;
 

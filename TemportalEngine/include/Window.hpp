@@ -19,9 +19,6 @@ NS_END
 
 class TEMPORTALENGINE_API Window
 {
-public:
-	static void renderUntilClose(void* ptr);
-
 private:
 	ui32 mWidth, mHeight;
 	char const * mpTitle;
@@ -46,6 +43,7 @@ public:
 	void markShouldClose();
 	bool isPendingClose();
 
+	bool renderUntilClose();
 	void render();
 	void destroy();
 

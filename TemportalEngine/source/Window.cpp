@@ -13,15 +13,6 @@
 
 auto LogWindow = DeclareLog("Window");
 
-void Window::renderUntilClose(void* ptr)
-{
-	Window* pWindow = reinterpret_cast<Window*>(ptr);
-	while (pWindow->isValid())
-	{
-		pWindow->render();
-	}
-}
-
 Window::Window(ui32 width, ui32 height, utility::SExecutableInfo const *const appInfo)
 	: mWidth(width)
 	, mHeight(height)
@@ -112,6 +103,12 @@ bool Window::isPendingClose()
 
 void Window::initializeRenderContext()
 {
+}
+
+bool Window::renderUntilClose()
+{
+	this->render();
+	return this->isValid();
 }
 
 void Window::render()

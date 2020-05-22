@@ -1,26 +1,13 @@
 #include "thread/Thread.hpp"
 #include <thread>
 
-void Thread::updateInternal(void * params)
-{
-	mLogger.log(logging::ECategory::LOGINFO, "Starting thread");
-	(*mpDelegateUpdate)(params);
-	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread");
-}
-
-void Thread::updateInternalStatic(Thread * pThread, void * params)
-{
-	pThread->updateInternal(params);
-}
-
 Thread::Thread()
 {
 	mpThreadHandle = nullptr;
 }
 
-Thread::Thread(char const * name, logging::LogSystem * pLogSystem, DelegateUpdate update)
+Thread::Thread(char const * name, logging::LogSystem * pLogSystem)
 	: mpName(name)
-	, mpDelegateUpdate(update)
 {
 	mpThreadHandle = nullptr;
 	mLogger = logging::Logger(mpName, pLogSystem);
@@ -34,9 +21,16 @@ Thread::~Thread()
 	}
 }
 
-void Thread::start(void * params)
+void Thread::start(std::function<bool()> functor)
 {
-	mpThreadHandle = new std::thread(&updateInternalStatic, this, params);
+	mpThreadHandle = new std::thread(std::bind(&Thread::run, this, functor));
+}
+
+void Thread::run(std::function<bool()> functor)
+{
+	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName);
+	while (functor());
+	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName);
 }
 
 void Thread::join()
