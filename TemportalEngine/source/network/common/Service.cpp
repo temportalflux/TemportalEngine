@@ -57,7 +57,8 @@ void Service::startThread(engine::Engine * const pEngine)
 {
 	// TODO: this isn't dealloced
 	mpThread = pEngine->alloc<Thread>("Thread-Network", &engine::Engine::LOG_SYSTEM);
-	mpThread->start(std::bind(&Service::runThread, this));
+	mpThread->setFunctor(std::bind(&Service::runThread, this));
+	mpThread->start();
 }
 
 bool Service::runThread()

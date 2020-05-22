@@ -157,10 +157,9 @@ void Engine::run(Window* pWindow)
 	if (pWindow != nullptr && pWindow->isValid())
 	{
 		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM);
-		mpThreadRender->start(
-			std::bind(&Window::renderUntilClose, pWindow),
-			std::bind(&Window::waitForCleanup, pWindow)
-		);
+		mpThreadRender->setFunctor(std::bind(&Window::renderUntilClose, pWindow));
+		mpThreadRender->setOnComplete(std::bind(&Window::waitForCleanup, pWindow));
+		mpThreadRender->start();
 	}
 
 	if (this->hasNetwork())

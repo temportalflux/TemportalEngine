@@ -11,21 +11,15 @@ Queue::Queue()
 	mIndexTail = 0;
 }
 
-ListenerMap::iterator dereferenceListenerHandle(ListenerHandle &handle)
-{
-	return *((ListenerMap::iterator*)handle);
-}
-
 ListenerHandle Queue::addListener(EInputType evt, Listener listener)
 {
 	ListenerMap::iterator handle = this->mListenersByEvent.insert(std::make_pair(evt, listener));
-	return std::addressof(handle);
+	return handle;
 }
 
 void Queue::removeListener(ListenerHandle &handle)
 {
-	this->mListenersByEvent.erase(dereferenceListenerHandle(handle));
-	handle = nullptr;
+	this->mListenersByEvent.erase(handle);
 }
 
 bool Queue::hasPending() const

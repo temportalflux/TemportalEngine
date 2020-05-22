@@ -11,27 +11,35 @@
 class Thread
 {
 public:
-	typedef void (*DelegateUpdate)(void*);
-
-private:
-	char const* mpName;
-	logging::Logger mLogger;
-	void* mpThreadHandle;
-
-	void run(std::function<bool()> functor, std::optional<std::function<void()>> onComplete);
+	typedef std::function<bool()> DelegateRun;
+	typedef std::optional<std::function<void()>> DelegateOnComplete;
 
 public:
 	Thread();
-	Thread(char const* name, logging::LogSystem *pLogSystem);
+	Thread(std::string name, logging::LogSystem *pLogSystem);
 	~Thread();
+
+	void setFunctor(DelegateRun functor);
+	void setOnComplete(DelegateOnComplete onComplete);
 
 	/**
 		Starts the thread and runs the callable `functor`.
 		While `functor` returns true, the thread will continue.
 		If `functor` returns false, the thread will end.
 	*/
-	void start(std::function<bool()> functor, std::optional<std::function<void()>> onComplete = std::nullopt);
+	void start();
 	void join();
+
+private:
+	std::string mpName;
+	logging::Logger mLogger;
+
+	DelegateRun mFunctorDelegate;
+	DelegateOnComplete mOnCompleteDelegate;
+
+	void* mpThreadHandle;
+
+	void run();
 
 };
 

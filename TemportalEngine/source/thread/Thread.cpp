@@ -2,15 +2,17 @@
 #include <thread>
 
 Thread::Thread()
+	: mpThreadHandle(nullptr)
+	, mFunctorDelegate([&]() { return false; })
+	, mOnCompleteDelegate(std::nullopt)
 {
-	mpThreadHandle = nullptr;
 }
 
-Thread::Thread(char const * name, logging::LogSystem * pLogSystem)
-	: mpName(name)
+Thread::Thread(std::string name, logging::LogSystem * pLogSystem)
+	: Thread()
 {
-	mpThreadHandle = nullptr;
-	mLogger = logging::Logger(mpName, pLogSystem);
+	mpName = name;
+	mLogger = logging::Logger(mpName.c_str(), pLogSystem);
 }
 
 Thread::~Thread()
@@ -21,19 +23,29 @@ Thread::~Thread()
 	}
 }
 
-void Thread::start(std::function<bool()> functor, std::optional<std::function<void()>> onComplete)
+void Thread::setFunctor(DelegateRun functor)
 {
-	mpThreadHandle = new std::thread(std::bind(&Thread::run, this, functor, onComplete));
+	mFunctorDelegate = functor;
 }
 
-void Thread::run(std::function<bool()> functor, std::optional<std::function<void()>> onComplete)
+void Thread::setOnComplete(DelegateOnComplete onComplete)
+{
+	mOnCompleteDelegate = onComplete;
+}
+
+void Thread::start()
+{
+	mpThreadHandle = new std::thread(std::bind(&Thread::run, this));
+}
+
+void Thread::run()
 {
 	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName);
-	while (functor());
+	while (mFunctorDelegate());
 	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName);
-	if (onComplete.has_value())
+	if (mOnCompleteDelegate.has_value())
 	{
-		(onComplete.value())();
+		(mOnCompleteDelegate.value())();
 	}
 }
 
