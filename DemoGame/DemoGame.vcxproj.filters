@@ -14,7 +14,7 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Resource Files\shaders">
-      <UniqueIdentifier>{a7c1a9d6-40cd-46c1-9aaa-436d308f3461}</UniqueIdentifier>
+      <UniqueIdentifier>{fe181a86-9406-4794-9841-910aecc90b54}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -23,10 +23,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\triangle.frag">
+    <None Include="packages.config" />
+    <None Include="resources\shaders\triangle.vert">
       <Filter>Resource Files\shaders</Filter>
     </None>
-    <None Include="resources\shaders\triangle.vert">
+    <None Include="resources\shaders\triangle.frag">
       <Filter>Resource Files\shaders</Filter>
     </None>
   </ItemGroup>
