@@ -6,6 +6,7 @@
 #include "dependency/SDL.hpp"
 #include "thread/Thread.hpp"
 #include "input/InputWatcher.hpp"
+#include "input/types.h"
 #include "network/common/Service.hpp"
 #include <optional>
 #include <typeinfo>
@@ -64,6 +65,7 @@ private:
 	Thread *mpThreadRender;
 
 	input::Queue *mpInputQueue;
+	input::ListenerHandle mInputHandle;
 
 	Engine(ui32 const & version, void* memoryManager);
 

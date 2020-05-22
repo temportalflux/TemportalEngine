@@ -3,20 +3,16 @@
 
 #include "TemportalEnginePCH.hpp"
 
-// TODO: Organize Headers
-
 #include "types/integer.h"
-#include "Event.hpp"
+#include "input/types.h"
 #include "thread/MutexLock.hpp"
+#include "Event.hpp"
 
 NS_INPUT
 
 // http://gameprogrammingpatterns.com/event-queue.html
-class TEMPORTALENGINE_API Queue
+class Queue
 {
-public:
-	typedef void(*DelegateListener)(Event const &evt);
-
 private:
 	typedef ui8 TMaxSize;
 	static const TMaxSize MAX_COUNT_PENDING = 255;
@@ -25,15 +21,17 @@ private:
 	Event mpBuffer[MAX_COUNT_PENDING];
 	TMaxSize mIndexHead, mIndexTail;
 
-	DelegateListener mpListener;
+	ListenerMap mListenersByEvent;
 
 	Event const dequeueRaw();
 	bool enqueueRaw(Event const &evt);
 	void dispatchRaw();
 
 public:
-	Queue(DelegateListener listener);
 	Queue();
+
+	ListenerHandle addListener(EInputType evt, Listener listener);
+	void removeListener(ListenerHandle &handle);
 
 	bool hasPending() const;
 	bool enqueue(Event const& evt);

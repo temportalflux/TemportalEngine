@@ -82,22 +82,30 @@
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <SourcePath>$(VC_SourcePath);source</SourcePath>
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(VC_IncludePath);$(IncludePath);include</IncludePath>
     <SourcePath>$(VC_SourcePath);source</SourcePath>
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Output\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,7 +118,7 @@
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -118,9 +126,14 @@
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"</Command>
+      <Outputs>neverexists.txt</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -134,16 +147,21 @@ xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
     </ClCompile>
     <Link>
       <AdditionalDependencies>TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"</Command>
+      <Outputs>neverexists.txt</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -160,7 +178,7 @@ xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -168,9 +186,14 @@ xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"</Command>
+      <Outputs>neverexists.txt</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -188,16 +211,21 @@ xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>TemportalEngine.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"
-xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
+    <CustomBuildStep>
+      <Command>xcopy /y /d "$(SolutionDir)libs\SDL2\lib\$(PlatformTarget)\SDL2.dll" "$(OutDir)"
+xcopy /y /d "$(SolutionDir)Build\$(Configuration)\$(PlatformTarget)\TemportalEngine\TemportalEngine.dll" "$(OutDir)"</Command>
+      <Outputs>neverexists.txt</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

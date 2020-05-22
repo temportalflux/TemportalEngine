@@ -3,8 +3,7 @@
 
 using namespace input;
 
-Queue::Queue(DelegateListener listener)
-	: mpListener(listener)
+Queue::Queue()
 {
 	*mpMutex = thread::MutexLock();
 	memset(mpBuffer, 0, MAX_COUNT_PENDING * sizeof(Event));
@@ -12,8 +11,21 @@ Queue::Queue(DelegateListener listener)
 	mIndexTail = 0;
 }
 
-Queue::Queue() : Queue(nullptr)
+ListenerMap::iterator dereferenceListenerHandle(ListenerHandle &handle)
 {
+	return *((ListenerMap::iterator*)handle);
+}
+
+ListenerHandle Queue::addListener(EInputType evt, Listener listener)
+{
+	ListenerMap::iterator handle = this->mListenersByEvent.insert(std::make_pair(evt, listener));
+	return std::addressof(handle);
+}
+
+void Queue::removeListener(ListenerHandle &handle)
+{
+	this->mListenersByEvent.erase(dereferenceListenerHandle(handle));
+	handle = nullptr;
 }
 
 bool Queue::hasPending() const
@@ -50,10 +62,15 @@ void Queue::dispatchRaw()
 {
 	// If there are no pending requests, do nothing.
 	if (mIndexHead == mIndexTail) return;
+
 	Event const& evt = this->dequeueRaw();
-	if (this->mpListener != nullptr)
+
+	// Iterate over all iterators whose key matches the event type
+	std::pair<ListenerMap::iterator, ListenerMap::iterator> listeners = this->mListenersByEvent.equal_range(evt.type);
+	for (auto iter = listeners.first; iter != listeners.second; ++iter)
 	{
-		(*this->mpListener)(evt);
+		// Execute each listener
+		(iter->second)(evt);
 	}
 }
 

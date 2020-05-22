@@ -265,6 +265,7 @@
     <ClInclude Include="include\input\Key.hpp" />
     <ClInclude Include="include\input\Mouse.hpp" />
     <ClInclude Include="include\input\Queue.hpp" />
+    <ClInclude Include="include\input\types.h" />
     <ClInclude Include="include\logging\Logger.hpp" />
     <ClInclude Include="include\math\compare.h" />
     <ClInclude Include="include\math\pow.hpp" />

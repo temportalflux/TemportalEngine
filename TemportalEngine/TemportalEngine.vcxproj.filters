@@ -323,6 +323,9 @@
     <ClInclude Include="include\types\math.h">
       <Filter>Header Files\types</Filter>
     </ClInclude>
+    <ClInclude Include="include\input\types.h">
+      <Filter>Header Files\input</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="resource\shaders\triangle.frag.spv">
