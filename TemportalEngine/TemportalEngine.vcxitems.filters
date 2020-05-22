@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="dependency">
+    </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{a58b976f-a76e-4faf-9826-6ff2a6501831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dependency">
+    </Filter>
+    <Filter Include="logging">
+    </Filter>
+    <Filter Include="math">
+    </Filter>
+    <Filter Include="memory">
+    </Filter>
+    <Filter Include="network">
+    </Filter>
+    <Filter Include="registry">
+    </Filter>
+    <Filter Include="render">
+    </Filter>
+    <Filter Include="thread">
+    </Filter>
+    <Filter Include="types">
+    </Filter>
+    <Filter Include="network\client">
+      <UniqueIdentifier>{346ed6d3-47dc-4c18-b6ed-3b0384420921}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\common">
+      <UniqueIdentifier>{8a02bff1-c38c-4122-bf28-06f392a48f06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network\server">
+      <UniqueIdentifier>{3e9369f0-1349-485f-9be4-c8f74d11448e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp">
+      <Filter>dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp">
+      <Filter>dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputWatcher.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\input\Queue.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\logging\Logger.cpp">
+      <Filter>logging</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Vector.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\alloc.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp">
+      <Filter>network\client</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionRejected.cpp">
+      <Filter>network\client</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\ServiceClient.cpp">
+      <Filter>network\client</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\NetworkInterface.cpp">
+      <Filter>network\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\Packet.cpp">
+      <Filter>network\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\PacketQueue.cpp">
+      <Filter>network\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\PacketRegistry.cpp">
+      <Filter>network\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\Service.cpp">
+      <Filter>network\common</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp">
+      <Filter>network\server</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp">
+      <Filter>network\server</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\Renderer.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Mutex.c">
+      <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\MutexLock.cpp">
+      <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp">
+      <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c">
+      <Filter>thread</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp">
+      <Filter>dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp">
+      <Filter>dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Action.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Event.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputWatcher.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Joystick.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Key.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Mouse.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Queue.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\types.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\logging\Logger.hpp">
+      <Filter>logging</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\compare.h">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\pow.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Vector.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\VectorType.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\alloc.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryManager.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\Pool.h">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\SharedPtr.hpp">
+      <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp">
+      <Filter>registry</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp">
+      <Filter>registry</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\Renderer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\Mutex.h">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\MutexLock.hpp">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\Thread.hpp">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\ThreadId.h">
+      <Filter>thread</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\types\arch.h">
+      <Filter>types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\types\integer.h">
+      <Filter>types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h">
+      <Filter>types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h">
+      <Filter>types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionAccepted.hpp">
+      <Filter>network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionRejected.hpp">
+      <Filter>network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\ServiceClient.hpp">
+      <Filter>network\client</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp">
+      <Filter>network\server</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp">
+      <Filter>network\server</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\NetworkInterface.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Packet.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\PacketQueue.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\PacketRegistry.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\RakNet.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Service.hpp">
+      <Filter>network\common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

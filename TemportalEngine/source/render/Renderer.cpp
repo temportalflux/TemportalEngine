@@ -593,9 +593,9 @@ vk::UniqueRenderPass Renderer::createRenderPass()
 
 vk::UniquePipeline Renderer::createGraphicsPipeline()
 {
-	auto triangleVert = createShaderModule("resource/shaders/triangle.vert");
+	auto triangleVert = createShaderModule("shaders/triangle.vert");
 	assert(triangleVert.has_value());
-	auto triangleFrag = createShaderModule("resource/shaders/triangle.frag");
+	auto triangleFrag = createShaderModule("shaders/triangle.frag");
 	assert(triangleFrag.has_value());
 
 	auto infoStageTriangleVert = vk::PipelineShaderStageCreateInfo()
@@ -792,7 +792,7 @@ void Renderer::drawFrame()
 	{
 		mLogicalDevice->waitForFences((vk::Fence)mImagesInFlight[idxImage.value], /*wait for every fence in the list passed*/ true, UINT64_MAX);
 	}
-	mImagesInFlight[idxImage.value] = mFencesInFlight[mCurrentFrame].get();
+	mImagesInFlight[idxImage.value] = (VkFence)mFencesInFlight[mCurrentFrame].get();
 
 	auto cmdBuffer = mCommandBuffers[idxImage.value].get();
 
