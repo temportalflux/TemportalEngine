@@ -4,6 +4,8 @@
 
 #include "ExecutableInfo.hpp"
 #include "logging/Logger.hpp"
+#include "graphics/PhysicalDevicePreference.hpp"
+#include "graphics/PhysicalDevice.hpp"
 
 #include <optional>
 #include <unordered_set>
@@ -39,7 +41,7 @@ public:
 	VulkanInstance();
 
 	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
-	logging::Logger& getLog() { return mLogger; }
+	logging::Logger getLog() const { return mLogger; }
 
 	VulkanInstance& setApplicationInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
@@ -58,6 +60,8 @@ public:
 		Destroys the vulkan instance.
 	*/
 	void destroy();
+
+	std::optional<graphics::PhysicalDevice> pickPhysicalDevice(PhysicalDevicePreference const &preference, Surface *const surface) const;
 
 private:
 

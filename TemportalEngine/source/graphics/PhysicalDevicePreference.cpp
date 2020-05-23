@@ -1,5 +1,7 @@
 #include "graphics/PhysicalDevicePreference.hpp"
 
+#include "graphics/PhysicalDevice.hpp"
+
 #include <unordered_set>
 
 using namespace graphics;
@@ -37,16 +39,6 @@ QueueFamilyGroup findQueueFamilies(vk::PhysicalDevice const &device, vk::Surface
 		idxQueue++;
 	}
 	return group;
-}
-
-std::unordered_set<std::string> getSupportedExtensionNames(vk::PhysicalDevice const &device)
-{
-	std::unordered_set<std::string> supportedExtensionNames;
-	for (auto& ext : device.enumerateDeviceExtensionProperties())
-	{
-		supportedExtensionNames.insert(ext.extensionName);
-	}
-	return supportedExtensionNames;
 }
 
 bool doesDeviceIncludeFeatureType(vk::PhysicalDeviceFeatures const &features, PhysicalDeviceFeature type)
@@ -121,7 +113,7 @@ bool PhysicalDevicePreference::isSwapChainSupported(SwapChainSupport const &supp
 	return false;
 }
 
-PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::PhysicalDevice const &device, vk::SurfaceKHR const &surface) const
+PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevice const *pDevice) const
 {
 	// Defines if the scoring should examine all preferences, even if required ones have not been found (prevents returning early).
 	bool bExamineAllPreferences = false;
@@ -141,14 +133,14 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::P
 			bFoundAllReqiuredPreferences = false;
 			return bExamineAllPreferences;
 		}
-		else if (bIsSupported)
+		else if (!bIsRequired && bIsSupported)
 		{
 			score += pref.score.value();
 		}
 		return true;
 	};
 
-	auto deviceProperties = device.getProperties();
+	auto deviceProperties = pDevice->getProperties();
 	for (auto& prefDeviceType : this->mDeviceType)
 	{
 		if (!scorePreference(prefDeviceType,
@@ -160,7 +152,7 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::P
 	}
 
 	// Determine if all required extensions are supported, and adding the score of those that are optional to `score`.
-	auto supportedExtensions = getSupportedExtensionNames(device);
+	auto supportedExtensions = pDevice->getSupportedExtensionNames();
 	for (auto& prefExtension : mDeviceExtensions)
 	{
 		if (!scorePreference(prefExtension,
@@ -171,7 +163,7 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::P
 		}
 	}
 
-	auto features = device.getFeatures();
+	auto features = pDevice->getFeatures();
 	for (auto& prefFeature : this->mFeatures)
 	{
 		if (!scorePreference(prefFeature,
@@ -182,7 +174,7 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::P
 		}
 	}
 
-	auto supportedQueueFamilyGroup = findQueueFamilies(device, surface);
+	auto supportedQueueFamilyGroup = pDevice->queryQueueFamilyGroup();
 	for (auto& prefQueueFamily : this->mQueueFamilies)
 	{
 		if (!scorePreference(prefQueueFamily,
@@ -193,7 +185,7 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(vk::P
 		}
 	}
 
-	auto swapChainSupport = SwapChainSupport(device, surface);
+	auto swapChainSupport = pDevice->querySwapChainSupport();
 	for (auto& prefSwapChain : this->mSwapChain)
 	{
 		if (!scorePreference(prefSwapChain,

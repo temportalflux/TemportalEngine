@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevicePreference.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanInstance.cpp" />
@@ -51,6 +52,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevice.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevicePreference.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Surface.hpp" />

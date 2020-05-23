@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
+#include "..\..\include\graphics\Surface.hpp"
 
 using namespace graphics;
 
@@ -12,8 +13,14 @@ Surface::Surface(void *pWindowHandle)
 {
 }
 
+void Surface::releaseWindowHandle()
+{
+	mpWindowHandle = nullptr;
+}
+
 void Surface::create(VulkanInstance *pVulkan)
 {
+	assert(mpWindowHandle != nullptr);
 	VkSurfaceKHR surface;
 	SDL_Window* pWindow = reinterpret_cast<SDL_Window*>(this->mpWindowHandle);
 	if (!SDL_Vulkan_CreateSurface(pWindow, pVulkan->mInstance.get(), &surface))

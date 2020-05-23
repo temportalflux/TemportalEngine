@@ -11,6 +11,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
+class PhysicalDevice;
 
 enum class PhysicalDeviceFeature
 {
@@ -159,7 +160,7 @@ public:
 	PhysicalDevicePreference& addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score = std::nullopt);
 	
-	TotalScore scoreDevice(vk::PhysicalDevice const &device, vk::SurfaceKHR const &surface) const;
+	TotalScore scoreDevice(graphics::PhysicalDevice const *pDevice) const;
 
 private:
 	std::set<PreferenceDeviceType> mDeviceType;

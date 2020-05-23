@@ -124,6 +124,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevice.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -267,6 +270,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Surface.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevice.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

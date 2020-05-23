@@ -1,8 +1,11 @@
 #include "graphics/VulkanInstance.hpp"
 
+#include "graphics/Surface.hpp"
 #include "types/integer.h"
 #include "version.h"
+
 #include <set>
+#include <map>
 
 using namespace graphics;
 
@@ -126,6 +129,28 @@ void VulkanInstance::destroy()
 
 	mInstance.reset();
 	mInstanceCreated = false;
+}
+
+std::optional<graphics::PhysicalDevice> VulkanInstance::pickPhysicalDevice(PhysicalDevicePreference const & preference, Surface *const pSurface) const
+{
+	assert(isValid());
+
+	std::multimap<ui32, graphics::PhysicalDevice> candidates;
+	for (auto& device : this->mInstance->enumeratePhysicalDevices())
+	{
+		auto physicalDevice = PhysicalDevice(device, pSurface);
+		auto score = preference.scoreDevice(&physicalDevice);
+		if (score.has_value())
+		{
+			candidates.insert(std::make_pair(score.value(), physicalDevice));
+		}
+	}
+
+	if (candidates.size() > 0)
+	{
+		return candidates.rbegin()->second;
+	}
+	return std::nullopt;
 }
 
 static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(

@@ -3,6 +3,7 @@
 #include "types/real.h"
 #include "ExecutableInfo.hpp"
 #include "version.h"
+#include "graphics/PhysicalDevicePreference.hpp"
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -33,6 +34,7 @@ Editor::Editor()
 	this->mVulkanInstance.setApplicationInfo(appInfo);
 	this->mVulkanInstance.setEngineInfo(engineInfo);
 	this->mVulkanInstance.createLogger(&this->LogSystem, /*vulkan debug*/ true);
+
 }
 
 Editor::~Editor()
@@ -60,8 +62,21 @@ void Editor::openWindow()
 {
 	this->createWindow();
 	this->initializeVulkan();
+
 	mSurface = graphics::Surface(this->mpWindowHandle);
 	mSurface.create(&this->mVulkanInstance);
+
+	auto optPhysicalDevice = mVulkanInstance.pickPhysicalDevice(
+		graphics::PhysicalDevicePreference()
+			.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics),
+		&mSurface
+	);
+	if (!optPhysicalDevice.has_value())
+	{
+		mVulkanInstance.getLog().log(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device.");
+		return;
+	}
+	mPhysicalDevice = optPhysicalDevice.value();
 
 	i32 width, height;
 	SDL_GetWindowSize(GetSDLWindow(this->mpWindowHandle), &width, &height);
@@ -70,9 +85,11 @@ void Editor::openWindow()
 
 void Editor::closeWindow()
 {
+	mSurface.releaseWindowHandle();
 	this->destroyWindow();
 	if (this->mVulkanInstance.isValid())
 	{
+		mPhysicalDevice.invalidate();
 		mSurface.destroy(&this->mVulkanInstance);
 		this->mVulkanInstance.destroy();
 	}
@@ -146,30 +163,15 @@ std::vector<char const *> GetRequiredSDLVulkanExtensions(void *pWindowHandle)
 
 void Editor::setupVulkan()
 {
-	auto extensions = GetRequiredSDLVulkanExtensions(this->mpWindowHandle);
-
-	// TODO: add validation layers and debug callback when integrating with an actual system
-
-	// Create the vulkan instance
-	{
-		auto info = vk::InstanceCreateInfo()
-			.setEnabledExtensionCount((ui32)extensions.size())
-			.setPpEnabledExtensionNames(extensions.data());
-		//mVulkanInstance = vk::createInstanceUnique(info);
-	}
-
 	// Select the GPU/Physical Device
 	{
-		// TODO: Actually pick the best physical device
-		//auto physicalDevices = mVulkanInstance->enumeratePhysicalDevices();
-		// currently assumes the first has a graphics queue
-		//mPhysicalDevice = physicalDevices.front();
 
 	}
 
 	// Find the graphics queue family
 	// Assert that a queue was found
 	{
+		/*
 		bool bFoundGraphicsFamily = false;
 		auto queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
 		for (ui32 i = 0; i < queueFamilyProperties.size(); ++i)
@@ -182,6 +184,7 @@ void Editor::setupVulkan()
 			}
 		}
 		assert(bFoundGraphicsFamily);
+		//*/
 	}
 
 	// Create a GPU API / Logical Device
@@ -199,8 +202,8 @@ void Editor::setupVulkan()
 			.setEnabledExtensionCount(1)
 			.setPpEnabledExtensionNames(deviceExtensions);
 
-		mLogicalDevice = mPhysicalDevice.createDeviceUnique(info);
-		mGraphicsQueue = mLogicalDevice->getQueue(mGraphicsQueueIndex, 0);
+		//mLogicalDevice = mPhysicalDevice.createDeviceUnique(info);
+		//mGraphicsQueue = mLogicalDevice->getQueue(mGraphicsQueueIndex, 0);
 	}
 
 	// Create descriptor pool

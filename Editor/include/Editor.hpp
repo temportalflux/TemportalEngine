@@ -4,6 +4,7 @@
 #include "types/integer.h"
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/Surface.hpp"
+#include "graphics/PhysicalDevice.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -26,8 +27,8 @@ private:
 
 	graphics::VulkanInstance mVulkanInstance;
 	graphics::Surface mSurface;
+	graphics::PhysicalDevice mPhysicalDevice;
 
-	vk::PhysicalDevice mPhysicalDevice;
 	ui32 mGraphicsQueueIndex;
 	vk::UniqueDevice mLogicalDevice;
 	vk::Queue mGraphicsQueue;
