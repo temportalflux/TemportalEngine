@@ -76,6 +76,7 @@
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
@@ -83,6 +84,7 @@
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
@@ -90,6 +92,7 @@
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
@@ -97,6 +100,7 @@
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

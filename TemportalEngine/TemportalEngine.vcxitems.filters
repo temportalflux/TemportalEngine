@@ -33,6 +33,9 @@
     <Filter Include="network\server">
       <UniqueIdentifier>{3e9369f0-1349-485f-9be4-c8f74d11448e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="graphics">
+      <UniqueIdentifier>{1385d2fa-e688-4a45-80eb-782d1df3b0c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -111,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c">
       <Filter>thread</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevicePreference.cpp">
+      <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +248,15 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Service.hpp">
       <Filter>network\common</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevicePreference.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\graphics\SwapChainSupport.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

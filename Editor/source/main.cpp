@@ -17,6 +17,9 @@
 #include <SDL_vulkan.h>
 #include <vulkan/vulkan.h>
 
+#include <iostream>
+#include "Editor.hpp"
+
 //#define IMGUI_UNLIMITED_FRAME_RATE
 #ifdef _DEBUG
 #define IMGUI_VULKAN_DEBUG_REPORT
@@ -318,6 +321,14 @@ static void FramePresent(ImGui_ImplVulkanH_Window* wd)
 
 int main(int, char**)
 {
+	auto editor = Editor();
+	editor.openWindow();
+
+	char tmp[16];
+	std::cin.getline(tmp, 16);
+
+	return 0;
+
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
