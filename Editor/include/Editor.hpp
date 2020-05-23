@@ -31,9 +31,8 @@ private:
 	graphics::Surface mSurface;
 	graphics::PhysicalDevice mPhysicalDevice;
 	graphics::LogicalDevice mLogicalDevice;
+	std::optional<vk::Queue> mGraphicsQueue;
 
-	ui32 mGraphicsQueueIndex;
-	vk::Queue mGraphicsQueue;
 	vk::UniqueDescriptorPool mDescriptorPool;
 
 	bool mIsRunning;

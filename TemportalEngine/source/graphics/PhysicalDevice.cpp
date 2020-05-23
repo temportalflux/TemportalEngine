@@ -103,5 +103,5 @@ LogicalDevice PhysicalDevice::createLogicalDevice(LogicalDeviceInfo const * pInf
 		.setEnabledLayerCount((ui32)pInfo->mValidationLayers.size())
 		.setPpEnabledLayerNames(pInfo->mValidationLayers.data());
 	vk::UniqueDevice device = mDevice.createDeviceUnique(info);
-	return LogicalDevice(device);
+	return LogicalDevice(this, device);
 }

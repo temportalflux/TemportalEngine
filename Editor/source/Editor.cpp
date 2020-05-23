@@ -87,6 +87,8 @@ void Editor::openWindow()
 		.setValidationLayers(VulkanValidationLayers);
 	mLogicalDevice = mPhysicalDevice.createLogicalDevice(&logicalDeviceInfo);
 
+	mGraphicsQueue = mLogicalDevice.getQueue(graphics::QueueFamily::eGraphics);
+
 	i32 width, height;
 	SDL_GetWindowSize(GetSDLWindow(this->mpWindowHandle), &width, &height);
 	//this->createFrameBuffers(width, height);
@@ -98,6 +100,7 @@ void Editor::closeWindow()
 	this->destroyWindow();
 	if (this->mVulkanInstance.isValid())
 	{
+		mGraphicsQueue.reset();
 		mLogicalDevice.invalidate();
 		mPhysicalDevice.invalidate();
 		mSurface.destroy(&this->mVulkanInstance);
@@ -159,26 +162,6 @@ void Editor::run()
 
 void Editor::setupVulkan()
 {
-
-	// Create a GPU API / Logical Device
-	{
-		f32 queuePriorities[] = { 1.0f };
-		auto infoQueue = vk::DeviceQueueCreateInfo()
-			.setQueueFamilyIndex(mGraphicsQueueIndex)
-			.setQueueCount(1)
-			.setPQueuePriorities(queuePriorities);
-		
-		char const* deviceExtensions[] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-		auto info = vk::DeviceCreateInfo()
-			.setQueueCreateInfoCount(1)
-			.setPQueueCreateInfos(&infoQueue)
-			.setEnabledExtensionCount(1)
-			.setPpEnabledExtensionNames(deviceExtensions);
-
-		//mLogicalDevice = mPhysicalDevice.createDeviceUnique(info);
-		//mGraphicsQueue = mLogicalDevice->getQueue(mGraphicsQueueIndex, 0);
-	}
-
 	// Create descriptor pool
 	{
 		ui32 const poolSize = 1000;

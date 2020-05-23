@@ -2,10 +2,14 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "graphics/QueueFamily.hpp"
+
+#include <optional>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class PhysicalDevice;
+class LogicalDeviceInfo;
 
 class LogicalDevice
 {
@@ -14,12 +18,14 @@ class LogicalDevice
 public:
 	LogicalDevice() = default;
 
+	std::optional<vk::Queue> getQueue(QueueFamily type) const;
 	void invalidate();
 
 private:
-	LogicalDevice(vk::UniqueDevice &device);
-
+	PhysicalDevice const *mpPhysicalDevice;
 	vk::UniqueDevice mDevice;
+
+	LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDevice &device);
 
 };
 
