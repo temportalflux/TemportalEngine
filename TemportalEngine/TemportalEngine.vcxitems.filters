@@ -255,8 +255,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\graphics\SwapChainSupport.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
   </ItemGroup>
 </Project>

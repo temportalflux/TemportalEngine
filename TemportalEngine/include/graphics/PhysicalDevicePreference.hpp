@@ -72,7 +72,7 @@ enum class PhysicalDeviceFeature
 
 class PhysicalDevicePreference
 {
-private:
+public:
 	typedef std::optional<ui8> IndividualScore;
 	typedef std::optional<ui32> TotalScore;
 
@@ -85,26 +85,51 @@ private:
 			are ignored.
 		*/
 		IndividualScore score;
+
+		bool isScoreLessThan(Preference const &other) const
+		{
+			return !this->score.has_value() && other.score.has_value();
+		}
 	};
 
 	struct PreferenceDeviceType : Preference
 	{
 		vk::PhysicalDeviceType type;
+
+		bool operator<(PreferenceDeviceType const &other) const
+		{
+			return this->isScoreLessThan(other) || std::less()(this->type, other.type);
+		}
 	};
 
 	struct PreferenceExtension : Preference
 	{
 		std::string extensionName;
+
+		bool operator<(PreferenceExtension const &other) const
+		{
+			return this->isScoreLessThan(other) || std::less()(this->extensionName, other.extensionName);
+		}
 	};
 
 	struct PreferenceFeature : Preference
 	{
 		PhysicalDeviceFeature feature;
+
+		bool operator<(PreferenceFeature const &other) const
+		{
+			return this->isScoreLessThan(other) || std::less()(this->feature, other.feature);
+		}
 	};
 
 	struct PreferenceQueueFamily : Preference
 	{
 		QueueFamily queueFamily;
+
+		bool operator<(PreferenceQueueFamily const &other) const
+		{
+			return this->isScoreLessThan(other) || std::less()(this->queueFamily, other.queueFamily);
+		}
 	};
 
 	struct PreferenceSwapChain : Preference
@@ -115,6 +140,11 @@ private:
 			eHasAnyPresentationMode,
 		};
 		Type supportType;
+
+		bool operator<(PreferenceSwapChain const &other) const
+		{
+			return this->isScoreLessThan(other) || std::less()(this->supportType, other.supportType);
+		}
 	};
 
 	bool isSwapChainSupported(SwapChainSupport const &support, PreferenceSwapChain::Type type) const;
@@ -122,6 +152,9 @@ private:
 public:
 	PhysicalDevicePreference() = default;
 
+	PhysicalDevicePreference& addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score = std::nullopt);
+	
 	TotalScore scoreDevice(vk::PhysicalDevice const &device, vk::SurfaceKHR const &surface) const;
 
 private:

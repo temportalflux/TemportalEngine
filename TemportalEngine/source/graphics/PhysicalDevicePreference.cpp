@@ -4,6 +4,18 @@
 
 using namespace graphics;
 
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score)
+{
+	mDeviceType.insert({ score, deviceType });
+	return *this;
+}
+
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score)
+{
+	mQueueFamilies.insert({ score, queueFamily });
+	return *this;
+}
+
 QueueFamilyGroup findQueueFamilies(vk::PhysicalDevice const &device, vk::SurfaceKHR const &surface)
 {
 	auto group = QueueFamilyGroup();
