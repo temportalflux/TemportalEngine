@@ -7,6 +7,8 @@
 // Engine ---------------------------------------------------------------------
 #include "thread/MutexLock.hpp"
 
+#include <string>
+
 // ----------------------------------------------------------------------------
 NS_LOGGING
 
@@ -61,6 +63,8 @@ private:
 public:
 
 	LogSystem();
+
+	static std::string getCurrentTimeString();
 	
 	/**
 	* Opens a file stream for writing.

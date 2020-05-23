@@ -6,6 +6,7 @@
 #include "logging/Logger.hpp"
 
 #include <optional>
+#include <unordered_set>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
@@ -24,14 +25,18 @@ private:
 	bool mUseVulkanDebugMessenger;
 	std::optional<vk::DebugUtilsMessengerEXT> mDebugMessenger;
 
+	std::unordered_set<char const*> mEnabledExtensions;
+	std::optional<std::vector<char const*>> mValidationLayers;
+
 	vk::ApplicationInfo mInfo;
 	vk::InstanceCreateInfo mCreateInfo;
 	bool mInstanceCreated;
 	vk::UniqueInstance mInstance;
 
 public:
-	VulkanInstance(logging::LogSystem *logSys, bool bLogVulkanDebug);
+	VulkanInstance();
 
+	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
 	logging::Logger& getLog() { return mLogger; }
 
 	VulkanInstance& setApplicationInfo(utility::SExecutableInfo const &info);

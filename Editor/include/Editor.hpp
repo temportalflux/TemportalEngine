@@ -2,6 +2,7 @@
 
 #include "dependency/SDL.hpp"
 #include "types/integer.h"
+#include "graphics/VulkanInstance.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -9,6 +10,8 @@ class Editor
 {
 
 public:
+	logging::LogSystem LogSystem;
+
 	Editor();
 	~Editor();
 
@@ -16,9 +19,10 @@ public:
 	void run();
 
 private:
-
 	dependency::SDL mDependencySDL[1];
 	void* mpWindowHandle;
+
+	graphics::VulkanInstance mVulkanInstance_new[1]; // TODO: rename
 
 	vk::UniqueInstance mVulkanInstance;
 	vk::PhysicalDevice mPhysicalDevice;
@@ -33,8 +37,14 @@ private:
 	bool initializeDependencies();
 	void terminateDependencies();
 
-	void createWindow();
 	void closeWindow();
+
+	void createWindow();
+	void destroyWindow();
+
+	std::vector<const char*> querySDLVulkanExtensions() const;
+	void initializeVulkan();
+	void destroyVulkan();
 	
 	// VULKAN STUBBING - TO BE MOVED TO INTERNAL API
 	void createSurface();

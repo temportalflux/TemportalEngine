@@ -4,7 +4,6 @@
 #include <cassert>
 #include <fstream>
 #include <stdarg.h>
-#include <string>
 #include <time.h>
 
 // Engine ---------------------------------------------------------------------
@@ -38,6 +37,22 @@ void LogSystem::printLog(char const *const format, ...)
 	va_end(args);
 }
 
+std::string LogSystem::getCurrentTimeString()
+{
+	time_t currentTime = time(nullptr);
+	struct tm timeinfo;
+	localtime_s(&timeinfo, &currentTime);
+	// Y = ####
+	// m = ##
+	// d = ##
+	// H = ##
+	// M = ##
+	// S = ##
+	char timeStr[19];
+	strftime(timeStr, sizeof(timeStr), "%Y-%m-%d-%H-%M-%S", &timeinfo);
+	return timeStr;
+}
+
 void LogSystem::open(char const * const filePath)
 {
 	fopen_s((FILE**)&mpFileStream, filePath, "w");
@@ -68,7 +83,7 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 	time_t currentTime = time(nullptr);
 	struct tm timeinfo;
 	localtime_s(&timeinfo, &currentTime);
-	char timeStr[70];
+	char timeStr[19];
 	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", &timeinfo);
 
 	va_list args;

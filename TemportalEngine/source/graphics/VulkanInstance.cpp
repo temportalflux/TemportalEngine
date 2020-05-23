@@ -2,19 +2,25 @@
 
 #include "types/integer.h"
 #include "version.h"
+#include <set>
 
 using namespace graphics;
 
-VulkanInstance::VulkanInstance(logging::LogSystem *logSys, bool bLogVulkanDebug)
+VulkanInstance::VulkanInstance()
 	: mInstanceCreated(false)
-	, mLogger(logging::Logger("Vulkan", logSys))
-	, mUseVulkanDebugMessenger(bLogVulkanDebug)
 	, mDebugMessenger(std::nullopt)
 {
 	mInfo.apiVersion = VK_API_VERSION_1_2;
 	mCreateInfo.setPApplicationInfo(&mInfo);
 	// Ensure validation layers are disabled
 	setValidationLayers(std::nullopt);
+}
+
+VulkanInstance& VulkanInstance::createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug)
+{
+	mUseVulkanDebugMessenger = bLogVulkanDebug;
+	mLogger = logging::Logger("Vulkan", logSys);
+	return *this;
 }
 
 VulkanInstance& VulkanInstance::setApplicationInfo(utility::SExecutableInfo const &info)
@@ -34,8 +40,10 @@ VulkanInstance& VulkanInstance::setEngineInfo(utility::SExecutableInfo const &in
 VulkanInstance& VulkanInstance::setRequiredExtensions(std::vector<char const*> extensions)
 {
 	assert(!mInstanceCreated);
-	mCreateInfo.setEnabledExtensionCount((ui32)extensions.size());
-	mCreateInfo.setPpEnabledExtensionNames(extensions.data());
+	// Clear the set of extensions and load it will the passed extensions
+	// Ensures there is only one of each type
+	mEnabledExtensions.clear();
+	mEnabledExtensions.insert(extensions.begin(), extensions.end());
 	return *this;
 }
 
@@ -45,24 +53,44 @@ VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<ch
 	// Check that all layers are actually available. Will be optimized out in a non-debug build
 	if (layers.has_value())
 	{
+		std::set<char const*> desiredLayers(layers.value().begin(), layers.value().end());
 		for (const auto& availableLayer : vk::enumerateInstanceLayerProperties())
 		{
-			for (const auto& desiredLayerName : layers.value())
+			for (auto iter = layers.value().begin(); iter != layers.value().end(); ++iter)
 			{
-				bool bHasLayer = strcmp(availableLayer.layerName, desiredLayerName) == 0;
-				assert(bHasLayer);
+				bool bIsDesiredLayer = strcmp(availableLayer.layerName, *iter) == 0;
+				if (bIsDesiredLayer)
+				{
+					desiredLayers.erase(*iter);
+				}
 			}
 		}
+		// Assert-fail if there are unsupported validation layers
+		assert(desiredLayers.empty());
 	}
 
-	mCreateInfo.setEnabledLayerCount(layers.has_value() ? (ui32)layers.value().size() : 0);
-	mCreateInfo.setPpEnabledLayerNames(layers.has_value() ? layers.value().data() : nullptr);
+	mValidationLayers = layers;
 	return *this;
 }
 
 void VulkanInstance::initialize()
 {
 	assert(!mInstanceCreated);
+
+	// Append debug extensions as needed
+	std::unordered_set<char const*> enabledExtensions(mEnabledExtensions.begin(), mEnabledExtensions.end());
+	if (this->mUseVulkanDebugMessenger)
+	{
+		enabledExtensions.insert(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	}
+
+	// Copy the set back into a vector for sending to create info
+	std::vector<char const*> extensionNames(enabledExtensions.begin(), enabledExtensions.end());
+	mCreateInfo.setEnabledExtensionCount((ui32)extensionNames.size());
+	mCreateInfo.setPpEnabledExtensionNames(extensionNames.data());
+
+	mCreateInfo.setEnabledLayerCount(mValidationLayers.has_value() ? (ui32)mValidationLayers.value().size() : 0);
+	mCreateInfo.setPpEnabledLayerNames(mValidationLayers.has_value() ? mValidationLayers.value().data() : nullptr);
 
 	getLog().log(logging::ECategory::LOGINFO,
 		"Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
