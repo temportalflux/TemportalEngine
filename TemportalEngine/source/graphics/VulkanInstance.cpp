@@ -73,6 +73,11 @@ VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<ch
 	return *this;
 }
 
+bool VulkanInstance::isValid() const
+{
+	return mInstanceCreated;
+}
+
 void VulkanInstance::initialize()
 {
 	assert(!mInstanceCreated);
@@ -120,6 +125,7 @@ void VulkanInstance::destroy()
 	}
 
 	mInstance.reset();
+	mInstanceCreated = false;
 }
 
 static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(

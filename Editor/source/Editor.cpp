@@ -30,9 +30,9 @@ Editor::Editor()
 
 	this->initializeDependencies();
 
-	this->mVulkanInstance_new->setApplicationInfo(appInfo);
-	this->mVulkanInstance_new->setEngineInfo(engineInfo);
-	this->mVulkanInstance_new->createLogger(&this->LogSystem, /*vulkan debug*/ true);
+	this->mVulkanInstance.setApplicationInfo(appInfo);
+	this->mVulkanInstance.setEngineInfo(engineInfo);
+	this->mVulkanInstance.createLogger(&this->LogSystem, /*vulkan debug*/ true);
 }
 
 Editor::~Editor()
@@ -60,7 +60,8 @@ void Editor::openWindow()
 {
 	this->createWindow();
 	this->initializeVulkan();
-	//this->createSurface();
+	mSurface = graphics::Surface(this->mpWindowHandle);
+	mSurface.create(&this->mVulkanInstance);
 
 	i32 width, height;
 	SDL_GetWindowSize(GetSDLWindow(this->mpWindowHandle), &width, &height);
@@ -70,8 +71,11 @@ void Editor::openWindow()
 void Editor::closeWindow()
 {
 	this->destroyWindow();
-	//this->destroySurface();
-	this->destroyVulkan();
+	if (this->mVulkanInstance.isValid())
+	{
+		mSurface.destroy(&this->mVulkanInstance);
+		this->mVulkanInstance.destroy();
+	}
 }
 
 void Editor::createWindow()
@@ -117,30 +121,9 @@ std::vector<const char*> Editor::querySDLVulkanExtensions() const
 void Editor::initializeVulkan()
 {
 	static const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-	this->mVulkanInstance_new->setRequiredExtensions(this->querySDLVulkanExtensions());
-	this->mVulkanInstance_new->setValidationLayers(validationLayers);
-	this->mVulkanInstance_new->initialize();
-}
-
-void Editor::destroyVulkan()
-{
-	this->mVulkanInstance_new->destroy();
-}
-
-void Editor::createSurface()
-{
-	VkSurfaceKHR surface;
-	if (!SDL_Vulkan_CreateSurface(GetSDLWindow(this->mpWindowHandle), this->mVulkanInstance.get(), &surface))
-	{
-		// TODO: output error on failure to create surface
-	}
-	mSurface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface));
-}
-
-void Editor::destroySurface()
-{
-	auto surface = mSurface.release();
-	mVulkanInstance->destroySurfaceKHR(surface);
+	this->mVulkanInstance.setRequiredExtensions(this->querySDLVulkanExtensions());
+	this->mVulkanInstance.setValidationLayers(validationLayers);
+	this->mVulkanInstance.initialize();
 }
 
 void Editor::run()
@@ -172,15 +155,15 @@ void Editor::setupVulkan()
 		auto info = vk::InstanceCreateInfo()
 			.setEnabledExtensionCount((ui32)extensions.size())
 			.setPpEnabledExtensionNames(extensions.data());
-		mVulkanInstance = vk::createInstanceUnique(info);
+		//mVulkanInstance = vk::createInstanceUnique(info);
 	}
 
 	// Select the GPU/Physical Device
 	{
 		// TODO: Actually pick the best physical device
-		auto physicalDevices = mVulkanInstance->enumeratePhysicalDevices();
+		//auto physicalDevices = mVulkanInstance->enumeratePhysicalDevices();
 		// currently assumes the first has a graphics queue
-		mPhysicalDevice = physicalDevices.front();
+		//mPhysicalDevice = physicalDevices.front();
 
 	}
 
@@ -255,7 +238,7 @@ void Editor::cleanUpVulkan()
 {
 	mDescriptorPool.reset();
 	mLogicalDevice.reset();
-	mVulkanInstance.reset();
+	//mVulkanInstance.reset();
 }
 
 void Editor::createFrameBuffers(i32 const width, i32 const height)

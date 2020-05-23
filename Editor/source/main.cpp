@@ -331,6 +331,8 @@ int main(int, char**)
 	char tmp[16];
 	std::cin.getline(tmp, 16);
 
+	editor.closeWindow();
+
 	return 0;
 
 	// Setup SDL

@@ -11,6 +11,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
+class Surface;
 
 /**
 	Wrapper class for managing a vulkan instance.
@@ -18,6 +19,7 @@ NS_GRAPHICS
 */
 class VulkanInstance
 {
+	friend class graphics::Surface;
 
 private:
 	logging::Logger mLogger;
@@ -43,6 +45,8 @@ public:
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
 	VulkanInstance& setValidationLayers(std::optional<std::vector<char const*>> layers = std::nullopt);
+
+	bool isValid() const;
 
 	/**
 		Creates the actual vulkan instances after everything has been configured.
