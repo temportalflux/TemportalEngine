@@ -4,6 +4,7 @@
 #include "ExecutableInfo.hpp"
 #include "version.h"
 #include "graphics/PhysicalDevicePreference.hpp"
+#include "graphics/LogicalDeviceInfo.hpp"
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
@@ -13,6 +14,8 @@ SDL_Window* GetSDLWindow(void* handle)
 {
 	return reinterpret_cast<SDL_Window*>(handle);
 }
+
+std::vector<const char*> Editor::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 Editor::Editor()
 	: LogSystem(logging::LogSystem())
@@ -78,6 +81,12 @@ void Editor::openWindow()
 	}
 	mPhysicalDevice = optPhysicalDevice.value();
 
+	static const auto logicalDeviceInfo = graphics::LogicalDeviceInfo()
+		.addQueueFamily(graphics::QueueFamily::eGraphics)
+		.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+		.setValidationLayers(VulkanValidationLayers);
+	mLogicalDevice = mPhysicalDevice.createLogicalDevice(&logicalDeviceInfo);
+
 	i32 width, height;
 	SDL_GetWindowSize(GetSDLWindow(this->mpWindowHandle), &width, &height);
 	//this->createFrameBuffers(width, height);
@@ -89,6 +98,7 @@ void Editor::closeWindow()
 	this->destroyWindow();
 	if (this->mVulkanInstance.isValid())
 	{
+		mLogicalDevice.invalidate();
 		mPhysicalDevice.invalidate();
 		mSurface.destroy(&this->mVulkanInstance);
 		this->mVulkanInstance.destroy();
@@ -137,9 +147,8 @@ std::vector<const char*> Editor::querySDLVulkanExtensions() const
 
 void Editor::initializeVulkan()
 {
-	static const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 	this->mVulkanInstance.setRequiredExtensions(this->querySDLVulkanExtensions());
-	this->mVulkanInstance.setValidationLayers(validationLayers);
+	this->mVulkanInstance.setValidationLayers(VulkanValidationLayers);
 	this->mVulkanInstance.initialize();
 }
 
@@ -148,44 +157,8 @@ void Editor::run()
 	while (mIsRunning);
 }
 
-std::vector<char const *> GetRequiredSDLVulkanExtensions(void *pWindowHandle)
-{
-	ui32 extCount = 0;
-	auto extensions = std::vector<char const *>();
-	auto pWindow = GetSDLWindow(pWindowHandle);
-	// Resize the list to the amount of extensions required by SDL
-	SDL_Vulkan_GetInstanceExtensions(pWindow, &extCount, nullptr);
-	extensions.resize(extCount);
-	// Populate list with extension names
-	SDL_Vulkan_GetInstanceExtensions(pWindow, &extCount, extensions.data());
-	return extensions;
-}
-
 void Editor::setupVulkan()
 {
-	// Select the GPU/Physical Device
-	{
-
-	}
-
-	// Find the graphics queue family
-	// Assert that a queue was found
-	{
-		/*
-		bool bFoundGraphicsFamily = false;
-		auto queueFamilyProperties = mPhysicalDevice.getQueueFamilyProperties();
-		for (ui32 i = 0; i < queueFamilyProperties.size(); ++i)
-		{
-			if (queueFamilyProperties[i].queueFlags & vk::QueueFlagBits::eGraphics)
-			{
-				bFoundGraphicsFamily = true;
-				mGraphicsQueueIndex = i;
-				break;
-			}
-		}
-		assert(bFoundGraphicsFamily);
-		//*/
-	}
 
 	// Create a GPU API / Logical Device
 	{
@@ -233,15 +206,13 @@ void Editor::setupVulkan()
 			.setMaxSets(poolSize)
 			.setPoolSizeCount((ui32)poolSizes.size())
 			.setPPoolSizes(poolSizes.data());
-		mDescriptorPool = mLogicalDevice->createDescriptorPoolUnique(info);
+		//mDescriptorPool = mLogicalDevice->createDescriptorPoolUnique(info);
 	}
 }
 
 void Editor::cleanUpVulkan()
 {
 	mDescriptorPool.reset();
-	mLogicalDevice.reset();
-	//mVulkanInstance.reset();
 }
 
 void Editor::createFrameBuffers(i32 const width, i32 const height)

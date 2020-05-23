@@ -4,6 +4,7 @@
 
 #include "graphics/QueueFamilyGroup.hpp"
 #include "graphics/SwapChainSupport.hpp"
+#include "graphics/LogicalDevice.hpp"
 
 #include <unordered_set>
 #include <vulkan/vulkan.hpp>
@@ -11,6 +12,7 @@
 NS_GRAPHICS
 class VulkanInstance;
 class Surface;
+class LogicalDeviceInfo;
 
 class PhysicalDevice
 {
@@ -27,6 +29,8 @@ public:
 	SwapChainSupport querySwapChainSupport() const;
 
 	void invalidate();
+
+	LogicalDevice createLogicalDevice(LogicalDeviceInfo const *pInfo) const;
 
 private:
 	graphics::Surface *mpSurface;

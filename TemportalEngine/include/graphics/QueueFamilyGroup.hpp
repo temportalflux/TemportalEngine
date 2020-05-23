@@ -9,42 +9,19 @@
 #include <vector>
 
 NS_GRAPHICS
-
-enum class QueueFamily
-{
-	eGraphics,
-	ePresentation,
-};
+enum class QueueFamily;
 
 struct QueueFamilyGroup
 {
 	std::optional<ui32> idxGraphicsQueue;
 	std::optional<ui32> idxPresentationQueue;
 
-	bool hasFoundAllQueues() const
-	{
-		return idxGraphicsQueue.has_value() && idxPresentationQueue.has_value();
-	}
+	bool hasFoundAllQueues() const;
+	std::set<ui32> uniqueQueues() const;
+	std::vector<ui32> allQueues() const;
+	bool hasQueueFamily(QueueFamily type) const;
+	std::optional<ui32> getQueueIndex(QueueFamily type) const;
 
-	std::set<ui32> uniqueQueues() const
-	{
-		return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
-	}
-
-	std::vector<ui32> allQueues() const
-	{
-		return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
-	}
-
-	bool hasQueueFamily(QueueFamily type) const
-	{
-		switch (type)
-		{
-		case QueueFamily::eGraphics: return idxGraphicsQueue.has_value();
-		case QueueFamily::ePresentation: return idxPresentationQueue.has_value();
-		}
-		return false;
-	}
 };
 
 NS_END

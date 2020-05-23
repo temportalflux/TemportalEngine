@@ -5,6 +5,7 @@
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/Surface.hpp"
 #include "graphics/PhysicalDevice.hpp"
+#include "graphics/LogicalDevice.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -25,12 +26,13 @@ private:
 	dependency::SDL mDependencySDL[1];
 	void* mpWindowHandle;
 
+	static std::vector<const char*> VulkanValidationLayers;
 	graphics::VulkanInstance mVulkanInstance;
 	graphics::Surface mSurface;
 	graphics::PhysicalDevice mPhysicalDevice;
+	graphics::LogicalDevice mLogicalDevice;
 
 	ui32 mGraphicsQueueIndex;
-	vk::UniqueDevice mLogicalDevice;
 	vk::Queue mGraphicsQueue;
 	vk::UniqueDescriptorPool mDescriptorPool;
 
@@ -44,7 +46,7 @@ private:
 
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	void initializeVulkan();
-	
+
 	// VULKAN STUBBING - TO BE MOVED TO INTERNAL API
 	void setupVulkan();
 	void cleanUpVulkan();

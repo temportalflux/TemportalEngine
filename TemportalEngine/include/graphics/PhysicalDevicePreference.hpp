@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "types/integer.h"
+#include "graphics/QueueFamily.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
 #include "graphics/SwapChainSupport.hpp"
 

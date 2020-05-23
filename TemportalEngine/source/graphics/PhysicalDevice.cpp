@@ -1,7 +1,7 @@
 #include "graphics/PhysicalDevice.hpp"
 
 #include "graphics/Surface.hpp"
-#include "..\..\include\graphics\PhysicalDevice.hpp"
+#include "graphics/LogicalDeviceInfo.hpp"
 
 using namespace graphics;
 
@@ -86,4 +86,22 @@ SwapChainSupport PhysicalDevice::querySwapChainSupport() const
 		mDevice.getSurfaceFormatsKHR(surface),
 		mDevice.getSurfacePresentModesKHR(surface),
 	};
+}
+
+LogicalDevice PhysicalDevice::createLogicalDevice(LogicalDeviceInfo const * pInfo) const
+{
+	auto queueFamilies = this->queryQueueFamilyGroup();
+	auto queueInfo = pInfo->makeQueueInfo(&queueFamilies);
+	auto queueCreateInfo = std::vector<vk::DeviceQueueCreateInfo>(queueInfo.size());
+	for (uSize i = 0; i < queueInfo.size(); ++i)
+		queueCreateInfo[i] = queueInfo[i].makeInfo();
+	auto info = vk::DeviceCreateInfo()
+		.setQueueCreateInfoCount((ui32)queueCreateInfo.size())
+		.setPQueueCreateInfos(queueCreateInfo.data())
+		.setEnabledExtensionCount((ui32)pInfo->mDeviceExtensions.size())
+		.setPpEnabledExtensionNames(pInfo->mDeviceExtensions.data())
+		.setEnabledLayerCount((ui32)pInfo->mValidationLayers.size())
+		.setPpEnabledLayerNames(pInfo->mValidationLayers.data());
+	vk::UniqueDevice device = mDevice.createDeviceUnique(info);
+	return LogicalDevice(device);
 }
