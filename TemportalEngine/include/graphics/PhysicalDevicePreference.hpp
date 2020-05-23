@@ -70,6 +70,10 @@ enum class PhysicalDeviceFeature
 	VariableMultisampleRate,
 };
 
+/**
+	A set of scored preferences for determining the most applicable
+	Physical Device/GPU for a pipeline.
+*/
 class PhysicalDevicePreference
 {
 public:

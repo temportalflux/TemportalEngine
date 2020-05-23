@@ -68,7 +68,7 @@ private:
 	vk::ApplicationInfo mpApplicationInfo[1];
 	vk::InstanceCreateInfo mpInstanceInfo[1];
 	vk::UniqueInstance mAppInstance;
-	vk::UniqueHandle<vk::DebugUtilsMessengerEXT, vk::DispatchLoaderDynamic> mDebugMessenger;
+	vk::DebugUtilsMessengerEXT mDebugMessenger;
 
 	std::optional<vk::PhysicalDevice> mPhysicalDevice;
 	vk::UniqueDevice mLogicalDevice;

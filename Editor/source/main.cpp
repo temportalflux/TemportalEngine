@@ -21,7 +21,7 @@
 #include "Editor.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
 
-static auto gpuPreference = graphics::PhysicalDevicePreference()
+static const auto gpuPreference = graphics::PhysicalDevicePreference()
 	.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics);
 
 //#define IMGUI_UNLIMITED_FRAME_RATE

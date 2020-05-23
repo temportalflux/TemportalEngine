@@ -40,9 +40,9 @@ void Thread::start()
 
 void Thread::run()
 {
-	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName);
+	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName.c_str());
 	while (mFunctorDelegate());
-	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName);
+	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName.c_str());
 	if (mOnCompleteDelegate.has_value())
 	{
 		(mOnCompleteDelegate.value())();

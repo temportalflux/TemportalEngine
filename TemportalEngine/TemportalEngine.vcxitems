@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevicePreference.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputWatcher.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\Queue.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\logging\Logger.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevicePreference.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Action.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Event.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputWatcher.hpp" />
@@ -93,6 +95,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\integer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
   </ItemGroup>
 </Project>

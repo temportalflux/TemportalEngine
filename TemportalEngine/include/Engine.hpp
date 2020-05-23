@@ -11,6 +11,7 @@
 #include "input/types.h"
 #include "network/common/Service.hpp"
 #include "thread/Thread.hpp"
+#include "version.h"
 
 #include "logging/Logger.hpp"
 #include "ExecutableInfo.hpp"
@@ -26,13 +27,6 @@ NS_ENGINE
 #define LogEngine(cate, ...) DeclareLog("Engine").log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
-
-// Creates a unique 32-bit integer version for a unique semantic version
-// NOTE: based on vulkan's VK_MAKE_VERSION
-#define TE_MAKE_VERSION(major, minor, patch) (((major) << 22) | ((minor) << 12) | (patch))
-#define TE_GET_MAJOR_VERSION(version) ((ui32)(version) >> 22)
-#define TE_GET_MINOR_VERSION(version) (((ui32)(version) >> 12) & 0x3ff)
-#define TE_GET_PATCH_VERSION(version) ((ui32)(version) & 0xfff)
 
 class TEMPORTALENGINE_API Engine
 {

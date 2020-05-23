@@ -71,7 +71,7 @@ Renderer::Renderer(
 	mAppInstance = createInstance(appInfo, engineInfo);
 
 #ifdef RENDERER_USE_VALIDATION_LAYERS
-	//setupVulkanMessenger();
+	setupVulkanMessenger();
 #endif
 
 	// Surface ------------------------------------------------------------------
@@ -197,7 +197,11 @@ Renderer::~Renderer()
 	auto surface = mSurface.release();
 	mAppInstance->destroySurfaceKHR(surface);
 
-	mDebugMessenger.reset();
+	vk::Instance inst = this->mAppInstance.get();
+	VkInstance tmp = (VkInstance)inst;
+	vk::DispatchLoaderDynamic dldi(tmp, vkGetInstanceProcAddr);
+	this->mAppInstance->destroyDebugUtilsMessengerEXT(mDebugMessenger, nullptr, dldi);
+
 	mAppInstance.reset();
 }
 
@@ -299,7 +303,7 @@ void Renderer::setupVulkanMessenger()
 	vk::Instance inst = this->mAppInstance.get();
 	VkInstance tmp = (VkInstance)inst;
 	vk::DispatchLoaderDynamic dldi(tmp, vkGetInstanceProcAddr);
-	mDebugMessenger = this->mAppInstance->createDebugUtilsMessengerEXTUnique(info, nullptr, dldi);
+	mDebugMessenger = this->mAppInstance->createDebugUtilsMessengerEXT(info, nullptr, dldi);
 }
 
 std::optional<vk::PhysicalDevice> Renderer::pickPhysicalDevice()
