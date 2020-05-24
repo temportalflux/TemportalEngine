@@ -139,6 +139,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanRenderer.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChain.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -297,6 +300,9 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChain.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
