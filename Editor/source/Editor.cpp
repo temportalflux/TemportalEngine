@@ -67,7 +67,7 @@ void Editor::openWindow()
 	this->initializeVulkan();
 
 	mSurface = graphics::Surface(this->mpWindowHandle);
-	mSurface.create(&this->mVulkanInstance);
+	mSurface.initialize(&this->mVulkanInstance);
 
 	auto optPhysicalDevice = mVulkanInstance.pickPhysicalDevice(
 		graphics::PhysicalDevicePreference()

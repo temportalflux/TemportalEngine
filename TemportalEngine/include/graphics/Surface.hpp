@@ -16,10 +16,12 @@ class Surface
 public:
 	Surface() = default;
 	Surface(void* pWindowHandle);
+	
+	void swap(Surface &other);
 
 	void releaseWindowHandle();
 
-	void create(VulkanInstance *pVulkan);
+	Surface& initialize(VulkanInstance *pVulkan);
 	void destroy(VulkanInstance *pVulkan);
 
 private:

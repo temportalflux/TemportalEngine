@@ -13,22 +13,30 @@ Surface::Surface(void *pWindowHandle)
 {
 }
 
+void Surface::swap(Surface &other)
+{
+	mpWindowHandle = other.mpWindowHandle;
+	other.mpWindowHandle = nullptr;
+	mSurface.swap(other.mSurface);
+}
+
 void Surface::releaseWindowHandle()
 {
 	mpWindowHandle = nullptr;
 }
 
-void Surface::create(VulkanInstance *pVulkan)
+Surface& Surface::initialize(VulkanInstance *pVulkan)
 {
 	assert(mpWindowHandle != nullptr);
 	VkSurfaceKHR surface;
 	SDL_Window* pWindow = reinterpret_cast<SDL_Window*>(this->mpWindowHandle);
-	if (!SDL_Vulkan_CreateSurface(pWindow, pVulkan->mInstance.get(), &surface))
+	if (!SDL_Vulkan_CreateSurface(pWindow, (VkInstance)pVulkan->mInstance.get(), &surface))
 	{
 		pVulkan->mLogger.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface: %s", SDL_GetError());
-		return;
+		return *this;
 	}
 	mSurface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface));
+	return *this;
 }
 
 void Surface::destroy(VulkanInstance *pVulkan)

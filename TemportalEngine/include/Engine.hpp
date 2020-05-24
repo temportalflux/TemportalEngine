@@ -7,9 +7,10 @@
 #include <typeinfo>
 
 #include "dependency/SDL.hpp"
+#include "graphics/VulkanInstance.hpp"
 #include "input/InputWatcher.hpp"
 #include "input/types.h"
-#include "network/common/Service.hpp"
+//#include "network/common/Service.hpp"
 #include "thread/Thread.hpp"
 #include "version.h"
 
@@ -44,18 +45,22 @@ public:
 
 private:
 
-	utility::SExecutableInfo mInfo;
+	utility::SExecutableInfo mEngineInfo;
+	utility::SExecutableInfo mAppInfo;
 
 	thread::MutexLock mpLockMemoryManager[1];
 	void* mpMemoryManager;
 
 	dependency::SDL mpDepSDL[1];
 
+	static std::vector<const char*> VulkanValidationLayers;
+	graphics::VulkanInstance mVulkanInstance;
+
 	bool mIsRunning;
 
 	input::InputWatcher mpInputWatcher[1];
 
-	network::Service *mpNetworkService;
+	//network::Service *mpNetworkService;
 	Thread *mpThreadRender;
 
 	input::Queue *mpInputQueue;
@@ -66,6 +71,8 @@ private:
 public:
 	~Engine();
 	utility::SExecutableInfo const *const getInfo() const;
+
+#pragma region Memory
 
 	void* getMemoryManager();
 
@@ -129,10 +136,16 @@ public:
 		}
 	}
 
+#pragma endregion
+
+	void setApplicationInfo(utility::SExecutableInfo const *const pAppInfo);
+
 	bool initializeDependencies();
 	void terminateDependencies();
+	bool setupVulkan();
+	graphics::VulkanInstance* initializeVulkan(std::vector<const char*> requiredExtensions);
 
-	Window* createWindow(utility::SExecutableInfo const *const pAppInfo);
+	Window* createWindow(ui16 width, ui16 height);
 
 	void createServer(ui16 const port, ui16 maxClients);
 	void createClient(char const *address, ui16 port);
@@ -142,7 +155,7 @@ public:
 	void markShouldStop();
 
 	bool const hasNetwork() const;
-	std::optional<network::Service* const> getNetworkService() const;
+	//std::optional<network::Service* const> getNetworkService() const;
 
 	void pollInput();
 	void enqueueInput(struct input::Event const &evt);

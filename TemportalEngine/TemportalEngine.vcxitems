@@ -24,6 +24,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\QueueFamilyGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanInstance.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputWatcher.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\Queue.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\logging\Logger.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Surface.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Action.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Event.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputWatcher.hpp" />

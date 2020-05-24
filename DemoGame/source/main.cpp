@@ -1,6 +1,7 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
 #include "Window.hpp"
+#include "graphics/VulkanRenderer.hpp"
 
 #include <iostream>
 #include <string>
@@ -53,32 +54,24 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main()
 {
-	utility::SExecutableInfo appInfo;
-	appInfo.version = TE_MAKE_VERSION(0, 1, 0);
-
-	string logFile = "TemportalEngine_";
-	{
-		time_t currentTime = time(nullptr);
-		struct tm timeinfo;
-		localtime_s(&timeinfo, &currentTime);
-		char timeStr[70];
-		strftime(timeStr, sizeof(timeStr), "%Y-%m-%d-%H-%M-%S", &timeinfo);
-		logFile.append(timeStr);
-	}
-	logFile += ".log";
-
-	engine::Engine::LOG_SYSTEM.open(logFile.c_str());
+	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
+	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
 	engine::Engine *pEngine = engine::Engine::Create();
-	if (!pEngine->initializeDependencies()) return 1;
+	LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+
+	if (!pEngine->initializeDependencies())
+	{
+		engine::Engine::Destroy();
+		return 1;
+	}
 	
-	LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFile.c_str());
-
 	initializeNetwork(pEngine);
-
+	
 	std::string title = "Demo Game";
 	if (pEngine->hasNetwork())
 	{
+		/*
 		auto network = pEngine->getNetworkService();
 		if (network.has_value())
 		{
@@ -91,22 +84,37 @@ int main()
 				title += " (Client)";
 			}
 		}
-	}			
-	appInfo.title = title.c_str();
+		//*/
+	}
 
-	auto window = pEngine->createWindow(&appInfo);
-	if (window == nullptr)
+	utility::SExecutableInfo appInfo = { title.c_str(), TE_MAKE_VERSION(0, 1, 0) };
+	pEngine->setApplicationInfo(&appInfo);
+
+	if (!pEngine->setupVulkan())
 	{
 		engine::Engine::Destroy();
 		return 1;
 	}
 
-	pEngine->run(window);
+	auto pWindow = pEngine->createWindow(800, 600);
+	if (pWindow == nullptr)
+	{
+		engine::Engine::Destroy();
+		return 1;
+	}
+
+#pragma region Vulkan
+	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+	auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+#pragma endregion
+
+	pEngine->run(pWindow);
 
 	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
-	window->destroy();
-	engine::Engine::Get()->dealloc(&window);
+	renderer.invalidate();
+	pWindow->destroy();
+	engine::Engine::Get()->dealloc(&pWindow);
 	engine::Engine::Destroy();
 
 	engine::Engine::LOG_SYSTEM.close();

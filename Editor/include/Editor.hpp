@@ -33,6 +33,7 @@ private:
 	graphics::LogicalDevice mLogicalDevice;
 	std::optional<vk::Queue> mGraphicsQueue;
 
+	// OLD
 	vk::UniqueDescriptorPool mDescriptorPool;
 
 	bool mIsRunning;

@@ -6,9 +6,9 @@
 #include "types/integer.h"
 #include "input/Event.hpp"
 #include "input/types.h"
+#include "graphics/Surface.hpp"
 
-// TODO: Namespace
-// TODO: Organize Headers
+#include <vector>
 
 NS_INPUT
 class Queue;
@@ -18,6 +18,10 @@ NS_RENDER
 class Renderer;
 NS_END
 
+NS_GRAPHICS
+class VulkanInstance;
+NS_END
+
 NS_UTILITY
 struct SExecutableInfo;
 NS_END
@@ -25,7 +29,7 @@ NS_END
 class TEMPORTALENGINE_API Window
 {
 private:
-	ui32 mWidth, mHeight;
+	ui16 mWidth, mHeight;
 	char const * mpTitle;
 
 	void* mpHandle;
@@ -38,9 +42,11 @@ private:
 public:
 	Window() = default;
 	Window(
-		ui32 width, ui32 height,
-		utility::SExecutableInfo const *const appInfo
+		ui16 width, ui16 height
 	);
+
+	std::vector<const char*> querySDLVulkanExtensions() const;
+	graphics::Surface createSurface() const;
 
 	bool isValid();
 	void addInputListeners(input::Queue *pQueue);

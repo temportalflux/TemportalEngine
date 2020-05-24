@@ -136,6 +136,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\QueueFamilyGroup.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanRenderer.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -291,6 +294,9 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamily.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

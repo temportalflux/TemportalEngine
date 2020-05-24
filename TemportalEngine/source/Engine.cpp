@@ -1,19 +1,21 @@
 #include "Engine.hpp"
+
 #include "Window.hpp"
 #include "math/Vector.hpp"
 #include "memory/MemoryManager.h"
 #include <string>
 #include "input/Queue.hpp"
-#include "network/client/ServiceClient.hpp"
-#include "network/server/ServiceServer.hpp"
+//#include "network/client/ServiceClient.hpp"
+//#include "network/server/ServiceServer.hpp"
 
 using namespace engine;
 
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 void* Engine::spInstance = nullptr;
 
+std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+
 void windowKeyInputCallback(input::Event const &inputEvt);
-void inputQueueListener(input::Event const & evt);
 
 constexpr uSize Engine::getMaxMemorySize()
 {
@@ -65,11 +67,11 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	: mpMemoryManager(memoryManager)
 	, mIsRunning(false)
 	, mpThreadRender(nullptr)
-	, mpNetworkService(nullptr)
+	//, mpNetworkService(nullptr)
 {
 	LogEngineInfo("Creating Engine");
-	mInfo.title = "TemportalEngine";
-	mInfo.version = version;
+	mEngineInfo.title = "TemportalEngine";
+	mEngineInfo.version = version;
 
 	mpInputWatcher->setCallback(&windowKeyInputCallback);
 	mpInputQueue = this->alloc<input::Queue>();
@@ -80,6 +82,10 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 
 Engine::~Engine()
 {
+	if (this->mVulkanInstance.isValid())
+	{
+		this->mVulkanInstance.destroy();
+	}
 	this->terminateDependencies();
 	this->dealloc(&mpInputQueue);
 	LogEngineInfo("Engine Destroyed");
@@ -87,8 +93,15 @@ Engine::~Engine()
 
 utility::SExecutableInfo const *const Engine::getInfo() const
 {
-	return &mInfo;
+	return &mEngineInfo;
 }
+
+void Engine::setApplicationInfo(utility::SExecutableInfo const *const pAppInfo)
+{
+	mAppInfo = *pAppInfo;
+}
+
+#pragma region Memory
 
 void * Engine::getMemoryManager()
 {
@@ -112,6 +125,10 @@ void Engine::deallocRaw(void** ptr)
 	ptr = nullptr;
 }
 
+#pragma endregion
+
+#pragma region Dependencies
+
 bool Engine::initializeDependencies()
 {
 	*mpDepSDL = dependency::SDL();
@@ -126,28 +143,50 @@ void Engine::terminateDependencies()
 		mpDepSDL->terminate();
 }
 
-Window* Engine::createWindow(utility::SExecutableInfo const *const pAppInfo)
+#pragma endregion
+
+#pragma region Rendering
+
+bool Engine::setupVulkan()
 {
-	auto window = this->alloc<Window>(800, 600, pAppInfo);
+	this->mVulkanInstance.setApplicationInfo(mAppInfo);
+	this->mVulkanInstance.setEngineInfo(mEngineInfo);
+	this->mVulkanInstance.setValidationLayers(Engine::VulkanValidationLayers);
+	this->mVulkanInstance.createLogger(&LOG_SYSTEM, /*vulkan debug*/ true);
+	return true;
+}
+
+graphics::VulkanInstance* Engine::initializeVulkan(std::vector<const char*> requiredExtensions)
+{
+	this->mVulkanInstance.setRequiredExtensions(requiredExtensions);
+	this->mVulkanInstance.initialize();
+	return &this->mVulkanInstance;
+}
+
+Window* Engine::createWindow(ui16 width, ui16 height)
+{
+	auto window = this->alloc<Window>(width, height);
 	window->addInputListeners(mpInputQueue);
 	return window;
 }
 
+#pragma endregion
+
 void Engine::createClient(char const *address, ui16 port)
 {
 	LogEngine(logging::ECategory::LOGINFO, "Initializing network client");
-	auto client = this->alloc<network::ServiceClient>();
-	client->initialize();
-	client->connectToServer(address, port);
-	this->mpNetworkService = client;
+	//auto client = this->alloc<network::ServiceClient>();
+	//client->initialize();
+	//client->connectToServer(address, port);
+	//this->mpNetworkService = client;
 }
 
 void Engine::createServer(ui16 const port, ui16 maxClients)
 {
 	LogEngine(logging::ECategory::LOGINFO, "Initializing network server");
-	auto server = this->alloc<network::ServiceServer>();
-	server->initialize(port, maxClients);
-	this->mpNetworkService = server;
+	//auto server = this->alloc<network::ServiceServer>();
+	//server->initialize(port, maxClients);
+	//this->mpNetworkService = server;
 }
 
 void Engine::run(Window* pWindow)
@@ -164,7 +203,7 @@ void Engine::run(Window* pWindow)
 
 	if (this->hasNetwork())
 	{
-		this->mpNetworkService->startThread(this);
+		//this->mpNetworkService->startThread(this);
 	}
 
 	while (this->isActive())
@@ -173,8 +212,8 @@ void Engine::run(Window* pWindow)
 		mpInputQueue->dispatchAll();
 	}
 
-	if (this->hasNetwork())
-		this->mpNetworkService->joinThread();
+	//if (this->hasNetwork())
+	//	this->mpNetworkService->joinThread();
 	
 	mpThreadRender->join();
 }
@@ -191,15 +230,17 @@ void Engine::markShouldStop()
 
 bool const Engine::hasNetwork() const
 {
-	return this->mpNetworkService != nullptr;
+	return false;// this->mpNetworkService != nullptr;
 }
 
+/*
 std::optional<network::Service* const> Engine::getNetworkService() const
 {
 	if (this->hasNetwork())
 		return this->mpNetworkService;
 	return std::nullopt;
 }
+//*/
 
 void Engine::pollInput()
 {
@@ -212,15 +253,6 @@ void windowKeyInputCallback(input::Event const &inputEvt)
 	if (Engine::GetChecked(pEngine))
 	{
 		pEngine->enqueueInput(inputEvt);
-	}
-}
-
-void inputQueueListener(input::Event const & evt)
-{
-	Engine* pEngine;
-	if (Engine::GetChecked(pEngine))
-	{
-		pEngine->processInput(evt);
 	}
 }
 

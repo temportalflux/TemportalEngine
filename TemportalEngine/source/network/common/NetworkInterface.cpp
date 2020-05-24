@@ -12,21 +12,21 @@ using namespace network;
 
 // ----------------------------------------------------------------------------
 
-const uSize SIZE_OF_TIMESTAMPS = sizeof(char) + sizeof(RakNet::Time) + sizeof(RakNet::Time);
+//const uSize SIZE_OF_TIMESTAMPS = sizeof(char) + sizeof(RakNet::Time) + sizeof(RakNet::Time);
 
-typedef RakNet::RakPeerInterface * Interface;
-#define GetInterface(ptr) static_cast<Interface>(ptr)
+//typedef RakNet::RakPeerInterface * Interface;
+//#define GetInterface(ptr) static_cast<Interface>(ptr)
 
 NetworkInterface::NetworkInterface()
 {
 	mIsServer = false;
-	mpPeerInterface = RakNet::RakPeerInterface::GetInstance();
+	//mpPeerInterface = RakNet::RakPeerInterface::GetInstance();
 }
 
 NetworkInterface::~NetworkInterface()
 {
-	RakNet::RakPeerInterface::DestroyInstance(GetInterface(mpPeerInterface));
-	mpPeerInterface = nullptr;
+	//RakNet::RakPeerInterface::DestroyInstance(GetInterface(mpPeerInterface));
+	//mpPeerInterface = nullptr;
 }
 
 // Startup the server interface
@@ -35,44 +35,44 @@ void NetworkInterface::initServer(const ui16 port, const ui16 maxClients)
 	mIsServer = true;
 	
 	// Startup the server by reserving a port
-	RakNet::SocketDescriptor sd = RakNet::SocketDescriptor(port, 0);
-	Interface pInterface = GetInterface(mpPeerInterface);
-	pInterface->Startup(maxClients, &sd, 1);
-	pInterface->SetMaximumIncomingConnections(maxClients);
+	//RakNet::SocketDescriptor sd = RakNet::SocketDescriptor(port, 0);
+	//Interface pInterface = GetInterface(mpPeerInterface);
+	//pInterface->Startup(maxClients, &sd, 1);
+	//pInterface->SetMaximumIncomingConnections(maxClients);
 }
 
 // Startup the client interface
 void NetworkInterface::initClient()
 {
 	// Startup the client by starting on an empty socket
-	RakNet::SocketDescriptor sd;
-	GetInterface(mpPeerInterface)->Startup(1, &sd, 1);
+	//RakNet::SocketDescriptor sd;
+	//GetInterface(mpPeerInterface)->Startup(1, &sd, 1);
 }
 
 // Connect the interface to its destination
 void NetworkInterface::connectToServer(char const *address, const ui16 port)
 {
 	// Connect to the server using the specified address and port
-	GetInterface(mpPeerInterface)->Connect(address, port, 0, 0);
+	//GetInterface(mpPeerInterface)->Connect(address, port, 0, 0);
 }
 
 // Fetch the address the peer is bound to
 void NetworkInterface::queryAddress() const
 {
-	auto address = GetInterface(mpPeerInterface)->GetMyBoundAddress();
+	//auto address = GetInterface(mpPeerInterface)->GetMyBoundAddress();
 	//address.address;
 }
 
 // Return the IP string from the peer
 char const * NetworkInterface::getIP() const
 {
-	return GetInterface(mpPeerInterface)->GetLocalIP(0); // note: this can be finicky if there are multiple network addapters
+	return "";// GetInterface(mpPeerInterface)->GetLocalIP(0); // note: this can be finicky if there are multiple network addapters
 }
 
 // Returns true if the network interface (RakNet thread) is active
 bool NetworkInterface::isActive() const
 {
-	return GetInterface(mpPeerInterface)->IsActive();
+	return false;// GetInterface(mpPeerInterface)->IsActive();
 }
 
 bool NetworkInterface::isServer() const
@@ -82,6 +82,7 @@ bool NetworkInterface::isServer() const
 
 i32 readTimestamps(const ui8 *buffer, ui64 &time1, ui64 &time2)
 {
+	/*
 	if (buffer)
 	{
 		i8 tag;
@@ -97,11 +98,13 @@ i32 readTimestamps(const ui8 *buffer, ui64 &time1, ui64 &time2)
 			return SIZE_OF_TIMESTAMPS;
 		}
 	}
+	//*/
 	return 0;
 }
 
 i32 writeTimestamps(ui8 *buffer, const ui64 &time1, const ui64 &time2)
 {
+	/*
 	if (buffer)
 	{
 		*(buffer++) = (char)(ID_TIMESTAMP);
@@ -110,11 +113,14 @@ i32 writeTimestamps(ui8 *buffer, const ui64 &time1, const ui64 &time2)
 		*(tPtr++) = time2;
 		return SIZE_OF_TIMESTAMPS;
 	}
+	//*/
 	return 0;
 }
 
 bool NetworkInterface::fetchPacket()
 {
+	return false;
+	/*
 	if (!mpQueue->canEnqueue())
 	{
 		LogEngine(logging::ECategory::LOGWARN, "Packet Queue Full: Cannot enqueue more packets to network::NetworkInterface's packet queue.");
@@ -193,6 +199,7 @@ bool NetworkInterface::fetchPacket()
 	pInterface->DeallocatePacket(pRakPak);
 
 	return true;
+	//*/
 }
 
 void NetworkInterface::fetchAllPackets()
@@ -211,6 +218,7 @@ T getData(void* &pBuffer)
 
 RegistryIdentifier const NetworkInterface::retrievePacketId(void* packetData) const
 {
+	/*
 	ui8 mRakNetId;
 	RegistryIdentifier packetId = std::nullopt;
 	switch (mRakNetId = getData<ui8>(packetData))
@@ -238,12 +246,14 @@ RegistryIdentifier const NetworkInterface::retrievePacketId(void* packetData) co
 		break;
 	}
 	return packetId;
+	//*/
+	return std::nullopt;
 }
 
 // Shutdown the peer interface
 void NetworkInterface::disconnect()
 {
-	GetInterface(mpPeerInterface)->Shutdown(500);
+	//GetInterface(mpPeerInterface)->Shutdown(500);
 }
 
 /*

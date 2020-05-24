@@ -68,7 +68,7 @@ bool Service::runThread()
 	if (isActive)
 	{
 		mpNetworkInterface->fetchAllPackets();
-		pEngine->getNetworkService().value()->processAllPackets();
+		//pEngine->getNetworkService().value()->processAllPackets();
 	}
 	return isActive;
 }
