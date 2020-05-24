@@ -8,6 +8,7 @@
 
 #include <map>
 #include <vector>
+#include <set>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -33,6 +34,8 @@ public:
 	LogicalDeviceInfo& addQueueFamily(QueueFamily type);
 	LogicalDeviceInfo& addDeviceExtension(char const* name);
 	LogicalDeviceInfo& setValidationLayers(std::vector<char const*> layers);
+
+	std::set<QueueFamily> getQueues() const;
 
 private:
 	std::vector<QueueFamily> mQueues;

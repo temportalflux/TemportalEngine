@@ -159,7 +159,10 @@ public:
 	PhysicalDevicePreference() = default;
 
 	PhysicalDevicePreference& addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceExtension(std::string extensionName, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceFeature(PhysicalDeviceFeature feature, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaSwapChain(PreferenceSwapChain::Type optionType, IndividualScore score = std::nullopt);
 	
 	TotalScore scoreDevice(graphics::PhysicalDevice const *pDevice) const;
 

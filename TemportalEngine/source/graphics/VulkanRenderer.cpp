@@ -8,24 +8,47 @@ VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
 	: mpInstance(pInstance)
 {
 	mSurface.swap(surface);
+}
 
-	/*
-	auto optPhysicalDevice = pVulkan->pickPhysicalDevice(
-		graphics::PhysicalDevicePreference()
-		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics),
-		&surface
-	);
+logging::Logger VulkanRenderer::getLog() const
+{
+	return mpInstance->getLog();
+}
+
+void VulkanRenderer::setPhysicalDevicePreference(PhysicalDevicePreference const &preference)
+{
+	mPhysicalDevicePreference = preference;
+}
+
+void VulkanRenderer::setLogicalDeviceInfo(LogicalDeviceInfo const &info)
+{
+	mLogicalDeviceInfo = info;
+}
+
+void VulkanRenderer::initializeDevices()
+{
+	this->pickPhysicalDevice();
+	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&mLogicalDeviceInfo);
+	this->mQueues = this->mLogicalDevice.findQueues(mLogicalDeviceInfo.getQueues());
+}
+
+void VulkanRenderer::pickPhysicalDevice()
+{
+	auto optPhysicalDevice = mpInstance->pickPhysicalDevice(mPhysicalDevicePreference, &mSurface);
 	if (!optPhysicalDevice.has_value())
 	{
-		pVulkan->getLog().log(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device.");
-		engine::Engine::Destroy();
-		return 1;
+		getLog().log(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device.");
+		return;
 	}
-	//*/
+	mPhysicalDevice = optPhysicalDevice.value();
 }
 
 void VulkanRenderer::invalidate()
 {
+	this->mQueues.clear();
+	this->mLogicalDevice.invalidate();
+	this->mPhysicalDevice.invalidate();
+
 	mSurface.destroy(mpInstance);
 	mSurface.releaseWindowHandle();
 

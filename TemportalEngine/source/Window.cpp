@@ -118,11 +118,11 @@ bool Window::isPendingClose()
 
 bool Window::renderUntilClose()
 {
-	mpRenderer->drawFrame();
+	//mpRenderer->drawFrame();
 	return this->isValid() && !this->isPendingClose();
 }
 
 void Window::waitForCleanup()
 {
-	mpRenderer->waitUntilIdle();
+	//mpRenderer->waitUntilIdle();
 }

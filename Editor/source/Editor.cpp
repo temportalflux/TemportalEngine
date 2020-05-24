@@ -87,7 +87,7 @@ void Editor::openWindow()
 		.setValidationLayers(VulkanValidationLayers);
 	mLogicalDevice = mPhysicalDevice.createLogicalDevice(&logicalDeviceInfo);
 
-	mGraphicsQueue = mLogicalDevice.getQueue(graphics::QueueFamily::eGraphics);
+	mQueues = mLogicalDevice.findQueues({ graphics::QueueFamily::eGraphics });
 
 	i32 width, height;
 	SDL_GetWindowSize(GetSDLWindow(this->mpWindowHandle), &width, &height);
@@ -100,7 +100,7 @@ void Editor::closeWindow()
 	this->destroyWindow();
 	if (this->mVulkanInstance.isValid())
 	{
-		mGraphicsQueue.reset();
+		mQueues.clear();
 		mLogicalDevice.invalidate();
 		mPhysicalDevice.invalidate();
 		mSurface.destroy(&this->mVulkanInstance);

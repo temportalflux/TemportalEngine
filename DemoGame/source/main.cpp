@@ -106,6 +106,22 @@ int main()
 #pragma region Vulkan
 	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
 	auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+	renderer.setPhysicalDevicePreference(graphics::PhysicalDevicePreference()
+		.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
+		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
+		.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
+		.addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
+		.addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+		.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
+		.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
+	);
+	renderer.setLogicalDeviceInfo(graphics::LogicalDeviceInfo()
+		.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+		.addQueueFamily(graphics::QueueFamily::eGraphics)
+		.addQueueFamily(graphics::QueueFamily::ePresentation)
+		.setValidationLayers(engine::Engine::VulkanValidationLayers)
+	);
+	renderer.initializeDevices();
 #pragma endregion
 
 	pEngine->run(pWindow);

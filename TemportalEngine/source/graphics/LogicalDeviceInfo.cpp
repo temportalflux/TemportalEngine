@@ -3,12 +3,19 @@
 #include "types/integer.h"
 #include "graphics/QueueFamilyGroup.hpp"
 
+#include <unordered_set>
+
 using namespace graphics;
 
 LogicalDeviceInfo& LogicalDeviceInfo::addQueueFamily(QueueFamily type)
 {
 	this->mQueues.push_back(type);
 	return *this;
+}
+
+std::set<QueueFamily> LogicalDeviceInfo::getQueues() const
+{
+	return std::set<QueueFamily>(this->mQueues.begin(), this->mQueues.end());
 }
 
 LogicalDeviceInfo& LogicalDeviceInfo::addDeviceExtension(char const* name)
@@ -34,15 +41,25 @@ vk::DeviceQueueCreateInfo QueueInfo::makeInfo() const
 std::vector<QueueInfo> LogicalDeviceInfo::makeQueueInfo(QueueFamilyGroup const *pAvailableQueues) const
 {
 	auto queueCount = this->mQueues.size();
-	auto queueCreateInfo = std::vector<QueueInfo>(queueCount);
+	auto queueIndicies = std::unordered_set<ui32>();
+	auto queueCreateInfo = std::vector<QueueInfo>();
 	for (uSize i = 0; i < queueCount; ++i)
 	{
 		auto idxQueueFamily = pAvailableQueues->getQueueIndex(this->mQueues[i]);
 		assert(idxQueueFamily.has_value());
 
-		queueCreateInfo[i].idxQueueFamily = idxQueueFamily.value();
-		// TODO: allow each queue to specify their sub-queue priorities
-		queueCreateInfo[i].queuePriorities.push_back(1.0f);
+		// If the queue family is not already in the info list
+		if (queueIndicies.find(idxQueueFamily.value()) == queueIndicies.end())
+		{
+			queueIndicies.insert(idxQueueFamily.value());
+			
+			auto info = QueueInfo();
+			info.idxQueueFamily = idxQueueFamily.value();
+			// TODO: allow each queue to specify their sub-queue priorities
+			info.queuePriorities.push_back(1.0f);
+
+			queueCreateInfo.push_back(info);
+		}
 	}
 	return queueCreateInfo;
 }

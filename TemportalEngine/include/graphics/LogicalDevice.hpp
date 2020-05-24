@@ -6,6 +6,8 @@
 
 #include <optional>
 #include <vulkan/vulkan.hpp>
+#include <unordered_map>
+#include <set>
 
 NS_GRAPHICS
 class PhysicalDevice;
@@ -18,7 +20,7 @@ class LogicalDevice
 public:
 	LogicalDevice() = default;
 
-	std::optional<vk::Queue> getQueue(QueueFamily type) const;
+	std::unordered_map<QueueFamily, vk::Queue> findQueues(std::set<QueueFamily> types) const;
 	void invalidate();
 
 private:

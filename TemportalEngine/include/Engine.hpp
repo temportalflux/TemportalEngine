@@ -36,6 +36,7 @@ private:
 
 public:
 	static logging::LogSystem LOG_SYSTEM;
+	static std::vector<const char*> VulkanValidationLayers;
 
 	static constexpr uSize getMaxMemorySize();
 	static Engine* Create();
@@ -53,7 +54,6 @@ private:
 
 	dependency::SDL mpDepSDL[1];
 
-	static std::vector<const char*> VulkanValidationLayers;
 	graphics::VulkanInstance mVulkanInstance;
 
 	bool mIsRunning;

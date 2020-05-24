@@ -12,9 +12,27 @@ PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(vk::Ph
 	return *this;
 }
 
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(std::string extensionName, IndividualScore score)
+{
+	mDeviceExtensions.insert({ score, extensionName });
+	return *this;
+}
+
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(PhysicalDeviceFeature feature, IndividualScore score)
+{
+	mFeatures.insert({ score, feature });
+	return *this;
+}
+
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score)
 {
 	mQueueFamilies.insert({ score, queueFamily });
+	return *this;
+}
+
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(PreferenceSwapChain::Type optionType, IndividualScore score)
+{
+	mSwapChain.insert({ score, optionType });
 	return *this;
 }
 

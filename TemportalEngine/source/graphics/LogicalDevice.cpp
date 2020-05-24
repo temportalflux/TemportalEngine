@@ -10,13 +10,26 @@ LogicalDevice::LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDe
 	mDevice.swap(device);
 }
 
-std::optional<vk::Queue> LogicalDevice::getQueue(QueueFamily type) const
+std::unordered_map<QueueFamily, vk::Queue> LogicalDevice::findQueues(std::set<QueueFamily> types) const
 {
-	if (mpPhysicalDevice == nullptr) return std::nullopt;
+	auto queues = std::unordered_map<QueueFamily, vk::Queue>();
+
+	if (mpPhysicalDevice == nullptr) return queues;
 	auto queueGroup = this->mpPhysicalDevice->queryQueueFamilyGroup();
-	auto idxQueueFamily = queueGroup.getQueueIndex(type);
-	if (!idxQueueFamily.has_value()) return std::nullopt;
-	return mDevice->getQueue(idxQueueFamily.value(), /*subqueue index*/ 0);
+
+	for (auto& queueFamilyType : types)
+	{
+		auto idxQueueFamily = queueGroup.getQueueIndex(queueFamilyType);
+		if (idxQueueFamily.has_value())
+		{
+			queues.insert(std::make_pair(
+				queueFamilyType,
+				mDevice->getQueue(idxQueueFamily.value(), /*subqueue index*/ 0)
+			));
+		}
+	}
+
+	return queues;
 }
 
 void LogicalDevice::invalidate()

@@ -7,6 +7,7 @@
 #include "graphics/PhysicalDevice.hpp"
 #include "graphics/LogicalDevice.hpp"
 
+#include <unordered_map>
 #include <vulkan/vulkan.hpp>
 
 class Editor
@@ -31,7 +32,7 @@ private:
 	graphics::Surface mSurface;
 	graphics::PhysicalDevice mPhysicalDevice;
 	graphics::LogicalDevice mLogicalDevice;
-	std::optional<vk::Queue> mGraphicsQueue;
+	std::unordered_map<graphics::QueueFamily, vk::Queue> mQueues;
 
 	// OLD
 	vk::UniqueDescriptorPool mDescriptorPool;
