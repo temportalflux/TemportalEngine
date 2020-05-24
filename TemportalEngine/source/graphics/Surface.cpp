@@ -13,16 +13,25 @@ Surface::Surface(void *pWindowHandle)
 {
 }
 
-void Surface::swap(Surface &other)
-{
-	mpWindowHandle = other.mpWindowHandle;
-	other.mpWindowHandle = nullptr;
-	mSurface.swap(other.mSurface);
-}
-
 void Surface::releaseWindowHandle()
 {
 	mpWindowHandle = nullptr;
+}
+
+void Surface::swap(Surface &other)
+{
+	mpWindowHandle = other.mpWindowHandle;
+	other.releaseWindowHandle();
+	mSurface.swap(other.mSurface);
+}
+
+vk::Extent2D Surface::getDrawableSize() const
+{
+	// SDL returns drawable size in pixels in signed-integers (no idea why)
+	i32 w, h;
+	SDL_Window* pWindow = reinterpret_cast<SDL_Window*>(this->mpWindowHandle);
+	SDL_Vulkan_GetDrawableSize(pWindow, &w, &h);
+	return vk::Extent2D().setWidth((ui32)w).setHeight((ui32)h);
 }
 
 Surface& Surface::initialize(VulkanInstance *pVulkan)

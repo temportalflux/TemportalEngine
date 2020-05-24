@@ -9,6 +9,8 @@
 #include "graphics/PhysicalDevicePreference.hpp"
 #include "graphics/QueueFamily.hpp"
 #include "graphics/Surface.hpp"
+#include "graphics/SwapChain.hpp"
+#include "graphics/SwapChainInfo.hpp"
 
 #include <unordered_map>
 
@@ -24,8 +26,11 @@ public:
 
 	void setPhysicalDevicePreference(PhysicalDevicePreference const &preference);
 	void setLogicalDeviceInfo(LogicalDeviceInfo const &info);
+	void setSwapChainInfo(SwapChainInfo const &info);
 
 	void initializeDevices();
+	// Creates a swap chain, and all objects that depend on it
+	void constructRenderChain();
 
 	void invalidate();
 
@@ -38,8 +43,10 @@ private:
 	
 	LogicalDeviceInfo mLogicalDeviceInfo;
 	LogicalDevice mLogicalDevice;
-
 	std::unordered_map<QueueFamily, vk::Queue> mQueues;
+
+	SwapChainInfo mSwapChainInfo;
+	SwapChain mSwapChain;
 
 	VulkanRenderer() = default;
 

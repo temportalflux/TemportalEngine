@@ -10,6 +10,18 @@ LogicalDevice::LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDe
 	mDevice.swap(device);
 }
 
+bool LogicalDevice::isValid() const
+{
+	// Checks underlying structure for VK_NULL_HANDLE
+	return (bool)this->mDevice;
+}
+
+void LogicalDevice::invalidate()
+{
+	this->mpPhysicalDevice = nullptr;
+	this->mDevice.reset();
+}
+
 std::unordered_map<QueueFamily, vk::Queue> LogicalDevice::findQueues(std::set<QueueFamily> types) const
 {
 	auto queues = std::unordered_map<QueueFamily, vk::Queue>();
@@ -30,10 +42,4 @@ std::unordered_map<QueueFamily, vk::Queue> LogicalDevice::findQueues(std::set<Qu
 	}
 
 	return queues;
-}
-
-void LogicalDevice::invalidate()
-{
-	this->mpPhysicalDevice = nullptr;
-	this->mDevice.reset();
 }

@@ -7,19 +7,23 @@
 NS_GRAPHICS
 class VulkanInstance;
 class PhysicalDevice;
+class SwapChain;
 
 class Surface
 {
 	friend class VulkanInstance;
 	friend class PhysicalDevice;
+	friend class SwapChain;
 
 public:
 	Surface() = default;
 	Surface(void* pWindowHandle);
+	void releaseWindowHandle();
 	
 	void swap(Surface &other);
 
-	void releaseWindowHandle();
+	// TODO: Replace return vec with engine-level structure
+	vk::Extent2D getDrawableSize() const;
 
 	Surface& initialize(VulkanInstance *pVulkan);
 	void destroy(VulkanInstance *pVulkan);

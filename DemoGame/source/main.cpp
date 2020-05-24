@@ -2,6 +2,7 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "graphics/VulkanRenderer.hpp"
+#include "graphics/ShaderModule.hpp"
 
 #include <iostream>
 #include <string>
@@ -121,14 +122,21 @@ int main()
 		.addQueueFamily(graphics::QueueFamily::ePresentation)
 		.setValidationLayers(engine::Engine::VulkanValidationLayers)
 	);
+	renderer.setSwapChainInfo(graphics::SwapChainInfo());
+	auto shaderVertex = graphics::ShaderModule("shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
+	auto shaderFragment = graphics::ShaderModule("shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 	renderer.initializeDevices();
+	renderer.constructRenderChain();
 #pragma endregion
 
 	pEngine->run(pWindow);
 
 	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
+	shaderVertex.destroy();
+	shaderFragment.destroy();
 	renderer.invalidate();
+
 	pWindow->destroy();
 	engine::Engine::Get()->dealloc(&pWindow);
 	engine::Engine::Destroy();

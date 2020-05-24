@@ -25,6 +25,11 @@ void VulkanRenderer::setLogicalDeviceInfo(LogicalDeviceInfo const &info)
 	mLogicalDeviceInfo = info;
 }
 
+void VulkanRenderer::setSwapChainInfo(SwapChainInfo const &info)
+{
+	mSwapChainInfo = info;
+}
+
 void VulkanRenderer::initializeDevices()
 {
 	this->pickPhysicalDevice();
@@ -43,8 +48,19 @@ void VulkanRenderer::pickPhysicalDevice()
 	mPhysicalDevice = optPhysicalDevice.value();
 }
 
+void VulkanRenderer::constructRenderChain()
+{
+	mSwapChain
+		.setInfo(mSwapChainInfo)
+		.setSupport(mPhysicalDevice.querySwapChainSupport())
+		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup());
+	mSwapChain.create(&mLogicalDevice, &mSurface);
+}
+
 void VulkanRenderer::invalidate()
 {
+	this->mSwapChain.destroy();
+
 	this->mQueues.clear();
 	this->mLogicalDevice.invalidate();
 	this->mPhysicalDevice.invalidate();
