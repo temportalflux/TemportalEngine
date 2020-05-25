@@ -65,6 +65,7 @@ private:
 
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
+	void recordCommandBufferInstructions();
 
 };
 

@@ -12,6 +12,7 @@ class FrameBuffer
 {
 	friend class VulkanApi;
 	friend class RenderPass;
+	friend class Command;
 
 public:
 	FrameBuffer() = default;

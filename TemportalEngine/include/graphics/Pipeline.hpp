@@ -14,6 +14,7 @@ class ShaderModule;
 class Pipeline
 {
 	friend class VulkanApi;
+	friend class Command;
 
 public:
 	Pipeline() = default;

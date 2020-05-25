@@ -13,9 +13,10 @@ class SwapChain;
 
 class RenderPass
 {
+	friend class VulkanApi;
 	friend class Pipeline;
 	friend class FrameBuffer;
-	friend class VulkanApi;
+	friend class Command;
 
 public:
 	RenderPass();

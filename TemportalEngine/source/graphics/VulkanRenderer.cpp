@@ -89,6 +89,22 @@ void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders
 		.setQueueFamily(graphics::QueueFamily::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&this->mLogicalDevice);
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
+	
+	this->recordCommandBufferInstructions();
+}
+
+void VulkanRenderer::recordCommandBufferInstructions()
+{
+	for (uSize i = 0; i < this->mCommandBuffers.size(); ++i)
+	{
+		this->mCommandBuffers[i].beginCommand()
+			.clear({ 0.0f, 0.0f, 0.0f, 1.0f })
+			.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i])
+			.bindPipeline(&this->mPipeline)
+			.draw()
+			.endRenderPass()
+			.end();
+	}
 }
 
 void VulkanRenderer::invalidate()
