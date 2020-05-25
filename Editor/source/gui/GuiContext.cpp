@@ -15,7 +15,18 @@ void GuiContext::initContext()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
 	ImGui::StyleColorsDark();
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
 }
 
 void GuiContext::initWindow(void* handle)
@@ -194,22 +205,41 @@ void GuiContext::endFrame()
 {
 	ImGui::Render();
 
+	auto drawData = ImGui::GetDrawData();
+	bool const bIsMinimized = (drawData->DisplaySize.x <= 0.0f || drawData->DisplaySize.y <= 0.0f);
+
 	auto& frame = this->mDynamicFrames[this->mIdxCurrentFrame];
-	frame.waitUntilNotInFlight();
-
-	auto idxImage = frame.acquireNextImage(&mSwapChain);
-	// vulkan implements the bool operator for validity checks
-	if (this->mImagesInFlight[idxImage])
+	ui32 idxImage;
+	//if (!bIsMinimized)
 	{
-		mLogicalDevice.mDevice->waitForFences(mImagesInFlight[idxImage], true, UINT64_MAX);
-	}
-	mImagesInFlight[idxImage] = frame.mFence_FrameInFlight.get();
-	frame.markNotInFlight();
+		frame.waitUntilNotInFlight();
 
-	this->renderFrame(frame);
-	frame.present(&mSwapChain, idxImage, &mQueues[graphics::QueueFamily::eGraphics]);
-	
-	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mDynamicFrames.size();
+		idxImage = frame.acquireNextImage(&mSwapChain);
+		// vulkan implements the bool operator for validity checks
+		if (this->mImagesInFlight[idxImage])
+		{
+			mLogicalDevice.mDevice->waitForFences(mImagesInFlight[idxImage], true, UINT64_MAX);
+		}
+		mImagesInFlight[idxImage] = frame.mFence_FrameInFlight.get();
+
+		frame.markNotInFlight();
+
+		this->renderFrame(frame);
+	}
+
+	auto& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+
+	// Present the queue
+	//if (!bIsMinimized)
+	{
+		frame.present(&mSwapChain, idxImage, &mQueues[graphics::QueueFamily::eGraphics]);
+		this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mDynamicFrames.size();
+	}
 }
 
 void GuiContext::renderFrame(graphics::DynamicFrame &frame)

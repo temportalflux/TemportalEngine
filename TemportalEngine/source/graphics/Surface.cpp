@@ -30,6 +30,15 @@ void* Surface::getWindowHandle() const
 	return this->mpWindowHandle;
 }
 
+vk::Extent2D Surface::getWindowSize() const
+{
+	// SDL returns window size in pixels in signed-integers (no idea why)
+	i32 w, h;
+	SDL_Window* pWindow = reinterpret_cast<SDL_Window*>(this->mpWindowHandle);
+	SDL_GetWindowSize(pWindow, &w, &h);
+	return vk::Extent2D().setWidth((ui32)w).setHeight((ui32)h);
+}
+
 vk::Extent2D Surface::getDrawableSize() const
 {
 	// SDL returns drawable size in pixels in signed-integers (no idea why)
