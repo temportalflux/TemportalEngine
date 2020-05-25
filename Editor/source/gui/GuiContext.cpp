@@ -81,10 +81,10 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 		});
 
 	auto viewCount = views.size();
-	mImGuiFrames.resize(viewCount);
+	mDynamicFrames.resize(viewCount);
 	for (uSize i = 0; i < viewCount; ++i)
 	{
-		mImGuiFrames[i]
+		mDynamicFrames[i]
 			.setRenderPass(&mRenderPass)
 			.setView(views[i]) // actually yield control of the ImageView to the frame
 			.setQueueFamilyGroup(queueFamilyGroup)
@@ -138,7 +138,7 @@ vk::UniqueDescriptorPool GuiContext::createDescriptorPool()
 void GuiContext::submitFonts()
 {
 	// since the command pools are re-programmed every frame, it doesn't matter which frame we use
-	auto& frame = this->mImGuiFrames[0];
+	auto& frame = this->mDynamicFrames[0];
 	frame.submitOneOff(
 		&mLogicalDevice, &mQueues[graphics::QueueFamily::eGraphics],
 		[&](vk::UniqueCommandBuffer &buffer)
@@ -155,7 +155,7 @@ void GuiContext::destroy(graphics::VulkanInstance const *pInstance)
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
-	mImGuiFrames.clear(); // auto releases internal unique handles on deconstruct of elements
+	mDynamicFrames.clear(); // auto releases internal unique handles on deconstruct of elements
 	mRenderPass.destroy();
 	mSwapChain.destroy();
 
@@ -171,4 +171,44 @@ void GuiContext::destroy(graphics::VulkanInstance const *pInstance)
 void GuiContext::processInput(void *evt)
 {
 	ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<SDL_Event*>(evt));
+}
+
+void GuiContext::render()
+{
+	this->startFrame();
+	this->makeGui();
+	this->endFrame();
+}
+
+void GuiContext::startFrame()
+{
+	ImGui_ImplVulkan_NewFrame();
+	ImGui_ImplSDL2_NewFrame(reinterpret_cast<SDL_Window*>(mSurface.getWindowHandle()));
+	ImGui::NewFrame();
+}
+
+void GuiContext::endFrame()
+{
+	ImGui::Render();
+	auto& frame = this->mDynamicFrames[this->mIdxCurrentFrame];
+	this->renderFrame(frame);
+	this->presentFrame(frame);
+	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mDynamicFrames.size();
+}
+
+void GuiContext::renderFrame(graphics::DynamicFrame &frame)
+{
+
+}
+
+void GuiContext::presentFrame(graphics::DynamicFrame &frame)
+{
+
+}
+
+void GuiContext::makeGui()
+{
+	ImGui::Begin("Hello, world!");
+	ImGui::Text("This is some useful text.");
+	ImGui::End();
 }

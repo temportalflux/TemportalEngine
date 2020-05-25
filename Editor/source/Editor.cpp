@@ -140,6 +140,7 @@ void Editor::run()
 	while (mIsRunning)
 	{
 		this->pollInput();
+		this->mGui.render();
 	}
 }
 

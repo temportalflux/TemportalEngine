@@ -25,6 +25,11 @@ void Surface::swap(Surface &other)
 	mSurface.swap(other.mSurface);
 }
 
+void* Surface::getWindowHandle() const
+{
+	return this->mpWindowHandle;
+}
+
 vk::Extent2D Surface::getDrawableSize() const
 {
 	// SDL returns drawable size in pixels in signed-integers (no idea why)

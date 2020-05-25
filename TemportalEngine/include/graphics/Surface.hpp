@@ -23,6 +23,7 @@ public:
 	
 	void swap(Surface &other);
 
+	void* getWindowHandle() const;
 	// TODO: Replace return vec with engine-level structure
 	vk::Extent2D getDrawableSize() const;
 
