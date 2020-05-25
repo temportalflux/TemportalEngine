@@ -1,6 +1,7 @@
 #include "graphics/RenderPass.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/SwapChain.hpp"
 
 using namespace graphics;
 
@@ -8,9 +9,11 @@ RenderPass::RenderPass()
 {
 }
 
-RenderPass::RenderPass(vk::Format format)
-	: mFormat(format)
+RenderPass& RenderPass::initFromSwapChain(SwapChain const *pSwapChain)
 {
+	mFormat = pSwapChain->mSurfaceFormat.format;
+	mResolution = pSwapChain->mResolution; // for usage in FrameBuffer
+	return *this;
 }
 
 bool RenderPass::isValid() const
@@ -18,7 +21,7 @@ bool RenderPass::isValid() const
 	return (bool)this->mRenderPass;
 }
 
-void RenderPass::create(LogicalDevice const *pDevice)
+RenderPass& RenderPass::create(LogicalDevice const *pDevice)
 {
 	assert(!isValid());
 
@@ -61,6 +64,7 @@ void RenderPass::create(LogicalDevice const *pDevice)
 		.setPDependencies(&subpassDependency);
 
 	mRenderPass = pDevice->mDevice->createRenderPassUnique(info);
+	return *this;
 }
 
 void RenderPass::destroy()

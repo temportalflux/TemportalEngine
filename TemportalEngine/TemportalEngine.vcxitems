@@ -17,10 +17,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDeviceInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevicePreference.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Pipeline.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\QueueFamilyGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\RenderPass.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ShaderModule.cpp" />
@@ -60,10 +62,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FrameBuffer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageViewInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\LogicalDevice.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\LogicalDeviceInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevice.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevicePreference.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Pipeline.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamily.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\RenderPass.hpp" />

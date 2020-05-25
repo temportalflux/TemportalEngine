@@ -11,6 +11,8 @@
 #include "graphics/Surface.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/SwapChainInfo.hpp"
+#include "graphics/RenderPass.hpp"
+#include "graphics/Pipeline.hpp"
 
 #include <unordered_map>
 

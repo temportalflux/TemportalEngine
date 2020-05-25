@@ -55,6 +55,25 @@ void VulkanRenderer::constructRenderChain()
 		.setSupport(mPhysicalDevice.querySwapChainSupport())
 		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup());
 	mSwapChain.create(&mLogicalDevice, &mSurface);
+
+	auto resolution = mSwapChain.getResolution();
+	auto imageViews = mSwapChain.createImageViews({
+		vk::ImageViewType::e2D,
+		{
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity
+		}
+	});
+	auto& renderPass = RenderPass().initFromSwapChain(&mSwapChain).create(&mLogicalDevice);
+	auto& pipeline = Pipeline().setViewArea(
+		vk::Viewport()
+			.setX(0).setY(0)
+			.setWidth((f32)resolution.width).setHeight((f32)resolution.height)
+			.setMinDepth(0.0f).setMaxDepth(1.0f),
+		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
+	);
 }
 
 void VulkanRenderer::invalidate()

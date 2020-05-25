@@ -6,23 +6,26 @@
 
 NS_GRAPHICS
 class LogicalDevice;
+class SwapChain;
 
 class RenderPass
 {
-	friend class SwapChain;
+	friend class Pipeline;
+	friend class FrameBuffer;
 
 public:
 	RenderPass();
 
+	RenderPass& initFromSwapChain(SwapChain const *pSwapChain);
+
 	bool isValid() const;
-	void create(LogicalDevice const *pDevice);
+	RenderPass& create(LogicalDevice const *pDevice);
 	void destroy();
 
 private:
 	vk::Format mFormat;
+	vk::Extent2D mResolution;
 	vk::UniqueRenderPass mRenderPass;
-
-	RenderPass(vk::Format format);
 
 };
 

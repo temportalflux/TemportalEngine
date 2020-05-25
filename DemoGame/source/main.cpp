@@ -122,7 +122,12 @@ int main()
 		.addQueueFamily(graphics::QueueFamily::ePresentation)
 		.setValidationLayers(engine::Engine::VulkanValidationLayers)
 	);
-	renderer.setSwapChainInfo(graphics::SwapChainInfo());
+	renderer.setSwapChainInfo(graphics::SwapChainInfo()
+		.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
+		.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+		.addPresentModePreference(vk::PresentModeKHR::eMailbox)
+		.addPresentModePreference(vk::PresentModeKHR::eFifo)
+	);
 	auto shaderVertex = graphics::ShaderModule("shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
 	auto shaderFragment = graphics::ShaderModule("shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
 	renderer.initializeDevices();

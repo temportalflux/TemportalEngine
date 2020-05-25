@@ -17,6 +17,7 @@ class LogicalDevice;
 // TODO: Can integrate https://github.com/google/shaderc for compiling shaders within the editor
 class ShaderModule
 {
+	friend class Pipeline;
 
 public:
 	ShaderModule();

@@ -28,7 +28,7 @@ SwapChain& SwapChain::setQueueFamilyGroup(QueueFamilyGroup const &qfg)
 	return *this;
 }
 
-void SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurface)
+SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurface)
 {
 	mpDevice = pDevice;
 
@@ -43,7 +43,7 @@ void SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurface)
 	auto info = vk::SwapchainCreateInfoKHR()
 		// Hard set internally
 		.setSurface(pSurface->mSurface.get())
-		.setPreTransform(mSupport.capabilities.currentTransform)
+		.setPreTransform(mSupport.capabilities.currentTransform) // IMGUI by default was using VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 		.setOldSwapchain(nullptr) // swap chain must be recreated if the window is resized. this is not yet handled
 		// Determined above
 		.setImageExtent(mResolution)
@@ -73,6 +73,12 @@ void SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurface)
 	}
 
 	mSwapChain = mpDevice->mDevice->createSwapchainKHRUnique(info);
+	return *this;
+}
+
+vk::Extent2D SwapChain::getResolution() const
+{
+	return mResolution;
 }
 
 std::vector<vk::Image> SwapChain::queryImages() const
@@ -81,7 +87,7 @@ std::vector<vk::Image> SwapChain::queryImages() const
 	return mpDevice->mDevice->getSwapchainImagesKHR(mSwapChain.get());
 }
 
-std::vector<vk::UniqueImageView> SwapChain::createImageViews() const
+std::vector<vk::UniqueImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
 {
 	auto images = this->queryImages();
 	uSize imageCount = images.size();
@@ -91,14 +97,9 @@ std::vector<vk::UniqueImageView> SwapChain::createImageViews() const
 		views[i] = mpDevice->mDevice->createImageViewUnique(vk::ImageViewCreateInfo()
 			.setImage(images[i])
 			.setFormat(mSurfaceFormat.format)
+			.setViewType(info.type)
+			.setComponents(info.swizzle)
 			// TODO: These can be configured by something in the future
-			.setViewType(vk::ImageViewType::e2D)
-			.setComponents(vk::ComponentMapping()
-				.setR(vk::ComponentSwizzle::eIdentity)
-				.setG(vk::ComponentSwizzle::eIdentity)
-				.setB(vk::ComponentSwizzle::eIdentity)
-				.setA(vk::ComponentSwizzle::eIdentity)
-			)
 			.setSubresourceRange(vk::ImageSubresourceRange()
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setBaseMipLevel(0).setLevelCount(1)
