@@ -99,7 +99,7 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 	mInfo.PipelineCache = VK_NULL_HANDLE;
 	mInfo.DescriptorPool = (VkDescriptorPool)mDescriptorPool.get();
 	mInfo.Allocator = nullptr;
-	mInfo.MinImageCount = viewCount;
+	mInfo.MinImageCount = (ui32)viewCount;
 	mInfo.ImageCount = (ui32)viewCount;
 	mInfo.CheckVkResultFn = nullptr;
 	ImGui_ImplVulkan_Init(&mInfo, this->extract(&mRenderPass));
@@ -139,7 +139,14 @@ void GuiContext::submitFonts()
 {
 	// since the command pools are re-programmed every frame, it doesn't matter which frame we use
 	auto& frame = this->mImGuiFrames[0];
-	
+	frame.submitOneOff(
+		&mLogicalDevice, &mQueues[graphics::QueueFamily::eGraphics],
+		[&](vk::UniqueCommandBuffer &buffer)
+		{
+			ImGui_ImplVulkan_CreateFontsTexture((VkCommandBuffer)buffer.get());
+		}
+	);
+	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 void GuiContext::destroy(graphics::VulkanInstance const *pInstance)

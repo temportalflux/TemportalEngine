@@ -127,9 +127,10 @@ std::vector<const char*> Editor::querySDLVulkanExtensions() const
 
 void Editor::createGui()
 {
-	mGui.initContext();
-	mGui.initWindow(this->mpWindowHandle);
-	mGui.initVulkan(&this->mVulkanInstance);
+	this->mGui.initContext();
+	this->mGui.initWindow(this->mpWindowHandle);
+	this->mGui.initVulkan(&this->mVulkanInstance);
+	this->mGui.submitFonts();
 }
 
 void Editor::run()

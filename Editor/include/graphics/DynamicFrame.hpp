@@ -5,6 +5,7 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
 
+#include <functional>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -29,6 +30,11 @@ public:
 
 	DynamicFrame& create(LogicalDevice const *pDevice);
 	void destroy();
+
+	void submitOneOff(
+		LogicalDevice const *pDevice, vk::Queue const *pQueue,
+		std::function<void(vk::UniqueCommandBuffer &buffer)> write
+	);
 
 private:
 	vk::UniqueImageView mView;

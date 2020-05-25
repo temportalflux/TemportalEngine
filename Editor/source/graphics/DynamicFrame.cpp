@@ -90,3 +90,16 @@ void DynamicFrame::destroy()
 	this->mFrameBuffer.destroy();
 	this->mView.reset();
 }
+
+void DynamicFrame::submitOneOff(LogicalDevice const *pDevice, vk::Queue const *pQueue, std::function<void(vk::UniqueCommandBuffer &buffer)> write)
+{
+	pDevice->mDevice->resetCommandPool(this->mCommandPool.get(), vk::CommandPoolResetFlags());
+	this->mCommandBuffer->begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	write(this->mCommandBuffer);
+	this->mCommandBuffer->end();
+	pQueue->submit(
+		vk::SubmitInfo().setCommandBufferCount(1).setPCommandBuffers(&this->mCommandBuffer.get()),
+		vk::Fence()
+	);
+	pDevice->mDevice->waitIdle();
+}
