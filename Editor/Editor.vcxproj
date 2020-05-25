@@ -167,6 +167,7 @@
     <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
     <ClCompile Include="source\Editor.cpp" />
     <ClCompile Include="source\graphics\ImGuiFrame.cpp" />
+    <ClCompile Include="source\gui\GuiContext.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="include\Editor.hpp" />
     <ClInclude Include="include\graphics\ImGuiFrame.hpp" />
+    <ClInclude Include="include\gui\GuiContext.hpp" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />
     <ClInclude Include="libs\imgui\imgui.h" />

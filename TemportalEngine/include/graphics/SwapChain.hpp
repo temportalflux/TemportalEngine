@@ -18,6 +18,7 @@ class Surface;
 class SwapChain
 {
 	friend class RenderPass;
+	friend class VulkanApi;
 
 public:
 	SwapChain();

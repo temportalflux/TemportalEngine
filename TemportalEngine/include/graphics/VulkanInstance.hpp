@@ -13,7 +13,6 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class Surface;
 
 /**
 	Wrapper class for managing a vulkan instance.
@@ -21,32 +20,20 @@ class Surface;
 */
 class VulkanInstance
 {
-	friend class graphics::Surface;
-
-private:
-	logging::Logger mLogger;
-
-	bool mUseVulkanDebugMessenger;
-	std::optional<vk::DebugUtilsMessengerEXT> mDebugMessenger;
-
-	std::unordered_set<char const*> mEnabledExtensions;
-	std::optional<std::vector<char const*>> mValidationLayers;
-
-	vk::ApplicationInfo mInfo;
-	vk::InstanceCreateInfo mCreateInfo;
-	bool mInstanceCreated;
-	vk::UniqueInstance mInstance;
+	friend class VulkanApi;
+	friend class Surface;
 
 public:
 	VulkanInstance();
 
 	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
-	logging::Logger getLog() const { return mLogger; }
+	logging::Logger getLog() const;
 
 	VulkanInstance& setApplicationInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
 	VulkanInstance& setValidationLayers(std::optional<std::vector<char const*>> layers = std::nullopt);
+	std::vector<char const*> getValidationLayers() const;
 
 	bool isValid() const;
 
@@ -61,9 +48,22 @@ public:
 	*/
 	void destroy();
 
-	std::optional<graphics::PhysicalDevice> pickPhysicalDevice(PhysicalDevicePreference const &preference, Surface *const surface) const;
+	std::optional<graphics::PhysicalDevice> pickPhysicalDevice(PhysicalDevicePreference const &preference, Surface const *pSurface) const;
+
 
 private:
+	logging::Logger mLogger;
+
+	bool mUseVulkanDebugMessenger;
+	std::optional<vk::DebugUtilsMessengerEXT> mDebugMessenger;
+
+	std::unordered_set<char const*> mEnabledExtensions;
+	std::vector<char const*> mValidationLayers;
+
+	vk::ApplicationInfo mInfo;
+	vk::InstanceCreateInfo mCreateInfo;
+	bool mInstanceCreated;
+	vk::UniqueInstance mInstance;
 
 	void createDebugMessenger();
 	void destroyDebugMessenger();

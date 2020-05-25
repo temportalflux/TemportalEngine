@@ -16,7 +16,7 @@ PhysicalDevice::PhysicalDevice(PhysicalDevice const &other)
 {
 }
 
-PhysicalDevice::PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface *const pSurface)
+PhysicalDevice::PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface const *pSurface)
 	: mDevice(device)
 	, mpSurface(pSurface)
 {

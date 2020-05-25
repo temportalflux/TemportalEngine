@@ -13,6 +13,7 @@ class ShaderModule;
 
 class Pipeline
 {
+	friend class VulkanApi;
 
 public:
 	Pipeline() = default;

@@ -29,6 +29,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanApi.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputWatcher.cpp" />
@@ -77,6 +78,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChain.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanApi.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Action.hpp" />

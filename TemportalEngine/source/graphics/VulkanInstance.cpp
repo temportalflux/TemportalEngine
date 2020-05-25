@@ -26,6 +26,11 @@ VulkanInstance& VulkanInstance::createLogger(logging::LogSystem *logSys, bool bL
 	return *this;
 }
 
+logging::Logger VulkanInstance::getLog() const
+{
+	return mLogger;
+}
+
 VulkanInstance& VulkanInstance::setApplicationInfo(utility::SExecutableInfo const &info)
 {
 	assert(!mInstanceCreated);
@@ -72,8 +77,13 @@ VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<ch
 		assert(desiredLayers.empty());
 	}
 
-	mValidationLayers = layers;
+	mValidationLayers = layers.value();
 	return *this;
+}
+
+std::vector<char const*> VulkanInstance::getValidationLayers() const
+{
+	return mValidationLayers;
 }
 
 bool VulkanInstance::isValid() const
@@ -97,8 +107,9 @@ void VulkanInstance::initialize()
 	mCreateInfo.setEnabledExtensionCount((ui32)extensionNames.size());
 	mCreateInfo.setPpEnabledExtensionNames(extensionNames.data());
 
-	mCreateInfo.setEnabledLayerCount(mValidationLayers.has_value() ? (ui32)mValidationLayers.value().size() : 0);
-	mCreateInfo.setPpEnabledLayerNames(mValidationLayers.has_value() ? mValidationLayers.value().data() : nullptr);
+	auto validationLayerCount = (ui32)mValidationLayers.size();
+	mCreateInfo.setEnabledLayerCount(validationLayerCount);
+	mCreateInfo.setPpEnabledLayerNames(validationLayerCount > 0 ? mValidationLayers.data() : nullptr);
 
 	getLog().log(logging::ECategory::LOGINFO,
 		"Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
@@ -131,7 +142,7 @@ void VulkanInstance::destroy()
 	mInstanceCreated = false;
 }
 
-std::optional<graphics::PhysicalDevice> VulkanInstance::pickPhysicalDevice(PhysicalDevicePreference const & preference, Surface *const pSurface) const
+std::optional<graphics::PhysicalDevice> VulkanInstance::pickPhysicalDevice(PhysicalDevicePreference const & preference, Surface const *pSurface) const
 {
 	assert(isValid());
 

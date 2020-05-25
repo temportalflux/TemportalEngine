@@ -18,6 +18,7 @@ class LogicalDevice;
 class ShaderModule
 {
 	friend class Pipeline;
+	friend class VulkanApi;
 
 public:
 	ShaderModule();

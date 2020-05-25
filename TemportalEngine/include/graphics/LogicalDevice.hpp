@@ -22,6 +22,7 @@ class LogicalDevice
 	friend class ShaderModule;
 	friend class RenderPass;
 	friend class Pipeline;
+	friend class VulkanApi;
 
 public:
 	LogicalDevice() = default;

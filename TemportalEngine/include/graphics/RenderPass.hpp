@@ -12,6 +12,7 @@ class RenderPass
 {
 	friend class Pipeline;
 	friend class FrameBuffer;
+	friend class VulkanApi;
 
 public:
 	RenderPass();

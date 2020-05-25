@@ -14,6 +14,7 @@ class Surface
 	friend class VulkanInstance;
 	friend class PhysicalDevice;
 	friend class SwapChain;
+	friend class VulkanApi;
 
 public:
 	Surface() = default;
@@ -25,8 +26,8 @@ public:
 	// TODO: Replace return vec with engine-level structure
 	vk::Extent2D getDrawableSize() const;
 
-	Surface& initialize(VulkanInstance *pVulkan);
-	void destroy(VulkanInstance *pVulkan);
+	Surface& initialize(VulkanInstance const *pVulkan);
+	void destroy(VulkanInstance const *pVulkan);
 
 private:
 	void* mpWindowHandle;

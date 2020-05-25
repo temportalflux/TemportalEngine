@@ -17,6 +17,7 @@ class LogicalDeviceInfo;
 class PhysicalDevice
 {
 	friend class VulkanInstance;
+	friend class VulkanApi;
 
 public:
 	PhysicalDevice();
@@ -33,10 +34,10 @@ public:
 	LogicalDevice createLogicalDevice(LogicalDeviceInfo const *pInfo) const;
 
 private:
-	graphics::Surface *mpSurface;
+	graphics::Surface const *mpSurface;
 	vk::PhysicalDevice mDevice;
 
-	PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface *const pSurface);
+	PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface const *pSurface);
 	vk::SurfaceKHR getVulkanSurface() const;
 
 };
