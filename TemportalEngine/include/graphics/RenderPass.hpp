@@ -23,6 +23,8 @@ public:
 	RenderPass& create(LogicalDevice const *pDevice);
 	void destroy();
 
+	vk::RenderPass getRenderPass() const;
+
 private:
 	vk::Format mFormat;
 	vk::Extent2D mResolution;

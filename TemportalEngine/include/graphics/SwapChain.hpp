@@ -33,6 +33,9 @@ public:
 	std::vector<vk::UniqueImageView> createImageViews(ImageViewInfo const &info) const;
 	vk::Extent2D getResolution() const;
 
+	ui32 acquireNextImage(LogicalDevice const *pDevice, vk::Semaphore &waitSemaphore) const;
+	vk::SwapchainKHR get() const;
+
 private:
 	SwapChainInfo mInfo;
 	SwapChainSupport mSupport;

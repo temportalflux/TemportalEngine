@@ -33,6 +33,8 @@ public:
 	void processInput(void *evt);
 	void render();
 
+	void waitUntilIdle();
+
 private:
 	ImGui_ImplVulkan_InitInfo mInfo;
 
@@ -46,6 +48,7 @@ private:
 	graphics::RenderPass mRenderPass;
 	// Because IMGUI is "immediate", each frame needs to record its own command pool instructions
 	std::vector<graphics::DynamicFrame> mDynamicFrames;
+	std::vector<vk::Fence> mImagesInFlight;
 	ui8 mIdxCurrentFrame;
 
 	vk::UniqueDescriptorPool createDescriptorPool();
@@ -54,7 +57,6 @@ private:
 	void makeGui();
 	void endFrame();
 	void renderFrame(graphics::DynamicFrame &frame);
-	void presentFrame(graphics::DynamicFrame &frame);
 
 };
 

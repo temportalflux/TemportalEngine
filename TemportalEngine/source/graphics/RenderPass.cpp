@@ -71,3 +71,8 @@ void RenderPass::destroy()
 {
 	this->mRenderPass.reset();
 }
+
+vk::RenderPass RenderPass::getRenderPass() const
+{
+	return mRenderPass.get();
+}

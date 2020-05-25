@@ -1,6 +1,7 @@
 #include "graphics/DynamicFrame.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/SwapChain.hpp"
 
 using namespace graphics;
 
@@ -34,6 +35,7 @@ DynamicFrame& DynamicFrame::operator=(DynamicFrame&& other)
 
 DynamicFrame& DynamicFrame::setRenderPass(RenderPass const *pRenderPass)
 {
+	mpRenderPass = pRenderPass;
 	mFrameBuffer.setRenderPass(pRenderPass);
 	return *this;
 }
@@ -52,6 +54,8 @@ DynamicFrame& DynamicFrame::setQueueFamilyGroup(QueueFamilyGroup const &group)
 
 DynamicFrame& DynamicFrame::create(LogicalDevice const *pDevice)
 {
+	mpDevice = pDevice;
+
 	// Create the frame buffer
 	mFrameBuffer.setView(mView.get()).create(pDevice);
 
@@ -82,6 +86,8 @@ DynamicFrame& DynamicFrame::create(LogicalDevice const *pDevice)
 
 void DynamicFrame::destroy()
 {
+	mpDevice = nullptr;
+	mpRenderPass = nullptr;
 	this->mSemaphore_RenderComplete.reset();
 	this->mSemaphore_ImageAcquired.reset();
 	this->mFence_FrameInFlight.reset();
@@ -91,9 +97,9 @@ void DynamicFrame::destroy()
 	this->mView.reset();
 }
 
-void DynamicFrame::submitOneOff(LogicalDevice const *pDevice, vk::Queue const *pQueue, std::function<void(vk::UniqueCommandBuffer &buffer)> write)
+void DynamicFrame::submitOneOff(vk::Queue const *pQueue, std::function<void(vk::UniqueCommandBuffer &buffer)> write)
 {
-	pDevice->mDevice->resetCommandPool(this->mCommandPool.get(), vk::CommandPoolResetFlags());
+	mpDevice->mDevice->resetCommandPool(this->mCommandPool.get(), vk::CommandPoolResetFlags());
 	this->mCommandBuffer->begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
 	write(this->mCommandBuffer);
 	this->mCommandBuffer->end();
@@ -101,5 +107,64 @@ void DynamicFrame::submitOneOff(LogicalDevice const *pDevice, vk::Queue const *p
 		vk::SubmitInfo().setCommandBufferCount(1).setPCommandBuffers(&this->mCommandBuffer.get()),
 		vk::Fence()
 	);
-	pDevice->mDevice->waitIdle();
+	mpDevice->mDevice->waitIdle();
+}
+
+void DynamicFrame::waitUntilNotInFlight()
+{
+	// stall until the fence is cleared
+	mpDevice->mDevice->waitForFences(this->mFence_FrameInFlight.get(), true, UINT64_MAX);
+}
+
+ui32 DynamicFrame::acquireNextImage(SwapChain const *pSwapChain)
+{
+	return pSwapChain->acquireNextImage(mpDevice, mSemaphore_ImageAcquired.get());
+}
+
+void DynamicFrame::markNotInFlight()
+{
+	mpDevice->mDevice->resetFences(this->mFence_FrameInFlight.get());
+}
+
+void DynamicFrame::beginRenderPass(SwapChain const *pSwapChain, vk::ClearValue clearValue)
+{
+	this->mCommandBuffer->begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
+	this->mCommandBuffer->beginRenderPass(vk::RenderPassBeginInfo()
+		.setRenderPass(mpRenderPass->getRenderPass())
+		.setFramebuffer(mFrameBuffer.getBuffer())
+		.setRenderArea(vk::Rect2D()
+			.setOffset({ 0, 0 })
+			.setExtent(pSwapChain->getResolution())
+		)
+		.setClearValueCount(1)
+		.setPClearValues(&clearValue),
+		vk::SubpassContents::eInline
+	);
+}
+
+void DynamicFrame::endRenderPass()
+{
+	this->mCommandBuffer->endRenderPass();
+	this->mCommandBuffer->end();
+}
+
+void DynamicFrame::submitBuffer(vk::Queue const *pQueue)
+{
+	vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	pQueue->submit(vk::SubmitInfo()
+		.setWaitSemaphoreCount(1).setPWaitSemaphores(&this->mSemaphore_ImageAcquired.get())
+		.setPWaitDstStageMask(&waitStage)
+		.setCommandBufferCount(1).setPCommandBuffers(&this->mCommandBuffer.get())
+		.setSignalSemaphoreCount(1).setPSignalSemaphores(&this->mSemaphore_RenderComplete.get()),
+		this->mFence_FrameInFlight.get()
+	);
+}
+
+void DynamicFrame::present(SwapChain const *pSwapChain, ui32 idxImage, vk::Queue const *pQueue)
+{
+	pQueue->presentKHR(vk::PresentInfoKHR()
+		.setWaitSemaphoreCount(1).setPWaitSemaphores(&mSemaphore_RenderComplete.get())
+		.setSwapchainCount(1).setPSwapchains(&pSwapChain->get())
+		.setPImageIndices(&idxImage)
+	);
 }

@@ -4,17 +4,24 @@
 
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
+#include "types/integer.h"
 
 #include <functional>
 #include <vulkan/vulkan.hpp>
 
+NS_GUI
+class GuiContext;
+NS_END
+
 NS_GRAPHICS
 class RenderPass;
 class LogicalDevice;
+class SwapChain;
 
 // Because IMGUI is "immediate", each frame needs to record its own command pool instructions
 class DynamicFrame
 {
+	friend class gui::GuiContext;
 
 public:
 	DynamicFrame();
@@ -32,14 +39,24 @@ public:
 	void destroy();
 
 	void submitOneOff(
-		LogicalDevice const *pDevice, vk::Queue const *pQueue,
+		vk::Queue const *pQueue,
 		std::function<void(vk::UniqueCommandBuffer &buffer)> write
 	);
 
+	void waitUntilNotInFlight();
+	ui32 acquireNextImage(SwapChain const *pSwapChain);
+	void markNotInFlight();
+	void beginRenderPass(SwapChain const *pSwapChain, vk::ClearValue clearValue);
+	void endRenderPass();
+	void submitBuffer(vk::Queue const *pQueue);
+	void present(SwapChain const *pSwapChain, ui32 idxImage, vk::Queue const *pQueue);
+
 private:
+	LogicalDevice const *mpDevice;
 	vk::UniqueImageView mView;
 	QueueFamilyGroup mQueueFamilyGroup;
 
+	RenderPass const *mpRenderPass;
 	// The buffer that stores the output for this frame
 	graphics::FrameBuffer mFrameBuffer;
 	// The command pool to which instructions are issued

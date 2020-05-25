@@ -50,3 +50,8 @@ void FrameBuffer::destroy()
 	this->mpRenderPass = nullptr;
 	this->mView = vk::ImageView();
 }
+
+vk::Framebuffer FrameBuffer::getBuffer() const
+{
+	return mBuffer.get();
+}

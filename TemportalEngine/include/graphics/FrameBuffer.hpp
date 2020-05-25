@@ -25,6 +25,8 @@ public:
 	FrameBuffer& create(LogicalDevice const *pDevice);
 	void destroy();
 
+	vk::Framebuffer getBuffer() const;
+
 private:
 	RenderPass const *mpRenderPass;
 	vk::ImageView mView;

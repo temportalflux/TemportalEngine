@@ -78,7 +78,7 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 			vk::ComponentSwizzle::eB,
 			vk::ComponentSwizzle::eA
 		}
-		});
+	});
 
 	auto viewCount = views.size();
 	mDynamicFrames.resize(viewCount);
@@ -90,6 +90,8 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 			.setQueueFamilyGroup(queueFamilyGroup)
 			.create(&mLogicalDevice);
 	}
+
+	mImagesInFlight.resize(viewCount);
 
 	mInfo.Instance = this->extract(pInstance);
 	mInfo.PhysicalDevice = this->extract(&mPhysicalDevice);
@@ -140,7 +142,7 @@ void GuiContext::submitFonts()
 	// since the command pools are re-programmed every frame, it doesn't matter which frame we use
 	auto& frame = this->mDynamicFrames[0];
 	frame.submitOneOff(
-		&mLogicalDevice, &mQueues[graphics::QueueFamily::eGraphics],
+		&mQueues[graphics::QueueFamily::eGraphics],
 		[&](vk::UniqueCommandBuffer &buffer)
 		{
 			ImGui_ImplVulkan_CreateFontsTexture((VkCommandBuffer)buffer.get());
@@ -190,20 +192,37 @@ void GuiContext::startFrame()
 void GuiContext::endFrame()
 {
 	ImGui::Render();
+
 	auto& frame = this->mDynamicFrames[this->mIdxCurrentFrame];
+	frame.waitUntilNotInFlight();
+
+	auto idxImage = frame.acquireNextImage(&mSwapChain);
+	// vulkan implements the bool operator for validity checks
+	if (this->mImagesInFlight[idxImage])
+	{
+		mLogicalDevice.mDevice->waitForFences(mImagesInFlight[idxImage], true, UINT64_MAX);
+	}
+	mImagesInFlight[idxImage] = frame.mFence_FrameInFlight.get();
+	frame.markNotInFlight();
+
 	this->renderFrame(frame);
-	this->presentFrame(frame);
+	frame.present(&mSwapChain, idxImage, &mQueues[graphics::QueueFamily::eGraphics]);
+	
 	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mDynamicFrames.size();
 }
 
 void GuiContext::renderFrame(graphics::DynamicFrame &frame)
 {
-
+	std::array<f32, 4U> clearColor = { 0.45f, 0.55f, 0.60f, 1.00f };
+	frame.beginRenderPass(&mSwapChain, vk::ClearValue().setColor(vk::ClearColorValue(clearColor)));
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), frame.mCommandBuffer.get());
+	frame.endRenderPass();
+	frame.submitBuffer(&mQueues[graphics::QueueFamily::eGraphics]);
 }
 
-void GuiContext::presentFrame(graphics::DynamicFrame &frame)
+void GuiContext::waitUntilIdle()
 {
-
+	this->mLogicalDevice.mDevice->waitIdle();
 }
 
 void GuiContext::makeGui()

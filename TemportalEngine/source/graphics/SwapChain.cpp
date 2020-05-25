@@ -115,3 +115,16 @@ void SwapChain::destroy()
 	mpDevice = nullptr;
 	mSwapChain.reset();
 }
+
+ui32 SwapChain::acquireNextImage(LogicalDevice const *pDevice, vk::Semaphore &waitSemaphore) const
+{
+	return pDevice->mDevice->acquireNextImageKHR(
+		mSwapChain.get(), UINT64_MAX,
+		waitSemaphore, /*fence*/{}
+	).value;
+}
+
+vk::SwapchainKHR SwapChain::get() const
+{
+	return mSwapChain.get();
+}

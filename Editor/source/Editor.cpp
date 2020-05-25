@@ -142,6 +142,7 @@ void Editor::run()
 		this->pollInput();
 		this->mGui.render();
 	}
+	this->mGui.waitUntilIdle();
 }
 
 void Editor::pollInput()
