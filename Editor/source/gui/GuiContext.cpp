@@ -167,3 +167,8 @@ void GuiContext::destroy(graphics::VulkanInstance const *pInstance)
 	mSurface.releaseWindowHandle();
 	mSurface.destroy(pInstance);
 }
+
+void GuiContext::processInput(void *evt)
+{
+	ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<SDL_Event*>(evt));
+}

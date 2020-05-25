@@ -43,7 +43,6 @@ private:
 
 	std::vector<const char*> querySDLVulkanExtensions() const;
 
-	// VULKAN STUBBING - TO BE MOVED TO INTERNAL API
-	void createFrameBuffers(i32 const width, i32 const height);
+	void pollInput();
 
 };

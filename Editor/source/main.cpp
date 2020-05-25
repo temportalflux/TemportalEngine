@@ -323,12 +323,8 @@ int main(int, char**)
 {
 	auto editor = Editor();
 	editor.openWindow();
-
-	char tmp[16];
-	std::cin.getline(tmp, 16);
-
+	editor.run();
 	editor.closeWindow();
-
 	return 0;
 
 	// Setup SDL

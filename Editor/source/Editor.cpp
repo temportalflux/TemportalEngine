@@ -17,6 +17,7 @@ std::vector<const char*> Editor::VulkanValidationLayers = { "VK_LAYER_KHRONOS_va
 
 Editor::Editor()
 	: LogSystem(logging::LogSystem())
+	, mIsRunning(true)
 {
 	// TODO: Unify versions in a header/config file
 	utility::SExecutableInfo appInfo = { "Editor", TE_MAKE_VERSION(0, 0, 1) };
@@ -87,7 +88,8 @@ void Editor::closeWindow()
 
 void Editor::createWindow()
 {
-	auto flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+	// TODO: Allow resizing, but that means re-creating the swapchain when it happens
+	auto flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);// | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 	this->mpWindowHandle = SDL_CreateWindow("TemportalEngine Editor",
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		1280, 720,
@@ -135,10 +137,29 @@ void Editor::createGui()
 
 void Editor::run()
 {
-	while (mIsRunning);
+	while (mIsRunning)
+	{
+		this->pollInput();
+	}
 }
 
-void Editor::createFrameBuffers(i32 const width, i32 const height)
+void Editor::pollInput()
 {
-
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		this->mGui.processInput(&event);
+		if (event.type == SDL_QUIT)
+		{
+			mIsRunning = false;
+		}
+		/*
+		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && event.window.windowID == SDL_GetWindowID(window))
+		{
+			g_SwapChainResizeWidth = (int)event.window.data1;
+			g_SwapChainResizeHeight = (int)event.window.data2;
+			g_SwapChainRebuild = true;
+		}
+		//*/
+	}
 }

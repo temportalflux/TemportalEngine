@@ -29,6 +29,9 @@ public:
 	void submitFonts(); // sends imgui fonts to GPU
 	void destroy(graphics::VulkanInstance const *pInstance);
 
+	// TODO: the gui should listen to an input queue like Engine uses
+	void processInput(void *evt);
+
 private:
 	ImGui_ImplVulkan_InitInfo mInfo;
 
