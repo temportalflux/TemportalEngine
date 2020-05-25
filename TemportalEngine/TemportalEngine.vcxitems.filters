@@ -18,8 +18,6 @@
     </Filter>
     <Filter Include="registry">
     </Filter>
-    <Filter Include="render">
-    </Filter>
     <Filter Include="thread">
     </Filter>
     <Filter Include="types">
@@ -99,9 +97,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp">
       <Filter>network\server</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\Renderer.cpp">
-      <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Mutex.c">
       <Filter>thread</Filter>
@@ -245,9 +240,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp">
       <Filter>registry</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\Renderer.hpp">
-      <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\Mutex.h">
       <Filter>thread</Filter>

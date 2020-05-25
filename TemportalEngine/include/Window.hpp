@@ -38,7 +38,6 @@ private:
 	bool mIsPendingClose;
 	input::ListenerHandle mInputHandleQuit;
 
-	//render::Renderer *mpRenderer;
 	graphics::VulkanRenderer *mpRenderer;
 
 public:

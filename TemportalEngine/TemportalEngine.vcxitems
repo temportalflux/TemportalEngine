@@ -55,7 +55,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\Renderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Mutex.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\MutexLock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp" />
@@ -122,7 +121,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\Renderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\Mutex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\MutexLock.hpp" />

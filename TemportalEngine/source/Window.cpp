@@ -31,22 +31,6 @@ Window::Window(ui16 width, ui16 height)
 		LogWindow.log(logging::ECategory::LOGERROR, "Failed to create window");
 		return;
 	}
-	
-	/*
-	this->mpRenderer = engine::Engine::Get()->alloc<render::Renderer>(
-		appInfo, engine::Engine::Get()->getInfo(),
-		width, height,
-		vulkanExtensionsForSDL,
-		[&](VkInstance const *pInst, VkSurfaceKHR *pOutSurface) {
-			if (!SDL_Vulkan_CreateSurface((SDL_Window*)mpHandle, *pInst, pOutSurface))
-			{
-				LogWindow.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface");
-				return false;
-			}
-			return true;
-		}
-	);
-	//*/
 
 }
 
