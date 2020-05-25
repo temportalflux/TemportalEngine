@@ -57,11 +57,11 @@
     <ClCompile Include="source\Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\graphics\ImGuiFrame.cpp">
-      <Filter>Source Files\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="source\gui\GuiContext.cpp">
       <Filter>Source Files\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\DynamicFrame.cpp">
+      <Filter>Source Files\graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,11 +80,11 @@
     <ClInclude Include="include\Editor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\graphics\ImGuiFrame.hpp">
-      <Filter>Header Files\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="include\gui\GuiContext.hpp">
       <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\DynamicFrame.hpp">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

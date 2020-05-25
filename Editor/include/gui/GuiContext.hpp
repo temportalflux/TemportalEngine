@@ -8,7 +8,7 @@
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/RenderPass.hpp"
-#include "graphics/ImGuiFrame.hpp"
+#include "graphics/DynamicFrame.hpp"
 
 #include <vector>
 #include <examples/imgui_impl_vulkan.h>
@@ -26,6 +26,7 @@ public:
 	void initContext();
 	void initWindow(void* handle);
 	void initVulkan(graphics::VulkanInstance const *pInstance);
+	void submitFonts(); // sends imgui fonts to GPU
 	void destroy(graphics::VulkanInstance const *pInstance);
 
 private:
@@ -40,7 +41,7 @@ private:
 	graphics::SwapChain mSwapChain;
 	graphics::RenderPass mRenderPass;
 	// Because IMGUI is "immediate", each frame needs to record its own command pool instructions
-	std::vector<graphics::ImGuiFrame> mImGuiFrames;
+	std::vector<graphics::DynamicFrame> mImGuiFrames;
 
 	vk::UniqueDescriptorPool createDescriptorPool();
 

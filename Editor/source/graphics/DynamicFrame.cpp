@@ -1,24 +1,24 @@
-#include "graphics/ImGuiFrame.hpp"
+#include "graphics/DynamicFrame.hpp"
 
 #include "graphics/LogicalDevice.hpp"
 
 using namespace graphics;
 
-ImGuiFrame::ImGuiFrame()
+DynamicFrame::DynamicFrame()
 {
 }
 
-ImGuiFrame::ImGuiFrame(ImGuiFrame &&other)
+DynamicFrame::DynamicFrame(DynamicFrame &&other)
 {
 	*this = std::move(other);
 }
 
-ImGuiFrame::~ImGuiFrame()
+DynamicFrame::~DynamicFrame()
 {
 	this->destroy();
 }
 
-ImGuiFrame& ImGuiFrame::operator=(ImGuiFrame&& other)
+DynamicFrame& DynamicFrame::operator=(DynamicFrame&& other)
 {
 	mView.swap(other.mView);
 	mQueueFamilyGroup = other.mQueueFamilyGroup;
@@ -32,25 +32,25 @@ ImGuiFrame& ImGuiFrame::operator=(ImGuiFrame&& other)
 	return *this;
 }
 
-ImGuiFrame& ImGuiFrame::setRenderPass(RenderPass const *pRenderPass)
+DynamicFrame& DynamicFrame::setRenderPass(RenderPass const *pRenderPass)
 {
 	mFrameBuffer.setRenderPass(pRenderPass);
 	return *this;
 }
 
-ImGuiFrame& ImGuiFrame::setView(vk::UniqueImageView &view)
+DynamicFrame& DynamicFrame::setView(vk::UniqueImageView &view)
 {
 	mView.swap(view);
 	return *this;
 }
 
-ImGuiFrame& ImGuiFrame::setQueueFamilyGroup(QueueFamilyGroup const &group)
+DynamicFrame& DynamicFrame::setQueueFamilyGroup(QueueFamilyGroup const &group)
 {
 	mQueueFamilyGroup = group;
 	return *this;
 }
 
-ImGuiFrame& ImGuiFrame::create(LogicalDevice const *pDevice)
+DynamicFrame& DynamicFrame::create(LogicalDevice const *pDevice)
 {
 	// Create the frame buffer
 	mFrameBuffer.setView(mView.get()).create(pDevice);
@@ -80,7 +80,7 @@ ImGuiFrame& ImGuiFrame::create(LogicalDevice const *pDevice)
 	return *this;
 }
 
-void ImGuiFrame::destroy()
+void DynamicFrame::destroy()
 {
 	this->mSemaphore_RenderComplete.reset();
 	this->mSemaphore_ImageAcquired.reset();

@@ -135,6 +135,13 @@ vk::UniqueDescriptorPool GuiContext::createDescriptorPool()
 	return mLogicalDevice.mDevice->createDescriptorPoolUnique(info);
 }
 
+void GuiContext::submitFonts()
+{
+	// since the command pools are re-programmed every frame, it doesn't matter which frame we use
+	auto& frame = this->mImGuiFrames[0];
+	
+}
+
 void GuiContext::destroy(graphics::VulkanInstance const *pInstance)
 {
 	ImGui_ImplVulkan_Shutdown();

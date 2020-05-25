@@ -12,22 +12,22 @@ class RenderPass;
 class LogicalDevice;
 
 // Because IMGUI is "immediate", each frame needs to record its own command pool instructions
-class ImGuiFrame
+class DynamicFrame
 {
 
 public:
-	ImGuiFrame();
+	DynamicFrame();
 	// move constructor
-	ImGuiFrame(ImGuiFrame &&other);
-	~ImGuiFrame();
-	ImGuiFrame& operator=(ImGuiFrame&& other);
+	DynamicFrame(DynamicFrame &&other);
+	~DynamicFrame();
+	DynamicFrame& operator=(DynamicFrame&& other);
 
-	ImGuiFrame& setRenderPass(RenderPass const *pRenderPass);
+	DynamicFrame& setRenderPass(RenderPass const *pRenderPass);
 	// TODO: Make private-unless-friend or take a wrapper of ImageView
-	ImGuiFrame& setView(vk::UniqueImageView &view);
-	ImGuiFrame& setQueueFamilyGroup(QueueFamilyGroup const &group);
+	DynamicFrame& setView(vk::UniqueImageView &view);
+	DynamicFrame& setQueueFamilyGroup(QueueFamilyGroup const &group);
 
-	ImGuiFrame& create(LogicalDevice const *pDevice);
+	DynamicFrame& create(LogicalDevice const *pDevice);
 	void destroy();
 
 private:
