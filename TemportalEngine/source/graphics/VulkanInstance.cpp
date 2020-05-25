@@ -75,9 +75,8 @@ VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<ch
 		}
 		// Assert-fail if there are unsupported validation layers
 		assert(desiredLayers.empty());
+		mValidationLayers = layers.value();
 	}
-
-	mValidationLayers = layers.value();
 	return *this;
 }
 

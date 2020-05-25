@@ -41,6 +41,11 @@ Editor::Editor()
 Editor::~Editor()
 {
 	this->closeWindow();
+	if (this->mVulkanInstance.isValid())
+	{
+		this->mVulkanInstance.destroy();
+	}
+
 	this->terminateDependencies();
 	this->LogSystem.close();
 }
@@ -73,12 +78,11 @@ void Editor::openWindow()
 
 void Editor::closeWindow()
 {
-	this->mGui.destroy(&this->mVulkanInstance);
-	this->destroyWindow();
-	if (this->mVulkanInstance.isValid())
+	if (this->mpWindowHandle != nullptr)
 	{
-		this->mVulkanInstance.destroy();
+		this->mGui.destroy(&this->mVulkanInstance);
 	}
+	this->destroyWindow();
 }
 
 void Editor::createWindow()
