@@ -223,7 +223,7 @@ void GuiContext::renderFrame(graphics::DynamicFrame &frame)
 
 void GuiContext::waitUntilIdle()
 {
-	this->mLogicalDevice.mDevice->waitIdle();
+	this->mLogicalDevice.waitUntilIdle();
 }
 
 void GuiContext::makeGui()

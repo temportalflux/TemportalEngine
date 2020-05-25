@@ -31,6 +31,7 @@ public:
 	void invalidate();
 
 	std::unordered_map<QueueFamily, vk::Queue> findQueues(std::set<QueueFamily> types) const;
+	void waitUntilIdle() const;
 
 	vk::UniqueDevice mDevice; // TODO: Make private
 private:

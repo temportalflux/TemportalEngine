@@ -42,7 +42,7 @@ public:
 	void constructRenderChain(std::set<ShaderModule*> const &shaders);
 
 	void drawFrame();
-
+	void waitUntilIdle();
 	void invalidate();
 
 private:

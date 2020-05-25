@@ -43,3 +43,8 @@ std::unordered_map<QueueFamily, vk::Queue> LogicalDevice::findQueues(std::set<Qu
 
 	return queues;
 }
+
+void LogicalDevice::waitUntilIdle() const
+{
+	this->mDevice->waitIdle();
+}

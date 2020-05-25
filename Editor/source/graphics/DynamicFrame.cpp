@@ -108,7 +108,7 @@ void DynamicFrame::submitOneOff(vk::Queue const *pQueue, std::function<void(vk::
 		vk::SubmitInfo().setCommandBufferCount(1).setPCommandBuffers(&this->mCommandBuffer.get()),
 		vk::Fence()
 	);
-	mpDevice->mDevice->waitIdle();
+	mpDevice->waitUntilIdle();
 }
 
 void DynamicFrame::waitUntilNotInFlight()

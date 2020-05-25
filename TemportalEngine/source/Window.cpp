@@ -7,7 +7,7 @@
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
-#include "render/Renderer.hpp"
+#include "graphics/VulkanRenderer.hpp"
 #include "input/Queue.hpp"
 
 #include "ExecutableInfo.hpp"
@@ -77,10 +77,14 @@ graphics::Surface Window::createSurface() const
 	return graphics::Surface(this->mpHandle);
 }
 
+void Window::setRenderer(graphics::VulkanRenderer *pRenderer)
+{
+	mpRenderer = pRenderer;
+}
+
 void Window::destroy()
 {
 	// TODO: Undo input listeners
-	engine::Engine::Get()->dealloc(&mpRenderer);
 	if (this->mpHandle != nullptr)
 	{
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
@@ -118,11 +122,11 @@ bool Window::isPendingClose()
 
 bool Window::renderUntilClose()
 {
-	//mpRenderer->drawFrame();
+	mpRenderer->drawFrame();
 	return this->isValid() && !this->isPendingClose();
 }
 
 void Window::waitForCleanup()
 {
-	//mpRenderer->waitUntilIdle();
+	mpRenderer->waitUntilIdle();
 }

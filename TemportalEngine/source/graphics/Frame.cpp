@@ -67,7 +67,7 @@ void Frame::markNotInFlight()
 
 void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers)
 {
-	auto vkBuffers = std::vector<vk::CommandBuffer>();
+	auto vkBuffers = std::vector<vk::CommandBuffer>(buffers.size());
 	std::transform(buffers.begin(), buffers.end(), vkBuffers.begin(),
 		[](CommandBuffer *b) { return b->mInternal.get(); }
 	);
@@ -86,7 +86,7 @@ void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers
 
 void Frame::present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
 {
-	auto vkSwapChains = std::vector<vk::SwapchainKHR>();
+	auto vkSwapChains = std::vector<vk::SwapchainKHR>(swapChains.size());
 	std::transform(swapChains.begin(), swapChains.end(), vkSwapChains.begin(),
 		[](SwapChain *sc) { return sc->mInternal.get(); }
 	);

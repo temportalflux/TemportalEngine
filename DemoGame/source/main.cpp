@@ -138,6 +138,7 @@ int main()
 
 	renderer.initializeDevices();
 	renderer.constructRenderChain({ &shaderVertex, &shaderFragment });
+	pWindow->setRenderer(&renderer);
 #pragma endregion
 
 	pEngine->run(pWindow);

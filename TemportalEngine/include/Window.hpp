@@ -20,6 +20,7 @@ NS_END
 
 NS_GRAPHICS
 class VulkanInstance;
+class VulkanRenderer;
 NS_END
 
 NS_UTILITY
@@ -37,7 +38,8 @@ private:
 	bool mIsPendingClose;
 	input::ListenerHandle mInputHandleQuit;
 
-	render::Renderer *mpRenderer;
+	//render::Renderer *mpRenderer;
+	graphics::VulkanRenderer *mpRenderer;
 
 public:
 	Window() = default;
@@ -48,13 +50,15 @@ public:
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;
 
+	void setRenderer(graphics::VulkanRenderer *pRenderer);
+
 	bool isValid();
 	void addInputListeners(input::Queue *pQueue);
 
 	void onInputQuit(input::Event const &evt);
 	void markShouldClose();
 	bool isPendingClose();
-
+	
 	bool renderUntilClose();
 	void waitForCleanup();
 	void destroy();

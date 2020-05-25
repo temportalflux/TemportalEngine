@@ -166,3 +166,8 @@ void VulkanRenderer::drawFrame()
 
 	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
 }
+
+void VulkanRenderer::waitUntilIdle()
+{
+	this->mLogicalDevice.waitUntilIdle();
+}
