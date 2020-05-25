@@ -116,11 +116,15 @@ void SwapChain::destroy()
 	mSwapChain.reset();
 }
 
-ui32 SwapChain::acquireNextImage(LogicalDevice const *pDevice, vk::Semaphore &waitSemaphore) const
+ui32 SwapChain::acquireNextImage(
+	std::optional<vk::Semaphore> waitSemaphore,
+	std::optional<vk::Fence> waitFence
+) const
 {
-	return pDevice->mDevice->acquireNextImageKHR(
+	return mpDevice->mDevice->acquireNextImageKHR(
 		mSwapChain.get(), UINT64_MAX,
-		waitSemaphore, /*fence*/{}
+		waitSemaphore.has_value() ? waitSemaphore.value() : vk::Semaphore(),
+		waitFence.has_value() ? waitFence.value() : vk::Fence()
 	).value;
 }
 

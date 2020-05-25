@@ -7,9 +7,10 @@
 
 using namespace graphics;
 
-void Pipeline::addShader(ShaderModule const *pShader)
+Pipeline& Pipeline::addShader(ShaderModule *pShader)
 {
 	this->mShaderPtrs.push_back(pShader);
+	return *this;
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> Pipeline::createShaderStages() const
@@ -35,7 +36,7 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-void Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass)
+Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass)
 {
 	// TODO (START): These need to go in configurable objects
 	auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
@@ -98,7 +99,12 @@ void Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPas
 	);
 	this->mCache = pDevice->mDevice->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 
+	for (auto& shaderPtr : this->mShaderPtrs)
+	{
+		shaderPtr->create(pDevice);
+	}
 	auto stages = this->createShaderStages();
+	
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount((ui32)stages.size()).setPStages(stages.data())
 		.setRenderPass(pRenderPass->mRenderPass.get())
@@ -117,6 +123,13 @@ void Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPas
 		.setBasePipelineHandle({});
 
 	this->mPipeline = pDevice->mDevice->createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
+
+	for (auto& shaderPtr : this->mShaderPtrs)
+	{
+		shaderPtr->destroy();
+	}
+
+	return *this;
 }
 
 void Pipeline::destroy()

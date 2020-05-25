@@ -25,6 +25,8 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice)
 {
 	assert(!isValid());
 
+	mpDevice = pDevice;
+
 	// TODO: All of these can be configured by a static class/structure asset in editor
 
 	auto colorAttachment = vk::AttachmentDescription()
@@ -63,7 +65,7 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice)
 		.setDependencyCount(1)
 		.setPDependencies(&subpassDependency);
 
-	mRenderPass = pDevice->mDevice->createRenderPassUnique(info);
+	mRenderPass = mpDevice->mDevice->createRenderPassUnique(info);
 	return *this;
 }
 
@@ -75,4 +77,15 @@ void RenderPass::destroy()
 vk::RenderPass RenderPass::getRenderPass() const
 {
 	return mRenderPass.get();
+}
+
+std::vector<FrameBuffer> RenderPass::createFrameBuffers(std::vector<vk::UniqueImageView> const &views) const
+{
+	auto viewCount = views.size();
+	auto buffers = std::vector<FrameBuffer>(viewCount);
+	for (uSize i = 0; i < viewCount; ++i)
+	{
+		buffers[i].setRenderPass(this).setView(views[i].get()).create(mpDevice);
+	}
+	return buffers;
 }

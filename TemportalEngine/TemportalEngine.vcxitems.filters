@@ -160,6 +160,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanApi.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandBuffer.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -342,6 +348,12 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanApi.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\CommandPool.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\CommandBuffer.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

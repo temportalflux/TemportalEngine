@@ -12,16 +12,36 @@ ShaderModule::ShaderModule()
 {
 }
 
-ShaderModule::ShaderModule(std::string fileName, vk::ShaderStageFlagBits stage)
-	: ShaderModule()
+ShaderModule::ShaderModule(ShaderModule &&other)
 {
-	mFileName = fileName;
-	mStage = stage;
+	*this = std::move(other);
 }
 
 ShaderModule::~ShaderModule()
 {
 	this->destroy();
+}
+
+ShaderModule& ShaderModule::operator=(ShaderModule&& other)
+{
+	this->mMainOpName = other.mMainOpName;
+	this->mFileName = other.mFileName;
+	this->mStage = other.mStage;
+	this->mShader.swap(other.mShader);
+	other.destroy();
+	return *this;
+}
+
+ShaderModule& ShaderModule::setStage(vk::ShaderStageFlagBits stage)
+{
+	this->mStage = stage;
+	return *this;
+}
+
+ShaderModule& ShaderModule::setSource(std::string fileName)
+{
+	this->mFileName = fileName;
+	return *this;
 }
 
 bool ShaderModule::isLoaded() const

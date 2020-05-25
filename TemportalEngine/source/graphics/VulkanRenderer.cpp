@@ -1,6 +1,7 @@
 #include "graphics/VulkanRenderer.hpp"
 
 #include "graphics/VulkanInstance.hpp"
+#include "graphics/ShaderModule.hpp"
 
 using namespace graphics;
 
@@ -48,16 +49,15 @@ void VulkanRenderer::pickPhysicalDevice()
 	mPhysicalDevice = optPhysicalDevice.value();
 }
 
-void VulkanRenderer::constructRenderChain()
+void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders)
 {
-	mSwapChain
+	this->mSwapChain
 		.setInfo(mSwapChainInfo)
 		.setSupport(mPhysicalDevice.querySwapChainSupport())
-		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup());
-	mSwapChain.create(&mLogicalDevice, &mSurface);
+		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup())
+		.create(&mLogicalDevice, &mSurface);
 
-	auto resolution = mSwapChain.getResolution();
-	auto imageViews = mSwapChain.createImageViews({
+	this->mImageViews = this->mSwapChain.createImageViews({
 		vk::ImageViewType::e2D,
 		{
 			vk::ComponentSwizzle::eIdentity,
@@ -66,18 +66,39 @@ void VulkanRenderer::constructRenderChain()
 			vk::ComponentSwizzle::eIdentity
 		}
 	});
-	auto& renderPass = RenderPass().initFromSwapChain(&mSwapChain).create(&mLogicalDevice);
-	auto& pipeline = Pipeline().setViewArea(
+
+	auto resolution = this->mSwapChain.getResolution();
+	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
+
+	this->mFrameBuffers = this->mRenderPass.createFrameBuffers(this->mImageViews);
+	
+	this->mPipeline.setViewArea(
 		vk::Viewport()
-			.setX(0).setY(0)
-			.setWidth((f32)resolution.width).setHeight((f32)resolution.height)
-			.setMinDepth(0.0f).setMaxDepth(1.0f),
+		.setX(0).setY(0)
+		.setWidth((f32)resolution.width).setHeight((f32)resolution.height)
+		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
+	for (auto& shaderPtr : shaders)
+	{
+		this->mPipeline.addShader(shaderPtr);
+	}
+	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass);
+	
+	this->mCommandPool
+		.setQueueFamily(graphics::QueueFamily::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
+		.create(&this->mLogicalDevice);
+	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
 }
 
 void VulkanRenderer::invalidate()
 {
+	this->mCommandBuffers.clear();
+	this->mCommandPool.destroy();
+	this->mPipeline.destroy();
+	this->mFrameBuffers.clear();
+	this->mRenderPass.destroy();
+	this->mImageViews.clear();
 	this->mSwapChain.destroy();
 
 	this->mQueues.clear();

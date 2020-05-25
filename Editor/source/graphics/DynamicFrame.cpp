@@ -118,7 +118,7 @@ void DynamicFrame::waitUntilNotInFlight()
 
 ui32 DynamicFrame::acquireNextImage(SwapChain const *pSwapChain)
 {
-	return pSwapChain->acquireNextImage(mpDevice, mSemaphore_ImageAcquired.get());
+	return pSwapChain->acquireNextImage(mSemaphore_ImageAcquired.get());
 }
 
 void DynamicFrame::markNotInFlight()

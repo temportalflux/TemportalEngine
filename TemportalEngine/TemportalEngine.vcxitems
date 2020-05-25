@@ -17,6 +17,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDeviceInfo.cpp" />
@@ -63,6 +65,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\CommandBuffer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\CommandPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FrameBuffer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageViewInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\LogicalDevice.hpp" />

@@ -13,12 +13,17 @@
 #include "graphics/SwapChainInfo.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/Pipeline.hpp"
+#include "graphics/FrameBuffer.hpp"
+#include "graphics/CommandPool.hpp"
+#include "graphics/CommandBuffer.hpp"
 
 #include <unordered_map>
+#include <set>
 
 NS_GRAPHICS
 class VulkanInstance;
 class PhysicalDevicePreference;
+class ShaderModule;
 
 class VulkanRenderer
 {
@@ -32,7 +37,7 @@ public:
 
 	void initializeDevices();
 	// Creates a swap chain, and all objects that depend on it
-	void constructRenderChain();
+	void constructRenderChain(std::set<ShaderModule*> const &shaders);
 
 	void invalidate();
 
@@ -49,6 +54,12 @@ private:
 
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
+	std::vector<vk::UniqueImageView> mImageViews;
+	RenderPass mRenderPass;
+	std::vector<FrameBuffer> mFrameBuffers;
+	Pipeline mPipeline;
+	CommandPool mCommandPool;
+	std::vector<CommandBuffer> mCommandBuffers;
 
 	VulkanRenderer() = default;
 

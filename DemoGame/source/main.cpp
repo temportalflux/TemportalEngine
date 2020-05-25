@@ -128,18 +128,22 @@ int main()
 		.addPresentModePreference(vk::PresentModeKHR::eMailbox)
 		.addPresentModePreference(vk::PresentModeKHR::eFifo)
 	);
-	auto shaderVertex = graphics::ShaderModule("shaders/triangle.vert.spv", vk::ShaderStageFlagBits::eVertex);
-	auto shaderFragment = graphics::ShaderModule("shaders/triangle.frag.spv", vk::ShaderStageFlagBits::eFragment);
+	
+	auto shaderVertex = graphics::ShaderModule();
+	shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
+	shaderVertex.setSource("shaders/triangle.vert.spv");
+	auto shaderFragment = graphics::ShaderModule();
+	shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
+	shaderFragment.setSource("shaders/triangle.frag.spv");
+
 	renderer.initializeDevices();
-	renderer.constructRenderChain();
+	renderer.constructRenderChain({ &shaderVertex, &shaderFragment });
 #pragma endregion
 
 	pEngine->run(pWindow);
 
 	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
-	shaderVertex.destroy();
-	shaderFragment.destroy();
 	renderer.invalidate();
 
 	pWindow->destroy();

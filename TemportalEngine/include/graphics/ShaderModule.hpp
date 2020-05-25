@@ -22,8 +22,12 @@ class ShaderModule
 
 public:
 	ShaderModule();
-	ShaderModule(std::string fileName, vk::ShaderStageFlagBits stage);
+	ShaderModule(ShaderModule &&other);
 	~ShaderModule();
+	ShaderModule& operator=(ShaderModule&& other);
+
+	ShaderModule& setStage(vk::ShaderStageFlagBits stage);
+	ShaderModule& setSource(std::string fileName);
 
 	bool isLoaded() const;
 	void create(LogicalDevice const *pDevice);

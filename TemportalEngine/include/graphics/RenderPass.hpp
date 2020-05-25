@@ -2,6 +2,9 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "graphics/FrameBuffer.hpp"
+
+#include <vector>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -25,9 +28,14 @@ public:
 
 	vk::RenderPass getRenderPass() const;
 
+	std::vector<FrameBuffer> createFrameBuffers(std::vector<vk::UniqueImageView> const &views) const;
+
 private:
 	vk::Format mFormat;
 	vk::Extent2D mResolution;
+
+	LogicalDevice const *mpDevice;
+
 	vk::UniqueRenderPass mRenderPass;
 
 };
