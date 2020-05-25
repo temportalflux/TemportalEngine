@@ -12,6 +12,7 @@ class CommandBuffer
 {
 	friend class CommandPool;
 	friend class Command;
+	friend class Frame;
 
 public:
 	CommandBuffer() = default;

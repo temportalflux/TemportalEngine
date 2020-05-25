@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
+class LogicalDevice;
 
 class ImageView
 {
@@ -15,8 +16,14 @@ public:
 	ImageView() = default;
 	~ImageView();
 
+	void setInFlightFence(vk::Fence &fence);
+	bool isInFlight() const;
+	void waitUntilNotInFlight(LogicalDevice const *pDevice);
+
 private:
 	vk::UniqueImageView mInternal;
+	// fence is active while a frame is drawing to this view
+	vk::Fence mFence_ImageInFlight;
 
 };
 

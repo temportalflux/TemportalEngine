@@ -72,7 +72,7 @@ SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurfa
 		info.setPQueueFamilyIndices(nullptr);
 	}
 
-	mSwapChain = mpDevice->mDevice->createSwapchainKHRUnique(info);
+	this->mInternal = mpDevice->mDevice->createSwapchainKHRUnique(info);
 	return *this;
 }
 
@@ -84,7 +84,7 @@ vk::Extent2D SwapChain::getResolution() const
 std::vector<vk::Image> SwapChain::queryImages() const
 {
 	assert(mpDevice != nullptr);
-	return mpDevice->mDevice->getSwapchainImagesKHR(mSwapChain.get());
+	return mpDevice->mDevice->getSwapchainImagesKHR(this->mInternal.get());
 }
 
 std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
@@ -114,7 +114,7 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 void SwapChain::destroy()
 {
 	mpDevice = nullptr;
-	mSwapChain.reset();
+	this->mInternal.reset();
 }
 
 ui32 SwapChain::acquireNextImage(
@@ -123,7 +123,7 @@ ui32 SwapChain::acquireNextImage(
 ) const
 {
 	return mpDevice->mDevice->acquireNextImageKHR(
-		mSwapChain.get(), UINT64_MAX,
+		this->mInternal.get(), UINT64_MAX,
 		waitSemaphore.has_value() ? waitSemaphore.value() : vk::Semaphore(),
 		waitFence.has_value() ? waitFence.value() : vk::Fence()
 	).value;
@@ -131,5 +131,5 @@ ui32 SwapChain::acquireNextImage(
 
 vk::SwapchainKHR SwapChain::get() const
 {
-	return mSwapChain.get();
+	return this->mInternal.get();
 }

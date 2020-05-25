@@ -7,6 +7,7 @@ using namespace graphics;
 
 VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
 	: mpInstance(pInstance)
+	, mIdxCurrentFrame(0)
 {
 	mSurface.swap(surface);
 }
@@ -91,6 +92,13 @@ void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
 	
 	this->recordCommandBufferInstructions();
+
+	// TODO: make the number of frames not a magic number
+	this->mFrames.resize(/*max number of frames*/ 3);
+	for (auto& frame : this->mFrames)
+	{
+		frame.create(&this->mLogicalDevice);
+	}
 }
 
 void VulkanRenderer::recordCommandBufferInstructions()
@@ -109,6 +117,8 @@ void VulkanRenderer::recordCommandBufferInstructions()
 
 void VulkanRenderer::invalidate()
 {
+	this->mFrames.clear();
+
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
 	this->mPipeline.destroy();
@@ -125,4 +135,34 @@ void VulkanRenderer::invalidate()
 	mSurface.releaseWindowHandle();
 
 	mpInstance = nullptr;
+}
+
+void VulkanRenderer::drawFrame()
+{
+	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	currentFrame.waitUntilNotInFlight();
+	
+	auto idxImageView = currentFrame.acquireNextImage(&this->mSwapChain);
+	
+	// If the next iamge view is currently in flight, wait until it isn't (it is being used by another frame)
+	auto& imageView = this->mImageViews[idxImageView];
+	if (imageView.isInFlight())
+	{
+		imageView.waitUntilNotInFlight(&this->mLogicalDevice);
+	}
+
+	// Ensure that the image view is marked as in-flight as long as the frame is
+	currentFrame.setImageViewInFlight(&imageView);
+	
+	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
+	currentFrame.markNotInFlight();
+
+	// Submit the command buffer to the graphics queue
+	auto& commandBuffer = this->mCommandBuffers[idxImageView];
+	currentFrame.submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
+
+	// Present the frame
+	currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, idxImageView);
+
+	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
 }

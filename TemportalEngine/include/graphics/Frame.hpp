@@ -9,18 +9,27 @@
 NS_GRAPHICS
 class LogicalDevice;
 class SwapChain;
+class ImageView;
+class CommandBuffer;
 
 class Frame
 {
 
 public:
 	Frame() = default;
+	Frame(Frame &&other);
+	Frame& operator=(Frame&& other);
+	~Frame();
 
 	void create(LogicalDevice const *pDevice);
 	void destroy();
 
 	void waitUntilNotInFlight() const;
 	ui32 acquireNextImage(SwapChain const *pSwapChain) const;
+	void setImageViewInFlight(ImageView *pView);
+	void markNotInFlight();
+	void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
+	void present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
 
 private:
 	LogicalDevice const *mpDevice;

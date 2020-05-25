@@ -17,6 +17,7 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/CommandPool.hpp"
 #include "graphics/CommandBuffer.hpp"
+#include "graphics/Frame.hpp"
 
 #include <unordered_map>
 #include <set>
@@ -40,6 +41,8 @@ public:
 	// Creates a swap chain, and all objects that depend on it
 	void constructRenderChain(std::set<ShaderModule*> const &shaders);
 
+	void drawFrame();
+
 	void invalidate();
 
 private:
@@ -61,7 +64,9 @@ private:
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
-	//std::vector<Frame> mFrames;
+	
+	std::vector<Frame> mFrames;
+	uSize mIdxCurrentFrame;
 
 	VulkanRenderer() = default;
 

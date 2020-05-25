@@ -18,8 +18,9 @@ class Surface;
 
 class SwapChain
 {
-	friend class RenderPass;
 	friend class VulkanApi;
+	friend class RenderPass;
+	friend class Frame;
 
 public:
 	SwapChain();
@@ -52,7 +53,7 @@ private:
 	vk::SurfaceFormatKHR mSurfaceFormat;
 	vk::PresentModeKHR mPresentationMode;
 
-	vk::UniqueSwapchainKHR mSwapChain;
+	vk::UniqueSwapchainKHR mInternal;
 
 	std::vector<vk::Image> queryImages() const;
 
