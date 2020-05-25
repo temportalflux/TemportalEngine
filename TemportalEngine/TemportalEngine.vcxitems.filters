@@ -169,6 +169,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Command.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Frame.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageView.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -360,6 +366,12 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Command.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Frame.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageView.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

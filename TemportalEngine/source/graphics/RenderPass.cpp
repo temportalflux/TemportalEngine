@@ -79,13 +79,13 @@ vk::RenderPass RenderPass::getRenderPass() const
 	return mRenderPass.get();
 }
 
-std::vector<FrameBuffer> RenderPass::createFrameBuffers(std::vector<vk::UniqueImageView> const &views) const
+std::vector<FrameBuffer> RenderPass::createFrameBuffers(std::vector<ImageView> const &views) const
 {
 	auto viewCount = views.size();
 	auto buffers = std::vector<FrameBuffer>(viewCount);
 	for (uSize i = 0; i < viewCount; ++i)
 	{
-		buffers[i].setRenderPass(this).setView(views[i].get()).create(mpDevice);
+		buffers[i].setRenderPass(this).setView(&views[i]).create(mpDevice);
 	}
 	return buffers;
 }

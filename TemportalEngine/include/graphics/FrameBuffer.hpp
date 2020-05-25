@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "graphics/ImageView.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -23,7 +25,7 @@ public:
 
 	FrameBuffer& setRenderPass(RenderPass const *pRenderPass);
 	// TODO: Make private-unless-friend or take a wrapper of ImageView
-	FrameBuffer& setView(vk::ImageView const &view);
+	FrameBuffer& setView(ImageView const *pView);
 
 	FrameBuffer& create(LogicalDevice const *pDevice);
 	void destroy();
@@ -32,7 +34,7 @@ public:
 
 private:
 	RenderPass const *mpRenderPass;
-	vk::ImageView mView;
+	ImageView const *mpView;
 	vk::UniqueFramebuffer mInternal;
 
 };

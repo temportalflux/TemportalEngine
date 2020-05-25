@@ -7,6 +7,7 @@
 #include "graphics/SwapChainInfo.hpp"
 #include "graphics/SwapChainSupport.hpp"
 #include "graphics/ImageViewInfo.hpp"
+#include "graphics/ImageView.hpp"
 #include "types/integer.h"
 
 #include <vulkan/vulkan.hpp>
@@ -30,7 +31,7 @@ public:
 	SwapChain& create(LogicalDevice const *pDevice, Surface const *pSurface);
 	void destroy();
 
-	std::vector<vk::UniqueImageView> createImageViews(ImageViewInfo const &info) const;
+	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
 	vk::Extent2D getResolution() const;
 
 	ui32 acquireNextImage(

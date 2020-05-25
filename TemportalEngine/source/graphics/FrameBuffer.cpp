@@ -13,7 +13,7 @@ FrameBuffer::FrameBuffer(FrameBuffer &&other)
 FrameBuffer& FrameBuffer::operator=(FrameBuffer&& other)
 {
 	mpRenderPass = other.mpRenderPass;
-	mView = other.mView;
+	mpView = other.mpView;
 	mInternal.swap(other.mInternal);
 	other.destroy();
 	return *this;
@@ -30,9 +30,9 @@ FrameBuffer& FrameBuffer::setRenderPass(RenderPass const *pRenderPass)
 	return *this;
 }
 
-FrameBuffer& FrameBuffer::setView(vk::ImageView const &view)
+FrameBuffer& FrameBuffer::setView(ImageView const *pView)
 {
-	mView = view;
+	mpView = pView;
 	return *this;
 }
 
@@ -41,7 +41,7 @@ FrameBuffer& FrameBuffer::create(LogicalDevice const *pDevice)
 	auto info = vk::FramebufferCreateInfo()
 		.setRenderPass(mpRenderPass->mRenderPass.get())
 		.setAttachmentCount(1)
-		.setPAttachments(&mView)
+		.setPAttachments(&this->mpView->mInternal.get())
 		.setWidth(mpRenderPass->mResolution.width)
 		.setHeight(mpRenderPass->mResolution.height)
 		.setLayers(1);
@@ -53,7 +53,7 @@ void FrameBuffer::destroy()
 {
 	this->mInternal.reset();
 	this->mpRenderPass = nullptr;
-	this->mView = vk::ImageView();
+	this->mpView = nullptr;
 }
 
 vk::Framebuffer FrameBuffer::getBuffer() const

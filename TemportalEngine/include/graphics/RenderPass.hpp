@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "graphics/FrameBuffer.hpp"
+#include "graphics/ImageView.hpp"
 
 #include <vector>
 #include <vulkan/vulkan.hpp>
@@ -29,7 +30,7 @@ public:
 
 	vk::RenderPass getRenderPass() const;
 
-	std::vector<FrameBuffer> createFrameBuffers(std::vector<vk::UniqueImageView> const &views) const;
+	std::vector<FrameBuffer> createFrameBuffers(std::vector<ImageView> const &views) const;
 
 private:
 	vk::Format mFormat;

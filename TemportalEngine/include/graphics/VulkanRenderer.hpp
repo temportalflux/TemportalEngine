@@ -11,6 +11,7 @@
 #include "graphics/Surface.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/SwapChainInfo.hpp"
+#include "graphics/ImageView.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/Pipeline.hpp"
 #include "graphics/FrameBuffer.hpp"
@@ -54,12 +55,13 @@ private:
 
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
-	std::vector<vk::UniqueImageView> mImageViews;
+	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
+	//std::vector<Frame> mFrames;
 
 	VulkanRenderer() = default;
 

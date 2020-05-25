@@ -70,7 +70,7 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 
 	mRenderPass.initFromSwapChain(&mSwapChain).create(&mLogicalDevice);
 
-	std::vector<vk::UniqueImageView> views = mSwapChain.createImageViews({
+	mImageViews = mSwapChain.createImageViews({
 		vk::ImageViewType::e2D,
 		{
 			vk::ComponentSwizzle::eR,
@@ -80,13 +80,13 @@ void GuiContext::initVulkan(graphics::VulkanInstance const *pInstance)
 		}
 	});
 
-	auto viewCount = views.size();
+	auto viewCount = mImageViews.size();
 	mDynamicFrames.resize(viewCount);
 	for (uSize i = 0; i < viewCount; ++i)
 	{
 		mDynamicFrames[i]
 			.setRenderPass(&mRenderPass)
-			.setView(views[i]) // actually yield control of the ImageView to the frame
+			.setView(&mImageViews[i])
 			.setQueueFamilyGroup(queueFamilyGroup)
 			.create(&mLogicalDevice);
 	}
@@ -159,6 +159,7 @@ void GuiContext::destroy(graphics::VulkanInstance const *pInstance)
 
 	mDynamicFrames.clear(); // auto releases internal unique handles on deconstruct of elements
 	mRenderPass.destroy();
+	mImageViews.clear();
 	mSwapChain.destroy();
 
 	mDescriptorPool.reset();

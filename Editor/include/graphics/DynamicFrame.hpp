@@ -32,7 +32,7 @@ public:
 
 	DynamicFrame& setRenderPass(RenderPass const *pRenderPass);
 	// TODO: Make private-unless-friend or take a wrapper of ImageView
-	DynamicFrame& setView(vk::UniqueImageView &view);
+	DynamicFrame& setView(ImageView *pView);
 	DynamicFrame& setQueueFamilyGroup(QueueFamilyGroup const &group);
 
 	DynamicFrame& create(LogicalDevice const *pDevice);
@@ -53,7 +53,7 @@ public:
 
 private:
 	LogicalDevice const *mpDevice;
-	vk::UniqueImageView mView;
+	ImageView *mpView;
 	QueueFamilyGroup mQueueFamilyGroup;
 
 	RenderPass const *mpRenderPass;

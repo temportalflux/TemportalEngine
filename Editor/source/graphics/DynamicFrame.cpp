@@ -2,6 +2,7 @@
 
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/SwapChain.hpp"
+#include "graphics/ImageView.hpp"
 
 using namespace graphics;
 
@@ -21,7 +22,7 @@ DynamicFrame::~DynamicFrame()
 
 DynamicFrame& DynamicFrame::operator=(DynamicFrame&& other)
 {
-	mView.swap(other.mView);
+	mpView = other.mpView;
 	mQueueFamilyGroup = other.mQueueFamilyGroup;
 	mFrameBuffer = std::move(other.mFrameBuffer);
 	mCommandPool.swap(other.mCommandPool);
@@ -40,9 +41,9 @@ DynamicFrame& DynamicFrame::setRenderPass(RenderPass const *pRenderPass)
 	return *this;
 }
 
-DynamicFrame& DynamicFrame::setView(vk::UniqueImageView &view)
+DynamicFrame& DynamicFrame::setView(ImageView *pView)
 {
-	mView.swap(view);
+	mpView = pView;
 	return *this;
 }
 
@@ -57,7 +58,7 @@ DynamicFrame& DynamicFrame::create(LogicalDevice const *pDevice)
 	mpDevice = pDevice;
 
 	// Create the frame buffer
-	mFrameBuffer.setView(mView.get()).create(pDevice);
+	mFrameBuffer.setView(mpView).create(pDevice);
 
 	// Create a command pool per frame (because IMGUI needs to record commands per frame)
 	mCommandPool = pDevice->mDevice->createCommandPoolUnique(vk::CommandPoolCreateInfo()
@@ -88,13 +89,13 @@ void DynamicFrame::destroy()
 {
 	mpDevice = nullptr;
 	mpRenderPass = nullptr;
+	this->mpView = nullptr;
 	this->mSemaphore_RenderComplete.reset();
 	this->mSemaphore_ImageAcquired.reset();
 	this->mFence_FrameInFlight.reset();
 	this->mCommandBuffer.reset();
 	this->mCommandPool.reset();
 	this->mFrameBuffer.destroy();
-	this->mView.reset();
 }
 
 void DynamicFrame::submitOneOff(vk::Queue const *pQueue, std::function<void(vk::UniqueCommandBuffer &buffer)> write)

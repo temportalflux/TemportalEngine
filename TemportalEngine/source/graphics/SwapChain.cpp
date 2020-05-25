@@ -87,14 +87,14 @@ std::vector<vk::Image> SwapChain::queryImages() const
 	return mpDevice->mDevice->getSwapchainImagesKHR(mSwapChain.get());
 }
 
-std::vector<vk::UniqueImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
+std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
 {
 	auto images = this->queryImages();
 	uSize imageCount = images.size();
-	auto views = std::vector<vk::UniqueImageView>(imageCount);
+	auto views = std::vector<ImageView>(imageCount);
 	for (uSize i = 0; i < imageCount; ++i)
 	{
-		views[i] = mpDevice->mDevice->createImageViewUnique(vk::ImageViewCreateInfo()
+		auto viewHandle = mpDevice->mDevice->createImageViewUnique(vk::ImageViewCreateInfo()
 			.setImage(images[i])
 			.setFormat(mSurfaceFormat.format)
 			.setViewType(info.type)
@@ -106,6 +106,7 @@ std::vector<vk::UniqueImageView> SwapChain::createImageViews(ImageViewInfo const
 				.setBaseArrayLayer(0).setLayerCount(1)
 			)
 		);
+		views[i].mInternal.swap(viewHandle);
 	}
 	return views;
 }

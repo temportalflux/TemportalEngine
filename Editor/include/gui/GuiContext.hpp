@@ -45,6 +45,7 @@ private:
 	vk::UniqueDescriptorPool mDescriptorPool;
 
 	graphics::SwapChain mSwapChain;
+	std::vector<graphics::ImageView> mImageViews;
 	graphics::RenderPass mRenderPass;
 	// Because IMGUI is "immediate", each frame needs to record its own command pool instructions
 	std::vector<graphics::DynamicFrame> mDynamicFrames;
