@@ -214,7 +214,8 @@ void GuiContext::endFrame()
 	{
 		frame.waitUntilNotInFlight();
 
-		idxImage = frame.acquireNextImage(&mSwapChain);
+		auto [result, i] = frame.acquireNextImage(&mSwapChain);
+		idxImage = i;
 		// vulkan implements the bool operator for validity checks
 		if (this->mImagesInFlight[idxImage])
 		{

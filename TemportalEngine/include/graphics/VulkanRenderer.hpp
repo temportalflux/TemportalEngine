@@ -74,7 +74,8 @@ private:
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
 	void recordCommandBufferInstructions();
-
+	
+	bool acquireNextImage();
 	void prepareRender();
 	void render();
 	void present();

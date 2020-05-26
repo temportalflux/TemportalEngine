@@ -141,6 +141,7 @@ void VulkanRenderer::drawFrame()
 {
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
 	currentFrame.waitUntilNotInFlight();
+	if (!this->acquireNextImage()) return;
 	this->prepareRender();
 	this->render();
 	this->present();
@@ -150,7 +151,6 @@ void VulkanRenderer::drawFrame()
 void VulkanRenderer::prepareRender()
 {
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
-	mIdxCurrentImage = currentFrame.acquireNextImage(&this->mSwapChain);
 
 	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
 	auto& imageView = this->mImageViews[mIdxCurrentImage];
@@ -164,6 +164,21 @@ void VulkanRenderer::prepareRender()
 
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
 	currentFrame.markNotInFlight();
+}
+
+bool VulkanRenderer::acquireNextImage()
+{
+	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	auto [result, idxImage] = currentFrame.acquireNextImage(&this->mSwapChain);
+
+	if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+	{
+
+		return false;
+	}
+
+	mIdxCurrentImage = idxImage;
+	return true;
 }
 
 void VulkanRenderer::render()

@@ -50,7 +50,7 @@ void Frame::waitUntilNotInFlight() const
 	);
 }
 
-ui32 Frame::acquireNextImage(SwapChain const *pSwapChain) const
+vk::ResultValue<ui32> Frame::acquireNextImage(SwapChain const *pSwapChain) const
 {
 	return pSwapChain->acquireNextImage(this->mSemaphore_ImageAvailable.get());
 }

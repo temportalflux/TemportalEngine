@@ -35,7 +35,7 @@ public:
 	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
 	vk::Extent2D getResolution() const;
 
-	ui32 acquireNextImage(
+	vk::ResultValue<ui32> acquireNextImage(
 		std::optional<vk::Semaphore> waitSemaphore = std::nullopt,
 		std::optional<vk::Fence> waitFence = std::nullopt
 	) const;

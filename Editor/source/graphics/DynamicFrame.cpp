@@ -117,7 +117,7 @@ void DynamicFrame::waitUntilNotInFlight()
 	mpDevice->mDevice->waitForFences(this->mFence_FrameInFlight.get(), true, UINT64_MAX);
 }
 
-ui32 DynamicFrame::acquireNextImage(SwapChain const *pSwapChain)
+vk::ResultValue<ui32> DynamicFrame::acquireNextImage(SwapChain const *pSwapChain)
 {
 	return pSwapChain->acquireNextImage(mSemaphore_ImageAcquired.get());
 }

@@ -117,7 +117,7 @@ void SwapChain::destroy()
 	this->mInternal.reset();
 }
 
-ui32 SwapChain::acquireNextImage(
+vk::ResultValue<ui32> SwapChain::acquireNextImage(
 	std::optional<vk::Semaphore> waitSemaphore,
 	std::optional<vk::Fence> waitFence
 ) const
@@ -126,7 +126,7 @@ ui32 SwapChain::acquireNextImage(
 		this->mInternal.get(), UINT64_MAX,
 		waitSemaphore.has_value() ? waitSemaphore.value() : vk::Semaphore(),
 		waitFence.has_value() ? waitFence.value() : vk::Fence()
-	).value;
+	);
 }
 
 vk::SwapchainKHR SwapChain::get() const

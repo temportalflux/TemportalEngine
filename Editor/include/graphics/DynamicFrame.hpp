@@ -44,7 +44,7 @@ public:
 	);
 
 	void waitUntilNotInFlight();
-	ui32 acquireNextImage(SwapChain const *pSwapChain);
+	vk::ResultValue<ui32> acquireNextImage(SwapChain const *pSwapChain);
 	void markNotInFlight();
 	void beginRenderPass(SwapChain const *pSwapChain, vk::ClearValue clearValue);
 	void endRenderPass();
