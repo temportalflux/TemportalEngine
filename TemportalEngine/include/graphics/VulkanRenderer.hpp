@@ -86,7 +86,6 @@ private:
 	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
 
-	std::set<ShaderModule*> mShaders;
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
@@ -101,6 +100,7 @@ private:
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
 
+	void destroyRenderChain();
 	void createRenderObjects();
 	void createCommandObjects();
 	void recordCommandBufferInstructions();
@@ -108,7 +108,7 @@ private:
 	bool acquireNextImage();
 	void prepareRender();
 	void render();
-	void present();
+	bool present();
 
 };
 

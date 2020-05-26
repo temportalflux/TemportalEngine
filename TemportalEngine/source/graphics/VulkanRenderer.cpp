@@ -33,6 +33,14 @@ void VulkanRenderer::setSwapChainInfo(SwapChainInfo const &info)
 	mSwapChainInfo = info;
 }
 
+void VulkanRenderer::setShaders(std::set<ShaderModule*> const &shaders)
+{
+	for (auto& shaderPtr : shaders)
+	{
+		this->mPipeline.addShader(shaderPtr);
+	}
+}
+
 void VulkanRenderer::initializeDevices()
 {
 	this->pickPhysicalDevice();
@@ -51,15 +59,40 @@ void VulkanRenderer::pickPhysicalDevice()
 	mPhysicalDevice = optPhysicalDevice.value();
 }
 
-void VulkanRenderer::setShaders(std::set<ShaderModule*> const &shaders)
+void VulkanRenderer::invalidate()
 {
-	this->mShaders = shaders;
+	this->mFrames.clear();
+
+	this->destroyRenderChain();
+
+	this->mQueues.clear();
+	this->mLogicalDevice.invalidate();
+	this->mPhysicalDevice.invalidate();
+
+	mSurface.destroy(mpInstance);
+	mSurface.releaseWindowHandle();
+
+	mpInstance = nullptr;
 }
 
 void VulkanRenderer::createRenderChain()
 {
 	this->createRenderObjects();
 	this->createCommandObjects();
+}
+
+void VulkanRenderer::destroyRenderChain()
+{
+	// Command Objects
+	this->mCommandBuffers.clear();
+	this->mCommandPool.destroy();
+	this->mPipeline.destroy();
+	this->mFrameBuffers.clear();
+
+	// Render Objects
+	this->mRenderPass.destroy();
+	this->mImageViews.clear();
+	this->mSwapChain.destroy();
 }
 
 void VulkanRenderer::createRenderObjects()
@@ -96,10 +129,6 @@ void VulkanRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	for (auto& shaderPtr : this->mShaders)
-	{
-		this->mPipeline.addShader(shaderPtr);
-	}
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass);
 	
 	this->mCommandPool
@@ -131,38 +160,15 @@ void VulkanRenderer::recordCommandBufferInstructions()
 	}
 }
 
-void VulkanRenderer::invalidate()
-{
-	this->mFrames.clear();
-
-	this->mShaders.clear();
-	this->mCommandBuffers.clear();
-	this->mCommandPool.destroy();
-	this->mPipeline.destroy();
-	this->mFrameBuffers.clear();
-
-	this->mRenderPass.destroy();
-	this->mImageViews.clear();
-	this->mSwapChain.destroy();
-
-	this->mQueues.clear();
-	this->mLogicalDevice.invalidate();
-	this->mPhysicalDevice.invalidate();
-
-	mSurface.destroy(mpInstance);
-	mSurface.releaseWindowHandle();
-
-	mpInstance = nullptr;
-}
-
 void VulkanRenderer::drawFrame()
 {
+	if (this->mbRenderChainDirty) return;
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
 	currentFrame.waitUntilNotInFlight();
 	if (!this->acquireNextImage()) return;
 	this->prepareRender();
 	this->render();
-	this->present();
+	if (!this->present()) return;
 	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
 }
 
@@ -187,17 +193,20 @@ void VulkanRenderer::prepareRender()
 bool VulkanRenderer::acquireNextImage()
 {
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
-	auto [result, idxImage] = currentFrame.acquireNextImage(&this->mSwapChain);
 
-	if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
+	try
 	{
+		auto [result, idxImage] = currentFrame.acquireNextImage(&this->mSwapChain);
+		this->mIdxCurrentImage = idxImage;
+	}
+	catch (vk::OutOfDateKHRError const &e)
+	{
+		(void)e; // removes unreferenced compiler exception
 		// Only mark as dirty if it is not already dirty.
 		if (!this->mbRenderChainDirty) this->markRenderChainDirty();
 		// Once dirty has been detected, stall until it is resolved
 		return false;
 	}
-
-	mIdxCurrentImage = idxImage;
 	return true;
 }
 
@@ -209,10 +218,27 @@ void VulkanRenderer::render()
 	currentFrame.submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
 }
 
-void VulkanRenderer::present()
+bool VulkanRenderer::present()
 {
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
-	currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
+	try
+	{
+		auto result = currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
+		if (result == vk::Result::eSuboptimalKHR)
+		{
+			if (!this->mbRenderChainDirty) this->markRenderChainDirty();
+			return false;
+		}
+	}
+	catch (vk::OutOfDateKHRError const &e)
+	{
+		(void)e; // removes unreferenced compiler exception
+		// Only mark as dirty if it is not already dirty.
+		if (!this->mbRenderChainDirty) this->markRenderChainDirty();
+		// Once dirty has been detected, stall until it is resolved.
+		return false;
+	}
+	return true;
 }
 
 void VulkanRenderer::waitUntilIdle()
@@ -229,6 +255,14 @@ void VulkanRenderer::update()
 {
 	if (this->mbRenderChainDirty)
 	{
+		this->waitUntilIdle();
+		this->destroyRenderChain();
+
+		// Stall creating the render chain until the window is not minimized
+		auto actualSize = mPhysicalDevice.querySwapChainSupport().capabilities.currentExtent;
+		if (actualSize.width <= 0 || actualSize.height <= 0) return;
+
+		this->createRenderChain();
 		this->mbRenderChainDirty = false;
 	}
 }

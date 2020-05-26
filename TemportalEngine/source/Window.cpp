@@ -24,14 +24,20 @@ Window::Window(ui16 width, ui16 height)
 	this->mpHandle = SDL_CreateWindow(
 		mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		(int)mWidth, (int)mHeight,
-		SDL_WINDOW_VULKAN
+		// TODO: add initialization flag for resizable
+		SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
 	);
 	if (!this->isValid())
 	{
 		LogWindow.log(logging::ECategory::LOGERROR, "Failed to create window");
 		return;
 	}
+	this->mId = SDL_GetWindowID(reinterpret_cast<SDL_Window*>(this->mpHandle));
+}
 
+ui32 Window::getId() const
+{
+	return this->mId;
 }
 
 std::vector<const char*> Window::querySDLVulkanExtensions() const
@@ -102,6 +108,24 @@ void Window::markShouldClose()
 bool Window::isPendingClose()
 {
 	return this->mIsPendingClose;
+}
+
+void Window::onEvent(void* pSdlEvent)
+{
+	SDL_Event *evt = reinterpret_cast<SDL_Event*>(pSdlEvent);
+	assert(evt->type == SDL_WINDOWEVENT);
+	switch (evt->window.event)
+	{
+	case SDL_WINDOWEVENT_RESIZED:
+	{
+		this->mpRenderer->markRenderChainDirty();
+		break;
+	}
+	case SDL_WINDOWEVENT_CLOSE:
+		markShouldClose();
+		break;
+	default: break;
+	}
 }
 
 void Window::update()

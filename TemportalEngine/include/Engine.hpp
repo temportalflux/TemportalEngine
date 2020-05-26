@@ -123,19 +123,14 @@ public:
 	void terminateDependencies();
 #pragma endregion
 
-#pragma region Helpers
+#pragma region Windows
 	Window* createWindow(ui16 width, ui16 height);
+	void destroyWindow(Window* &pWindow);
 #pragma endregion
 
 #pragma region Graphics
 	bool setupVulkan();
 	graphics::VulkanInstance* initializeVulkan(std::vector<const char*> requiredExtensions);
-#pragma endregion
-
-#pragma region Input
-	void pollInput();
-	void enqueueInput(struct input::Event const &evt);
-	void processInput(struct input::Event const &evt);
 #pragma endregion
 
 #pragma region Game Loop
@@ -163,6 +158,10 @@ private:
 	dependency::SDL mpDepSDL[1];
 #pragma endregion
 	
+#pragma region Windows
+	std::map<ui32, Window*> mWindowPtrs;
+#pragma endregion
+	
 #pragma region Graphic
 	graphics::VulkanInstance mVulkanInstance;
 	Thread *mpThreadRender;
@@ -177,7 +176,15 @@ private:
 	bool mIsRunning;
 
 	//network::Service *mpNetworkService;
+
 	Engine(ui32 const & version, void* memoryManager);
+
+#pragma region Input
+	void pollInput();
+	void enqueueInput(struct input::Event const &evt);
+	void onWindowEvent(ui32 windowId, void *pEvt);
+	void processInput(struct input::Event const &evt);
+#pragma endregion
 
 };
 

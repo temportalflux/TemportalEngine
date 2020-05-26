@@ -4,23 +4,9 @@
 
 using namespace input;
 
-void InputWatcher::executeInputCallback(Event const & evt)
-{
-	if (this->mpDelegateCallback != nullptr)
-	{
-		(*this->mpDelegateCallback)(evt);
-	}
-}
-
 InputWatcher::InputWatcher()
 {
-	mpDelegateCallback = 0;
 	mJoystickCount = 0;
-}
-
-InputWatcher::InputWatcher(DelegateKeyCallback callback)
-{
-	this->setCallback(callback);
 }
 
 InputWatcher::~InputWatcher()
@@ -29,9 +15,14 @@ InputWatcher::~InputWatcher()
 		SDL_JoystickClose((SDL_Joystick*)mpJoystickHandles[i]);
 }
 
-void InputWatcher::setCallback(DelegateKeyCallback callback)
+void InputWatcher::setInputEventCallback(EventDelegateInput callback)
 {
-	this->mpDelegateCallback = callback;
+	this->mDelegateInput = callback;
+}
+
+void InputWatcher::setWindowEventCallback(EventDelegateWindow callback)
+{
+	this->mDelegateWindow = callback;
 }
 
 void InputWatcher::initializeJoysticks(ui8 count)
@@ -155,10 +146,30 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 void InputWatcher::pollInput()
 {
 	SDL_Event sdlEvent;
-	input::Event evt;
 	while (SDL_PollEvent(&sdlEvent))
 	{
-		if (makeInputEvent(sdlEvent, evt))
-			this->executeInputCallback(evt);
+		this->processEvent(&sdlEvent);
+	}
+}
+
+void InputWatcher::processEvent(void* pEvt)
+{
+	SDL_Event *evt = reinterpret_cast<SDL_Event*>(pEvt);
+	switch (evt->type)
+	{
+	case SDL_WINDOWEVENT:
+		if (this->mDelegateWindow)
+			this->mDelegateWindow(evt->window.windowID, evt);
+		break;
+	default:
+		if (this->mDelegateInput)
+		{
+			input::Event inputEvent;
+			if (makeInputEvent(*evt, inputEvent))
+			{
+				this->mDelegateInput(inputEvent);
+			}
+		}
+		break;
 	}
 }

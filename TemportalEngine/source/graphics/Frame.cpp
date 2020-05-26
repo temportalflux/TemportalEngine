@@ -84,13 +84,13 @@ void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers
 	);
 }
 
-void Frame::present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
+vk::Result Frame::present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
 {
 	auto vkSwapChains = std::vector<vk::SwapchainKHR>(swapChains.size());
 	std::transform(swapChains.begin(), swapChains.end(), vkSwapChains.begin(),
 		[](SwapChain *sc) { return sc->mInternal.get(); }
 	);
-	pQueue->presentKHR(vk::PresentInfoKHR()
+	return pQueue->presentKHR(vk::PresentInfoKHR()
 		.setWaitSemaphoreCount(1).setPWaitSemaphores(&this->mSemaphore_RenderComplete.get())
 		.setSwapchainCount((ui32)vkSwapChains.size()).setPSwapchains(vkSwapChains.data())
 		.setPImageIndices(&idxImage)

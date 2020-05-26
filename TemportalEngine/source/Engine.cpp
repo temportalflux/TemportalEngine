@@ -15,8 +15,6 @@ void* Engine::spInstance = nullptr;
 
 std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-void windowKeyInputCallback(input::Event const &inputEvt);
-
 constexpr uSize Engine::getMaxMemorySize()
 {
 	return 1 << 22; // 2^22
@@ -77,15 +75,26 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	mEngineInfo.title = "TemportalEngine";
 	mEngineInfo.version = version;
 
-	mpInputWatcher->setCallback(&windowKeyInputCallback);
-	mpInputQueue = this->alloc<input::Queue>();
-	mInputHandle = mpInputQueue->addListener(input::EInputType::QUIT,
+	this->mpInputWatcher->setInputEventCallback(std::bind(
+		&Engine::enqueueInput, this,
+		std::placeholders::_1
+	));
+	this->mpInputWatcher->setWindowEventCallback(std::bind(
+		&Engine::onWindowEvent, this,
+		std::placeholders::_1, std::placeholders::_2
+	));
+
+	this->mpInputQueue = this->alloc<input::Queue>();
+	this->mInputHandle = this->mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
 }
 
 Engine::~Engine()
 {
+	// TODO: deallocate any windows that still exist in here
+	this->mWindowPtrs.clear();
+
 	if (this->mVulkanInstance.isValid())
 	{
 		this->mVulkanInstance.destroy();
@@ -149,13 +158,21 @@ void Engine::terminateDependencies()
 
 #pragma endregion
 
-#pragma region Helpers
+#pragma region Windows
 
 Window* Engine::createWindow(ui16 width, ui16 height)
 {
 	auto window = this->alloc<Window>(width, height);
 	window->addInputListeners(mpInputQueue);
+	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;
+}
+
+void Engine::destroyWindow(Window* &pWindow)
+{
+	this->mWindowPtrs.erase(pWindow->getId());
+	pWindow->destroy();
+	engine::Engine::Get()->dealloc(&pWindow);
 }
 
 #pragma endregion
@@ -231,15 +248,6 @@ void Engine::pollInput()
 	mpInputWatcher->pollInput();
 }
 
-void windowKeyInputCallback(input::Event const &inputEvt)
-{
-	Engine* pEngine;
-	if (Engine::GetChecked(pEngine))
-	{
-		pEngine->enqueueInput(inputEvt);
-	}
-}
-
 void Engine::enqueueInput(input::Event const & evt)
 {
 	this->mpInputQueue->enqueue(evt);
@@ -285,6 +293,15 @@ void Engine::processInput(input::Event const & evt)
 		this->markShouldStop();
 	}
 
+}
+
+void Engine::onWindowEvent(ui32 windowId, void *pEvt)
+{
+	auto iter = this->mWindowPtrs.find(windowId);
+	if (iter != this->mWindowPtrs.end())
+	{
+		iter->second->onEvent(pEvt);
+	}
 }
 
 #pragma endregion

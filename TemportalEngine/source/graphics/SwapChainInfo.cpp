@@ -37,7 +37,6 @@ vk::Extent2D SwapChainInfo::getAdjustedResolution(vk::Extent2D drawableSize, vk:
 		);
 }
 
-
 vk::SurfaceFormatKHR SwapChainInfo::selectSurfaceFormat(std::vector<vk::SurfaceFormatKHR> const &availableFormats) const
 {
 	auto prefCount = this->mFormatPreferences.size();

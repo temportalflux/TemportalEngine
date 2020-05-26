@@ -29,7 +29,7 @@ public:
 	void setImageViewInFlight(ImageView *pView);
 	void markNotInFlight();
 	void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
-	void present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
+	vk::Result present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
 
 private:
 	LogicalDevice const *mpDevice;

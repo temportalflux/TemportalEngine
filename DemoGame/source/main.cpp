@@ -156,8 +156,7 @@ int main()
 
 	renderer.invalidate();
 
-	pWindow->destroy();
-	engine::Engine::Get()->dealloc(&pWindow);
+	engine::Engine::Get()->destroyWindow(pWindow);
 	engine::Engine::Destroy();
 
 	engine::Engine::LOG_SYSTEM.close();

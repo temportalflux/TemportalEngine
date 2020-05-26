@@ -23,7 +23,7 @@ bool CommandPool::isValid() const
 
 CommandPool& CommandPool::create(LogicalDevice const *pDevice)
 {
-	this->mInternal = (mpDevice = pDevice)->mDevice->createCommandPoolUnique(
+	this->mInternal = (this->mpDevice = pDevice)->mDevice->createCommandPoolUnique(
 		vk::CommandPoolCreateInfo().setQueueFamilyIndex(this->mIdxQueueFamily)
 	);
 	return *this;

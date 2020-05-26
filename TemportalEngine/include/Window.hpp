@@ -34,6 +34,7 @@ private:
 	char const * mpTitle;
 
 	void* mpHandle;
+	ui32 mId;
 	void* mpJoystick;
 	bool mIsPendingClose;
 	input::ListenerHandle mInputHandleQuit;
@@ -47,6 +48,8 @@ public:
 	);
 	void destroy();
 
+	ui32 getId() const;
+
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;
 
@@ -58,6 +61,8 @@ public:
 	void onInputQuit(input::Event const &evt);
 	void markShouldClose();
 	bool isPendingClose();
+
+	void onEvent(void* pSdlEvent);
 
 	/**
 	 * Runs on the main thread as often as possible
