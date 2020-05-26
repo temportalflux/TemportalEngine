@@ -67,12 +67,17 @@ private:
 	
 	std::vector<Frame> mFrames;
 	uSize mIdxCurrentFrame;
+	ui32 mIdxCurrentImage;
 
 	VulkanRenderer() = default;
 
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
 	void recordCommandBufferInstructions();
+
+	void prepareRender();
+	void render();
+	void present();
 
 };
 

@@ -141,11 +141,19 @@ void VulkanRenderer::drawFrame()
 {
 	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
 	currentFrame.waitUntilNotInFlight();
-	
-	auto idxImageView = currentFrame.acquireNextImage(&this->mSwapChain);
-	
-	// If the next iamge view is currently in flight, wait until it isn't (it is being used by another frame)
-	auto& imageView = this->mImageViews[idxImageView];
+	this->prepareRender();
+	this->render();
+	this->present();
+	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
+}
+
+void VulkanRenderer::prepareRender()
+{
+	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	mIdxCurrentImage = currentFrame.acquireNextImage(&this->mSwapChain);
+
+	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
+	auto& imageView = this->mImageViews[mIdxCurrentImage];
 	if (imageView.isInFlight())
 	{
 		imageView.waitUntilNotInFlight(&this->mLogicalDevice);
@@ -153,18 +161,23 @@ void VulkanRenderer::drawFrame()
 
 	// Ensure that the image view is marked as in-flight as long as the frame is
 	currentFrame.setImageViewInFlight(&imageView);
-	
+
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
 	currentFrame.markNotInFlight();
+}
 
+void VulkanRenderer::render()
+{
+	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
 	// Submit the command buffer to the graphics queue
-	auto& commandBuffer = this->mCommandBuffers[idxImageView];
+	auto& commandBuffer = this->mCommandBuffers[mIdxCurrentImage];
 	currentFrame.submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
+}
 
-	// Present the frame
-	currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, idxImageView);
-
-	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
+void VulkanRenderer::present()
+{
+	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
 }
 
 void VulkanRenderer::waitUntilIdle()
