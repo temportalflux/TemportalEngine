@@ -104,6 +104,12 @@ bool Window::isPendingClose()
 	return this->mIsPendingClose;
 }
 
+void Window::update()
+{
+	if (!this->isValid() || this->isPendingClose()) return;
+	this->mpRenderer->update();
+}
+
 bool Window::renderUntilClose()
 {
 	mpRenderer->drawFrame();

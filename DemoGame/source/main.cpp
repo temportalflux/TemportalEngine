@@ -107,6 +107,8 @@ int main()
 #pragma region Vulkan
 	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
 	auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+	
+	// Initialize settings
 	renderer.setPhysicalDevicePreference(graphics::PhysicalDevicePreference()
 		.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
 		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
@@ -129,15 +131,22 @@ int main()
 		.addPresentModePreference(vk::PresentModeKHR::eFifo)
 	);
 	
+	// Initialize required api connections
+	renderer.initializeDevices();
+	
+	// Create shaders
 	auto shaderVertex = graphics::ShaderModule();
 	shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
 	shaderVertex.setSource("shaders/triangle.vert.spv");
 	auto shaderFragment = graphics::ShaderModule();
 	shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
 	shaderFragment.setSource("shaders/triangle.frag.spv");
+	renderer.setShaders({ &shaderVertex, &shaderFragment });
 
-	renderer.initializeDevices();
-	renderer.constructRenderChain({ &shaderVertex, &shaderFragment });
+	// Initialize the rendering api connections
+	renderer.createRenderChain();
+
+	// Give the window its renderer
 	pWindow->setRenderer(&renderer);
 #pragma endregion
 

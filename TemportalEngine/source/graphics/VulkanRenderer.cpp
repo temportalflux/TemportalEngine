@@ -8,6 +8,7 @@ using namespace graphics;
 VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
 	: mpInstance(pInstance)
 	, mIdxCurrentFrame(0)
+	, mbRenderChainDirty(false)
 {
 	mSurface.swap(surface);
 }
@@ -50,7 +51,18 @@ void VulkanRenderer::pickPhysicalDevice()
 	mPhysicalDevice = optPhysicalDevice.value();
 }
 
-void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders)
+void VulkanRenderer::setShaders(std::set<ShaderModule*> const &shaders)
+{
+	this->mShaders = shaders;
+}
+
+void VulkanRenderer::createRenderChain()
+{
+	this->createRenderObjects();
+	this->createCommandObjects();
+}
+
+void VulkanRenderer::createRenderObjects()
 {
 	this->mSwapChain
 		.setInfo(mSwapChainInfo)
@@ -68,8 +80,12 @@ void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders
 		}
 	});
 
-	auto resolution = this->mSwapChain.getResolution();
 	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
+}
+
+void VulkanRenderer::createCommandObjects()
+{
+	auto resolution = this->mSwapChain.getResolution();
 
 	this->mFrameBuffers = this->mRenderPass.createFrameBuffers(this->mImageViews);
 	
@@ -80,7 +96,7 @@ void VulkanRenderer::constructRenderChain(std::set<ShaderModule*> const &shaders
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	for (auto& shaderPtr : shaders)
+	for (auto& shaderPtr : this->mShaders)
 	{
 		this->mPipeline.addShader(shaderPtr);
 	}
@@ -119,10 +135,12 @@ void VulkanRenderer::invalidate()
 {
 	this->mFrames.clear();
 
+	this->mShaders.clear();
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
 	this->mPipeline.destroy();
 	this->mFrameBuffers.clear();
+
 	this->mRenderPass.destroy();
 	this->mImageViews.clear();
 	this->mSwapChain.destroy();
@@ -173,7 +191,9 @@ bool VulkanRenderer::acquireNextImage()
 
 	if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR)
 	{
-
+		// Only mark as dirty if it is not already dirty.
+		if (!this->mbRenderChainDirty) this->markRenderChainDirty();
+		// Once dirty has been detected, stall until it is resolved
 		return false;
 	}
 
@@ -198,4 +218,17 @@ void VulkanRenderer::present()
 void VulkanRenderer::waitUntilIdle()
 {
 	this->mLogicalDevice.waitUntilIdle();
+}
+
+void VulkanRenderer::markRenderChainDirty()
+{
+	this->mbRenderChainDirty = true;
+}
+
+void VulkanRenderer::update()
+{
+	if (this->mbRenderChainDirty)
+	{
+		this->mbRenderChainDirty = false;
+	}
 }

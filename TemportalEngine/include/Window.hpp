@@ -45,6 +45,7 @@ public:
 	Window(
 		ui16 width, ui16 height
 	);
+	void destroy();
 
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;
@@ -57,10 +58,27 @@ public:
 	void onInputQuit(input::Event const &evt);
 	void markShouldClose();
 	bool isPendingClose();
+
+	/**
+	 * Runs on the main thread as often as possible
+	 * while the engine is running.
+	 */
+	void update();
 	
+	/**
+	 * THREADED
+	 * Executed in a near-infinite loop on the render thread.
+	 * Tells the renderer to draw a frame.
+	 * Returns true if the window is ready to close.
+	 */
 	bool renderUntilClose();
+
+	/**
+	 * THREADED
+	 * Executes when the render thread has finished running.
+	 * Waits for the renderer to be idle before exiting the thread.
+	 */
 	void waitForCleanup();
-	void destroy();
 
 };
 

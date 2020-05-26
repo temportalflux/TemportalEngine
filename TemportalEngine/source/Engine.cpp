@@ -203,6 +203,7 @@ void Engine::run(Window* pWindow)
 	{
 		this->pollInput();
 		mpInputQueue->dispatchAll();
+		pWindow->update();
 	}
 
 	//if (this->hasNetwork())

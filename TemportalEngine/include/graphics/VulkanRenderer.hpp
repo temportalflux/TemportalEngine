@@ -39,10 +39,32 @@ public:
 
 	void initializeDevices();
 	// Creates a swap chain, and all objects that depend on it
-	void constructRenderChain(std::set<ShaderModule*> const &shaders);
+	void setShaders(std::set<ShaderModule*> const &shaders);
+	void createRenderChain();
 
+	/**
+	 * Marks the destination of renders "dirty", meaning that the drawable size has changed.
+	 * Will cause the render-chain to be re-created the next time `update` is called.
+	 */
+	void markRenderChainDirty();
+
+	/**
+	 * Called on the main thread to refresh any objects that need to be re-created.
+	 */
+	void update();
+
+	/**
+	 * THREADED
+	 * Called on the render thread to submit & present a frame to the surface.
+	 */
 	void drawFrame();
+
+	/**
+	 * THREADED
+	 * Called on the render thread to stall until idle.
+	 */
 	void waitUntilIdle();
+
 	void invalidate();
 
 private:
@@ -56,10 +78,15 @@ private:
 	LogicalDevice mLogicalDevice;
 	std::unordered_map<QueueFamily, vk::Queue> mQueues;
 
+	// if the render chain is out of date and needs to be recreated on next `update`
+	// TODO: Might need a mutex if it can be written to by both render thread (vulkan callbacks) AND via `markRenderChainDirty`
+	bool mbRenderChainDirty;
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
 	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
+
+	std::set<ShaderModule*> mShaders;
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
@@ -73,6 +100,9 @@ private:
 
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
+
+	void createRenderObjects();
+	void createCommandObjects();
 	void recordCommandBufferInstructions();
 	
 	bool acquireNextImage();
