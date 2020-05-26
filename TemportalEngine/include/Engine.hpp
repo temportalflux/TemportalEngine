@@ -39,38 +39,18 @@ public:
 	static std::vector<const char*> VulkanValidationLayers;
 
 	static constexpr uSize getMaxMemorySize();
+
+#pragma region Singleton
 	static Engine* Create();
 	static Engine* Get();
 	static bool GetChecked(Engine* &instance);
 	static void Destroy();
+#pragma endregion
 
-private:
-
-	utility::SExecutableInfo mEngineInfo;
-	utility::SExecutableInfo mAppInfo;
-
-	thread::MutexLock mpLockMemoryManager[1];
-	void* mpMemoryManager;
-
-	dependency::SDL mpDepSDL[1];
-
-	graphics::VulkanInstance mVulkanInstance;
-
-	bool mIsRunning;
-
-	input::InputWatcher mpInputWatcher[1];
-
-	//network::Service *mpNetworkService;
-	Thread *mpThreadRender;
-
-	input::Queue *mpInputQueue;
-	input::ListenerHandle mInputHandle;
-
-	Engine(ui32 const & version, void* memoryManager);
-
-public:
 	~Engine();
+
 	utility::SExecutableInfo const *const getInfo() const;
+	void setApplicationInfo(utility::SExecutableInfo const *const pAppInfo);
 
 #pragma region Memory
 
@@ -138,28 +118,66 @@ public:
 
 #pragma endregion
 
-	void setApplicationInfo(utility::SExecutableInfo const *const pAppInfo);
-
+#pragma region Dependencies
 	bool initializeDependencies();
 	void terminateDependencies();
+#pragma endregion
+
+#pragma region Helpers
+	Window* createWindow(ui16 width, ui16 height);
+#pragma endregion
+
+#pragma region Graphics
 	bool setupVulkan();
 	graphics::VulkanInstance* initializeVulkan(std::vector<const char*> requiredExtensions);
+#pragma endregion
 
-	Window* createWindow(ui16 width, ui16 height);
-
-	void createServer(ui16 const port, ui16 maxClients);
-	void createClient(char const *address, ui16 port);
-	
-	void run(Window* pWindow);
-	bool const isActive() const;
-	void markShouldStop();
-
-	bool const hasNetwork() const;
-	//std::optional<network::Service* const> getNetworkService() const;
-
+#pragma region Input
 	void pollInput();
 	void enqueueInput(struct input::Event const &evt);
 	void processInput(struct input::Event const &evt);
+#pragma endregion
+
+#pragma region Game Loop
+	void run(Window* pWindow);
+	bool const isActive() const;
+	void markShouldStop();
+#pragma endregion
+
+	void createServer(ui16 const port, ui16 maxClients);
+	void createClient(char const *address, ui16 port);
+	bool const hasNetwork() const;
+	//std::optional<network::Service* const> getNetworkService() const;
+
+private:
+
+	utility::SExecutableInfo mEngineInfo;
+	utility::SExecutableInfo mAppInfo;
+
+#pragma region Memory
+	thread::MutexLock mpLockMemoryManager[1];
+	void* mpMemoryManager;
+#pragma endregion
+
+#pragma region Dependencies
+	dependency::SDL mpDepSDL[1];
+#pragma endregion
+	
+#pragma region Graphic
+	graphics::VulkanInstance mVulkanInstance;
+	Thread *mpThreadRender;
+#pragma endregion
+
+#pragma region Input
+	input::InputWatcher mpInputWatcher[1];
+	input::Queue *mpInputQueue;
+	input::ListenerHandle mInputHandle;
+#pragma endregion
+
+	bool mIsRunning;
+
+	//network::Service *mpNetworkService;
+	Engine(ui32 const & version, void* memoryManager);
 
 };
 

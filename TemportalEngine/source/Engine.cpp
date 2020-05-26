@@ -22,6 +22,8 @@ constexpr uSize Engine::getMaxMemorySize()
 	return 1 << 22; // 2^22
 }
 
+#pragma region Singleton
+
 Engine* Engine::Create()
 {
 	if (spInstance == nullptr)
@@ -62,6 +64,8 @@ void Engine::Destroy()
 		free(memoryManager);
 	}
 }
+
+#pragma endregion
 
 Engine::Engine(ui32 const & version, void* memoryManager)
 	: mpMemoryManager(memoryManager)
@@ -145,7 +149,18 @@ void Engine::terminateDependencies()
 
 #pragma endregion
 
-#pragma region Rendering
+#pragma region Helpers
+
+Window* Engine::createWindow(ui16 width, ui16 height)
+{
+	auto window = this->alloc<Window>(width, height);
+	window->addInputListeners(mpInputQueue);
+	return window;
+}
+
+#pragma endregion
+
+#pragma region Graphics
 
 bool Engine::setupVulkan()
 {
@@ -163,31 +178,9 @@ graphics::VulkanInstance* Engine::initializeVulkan(std::vector<const char*> requ
 	return &this->mVulkanInstance;
 }
 
-Window* Engine::createWindow(ui16 width, ui16 height)
-{
-	auto window = this->alloc<Window>(width, height);
-	window->addInputListeners(mpInputQueue);
-	return window;
-}
-
 #pragma endregion
 
-void Engine::createClient(char const *address, ui16 port)
-{
-	LogEngine(logging::ECategory::LOGINFO, "Initializing network client");
-	//auto client = this->alloc<network::ServiceClient>();
-	//client->initialize();
-	//client->connectToServer(address, port);
-	//this->mpNetworkService = client;
-}
-
-void Engine::createServer(ui16 const port, ui16 maxClients)
-{
-	LogEngine(logging::ECategory::LOGINFO, "Initializing network server");
-	//auto server = this->alloc<network::ServiceServer>();
-	//server->initialize(port, maxClients);
-	//this->mpNetworkService = server;
-}
+#pragma region Game Loop
 
 void Engine::run(Window* pWindow)
 {
@@ -228,19 +221,9 @@ void Engine::markShouldStop()
 	mIsRunning = false;
 }
 
-bool const Engine::hasNetwork() const
-{
-	return false;// this->mpNetworkService != nullptr;
-}
+#pragma endregion
 
-/*
-std::optional<network::Service* const> Engine::getNetworkService() const
-{
-	if (this->hasNetwork())
-		return this->mpNetworkService;
-	return std::nullopt;
-}
-//*/
+#pragma region Input
 
 void Engine::pollInput()
 {
@@ -302,3 +285,36 @@ void Engine::processInput(input::Event const & evt)
 	}
 
 }
+
+#pragma endregion
+
+void Engine::createClient(char const *address, ui16 port)
+{
+	LogEngine(logging::ECategory::LOGINFO, "Initializing network client");
+	//auto client = this->alloc<network::ServiceClient>();
+	//client->initialize();
+	//client->connectToServer(address, port);
+	//this->mpNetworkService = client;
+}
+
+void Engine::createServer(ui16 const port, ui16 maxClients)
+{
+	LogEngine(logging::ECategory::LOGINFO, "Initializing network server");
+	//auto server = this->alloc<network::ServiceServer>();
+	//server->initialize(port, maxClients);
+	//this->mpNetworkService = server;
+}
+
+bool const Engine::hasNetwork() const
+{
+	return false;// this->mpNetworkService != nullptr;
+}
+
+/*
+std::optional<network::Service* const> Engine::getNetworkService() const
+{
+	if (this->hasNetwork())
+		return this->mpNetworkService;
+	return std::nullopt;
+}
+//*/
