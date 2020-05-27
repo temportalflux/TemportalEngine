@@ -17,9 +17,9 @@ ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : Vulk
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	ImGui::StyleColorsDark();
 
@@ -33,6 +33,12 @@ ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : Vulk
 	ImGui_ImplSDL2_InitForVulkan(reinterpret_cast<SDL_Window*>(surface.getWindowHandle()));
 }
 
+void ImGuiRenderer::initializeDevices()
+{
+	VulkanRenderer::initializeDevices();
+	this->mDescriptorPool = this->createDescriptorPool();
+}
+
 void ImGuiRenderer::invalidate()
 {
 	ImGui_ImplVulkan_Shutdown();
@@ -42,12 +48,6 @@ void ImGuiRenderer::invalidate()
 	this->mDescriptorPool.reset();
 
 	VulkanRenderer::invalidate();
-}
-
-void ImGuiRenderer::createRenderObjects()
-{
-	VulkanRenderer::createRenderObjects();
-	this->mDescriptorPool = this->createDescriptorPool();
 }
 
 vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPool()
@@ -158,6 +158,13 @@ void ImGuiRenderer::drawFrame()
 	this->endGuiFrame();
 
 	VulkanRenderer::drawFrame();
+
+	auto& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
 }
 
 void ImGuiRenderer::startGuiFrame()
@@ -171,6 +178,10 @@ void ImGuiRenderer::makeGui()
 {
 	ImGui::Begin("Hello, world!");
 	ImGui::Text("This is some useful text.");
+	ImGui::End();
+
+	ImGui::Begin("Window 2");
+	ImGui::Text("This is some meaningless text.");
 	ImGui::End();
 }
 
@@ -188,11 +199,4 @@ void ImGuiRenderer::render()
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentFrame->getRawBuffer());
 	currentFrame->endRenderPass(cmd);
 	currentFrame->submitBuffers(&this->mQueues[QueueFamily::eGraphics], {});
-
-	auto& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-	}
 }

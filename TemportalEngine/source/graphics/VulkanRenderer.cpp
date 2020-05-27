@@ -93,17 +93,8 @@ void VulkanRenderer::createRenderChain()
 void VulkanRenderer::destroyRenderChain()
 {
 	this->destroyFrames();
-
-	// Command Objects
-	this->mCommandBuffers.clear();
-	this->mCommandPool.destroy();
-	this->mPipeline.destroy();
-	this->mFrameBuffers.clear();
-
-	// Render Objects
-	this->mRenderPass.destroy();
-	this->mImageViews.clear();
-	this->mSwapChain.destroy();
+	this->destroyCommandObjects();
+	this->destroyRenderObjects();
 }
 
 void VulkanRenderer::createRenderObjects()
@@ -117,6 +108,13 @@ void VulkanRenderer::createRenderObjects()
 	this->mImageViews = this->mSwapChain.createImageViews(mImageViewInfo);
 
 	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
+}
+
+void VulkanRenderer::destroyRenderObjects()
+{
+	this->mRenderPass.destroy();
+	this->mImageViews.clear();
+	this->mSwapChain.destroy();
 }
 
 void VulkanRenderer::createCommandObjects()
@@ -140,6 +138,14 @@ void VulkanRenderer::createCommandObjects()
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
 	
 	this->recordCommandBufferInstructions();
+}
+
+void VulkanRenderer::destroyCommandObjects()
+{
+	this->mCommandBuffers.clear();
+	this->mCommandPool.destroy();
+	this->mPipeline.destroy();
+	this->mFrameBuffers.clear();
 }
 
 void VulkanRenderer::createFrames(uSize viewCount)
@@ -243,6 +249,8 @@ void VulkanRenderer::render()
 
 bool VulkanRenderer::present()
 {
+	if (this->mbRenderChainDirty) return false;
+
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
 	{
@@ -286,6 +294,8 @@ void VulkanRenderer::update()
 		if (actualSize.width <= 0 || actualSize.height <= 0) return;
 
 		this->createRenderChain();
+		this->mIdxCurrentFrame = 0;
+		this->mIdxCurrentImage = 0;
 		this->mbRenderChainDirty = false;
 	}
 }

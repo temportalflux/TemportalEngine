@@ -7,6 +7,7 @@
 #include "input/Event.hpp"
 #include "input/types.h"
 #include "graphics/Surface.hpp"
+#include "thread/Thread.hpp"
 
 #include <vector>
 
@@ -31,7 +32,7 @@ class TEMPORTALENGINE_API Window
 {
 private:
 	ui16 mWidth, mHeight;
-	char const * mpTitle;
+	std::string mpTitle;
 
 	void* mpHandle;
 	ui32 mId;
@@ -39,16 +40,22 @@ private:
 	bool mIsPendingClose;
 	input::ListenerHandle mInputHandleQuit;
 
+	bool mbRenderOnThread;
+	Thread mRenderThread;
+
 	graphics::VulkanRenderer *mpRenderer;
 
 public:
 	Window() = default;
 	Window(
-		ui16 width, ui16 height
+		ui16 width, ui16 height,
+		bool bResizable,
+		bool bRenderOnThread = true
 	);
 	void destroy();
 
 	ui32 getId() const;
+	void* getWindowHandle() const;
 
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;
@@ -63,6 +70,9 @@ public:
 	bool isPendingClose();
 
 	void onEvent(void* pSdlEvent);
+
+	void startThread();
+	void joinThread();
 
 	/**
 	 * Runs on the main thread as often as possible

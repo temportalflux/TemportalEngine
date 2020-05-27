@@ -38,7 +38,7 @@ public:
 	void setSwapChainInfo(SwapChainInfo const &info);
 	void setImageViewInfo(ImageViewInfo const &info);
 
-	void initializeDevices();
+	virtual void initializeDevices();
 	// Creates a swap chain, and all objects that depend on it
 	void setShaders(std::set<ShaderModule*> const &shaders);
 	void createRenderChain();
@@ -121,7 +121,9 @@ protected:
 	vk::Queue& getQueue(QueueFamily type);
 
 	virtual void createRenderObjects();
+	virtual void destroyRenderObjects();
 	virtual void createCommandObjects();
+	virtual void destroyCommandObjects();
 
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 	virtual void createFrames(uSize viewCount);

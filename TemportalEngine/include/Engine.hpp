@@ -124,7 +124,7 @@ public:
 #pragma endregion
 
 #pragma region Windows
-	Window* createWindow(ui16 width, ui16 height);
+	Window* createWindow(ui16 width, ui16 height, bool bResizable, bool bRenderOnThread = true);
 	void destroyWindow(Window* &pWindow);
 #pragma endregion
 
@@ -134,8 +134,10 @@ public:
 #pragma endregion
 
 #pragma region Game Loop
-	void run(Window* pWindow);
+	void start();
 	bool const isActive() const;
+	void update();
+	void joinThreads();
 	void markShouldStop();
 #pragma endregion
 
@@ -164,7 +166,6 @@ private:
 	
 #pragma region Graphic
 	graphics::VulkanInstance mVulkanInstance;
-	Thread *mpThreadRender;
 #pragma endregion
 
 #pragma region Input
@@ -173,7 +174,7 @@ private:
 	input::ListenerHandle mInputHandle;
 #pragma endregion
 
-	bool mIsRunning;
+	bool mbShouldContinueRunning;
 
 	//network::Service *mpNetworkService;
 

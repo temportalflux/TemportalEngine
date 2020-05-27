@@ -14,18 +14,25 @@
 
 auto LogWindow = DeclareLog("Window");
 
-Window::Window(ui16 width, ui16 height)
+Window::Window(
+	ui16 width, ui16 height, bool bResizable,
+	bool bRenderOnThread
+)
 	: mWidth(width)
 	, mHeight(height)
 	, mpTitle("TODO Update Title")
+	, mbRenderOnThread(bRenderOnThread)
 {
 	this->mIsPendingClose = false;
 
+	ui32 windowFlags = SDL_WINDOW_VULKAN;
+	if (bResizable)
+	{
+		windowFlags |= SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	}
 	this->mpHandle = SDL_CreateWindow(
-		mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		(int)mWidth, (int)mHeight,
-		// TODO: add initialization flag for resizable
-		SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
+		mpTitle.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+		(int)mWidth, (int)mHeight, windowFlags
 	);
 	if (!this->isValid())
 	{
@@ -38,6 +45,11 @@ Window::Window(ui16 width, ui16 height)
 ui32 Window::getId() const
 {
 	return this->mId;
+}
+
+void* Window::getWindowHandle() const
+{
+	return this->mpHandle;
 }
 
 std::vector<const char*> Window::querySDLVulkanExtensions() const
@@ -131,10 +143,37 @@ void Window::onEvent(void* pSdlEvent)
 	this->mpRenderer->onInputEvent(pSdlEvent);
 }
 
+void Window::startThread()
+{
+	if (!this->mbRenderOnThread) return;
+	this->mRenderThread = Thread("Thread:" + this->mpTitle, &engine::Engine::LOG_SYSTEM);
+	this->mRenderThread.setFunctor(std::bind(&Window::renderUntilClose, this));
+	this->mRenderThread.setOnComplete(std::bind(&Window::waitForCleanup, this));
+	this->mRenderThread.start();
+}
+
+void Window::joinThread()
+{
+	if (this->mRenderThread.isValid())
+	{
+		this->mRenderThread.join();
+	}
+	else
+	{
+		this->waitForCleanup();
+	}
+}
+
 void Window::update()
 {
 	if (!this->isValid() || this->isPendingClose()) return;
+
 	this->mpRenderer->update();
+
+	if (!this->mbRenderOnThread)
+	{
+		this->renderUntilClose();
+	}
 }
 
 bool Window::renderUntilClose()

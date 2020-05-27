@@ -97,7 +97,7 @@ int main()
 		return 1;
 	}
 
-	auto pWindow = pEngine->createWindow(800, 600);
+	auto pWindow = pEngine->createWindow(800, 600, true, true);
 	if (pWindow == nullptr)
 	{
 		engine::Engine::Destroy();
@@ -160,7 +160,12 @@ int main()
 	pWindow->setRenderer(&renderer);
 #pragma endregion
 
-	pEngine->run(pWindow);
+	pEngine->start();
+	while (pEngine->isActive())
+	{
+		pEngine->update();
+	}
+	pEngine->joinThreads();
 
 	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 

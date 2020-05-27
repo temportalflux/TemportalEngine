@@ -67,8 +67,7 @@ void Engine::Destroy()
 
 Engine::Engine(ui32 const & version, void* memoryManager)
 	: mpMemoryManager(memoryManager)
-	, mIsRunning(false)
-	, mpThreadRender(nullptr)
+	, mbShouldContinueRunning(false)
 	//, mpNetworkService(nullptr)
 {
 	LogEngineInfo("Creating Engine");
@@ -158,9 +157,9 @@ void Engine::terminateDependencies()
 
 #pragma region Windows
 
-Window* Engine::createWindow(ui16 width, ui16 height)
+Window* Engine::createWindow(ui16 width, ui16 height, bool bResizable, bool bRenderOnThread)
 {
-	auto window = this->alloc<Window>(width, height);
+	auto window = this->alloc<Window>(width, height, bResizable, bRenderOnThread);
 	window->addInputListeners(mpInputQueue);
 	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;
@@ -197,44 +196,50 @@ graphics::VulkanInstance* Engine::initializeVulkan(std::vector<const char*> requ
 
 #pragma region Game Loop
 
-void Engine::run(Window* pWindow)
+void Engine::start()
 {
-	mIsRunning = true;
+	this->mbShouldContinueRunning = true;
 
-	if (pWindow != nullptr && pWindow->isValid())
+	for (auto [id, pWindow] : this->mWindowPtrs)
 	{
-		mpThreadRender = this->alloc<Thread>("Thread-Render", &Engine::LOG_SYSTEM);
-		mpThreadRender->setFunctor(std::bind(&Window::renderUntilClose, pWindow));
-		mpThreadRender->setOnComplete(std::bind(&Window::waitForCleanup, pWindow));
-		mpThreadRender->start();
+		pWindow->startThread();
 	}
 
 	if (this->hasNetwork())
 	{
 		//this->mpNetworkService->startThread(this);
 	}
-
-	while (this->isActive())
-	{
-		this->pollInput();
-		mpInputQueue->dispatchAll();
-		pWindow->update();
-	}
-
-	//if (this->hasNetwork())
-	//	this->mpNetworkService->joinThread();
-	
-	mpThreadRender->join();
 }
 
 bool const Engine::isActive() const
 {
-	return mIsRunning;
+	return this->mbShouldContinueRunning;
+}
+
+void Engine::update()
+{
+	this->pollInput();
+	mpInputQueue->dispatchAll();
+	for (auto[id, pWindow] : this->mWindowPtrs)
+	{
+		pWindow->update();
+	}
+}
+
+void Engine::joinThreads()
+{
+	//if (this->hasNetwork())
+	//	this->mpNetworkService->joinThread();
+
+	for (auto[id, pWindow] : this->mWindowPtrs)
+	{
+		pWindow->joinThread();
+	}
 }
 
 void Engine::markShouldStop()
 {
-	mIsRunning = false;
+	this->mbShouldContinueRunning = false;
 }
 
 #pragma endregion

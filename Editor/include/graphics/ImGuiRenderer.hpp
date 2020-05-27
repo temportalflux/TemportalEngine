@@ -17,6 +17,8 @@ class ImGuiRenderer : public VulkanRenderer
 
 public:
 	ImGuiRenderer(VulkanInstance *pInstance, Surface &surface);
+	
+	void initializeDevices() override;
 	void invalidate() override;
 
 	void finalizeInitialization() override;
@@ -37,8 +39,8 @@ private:
 	void endGuiFrame();
 
 protected:
-	void createRenderObjects() override;
 	void createCommandObjects() override {}
+	void destroyCommandObjects() override {}
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

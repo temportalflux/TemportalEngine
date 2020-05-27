@@ -33,6 +33,11 @@ void Thread::setOnComplete(DelegateOnComplete onComplete)
 	mOnCompleteDelegate = onComplete;
 }
 
+bool Thread::isValid() const
+{
+	return this->mpThreadHandle != nullptr;
+}
+
 void Thread::start()
 {
 	mpThreadHandle = new std::thread(std::bind(&Thread::run, this));

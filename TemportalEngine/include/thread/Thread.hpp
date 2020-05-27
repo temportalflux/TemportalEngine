@@ -22,6 +22,8 @@ public:
 	void setFunctor(DelegateRun functor);
 	void setOnComplete(DelegateOnComplete onComplete);
 
+	bool isValid() const;
+
 	/**
 		Starts the thread and runs the callable `functor`.
 		While `functor` returns true, the thread will continue.
