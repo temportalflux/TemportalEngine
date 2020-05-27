@@ -36,7 +36,7 @@ void Editor::run()
 {
 	auto pEngine = engine::Engine::Get();
 
-	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RESIZABLE | WindowFlags::BORDERLESS);
+	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RESIZABLE);
 	if (pWindow == nullptr) return;
 	
 	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
