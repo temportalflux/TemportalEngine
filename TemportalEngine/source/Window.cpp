@@ -164,9 +164,9 @@ void Window::joinThread()
 	}
 }
 
-void Window::update()
+bool Window::update()
 {
-	if (!this->isValid() || this->isPendingClose()) return;
+	if (!this->isValid() || this->isPendingClose()) return false;
 
 	this->mpRenderer->update();
 
@@ -174,6 +174,7 @@ void Window::update()
 	{
 		this->renderUntilClose();
 	}
+	return true;
 }
 
 bool Window::renderUntilClose()

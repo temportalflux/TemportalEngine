@@ -47,7 +47,7 @@ void Editor::run()
 	pWindow->setRenderer(&renderer);
 
 	pEngine->start();
-	while (pEngine->isActive())
+	while (pEngine->isActive() && !pWindow->isPendingClose())
 	{
 		pEngine->update();
 	}

@@ -60,6 +60,7 @@ void ImGuiFrame::submitOneOff(
 
 Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearcolor)
 {
+	this->mCommandPool.resetPool();
 	return this->mCommandBuffer
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.clear(clearcolor)

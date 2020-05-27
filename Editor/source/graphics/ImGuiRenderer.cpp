@@ -7,6 +7,7 @@
 #include "graphics/RenderPass.hpp"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
 
@@ -18,8 +19,8 @@ ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : Vulk
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	//io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	ImGui::StyleColorsDark();
 
@@ -29,8 +30,6 @@ ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : Vulk
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
-
-	ImGui_ImplSDL2_InitForVulkan(reinterpret_cast<SDL_Window*>(surface.getWindowHandle()));
 }
 
 void ImGuiRenderer::initializeDevices()
@@ -113,6 +112,8 @@ void ImGuiRenderer::finalizeInitialization()
 {
 	VulkanRenderer::finalizeInitialization();
 
+	ImGui_ImplSDL2_InitForVulkan(reinterpret_cast<SDL_Window*>(this->mSurface.getWindowHandle()));
+
 	{
 		ImGui_ImplVulkan_InitInfo info;
 		info.Instance = *reinterpret_cast<VkInstance*>(this->mpInstance->get());
@@ -178,6 +179,7 @@ void ImGuiRenderer::makeGui()
 {
 	ImGui::Begin("Hello, world!");
 	ImGui::Text("This is some useful text.");
+	ImGui::Button("Button");
 	ImGui::End();
 
 	ImGui::Begin("Window 2");

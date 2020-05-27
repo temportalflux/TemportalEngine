@@ -78,7 +78,7 @@ public:
 	 * Runs on the main thread as often as possible
 	 * while the engine is running.
 	 */
-	void update();
+	bool update();
 	
 	/**
 	 * THREADED
