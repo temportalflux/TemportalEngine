@@ -36,7 +36,7 @@ void Editor::run()
 {
 	auto pEngine = engine::Engine::Get();
 
-	auto pWindow = pEngine->createWindow(800, 600, true, false);
+	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RESIZABLE | WindowFlags::BORDERLESS);
 	if (pWindow == nullptr) return;
 	
 	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
@@ -46,8 +46,10 @@ void Editor::run()
 
 	pWindow->setRenderer(&renderer);
 
+	renderer.addGui(&this->mDockspace);
+
 	pEngine->start();
-	while (pEngine->isActive() && !pWindow->isPendingClose())
+	while (pEngine->isActive() && !pWindow->isPendingClose() && this->mDockspace.isOpen())
 	{
 		pEngine->update();
 	}

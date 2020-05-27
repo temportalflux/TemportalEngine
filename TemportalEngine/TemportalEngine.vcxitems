@@ -132,5 +132,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
   </ItemGroup>
 </Project>

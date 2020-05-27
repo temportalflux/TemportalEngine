@@ -5,6 +5,7 @@
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/QueueFamily.hpp"
 #include "graphics/RenderPass.hpp"
+#include "gui/IGui.hpp"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -145,6 +146,16 @@ void ImGuiRenderer::submitFonts()
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
+void ImGuiRenderer::addGui(gui::IGui *gui)
+{
+	this->mGuis.insert(gui);
+}
+
+void ImGuiRenderer::removeGui(gui::IGui *gui)
+{
+	this->mGuis.erase(gui);
+}
+
 void ImGuiRenderer::onInputEvent(void* evt)
 {
 	ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<SDL_Event*>(evt));
@@ -177,14 +188,11 @@ void ImGuiRenderer::startGuiFrame()
 
 void ImGuiRenderer::makeGui()
 {
-	ImGui::Begin("Hello, world!");
-	ImGui::Text("This is some useful text.");
-	ImGui::Button("Button");
-	ImGui::End();
-
-	ImGui::Begin("Window 2");
-	ImGui::Text("This is some meaningless text.");
-	ImGui::End();
+	for (auto pGui : this->mGuis)
+	{
+		assert(pGui);
+		pGui->makeGui();
+	}
 }
 
 void ImGuiRenderer::endGuiFrame()
@@ -196,7 +204,7 @@ void ImGuiRenderer::render()
 {
 	auto* currentFrame = reinterpret_cast<ImGuiFrame*>(this->getFrameAt(this->mIdxCurrentFrame));
 	
-	std::array<f32, 4U> clearColor = { 0.45f, 0.55f, 0.60f, 1.00f };
+	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
 	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentFrame->getRawBuffer());
 	currentFrame->endRenderPass(cmd);

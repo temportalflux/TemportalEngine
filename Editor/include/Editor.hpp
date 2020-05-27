@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "gui/MainDockspace.hpp"
+
 NS_ENGINE
 class Engine;
 NS_END
@@ -22,6 +24,8 @@ public:
 	void run();
 
 private:
+	gui::MainDockspace mDockspace;
+
 	void initializeRenderer(graphics::VulkanRenderer *pRenderer);
 
 };

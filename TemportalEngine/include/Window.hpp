@@ -3,6 +3,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "WindowFlags.hpp"
 #include "types/integer.h"
 #include "input/Event.hpp"
 #include "input/types.h"
@@ -40,18 +41,16 @@ private:
 	bool mIsPendingClose;
 	input::ListenerHandle mInputHandleQuit;
 
-	bool mbRenderOnThread;
+	WindowFlags mFlags;
+	bool hasFlag(WindowFlags flag) const;
+
 	Thread mRenderThread;
 
 	graphics::VulkanRenderer *mpRenderer;
 
 public:
 	Window() = default;
-	Window(
-		ui16 width, ui16 height,
-		bool bResizable,
-		bool bRenderOnThread = true
-	);
+	Window(ui16 width, ui16 height, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroy();
 
 	ui32 getId() const;

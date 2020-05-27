@@ -25,6 +25,12 @@
     <Filter Include="Source Files\graphics">
       <UniqueIdentifier>{bc287c3b-6155-4382-82d5-414db121349d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui">
+      <UniqueIdentifier>{ecd5ee0e-a717-450d-97c2-279241b4253b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui">
+      <UniqueIdentifier>{0e5ac739-6c6c-4126-ba53-31b2d01091a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -57,6 +63,9 @@
     <ClCompile Include="source\graphics\ImGuiFrame.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\MainDockspace.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -82,6 +91,12 @@
     </ClInclude>
     <ClInclude Include="libs\imgui\imgui_internal.h">
       <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\IGui.hpp">
+      <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\MainDockspace.hpp">
+      <Filter>Header Files\gui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

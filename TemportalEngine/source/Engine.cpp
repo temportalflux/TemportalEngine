@@ -157,9 +157,9 @@ void Engine::terminateDependencies()
 
 #pragma region Windows
 
-Window* Engine::createWindow(ui16 width, ui16 height, bool bResizable, bool bRenderOnThread)
+Window* Engine::createWindow(ui16 width, ui16 height, WindowFlags flags)
 {
-	auto window = this->alloc<Window>(width, height, bResizable, bRenderOnThread);
+	auto window = this->alloc<Window>(width, height, flags);
 	window->addInputListeners(mpInputQueue);
 	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;

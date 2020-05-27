@@ -3,9 +3,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include <optional>
-#include <typeinfo>
-
+#include "WindowFlags.hpp"
 #include "dependency/SDL.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "input/InputWatcher.hpp"
@@ -16,6 +14,9 @@
 
 #include "logging/Logger.hpp"
 #include "ExecutableInfo.hpp"
+
+#include <optional>
+#include <typeinfo>
 
 class Window;
 NS_INPUT
@@ -124,7 +125,7 @@ public:
 #pragma endregion
 
 #pragma region Windows
-	Window* createWindow(ui16 width, ui16 height, bool bResizable, bool bRenderOnThread = true);
+	Window* createWindow(ui16 width, ui16 height, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroyWindow(Window* &pWindow);
 #pragma endregion
 

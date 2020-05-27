@@ -366,5 +366,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageView.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
   </ItemGroup>
 </Project>

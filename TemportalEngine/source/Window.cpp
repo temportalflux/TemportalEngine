@@ -15,21 +15,19 @@
 auto LogWindow = DeclareLog("Window");
 
 Window::Window(
-	ui16 width, ui16 height, bool bResizable,
-	bool bRenderOnThread
+	ui16 width, ui16 height, WindowFlags flags
 )
 	: mWidth(width)
 	, mHeight(height)
 	, mpTitle("TODO Update Title")
-	, mbRenderOnThread(bRenderOnThread)
+	, mFlags(flags)
 {
 	this->mIsPendingClose = false;
 
 	ui32 windowFlags = SDL_WINDOW_VULKAN;
-	if (bResizable)
-	{
-		windowFlags |= SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-	}
+	if (this->hasFlag(WindowFlags::RESIZABLE)) windowFlags |= SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	if (this->hasFlag(WindowFlags::BORDERLESS)) windowFlags |= SDL_WINDOW_BORDERLESS;
+
 	this->mpHandle = SDL_CreateWindow(
 		mpTitle.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		(int)mWidth, (int)mHeight, windowFlags
@@ -40,6 +38,11 @@ Window::Window(
 		return;
 	}
 	this->mId = SDL_GetWindowID(reinterpret_cast<SDL_Window*>(this->mpHandle));
+}
+
+bool Window::hasFlag(WindowFlags flag) const
+{
+	return ((ui32)this->mFlags & (ui32)flag) != 0;
 }
 
 ui32 Window::getId() const
@@ -145,7 +148,7 @@ void Window::onEvent(void* pSdlEvent)
 
 void Window::startThread()
 {
-	if (!this->mbRenderOnThread) return;
+	if (!this->hasFlag(WindowFlags::RENDER_ON_THREAD)) return;
 	this->mRenderThread = Thread("Thread:" + this->mpTitle, &engine::Engine::LOG_SYSTEM);
 	this->mRenderThread.setFunctor(std::bind(&Window::renderUntilClose, this));
 	this->mRenderThread.setOnComplete(std::bind(&Window::waitForCleanup, this));
@@ -170,7 +173,7 @@ bool Window::update()
 
 	this->mpRenderer->update();
 
-	if (!this->mbRenderOnThread)
+	if (!this->hasFlag(WindowFlags::RENDER_ON_THREAD))
 	{
 		this->renderUntilClose();
 	}

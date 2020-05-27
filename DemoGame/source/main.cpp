@@ -1,5 +1,6 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
+#include "WindowFlags.hpp"
 #include "Window.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
@@ -97,7 +98,7 @@ int main()
 		return 1;
 	}
 
-	auto pWindow = pEngine->createWindow(800, 600, true, true);
+	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE);
 	if (pWindow == nullptr)
 	{
 		engine::Engine::Destroy();
