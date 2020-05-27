@@ -25,12 +25,6 @@
     <Filter Include="Source Files\graphics">
       <UniqueIdentifier>{bc287c3b-6155-4382-82d5-414db121349d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\gui">
-      <UniqueIdentifier>{1e9c918b-5d02-42e6-a2d5-0aa73247b6bd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\gui">
-      <UniqueIdentifier>{6a560b0c-0db8-451f-884d-37cbcfd46dce}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -57,12 +51,6 @@
     <ClCompile Include="source\Editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\GuiContext.cpp">
-      <Filter>Source Files\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\graphics\DynamicFrame.cpp">
-      <Filter>Source Files\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="source\graphics\ImGuiRenderer.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
@@ -85,12 +73,6 @@
     </ClInclude>
     <ClInclude Include="include\Editor.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\gui\GuiContext.hpp">
-      <Filter>Header Files\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="include\graphics\DynamicFrame.hpp">
-      <Filter>Header Files\graphics</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\ImGuiRenderer.hpp">
       <Filter>Header Files\graphics</Filter>

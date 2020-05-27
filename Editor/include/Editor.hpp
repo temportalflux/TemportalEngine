@@ -2,14 +2,6 @@
 
 #include "TemportalEnginePCH.hpp"
 
-//#include "dependency/SDL.hpp"
-//#include "types/integer.h"
-//#include "graphics/VulkanInstance.hpp"
-//#include "gui/GuiContext.hpp"
-
-//#include <unordered_map>
-//#include <vulkan/vulkan.hpp>
-
 NS_ENGINE
 class Engine;
 NS_END
