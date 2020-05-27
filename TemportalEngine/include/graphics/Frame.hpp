@@ -21,22 +21,22 @@ public:
 	Frame& operator=(Frame&& other);
 	~Frame();
 
-	void create(LogicalDevice const *pDevice);
-	void destroy();
+	virtual void create(LogicalDevice const *pDevice);
+	virtual void destroy();
 
 	void waitUntilNotInFlight() const;
 	vk::ResultValue<ui32> acquireNextImage(SwapChain const *pSwapChain) const;
 	void setImageViewInFlight(ImageView *pView);
 	void markNotInFlight();
-	void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
+	virtual void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
 	vk::Result present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
 
-private:
+protected:
 	LogicalDevice const *mpDevice;
 
 	vk::UniqueFence mFence_FrameInFlight; // active while the frame is being drawn to by GPU
-	vk::UniqueSemaphore mSemaphore_ImageAvailable; // signalled to indicate the graphics queue has grabbed the image and can begin drawing
-	vk::UniqueSemaphore mSemaphore_RenderComplete; // signalled when graphics queue has finished drawing and present queue can start
+	vk::UniqueSemaphore mSemaphore_ImageAvailable; // signaled to indicate the graphics queue has grabbed the image and can begin drawing
+	vk::UniqueSemaphore mSemaphore_RenderComplete; // signaled when graphics queue has finished drawing and present queue can start
 
 };
 

@@ -22,10 +22,11 @@ public:
 	CommandPool& setQueueFamily(QueueFamily queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
-	CommandPool& create(LogicalDevice const *pDevice);
+	CommandPool& create(LogicalDevice const *pDevice, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
 	void destroy();
 
 	std::vector<CommandBuffer> createCommandBuffers(uSize count) const;
+	void resetPool();
 
 private:
 	QueueFamily mQueueFamily;

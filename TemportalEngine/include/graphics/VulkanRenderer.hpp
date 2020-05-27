@@ -36,11 +36,15 @@ public:
 	void setPhysicalDevicePreference(PhysicalDevicePreference const &preference);
 	void setLogicalDeviceInfo(LogicalDeviceInfo const &info);
 	void setSwapChainInfo(SwapChainInfo const &info);
+	void setImageViewInfo(ImageViewInfo const &info);
 
 	void initializeDevices();
 	// Creates a swap chain, and all objects that depend on it
 	void setShaders(std::set<ShaderModule*> const &shaders);
 	void createRenderChain();
+
+	virtual void finalizeInitialization() {}
+	virtual void onInputEvent(void* evt) {}
 
 	/**
 	 * Marks the destination of renders "dirty", meaning that the drawable size has changed.
@@ -57,7 +61,7 @@ public:
 	 * THREADED
 	 * Called on the render thread to submit & present a frame to the surface.
 	 */
-	void drawFrame();
+	virtual void drawFrame();
 
 	/**
 	 * THREADED
@@ -65,9 +69,9 @@ public:
 	 */
 	void waitUntilIdle();
 
-	void invalidate();
+	virtual void invalidate();
 
-private:
+protected:
 	VulkanInstance *mpInstance;
 	Surface mSurface;
 
@@ -75,7 +79,6 @@ private:
 	PhysicalDevice mPhysicalDevice;
 	
 	LogicalDeviceInfo mLogicalDeviceInfo;
-	LogicalDevice mLogicalDevice;
 	std::unordered_map<QueueFamily, vk::Queue> mQueues;
 
 	// if the render chain is out of date and needs to be recreated on next `update`
@@ -83,9 +86,12 @@ private:
 	bool mbRenderChainDirty;
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
+	ImageViewInfo mImageViewInfo;
+	
 	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
 
+	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
@@ -99,16 +105,29 @@ private:
 
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
-
 	void destroyRenderChain();
-	void createRenderObjects();
-	void createCommandObjects();
 	void recordCommandBufferInstructions();
-	
+
 	bool acquireNextImage();
 	void prepareRender();
-	void render();
+	virtual void render();
 	bool present();
+
+protected:
+
+	// TODO: Move to private
+	LogicalDevice mLogicalDevice;
+
+	vk::Queue& getQueue(QueueFamily type);
+
+	virtual void createRenderObjects();
+	virtual void createCommandObjects();
+
+	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
+	virtual void createFrames(uSize viewCount);
+	virtual uSize getNumberOfFrames() const;
+	virtual graphics::Frame* getFrameAt(uSize idx);
+	virtual void destroyFrames();
 
 };
 

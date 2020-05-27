@@ -25,7 +25,7 @@ Window::Window(ui16 width, ui16 height)
 		mpTitle, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 		(int)mWidth, (int)mHeight,
 		// TODO: add initialization flag for resizable
-		SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE
+		SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI
 	);
 	if (!this->isValid())
 	{
@@ -113,19 +113,22 @@ bool Window::isPendingClose()
 void Window::onEvent(void* pSdlEvent)
 {
 	SDL_Event *evt = reinterpret_cast<SDL_Event*>(pSdlEvent);
-	assert(evt->type == SDL_WINDOWEVENT);
-	switch (evt->window.event)
+	if (evt->type == SDL_WINDOWEVENT && evt->window.windowID == this->getId())
 	{
-	case SDL_WINDOWEVENT_RESIZED:
-	{
-		this->mpRenderer->markRenderChainDirty();
-		break;
+		switch (evt->window.event)
+		{
+		case SDL_WINDOWEVENT_RESIZED:
+		{
+			this->mpRenderer->markRenderChainDirty();
+			break;
+		}
+		case SDL_WINDOWEVENT_CLOSE:
+			markShouldClose();
+			break;
+		default: break;
+		}
 	}
-	case SDL_WINDOWEVENT_CLOSE:
-		markShouldClose();
-		break;
-	default: break;
-	}
+	this->mpRenderer->onInputEvent(pSdlEvent);
 }
 
 void Window::update()

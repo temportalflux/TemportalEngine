@@ -16,8 +16,12 @@ class CommandBuffer
 
 public:
 	CommandBuffer() = default;
+	CommandBuffer(CommandBuffer &&other);
+	CommandBuffer& operator=(CommandBuffer &&other);
 
-	Command beginCommand();
+	void* get();
+
+	Command beginCommand(vk::CommandBufferUsageFlags flags = vk::CommandBufferUsageFlags());
 
 private:
 	vk::UniqueCommandBuffer mInternal;

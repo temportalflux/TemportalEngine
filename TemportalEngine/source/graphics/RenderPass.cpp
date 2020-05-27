@@ -16,6 +16,11 @@ RenderPass& RenderPass::initFromSwapChain(SwapChain const *pSwapChain)
 	return *this;
 }
 
+void* RenderPass::get()
+{
+	return &this->mRenderPass.get();
+}
+
 bool RenderPass::isValid() const
 {
 	return (bool)this->mRenderPass;

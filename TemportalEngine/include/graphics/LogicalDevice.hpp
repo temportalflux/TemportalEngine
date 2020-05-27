@@ -27,6 +27,8 @@ class LogicalDevice
 public:
 	LogicalDevice() = default;
 
+	void* get();
+
 	bool isValid() const;
 	void invalidate();
 

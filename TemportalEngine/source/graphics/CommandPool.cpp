@@ -21,10 +21,12 @@ bool CommandPool::isValid() const
 	return (bool)this->mInternal;
 }
 
-CommandPool& CommandPool::create(LogicalDevice const *pDevice)
+CommandPool& CommandPool::create(LogicalDevice const *pDevice, vk::CommandPoolCreateFlags flags)
 {
 	this->mInternal = (this->mpDevice = pDevice)->mDevice->createCommandPoolUnique(
-		vk::CommandPoolCreateInfo().setQueueFamilyIndex(this->mIdxQueueFamily)
+		vk::CommandPoolCreateInfo()
+		.setFlags(flags)
+		.setQueueFamilyIndex(this->mIdxQueueFamily)
 	);
 	return *this;
 }
@@ -47,4 +49,9 @@ std::vector<CommandBuffer> CommandPool::createCommandBuffers(uSize count) const
 		buffers[i].mInternal.swap(bufferHandles[i]);
 	}
 	return buffers;
+}
+
+void CommandPool::resetPool()
+{
+	this->mpDevice->mDevice->resetCommandPool(this->mInternal.get(), vk::CommandPoolResetFlags());
 }

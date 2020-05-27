@@ -10,6 +10,11 @@ LogicalDevice::LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDe
 	mDevice.swap(device);
 }
 
+void* LogicalDevice::get()
+{
+	return &this->mDevice.get();
+}
+
 bool LogicalDevice::isValid() const
 {
 	// Checks underlying structure for VK_NULL_HANDLE

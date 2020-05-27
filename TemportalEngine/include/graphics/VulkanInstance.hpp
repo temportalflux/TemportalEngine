@@ -26,6 +26,8 @@ class VulkanInstance
 public:
 	VulkanInstance();
 
+	void* get();
+
 	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
 	logging::Logger getLog() const;
 

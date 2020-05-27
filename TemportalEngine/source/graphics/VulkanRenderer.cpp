@@ -33,6 +33,11 @@ void VulkanRenderer::setSwapChainInfo(SwapChainInfo const &info)
 	mSwapChainInfo = info;
 }
 
+void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
+{
+	mImageViewInfo = info;
+}
+
 void VulkanRenderer::setShaders(std::set<ShaderModule*> const &shaders)
 {
 	for (auto& shaderPtr : shaders)
@@ -48,6 +53,11 @@ void VulkanRenderer::initializeDevices()
 	this->mQueues = this->mLogicalDevice.findQueues(mLogicalDeviceInfo.getQueues());
 }
 
+vk::Queue& VulkanRenderer::getQueue(QueueFamily type)
+{
+	return this->mQueues[type];
+}
+
 void VulkanRenderer::pickPhysicalDevice()
 {
 	auto optPhysicalDevice = mpInstance->pickPhysicalDevice(mPhysicalDevicePreference, &mSurface);
@@ -61,8 +71,6 @@ void VulkanRenderer::pickPhysicalDevice()
 
 void VulkanRenderer::invalidate()
 {
-	this->mFrames.clear();
-
 	this->destroyRenderChain();
 
 	this->mQueues.clear();
@@ -79,10 +87,13 @@ void VulkanRenderer::createRenderChain()
 {
 	this->createRenderObjects();
 	this->createCommandObjects();
+	this->createFrames(this->mImageViews.size());
 }
 
 void VulkanRenderer::destroyRenderChain()
 {
+	this->destroyFrames();
+
 	// Command Objects
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
@@ -103,15 +114,7 @@ void VulkanRenderer::createRenderObjects()
 		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&mLogicalDevice, &mSurface);
 
-	this->mImageViews = this->mSwapChain.createImageViews({
-		vk::ImageViewType::e2D,
-		{
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity
-		}
-	});
+	this->mImageViews = this->mSwapChain.createImageViews(mImageViewInfo);
 
 	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
 }
@@ -137,13 +140,30 @@ void VulkanRenderer::createCommandObjects()
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
 	
 	this->recordCommandBufferInstructions();
+}
 
-	// TODO: make the number of frames not a magic number
-	this->mFrames.resize(/*max number of frames*/ 3);
+void VulkanRenderer::createFrames(uSize viewCount)
+{
+	this->mFrames.resize(viewCount);
 	for (auto& frame : this->mFrames)
 	{
 		frame.create(&this->mLogicalDevice);
 	}
+}
+
+uSize VulkanRenderer::getNumberOfFrames() const
+{
+	return this->mFrames.size();
+}
+
+graphics::Frame* VulkanRenderer::getFrameAt(uSize idx)
+{
+	return &this->mFrames[idx];
+}
+
+void VulkanRenderer::destroyFrames()
+{
+	this->mFrames.clear();
 }
 
 void VulkanRenderer::recordCommandBufferInstructions()
@@ -163,18 +183,21 @@ void VulkanRenderer::recordCommandBufferInstructions()
 void VulkanRenderer::drawFrame()
 {
 	if (this->mbRenderChainDirty) return;
-	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
-	currentFrame.waitUntilNotInFlight();
+	
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
+	currentFrame->waitUntilNotInFlight();
+	
 	if (!this->acquireNextImage()) return;
 	this->prepareRender();
 	this->render();
 	if (!this->present()) return;
-	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->mFrames.size();
+	
+	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->getNumberOfFrames();
 }
 
 void VulkanRenderer::prepareRender()
 {
-	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 
 	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
 	auto& imageView = this->mImageViews[mIdxCurrentImage];
@@ -184,19 +207,19 @@ void VulkanRenderer::prepareRender()
 	}
 
 	// Ensure that the image view is marked as in-flight as long as the frame is
-	currentFrame.setImageViewInFlight(&imageView);
+	currentFrame->setImageViewInFlight(&imageView);
 
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
-	currentFrame.markNotInFlight();
+	currentFrame->markNotInFlight();
 }
 
 bool VulkanRenderer::acquireNextImage()
 {
-	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 
 	try
 	{
-		auto [result, idxImage] = currentFrame.acquireNextImage(&this->mSwapChain);
+		auto [result, idxImage] = currentFrame->acquireNextImage(&this->mSwapChain);
 		this->mIdxCurrentImage = idxImage;
 	}
 	catch (vk::OutOfDateKHRError const &e)
@@ -212,18 +235,18 @@ bool VulkanRenderer::acquireNextImage()
 
 void VulkanRenderer::render()
 {
-	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	// Submit the command buffer to the graphics queue
-	auto& commandBuffer = this->mCommandBuffers[mIdxCurrentImage];
-	currentFrame.submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
+	auto& commandBuffer = this->mCommandBuffers[this->mIdxCurrentImage];
+	currentFrame->submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
 }
 
 bool VulkanRenderer::present()
 {
-	auto& currentFrame = this->mFrames[this->mIdxCurrentFrame];
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
 	{
-		auto result = currentFrame.present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
+		auto result = currentFrame->present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
 		if (result == vk::Result::eSuboptimalKHR)
 		{
 			if (!this->mbRenderChainDirty) this->markRenderChainDirty();

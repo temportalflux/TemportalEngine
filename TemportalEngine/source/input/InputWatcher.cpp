@@ -4,8 +4,9 @@
 
 using namespace input;
 
-InputWatcher::InputWatcher()
+InputWatcher::InputWatcher(std::optional<EventDelegateRaw> rawCallback)
 {
+	mDelegateRaw = rawCallback;
 	mJoystickCount = 0;
 }
 
@@ -18,11 +19,6 @@ InputWatcher::~InputWatcher()
 void InputWatcher::setInputEventCallback(EventDelegateInput callback)
 {
 	this->mDelegateInput = callback;
-}
-
-void InputWatcher::setWindowEventCallback(EventDelegateWindow callback)
-{
-	this->mDelegateWindow = callback;
 }
 
 void InputWatcher::initializeJoysticks(ui8 count)
@@ -155,21 +151,16 @@ void InputWatcher::pollInput()
 void InputWatcher::processEvent(void* pEvt)
 {
 	SDL_Event *evt = reinterpret_cast<SDL_Event*>(pEvt);
-	switch (evt->type)
+	if (this->mDelegateRaw.has_value())
 	{
-	case SDL_WINDOWEVENT:
-		if (this->mDelegateWindow)
-			this->mDelegateWindow(evt->window.windowID, evt);
-		break;
-	default:
-		if (this->mDelegateInput)
+		this->mDelegateRaw.value()(pEvt);
+	}
+	if (this->mDelegateInput)
+	{
+		input::Event inputEvent;
+		if (makeInputEvent(*evt, inputEvent))
 		{
-			input::Event inputEvent;
-			if (makeInputEvent(*evt, inputEvent))
-			{
-				this->mDelegateInput(inputEvent);
-			}
+			this->mDelegateInput(inputEvent);
 		}
-		break;
 	}
 }

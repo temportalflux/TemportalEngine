@@ -19,6 +19,11 @@ VulkanInstance::VulkanInstance()
 	setValidationLayers(std::nullopt);
 }
 
+void* VulkanInstance::get()
+{
+	return &this->mInstance.get();
+}
+
 VulkanInstance& VulkanInstance::createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug)
 {
 	mUseVulkanDebugMessenger = bLogVulkanDebug;

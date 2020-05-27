@@ -8,6 +8,7 @@
 #include "types/integer.h"
 
 #include <functional>
+#include <optional>
 
 NS_INPUT
 
@@ -15,7 +16,7 @@ class TEMPORTALENGINE_API InputWatcher
 {
 public:
 	typedef std::function<void(Event const &evt)> EventDelegateInput;
-	typedef std::function<void(ui32 windowId, void* sdlEvent)> EventDelegateWindow;
+	typedef std::function<void(void* sdlEvent)> EventDelegateRaw;
 
 private:
 
@@ -26,17 +27,16 @@ private:
 	ui8 mJoystickCount;
 	void* mpJoystickHandles[MAX_JOYSTICK_COUNT];
 
+	std::optional<EventDelegateRaw> mDelegateRaw;
 	EventDelegateInput mDelegateInput;
-	EventDelegateWindow mDelegateWindow;
 
 	void processEvent(void* evt);
 
 public:
-	InputWatcher();
+	InputWatcher(std::optional<EventDelegateRaw> rawCallback = std::nullopt);
 	~InputWatcher();
 
 	void setInputEventCallback(EventDelegateInput callback);
-	void setWindowEventCallback(EventDelegateWindow callback);
 	
 	void initializeJoysticks(ui8 count);
 	void pollInput();

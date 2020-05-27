@@ -4,8 +4,9 @@
 int main()
 {
 	auto editor = Editor();
-	editor.openWindow();
-	editor.run();
-	editor.closeWindow();
+	if (editor.setup())
+	{
+		editor.run();
+	}
 	return 0;
 }

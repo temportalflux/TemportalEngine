@@ -63,6 +63,12 @@
     <ClCompile Include="source\graphics\DynamicFrame.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="source\graphics\ImGuiRenderer.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\graphics\ImGuiFrame.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -84,6 +90,12 @@
       <Filter>Header Files\gui</Filter>
     </ClInclude>
     <ClInclude Include="include\graphics\DynamicFrame.hpp">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\ImGuiRenderer.hpp">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\graphics\ImGuiFrame.hpp">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>

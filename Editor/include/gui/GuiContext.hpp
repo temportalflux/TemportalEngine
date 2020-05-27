@@ -9,6 +9,7 @@
 #include "graphics/SwapChain.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/DynamicFrame.hpp"
+#include "graphics/ImGuiRenderer.hpp"
 
 #include <vector>
 #include <examples/imgui_impl_vulkan.h>
@@ -23,6 +24,8 @@ class GuiContext : public graphics::VulkanApi
 {
 
 public:
+	GuiContext() = default;
+
 	void initContext();
 	void initWindow(void* handle);
 	void initVulkan(graphics::VulkanInstance const *pInstance);
@@ -37,6 +40,8 @@ public:
 
 private:
 	ImGui_ImplVulkan_InitInfo mInfo;
+
+	graphics::ImGuiRenderer *mpRenderer;
 
 	graphics::Surface mSurface;
 	graphics::PhysicalDevice mPhysicalDevice;

@@ -75,13 +75,11 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	mEngineInfo.title = "TemportalEngine";
 	mEngineInfo.version = version;
 
-	this->mpInputWatcher->setInputEventCallback(std::bind(
-		&Engine::enqueueInput, this,
-		std::placeholders::_1
+	this->mpInputWatcher[0] = input::InputWatcher(std::bind(
+		&Engine::onRawEvent, this, std::placeholders::_1
 	));
-	this->mpInputWatcher->setWindowEventCallback(std::bind(
-		&Engine::onWindowEvent, this,
-		std::placeholders::_1, std::placeholders::_2
+	this->mpInputWatcher->setInputEventCallback(std::bind(
+		&Engine::enqueueInput, this, std::placeholders::_1
 	));
 
 	this->mpInputQueue = this->alloc<input::Queue>();
@@ -295,12 +293,11 @@ void Engine::processInput(input::Event const & evt)
 
 }
 
-void Engine::onWindowEvent(ui32 windowId, void *pEvt)
+void Engine::onRawEvent(void *pEvt)
 {
-	auto iter = this->mWindowPtrs.find(windowId);
-	if (iter != this->mWindowPtrs.end())
+	for (auto [id, pWindow] : this->mWindowPtrs)
 	{
-		iter->second->onEvent(pEvt);
+		pWindow->onEvent(pEvt);
 	}
 }
 

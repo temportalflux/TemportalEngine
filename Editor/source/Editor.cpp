@@ -1,167 +1,94 @@
 #include "Editor.hpp"
 
-#include "types/real.h"
-#include "ExecutableInfo.hpp"
-#include "version.h"
-
-#include <time.h>
-#include <SDL.h>
-#include <SDL_vulkan.h>
-
-SDL_Window* GetSDLWindow(void* handle)
-{
-	return reinterpret_cast<SDL_Window*>(handle);
-}
-
-std::vector<const char*> Editor::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+#include "Engine.hpp"
+#include "Window.hpp"
+#include "graphics/ImGuiRenderer.hpp"
 
 Editor::Editor()
-	: LogSystem(logging::LogSystem())
-	, mIsRunning(true)
 {
-	// TODO: Unify versions in a header/config file
+	std::string logFileName = "TemportalEngine_Editor_" + logging::LogSystem::getCurrentTimeString() + ".log";
+	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
+
+	auto pEngine = engine::Engine::Create();
+
 	utility::SExecutableInfo appInfo = { "Editor", TE_MAKE_VERSION(0, 0, 1) };
-	utility::SExecutableInfo engineInfo = { "TemportalEngine", TE_MAKE_VERSION(0, 0, 1) };
-	std::string logFileName = "";
-	logFileName += engineInfo.title;
-	logFileName += "_";
-	logFileName += appInfo.title;
-	logFileName += "_";
-	logFileName += logging::LogSystem::getCurrentTimeString();
-	logFileName += ".log";
-	this->LogSystem.open(logFileName.c_str());
-
-	this->initializeDependencies();
-
-	this->mVulkanInstance.setApplicationInfo(appInfo);
-	this->mVulkanInstance.setEngineInfo(engineInfo);
-	this->mVulkanInstance.createLogger(&this->LogSystem, /*vulkan debug*/ true);
-
+	pEngine->setApplicationInfo(&appInfo);
 }
 
 Editor::~Editor()
 {
-	this->closeWindow();
-	if (this->mVulkanInstance.isValid())
-	{
-		this->mVulkanInstance.destroy();
-	}
-
-	this->terminateDependencies();
-	this->LogSystem.close();
+	engine::Engine::Destroy();
+	engine::Engine::LOG_SYSTEM.close();
 }
 
-bool Editor::initializeDependencies()
+bool Editor::setup()
 {
-	if (!mDependencySDL->initialize()) return false;
+	auto pEngine = engine::Engine::Get();
+	if (!pEngine->initializeDependencies()) return false;
+	if (!pEngine->setupVulkan()) return false;
 	return true;
-}
-
-void Editor::terminateDependencies()
-{
-	if (mDependencySDL->isInitialized())
-	{
-		mDependencySDL->terminate();
-	}
-}
-
-void Editor::openWindow()
-{
-	this->createWindow();
-	
-	// Initialize the vulkan instance
-	this->mVulkanInstance.setRequiredExtensions(this->querySDLVulkanExtensions());
-	this->mVulkanInstance.setValidationLayers(VulkanValidationLayers);
-	this->mVulkanInstance.initialize();
-
-	this->createGui();
-}
-
-void Editor::closeWindow()
-{
-	if (this->mpWindowHandle != nullptr)
-	{
-		this->mGui.destroy(&this->mVulkanInstance);
-	}
-	this->destroyWindow();
-}
-
-void Editor::createWindow()
-{
-	// TODO: Allow resizing, but that means re-creating the swapchain when it happens
-	auto flags = (SDL_WindowFlags)(SDL_WINDOW_VULKAN);// | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	this->mpWindowHandle = SDL_CreateWindow("TemportalEngine Editor",
-		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-		1280, 720,
-		flags
-	);
-}
-
-void Editor::destroyWindow()
-{
-	if (this->mpWindowHandle != nullptr)
-	{
-		SDL_DestroyWindow(GetSDLWindow(this->mpWindowHandle));
-		this->mpWindowHandle = nullptr;
-	}
-}
-
-std::vector<const char*> Editor::querySDLVulkanExtensions() const
-{
-	ui32 extCount = 0;
-	std::vector<const char*> vulkanExtensionsForSDL = {};
-	auto result = SDL_Vulkan_GetInstanceExtensions(GetSDLWindow(this->mpWindowHandle), &extCount, NULL);
-	if (!result)
-	{
-		//LogWindow.log(logging::ECategory::LOGERROR, "SDL-Vulkan: Failed to get required vulkan extension count.");
-	}
-	else
-	{
-		//LogWindow.log(logging::ECategory::LOGDEBUG, "SDL-Vulkan: Found %i extensions", extCount);
-		vulkanExtensionsForSDL.resize(extCount);
-		if (!SDL_Vulkan_GetInstanceExtensions(GetSDLWindow(this->mpWindowHandle), &extCount, vulkanExtensionsForSDL.data()))
-		{
-			//LogWindow.log(logging::ECategory::LOGERROR, "Failed to get required vulkan extensions for SDL.");
-		}
-	}
-	return vulkanExtensionsForSDL;
-}
-
-void Editor::createGui()
-{
-	this->mGui.initContext();
-	this->mGui.initWindow(this->mpWindowHandle);
-	this->mGui.initVulkan(&this->mVulkanInstance);
-	this->mGui.submitFonts();
 }
 
 void Editor::run()
 {
-	while (mIsRunning)
-	{
-		this->pollInput();
-		this->mGui.render();
-	}
-	this->mGui.waitUntilIdle();
+	auto pEngine = engine::Engine::Get();
+
+	auto pWindow = pEngine->createWindow(800, 600);
+	if (pWindow == nullptr) return;
+	
+	// In original code, this was before vulkan initialization. Does it work if its after the vulkan instance? Currently lives inside ImGuiRenderer
+	//ImGui_ImplSDL2_InitForVulkan(reinterpret_cast<SDL_Window*>(handle));
+
+	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+	auto renderer = graphics::ImGuiRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+	this->initializeRenderer(&renderer);
+	renderer.finalizeInitialization();
+
+	pWindow->setRenderer(&renderer);
+
+	pEngine->run(pWindow);
+
+	renderer.invalidate();
+	pEngine->destroyWindow(pWindow);
 }
 
-void Editor::pollInput()
+void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)
 {
-	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
-		this->mGui.processInput(&event);
-		if (event.type == SDL_QUIT)
+	pRenderer->setPhysicalDevicePreference(
+		graphics::PhysicalDevicePreference()
+		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
+		.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
+	);
+	pRenderer->setLogicalDeviceInfo(
+		graphics::LogicalDeviceInfo()
+		.addQueueFamily(graphics::QueueFamily::eGraphics)
+		.addQueueFamily(graphics::QueueFamily::ePresentation)
+		.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+		.setValidationLayers(engine::Engine::VulkanValidationLayers)
+	);
+	pRenderer->setSwapChainInfo(
+		graphics::SwapChainInfo()
+		.addFormatPreference(vk::Format::eB8G8R8A8Unorm)
+		.addFormatPreference(vk::Format::eR8G8B8A8Unorm)
+		.addFormatPreference(vk::Format::eB8G8R8Unorm)
+		.addFormatPreference(vk::Format::eR8G8B8Unorm)
+		.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+#ifdef IMGUI_UNLIMITED_FRAME_RATE
+		.addPresentModePreference(vk::PresentModeKHR::eMailbox)
+		.addPresentModePreference(vk::PresentModeKHR::eImmediate)
+#endif
+		.addPresentModePreference(vk::PresentModeKHR::eFifo)
+	);
+	pRenderer->setImageViewInfo({
+		vk::ImageViewType::e2D,
 		{
-			mIsRunning = false;
+			vk::ComponentSwizzle::eR,
+			vk::ComponentSwizzle::eG,
+			vk::ComponentSwizzle::eB,
+			vk::ComponentSwizzle::eA
 		}
-		/*
-		if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_RESIZED && event.window.windowID == SDL_GetWindowID(window))
-		{
-			g_SwapChainResizeWidth = (int)event.window.data1;
-			g_SwapChainResizeHeight = (int)event.window.data2;
-			g_SwapChainRebuild = true;
-		}
-		//*/
-	}
+	});
+
+	pRenderer->initializeDevices();
+	pRenderer->createRenderChain();
 }

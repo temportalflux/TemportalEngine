@@ -22,6 +22,11 @@ PhysicalDevice::PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface con
 {
 }
 
+void* PhysicalDevice::get()
+{
+	return &this->mDevice;
+}
+
 void PhysicalDevice::invalidate()
 {
 	mDevice = vk::PhysicalDevice(); // no longer valid

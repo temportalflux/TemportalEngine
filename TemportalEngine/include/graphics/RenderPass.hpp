@@ -24,6 +24,8 @@ public:
 
 	RenderPass& initFromSwapChain(SwapChain const *pSwapChain);
 
+	void* get();
+
 	bool isValid() const;
 	RenderPass& create(LogicalDevice const *pDevice);
 	void destroy();

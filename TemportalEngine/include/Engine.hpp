@@ -182,7 +182,7 @@ private:
 #pragma region Input
 	void pollInput();
 	void enqueueInput(struct input::Event const &evt);
-	void onWindowEvent(ui32 windowId, void *pEvt);
+	void onRawEvent(void *pEvt);
 	void processInput(struct input::Event const &evt);
 #pragma endregion
 

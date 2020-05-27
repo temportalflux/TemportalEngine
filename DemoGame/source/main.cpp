@@ -130,6 +130,15 @@ int main()
 		.addPresentModePreference(vk::PresentModeKHR::eMailbox)
 		.addPresentModePreference(vk::PresentModeKHR::eFifo)
 	);
+	renderer.setImageViewInfo({
+		vk::ImageViewType::e2D,
+		{
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity
+		}
+	});
 	
 	// Initialize required api connections
 	renderer.initializeDevices();
@@ -145,6 +154,7 @@ int main()
 
 	// Initialize the rendering api connections
 	renderer.createRenderChain();
+	renderer.finalizeInitialization();
 
 	// Give the window its renderer
 	pWindow->setRenderer(&renderer);
