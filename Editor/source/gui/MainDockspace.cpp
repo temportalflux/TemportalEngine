@@ -1,17 +1,24 @@
 #include "gui/MainDockspace.hpp"
 
+#include "graphics/ImGuiRenderer.hpp"
+
 #include <imgui.h>
 
 using namespace gui;
 
-MainDockspace::MainDockspace()
-	: mbIsOpen(true)
+MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), mId(id)
 {
+	this->mAssetBrowser = gui::AssetBrowser("Asset Browser");
 }
 
-ui32 MainDockspace::getId() const
+void MainDockspace::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
 {
-	return ImGui::GetID("Editor::MainDockspace");
+	pRenderer->addGui(&this->mAssetBrowser);
+}
+
+void MainDockspace::onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer)
+{
+	pRenderer->removeGui(&this->mAssetBrowser);
 }
 
 i32 MainDockspace::getFlags() const
@@ -22,12 +29,7 @@ i32 MainDockspace::getFlags() const
 		| (ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
 }
 
-bool MainDockspace::isOpen() const
-{
-	return this->mbIsOpen;
-}
-
-void MainDockspace::makeGui()
+bool MainDockspace::beginView()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	assert(io.ConfigFlags & ImGuiConfigFlags_DockingEnable);
@@ -39,18 +41,29 @@ void MainDockspace::makeGui()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	ImGui::Begin("Main Dockspace", &this->mbIsOpen, getFlags());
+	auto isOpen = IGui::beginView();
 	ImGui::PopStyleVar(3);
 
-	ImGui::DockSpace(this->getId(), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+	return isOpen;
+}
+
+void MainDockspace::renderView()
+{
+	ImGui::DockSpace(ImGui::GetID(this->mId.c_str()), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
 	if (ImGui::BeginMenuBar())
 	{
+		if (ImGui::BeginMenu("Windows"))
+		{
+			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), true))
+			{
+				this->mAssetBrowser.openOrFocus();
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMenuBar();
 	}
-
-	ImGui::End();
-
+	/*
 	ImGui::Begin("Hello, world!");
 	ImGui::Text("This is some useful text.");
 	ImGui::Button("Button");
@@ -59,4 +72,5 @@ void MainDockspace::makeGui()
 	ImGui::Begin("Window 2");
 	ImGui::Text("This is some meaningless text.");
 	ImGui::End();
+	 */
 }

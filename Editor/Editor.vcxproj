@@ -168,6 +168,8 @@
     <ClCompile Include="source\Editor.cpp" />
     <ClCompile Include="source\graphics\ImGuiFrame.cpp" />
     <ClCompile Include="source\graphics\ImGuiRenderer.cpp" />
+    <ClCompile Include="source\gui\AssetBrowser.cpp" />
+    <ClCompile Include="source\gui\IGui.cpp" />
     <ClCompile Include="source\gui\MainDockspace.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
@@ -178,6 +180,7 @@
     <ClInclude Include="include\Editor.hpp" />
     <ClInclude Include="include\graphics\ImGuiFrame.hpp" />
     <ClInclude Include="include\graphics\ImGuiRenderer.hpp" />
+    <ClInclude Include="include\gui\AssetBrowser.hpp" />
     <ClInclude Include="include\gui\IGui.hpp" />
     <ClInclude Include="include\gui\MainDockspace.hpp" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />

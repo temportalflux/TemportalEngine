@@ -1,9 +1,8 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
-
 #include "gui/IGui.hpp"
-#include "types/integer.h"
+
+#include "gui/AssetBrowser.hpp"
 
 NS_GUI
 
@@ -11,15 +10,20 @@ class MainDockspace : public IGui
 {
 
 public:
-	MainDockspace();
+	MainDockspace() = default;
+	MainDockspace(std::string id, std::string title);
 
-	void makeGui() override;
-	bool isOpen() const;
+	void onAddedToRenderer(graphics::ImGuiRenderer *pRenderer);
+	void onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer);
+
+protected:
+	std::string mId;
+	i32 getFlags() const override;
+	bool beginView() override;
+	void renderView() override;
 
 private:
-	bool mbIsOpen;
-	ui32 getId() const;
-	i32 getFlags() const;
+	gui::AssetBrowser mAssetBrowser;
 
 };
 

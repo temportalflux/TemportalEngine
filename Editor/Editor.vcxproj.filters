@@ -66,6 +66,12 @@
     <ClCompile Include="source\gui\MainDockspace.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\IGui.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\AssetBrowser.cpp">
+      <Filter>Source Files\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -96,6 +102,9 @@
       <Filter>Header Files\gui</Filter>
     </ClInclude>
     <ClInclude Include="include\gui\MainDockspace.hpp">
+      <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\AssetBrowser.hpp">
       <Filter>Header Files\gui</Filter>
     </ClInclude>
   </ItemGroup>

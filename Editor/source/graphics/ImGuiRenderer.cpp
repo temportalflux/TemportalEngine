@@ -149,11 +149,13 @@ void ImGuiRenderer::submitFonts()
 void ImGuiRenderer::addGui(gui::IGui *gui)
 {
 	this->mGuis.insert(gui);
+	gui->onAddedToRenderer(this);
 }
 
 void ImGuiRenderer::removeGui(gui::IGui *gui)
 {
 	this->mGuis.erase(gui);
+	gui->onRemovedFromRenderer(this);
 }
 
 void ImGuiRenderer::onInputEvent(void* evt)

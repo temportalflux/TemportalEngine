@@ -16,6 +16,9 @@ Editor::Editor()
 
 	utility::SExecutableInfo appInfo = { "Editor", TE_MAKE_VERSION(0, 0, 1) };
 	pEngine->setApplicationInfo(&appInfo);
+
+	this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");
+	this->mDockspace.open();
 }
 
 Editor::~Editor()
