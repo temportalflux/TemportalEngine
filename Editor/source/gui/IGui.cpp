@@ -42,8 +42,10 @@ void IGui::openOrFocus()
 void IGui::makeGui()
 {
 	if (!this->isOpen()) return;
-	if (!this->beginView()) return;
-	this->renderView();
+	if (this->beginView())
+	{
+		this->renderView();
+	}
 	this->endView();
 }
 

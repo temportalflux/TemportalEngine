@@ -5,6 +5,7 @@
 #include <fstream>
 #include <stdarg.h>
 #include <time.h>
+#include <array>
 
 // Engine ---------------------------------------------------------------------
 #include "math/compare.h"
@@ -48,9 +49,22 @@ std::string LogSystem::getCurrentTimeString()
 	// H = ##
 	// M = ##
 	// S = ##
-	char timeStr[19];
+	char timeStr[20];
 	strftime(timeStr, sizeof(timeStr), "%Y-%m-%d-%H-%M-%S", &timeinfo);
 	return timeStr;
+}
+
+
+std::string LogSystem::getCategoryShortString(ECategory category)
+{
+	switch (category)
+	{
+	case ECategory::LOGINFO: return " INFO ";
+	case ECategory::LOGWARN: return " WARN ";
+	case ECategory::LOGERROR: return "ERROR";
+	case ECategory::LOGDEBUG: return "DEBUG";
+	default: return "?????";
+	}
 }
 
 void LogSystem::open(char const * const filePath)
@@ -80,10 +94,11 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 		break;
 	}
 
+	// TODO: Call getCurrentTimeString instead
 	time_t currentTime = time(nullptr);
 	struct tm timeinfo;
 	localtime_s(&timeinfo, &currentTime);
-	char timeStr[19];
+	char timeStr[20];
 	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", &timeinfo);
 
 	va_list args;
@@ -95,13 +110,33 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 	printLog("\n");
 	mpLock->unlock();
 
+	std::array<char, 256> logContentData;
+	logContentData.fill('\0');
+	vsnprintf(logContentData.data(), logContentData.size(), format, args);
+	std::string logContent(logContentData.begin(), std::find_if(logContentData.begin(), logContentData.end(), [](int c) { return c == '\0'; }));
+
 	va_end(args);
+
+	for (const auto& listener : this->mListeners)
+	{
+		listener(timeStr, category, pLogger->mpTitle, logContent);
+	}
 }
 
 bool LogSystem::close()
 {
 	assert(mpFileStream != 0);
 	return fclose((FILE*)mpFileStream) == 0;
+}
+
+LogSystem::ListenerHandle LogSystem::addListener(Listener value)
+{
+	return this->mListeners.insert(this->mListeners.end(), value);
+}
+
+void LogSystem::removeListener(ListenerHandle &handle)
+{
+	this->mListeners.erase(handle);
 }
 
 // Logger ---------------------------------------------------------------------

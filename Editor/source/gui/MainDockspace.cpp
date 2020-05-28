@@ -9,16 +9,21 @@ using namespace gui;
 MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), mId(id)
 {
 	this->mAssetBrowser = gui::AssetBrowser("Asset Browser");
+	this->mLogEditor = gui::Log("Log (Editor)");
 }
 
 void MainDockspace::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
 {
+	IGui::onAddedToRenderer(pRenderer);
 	pRenderer->addGui(&this->mAssetBrowser);
+	pRenderer->addGui(&this->mLogEditor);
 }
 
 void MainDockspace::onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer)
 {
+	IGui::onRemovedFromRenderer(pRenderer);
 	pRenderer->removeGui(&this->mAssetBrowser);
+	pRenderer->removeGui(&this->mLogEditor);
 }
 
 i32 MainDockspace::getFlags() const
@@ -55,22 +60,10 @@ void MainDockspace::renderView()
 	{
 		if (ImGui::BeginMenu("Windows"))
 		{
-			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), true))
-			{
-				this->mAssetBrowser.openOrFocus();
-			}
+			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), true)) this->mAssetBrowser.openOrFocus();
+			if (ImGui::MenuItem("Log (Editor)", "", this->mLogEditor.isOpen(), true)) this->mLogEditor.openOrFocus();
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
 	}
-	/*
-	ImGui::Begin("Hello, world!");
-	ImGui::Text("This is some useful text.");
-	ImGui::Button("Button");
-	ImGui::End();
-
-	ImGui::Begin("Window 2");
-	ImGui::Text("This is some meaningless text.");
-	ImGui::End();
-	 */
 }

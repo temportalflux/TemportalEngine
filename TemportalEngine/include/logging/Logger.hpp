@@ -8,6 +8,7 @@
 #include "thread/MutexLock.hpp"
 
 #include <string>
+#include <functional>
 
 // ----------------------------------------------------------------------------
 NS_LOGGING
@@ -41,6 +42,9 @@ typedef char const * Message;
 */
 class TEMPORTALENGINE_API LogSystem
 {
+public:
+	typedef std::function<void(std::string time, ECategory category, std::string loggerName, std::string content)> Listener;
+	typedef std::vector<Listener>::iterator ListenerHandle;
 
 private:
 	
@@ -49,6 +53,8 @@ private:
 
 	/** The standard lib file stream */
 	void* mpFileStream;
+
+	std::vector<Listener> mListeners;
 
 	/**
 	* Writes to the active output streams using known array data.
@@ -65,6 +71,7 @@ public:
 	LogSystem();
 
 	static std::string getCurrentTimeString();
+	static std::string getCategoryShortString(ECategory cate);
 	
 	/**
 	* Opens a file stream for writing.
@@ -80,6 +87,9 @@ public:
 	* Closes the active file stream.
 	*/
 	bool close();
+
+	ListenerHandle addListener(Listener value);
+	void removeListener(ListenerHandle &handle);
 
 };
 

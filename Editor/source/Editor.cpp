@@ -58,6 +58,8 @@ void Editor::run()
 	}
 	pEngine->joinThreads();
 
+	renderer.removeGui(&this->mDockspace);
+
 	renderer.invalidate();
 	pEngine->destroyWindow(pWindow);
 }

@@ -3,6 +3,7 @@
 #include "gui/IGui.hpp"
 
 #include "gui/AssetBrowser.hpp"
+#include "gui/Log.hpp"
 
 NS_GUI
 
@@ -24,6 +25,7 @@ protected:
 
 private:
 	gui::AssetBrowser mAssetBrowser;
+	gui::Log mLogEditor;
 
 };
 
