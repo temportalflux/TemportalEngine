@@ -5,3 +5,6 @@
 [submodule "libs/Vulkan"]
 	path = libs/Vulkan
 	url = git@github.com:KhronosGroup/Vulkan-Headers.git
+[submodule "libs/cereal"]
+	path = libs/cereal
+	url = https://github.com/USCiLab/cereal

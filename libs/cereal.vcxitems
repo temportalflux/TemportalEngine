@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{2ab47aa3-ab49-45c6-9969-d08fe23f6ab8}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\access.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\adapters.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\binary.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\json.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\portable_binary.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\xml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\cereal.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\helpers.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\polymorphic_impl.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\polymorphic_impl_fwd.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\static_object.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\traits.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\util.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\base64.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\allocators.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\document.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\encodedstream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\encodings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\error\en.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\error\error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\filereadstream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\filewritestream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\fwd.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\itoa.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\meta.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\pow10.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\regex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\stack.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\strtod.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\swap.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\memorybuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\memorystream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\pointer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\prettywriter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\rapidjson.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\reader.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\schema.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\stream.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\stringbuffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\writer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_iterators.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_print.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_utils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\macros.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\specialize.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\array.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\atomic.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\base_class.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\bitset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\boost_variant.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\chrono.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\common.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\complex.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\concepts\pair_associative_container.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\deque.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\forward_list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\functional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\map.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\memory.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\polymorphic.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\queue.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\set.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\stack.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\string.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\tuple.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\unordered_map.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\unordered_set.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\utility.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\valarray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\variant.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\vector.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\version.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\manual.html" />
+  </ItemGroup>
+</Project>

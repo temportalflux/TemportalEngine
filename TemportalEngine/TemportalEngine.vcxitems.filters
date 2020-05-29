@@ -34,6 +34,9 @@
     <Filter Include="graphics">
       <UniqueIdentifier>{1385d2fa-e688-4a45-80eb-782d1df3b0c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="asset">
+      <UniqueIdentifier>{58e5db61-1df6-43d7-8184-b20f84cb9bcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -169,6 +172,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageView.cpp">
       <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp">
+      <Filter>asset</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -367,5 +373,14 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetId.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

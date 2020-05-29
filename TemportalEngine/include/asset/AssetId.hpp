@@ -9,6 +9,9 @@ NS_ASSET
 struct AssetId
 {
 
+	/**
+	 * An identifier of 
+	 */
 	std::string Type;
 
 	/**
