@@ -85,6 +85,8 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 	this->mInputHandle = this->mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
+
+	this->mAssetManager.queryAssetTypes();
 }
 
 Engine::~Engine()

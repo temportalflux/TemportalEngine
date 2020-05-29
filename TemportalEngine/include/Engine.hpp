@@ -13,6 +13,7 @@
 #include "version.h"
 
 #include "logging/Logger.hpp"
+#include "asset/AssetManager.hpp"
 #include "ExecutableInfo.hpp"
 
 #include <optional>
@@ -160,6 +161,8 @@ private:
 #pragma region Dependencies
 	dependency::SDL mpDepSDL[1];
 #pragma endregion
+
+	asset::AssetManager mAssetManager;
 	
 #pragma region Windows
 	std::map<ui32, Window*> mWindowPtrs;
