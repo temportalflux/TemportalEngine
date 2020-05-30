@@ -8,3 +8,6 @@
 [submodule "libs/cereal"]
 	path = libs/cereal
 	url = https://github.com/USCiLab/cereal
+[submodule "libs/glm"]
+	path = libs/glm
+	url = git@github.com:g-truc/glm.git
