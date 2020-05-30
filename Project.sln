@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{3D9AF3
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vulkan", "libs\vulkan.vcxitems", "{E30D2C09-C680-4CBC-AB6D-126ACF07ECB3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glm", "libs\glm.vcxitems", "{DF1B4953-8F99-46D2-B1B4-D65B8EA778A8}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		libs\cereal.vcxitems*{2ab47aa3-ab49-45c6-9969-d08fe23f6ab8}*SharedItemsImports = 9
@@ -27,8 +29,10 @@ Global
 		TemportalEngine\TemportalEngine.vcxitems*{414d3b1a-bb7a-4935-b679-3c92b7f0adbf}*SharedItemsImports = 4
 		TemportalEngine\TemportalEngine.vcxitems*{4ee09edd-0bb4-4d4d-9777-55a748cc77fe}*SharedItemsImports = 9
 		libs\cereal.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
+		libs\glm.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		libs\vulkan.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		TemportalEngine\TemportalEngine.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
+		libs\glm.vcxitems*{df1b4953-8f99-46d2-b1b4-d65b8ea778a8}*SharedItemsImports = 9
 		libs\vulkan.vcxitems*{e30d2c09-c680-4cbc-ab6d-126acf07ecb3}*SharedItemsImports = 9
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +68,7 @@ Global
 		{414D3B1A-BB7A-4935-B679-3C92B7F0ADBF} = {E4CD3244-0C3C-4397-9E6D-570CFE1D5641}
 		{2AB47AA3-AB49-45C6-9969-D08FE23F6AB8} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 		{E30D2C09-C680-4CBC-AB6D-126ACF07ECB3} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
+		{DF1B4953-8F99-46D2-B1B4-D65B8EA778A8} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8539DF67-6A94-4B0F-9423-D8016914363B}
