@@ -26,7 +26,7 @@ public:
 	virtual void onAddedToRenderer(graphics::ImGuiRenderer *pRenderer) {}
 	virtual void onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer) {}
 
-	void makeGui();
+	virtual void makeGui();
 	bool isOpen() const;
 	void open();
 	void openOrFocus();

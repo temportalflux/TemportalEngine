@@ -31,6 +31,12 @@
     <Filter Include="Source Files\gui">
       <UniqueIdentifier>{0e5ac739-6c6c-4126-ba53-31b2d01091a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui\modal">
+      <UniqueIdentifier>{3445a4c4-2282-4017-9647-656ad920e1d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui\modal">
+      <UniqueIdentifier>{69d61b45-762b-4f86-aa04-5c2b53eeb87d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -75,6 +81,15 @@
     <ClCompile Include="source\gui\Log.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\modal\Modal.cpp">
+      <Filter>Source Files\gui\modal</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\modal\ModalNewProject.cpp">
+      <Filter>Source Files\gui\modal</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\modal\OpenProject.cpp">
+      <Filter>Source Files\gui\modal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -112,6 +127,15 @@
     </ClInclude>
     <ClInclude Include="include\gui\Log.hpp">
       <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\modal\Modal.hpp">
+      <Filter>Header Files\gui\modal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\modal\ModalNewProject.hpp">
+      <Filter>Header Files\gui\modal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\modal\OpenProject.hpp">
+      <Filter>Header Files\gui\modal</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

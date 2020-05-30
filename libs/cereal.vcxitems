@@ -100,7 +100,4 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\vector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\version.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\manual.html" />
-  </ItemGroup>
 </Project>

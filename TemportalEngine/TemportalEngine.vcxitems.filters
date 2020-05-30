@@ -37,6 +37,9 @@
     <Filter Include="asset">
       <UniqueIdentifier>{58e5db61-1df6-43d7-8184-b20f84cb9bcb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{750ab6e5-5873-4d05-9993-5816addaf57e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -381,6 +384,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetId.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

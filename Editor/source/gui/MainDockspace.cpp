@@ -6,6 +6,8 @@
 
 using namespace gui;
 
+static const char* MODAL_ID_NEW_PROJECT = "new_project";
+
 MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), mId(id)
 {
 	this->mAssetBrowser = gui::AssetBrowser("Asset Browser");
@@ -24,6 +26,13 @@ void MainDockspace::onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer)
 	IGui::onRemovedFromRenderer(pRenderer);
 	pRenderer->removeGui(&this->mAssetBrowser);
 	pRenderer->removeGui(&this->mLogEditor);
+}
+
+void MainDockspace::makeGui()
+{
+	IGui::makeGui();
+	this->mModalNewProject.draw();
+	this->mModalOpenProject.draw();
 }
 
 i32 MainDockspace::getFlags() const
@@ -58,6 +67,12 @@ void MainDockspace::renderView()
 
 	if (ImGui::BeginMenuBar())
 	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New Project", "", false, true)) this->mModalNewProject.open();
+			if (ImGui::MenuItem("Open Project", "", false, true)) this->mModalOpenProject.open();
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("Windows"))
 		{
 			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), true)) this->mAssetBrowser.openOrFocus();

@@ -134,6 +134,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\integer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />

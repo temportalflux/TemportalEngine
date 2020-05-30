@@ -1,6 +1,7 @@
 #include "gui/Log.hpp"
 
 #include "Engine.hpp"
+#include "utility/StringUtils.hpp"
 
 #include <regex>
 #include <imgui.h>
@@ -56,11 +57,7 @@ void Log::add(std::string timestamp, logging::ECategory category, std::string lo
 
 std::string Log::makeFilter() const
 {
-	auto filter = std::string(this->mRawFilter.begin(), this->mRawFilter.end());
-	filter.erase(std::find_if(filter.begin(), filter.end(), [&](int c) {
-		return c == '\0';
-	}), filter.end());
-	return filter;
+	return utility::createStringFromFixedArray(this->mRawFilter);
 }
 
 void Log::updateFilter()
