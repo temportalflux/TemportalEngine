@@ -21,7 +21,8 @@ void AssetBrowser::open()
 	if (Editor::EDITOR->hasProject())
 	{
 		auto project = Editor::EDITOR->getProject();
-		this->setPath(project->getAbsoluteDirectoryPath() / "assets");
+		this->mDefaultPath = project->getAbsoluteDirectoryPath() / "assets";
+		this->setPath(this->mDefaultPath);
 	}
 	IGui::open();
 }
@@ -35,10 +36,19 @@ void AssetBrowser::renderView()
 {
 	if (!Editor::EDITOR->hasProject()) return;
 
-	this->renderBreadcrumbs();
-
+	if (this->mCurrentPath != this->mDefaultPath)
+	{
+		if (ImGui::ArrowButton("", ImGuiDir_Left))
+		{
+			this->setPath(this->mCurrentPath.parent_path());
+		}
+		ImGui::SameLine();
+	}
+	this->renderBreadcrumbs();	
+	
 	ImGui::Separator();
-
+	
+	this->renderDirectoryContents();
 }
 
 std::vector<std::filesystem::path> createBreadcrumbs(std::filesystem::path path, std::filesystem::path root)
@@ -68,7 +78,7 @@ void AssetBrowser::renderBreadcrumbs()
 	for (auto iter = this->mBreadcrumbs.begin(); iter != this->mBreadcrumbs.end(); ++iter)
 	{
 		ImGui::Text(iter->filename().string().c_str());
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/*mouse button*/ 0))
 		{
 			newPath = *iter;
 		}
@@ -82,9 +92,56 @@ void AssetBrowser::renderBreadcrumbs()
 		}
 		if (iter + 1 != this->mBreadcrumbs.end())
 		{
+			ImGui::SameLine();
 			ImGui::Text("/");
 			ImGui::SameLine();
 		}
+	}
+	if (newPath.has_value())
+	{
+		this->setPath(newPath.value());
+	}
+}
+
+void AssetBrowser::renderDirectoryContents()
+{
+	if (!std::filesystem::exists(this->mCurrentPath))
+	{
+		ImGui::Text("Missing directory, cannot render contents");
+		return;
+	}
+	else if (std::filesystem::is_empty(this->mCurrentPath))
+	{
+		ImGui::Text("Directory is empty");
+		return;
+	}
+
+	std::optional<std::filesystem::path> newPath = std::nullopt;
+	ImGui::Columns(2); // name | ext/dir
+	for (const auto& entry : std::filesystem::directory_iterator(this->mCurrentPath))
+	{
+		auto itemName = entry.path().stem().string();
+		auto bIsDirectory = entry.is_directory();
+
+		ImGui::Text(itemName.c_str());
+		if (bIsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
+		{
+			newPath = entry.path();
+		}
+		ImGui::NextColumn();
+		if (bIsDirectory)
+		{
+			ImGui::Text("directory");
+		}
+		else if (entry.is_regular_file())
+		{
+			ImGui::Text(entry.path().extension().string().c_str());
+		}
+		else
+		{
+			ImGui::Text("unsupported type");
+		}
+		ImGui::NextColumn();
 	}
 	if (newPath.has_value())
 	{

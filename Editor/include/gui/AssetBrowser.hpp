@@ -20,11 +20,13 @@ protected:
 	i32 getFlags() const override;
 
 private:
+	std::filesystem::path mDefaultPath;
 	std::filesystem::path mCurrentPath;
 	std::vector<std::filesystem::path> mBreadcrumbs;
 
 	void setPath(std::filesystem::path path);
 	void renderBreadcrumbs();
+	void renderDirectoryContents();
 
 };
 
