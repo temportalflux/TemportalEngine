@@ -124,6 +124,7 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
 	assert(project != nullptr);
 	this->mpProject = project;
+	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory());
 }
 
 asset::ProjectPtrStrong Editor::getProject()

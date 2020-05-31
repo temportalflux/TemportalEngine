@@ -16,6 +16,7 @@ public:
 	DEFINE_ASSET_TYPE(AssetType_Project);
 
 	std::filesystem::path getAbsoluteDirectoryPath() const;
+	std::filesystem::path getAssetDirectory() const;
 
 private:
 	std::string mName;

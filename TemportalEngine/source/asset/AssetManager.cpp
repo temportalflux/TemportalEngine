@@ -21,12 +21,50 @@ AssetManager* AssetManager::get()
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, "te-project" });
+	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, ".te-project" });
+}
+
+void AssetManager::scanAssetDirectory(std::filesystem::path directory)
+{
+	this->mScannedAssetPathsByExtension.clear();
+	this->mScannedAssetMetadataByPath.clear();
+
+	ui32 totalFilesScanned = 0, foundAssetCount = 0;
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(directory))
+	{
+		// Ignore any non-normal files (directories, symlinks, etc.)
+		if (!entry.is_regular_file()) continue;
+
+		totalFilesScanned++;
+
+		// Ignore all files whose extension is not known
+		auto ext = entry.path().extension().string();
+		if (!this->isValidAssetExtension(ext)) continue;
+
+		foundAssetCount++;
+
+		AssetType assetType;
+		{
+			std::ifstream is(entry.path());
+			assetType = Asset::readAsset(&is)->getAssetType();
+		}
+
+		AssetMetadata metadata = { assetType, entry.path() };
+		this->mScannedAssetPathsByExtension.insert(std::make_pair(ext, metadata.path));
+		this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.path.string(), metadata));
+	}
+
+	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
 }
 
 std::set<AssetType> AssetManager::getAssetTypes() const
 {
 	return this->mAssetTypes;
+}
+
+bool AssetManager::isValidAssetExtension(std::string extension) const
+{
+	return this->mAssetTypeExtensions.find(extension) != this->mAssetTypeExtensions.end();
 }
 
 AssetTypeMetadata AssetManager::getAssetTypeMetadata(AssetType type) const
@@ -43,8 +81,22 @@ std::string AssetManager::getAssetTypeDisplayName(AssetType type) const
 
 void AssetManager::registerType(AssetType type, AssetTypeMetadata metadata)
 {
+	// Assumes that the type has not been registered before
+	assert(this->mAssetTypes.find(type) == this->mAssetTypes.end());
+	// Add type and metadata to mappings
 	this->mAssetTypes.insert(type);
 	this->mAssetTypeMap.insert(std::make_pair(type, metadata));
+	// Ensure that if the extension isn't already cataloged, it gets added to the set
+	if (!this->isValidAssetExtension(metadata.fileExtension))
+	{
+		this->mAssetTypeExtensions.insert(metadata.fileExtension);
+	}
+}
+
+std::optional<AssetMetadata> AssetManager::getAssetMetadata(std::filesystem::path filePath) const
+{
+	auto iter = this->mScannedAssetMetadataByPath.find(filePath.string());
+	return iter == this->mScannedAssetMetadataByPath.end() ? std::nullopt : std::make_optional(iter->second);
 }
 
 std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem::path filePath)
@@ -60,7 +112,14 @@ std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path fil
 	std::ifstream is(filePath);
 
 	// Read the asset using the base asset class to determine the asset type that is stored
-	AssetType assetType = Asset::readAsset(&is)->getAssetType();
+	auto assetMetadata = this->getAssetMetadata(filePath);
+	AssetType assetType;
+	if (!assetMetadata.has_value())
+	{
+		LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
+		assetType = Asset::readAsset(&is)->getAssetType();
+	}
+	assetType = assetMetadata->type;
 
 	// Reset the file stream back to the beginning for re-deserialization
 	is.clear();

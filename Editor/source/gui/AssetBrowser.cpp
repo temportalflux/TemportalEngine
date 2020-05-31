@@ -21,7 +21,7 @@ void AssetBrowser::open()
 	if (Editor::EDITOR->hasProject())
 	{
 		auto project = Editor::EDITOR->getProject();
-		this->mDefaultPath = project->getAbsoluteDirectoryPath() / "assets";
+		this->mDefaultPath = project->getAssetDirectory();
 		this->setPath(this->mDefaultPath);
 	}
 	IGui::open();
