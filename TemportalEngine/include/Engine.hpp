@@ -12,6 +12,8 @@
 #include "thread/Thread.hpp"
 #include "version.h"
 
+#include "asset/Project.hpp"
+
 #include "logging/Logger.hpp"
 #include "asset/AssetManager.hpp"
 #include "ExecutableInfo.hpp"
@@ -51,6 +53,8 @@ public:
 
 	~Engine();
 
+	void setProject(asset::ProjectPtrStrong project);
+	bool hasProject() const;
 	utility::SExecutableInfo const *const getInfo() const;
 	void setApplicationInfo(utility::SExecutableInfo const *const pAppInfo);
 
@@ -151,6 +155,8 @@ public:
 	//std::optional<network::Service* const> getNetworkService() const;
 
 private:
+	
+	asset::ProjectPtrStrong mProject;
 
 	utility::SExecutableInfo mEngineInfo;
 	utility::SExecutableInfo mAppInfo;

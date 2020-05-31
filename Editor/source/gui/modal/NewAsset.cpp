@@ -14,6 +14,11 @@ NewAsset::NewAsset() : Modal("New Asset")
 	this->mInputName.fill('\0');
 }
 
+void NewAsset::setCallback(AssetCreatedCallback callback)
+{
+	this->mOnAssetCreated = callback;
+}
+
 void NewAsset::open()
 {
 	Modal::open();
@@ -65,6 +70,11 @@ void NewAsset::drawContents()
 	{
 		this->submit();
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Cancel"))
+	{
+		this->close();
+	}
 }
 
 void NewAsset::submit()
@@ -72,6 +82,7 @@ void NewAsset::submit()
 	auto directory = utility::createStringFromFixedArray(this->mInputDirectory);
 	auto name = utility::createStringFromFixedArray(this->mInputName);
 
+	auto assetManager = asset::AssetManager::get();
 	auto assetType = this->mSelectedAssetType.first;
 	//LOG.log(logging::ECategory::LOGDEBUG, "Creating %s asset with name %s in %s", type.c_str(), name.c_str(), directory.c_str());
 
@@ -82,14 +93,12 @@ void NewAsset::submit()
 
 	// Determine the file path and assume it doesn't exist
 	// TODO: could prompt to overwrite the file if it does exist
-	std::filesystem::path filePath = dirPath / (name + ".te-asset");
+	std::filesystem::path filePath = dirPath / (name + "." + assetManager->getAssetTypeMetadata(assetType).fileExtension);
 	assert(!std::filesystem::exists(filePath));
 
-	auto assetManager = asset::AssetManager::get();
 	auto asset = assetManager->createAsset(assetType, filePath);
-	asset.reset(); // release the shared_ptr
-
 	this->close();
+	this->mOnAssetCreated(asset);
 }
 
 void NewAsset::reset()

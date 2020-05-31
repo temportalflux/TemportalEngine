@@ -18,6 +18,7 @@ struct AssetTypeMetadata
 	std::string DisplayName;
 	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath)> createAsset;
 	std::function<std::shared_ptr<Asset>(std::ifstream *stream, std::filesystem::path filePath)> readFromDisk;
+	std::string fileExtension;
 };
 
 class AssetManager
@@ -27,6 +28,7 @@ public:
 	static AssetManager* get();
 
 	std::set<AssetType> getAssetTypes() const;
+	AssetTypeMetadata getAssetTypeMetadata(AssetType type) const;
 	std::string getAssetTypeDisplayName(AssetType type) const;
 	void registerType(AssetType type, AssetTypeMetadata metadata);
 

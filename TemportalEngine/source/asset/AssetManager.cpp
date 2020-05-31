@@ -21,7 +21,7 @@ AssetManager* AssetManager::get()
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk });
+	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, "te-project" });
 }
 
 std::set<AssetType> AssetManager::getAssetTypes() const
@@ -29,11 +29,16 @@ std::set<AssetType> AssetManager::getAssetTypes() const
 	return this->mAssetTypes;
 }
 
-std::string AssetManager::getAssetTypeDisplayName(AssetType type) const
+AssetTypeMetadata AssetManager::getAssetTypeMetadata(AssetType type) const
 {
 	auto iter = this->mAssetTypeMap.find(type);
 	assert(iter != this->mAssetTypeMap.end());
-	return iter->second.DisplayName;
+	return iter->second;
+}
+
+std::string AssetManager::getAssetTypeDisplayName(AssetType type) const
+{
+	return this->getAssetTypeMetadata(type).DisplayName;
 }
 
 void AssetManager::registerType(AssetType type, AssetTypeMetadata metadata)

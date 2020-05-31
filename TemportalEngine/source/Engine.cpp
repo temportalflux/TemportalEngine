@@ -100,7 +100,20 @@ Engine::~Engine()
 	}
 	this->terminateDependencies();
 	this->dealloc(&mpInputQueue);
+	
+	this->mProject.reset();
+	
 	LogEngineInfo("Engine Destroyed");
+}
+
+void Engine::setProject(asset::ProjectPtrStrong project)
+{
+	this->mProject = project;
+}
+
+bool Engine::hasProject() const
+{
+	return (bool)this->mProject;
 }
 
 utility::SExecutableInfo const *const Engine::getInfo() const

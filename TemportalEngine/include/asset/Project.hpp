@@ -15,6 +15,8 @@ class Project : public Asset
 public:
 	DEFINE_ASSET_TYPE(AssetType_Project);
 
+	std::filesystem::path getAbsoluteDirectoryPath() const;
+
 private:
 	std::string mName;
 	std::filesystem::path mProjectDirectory;
@@ -46,5 +48,8 @@ private:
 #pragma endregion
 
 };
+
+typedef std::shared_ptr<Project> ProjectPtrStrong;
+typedef std::weak_ptr<Project> ProjectPtrWeak;
 
 NS_END

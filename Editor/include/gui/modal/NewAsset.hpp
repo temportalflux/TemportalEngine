@@ -9,20 +9,30 @@
 #include <set>
 #include <vector>
 
+NS_ASSET
+class Asset;
+NS_END
+
 NS_GUI NS_MODAL
 
 class NewAsset : public Modal
 {
 public:
+	typedef std::function<void(std::shared_ptr<asset::Asset> asset)> AssetCreatedCallback;
+
 	NewAsset();
 
 	void open() override;
+	void setCallback(AssetCreatedCallback callback);
 
 protected:
 	void drawContents() override;
 	void reset() override;
 
 private:
+
+	AssetCreatedCallback mOnAssetCreated;
+
 	uSize mAssetTypeCount;
 	std::set<std::string> mAssetTypes;
 	std::vector<std::string> mAssetTypeDisplayNames;

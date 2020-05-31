@@ -4,11 +4,17 @@
 #include "Window.hpp"
 #include "graphics/ImGuiRenderer.hpp"
 
+#include <memory>
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
 
+Editor* Editor::EDITOR = nullptr;
+
 Editor::Editor()
 {
+	assert(EDITOR == nullptr);
+	EDITOR = this;
+
 	std::string logFileName = "TemportalEngine_Editor_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
@@ -23,6 +29,8 @@ Editor::Editor()
 
 Editor::~Editor()
 {
+	EDITOR = nullptr;
+
 	engine::Engine::Destroy();
 	engine::Engine::LOG_SYSTEM.close();
 }
@@ -37,12 +45,13 @@ bool Editor::setup()
 
 void Editor::run()
 {
-	auto pEngine = engine::Engine::Get();
+	// TODO: moved the shared_ptr wrapper to Engine::Get()
+	this->mpEngine = engine::Engine::Get();
 
-	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RESIZABLE);
+	auto pWindow = this->mpEngine->createWindow(800, 600, WindowFlags::RESIZABLE);
 	if (pWindow == nullptr) return;
 	
-	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+	auto pVulkan = this->mpEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
 	auto renderer = graphics::ImGuiRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
 	this->initializeRenderer(&renderer);
 	renderer.finalizeInitialization();
@@ -51,17 +60,17 @@ void Editor::run()
 
 	renderer.addGui(&this->mDockspace);
 
-	pEngine->start();
-	while (pEngine->isActive() && !pWindow->isPendingClose() && this->mDockspace.isOpen())
+	this->mpEngine->start();
+	while (this->mpEngine->isActive() && !pWindow->isPendingClose() && this->mDockspace.isOpen())
 	{
-		pEngine->update();
+		this->mpEngine->update();
 	}
-	pEngine->joinThreads();
+	this->mpEngine->joinThreads();
 
 	renderer.removeGui(&this->mDockspace);
 
 	renderer.invalidate();
-	pEngine->destroyWindow(pWindow);
+	this->mpEngine->destroyWindow(pWindow);
 }
 
 void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)
@@ -103,4 +112,21 @@ void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)
 
 	pRenderer->initializeDevices();
 	pRenderer->createRenderChain();
+}
+
+bool Editor::hasProject() const
+{
+	return (bool)this->mpProject;
+}
+
+void Editor::setProject(asset::AssetPtrStrong asset)
+{
+	asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
+	assert(project != nullptr);
+	this->mpProject = project;
+}
+
+asset::ProjectPtrStrong Editor::getProject()
+{
+	return this->mpProject;
 }

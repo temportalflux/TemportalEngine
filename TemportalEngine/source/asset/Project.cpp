@@ -5,6 +5,11 @@
 
 using namespace asset;
 
+std::filesystem::path Project::getAbsoluteDirectoryPath() const
+{
+	return this->mProjectDirectory;
+}
+
 std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 {
 	// TODO: use std::allocate_shared instead of make_shared and utilize the memory system http://www.cplusplus.com/reference/memory/allocate_shared/

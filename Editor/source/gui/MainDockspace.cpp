@@ -1,5 +1,6 @@
 #include "gui/MainDockspace.hpp"
 
+#include "Editor.hpp"
 #include "graphics/ImGuiRenderer.hpp"
 
 #include <imgui.h>
@@ -12,6 +13,13 @@ MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), m
 {
 	this->mAssetBrowser = gui::AssetBrowser("Asset Browser");
 	this->mLogEditor = gui::Log("Log (Editor)");
+
+	auto onProjectAsset = [&](asset::AssetPtrStrong asset)
+	{
+		Editor::EDITOR->setProject(asset);
+	};
+	this->mModalNewProject.setCallback(onProjectAsset);
+	this->mModalOpenProject.setCallback(onProjectAsset);
 }
 
 void MainDockspace::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
@@ -63,7 +71,19 @@ bool MainDockspace::beginView()
 
 void MainDockspace::renderView()
 {
-	ImGui::DockSpace(ImGui::GetID(this->mId.c_str()), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+	bool bHasProject = Editor::EDITOR->hasProject();
+	if (bHasProject)
+	{
+		ImGui::DockSpace(ImGui::GetID(this->mId.c_str()), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+	}
+	else
+	{
+		ImGui::Text("You have not opened a project.");
+		if (ImGui::Button("Open Project"))
+		{
+			this->mModalOpenProject.open();
+		}
+	}
 
 	if (ImGui::BeginMenuBar())
 	{
@@ -75,8 +95,8 @@ void MainDockspace::renderView()
 		}
 		if (ImGui::BeginMenu("Windows"))
 		{
-			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), true)) this->mAssetBrowser.openOrFocus();
-			if (ImGui::MenuItem("Log (Editor)", "", this->mLogEditor.isOpen(), true)) this->mLogEditor.openOrFocus();
+			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser.isOpen(), bHasProject)) this->mAssetBrowser.openOrFocus();
+			if (ImGui::MenuItem("Log (Editor)", "", this->mLogEditor.isOpen(), bHasProject)) this->mLogEditor.openOrFocus();
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

@@ -59,4 +59,6 @@ private:
 
 };
 
+typedef std::shared_ptr<Asset> AssetPtrStrong;
+
 NS_END

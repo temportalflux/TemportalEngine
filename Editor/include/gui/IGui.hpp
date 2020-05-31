@@ -28,7 +28,7 @@ public:
 
 	virtual void makeGui();
 	bool isOpen() const;
-	void open();
+	virtual void open();
 	void openOrFocus();
 
 protected:
