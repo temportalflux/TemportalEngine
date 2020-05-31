@@ -7,19 +7,26 @@
 
 using namespace graphics;
 
-Pipeline& Pipeline::addShader(ShaderModule *pShader)
+Pipeline& Pipeline::addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader)
 {
-	this->mShaderPtrs.push_back(pShader);
+	this->mShaderPtrs.insert(std::make_pair(stage, pShader));
 	return *this;
+}
+
+ShaderModule* Pipeline::getShader(vk::ShaderStageFlagBits stage)
+{
+	auto iter = this->mShaderPtrs.find(stage);
+	return iter != this->mShaderPtrs.end() ? iter->second : nullptr;
 }
 
 std::vector<vk::PipelineShaderStageCreateInfo> Pipeline::createShaderStages() const
 {
 	auto shaderCount = this->mShaderPtrs.size();
 	auto shaderStages = std::vector<vk::PipelineShaderStageCreateInfo>(shaderCount);
-	for (uSize i = 0; i < shaderCount; ++i)
+	uSize i = 0;
+	for (auto [stage, pShader] : this->mShaderPtrs)
 	{
-		shaderStages[i] = this->mShaderPtrs[i]->getPipelineInfo();
+		shaderStages[i++] = pShader->getPipelineInfo().setStage(stage);
 	}
 	return shaderStages;
 }
@@ -38,13 +45,23 @@ bool Pipeline::isValid() const
 
 Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass)
 {
-	// TODO (START): These need to go in configurable objects
-	auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
-		.setVertexBindingDescriptionCount(0)
-		.setPVertexBindingDescriptions(nullptr)
-		.setVertexAttributeDescriptionCount(0)
-		.setPVertexAttributeDescriptions(nullptr);
+	for (auto[stage, shaderPtr] : this->mShaderPtrs)
+	{
+		shaderPtr->create(pDevice);
+	}
 
+	auto vertexShader = this->getShader(vk::ShaderStageFlagBits::eVertex);
+	assert(vertexShader != nullptr);
+	vk::VertexInputBindingDescription binding = vertexShader->createBindings();
+	std::vector<vk::VertexInputAttributeDescription> attributes = vertexShader->createAttributes();
+
+	auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
+		.setVertexBindingDescriptionCount(1)
+		.setPVertexBindingDescriptions(&binding)
+		.setVertexAttributeDescriptionCount((ui32)attributes.size())
+		.setPVertexAttributeDescriptions(attributes.data());
+
+	// TODO (START): These need to go in configurable objects
 	auto infoAssembly = vk::PipelineInputAssemblyStateCreateInfo()
 		.setTopology(vk::PrimitiveTopology::eTriangleList)
 		.setPrimitiveRestartEnable(false);
@@ -99,10 +116,6 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 	);
 	this->mCache = pDevice->mDevice->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 
-	for (auto& shaderPtr : this->mShaderPtrs)
-	{
-		shaderPtr->create(pDevice);
-	}
 	auto stages = this->createShaderStages();
 	
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
@@ -124,7 +137,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 
 	this->mPipeline = pDevice->mDevice->createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
 
-	for (auto& shaderPtr : this->mShaderPtrs)
+	for (auto[stage, shaderPtr] : this->mShaderPtrs)
 	{
 		shaderPtr->destroy();
 	}

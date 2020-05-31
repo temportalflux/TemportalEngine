@@ -38,12 +38,9 @@ void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
 	mImageViewInfo = info;
 }
 
-void VulkanRenderer::setShaders(std::set<ShaderModule*> const &shaders)
+void VulkanRenderer::addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader)
 {
-	for (auto& shaderPtr : shaders)
-	{
-		this->mPipeline.addShader(shaderPtr);
-	}
+	this->mPipeline.addShader(stage, pShader);
 }
 
 void VulkanRenderer::initializeDevices()
@@ -72,6 +69,8 @@ void VulkanRenderer::pickPhysicalDevice()
 void VulkanRenderer::invalidate()
 {
 	this->destroyRenderChain();
+
+	this->destroyInputBuffers();
 
 	this->mQueues.clear();
 	this->mLogicalDevice.invalidate();
@@ -148,6 +147,18 @@ void VulkanRenderer::destroyCommandObjects()
 	this->mFrameBuffers.clear();
 }
 
+void VulkanRenderer::createInputBuffers(ui32 bufferSize)
+{
+	auto vertexShader = this->mPipeline.getShader(vk::ShaderStageFlagBits::eVertex);
+	assert(vertexShader != nullptr);
+	this->mVertexBuffer.setSize(bufferSize).create(&this->mLogicalDevice);
+}
+
+void VulkanRenderer::destroyInputBuffers()
+{
+	this->mVertexBuffer.destroy();
+}
+
 void VulkanRenderer::createFrames(uSize viewCount)
 {
 	this->mFrames.resize(viewCount);
@@ -180,7 +191,8 @@ void VulkanRenderer::recordCommandBufferInstructions()
 			.clear({ 0.0f, 0.0f, 0.0f, 1.0f })
 			.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i])
 			.bindPipeline(&this->mPipeline)
-			.draw()
+			.bindVertexBuffers({ &this->mVertexBuffer })
+			.draw(this->mVertexCount)
 			.endRenderPass()
 			.end();
 	}

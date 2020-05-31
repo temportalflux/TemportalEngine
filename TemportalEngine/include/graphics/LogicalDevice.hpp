@@ -36,8 +36,8 @@ public:
 	void waitUntilIdle() const;
 
 	vk::UniqueDevice mDevice; // TODO: Make private
+	PhysicalDevice const *mpPhysicalDevice; // TODO: Make Private
 private:
-	PhysicalDevice const *mpPhysicalDevice;
 
 	LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDevice &device);
 

@@ -30,6 +30,7 @@ public:
 	vk::PhysicalDeviceFeatures const getFeatures() const;
 	QueueFamilyGroup queryQueueFamilyGroup() const;
 	SwapChainSupport querySwapChainSupport() const;
+	vk::PhysicalDeviceMemoryProperties getMemoryProperties() const;
 
 	void invalidate();
 

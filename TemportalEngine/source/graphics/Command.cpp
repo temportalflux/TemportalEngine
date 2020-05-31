@@ -4,6 +4,7 @@
 #include "graphics/RenderPass.hpp"
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/Pipeline.hpp"
+#include "graphics/Buffer.hpp"
 
 using namespace graphics;
 
@@ -42,10 +43,23 @@ Command& Command::bindPipeline(Pipeline const *pPipeline)
 	return *this;
 }
 
-Command& Command::draw()
+Command& Command::bindVertexBuffers(std::vector<Buffer*> const pBuffers)
 {
-	// TODO: This is yet unfinished
-	this->mpBuffer->mInternal->draw(3, 1, 0, 0);
+	ui32 bufferCount = (ui32)pBuffers.size();
+	auto buffers = std::vector<vk::Buffer>(bufferCount);
+	auto offsets = std::vector<ui64>(bufferCount);
+	for (ui32 i = 0; i < bufferCount; ++i)
+	{
+		buffers[i] = *reinterpret_cast<vk::Buffer*>(pBuffers[i]->get());
+		offsets[i] = 0; // NOTE: should probably be passed in or stored in buffer wrapper
+	}
+	this->mpBuffer->mInternal->bindVertexBuffers(0, { bufferCount, buffers.data() }, { bufferCount, offsets.data() });
+	return *this;
+}
+
+Command& Command::draw(ui32 vertexCount)
+{
+	this->mpBuffer->mInternal->draw(vertexCount, 1, 0, 0);
 	return *this;
 }
 

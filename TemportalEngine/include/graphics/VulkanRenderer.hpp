@@ -13,6 +13,7 @@
 #include "graphics/SwapChainInfo.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/RenderPass.hpp"
+#include "graphics/Buffer.hpp"
 #include "graphics/Pipeline.hpp"
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/CommandPool.hpp"
@@ -21,6 +22,7 @@
 
 #include <unordered_map>
 #include <set>
+#include <array>
 
 NS_GRAPHICS
 class VulkanInstance;
@@ -39,8 +41,18 @@ public:
 	void setImageViewInfo(ImageViewInfo const &info);
 
 	virtual void initializeDevices();
+	void addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader);
+
+	virtual void createInputBuffers(ui32 bufferSize);
+
+	template <typename TVertex, ui32 Size>
+	void writeVertexData(std::array<TVertex, Size> data)
+	{
+		this->mVertexCount = (ui32)data.size();
+		this->mVertexBuffer.write(data);
+	}
+	
 	// Creates a swap chain, and all objects that depend on it
-	void setShaders(std::set<ShaderModule*> const &shaders);
 	void createRenderChain();
 
 	virtual void finalizeInitialization() {}
@@ -92,6 +104,10 @@ protected:
 	RenderPass mRenderPass;
 
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
+
+	Buffer mVertexBuffer;
+	ui32 mVertexCount;
+
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
@@ -124,6 +140,7 @@ protected:
 	virtual void destroyRenderObjects();
 	virtual void createCommandObjects();
 	virtual void destroyCommandObjects();
+	virtual void destroyInputBuffers();
 
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 	virtual void createFrames(uSize viewCount);

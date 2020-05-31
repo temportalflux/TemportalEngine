@@ -5,12 +5,26 @@
 #include "graphics/VulkanRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
 
+#include <array>
 #include <iostream>
 #include <string>
 #include <stdarg.h>
 #include <time.h>
+#include <glm/glm.hpp>
 
 using namespace std;
+
+struct Vertex
+{
+	glm::vec2 position;
+	glm::vec3 color;
+};
+
+const std::array<Vertex, 3> vertices = { {
+	{{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+} };
 
 void initializeNetwork(engine::Engine *pEngine)
 {
@@ -68,7 +82,7 @@ int main()
 		return 1;
 	}
 	
-	initializeNetwork(pEngine);
+	//initializeNetwork(pEngine);
 	
 	std::string title = "Demo Game";
 	if (pEngine->hasNetwork())
@@ -148,12 +162,26 @@ int main()
 	auto shaderVertex = graphics::ShaderModule();
 	shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
 	shaderVertex.setSource("shaders/triangle.vert.spv");
+	shaderVertex.setVertexDescription(
+		{
+			sizeof(Vertex),
+			{
+				{ "position", (ui32)offsetof(Vertex, position) },
+				{ "color", (ui32)offsetof(Vertex, color) }
+			}
+		}
+	);
+
 	auto shaderFragment = graphics::ShaderModule();
 	shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
 	shaderFragment.setSource("shaders/triangle.frag.spv");
-	renderer.setShaders({ &shaderVertex, &shaderFragment });
+	renderer.addShader(vk::ShaderStageFlagBits::eVertex, &shaderVertex);
+	renderer.addShader(vk::ShaderStageFlagBits::eFragment, &shaderFragment);
 
 	// Initialize the rendering api connections
+	renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());
+	renderer.writeVertexData(vertices);
+
 	renderer.createRenderChain();
 	renderer.finalizeInitialization();
 

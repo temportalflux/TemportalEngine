@@ -2,8 +2,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "types/integer.h"
+
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
@@ -21,6 +24,14 @@ class ShaderModule
 	friend class VulkanApi;
 
 public:
+	struct VertexDescription
+	{
+		// Total size of 1 vertex structure (all the attributes for 1 vertex)
+		ui32 size;
+		// map of attribute name to the byte-offset of the property in the user's structure
+		std::unordered_map<std::string, ui32> locationToDataOffset;
+	};
+
 	ShaderModule();
 	ShaderModule(ShaderModule &&other);
 	~ShaderModule();
@@ -28,6 +39,8 @@ public:
 
 	ShaderModule& setStage(vk::ShaderStageFlagBits stage);
 	ShaderModule& setSource(std::string fileName);
+
+	ShaderModule& setVertexDescription(VertexDescription vertexData);
 
 	bool isLoaded() const;
 	void create(LogicalDevice const *pDevice);
@@ -39,8 +52,13 @@ private:
 	vk::ShaderStageFlagBits mStage;
 	vk::UniqueShaderModule mShader;
 
+	vk::VertexInputBindingDescription mBinding;
+	std::unordered_map<std::string, vk::VertexInputAttributeDescription> mAttributes;
+
 	std::optional<std::vector<char>> readBinary() const;
 	vk::PipelineShaderStageCreateInfo getPipelineInfo() const;
+	vk::VertexInputBindingDescription createBindings() const;
+	std::vector<vk::VertexInputAttributeDescription> createAttributes() const;
 
 };
 

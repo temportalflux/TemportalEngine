@@ -179,6 +179,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp">
       <Filter>asset</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -387,6 +390,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

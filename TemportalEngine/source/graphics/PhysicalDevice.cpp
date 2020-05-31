@@ -93,6 +93,11 @@ SwapChainSupport PhysicalDevice::querySwapChainSupport() const
 	};
 }
 
+vk::PhysicalDeviceMemoryProperties PhysicalDevice::getMemoryProperties() const
+{
+	return this->mDevice.getMemoryProperties();
+}
+
 LogicalDevice PhysicalDevice::createLogicalDevice(LogicalDeviceInfo const * pInfo) const
 {
 	auto queueFamilies = this->queryQueueFamilyGroup();

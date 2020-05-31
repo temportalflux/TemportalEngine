@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include <vector>
+#include <unordered_map>
 
 #include <vulkan/vulkan.hpp>
 
@@ -19,15 +20,17 @@ class Pipeline
 public:
 	Pipeline() = default;
 
-	Pipeline& addShader(ShaderModule *pShader);
+	Pipeline& addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader);
 	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
+
+	ShaderModule* getShader(vk::ShaderStageFlagBits stage);
 
 	bool isValid() const;
 	Pipeline& create(LogicalDevice const *pDevice, RenderPass const *pRenderPass);
 	void destroy();
 
 private:
-	std::vector<ShaderModule*> mShaderPtrs;
+	std::unordered_map<vk::ShaderStageFlagBits, ShaderModule*> mShaderPtrs;
 	vk::Viewport mViewport;
 	vk::Rect2D mScissor;
 

@@ -49,6 +49,8 @@ private:
 protected:
 	void createCommandObjects() override {}
 	void destroyCommandObjects() override {}
+	void createInputBuffers(ui32 bufferSize) override {}
+	void destroyInputBuffers() override {}
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

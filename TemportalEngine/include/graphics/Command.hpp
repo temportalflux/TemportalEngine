@@ -2,9 +2,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "types/integer.h"
 #include "types/real.h"
 
 #include <array>
+#include <vector>
 #include <optional>
 #include <vulkan/vulkan.hpp>
 
@@ -13,6 +15,7 @@ class CommandBuffer;
 class RenderPass;
 class FrameBuffer;
 class Pipeline;
+class Buffer;
 
 class Command
 {
@@ -25,7 +28,8 @@ public:
 
 	Command& beginRenderPass(RenderPass const *pRenderPass, FrameBuffer const *pFrameBuffer);
 	Command& bindPipeline(Pipeline const *pPipeline);
-	Command& draw();
+	Command& bindVertexBuffers(std::vector<Buffer*> const pBuffers);
+	Command& draw(ui32 vertexCount);
 	Command& endRenderPass();
 
 	void end();
