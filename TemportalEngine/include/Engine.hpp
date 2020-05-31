@@ -125,6 +125,8 @@ public:
 	void terminateDependencies();
 #pragma endregion
 
+	asset::AssetManager* getAssetManager() { return &mAssetManager; }
+
 #pragma region Windows
 	Window* createWindow(ui16 width, ui16 height, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroyWindow(Window* &pWindow);

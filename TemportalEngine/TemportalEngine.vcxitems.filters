@@ -182,6 +182,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -393,6 +399,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp">
+      <Filter>asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

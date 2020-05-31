@@ -14,7 +14,7 @@ public:
 	Modal(char const *title);
 
 	void draw();
-	void open();
+	virtual void open();
 	void close();
 
 protected:

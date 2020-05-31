@@ -1,0 +1,39 @@
+#pragma once
+
+#include "gui/modal/Modal.hpp"
+
+#include "types/integer.h"
+
+#include <array>
+#include <functional>
+#include <set>
+#include <vector>
+
+NS_GUI NS_MODAL
+
+class NewAsset : public Modal
+{
+public:
+	NewAsset();
+
+	void open() override;
+
+protected:
+	void drawContents() override;
+	void reset() override;
+
+private:
+	uSize mAssetTypeCount;
+	std::set<std::string> mAssetTypes;
+	std::vector<std::string> mAssetTypeDisplayNames;
+	void forEachAssetType(std::function<void(std::string type, std::string displayName, uSize idx)> body) const;
+
+	std::pair<std::string, uSize> mSelectedAssetType;
+	std::array<char, 128> mInputDirectory;
+	std::array<char, 32> mInputName;
+
+	void submit();
+
+};
+
+NS_END NS_END

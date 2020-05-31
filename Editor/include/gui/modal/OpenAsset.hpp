@@ -6,10 +6,10 @@
 
 NS_GUI NS_MODAL
 
-class OpenProject : public Modal
+class OpenAsset : public Modal
 {
 public:
-	OpenProject();
+	OpenAsset();
 
 protected:
 	void drawContents() override;

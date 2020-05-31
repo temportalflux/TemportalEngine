@@ -4,8 +4,8 @@
 
 #include "gui/AssetBrowser.hpp"
 #include "gui/Log.hpp"
-#include "gui/modal/ModalNewProject.hpp"
-#include "gui/modal/OpenProject.hpp"
+#include "gui/modal/NewAsset.hpp"
+#include "gui/modal/OpenAsset.hpp"
 
 NS_GUI
 
@@ -32,8 +32,8 @@ private:
 	gui::AssetBrowser mAssetBrowser;
 	gui::Log mLogEditor;
 
-	gui::modal::ModalNewProject mModalNewProject;
-	gui::modal::OpenProject mModalOpenProject;
+	gui::modal::NewAsset mModalNewProject;
+	gui::modal::OpenAsset mModalOpenProject;
 
 };
 

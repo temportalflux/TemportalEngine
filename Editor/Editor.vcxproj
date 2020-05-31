@@ -175,8 +175,8 @@
     <ClCompile Include="source\gui\Log.cpp" />
     <ClCompile Include="source\gui\MainDockspace.cpp" />
     <ClCompile Include="source\gui\modal\Modal.cpp" />
-    <ClCompile Include="source\gui\modal\ModalNewProject.cpp" />
-    <ClCompile Include="source\gui\modal\OpenProject.cpp" />
+    <ClCompile Include="source\gui\modal\NewAsset.cpp" />
+    <ClCompile Include="source\gui\modal\OpenAsset.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -191,8 +191,8 @@
     <ClInclude Include="include\gui\Log.hpp" />
     <ClInclude Include="include\gui\MainDockspace.hpp" />
     <ClInclude Include="include\gui\modal\Modal.hpp" />
-    <ClInclude Include="include\gui\modal\ModalNewProject.hpp" />
-    <ClInclude Include="include\gui\modal\OpenProject.hpp" />
+    <ClInclude Include="include\gui\modal\NewAsset.hpp" />
+    <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />
     <ClInclude Include="libs\imgui\imgui.h" />

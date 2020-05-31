@@ -84,10 +84,10 @@
     <ClCompile Include="source\gui\modal\Modal.cpp">
       <Filter>Source Files\gui\modal</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\modal\ModalNewProject.cpp">
+    <ClCompile Include="source\gui\modal\NewAsset.cpp">
       <Filter>Source Files\gui\modal</Filter>
     </ClCompile>
-    <ClCompile Include="source\gui\modal\OpenProject.cpp">
+    <ClCompile Include="source\gui\modal\OpenAsset.cpp">
       <Filter>Source Files\gui\modal</Filter>
     </ClCompile>
   </ItemGroup>
@@ -131,10 +131,10 @@
     <ClInclude Include="include\gui\modal\Modal.hpp">
       <Filter>Header Files\gui\modal</Filter>
     </ClInclude>
-    <ClInclude Include="include\gui\modal\ModalNewProject.hpp">
+    <ClInclude Include="include\gui\modal\NewAsset.hpp">
       <Filter>Header Files\gui\modal</Filter>
     </ClInclude>
-    <ClInclude Include="include\gui\modal\OpenProject.hpp">
+    <ClInclude Include="include\gui\modal\OpenAsset.hpp">
       <Filter>Header Files\gui\modal</Filter>
     </ClInclude>
   </ItemGroup>
