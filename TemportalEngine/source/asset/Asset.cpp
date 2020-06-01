@@ -1,5 +1,8 @@
 #include "asset/Asset.hpp"
 
+#include "asset/AssetManager.hpp"
+#include "memory/MemoryChunk.hpp"
+
 #include <algorithm>
 #include <cereal/archives/json.hpp>
 
@@ -7,7 +10,7 @@ using namespace asset;
 
 std::shared_ptr<Asset> Asset::readAsset(std::ifstream *stream)
 {
-	auto ptr = std::make_shared<Asset>();
+	auto ptr = asset::AssetManager::makeAsset<Asset>();
 	cereal::JSONInputArchive archive(*stream);
 	ptr->load(archive);
 	return ptr;

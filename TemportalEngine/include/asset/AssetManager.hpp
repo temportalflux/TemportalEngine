@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/Asset.hpp"
+#include "memory/MemoryChunk.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -12,10 +13,6 @@
 #include <string>
 #include <unordered_map>
 #include <map>
-
-NS_MEMORY
-class MemoryChunk;
-NS_END
 
 NS_ASSET
 
@@ -52,6 +49,12 @@ public:
 	std::shared_ptr<memory::MemoryChunk> mpAssetMemory;
 	void setAssetMemory(std::shared_ptr<memory::MemoryChunk> assetMemory);
 	std::shared_ptr<memory::MemoryChunk> getAssetMemory() const;
+
+	template <typename T>
+	static std::shared_ptr<T> makeAsset()
+	{
+		return AssetManager::get()->mpAssetMemory->make_shared<T>();
+	}
 
 	/**
 	 * Registers all known asset types.

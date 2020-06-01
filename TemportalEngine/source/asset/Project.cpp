@@ -1,5 +1,7 @@
 #include "asset/Project.hpp"
 
+#include "asset/AssetManager.hpp"
+
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
 
@@ -38,8 +40,7 @@ std::filesystem::path Project::getAssetDirectory() const
 
 std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 {
-	// TODO: use std::allocate_shared instead of make_shared and utilize the memory system http://www.cplusplus.com/reference/memory/allocate_shared/
-	auto ptr = std::make_shared<Project>();
+	auto ptr = asset::AssetManager::makeAsset<Project>();
 	ptr->mName = filePath.stem().string();
 	ptr->mProjectDirectory = filePath.parent_path();
 
@@ -51,7 +52,7 @@ std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 
 std::shared_ptr<Asset> Project::readFromDisk(std::ifstream *stream, std::filesystem::path filePath)
 {
-	auto ptr = std::make_shared<Project>();
+	auto ptr = asset::AssetManager::makeAsset<Project>();
 	cereal::JSONInputArchive archive(*stream);
 	ptr->load(archive);
 	ptr->mProjectDirectory = filePath.parent_path();
