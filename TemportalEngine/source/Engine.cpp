@@ -21,10 +21,10 @@ std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_va
 
 #pragma region Singleton
 
-Engine::EnginePtr Engine::Create(std::shared_ptr<memory::MemoryChunk> pChunk)
+Engine::EnginePtr Engine::Create(std::shared_ptr<memory::MemoryChunk> pChunk, std::unordered_map<std::string, ui64> memoryChunkSizes)
 {
 	assert(Engine::spInstance == nullptr);
-	Engine::spInstance = pChunk->make_shared<Engine>(pChunk);
+	Engine::spInstance = pChunk->make_shared<Engine>(pChunk, memoryChunkSizes);
 	return Engine::Get();
 }
 
@@ -41,11 +41,13 @@ void Engine::Destroy()
 
 #pragma endregion
 
-Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory)
+Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes)
 	: mMainMemory(mainMemory)
 	, mbShouldContinueRunning(false)
 	//, mpNetworkService(nullptr)
 {
+	assert(memoryChunkSizes.find("asset") != memoryChunkSizes.end());
+
 	LogEngineInfo("Creating Engine");
 	mEngineInfo.title = "TemportalEngine";
 	mEngineInfo.version = ENGINE_VERSION;
@@ -63,7 +65,9 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory)
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
 
-	this->mAssetManager.queryAssetTypes();
+	this->mpAssetManager = this->mMainMemory->make_shared<asset::AssetManager>();
+	this->mpAssetManager->setAssetMemory(this->mMainMemory->createChunk(memoryChunkSizes.find("asset")->second));
+	this->mpAssetManager->queryAssetTypes();
 }
 
 Engine::~Engine()

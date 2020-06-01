@@ -11,12 +11,12 @@
 
 Editor* Editor::EDITOR = nullptr;
 
-Editor::Editor(std::shared_ptr<memory::MemoryChunk> mainMemory)
+Editor::Editor(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes)
 {
 	assert(EDITOR == nullptr);
 	EDITOR = this;
 
-	auto pEngine = engine::Engine::Create(mainMemory);
+	auto pEngine = engine::Engine::Create(mainMemory, memoryChunkSizes);
 	pEngine->setProject(mainMemory->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
 
 	this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");

@@ -63,6 +63,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\MutexLock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>

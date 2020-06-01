@@ -5,6 +5,8 @@
 #include "gui/MainDockspace.hpp"
 #include "asset/Project.hpp"
 
+#include <unordered_map>
+
 class Window;
 
 NS_MEMORY
@@ -25,7 +27,7 @@ class Editor
 public:
 	static Editor* EDITOR;
 
-	Editor(std::shared_ptr<memory::MemoryChunk> mainMemory);
+	Editor(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes);
 	~Editor();
 
 	bool setup();

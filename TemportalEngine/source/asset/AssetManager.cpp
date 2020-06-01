@@ -14,9 +14,19 @@ using namespace asset;
 
 static logging::Logger LOG = DeclareLog("AssetManager");
 
-AssetManager* AssetManager::get()
+std::shared_ptr<AssetManager> AssetManager::get()
 {
 	return engine::Engine::Get()->getAssetManager();
+}
+
+void AssetManager::setAssetMemory(std::shared_ptr<memory::MemoryChunk> assetMemory)
+{
+	this->mpAssetMemory = assetMemory;
+}
+
+std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
+{
+	return this->mpAssetMemory;
 }
 
 void AssetManager::queryAssetTypes()

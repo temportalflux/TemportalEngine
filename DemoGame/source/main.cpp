@@ -6,6 +6,7 @@
 #include "graphics/ShaderModule.hpp"
 
 #include "memory/MemoryChunk.hpp"
+#include "utility/StringUtils.hpp"
 
 #include <array>
 #include <filesystem>
@@ -13,6 +14,7 @@
 #include <string>
 #include <stdarg.h>
 #include <time.h>
+#include <unordered_map>
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -71,15 +73,21 @@ void initializeNetwork(engine::Engine *pEngine)
 	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	auto memoryChunk = memory::MemoryChunk::Create(1 << 30);
+	auto args = utility::parseArguments(argc, argv);
+
+	ui64 totalMem = 0;
+	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
+	assert(totalMem > 0);
+	
+	auto memoryChunk = memory::MemoryChunk::Create(totalMem);
 
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
 	{
-		auto pEngine = engine::Engine::Create(memoryChunk);
+		auto pEngine = engine::Engine::Create(memoryChunk, memoryChunkSizes);
 		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
 
 		if (!pEngine->initializeDependencies())

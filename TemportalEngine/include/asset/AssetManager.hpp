@@ -13,6 +13,10 @@
 #include <unordered_map>
 #include <map>
 
+NS_MEMORY
+class MemoryChunk;
+NS_END
+
 NS_ASSET
 
 /**
@@ -43,7 +47,11 @@ class AssetManager
 {
 
 public:
-	static AssetManager* get();
+	static std::shared_ptr<AssetManager> get();
+
+	std::shared_ptr<memory::MemoryChunk> mpAssetMemory;
+	void setAssetMemory(std::shared_ptr<memory::MemoryChunk> assetMemory);
+	std::shared_ptr<memory::MemoryChunk> getAssetMemory() const;
 
 	/**
 	 * Registers all known asset types.

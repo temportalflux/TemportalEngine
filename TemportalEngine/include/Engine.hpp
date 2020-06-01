@@ -19,6 +19,7 @@
 #include "ExecutableInfo.hpp"
 
 #include <optional>
+#include <unordered_map>
 #include <typeinfo>
 
 class Window;
@@ -49,12 +50,12 @@ public:
 	static std::vector<const char*> VulkanValidationLayers;
 
 #pragma region Singleton
-	static EnginePtr Create(std::shared_ptr<memory::MemoryChunk> pChunk);
+	static EnginePtr Create(std::shared_ptr<memory::MemoryChunk> pChunk, std::unordered_map<std::string, ui64> memoryChunkSizes);
 	static EnginePtr Get();
 	static void Destroy();
 #pragma endregion
 
-	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory);
+	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes);
 	~Engine();
 
 	bool hasProject() const;
@@ -67,7 +68,7 @@ public:
 	void terminateDependencies();
 #pragma endregion
 
-	asset::AssetManager* getAssetManager() { return &mAssetManager; }
+	std::shared_ptr<asset::AssetManager> getAssetManager() { return mpAssetManager; }
 
 #pragma region Windows
 	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
@@ -101,13 +102,12 @@ private:
 #pragma region Memory
 	std::shared_ptr<memory::MemoryChunk> mMainMemory;
 #pragma endregion
-
 	
 #pragma region Dependencies
 	dependency::SDL mpDepSDL[1];
 #pragma endregion
 
-	asset::AssetManager mAssetManager;
+	std::shared_ptr<asset::AssetManager> mpAssetManager;
 	
 #pragma region Windows
 	std::map<ui32, std::shared_ptr<Window>> mWindowPtrs;
