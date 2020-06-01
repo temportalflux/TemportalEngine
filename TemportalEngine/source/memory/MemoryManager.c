@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "math/compare.h"
 #include <string.h>  // for memset
+#include <cassert>
 
 typedef struct a3_mem_NodeHeader	a3_mem_NodeHeader;
 typedef struct a3_mem_ChunkHeader	a3_mem_ChunkHeader;
@@ -317,6 +318,8 @@ ui8 a3_mem_manager_init(void* block, uSize size)
 
 	// Determine the size of the chunk header
 	uSize chunkHeaderSize = sizeof(a3_mem_ChunkHeader);
+
+	assert(chunkHeaderSize < size);
 
 	// Cast the full memory block to an a3_ChunkHeader to properly edit bytes
 	a3_mem_ChunkHeader* chunkHeader = (a3_mem_ChunkHeader*)block;

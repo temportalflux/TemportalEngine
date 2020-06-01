@@ -46,6 +46,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\logging\Logger.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Vector.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\alloc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp" />
@@ -114,6 +115,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Vector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\VectorType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\alloc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\Pool.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\SharedPtr.hpp" />

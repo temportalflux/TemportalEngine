@@ -8,6 +8,7 @@
 #define NS_GRAPHICS namespace graphics {
 #define NS_GUI namespace gui {
 #define NS_INPUT namespace input {
+#define NS_INTERNAL namespace _internal {
 #define NS_MATH namespace math {
 #define NS_MEMORY namespace memory {
 #define NS_NETWORK namespace network {

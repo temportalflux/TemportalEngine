@@ -188,6 +188,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp">
       <Filter>asset</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryChunk.cpp">
+      <Filter>memory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -405,6 +408,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\memory\MemoryChunk.hpp">
+      <Filter>memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

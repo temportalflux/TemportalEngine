@@ -5,6 +5,8 @@
 #include "graphics/VulkanRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
 
+#include "memory/MemoryChunk.hpp"
+
 #include <array>
 #include <filesystem>
 #include <iostream>
@@ -71,6 +73,26 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main()
 {
+	{
+		auto allocator = memory::MemoryChunk::Create(1 << 30);
+		{
+			auto ptr = allocator->make_shared<int>(0);
+			*ptr = 524;
+		}
+		{
+			auto ptr = allocator->make_shared<Vertex>();
+			*ptr = { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} };
+		}
+		{
+			auto smallAllocator = allocator->createChunk(1 << 16);
+			{
+				auto ptr = smallAllocator->make_shared<int>(0);
+				*ptr = 524;
+			}
+		}
+	}
+	return 0;
+
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
