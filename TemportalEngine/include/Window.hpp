@@ -50,11 +50,12 @@ private:
 
 public:
 	Window() = default;
-	Window(ui16 width, ui16 height, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
+	Window(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroy();
 
 	ui32 getId() const;
 	void* getWindowHandle() const;
+	void setTitle(std::string title);
 
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;

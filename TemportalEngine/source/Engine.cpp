@@ -106,14 +106,19 @@ Engine::~Engine()
 	LogEngineInfo("Engine Destroyed");
 }
 
+bool Engine::hasProject() const
+{
+	return (bool)this->mProject;
+}
+
 void Engine::setProject(asset::ProjectPtrStrong project)
 {
 	this->mProject = project;
 }
 
-bool Engine::hasProject() const
+asset::ProjectPtrStrong Engine::getProject() const
 {
-	return (bool)this->mProject;
+	return this->mProject;
 }
 
 utility::SExecutableInfo const *const Engine::getInfo() const
@@ -167,9 +172,9 @@ void Engine::terminateDependencies()
 
 #pragma region Windows
 
-Window* Engine::createWindow(ui16 width, ui16 height, WindowFlags flags)
+Window* Engine::createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags)
 {
-	auto window = this->alloc<Window>(width, height, flags);
+	auto window = this->alloc<Window>(width, height, title, flags);
 	window->addInputListeners(mpInputQueue);
 	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;

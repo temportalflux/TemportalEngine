@@ -5,6 +5,8 @@
 #include "gui/MainDockspace.hpp"
 #include "asset/Project.hpp"
 
+class Window;
+
 NS_ENGINE
 class Engine;
 NS_END
@@ -31,6 +33,7 @@ public:
 
 private:
 	engine::Engine *mpEngine;
+	Window *mpWindow;
 
 	gui::MainDockspace mDockspace;
 

@@ -21,6 +21,11 @@ Version Project::getVersion() const
 	return this->mVersion;
 }
 
+std::string Project::getDisplayName() const
+{
+	return this->getName() + " (" + this->getVersion().toString() + ")";
+}
+
 std::filesystem::path Project::getAbsoluteDirectoryPath() const
 {
 	return this->mProjectDirectory;

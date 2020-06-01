@@ -2,6 +2,7 @@
 
 #include "types/integer.h"
 
+#include <string>
 #include <cereal/cereal.hpp>
 
 // Creates a unique 32-bit integer version for a unique semantic version
@@ -40,6 +41,14 @@ struct Version
 			cereal::make_nvp("patch", patch)
 		);
 		this->unpacked = { patch, minor, major };
+	}
+
+	std::string toString() const
+	{
+		return
+			"v" + std::to_string(this->unpacked.major)
+			+ "." + std::to_string(this->unpacked.minor)
+			+ "." + std::to_string(this->unpacked.patch);
 	}
 };
 

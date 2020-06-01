@@ -120,7 +120,11 @@ int main()
 		return 1;
 	}
 
-	auto pWindow = pEngine->createWindow(800, 600, WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE);
+	auto pWindow = pEngine->createWindow(
+		800, 600,
+		pEngine->getProject()->getDisplayName(),
+		WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
+	);
 	if (pWindow == nullptr)
 	{
 		engine::Engine::Destroy();

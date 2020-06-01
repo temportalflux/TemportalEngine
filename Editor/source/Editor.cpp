@@ -46,20 +46,20 @@ void Editor::run()
 	// TODO: moved the shared_ptr wrapper to Engine::Get()
 	this->mpEngine = engine::Engine::Get();
 
-	auto pWindow = this->mpEngine->createWindow(800, 600, WindowFlags::RESIZABLE);
-	if (pWindow == nullptr) return;
+	this->mpWindow = this->mpEngine->createWindow(800, 600, "Editor", WindowFlags::RESIZABLE);
+	if (this->mpWindow == nullptr) return;
 	
-	auto pVulkan = this->mpEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
-	auto renderer = graphics::ImGuiRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+	auto pVulkan = this->mpEngine->initializeVulkan(this->mpWindow->querySDLVulkanExtensions());
+	auto renderer = graphics::ImGuiRenderer(pVulkan, this->mpWindow->createSurface().initialize(pVulkan));
 	this->initializeRenderer(&renderer);
 	renderer.finalizeInitialization();
 
-	pWindow->setRenderer(&renderer);
+	this->mpWindow->setRenderer(&renderer);
 
 	renderer.addGui(&this->mDockspace);
 
 	this->mpEngine->start();
-	while (this->mpEngine->isActive() && !pWindow->isPendingClose() && this->mDockspace.isOpen())
+	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mDockspace.isOpen())
 	{
 		this->mpEngine->update();
 	}
@@ -68,7 +68,7 @@ void Editor::run()
 	renderer.removeGui(&this->mDockspace);
 
 	renderer.invalidate();
-	this->mpEngine->destroyWindow(pWindow);
+	this->mpEngine->destroyWindow(this->mpWindow);
 }
 
 void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)
@@ -122,6 +122,8 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
 	assert(project != nullptr);
 	this->mpProject = project;
+
+	this->mpWindow->setTitle("Editor: " + this->getProject()->getDisplayName());
 	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory());
 }
 

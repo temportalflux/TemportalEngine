@@ -15,11 +15,11 @@
 auto LogWindow = DeclareLog("Window");
 
 Window::Window(
-	ui16 width, ui16 height, WindowFlags flags
+	ui16 width, ui16 height, std::string title, WindowFlags flags
 )
 	: mWidth(width)
 	, mHeight(height)
-	, mpTitle("TODO Update Title")
+	, mpTitle(title)
 	, mFlags(flags)
 {
 	this->mIsPendingClose = false;
@@ -53,6 +53,12 @@ ui32 Window::getId() const
 void* Window::getWindowHandle() const
 {
 	return this->mpHandle;
+}
+
+void Window::setTitle(std::string title)
+{
+	this->mpTitle = title;
+	SDL_SetWindowTitle(reinterpret_cast<SDL_Window*>(this->getWindowHandle()), this->mpTitle.c_str());
 }
 
 std::vector<const char*> Window::querySDLVulkanExtensions() const

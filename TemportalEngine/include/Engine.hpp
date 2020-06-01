@@ -53,8 +53,9 @@ public:
 
 	~Engine();
 
-	void setProject(asset::ProjectPtrStrong project);
 	bool hasProject() const;
+	void setProject(asset::ProjectPtrStrong project);
+	asset::ProjectPtrStrong getProject() const;
 	utility::SExecutableInfo const *const getInfo() const;
 
 #pragma region Memory
@@ -131,7 +132,7 @@ public:
 	asset::AssetManager* getAssetManager() { return &mAssetManager; }
 
 #pragma region Windows
-	Window* createWindow(ui16 width, ui16 height, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
+	Window* createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroyWindow(Window* &pWindow);
 #pragma endregion
 
