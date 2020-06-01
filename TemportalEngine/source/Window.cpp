@@ -109,7 +109,7 @@ bool Window::isValid()
 	return this->mpHandle != nullptr;
 }
 
-void Window::addInputListeners(input::Queue *pQueue)
+void Window::addInputListeners(std::shared_ptr<input::Queue> pQueue)
 {
 	mInputHandleQuit = pQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Window::onInputQuit, this, std::placeholders::_1)

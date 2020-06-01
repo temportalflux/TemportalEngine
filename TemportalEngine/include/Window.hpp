@@ -63,7 +63,7 @@ public:
 	void setRenderer(graphics::VulkanRenderer *pRenderer);
 
 	bool isValid();
-	void addInputListeners(input::Queue *pQueue);
+	void addInputListeners(std::shared_ptr<input::Queue> pQueue);
 
 	void onInputQuit(input::Event const &evt);
 	void markShouldClose();

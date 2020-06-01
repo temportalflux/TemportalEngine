@@ -56,15 +56,15 @@ void Service::registerCommonPackets()
 void Service::startThread(engine::Engine * const pEngine)
 {
 	// TODO: this isn't dealloced
-	mpThread = pEngine->alloc<Thread>("Thread-Network", &engine::Engine::LOG_SYSTEM);
-	mpThread->setFunctor(std::bind(&Service::runThread, this));
-	mpThread->start();
+	//mpThread = pEngine->alloc<Thread>("Thread-Network", &engine::Engine::LOG_SYSTEM);
+	//mpThread->setFunctor(std::bind(&Service::runThread, this));
+	//mpThread->start();
 }
 
 bool Service::runThread()
 {
 	engine::Engine *pEngine = nullptr;
-	bool isActive = engine::Engine::GetChecked(pEngine) && pEngine->isActive();
+	bool isActive = false;// engine::Engine::GetChecked(pEngine) && pEngine->isActive();
 	if (isActive)
 	{
 		mpNetworkInterface->fetchAllPackets();

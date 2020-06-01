@@ -7,6 +7,10 @@
 
 class Window;
 
+NS_MEMORY
+class MemoryChunk;
+NS_END
+
 NS_ENGINE
 class Engine;
 NS_END
@@ -21,7 +25,7 @@ class Editor
 public:
 	static Editor* EDITOR;
 
-	Editor();
+	Editor(std::shared_ptr<memory::MemoryChunk> mainMemory);
 	~Editor();
 
 	bool setup();
@@ -32,8 +36,8 @@ public:
 	asset::ProjectPtrStrong getProject();
 
 private:
-	engine::Engine *mpEngine;
-	Window *mpWindow;
+	std::shared_ptr<engine::Engine> mpEngine;
+	std::shared_ptr<Window> mpWindow;
 
 	gui::MainDockspace mDockspace;
 

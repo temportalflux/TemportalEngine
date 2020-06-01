@@ -73,169 +73,155 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main()
 {
-	{
-		auto allocator = memory::MemoryChunk::Create(1 << 30);
-		{
-			auto ptr = allocator->make_shared<int>(0);
-			*ptr = 524;
-		}
-		{
-			auto ptr = allocator->make_shared<Vertex>();
-			*ptr = { {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} };
-		}
-		{
-			auto smallAllocator = allocator->createChunk(1 << 16);
-			{
-				auto ptr = smallAllocator->make_shared<int>(0);
-				*ptr = 524;
-			}
-		}
-	}
-	return 0;
+	auto memoryChunk = memory::MemoryChunk::Create(1 << 30);
 
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
-	engine::Engine *pEngine = engine::Engine::Create();
-	LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+	{
+		auto pEngine = engine::Engine::Create(memoryChunk);
+		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
 
-	if (!pEngine->initializeDependencies())
-	{
-		engine::Engine::Destroy();
-		return 1;
-	}
-	
-	// TODO: Create copies of all assets (project file and assets directory) in binary format and store them in the output folder
-	{
-		auto assetManager = pEngine->getAssetManager();
-		auto asset = assetManager->readAssetFromDisk(std::filesystem::absolute("../../DemoGame/DemoGame.te-project"), false);
-		asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
-		assert(project != nullptr);
-		pEngine->setProject(project);
-		assetManager->scanAssetDirectory(project->getAssetDirectory());
-	}
-
-	//initializeNetwork(pEngine);
-	
-	std::string title = "Demo Game";
-	if (pEngine->hasNetwork())
-	{
-		/*
-		auto network = pEngine->getNetworkService();
-		if (network.has_value())
+		if (!pEngine->initializeDependencies())
 		{
-			if (network.value()->isServer())
-			{
-				title += " (Server)";
-			}
-			else
-			{
-				title += " (Client)";
-			}
+			engine::Engine::Destroy();
+			return 1;
 		}
-		//*/
-	}
 
-	if (!pEngine->setupVulkan())
-	{
-		engine::Engine::Destroy();
-		return 1;
-	}
+		// TODO: Create copies of all assets (project file and assets directory) in binary format and store them in the output folder
+		{
+			auto assetManager = pEngine->getAssetManager();
+			auto asset = assetManager->readAssetFromDisk(std::filesystem::absolute("../../DemoGame/DemoGame.te-project"), false);
+			asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
+			assert(project != nullptr);
+			pEngine->setProject(project);
+			assetManager->scanAssetDirectory(project->getAssetDirectory());
+		}
 
-	auto pWindow = pEngine->createWindow(
-		800, 600,
-		pEngine->getProject()->getDisplayName(),
-		WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
-	);
-	if (pWindow == nullptr)
-	{
-		engine::Engine::Destroy();
-		return 1;
-	}
+		//initializeNetwork(pEngine);
+
+		std::string title = "Demo Game";
+		if (pEngine->hasNetwork())
+		{
+			/*
+			auto network = pEngine->getNetworkService();
+			if (network.has_value())
+			{
+				if (network.value()->isServer())
+				{
+					title += " (Server)";
+				}
+				else
+				{
+					title += " (Client)";
+				}
+			}
+			//*/
+		}
+
+		if (!pEngine->setupVulkan())
+		{
+			engine::Engine::Destroy();
+			return 1;
+		}
+
+		auto pWindow = pEngine->createWindow(
+			800, 600,
+			pEngine->getProject()->getDisplayName(),
+			WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
+		);
+		if (pWindow == nullptr)
+		{
+			engine::Engine::Destroy();
+			return 1;
+		}
 
 #pragma region Vulkan
-	auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
-	auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
-	
-	// Initialize settings
-	renderer.setPhysicalDevicePreference(graphics::PhysicalDevicePreference()
-		.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
-		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
-		.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
-		.addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
-		.addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-		.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
-		.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
-	);
-	renderer.setLogicalDeviceInfo(graphics::LogicalDeviceInfo()
-		.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-		.addQueueFamily(graphics::QueueFamily::eGraphics)
-		.addQueueFamily(graphics::QueueFamily::ePresentation)
-		.setValidationLayers(engine::Engine::VulkanValidationLayers)
-	);
-	renderer.setSwapChainInfo(graphics::SwapChainInfo()
-		.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
-		.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
-		.addPresentModePreference(vk::PresentModeKHR::eMailbox)
-		.addPresentModePreference(vk::PresentModeKHR::eFifo)
-	);
-	renderer.setImageViewInfo({
-		vk::ImageViewType::e2D,
-		{
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity,
-			vk::ComponentSwizzle::eIdentity
-		}
-	});
-	
-	// Initialize required api connections
-	renderer.initializeDevices();
-	
-	// Create shaders
-	auto shaderVertex = graphics::ShaderModule();
-	shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
-	shaderVertex.setSource("shaders/triangle.vert.spv");
-	shaderVertex.setVertexDescription(
-		{
-			sizeof(Vertex),
+		auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+		auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+
+		// Initialize settings
+		renderer.setPhysicalDevicePreference(graphics::PhysicalDevicePreference()
+																				 .addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
+																				 .addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
+																				 .addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
+																				 .addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
+																				 .addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+																				 .addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
+																				 .addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
+		);
+		renderer.setLogicalDeviceInfo(graphics::LogicalDeviceInfo()
+																	.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+																	.addQueueFamily(graphics::QueueFamily::eGraphics)
+																	.addQueueFamily(graphics::QueueFamily::ePresentation)
+																	.setValidationLayers(engine::Engine::VulkanValidationLayers)
+		);
+		renderer.setSwapChainInfo(graphics::SwapChainInfo()
+															.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
+															.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+															.addPresentModePreference(vk::PresentModeKHR::eMailbox)
+															.addPresentModePreference(vk::PresentModeKHR::eFifo)
+		);
+		renderer.setImageViewInfo({
+			vk::ImageViewType::e2D,
 			{
-				{ "position", (ui32)offsetof(Vertex, position) },
-				{ "color", (ui32)offsetof(Vertex, color) }
+				vk::ComponentSwizzle::eIdentity,
+				vk::ComponentSwizzle::eIdentity,
+				vk::ComponentSwizzle::eIdentity,
+				vk::ComponentSwizzle::eIdentity
 			}
-		}
-	);
+															});
 
-	auto shaderFragment = graphics::ShaderModule();
-	shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
-	shaderFragment.setSource("shaders/triangle.frag.spv");
-	renderer.addShader(vk::ShaderStageFlagBits::eVertex, &shaderVertex);
-	renderer.addShader(vk::ShaderStageFlagBits::eFragment, &shaderFragment);
+		// Initialize required api connections
+		renderer.initializeDevices();
 
-	// Initialize the rendering api connections
-	renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());
-	renderer.writeVertexData(vertices);
+		// Create shaders
+		auto shaderVertex = graphics::ShaderModule();
+		shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
+		shaderVertex.setSource("shaders/triangle.vert.spv");
+		shaderVertex.setVertexDescription(
+			{
+				sizeof(Vertex),
+				{
+					{ "position", (ui32)offsetof(Vertex, position) },
+					{ "color", (ui32)offsetof(Vertex, color) }
+				}
+			}
+		);
 
-	renderer.createRenderChain();
-	renderer.finalizeInitialization();
+		auto shaderFragment = graphics::ShaderModule();
+		shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
+		shaderFragment.setSource("shaders/triangle.frag.spv");
+		renderer.addShader(vk::ShaderStageFlagBits::eVertex, &shaderVertex);
+		renderer.addShader(vk::ShaderStageFlagBits::eFragment, &shaderFragment);
 
-	// Give the window its renderer
-	pWindow->setRenderer(&renderer);
+		// Initialize the rendering api connections
+		renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());
+		renderer.writeVertexData(vertices);
+
+		renderer.createRenderChain();
+		renderer.finalizeInitialization();
+
+		// Give the window its renderer
+		pWindow->setRenderer(&renderer);
 #pragma endregion
 
-	pEngine->start();
-	while (pEngine->isActive())
-	{
-		pEngine->update();
+		pEngine->start();
+		while (pEngine->isActive())
+		{
+			pEngine->update();
+		}
+		pEngine->joinThreads();
+
+		// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
+
+		renderer.invalidate();
+
+		engine::Engine::Get()->destroyWindow(pWindow);
+		pWindow.reset();
+
+		engine::Engine::Destroy();
 	}
-	pEngine->joinThreads();
-
-	// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
-
-	renderer.invalidate();
-
-	engine::Engine::Get()->destroyWindow(pWindow);
-	engine::Engine::Destroy();
 
 	engine::Engine::LOG_SYSTEM.close();
 	return 0;

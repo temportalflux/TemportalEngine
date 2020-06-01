@@ -1,5 +1,7 @@
 #include "Engine.hpp"
 
+#include "memory/MemoryChunk.hpp"
+
 #include "Window.hpp"
 #include "math/Vector.hpp"
 #include "memory/MemoryManager.h"
@@ -10,69 +12,43 @@
 
 using namespace engine;
 
+#define ENGINE_VERSION TE_MAKE_VERSION(1, 0, 0)
+
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
-void* Engine::spInstance = nullptr;
+Engine::EnginePtr Engine::spInstance = nullptr;
 
 std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-constexpr uSize Engine::getMaxMemorySize()
-{
-	return 1 << 22; // 2^22
-}
-
 #pragma region Singleton
 
-Engine* Engine::Create()
+Engine::EnginePtr Engine::Create(std::shared_ptr<memory::MemoryChunk> pChunk)
 {
-	if (spInstance == nullptr)
-	{
-		void* memoryManager = malloc(getMaxMemorySize());
-		if (a3_mem_manager_init(memoryManager, getMaxMemorySize()))
-		{
-			if (a3_mem_manager_alloc(memoryManager, sizeof(Engine), &spInstance))
-			{
-				new (spInstance) Engine(TE_MAKE_VERSION(1, 0, 0), memoryManager);
-				return Engine::Get();
-			}
-		}
-	}
-	return nullptr;
+	assert(Engine::spInstance == nullptr);
+	Engine::spInstance = pChunk->make_shared<Engine>(pChunk);
+	return Engine::Get();
 }
 
-Engine * Engine::Get()
+Engine::EnginePtr Engine::Get()
 {
-	return (Engine*)spInstance;
-}
-
-bool Engine::GetChecked(Engine *& instance)
-{
-	instance = Engine::Get();
-	return instance != nullptr;
+	return Engine::spInstance;
 }
 
 void Engine::Destroy()
 {
-	if (spInstance != nullptr)
-	{
-		Engine *pEngine = static_cast<Engine*>(spInstance);
-		void* memoryManager = pEngine->getMemoryManager();
-		pEngine->~Engine();
-		a3_mem_manager_dealloc(memoryManager, pEngine);
-		spInstance = nullptr;
-		free(memoryManager);
-	}
+	Engine::spInstance = nullptr;
+	assert(!Engine::spInstance);
 }
 
 #pragma endregion
 
-Engine::Engine(ui32 const & version, void* memoryManager)
-	: mpMemoryManager(memoryManager)
+Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory)
+	: mMainMemory(mainMemory)
 	, mbShouldContinueRunning(false)
 	//, mpNetworkService(nullptr)
 {
 	LogEngineInfo("Creating Engine");
 	mEngineInfo.title = "TemportalEngine";
-	mEngineInfo.version = version;
+	mEngineInfo.version = ENGINE_VERSION;
 
 	this->mpInputWatcher[0] = input::InputWatcher(std::bind(
 		&Engine::onRawEvent, this, std::placeholders::_1
@@ -81,7 +57,8 @@ Engine::Engine(ui32 const & version, void* memoryManager)
 		&Engine::enqueueInput, this, std::placeholders::_1
 	));
 
-	this->mpInputQueue = this->alloc<input::Queue>();
+	// TODO: allocate from a sub-chunk of main memory
+	this->mpInputQueue = this->mMainMemory->make_shared<input::Queue>();
 	this->mInputHandle = this->mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
@@ -99,9 +76,11 @@ Engine::~Engine()
 		this->mVulkanInstance.destroy();
 	}
 	this->terminateDependencies();
-	this->dealloc(&mpInputQueue);
+
+	this->mpInputQueue.reset();
+	assert(!this->mpInputQueue);
 	
-	this->mProject.reset();
+	//this->mProject.reset();
 	
 	LogEngineInfo("Engine Destroyed");
 }
@@ -126,32 +105,6 @@ utility::SExecutableInfo const *const Engine::getInfo() const
 	return &mEngineInfo;
 }
 
-#pragma region Memory
-
-void * Engine::getMemoryManager()
-{
-	return mpMemoryManager;
-}
-
-void* Engine::allocRaw(uSize size)
-{
-	void* ptr = nullptr;
-	this->mpLockMemoryManager->lock();
-	a3_mem_manager_alloc(getMemoryManager(), size, &ptr);
-	this->mpLockMemoryManager->unlock();
-	return ptr;
-}
-
-void Engine::deallocRaw(void** ptr)
-{
-	this->mpLockMemoryManager->lock();
-	a3_mem_manager_dealloc(getMemoryManager(), *ptr);
-	this->mpLockMemoryManager->unlock();
-	ptr = nullptr;
-}
-
-#pragma endregion
-
 #pragma region Dependencies
 
 bool Engine::initializeDependencies()
@@ -172,19 +125,19 @@ void Engine::terminateDependencies()
 
 #pragma region Windows
 
-Window* Engine::createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags)
+std::shared_ptr<Window> Engine::createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags)
 {
-	auto window = this->alloc<Window>(width, height, title, flags);
-	window->addInputListeners(mpInputQueue);
+	// TODO: allocate from a sub-chunk of main memory
+	auto window = this->mMainMemory->make_shared<Window>(width, height, title, flags);
+	window->addInputListeners(this->mpInputQueue);
 	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;
 }
 
-void Engine::destroyWindow(Window* &pWindow)
+void Engine::destroyWindow(std::shared_ptr<Window> &pWindow)
 {
 	this->mWindowPtrs.erase(pWindow->getId());
 	pWindow->destroy();
-	engine::Engine::Get()->dealloc(&pWindow);
 }
 
 #pragma endregion

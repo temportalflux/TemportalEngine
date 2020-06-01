@@ -22,6 +22,11 @@
 #include <typeinfo>
 
 class Window;
+
+NS_MEMORY
+class MemoryChunk;
+NS_END
+
 NS_INPUT
 class Queue;
 NS_END
@@ -36,94 +41,27 @@ NS_ENGINE
 class TEMPORTALENGINE_API Engine
 {
 private:
-	static void* spInstance;
+	static std::shared_ptr<Engine> spInstance;
 
 public:
+	typedef std::shared_ptr<Engine> EnginePtr;
 	static logging::LogSystem LOG_SYSTEM;
 	static std::vector<const char*> VulkanValidationLayers;
 
-	static constexpr uSize getMaxMemorySize();
-
 #pragma region Singleton
-	static Engine* Create();
-	static Engine* Get();
-	static bool GetChecked(Engine* &instance);
+	static EnginePtr Create(std::shared_ptr<memory::MemoryChunk> pChunk);
+	static EnginePtr Get();
 	static void Destroy();
 #pragma endregion
 
+	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory);
 	~Engine();
 
 	bool hasProject() const;
 	void setProject(asset::ProjectPtrStrong project);
 	asset::ProjectPtrStrong getProject() const;
 	utility::SExecutableInfo const *const getInfo() const;
-
-#pragma region Memory
-
-	void* getMemoryManager();
-
-	void* allocRaw(uSize size);
-	void deallocRaw(void** ptr);
-
-	template <typename TAlloc, typename... TArgs>
-	TAlloc* alloc(TArgs... args)
-	{
-		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc));
-		if (ptr != nullptr)
-			new (ptr) TAlloc(args...);
-		else
-		{
-			type_info const &info = typeid(TAlloc);
-			LogEngine(logging::ECategory::LOGERROR, "Could not allocate object %s", info.name());
-		}
-		return ptr;
-	}
-
-	template <typename TAlloc, typename... TArgs>
-	TAlloc* allocArray(uSize const count, TArgs... args)
-	{
-		TAlloc *ptr = (TAlloc*)this->allocRaw(sizeof(TAlloc) * count);
-		if (ptr != nullptr)
-		{
-			// TODO: Use std::array::fill
-			for (uSize i = 0; i < count; ++i)
-				new (&(ptr[i])) TAlloc(args...);
-		}
-		else
-		{
-			type_info const &info = typeid(TAlloc);
-			LogEngine(logging::ECategory::LOGERROR, "Could not allocate object %s", info.name());
-		}
-		return ptr;
-	}
-
-	template <typename TDealloc>
-	void dealloc(TDealloc **ptrRef)
-	{
-		if (*ptrRef != nullptr)
-		{
-			(*ptrRef)->TDealloc::~TDealloc();
-			this->deallocRaw((void**)ptrRef);
-		}
-	}
-
-	template <typename TDealloc>
-	void deallocArray(uSize const count, TDealloc **ptrRef)
-	{
-		if (*ptrRef != nullptr)
-		{
-			for (uSize i = 0; i < count; ++i)
-			{
-				TDealloc element = (*ptrRef)[i];
-				(&element)->TDealloc::~TDealloc();
-			}
-
-			this->deallocRaw((void**)ptrRef);
-		}
-	}
-
-#pragma endregion
-
+	
 #pragma region Dependencies
 	bool initializeDependencies();
 	void terminateDependencies();
@@ -132,8 +70,8 @@ public:
 	asset::AssetManager* getAssetManager() { return &mAssetManager; }
 
 #pragma region Windows
-	Window* createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
-	void destroyWindow(Window* &pWindow);
+	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
+	void destroyWindow(std::shared_ptr<Window> &pWindow);
 #pragma endregion
 
 #pragma region Graphics
@@ -161,10 +99,10 @@ private:
 	utility::SExecutableInfo mEngineInfo;
 
 #pragma region Memory
-	thread::MutexLock mpLockMemoryManager[1];
-	void* mpMemoryManager;
+	std::shared_ptr<memory::MemoryChunk> mMainMemory;
 #pragma endregion
 
+	
 #pragma region Dependencies
 	dependency::SDL mpDepSDL[1];
 #pragma endregion
@@ -172,7 +110,7 @@ private:
 	asset::AssetManager mAssetManager;
 	
 #pragma region Windows
-	std::map<ui32, Window*> mWindowPtrs;
+	std::map<ui32, std::shared_ptr<Window>> mWindowPtrs;
 #pragma endregion
 	
 #pragma region Graphic
@@ -181,15 +119,13 @@ private:
 
 #pragma region Input
 	input::InputWatcher mpInputWatcher[1];
-	input::Queue *mpInputQueue;
+	std::shared_ptr<input::Queue> mpInputQueue;
 	input::ListenerHandle mInputHandle;
 #pragma endregion
 
 	bool mbShouldContinueRunning;
 
 	//network::Service *mpNetworkService;
-
-	Engine(ui32 const & version, void* memoryManager);
 
 #pragma region Input
 	void pollInput();
