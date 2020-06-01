@@ -2,6 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "version.h"
 #include "ExecutableInfo.hpp"
 #include "logging/Logger.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
@@ -31,7 +32,7 @@ public:
 	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
 	logging::Logger getLog() const;
 
-	VulkanInstance& setApplicationInfo(utility::SExecutableInfo const &info);
+	VulkanInstance& setApplicationInfo(std::string const &name, Version const &version);
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
 	VulkanInstance& setValidationLayers(std::optional<std::vector<char const*>> layers = std::nullopt);
@@ -62,6 +63,7 @@ private:
 	std::unordered_set<char const*> mEnabledExtensions;
 	std::vector<char const*> mValidationLayers;
 
+	std::string mInfoAppName; // ensures that the data stored in mInfo isn't gibberish
 	vk::ApplicationInfo mInfo;
 	vk::InstanceCreateInfo mCreateInfo;
 	bool mInstanceCreated;

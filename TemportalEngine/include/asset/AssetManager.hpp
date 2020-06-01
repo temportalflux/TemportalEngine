@@ -67,7 +67,7 @@ public:
 	void registerType(AssetType type, AssetTypeMetadata metadata);
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
-	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath);
+	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath, bool bShouldHaveBeenScanned=true);
 
 private:
 	/**

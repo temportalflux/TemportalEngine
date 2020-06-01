@@ -107,19 +107,24 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 	return functor(filePath);
 }
 
-std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath)
+std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, bool bShouldHaveBeenScanned)
 {
 	std::ifstream is(filePath);
+	assert(is.is_open());
 
 	// Read the asset using the base asset class to determine the asset type that is stored
 	auto assetMetadata = this->getAssetMetadata(filePath);
 	AssetType assetType;
 	if (!assetMetadata.has_value())
 	{
-		LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
+		if (bShouldHaveBeenScanned)
+			LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
 		assetType = Asset::readAsset(&is)->getAssetType();
 	}
-	assetType = assetMetadata->type;
+	else
+	{
+		assetType = assetMetadata->type;
+	}
 
 	// Reset the file stream back to the beginning for re-deserialization
 	is.clear();

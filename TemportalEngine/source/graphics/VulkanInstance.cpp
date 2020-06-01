@@ -2,7 +2,6 @@
 
 #include "graphics/Surface.hpp"
 #include "types/integer.h"
-#include "version.h"
 
 #include <set>
 #include <map>
@@ -36,10 +35,11 @@ logging::Logger VulkanInstance::getLog() const
 	return mLogger;
 }
 
-VulkanInstance& VulkanInstance::setApplicationInfo(utility::SExecutableInfo const &info)
+VulkanInstance& VulkanInstance::setApplicationInfo(std::string const &name, Version const &version)
 {
 	assert(!mInstanceCreated);
-	mInfo.setPApplicationName(info.title).setApplicationVersion(info.version);
+	this->mInfoAppName = name;
+	mInfo.setPApplicationName(this->mInfoAppName.c_str()).setApplicationVersion(version.packed);
 	return *this;
 }
 
@@ -115,13 +115,13 @@ void VulkanInstance::initialize()
 	mCreateInfo.setEnabledLayerCount(validationLayerCount);
 	mCreateInfo.setPpEnabledLayerNames(validationLayerCount > 0 ? mValidationLayers.data() : nullptr);
 
+	auto appVersion = TE_GET_VERSION(mInfo.applicationVersion);
+	auto engineVersion = TE_GET_VERSION(mInfo.engineVersion);
 	getLog().log(logging::ECategory::LOGINFO,
 		"Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
 		TE_GET_MAJOR_VERSION(mInfo.apiVersion), TE_GET_MINOR_VERSION(mInfo.apiVersion), TE_GET_PATCH_VERSION(mInfo.apiVersion),
-		mInfo.pApplicationName,
-		TE_GET_MAJOR_VERSION(mInfo.applicationVersion), TE_GET_MINOR_VERSION(mInfo.applicationVersion), TE_GET_PATCH_VERSION(mInfo.applicationVersion),
-		mInfo.pEngineName,
-		TE_GET_MAJOR_VERSION(mInfo.engineVersion), TE_GET_MINOR_VERSION(mInfo.engineVersion), TE_GET_PATCH_VERSION(mInfo.engineVersion)
+		mInfo.pApplicationName, appVersion.unpacked.major, appVersion.unpacked.minor, appVersion.unpacked.patch,
+		mInfo.pEngineName, engineVersion.unpacked.major, engineVersion.unpacked.minor, engineVersion.unpacked.patch
 	);
 
 	mInstance = vk::createInstanceUnique(mCreateInfo);

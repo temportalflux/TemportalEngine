@@ -19,9 +19,7 @@ Editor::Editor()
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
 	auto pEngine = engine::Engine::Create();
-
-	utility::SExecutableInfo appInfo = { "Editor", TE_MAKE_VERSION(0, 0, 1) };
-	pEngine->setApplicationInfo(&appInfo);
+	pEngine->setProject(std::make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
 
 	this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");
 	this->mDockspace.open();

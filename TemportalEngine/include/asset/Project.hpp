@@ -2,6 +2,8 @@
 
 #include "asset/Asset.hpp"
 
+#include "version.h"
+
 #include <filesystem>
 
 NS_ASSET
@@ -15,11 +17,19 @@ class Project : public Asset
 public:
 	DEFINE_ASSET_TYPE(AssetType_Project);
 
+	Project() = default;
+	Project(std::string name, Version version);
+
+	std::string getName() const;
+	Version getVersion() const;
+
 	std::filesystem::path getAbsoluteDirectoryPath() const;
 	std::filesystem::path getAssetDirectory() const;
 
 private:
 	std::string mName;
+	Version mVersion;
+
 	std::filesystem::path mProjectDirectory;
 
 #pragma region Serialization
@@ -30,11 +40,12 @@ public:
 
 private:
 	template<class Archive>
-	void save(Archive &archive)
+	void save(Archive &archive) const
 	{
 		Asset::save(archive);
 		archive(
-			cereal::make_nvp("name", this->mName)
+			cereal::make_nvp("name", this->mName),
+			cereal::make_nvp("version", this->mVersion)
 		);
 	}
 
@@ -43,7 +54,8 @@ private:
 	{
 		Asset::load(archive);
 		archive(
-			cereal::make_nvp("name", this->mName)
+			cereal::make_nvp("name", this->mName),
+			cereal::make_nvp("version", this->mVersion)
 		);
 	}
 #pragma endregion

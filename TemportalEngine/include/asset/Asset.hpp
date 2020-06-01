@@ -34,7 +34,7 @@ public:
 protected:
 
 	template<class Archive>
-	void save(Archive &archive)
+	void save(Archive &archive) const
 	{
 		// Always write the constant-type-per-subclass as the type
 		archive(cereal::make_nvp("type", this->getAssetType()));

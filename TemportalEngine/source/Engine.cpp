@@ -121,11 +121,6 @@ utility::SExecutableInfo const *const Engine::getInfo() const
 	return &mEngineInfo;
 }
 
-void Engine::setApplicationInfo(utility::SExecutableInfo const *const pAppInfo)
-{
-	mAppInfo = *pAppInfo;
-}
-
 #pragma region Memory
 
 void * Engine::getMemoryManager()
@@ -193,7 +188,7 @@ void Engine::destroyWindow(Window* &pWindow)
 
 bool Engine::setupVulkan()
 {
-	this->mVulkanInstance.setApplicationInfo(mAppInfo);
+	this->mVulkanInstance.setApplicationInfo(this->mProject->getName(), this->mProject->getVersion());
 	this->mVulkanInstance.setEngineInfo(mEngineInfo);
 	this->mVulkanInstance.setValidationLayers(Engine::VulkanValidationLayers);
 	this->mVulkanInstance.createLogger(&LOG_SYSTEM, /*vulkan debug*/ true);

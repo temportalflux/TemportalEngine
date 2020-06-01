@@ -56,7 +56,6 @@ public:
 	void setProject(asset::ProjectPtrStrong project);
 	bool hasProject() const;
 	utility::SExecutableInfo const *const getInfo() const;
-	void setApplicationInfo(utility::SExecutableInfo const *const pAppInfo);
 
 #pragma region Memory
 
@@ -159,7 +158,6 @@ private:
 	asset::ProjectPtrStrong mProject;
 
 	utility::SExecutableInfo mEngineInfo;
-	utility::SExecutableInfo mAppInfo;
 
 #pragma region Memory
 	thread::MutexLock mpLockMemoryManager[1];

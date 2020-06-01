@@ -1,4 +1,9 @@
 {
     "type": "project",
-    "name": "DemoGame"
+    "name": "DemoGame",
+    "version": {
+    	"major": 0,
+    	"minor": 1,
+    	"patch": 0
+    }
 }

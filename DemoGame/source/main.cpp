@@ -6,6 +6,7 @@
 #include "graphics/ShaderModule.hpp"
 
 #include <array>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <stdarg.h>
@@ -82,6 +83,16 @@ int main()
 		return 1;
 	}
 	
+	// TODO: Create copies of all assets (project file and assets directory) in binary format and store them in the output folder
+	{
+		auto assetManager = pEngine->getAssetManager();
+		auto asset = assetManager->readAssetFromDisk(std::filesystem::absolute("../../DemoGame/DemoGame.te-project"), false);
+		asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
+		assert(project != nullptr);
+		pEngine->setProject(project);
+		assetManager->scanAssetDirectory(project->getAssetDirectory());
+	}
+
 	//initializeNetwork(pEngine);
 	
 	std::string title = "Demo Game";
@@ -102,9 +113,6 @@ int main()
 		}
 		//*/
 	}
-
-	utility::SExecutableInfo appInfo = { title.c_str(), TE_MAKE_VERSION(0, 1, 0) };
-	pEngine->setApplicationInfo(&appInfo);
 
 	if (!pEngine->setupVulkan())
 	{

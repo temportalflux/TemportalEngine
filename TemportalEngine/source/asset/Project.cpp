@@ -5,6 +5,22 @@
 
 using namespace asset;
 
+Project::Project(std::string name, Version version) : Asset()
+{
+	this->mName = name;
+	this->mVersion = version;
+}
+
+std::string Project::getName() const
+{
+	return this->mName;
+}
+
+Version Project::getVersion() const
+{
+	return this->mVersion;
+}
+
 std::filesystem::path Project::getAbsoluteDirectoryPath() const
 {
 	return this->mProjectDirectory;
