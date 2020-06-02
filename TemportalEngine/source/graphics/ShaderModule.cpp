@@ -4,6 +4,9 @@
 #include "types/integer.h"
 
 #include <fstream>
+#include <shaderc/shaderc.hpp>
+
+//#define COMPILE_BINARIES
 
 using namespace graphics;
 
@@ -69,21 +72,48 @@ bool ShaderModule::isLoaded() const
 	return (bool)this->mShader;
 }
 
-std::optional<std::vector<char>> ShaderModule::readBinary() const
+std::optional<std::vector<ui32>> ShaderModule::readBinary() const
 {
-	std::ifstream file(this->mFileName, std::ios::ate | std::ios::binary);
+#ifndef COMPILE_BINARIES
+	auto fileName = this->mFileName + ".spv";
+	std::ifstream file(fileName, std::ios::ate | std::ios::binary);
+#else
+	std::ifstream file(this->mFileName);
+#endif
 	if (!file.is_open())
 	{
 		return std::nullopt;
 	}
 
+#ifndef COMPILE_BINARIES
 	uSize fileSize = (uSize)file.tellg();
-	std::vector<char> buffer(fileSize);
+	std::vector<ui32> buffer(fileSize / (sizeof(ui32) / sizeof(char)));
 	file.seekg(0);
-	file.read(buffer.data(), fileSize);
+	file.read(reinterpret_cast<char*>(buffer.data()), fileSize);
 
 	file.close();
 	return buffer;
+#else
+	std::string shaderText = std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+	file.close();
+	
+	// TODO: Compiling at runtime is SUPER slow. This should be moved to a build step when assets can be built to binary during build step.
+	auto compilationResult = shaderc::Compiler().CompileGlslToSpv(
+		shaderText,
+		this->mStage == vk::ShaderStageFlagBits::eVertex ? shaderc_shader_kind::shaderc_vertex_shader : shaderc_shader_kind::shaderc_fragment_shader,
+		mFileName.c_str()
+	);
+
+	auto status = compilationResult.GetCompilationStatus();
+	if (status != shaderc_compilation_status::shaderc_compilation_status_success)
+	{
+		return std::nullopt;
+	}
+
+	auto buffer = std::vector<ui32>();
+	buffer.assign(compilationResult.cbegin(), compilationResult.cend());
+	return buffer;
+#endif
 }
 
 void ShaderModule::create(LogicalDevice const *pDevice)
@@ -99,8 +129,8 @@ void ShaderModule::create(LogicalDevice const *pDevice)
 	}
 
 	auto info = vk::ShaderModuleCreateInfo()
-		.setCodeSize(binary.value().size())
-		.setPCode(reinterpret_cast<ui32 const *>(binary.value().data()));
+		.setCodeSize(sizeof(ui32) * binary.value().size())
+		.setPCode(binary.value().data());
 	mShader = pDevice->mDevice->createShaderModuleUnique(info);
 }
 

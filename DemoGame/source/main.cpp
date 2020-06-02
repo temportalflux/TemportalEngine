@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
 		// Create shaders
 		auto shaderVertex = graphics::ShaderModule();
 		shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
-		shaderVertex.setSource("shaders/triangle.vert.spv");
+		shaderVertex.setSource("shaders/triangle.vert");
 		shaderVertex.setVertexDescription(
 			{
 				sizeof(Vertex),
@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 
 		auto shaderFragment = graphics::ShaderModule();
 		shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
-		shaderFragment.setSource("shaders/triangle.frag.spv");
+		shaderFragment.setSource("shaders/triangle.frag");
 		renderer.addShader(vk::ShaderStageFlagBits::eVertex, &shaderVertex);
 		renderer.addShader(vk::ShaderStageFlagBits::eFragment, &shaderFragment);
 

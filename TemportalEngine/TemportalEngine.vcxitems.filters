@@ -403,8 +403,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\memory\MemoryChunk.hpp">
-      <Filter>memory</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@ This is a "fun" side-project which explores various areas of game and game-engin
 
 ## Rendering
 
-Vulkan 1.1.x (Apache License Version 2.0)
+### Vulkan 1.1.x (Apache License Version 2.0)
 
 The first and largest hurdle of any good game is what the user can interact with and see. That means we definitely need some kind of graphics.
 I decided to poke around at using Vulkan, as this projects intent was and continues to be to push myself to learn more.
@@ -16,3 +16,14 @@ Here are some resources for you (and myself) to get started with Vulkan!
 - Vulkan SDK tutorial: https://vulkan-tutorial.com/en/Overview
 
 Next Vulkan Task: Staging & Index Buffers https://vulkan-tutorial.com/en/Vertex_buffers/Staging_buffer
+
+### Shader Compilation
+
+To compile shaders, the editor uses libshaderc
+
+1. Download the Debug and Release build zip files from https://github.com/google/shaderc/blob/master/downloads.md
+2. Create `libs\shaderc`
+3. Copy the contents of (Debug build zip) `install\include\shaderc\` to `libs\shaderc\include\Debug\shaderc`
+4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to `libs\shaderc\lib\Debug\shaderc_combined.lib`
+5. Copy the contents of (Release build zip) `install\include\shaderc\` to `libs\shaderc\include\Release\shaderc`
+6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to `libs\shaderc\lib\Release\shaderc_combined.lib`

@@ -55,7 +55,7 @@ private:
 	vk::VertexInputBindingDescription mBinding;
 	std::unordered_map<std::string, vk::VertexInputAttributeDescription> mAttributes;
 
-	std::optional<std::vector<char>> readBinary() const;
+	std::optional<std::vector<ui32>> readBinary() const;
 	vk::PipelineShaderStageCreateInfo getPipelineInfo() const;
 	vk::VertexInputBindingDescription createBindings() const;
 	std::vector<vk::VertexInputAttributeDescription> createAttributes() const;
