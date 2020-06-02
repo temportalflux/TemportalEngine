@@ -10,17 +10,14 @@ int main(int argc, char *argv[])
 
 	ui64 totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
-	assert(totalMem > 0);
-
-	auto mainMemory = memory::MemoryChunk::Create(totalMem);
 
 	std::string logFileName = "TemportalEngine_Editor_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 	{
-		auto editor = Editor(mainMemory, memoryChunkSizes);
+		auto editor = Editor(memoryChunkSizes);
 		if (editor.setup(args))
 		{
-			editor.run();
+			editor.run(args);
 		}
 	}
 	engine::Engine::LOG_SYSTEM.close();

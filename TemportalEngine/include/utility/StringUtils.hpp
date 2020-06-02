@@ -31,6 +31,8 @@ namespace utility
 
 	ArgumentMap parseArguments(int argc, char *argv[]);
 
+	ArgumentMap getArgumentsWithPrefix(ArgumentMap args, std::string prefix);
+
 	template <typename TValue>
 	std::unordered_map<std::string, TValue> parseArgumentsWithPrefix(
 		ArgumentMap args,
@@ -42,11 +44,13 @@ namespace utility
 		for (auto&[arg, val] : args)
 		{
 			if (!utility::startsWith(arg, prefix)) continue;
+			auto argKey = utility::afterPrefix(arg, prefix);
+			if (argKey.empty()) continue;
 			auto parsedValue = parse(arg, val);
 			if (parsedValue.has_value())
 			{
 				parsedArgs.insert(std::make_pair(
-					utility::afterPrefix(arg, prefix),
+					argKey,
 					parsedValue.value()
 				));
 			}

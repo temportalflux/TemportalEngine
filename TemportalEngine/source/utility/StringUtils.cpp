@@ -29,6 +29,19 @@ utility::ArgumentMap utility::parseArguments(int argc, char *argv[])
 	return args;
 }
 
+utility::ArgumentMap utility::getArgumentsWithPrefix(ArgumentMap args, std::string prefix)
+{
+	auto filtered = std::unordered_map<std::string, std::optional<std::string>>();
+	for (auto&[arg, val] : args)
+	{
+		if (!utility::startsWith(arg, prefix)) continue;
+		auto argKey = utility::afterPrefix(arg, prefix);
+		if (argKey.empty()) continue;
+		filtered.insert(std::make_pair(argKey, val));
+	}
+	return filtered;
+}
+
 std::unordered_map<std::string, ui64> utility::parseArgumentInts(ArgumentMap args, std::string prefix, ui64 &sum)
 {
 	return utility::parseArgumentsWithPrefix<ui64>(args, prefix, [&sum](std::string arg, std::optional<std::string> value) -> std::optional<ui64>

@@ -44,6 +44,7 @@ class TEMPORTALENGINE_API Engine
 {
 private:
 	static std::shared_ptr<Engine> spInstance;
+	static std::shared_ptr<memory::MemoryChunk> spMainMemory; // static reference to the main memory object so it doesn't get discarded early
 
 public:
 	typedef std::shared_ptr<Engine> EnginePtr;
@@ -51,7 +52,7 @@ public:
 	static std::vector<const char*> VulkanValidationLayers;
 
 #pragma region Singleton
-	static EnginePtr Create(std::shared_ptr<memory::MemoryChunk> pChunk, std::unordered_map<std::string, ui64> memoryChunkSizes);
+	static EnginePtr Create(std::unordered_map<std::string, ui64> memoryChunkSizes);
 	static EnginePtr Get();
 	static void Destroy();
 #pragma endregion
@@ -63,7 +64,11 @@ public:
 	void setProject(asset::ProjectPtrStrong project);
 	asset::ProjectPtrStrong getProject() const;
 	utility::SExecutableInfo const *const getInfo() const;
-	
+
+#pragma region Memory
+	std::shared_ptr<memory::MemoryChunk> getMiscMemory() const;
+#pragma endregion
+
 #pragma region Dependencies
 	bool initializeDependencies(bool bShouldRender = true);
 	void terminateDependencies();
@@ -95,13 +100,13 @@ public:
 	//std::optional<network::Service* const> getNetworkService() const;
 
 private:
-	
 	asset::ProjectPtrStrong mProject;
 
 	utility::SExecutableInfo mEngineInfo;
 
 #pragma region Memory
-	std::shared_ptr<memory::MemoryChunk> mMainMemory;
+	std::shared_ptr<memory::MemoryChunk> mpMainMemory;
+	std::shared_ptr<memory::MemoryChunk> mMiscMemory;
 #pragma endregion
 	
 #pragma region Dependencies

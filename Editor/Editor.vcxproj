@@ -171,6 +171,7 @@
     <ClCompile Include="libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="libs\imgui\imgui_draw.cpp" />
     <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="source\commandlet\CommandletBuildAssets.cpp" />
     <ClCompile Include="source\Editor.cpp" />
     <ClCompile Include="source\graphics\ImGuiFrame.cpp" />
     <ClCompile Include="source\graphics\ImGuiRenderer.cpp" />
@@ -187,6 +188,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\commandlet\Commandlet.hpp" />
+    <ClInclude Include="include\commandlet\CommandletBuildAssets.hpp" />
     <ClInclude Include="include\Editor.hpp" />
     <ClInclude Include="include\graphics\ImGuiFrame.hpp" />
     <ClInclude Include="include\graphics\ImGuiRenderer.hpp" />

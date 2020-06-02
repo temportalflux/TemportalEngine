@@ -3,20 +3,41 @@
 	<property name="cfg" value="Debug" />
 	<property name="platform" value="x64" />
 
+	<macrodef name="run_editor">
+		<element name="extArgs" optional="y"/>
+		<sequential>
+			<echo message="Running editor on ${cfg} ${platform}" />
+			<exec dir="output/Editor" executable="Binaries/Build/${cfg}/${platform}/Editor/Editor.exe">
+				
+				<arg line="memory-asset=65536" />
+				<arg line="memory-misc=65536" />
+				<extArgs/>
+			</exec>
+		</sequential>
+	</macrodef>
+
 	<target name="run.editor" description="Runs the editor with UI">
-		<echo message="Running editor on ${cfg} ${platform}" />
-		<exec dir="output/Editor" executable="Binaries/Build/${cfg}/${platform}/Editor/Editor.exe">
-			<arg line="memory-asset=65536" />
-			<arg line="memory-misc=65536" />
-		</exec>
+		<run_editor>
+			<extArgs />
+		</run_editor>
 	</target>
 
 	<target name="run.demo" description="Runs the DemoGame">
 		<echo message="Running DemoGame on ${cfg} ${platform}" />
 		<exec dir="output/DemoGame" executable="Binaries/Build/${cfg}/${platform}/DemoGame/DemoGame.exe">
+			
 			<arg line="memory-asset=65536" />
 			<arg line="memory-misc=65536" />
 		</exec>
+	</target>
+
+	<target name="build.demo" description="Builds the DemoGame assets">
+		<run_editor>
+			<extArgs>
+				<arg line="noui" />
+				<arg line="cmdlet-buildAssets cmdlet-buildAssets-project=${user.dir}/DemoGame/DemoGame.te-project" />
+			</extArgs>
+		</run_editor>
 	</target>
 
 </project>

@@ -79,15 +79,12 @@ int main(int argc, char *argv[])
 
 	ui64 totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
-	assert(totalMem > 0);
 	
-	auto memoryChunk = memory::MemoryChunk::Create(totalMem);
-
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
 	{
-		auto pEngine = engine::Engine::Create(memoryChunk, memoryChunkSizes);
+		auto pEngine = engine::Engine::Create(memoryChunkSizes);
 		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
 
 		if (!pEngine->initializeDependencies())

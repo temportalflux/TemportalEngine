@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "Window.hpp"
+#include "commandlet/CommandletBuildAssets.hpp"
 #include "graphics/ImGuiRenderer.hpp"
 
 #include <memory>
@@ -11,39 +12,70 @@
 
 Editor* Editor::EDITOR = nullptr;
 
-Editor::Editor(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes)
+Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
 {
 	assert(EDITOR == nullptr);
 	EDITOR = this;
 
-	auto pEngine = engine::Engine::Create(mainMemory, memoryChunkSizes);
-	pEngine->setProject(mainMemory->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
+	auto pEngine = engine::Engine::Create(memoryChunkSizes);
+	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
 
-	this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");
-	this->mDockspace.open();
+	this->registerAllCommandlets();
 }
 
 Editor::~Editor()
 {
 	EDITOR = nullptr;
+	this->mCommandlets.clear();
 	engine::Engine::Destroy();
+}
+
+void Editor::registerAllCommandlets()
+{
+	auto miscMemory = engine::Engine::Get()->getMiscMemory();
+	this->registerCommandlet(miscMemory->make_shared<editor::CommandletBuildAssets>());
+}
+
+void Editor::registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet)
+{
+	assert(!cmdlet->getId().empty());
+	this->mCommandlets.insert(std::make_pair(cmdlet->getId(), cmdlet));
 }
 
 bool Editor::setup(utility::ArgumentMap args)
 {
 	this->mbShouldRender = args.find("noui") == args.end();
+
 	auto pEngine = engine::Engine::Get();
 	if (!pEngine->initializeDependencies(this->mbShouldRender)) return false;
 	if (this->mbShouldRender && !pEngine->setupVulkan()) return false;
+	
+	if (this->mbShouldRender)
+	{
+		this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");
+		this->mDockspace.open();
+	}
+	
 	return true;
 }
 
-void Editor::run()
+void Editor::run(utility::ArgumentMap args)
 {
 	if (!this->mbShouldRender)
 	{
 		// Running a headless command
-		DeclareLog("Editor").log(logging::ECategory::LOGINFO, "no u");
+		DeclareLog("Editor").log(logging::ECategory::LOGINFO, "no u(i)");
+
+		std::string cmdletPrefix("cmdlet-");
+		utility::ArgumentMap cmdlets = utility::getArgumentsWithPrefix(args, cmdletPrefix);
+		for (const auto& [cmdletId, _] : cmdlets)
+		{
+			auto cmdletIter = this->mCommandlets.find(cmdletId);
+			if (cmdletIter != this->mCommandlets.end())
+			{
+				cmdletIter->second->run(utility::getArgumentsWithPrefix(args, cmdletPrefix + cmdletId + "-"));
+			}
+		}
 		return;
 	}
 
@@ -72,6 +104,7 @@ void Editor::run()
 
 	renderer.invalidate();
 	this->mpEngine->destroyWindow(this->mpWindow);
+	this->mpEngine.reset();
 }
 
 void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)

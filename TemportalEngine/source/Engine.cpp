@@ -13,18 +13,21 @@
 using namespace engine;
 
 #define ENGINE_VERSION TE_MAKE_VERSION(1, 0, 0)
+#define GET_MEMORY_SIZE(sizes, key, defaultSize) sizes.find(key) != sizes.end() ? sizes.find(key)->second : defaultSize
 
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 Engine::EnginePtr Engine::spInstance = nullptr;
+std::shared_ptr<memory::MemoryChunk> Engine::spMainMemory = nullptr;
 
 std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 #pragma region Singleton
 
-Engine::EnginePtr Engine::Create(std::shared_ptr<memory::MemoryChunk> pChunk, std::unordered_map<std::string, ui64> memoryChunkSizes)
+Engine::EnginePtr Engine::Create(std::unordered_map<std::string, ui64> memoryChunkSizes)
 {
 	assert(Engine::spInstance == nullptr);
-	Engine::spInstance = pChunk->make_shared<Engine>(pChunk, memoryChunkSizes);
+	spMainMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "main", 1 << 16));
+	Engine::spInstance = spMainMemory->make_shared<Engine>(spMainMemory, memoryChunkSizes);
 	return Engine::Get();
 }
 
@@ -35,22 +38,29 @@ Engine::EnginePtr Engine::Get()
 
 void Engine::Destroy()
 {
+	if (!Engine::spInstance) return;
+
+	assert(Engine::spInstance.use_count() == 1);
 	Engine::spInstance = nullptr;
 	assert(!Engine::spInstance);
+
+	assert(Engine::spMainMemory.use_count() == 1);
+	Engine::spMainMemory = nullptr;
+	assert(!Engine::spMainMemory);
 }
 
 #pragma endregion
 
 Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes)
-	: mMainMemory(mainMemory)
+	: mpMainMemory(mainMemory)
 	, mbShouldContinueRunning(false)
 	//, mpNetworkService(nullptr)
 {
-	assert(memoryChunkSizes.find("asset") != memoryChunkSizes.end());
-
 	LogEngineInfo("Creating Engine");
 	mEngineInfo.title = "TemportalEngine";
 	mEngineInfo.version = ENGINE_VERSION;
+
+	this->mMiscMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "misc", 1 << 16));
 
 	this->mpInputWatcher[0] = input::InputWatcher(std::bind(
 		&Engine::onRawEvent, this, std::placeholders::_1
@@ -60,13 +70,13 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 	));
 
 	// TODO: allocate from a sub-chunk of main memory
-	this->mpInputQueue = this->mMainMemory->make_shared<input::Queue>();
+	this->mpInputQueue = this->mpMainMemory->make_shared<input::Queue>();
 	this->mInputHandle = this->mpInputQueue->addListener(input::EInputType::QUIT,
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
 
-	this->mpAssetManager = this->mMainMemory->make_shared<asset::AssetManager>();
-	this->mpAssetManager->setAssetMemory(this->mMainMemory->createChunk(memoryChunkSizes.find("asset")->second));
+	this->mpAssetManager = this->mpMainMemory->make_shared<asset::AssetManager>();
+	this->mpAssetManager->setAssetMemory(memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "asset", 1 << 16)));
 	this->mpAssetManager->queryAssetTypes();
 }
 
@@ -84,8 +94,18 @@ Engine::~Engine()
 	this->mpInputQueue.reset();
 	assert(!this->mpInputQueue);
 	
-	//this->mProject.reset();
-	
+	this->mProject.reset();
+	assert(!this->mProject);
+	this->mpAssetManager.reset();
+	assert(!this->mpAssetManager);
+
+	assert(this->mMiscMemory.use_count() == 1);
+	this->mMiscMemory.reset();
+	assert(!this->mMiscMemory);
+
+	this->mpMainMemory.reset();
+	assert(!this->mpMainMemory);
+
 	LogEngineInfo("Engine Destroyed");
 }
 
@@ -108,6 +128,15 @@ utility::SExecutableInfo const *const Engine::getInfo() const
 {
 	return &mEngineInfo;
 }
+
+#pragma region Memory
+
+std::shared_ptr<memory::MemoryChunk> Engine::getMiscMemory() const
+{
+	return this->mMiscMemory;
+}
+
+#pragma endregion
 
 #pragma region Dependencies
 
@@ -133,7 +162,7 @@ void Engine::terminateDependencies()
 std::shared_ptr<Window> Engine::createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags)
 {
 	// TODO: allocate from a sub-chunk of main memory
-	auto window = this->mMainMemory->make_shared<Window>(width, height, title, flags);
+	auto window = this->mpMainMemory->make_shared<Window>(width, height, title, flags);
 	window->addInputListeners(this->mpInputQueue);
 	this->mWindowPtrs.insert(std::make_pair(window->getId(), window));
 	return window;

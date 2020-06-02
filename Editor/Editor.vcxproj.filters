@@ -37,6 +37,12 @@
     <Filter Include="Source Files\gui\modal">
       <UniqueIdentifier>{69d61b45-762b-4f86-aa04-5c2b53eeb87d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\commandlet">
+      <UniqueIdentifier>{958b2c3c-81b4-45ef-8d3c-936421dd6b32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\commandlet">
+      <UniqueIdentifier>{70b8a1c1-e540-4b3a-b1a5-a186631281ef}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -90,6 +96,9 @@
     <ClCompile Include="source\gui\modal\OpenAsset.cpp">
       <Filter>Source Files\gui\modal</Filter>
     </ClCompile>
+    <ClCompile Include="source\commandlet\CommandletBuildAssets.cpp">
+      <Filter>Source Files\commandlet</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -136,6 +145,12 @@
     </ClInclude>
     <ClInclude Include="include\gui\modal\OpenAsset.hpp">
       <Filter>Header Files\gui\modal</Filter>
+    </ClInclude>
+    <ClInclude Include="include\commandlet\Commandlet.hpp">
+      <Filter>Header Files\commandlet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\commandlet\CommandletBuildAssets.hpp">
+      <Filter>Header Files\commandlet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
