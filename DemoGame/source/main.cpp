@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
 
 		if (!pEngine->initializeDependencies())
 		{
+			pEngine.reset();
 			engine::Engine::Destroy();
 			return 1;
 		}
@@ -126,6 +127,7 @@ int main(int argc, char *argv[])
 
 		if (!pEngine->setupVulkan())
 		{
+			pEngine.reset();
 			engine::Engine::Destroy();
 			return 1;
 		}
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
 		);
 		if (pWindow == nullptr)
 		{
+			pEngine.reset();
 			engine::Engine::Destroy();
 			return 1;
 		}
@@ -225,6 +228,7 @@ int main(int argc, char *argv[])
 		engine::Engine::Get()->destroyWindow(pWindow);
 		pWindow.reset();
 
+		pEngine.reset();
 		engine::Engine::Destroy();
 	}
 
