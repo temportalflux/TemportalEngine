@@ -29,17 +29,24 @@ Editor::~Editor()
 	engine::Engine::Destroy();
 }
 
-bool Editor::setup()
+bool Editor::setup(utility::ArgumentMap args)
 {
+	this->mbShouldRender = args.find("noui") == args.end();
 	auto pEngine = engine::Engine::Get();
-	if (!pEngine->initializeDependencies()) return false;
-	if (!pEngine->setupVulkan()) return false;
+	if (!pEngine->initializeDependencies(this->mbShouldRender)) return false;
+	if (this->mbShouldRender && !pEngine->setupVulkan()) return false;
 	return true;
 }
 
 void Editor::run()
 {
-	// TODO: moved the shared_ptr wrapper to Engine::Get()
+	if (!this->mbShouldRender)
+	{
+		// Running a headless command
+		DeclareLog("Editor").log(logging::ECategory::LOGINFO, "no u");
+		return;
+	}
+
 	this->mpEngine = engine::Engine::Get();
 
 	this->mpWindow = this->mpEngine->createWindow(800, 600, "Editor", WindowFlags::RESIZABLE);
@@ -119,7 +126,11 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	assert(project != nullptr);
 	this->mpProject = project;
 
-	this->mpWindow->setTitle("Editor: " + this->getProject()->getDisplayName());
+	if (this->mpWindow)
+	{
+		this->mpWindow->setTitle("Editor: " + this->getProject()->getDisplayName());
+	}
+	
 	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory());
 }
 

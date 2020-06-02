@@ -1,0 +1,22 @@
+<project basedir="." xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+	<property name="cfg" value="Debug" />
+	<property name="platform" value="x64" />
+
+	<target name="run.editor" description="Runs the editor with UI">
+		<echo message="Running editor on ${cfg} ${platform}" />
+		<exec dir="output/Editor" executable="Binaries/Build/${cfg}/${platform}/Editor/Editor.exe">
+			<arg line="memory-asset=65536" />
+			<arg line="memory-misc=65536" />
+		</exec>
+	</target>
+
+	<target name="run.demo" description="Runs the DemoGame">
+		<echo message="Running DemoGame on ${cfg} ${platform}" />
+		<exec dir="output/DemoGame" executable="Binaries/Build/${cfg}/${platform}/DemoGame/DemoGame.exe">
+			<arg line="memory-asset=65536" />
+			<arg line="memory-misc=65536" />
+		</exec>
+	</target>
+
+</project>

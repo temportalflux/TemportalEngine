@@ -11,9 +11,9 @@ std::string utility::afterPrefix(std::string a, std::string prefix)
 	return a.substr(prefix.length());
 }
 
-std::unordered_map<std::string, std::optional<std::string>> utility::parseArguments(int argc, char *argv[])
+utility::ArgumentMap utility::parseArguments(int argc, char *argv[])
 {
-	std::unordered_map<std::string, std::optional<std::string>> args;
+	ArgumentMap args;
 	for (auto i = 1; i < argc; ++i)
 	{
 		auto arg = std::string(argv[i]);
@@ -29,7 +29,7 @@ std::unordered_map<std::string, std::optional<std::string>> utility::parseArgume
 	return args;
 }
 
-std::unordered_map<std::string, ui64> utility::parseArgumentInts(std::unordered_map<std::string, std::optional<std::string>> args, std::string prefix, ui64 &sum)
+std::unordered_map<std::string, ui64> utility::parseArgumentInts(ArgumentMap args, std::string prefix, ui64 &sum)
 {
 	return utility::parseArgumentsWithPrefix<ui64>(args, prefix, [&sum](std::string arg, std::optional<std::string> value) -> std::optional<ui64>
 	{

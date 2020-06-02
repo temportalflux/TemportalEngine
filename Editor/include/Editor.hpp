@@ -4,6 +4,7 @@
 
 #include "gui/MainDockspace.hpp"
 #include "asset/Project.hpp"
+#include "utility/StringUtils.hpp"
 
 #include <unordered_map>
 
@@ -30,7 +31,7 @@ public:
 	Editor(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes);
 	~Editor();
 
-	bool setup();
+	bool setup(utility::ArgumentMap args);
 	void run();
 
 	bool hasProject() const;
@@ -38,6 +39,8 @@ public:
 	asset::ProjectPtrStrong getProject();
 
 private:
+	bool mbShouldRender;
+
 	std::shared_ptr<engine::Engine> mpEngine;
 	std::shared_ptr<Window> mpWindow;
 

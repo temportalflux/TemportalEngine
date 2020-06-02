@@ -13,6 +13,8 @@
 namespace utility
 {
 
+	typedef std::unordered_map<std::string, std::optional<std::string>> ArgumentMap;
+
 	template <size_t TSize>
 	std::string createStringFromFixedArray(std::array<char, TSize> fixed)
 	{
@@ -27,11 +29,11 @@ namespace utility
 
 	std::string afterPrefix(std::string a, std::string prefix);
 
-	std::unordered_map<std::string, std::optional<std::string>> parseArguments(int argc, char *argv[]);
+	ArgumentMap parseArguments(int argc, char *argv[]);
 
 	template <typename TValue>
 	std::unordered_map<std::string, TValue> parseArgumentsWithPrefix(
-		std::unordered_map<std::string, std::optional<std::string>> args,
+		ArgumentMap args,
 		std::string prefix,
 		std::function<std::optional<TValue>(std::string arg, std::optional<std::string> val)> parse
 	)
@@ -52,7 +54,7 @@ namespace utility
 		return parsedArgs;
 	}
 
-	std::unordered_map<std::string, ui64> parseArgumentInts(std::unordered_map<std::string, std::optional<std::string>> args, std::string prefix, ui64 &sum);
+	std::unordered_map<std::string, ui64> parseArgumentInts(ArgumentMap args, std::string prefix, ui64 &sum);
 
 }
 

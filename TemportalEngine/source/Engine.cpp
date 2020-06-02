@@ -111,11 +111,12 @@ utility::SExecutableInfo const *const Engine::getInfo() const
 
 #pragma region Dependencies
 
-bool Engine::initializeDependencies()
+bool Engine::initializeDependencies(bool bShouldRender)
 {
-	*mpDepSDL = dependency::SDL();
-	if (!mpDepSDL->initialize()) return false;
-
+	if (bShouldRender)
+	{
+		if (!mpDepSDL->initialize()) return false;
+	}
 	return true;
 }
 

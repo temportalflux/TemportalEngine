@@ -34,6 +34,7 @@ NS_END
 
 NS_ENGINE
 
+// TODO: Declare log should call a function on engine which lazily instantiates a logger and stores it by category name
 #define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
 #define LogEngine(cate, ...) DeclareLog("Engine").log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
@@ -64,7 +65,7 @@ public:
 	utility::SExecutableInfo const *const getInfo() const;
 	
 #pragma region Dependencies
-	bool initializeDependencies();
+	bool initializeDependencies(bool bShouldRender = true);
 	void terminateDependencies();
 #pragma endregion
 

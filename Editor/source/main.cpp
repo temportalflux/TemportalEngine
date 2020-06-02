@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 	{
 		auto editor = Editor(mainMemory, memoryChunkSizes);
-		if (editor.setup())
+		if (editor.setup(args))
 		{
 			editor.run();
 		}
