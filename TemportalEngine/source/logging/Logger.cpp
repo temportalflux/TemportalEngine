@@ -108,6 +108,7 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 	printLog("[%s][%s] %s> ", timeStr, categoryStr, pLogger->mpTitle);
 	printLog(format, args);
 	printLog("\n");
+	fflush(stdout);
 	mpLock->unlock();
 
 	std::array<char, 256> logContentData;
