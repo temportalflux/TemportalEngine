@@ -1,9 +1,8 @@
 #include "asset/Project.hpp"
 
 #include "asset/AssetManager.hpp"
-
 #include <cereal/archives/json.hpp>
-#include <cereal/archives/binary.hpp>
+#include <cereal/archives/portable_binary.hpp>
 
 using namespace asset;
 
@@ -33,9 +32,14 @@ std::filesystem::path Project::getAbsoluteDirectoryPath() const
 	return this->mProjectDirectory;
 }
 
+std::filesystem::path Project::getAssetDirectoryFor(std::filesystem::path projectDir)
+{
+	return projectDir / "assets";
+}
+
 std::filesystem::path Project::getAssetDirectory() const
 {
-	return this->getAbsoluteDirectoryPath() / "assets";
+	return Project::getAssetDirectoryFor(this->getAbsoluteDirectoryPath());
 }
 
 std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
@@ -43,24 +47,51 @@ std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 	auto ptr = asset::AssetManager::makeAsset<Project>();
 	ptr->mName = filePath.stem().string();
 	ptr->mProjectDirectory = filePath.parent_path();
-
-	std::ofstream os(filePath);
-	ptr->writeToDisk(&os);
-
+	ptr->writeToDisk(filePath, EAssetSerialization::Json);
 	return ptr;
 }
 
-std::shared_ptr<Asset> Project::readFromDisk(std::ifstream *stream, std::filesystem::path filePath)
+std::shared_ptr<Asset> Project::readFromDisk(std::filesystem::path filePath, EAssetSerialization type)
 {
 	auto ptr = asset::AssetManager::makeAsset<Project>();
-	cereal::JSONInputArchive archive(*stream);
-	ptr->load(archive);
+	switch (type)
+	{
+	case EAssetSerialization::Json:
+	{
+		std::ifstream is(filePath);
+		cereal::JSONInputArchive archive(is);
+		ptr->load(archive);
+		break;
+	}
+	case EAssetSerialization::Binary:
+	{
+		std::ifstream is(filePath, std::ios::binary);
+		cereal::PortableBinaryInputArchive archive(is);
+		ptr->load(archive);
+		break;
+	}
+	}
 	ptr->mProjectDirectory = filePath.parent_path();
 	return ptr;
 }
 
-void Project::writeToDisk(std::ofstream *stream)
+void Project::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
 {
-	cereal::JSONOutputArchive archive(*stream);
-	this->save(archive);
+	switch (type)
+	{
+	case EAssetSerialization::Json:
+	{
+		std::ofstream os(filePath);
+		cereal::JSONOutputArchive archive(os);
+		this->save(archive);
+		return;
+	}
+	case EAssetSerialization::Binary:
+	{
+		std::ofstream os(filePath, std::ios::trunc | std::ios::binary);
+		cereal::PortableBinaryOutputArchive archive(os);
+		this->save(archive);
+		return;
+	}
+	}
 }

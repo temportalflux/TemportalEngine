@@ -5,15 +5,37 @@
 
 #include <algorithm>
 #include <cereal/archives/json.hpp>
+#include <cereal/archives/portable_binary.hpp>
 
 using namespace asset;
 
-std::shared_ptr<Asset> Asset::readAsset(std::ifstream *stream)
+std::shared_ptr<Asset> Asset::readAsset(std::filesystem::path filePath, asset::EAssetSerialization type)
 {
 	auto ptr = asset::AssetManager::makeAsset<Asset>();
-	cereal::JSONInputArchive archive(*stream);
-	ptr->load(archive);
+	switch (type)
+	{
+	case EAssetSerialization::Json:
+	{
+		std::ifstream is(filePath);
+		cereal::JSONInputArchive archive(is);
+		ptr->load(archive);
+		break;
+	}
+	case EAssetSerialization::Binary:
+	{
+		std::ifstream is(filePath, std::ios::binary);
+		cereal::PortableBinaryInputArchive archive(is);
+		ptr->load(archive);
+		break;
+	}
+	}
 	return ptr;
+}
+
+void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
+{
+	// Should always be overriden by subclasses
+	assert(false);
 }
 
 /*

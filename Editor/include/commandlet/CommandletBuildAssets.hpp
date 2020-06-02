@@ -2,6 +2,8 @@
 
 #include "commandlet/Commandlet.hpp"
 
+#include <filesystem>
+
 NS_EDITOR
 
 class CommandletBuildAssets : public Commandlet
@@ -9,7 +11,12 @@ class CommandletBuildAssets : public Commandlet
 
 public:
 	std::string getId() const override { return "buildAssets"; }
-	void run(utility::ArgumentMap args) override;
+	void initialize(utility::ArgumentMap args) override;
+	void run() override;
+
+private:
+	std::filesystem::path mPathProjectAsset;
+	std::filesystem::path mPathOutputDir;
 
 };
 

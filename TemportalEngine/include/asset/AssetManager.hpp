@@ -23,7 +23,7 @@ struct AssetTypeMetadata
 {
 	std::string DisplayName;
 	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath)> createAsset;
-	std::function<std::shared_ptr<Asset>(std::ifstream *stream, std::filesystem::path filePath)> readFromDisk;
+	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath, asset::EAssetSerialization type)> readFromDisk;
 	std::string fileExtension;
 };
 
@@ -68,7 +68,7 @@ public:
 	 * Performs a read operation on each file with a known extension to determine its `AssetType`.
 	 * Generally collects `AssetMetadata`.
 	 */
-	void scanAssetDirectory(std::filesystem::path directory);
+	void scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type);
 
 	std::set<AssetType> getAssetTypes() const;
 	bool isValidAssetExtension(std::string extension) const;
@@ -78,7 +78,13 @@ public:
 	void registerType(AssetType type, AssetTypeMetadata metadata);
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
-	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath, bool bShouldHaveBeenScanned=true);
+	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned=true);
+
+	template <typename TAsset>
+	std::shared_ptr<TAsset> readFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type,  bool bShouldHaveBeenScanned = true)
+	{
+		return std::dynamic_pointer_cast<TAsset>(this->readAssetFromDisk(filePath, type, bShouldHaveBeenScanned));
+	}
 
 private:
 	/**

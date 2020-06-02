@@ -59,8 +59,8 @@ std::string LogSystem::getCategoryShortString(ECategory category)
 {
 	switch (category)
 	{
-	case ECategory::LOGINFO: return " INFO ";
-	case ECategory::LOGWARN: return " WARN ";
+	case ECategory::LOGINFO: return " INFO";
+	case ECategory::LOGWARN: return " WARN";
 	case ECategory::LOGERROR: return "ERROR";
 	case ECategory::LOGDEBUG: return "DEBUG";
 	default: return "?????";
@@ -74,25 +74,7 @@ void LogSystem::open(char const * const filePath)
 
 void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 {
-	const char* categoryStr;
-	switch (category)
-	{
-	case ECategory::LOGINFO:
-		categoryStr = "INFO";
-		break;
-	case ECategory::LOGWARN:
-		categoryStr = "WARNING";
-		break;
-	case ECategory::LOGERROR:
-		categoryStr = "ERROR";
-		break;
-	case ECategory::LOGDEBUG:
-		categoryStr = "DEBUG";
-		break;
-	default:
-		categoryStr = "";
-		break;
-	}
+	auto categoryStr = getCategoryShortString(category);
 
 	// TODO: Call getCurrentTimeString instead
 	time_t currentTime = time(nullptr);
@@ -105,7 +87,7 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 	va_start(args, format);
 
 	mpLock->lock();
-	printLog("[%s][%s] %s> ", timeStr, categoryStr, pLogger->mpTitle);
+	printLog("[%s][%s] %s> ", timeStr, categoryStr.c_str(), pLogger->mpTitle);
 	printLog(format, args);
 	printLog("\n");
 	fflush(stdout);

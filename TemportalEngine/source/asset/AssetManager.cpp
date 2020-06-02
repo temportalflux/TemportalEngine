@@ -34,7 +34,7 @@ void AssetManager::queryAssetTypes()
 	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, ".te-project" });
 }
 
-void AssetManager::scanAssetDirectory(std::filesystem::path directory)
+void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
 {
 	this->mScannedAssetPathsByExtension.clear();
 	this->mScannedAssetMetadataByPath.clear();
@@ -55,8 +55,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory)
 
 		AssetType assetType;
 		{
-			std::ifstream is(entry.path());
-			assetType = Asset::readAsset(&is)->getAssetType();
+			assetType = Asset::readAsset(entry.path(), type)->getAssetType();
 		}
 
 		AssetMetadata metadata = { assetType, entry.path() };
@@ -117,10 +116,13 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 	return functor(filePath);
 }
 
-std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, bool bShouldHaveBeenScanned)
+std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
 {
-	std::ifstream is(filePath);
-	assert(is.is_open());
+	assert(std::filesystem::exists(filePath));
+	if (!this->isValidAssetExtension(filePath.extension().string()))
+	{
+		return nullptr;
+	}
 
 	// Read the asset using the base asset class to determine the asset type that is stored
 	auto assetMetadata = this->getAssetMetadata(filePath);
@@ -129,16 +131,12 @@ std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path fil
 	{
 		if (bShouldHaveBeenScanned)
 			LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
-		assetType = Asset::readAsset(&is)->getAssetType();
+		assetType = Asset::readAsset(filePath, type)->getAssetType();
 	}
 	else
 	{
 		assetType = assetMetadata->type;
 	}
-
-	// Reset the file stream back to the beginning for re-deserialization
-	is.clear();
-	is.seekg(0, is.beg); // reset to beginning of stream
 
 	// Determine the functor for loading this asset type
 	auto typeMapEntry = this->mAssetTypeMap.find(assetType);
@@ -146,5 +144,5 @@ std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path fil
 	auto loadAssetFunctor = typeMapEntry->second.readFromDisk;
 
 	// Actually load the asset type, using the load functor so the type is known
-	return loadAssetFunctor(&is, filePath);
+	return loadAssetFunctor(filePath, type);
 }

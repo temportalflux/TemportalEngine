@@ -94,14 +94,17 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		// TODO: Create copies of all assets (project file and assets directory) in binary format and store them in the output folder
 		{
 			auto assetManager = pEngine->getAssetManager();
-			auto asset = assetManager->readAssetFromDisk(std::filesystem::absolute("../../DemoGame/DemoGame.te-project"), false);
+			auto asset = assetManager->readAssetFromDisk(
+				std::filesystem::absolute("DemoGame.te-project"),
+				asset::EAssetSerialization::Binary,
+				false
+			);
 			asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
 			assert(project != nullptr);
 			pEngine->setProject(project);
-			assetManager->scanAssetDirectory(project->getAssetDirectory());
+			assetManager->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 		}
 
 		//initializeNetwork(pEngine);

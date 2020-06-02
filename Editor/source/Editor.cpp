@@ -73,7 +73,8 @@ void Editor::run(utility::ArgumentMap args)
 			auto cmdletIter = this->mCommandlets.find(cmdletId);
 			if (cmdletIter != this->mCommandlets.end())
 			{
-				cmdletIter->second->run(utility::getArgumentsWithPrefix(args, cmdletPrefix + cmdletId + "-"));
+				cmdletIter->second->initialize(utility::getArgumentsWithPrefix(args, cmdletPrefix + cmdletId + "-"));
+				cmdletIter->second->run();
 			}
 		}
 		return;
@@ -164,7 +165,7 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 		this->mpWindow->setTitle("Editor: " + this->getProject()->getDisplayName());
 	}
 	
-	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory());
+	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
 }
 
 asset::ProjectPtrStrong Editor::getProject()

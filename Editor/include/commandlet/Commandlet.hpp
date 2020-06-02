@@ -12,13 +12,9 @@ class Commandlet
 {
 
 public:
-
-	virtual std::string getId() const
-	{
-		return "";
-	}
-
-	virtual void run(utility::ArgumentMap args) {}
+	virtual std::string getId() const = 0;
+	virtual void initialize(utility::ArgumentMap args) = 0;
+	virtual void run() = 0;
 
 };
 

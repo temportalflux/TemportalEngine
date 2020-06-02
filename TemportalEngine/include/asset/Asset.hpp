@@ -8,10 +8,17 @@
 #include <string>
 #include <cereal/access.hpp>
 #include <cereal/cereal.hpp>
+#include <cereal/types/string.hpp>
 
 NS_ASSET
 
 #define DEFINE_ASSET_TYPE(TYPE_STR) virtual AssetType getAssetType() const override { return TYPE_STR; }
+
+enum class EAssetSerialization
+{
+	Json,
+	Binary,
+};
 
 class Asset
 {
@@ -29,7 +36,8 @@ public:
 	/**
 	 * Reads the asset data from the file stream (calling `Asset#load` in the process).
 	 */
-	static std::shared_ptr<Asset> readAsset(std::ifstream *stream);
+	static std::shared_ptr<Asset> readAsset(std::filesystem::path filePath, asset::EAssetSerialization type);
+	virtual void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const;
 
 protected:
 
