@@ -18,7 +18,9 @@
 
 	<target name="run.editor" description="Runs the editor with UI">
 		<run_editor>
-			<extArgs />
+			<extArgs>
+				<arg line="memory-gui=65536" />
+			</extArgs>
 		</run_editor>
 	</target>
 

@@ -9,6 +9,11 @@
 
 using namespace asset;
 
+cereal::JSONOutputArchive::Options Asset::JsonFormat = cereal::JSONOutputArchive::Options(
+	324,
+	cereal::JSONOutputArchive::Options::IndentChar::tab, 1
+);
+
 std::shared_ptr<Asset> Asset::readAsset(std::filesystem::path filePath, asset::EAssetSerialization type)
 {
 	auto ptr = asset::AssetManager::makeAsset<Asset>();
@@ -37,6 +42,11 @@ void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type
 {
 	// Should always be overriden by subclasses
 	assert(false);
+}
+
+std::filesystem::path Asset::getPath() const
+{
+	return this->mFilePath;
 }
 
 std::string Asset::getFileName() const

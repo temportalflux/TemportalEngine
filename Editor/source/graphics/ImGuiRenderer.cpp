@@ -41,6 +41,12 @@ void ImGuiRenderer::initializeDevices()
 
 void ImGuiRenderer::invalidate()
 {
+	for (auto&[id, gui] : this->mGuis)
+	{
+		gui->onRemovedFromRenderer(this);
+	}
+	this->mGuis.clear();
+
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
@@ -146,16 +152,19 @@ void ImGuiRenderer::submitFonts()
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
-void ImGuiRenderer::addGui(gui::IGui *gui)
+void ImGuiRenderer::addGui(std::string id, std::shared_ptr<gui::IGui> gui)
 {
-	this->mGuis.insert(gui);
+	this->mGuis.insert(std::make_pair(id, gui));
 	gui->onAddedToRenderer(this);
 }
 
-void ImGuiRenderer::removeGui(gui::IGui *gui)
+std::shared_ptr<gui::IGui> ImGuiRenderer::removeGui(std::string id)
 {
-	this->mGuis.erase(gui);
-	gui->onRemovedFromRenderer(this);
+	auto guiIter = this->mGuis.find(id);
+	assert(guiIter != this->mGuis.end());
+	// add gui ids to remove when the current frame is done being iterated over
+	this->mGuisToRemove.push_back(id);
+	return guiIter->second;
 }
 
 void ImGuiRenderer::onInputEvent(void* evt)
@@ -179,6 +188,15 @@ void ImGuiRenderer::drawFrame()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
+
+	for (auto& id : this->mGuisToRemove)
+	{
+		auto guiIter = this->mGuis.find(id);
+		auto gui = guiIter->second;
+		this->mGuis.erase(guiIter);
+		gui->onRemovedFromRenderer(this);
+	}
+	this->mGuisToRemove.clear();
 }
 
 void ImGuiRenderer::startGuiFrame()
@@ -190,7 +208,7 @@ void ImGuiRenderer::startGuiFrame()
 
 void ImGuiRenderer::makeGui()
 {
-	for (auto pGui : this->mGuis)
+	for (auto& [id, pGui]: this->mGuis)
 	{
 		assert(pGui);
 		pGui->makeGui();

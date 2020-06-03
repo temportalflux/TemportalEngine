@@ -17,6 +17,11 @@ std::string Project::getName() const
 	return this->mName;
 }
 
+void Project::setName(std::string value)
+{
+	this->mName = value;
+}
+
 Version Project::getVersion() const
 {
 	return this->mVersion;
@@ -82,7 +87,7 @@ void Project::writeToDisk(std::filesystem::path filePath, EAssetSerialization ty
 	case EAssetSerialization::Json:
 	{
 		std::ofstream os(filePath);
-		cereal::JSONOutputArchive archive(os);
+		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
 		this->save(archive);
 		return;
 	}

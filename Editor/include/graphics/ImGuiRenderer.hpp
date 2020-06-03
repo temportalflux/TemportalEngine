@@ -26,8 +26,8 @@ public:
 	void finalizeInitialization() override;
 	void invalidate() override;
 
-	void addGui(gui::IGui *gui);
-	void removeGui(gui::IGui *gui);
+	void addGui(std::string id, std::shared_ptr<gui::IGui> gui);
+	std::shared_ptr<gui::IGui> removeGui(std::string id);
 
 	void onInputEvent(void* evt) override;
 
@@ -41,7 +41,9 @@ private:
 	vk::UniqueDescriptorPool createDescriptorPool();
 	void submitFonts();
 
-	std::unordered_set<gui::IGui*> mGuis;
+	std::unordered_map<std::string, std::shared_ptr<gui::IGui>> mGuis;
+	std::vector<std::string> mGuisToRemove;
+
 	void startGuiFrame();
 	void makeGui();
 	void endGuiFrame();

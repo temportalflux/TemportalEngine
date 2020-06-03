@@ -66,6 +66,7 @@ public:
 	utility::SExecutableInfo const *const getInfo() const;
 
 #pragma region Memory
+	std::shared_ptr<memory::MemoryChunk> getMainMemory() const;
 	std::shared_ptr<memory::MemoryChunk> getMiscMemory() const;
 #pragma endregion
 

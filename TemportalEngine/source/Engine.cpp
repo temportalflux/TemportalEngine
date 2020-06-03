@@ -131,6 +131,11 @@ utility::SExecutableInfo const *const Engine::getInfo() const
 
 #pragma region Memory
 
+std::shared_ptr<memory::MemoryChunk> Engine::getMainMemory() const
+{
+	return this->mpMainMemory;
+}
+
 std::shared_ptr<memory::MemoryChunk> Engine::getMiscMemory() const
 {
 	return this->mMiscMemory;

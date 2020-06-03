@@ -3,7 +3,7 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
-#include "graphics/ImGuiRenderer.hpp"
+#include "gui/asset/EditorProject.hpp"
 
 #include <memory>
 #include "memory/MemoryChunk.hpp"
@@ -19,13 +19,23 @@ Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
 
 	auto pEngine = engine::Engine::Create(memoryChunkSizes);
 	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
+	
+	auto guiMemorySize = memoryChunkSizes.find("gui");
+	this->mpMemoryGui = guiMemorySize != memoryChunkSizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;
 
 	this->registerAllCommandlets();
+}
+
+std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
+{
+	return this->mpMemoryGui;
 }
 
 Editor::~Editor()
 {
 	EDITOR = nullptr;
+	this->mpDockspace.reset();
+	this->mpMemoryGui.reset();
 	this->mpProject.reset();
 	this->mCommandlets.clear();
 	engine::Engine::Destroy();
@@ -53,11 +63,29 @@ bool Editor::setup(utility::ArgumentMap args)
 	
 	if (this->mbShouldRender)
 	{
-		this->mDockspace = gui::MainDockspace("Editor::MainDockspace", "Editor");
-		this->mDockspace.open();
+		assert(this->mpMemoryGui != nullptr);
+		this->mpDockspace = this->mpMemoryGui->make_shared<gui::MainDockspace>("Editor::MainDockspace", "Editor");
+		this->mpDockspace->open();
+		this->registerAllAssetEditors();
 	}
 	
 	return true;
+}
+
+void Editor::registerAllAssetEditors()
+{
+	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
+}
+
+void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)
+{
+	assert(!this->hasRegisteredAssetEditor(entry.key));
+	this->mAssetEditors.insert(std::make_pair(entry.key, entry));
+}
+
+bool Editor::hasRegisteredAssetEditor(asset::AssetType type) const
+{
+	return this->mAssetEditors.find(type) != this->mAssetEditors.end();
 }
 
 void Editor::run(utility::ArgumentMap args)
@@ -87,29 +115,34 @@ void Editor::run(utility::ArgumentMap args)
 	if (this->mpWindow == nullptr) return;
 	
 	auto pVulkan = this->mpEngine->initializeVulkan(this->mpWindow->querySDLVulkanExtensions());
-	auto renderer = graphics::ImGuiRenderer(pVulkan, this->mpWindow->createSurface().initialize(pVulkan));
-	this->initializeRenderer(&renderer);
-	renderer.finalizeInitialization();
+	this->mpRenderer = this->mpMemoryGui->make_shared<graphics::ImGuiRenderer>(
+		pVulkan, this->mpWindow->createSurface().initialize(pVulkan)
+	);
+	this->initializeRenderer(this->mpRenderer);
+	this->mpRenderer->finalizeInitialization();
 
-	this->mpWindow->setRenderer(&renderer);
+	// TODO: window should take a shared pointer to the renderer
+	this->mpWindow->setRenderer(this->mpRenderer.get());
 
-	renderer.addGui(&this->mDockspace);
+	this->mpRenderer->addGui("MainDockspace", this->mpDockspace);
 
 	this->mpEngine->start();
-	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mDockspace.isOpen())
+	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mpDockspace->isOpen())
 	{
 		this->mpEngine->update();
 	}
 	this->mpEngine->joinThreads();
 
-	renderer.removeGui(&this->mDockspace);
+	this->mpRenderer->removeGui("MainDockspace");
 
-	renderer.invalidate();
+	this->mpRenderer->invalidate();
+	this->mpRenderer.reset();
+
 	this->mpEngine->destroyWindow(this->mpWindow);
 	this->mpEngine.reset();
 }
 
-void Editor::initializeRenderer(graphics::VulkanRenderer *pRenderer)
+void Editor::initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRenderer)
 {
 	pRenderer->setPhysicalDevicePreference(
 		graphics::PhysicalDevicePreference()
@@ -179,7 +212,27 @@ std::filesystem::path Editor::getCurrentAssetDirectory() const
 	return this->getProject()->getAssetDirectory();
 }
 
-void Editor::openAssetEditor(asset::AssetPtrStrong &asset)
+void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 {
 	DeclareLog("Editor").log(LOG_DEBUG, "Opening Asset Editor for %s", asset->getFileName().c_str());
+	if (!this->hasRegisteredAssetEditor(asset->getAssetType()))
+	{
+		DeclareLog("Editor").log(LOG_DEBUG, "Cannot open editor, no editor registered for asset type %s", asset->getAssetType().c_str());
+		return;
+	}
+	auto factory = this->mAssetEditors.find(asset->getAssetType())->second;
+	auto editor = factory.create(engine::Engine::Get()->getAssetManager()->getAssetMemory());
+	editor->setAsset(asset);
+	this->mpRenderer->addGui(asset->getPath().string(), editor);
+	editor->open();
+}
+
+void Editor::closeGui(std::string id)
+{
+	this->mpRenderer->removeGui(id);
+}
+
+void Editor::openProjectSettings()
+{
+	this->openAssetEditor(this->getProject());
 }

@@ -5,6 +5,8 @@
 #include "asset/AssetType.hpp"
 
 #include <cereal/access.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/archives/portable_binary.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/types/common.hpp>
 #include <cereal/types/string.hpp>
@@ -33,9 +35,12 @@ public:
 	 */
 	virtual AssetType getAssetType() const { return this->mAssetType; }
 
+	std::filesystem::path getPath() const;
 	std::string getFileName() const;
 
 protected:
+	static cereal::JSONOutputArchive::Options JsonFormat;
+
 	/**
 	 * The location of this asset relative to the asset directory.
 	 */

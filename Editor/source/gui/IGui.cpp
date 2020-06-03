@@ -17,6 +17,16 @@ IGui::IGui(std::string title) : IGui()
 	this->mTitle = title;
 }
 
+std::string IGui::getId() const
+{
+	return this->getTitle();
+}
+
+std::string IGui::getTitle() const
+{
+	return this->mTitle;
+}
+
 logging::Logger* IGui::getLog() const
 {
 	static logging::Logger log = logging::Logger("Gui", &engine::Engine::LOG_SYSTEM);
@@ -51,7 +61,8 @@ void IGui::makeGui()
 
 bool IGui::beginView()
 {
-	return ImGui::Begin(this->mTitle.c_str(), &this->mbIsOpen, this->getFlags());
+	auto labelAndId = this->getTitle() + "###" + this->getId();
+	return ImGui::Begin(labelAndId.c_str(), &this->mbIsOpen, this->getFlags());
 }
 
 void IGui::endView()

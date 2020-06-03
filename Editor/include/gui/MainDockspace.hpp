@@ -29,13 +29,13 @@ protected:
 	void renderView() override;
 
 private:
-	gui::AssetBrowser mAssetBrowser;
-	gui::Log mLogEditor;
+	std::shared_ptr<gui::AssetBrowser> mAssetBrowser;
+	std::shared_ptr<gui::Log> mLogEditor;
 
-	gui::modal::NewAsset mModalNewProject;
-	gui::modal::OpenAsset mModalOpenProject;
+	std::shared_ptr<gui::modal::NewAsset> mModalNewProject;
+	std::shared_ptr<gui::modal::OpenAsset> mModalOpenProject;
 
-	gui::modal::NewAsset mModalNewAsset;
+	std::shared_ptr<gui::modal::NewAsset> mModalNewAsset;
 
 };
 

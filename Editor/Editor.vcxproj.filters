@@ -43,6 +43,12 @@
     <Filter Include="Source Files\commandlet">
       <UniqueIdentifier>{70b8a1c1-e540-4b3a-b1a5-a186631281ef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\gui\asset">
+      <UniqueIdentifier>{6eac9782-f6ee-47ab-a9eb-b8321fda9d7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\gui\asset">
+      <UniqueIdentifier>{e9b84c61-782e-46a5-ba6e-c967cb45d591}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -99,6 +105,12 @@
     <ClCompile Include="source\commandlet\CommandletBuildAssets.cpp">
       <Filter>Source Files\commandlet</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\asset\AssetEditor.cpp">
+      <Filter>Source Files\gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\asset\EditorProject.cpp">
+      <Filter>Source Files\gui\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -151,6 +163,12 @@
     </ClInclude>
     <ClInclude Include="include\commandlet\CommandletBuildAssets.hpp">
       <Filter>Header Files\commandlet</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\asset\AssetEditor.hpp">
+      <Filter>Header Files\gui\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\asset\EditorProject.hpp">
+      <Filter>Header Files\gui\asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

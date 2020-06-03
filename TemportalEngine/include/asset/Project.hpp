@@ -21,6 +21,8 @@ public:
 	Project(std::string name, Version version);
 
 	std::string getName() const;
+	void setName(std::string value);
+
 	Version getVersion() const;
 	std::string getDisplayName() const;
 

@@ -34,6 +34,10 @@ public:
 protected:
 	logging::Logger* getLog() const;
 
+	void setTitle(std::string title) { this->mTitle = title; }
+	virtual std::string getId() const;
+	virtual std::string getTitle() const;
+
 	virtual i32 getFlags() const = 0;
 	virtual bool beginView();
 	virtual void renderView() = 0;

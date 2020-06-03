@@ -2,9 +2,6 @@
 
 #include "asset/Asset.hpp"
 
-#include <cereal/archives/json.hpp>
-#include <cereal/archives/portable_binary.hpp>
-
 NS_ASSET
 
 #define AssetType_Shader "shader"
