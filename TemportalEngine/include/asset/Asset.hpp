@@ -4,11 +4,13 @@
 
 #include "asset/AssetType.hpp"
 
-#include <fstream>
-#include <string>
 #include <cereal/access.hpp>
 #include <cereal/cereal.hpp>
+#include <cereal/types/common.hpp>
 #include <cereal/types/string.hpp>
+#include <filesystem>
+#include <fstream>
+#include <string>
 
 NS_ASSET
 
@@ -30,6 +32,23 @@ public:
 	 * Used when the asset is written to disk to define the type loaded into `mAssetType` when the asset is loaded.
 	 */
 	virtual AssetType getAssetType() const { return this->mAssetType; }
+
+	std::string getFileName() const;
+
+protected:
+	/**
+	 * The location of this asset relative to the asset directory.
+	 */
+	std::filesystem::path mFilePath;
+
+private:
+	/**
+	 * The known type of this asset.
+	 * This may be empty if the asset has not yet be saved to disk.
+	 * When an asset is loaded from disk, the type value saved via
+	 * `getAssetType` will be loaded into this field.
+	 */
+	AssetType mAssetType;
 
 #pragma region Serialization
 public:
@@ -55,15 +74,6 @@ protected:
 		archive(cereal::make_nvp("type", this->mAssetType));
 	}
 #pragma endregion
-
-private:
-	/**
-	 * The known type of this asset.
-	 * This may be empty if the asset has not yet be saved to disk.
-	 * When an asset is loaded from disk, the type value saved via
-	 * `getAssetType` will be loaded into this field.
-	 */
-	AssetType mAssetType;
 
 };
 

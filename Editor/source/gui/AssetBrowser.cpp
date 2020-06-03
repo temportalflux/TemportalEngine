@@ -3,8 +3,10 @@
 #include "logging/Logger.hpp"
 
 #include "Editor.hpp"
+#include "asset/AssetManager.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <optional>
 #include <string>
 #include <vector>
@@ -12,33 +14,44 @@
 
 using namespace gui;
 
-AssetBrowser::AssetBrowser(std::string title) : IGui(title)
+AssetBrowser::AssetBrowser(std::string title)
+	: IGui(title)
+	// TODO: Make modal registry so modals can be opened by key instead of having multiple created by different views
+	, mModalNewAsset("New Asset (Asset Browser)")
 {
+	this->mModalNewAsset.setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
 }
 
 void AssetBrowser::open()
 {
 	if (Editor::EDITOR->hasProject())
 	{
-		auto project = Editor::EDITOR->getProject();
-		this->mDefaultPath = project->getAssetDirectory();
+		this->mDefaultPath = Editor::EDITOR->getCurrentAssetDirectory();
 		this->setPath(this->mDefaultPath);
 	}
 	IGui::open();
 }
 
+void AssetBrowser::makeGui()
+{
+	IGui::makeGui();
+	this->mModalNewAsset.draw();
+}
+
 i32 AssetBrowser::getFlags() const
 {
-	return ImGuiWindowFlags_None;
+	return ImGuiWindowFlags_MenuBar;
 }
 
 void AssetBrowser::renderView()
 {
 	if (!Editor::EDITOR->hasProject()) return;
 
+	this->renderMenuBar();
+
 	if (this->mCurrentPath != this->mDefaultPath)
 	{
-		if (ImGui::ArrowButton("", ImGuiDir_Left))
+		if (ImGui::ArrowButton("Back", ImGuiDir_Left))
 		{
 			this->setPath(this->mCurrentPath.parent_path());
 		}
@@ -66,10 +79,24 @@ std::vector<std::filesystem::path> createBreadcrumbs(std::filesystem::path path,
 void AssetBrowser::setPath(std::filesystem::path path)
 {
 	this->mCurrentPath = path;
+	this->mBreadcrumbs = createBreadcrumbs(this->mCurrentPath, Editor::EDITOR->getProject()->getAbsoluteDirectoryPath());
+}
 
-	auto project = Editor::EDITOR->getProject();
-	auto root = project->getAbsoluteDirectoryPath();
-	this->mBreadcrumbs = createBreadcrumbs(this->mCurrentPath, project->getAbsoluteDirectoryPath());
+std::filesystem::path AssetBrowser::getCurrentRelativePath() const
+{
+	return std::filesystem::relative(this->mCurrentPath, Editor::EDITOR->getProject()->getAbsoluteDirectoryPath());
+}
+
+void AssetBrowser::renderMenuBar()
+{
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::MenuItem("New Asset", "", false, true))
+			this->mModalNewAsset.setDirectory(this->getCurrentRelativePath()).open();
+		if (ImGui::MenuItem("New Folder", "", false, true))
+			std::filesystem::create_directory(this->mCurrentPath / "New Folder");
+		ImGui::EndMenuBar();
+	}
 }
 
 void AssetBrowser::renderBreadcrumbs()
@@ -116,18 +143,31 @@ void AssetBrowser::renderDirectoryContents()
 		return;
 	}
 
+	// TODO: Provide renaming of folders and assets
+
 	std::optional<std::filesystem::path> newPath = std::nullopt;
 	ImGui::Columns(2); // name | ext/dir
 	for (const auto& entry : std::filesystem::directory_iterator(this->mCurrentPath))
 	{
 		auto itemName = entry.path().stem().string();
 		auto bIsDirectory = entry.is_directory();
+		bool bIsAssetAndOpenForEdit = false;
+		auto entryIsEmpty = std::filesystem::is_empty(entry.path());
 
 		ImGui::Text(itemName.c_str());
-		if (bIsDirectory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
+		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
 		{
-			newPath = entry.path();
+			if (bIsDirectory) newPath = entry.path();
+			else if (entry.is_regular_file()) bIsAssetAndOpenForEdit = true;
 		}
+		if ((entry.is_regular_file() || entryIsEmpty)
+				&& ImGui::BeginPopupContextItem(entry.path().string().c_str()))
+		{
+			if (!bIsDirectory && ImGui::Selectable("Edit")) bIsAssetAndOpenForEdit = true;
+			if (ImGui::Selectable("Delete")) std::filesystem::remove(entry.path());
+			ImGui::EndPopup();
+		}
+
 		ImGui::NextColumn();
 		if (bIsDirectory)
 		{
@@ -142,6 +182,12 @@ void AssetBrowser::renderDirectoryContents()
 			ImGui::Text("unsupported type");
 		}
 		ImGui::NextColumn();
+
+		if (bIsAssetAndOpenForEdit)
+		{
+			auto asset = asset::AssetManager::get()->readAssetFromDisk(entry.path(), asset::EAssetSerialization::Json);
+			Editor::EDITOR->openAssetEditor(asset);
+		}
 	}
 	if (newPath.has_value())
 	{

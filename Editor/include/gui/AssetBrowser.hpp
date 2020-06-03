@@ -2,6 +2,8 @@
 
 #include "gui/IGui.hpp"
 
+#include "gui/modal/NewAsset.hpp"
+
 #include <filesystem>
 
 NS_GUI
@@ -14,6 +16,7 @@ public:
 	AssetBrowser(std::string title);
 
 	void open() override;
+	void makeGui() override;
 	void renderView() override;
 
 protected:
@@ -24,7 +27,12 @@ private:
 	std::filesystem::path mCurrentPath;
 	std::vector<std::filesystem::path> mBreadcrumbs;
 
+	gui::modal::NewAsset mModalNewAsset;
+
 	void setPath(std::filesystem::path path);
+	std::filesystem::path getCurrentRelativePath() const;
+
+	void renderMenuBar();
 	void renderBreadcrumbs();
 	void renderDirectoryContents();
 

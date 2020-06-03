@@ -4,8 +4,6 @@
 
 #include "version.h"
 
-#include <filesystem>
-
 NS_ASSET
 
 #define AssetType_Project "project"
@@ -32,8 +30,6 @@ public:
 private:
 	std::string mName;
 	Version mVersion;
-
-	std::filesystem::path mProjectDirectory;
 
 #pragma region Serialization
 public:

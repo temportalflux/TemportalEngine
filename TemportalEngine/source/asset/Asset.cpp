@@ -29,6 +29,7 @@ std::shared_ptr<Asset> Asset::readAsset(std::filesystem::path filePath, asset::E
 		break;
 	}
 	}
+	ptr->mFilePath = filePath;
 	return ptr;
 }
 
@@ -36,6 +37,11 @@ void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type
 {
 	// Should always be overriden by subclasses
 	assert(false);
+}
+
+std::string Asset::getFileName() const
+{
+	return this->mFilePath.stem().string();
 }
 
 /*

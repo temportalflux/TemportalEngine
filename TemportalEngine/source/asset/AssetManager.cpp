@@ -5,6 +5,7 @@
 
 #include "asset/Asset.hpp"
 #include "asset/Project.hpp"
+#include "asset/Shader.hpp"
 
 #include <filesystem>
 #include <cereal/types/polymorphic.hpp>
@@ -32,6 +33,7 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 void AssetManager::queryAssetTypes()
 {
 	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, ".te-project" });
+	this->registerType(AssetType_Shader, { "Shader", &Shader::createAsset, &Shader::readFromDisk, ".te-asset" });
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)

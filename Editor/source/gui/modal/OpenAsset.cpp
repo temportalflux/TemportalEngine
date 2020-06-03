@@ -7,7 +7,7 @@
 
 using namespace gui::modal;
 
-OpenAsset::OpenAsset() : Modal("Open Asset")
+OpenAsset::OpenAsset(char const *title) : Modal(title)
 {
 	this->mInputPath.fill('\0');
 	// TODO: Remove this when we have a filepicker

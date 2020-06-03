@@ -2,10 +2,12 @@
 
 #include "gui/modal/Modal.hpp"
 
-#include "types/integer.h"
+#include "asset/AssetType.hpp"
 
 #include <array>
+#include <filesystem>
 #include <functional>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -20,18 +22,24 @@ class NewAsset : public Modal
 public:
 	typedef std::function<void(std::shared_ptr<asset::Asset> asset)> AssetCreatedCallback;
 
-	NewAsset();
+	NewAsset() = default;
+	NewAsset(const char* title);
 
-	void open() override;
+	void setAssetType(asset::AssetType type);
 	void setCallback(AssetCreatedCallback callback);
+	NewAsset& setDirectory(std::filesystem::path const &path);
+	void open() override;
 
 protected:
 	void drawContents() override;
 	void reset() override;
 
 private:
+	typedef std::array<char, 128> DirectoryPathString;
 
 	AssetCreatedCallback mOnAssetCreated;
+
+	std::optional<asset::AssetType> mForcedAssetType;
 
 	uSize mAssetTypeCount;
 	std::set<std::string> mAssetTypes;
@@ -39,7 +47,7 @@ private:
 	void forEachAssetType(std::function<void(std::string type, std::string displayName, uSize idx)> body) const;
 
 	std::pair<std::string, uSize> mSelectedAssetType;
-	std::array<char, 128> mInputDirectory;
+	DirectoryPathString mInputDirectory;
 	std::array<char, 32> mInputName;
 
 	void submit();

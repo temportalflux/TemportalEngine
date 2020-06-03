@@ -26,6 +26,7 @@ Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
 Editor::~Editor()
 {
 	EDITOR = nullptr;
+	this->mpProject.reset();
 	this->mCommandlets.clear();
 	engine::Engine::Destroy();
 }
@@ -168,7 +169,17 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
 }
 
-asset::ProjectPtrStrong Editor::getProject()
+asset::ProjectPtrStrong Editor::getProject() const
 {
 	return this->mpProject;
+}
+
+std::filesystem::path Editor::getCurrentAssetDirectory() const
+{
+	return this->getProject()->getAssetDirectory();
+}
+
+void Editor::openAssetEditor(asset::AssetPtrStrong &asset)
+{
+	DeclareLog("Editor").log(LOG_DEBUG, "Opening Asset Editor for %s", asset->getFileName().c_str());
 }

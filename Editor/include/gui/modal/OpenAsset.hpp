@@ -16,7 +16,8 @@ class OpenAsset : public Modal
 public:
 	typedef std::function<void(std::shared_ptr<asset::Asset> asset)> AssetOpenedCallback;
 
-	OpenAsset();
+	OpenAsset() = default;
+	OpenAsset(char const *title);
 
 	void setCallback(AssetOpenedCallback callback);
 

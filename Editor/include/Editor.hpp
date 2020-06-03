@@ -38,7 +38,10 @@ public:
 
 	bool hasProject() const;
 	void setProject(asset::AssetPtrStrong asset);
-	asset::ProjectPtrStrong getProject();
+	asset::ProjectPtrStrong getProject() const;
+
+	std::filesystem::path getCurrentAssetDirectory() const;
+	void openAssetEditor(asset::AssetPtrStrong &asset);
 
 private:
 	bool mbShouldRender;

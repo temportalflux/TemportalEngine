@@ -32,6 +32,11 @@ enum class TEMPORTALENGINE_API ECategory
 	COUNT
 };
 
+#define LOG_DEBUG logging::ECategory::LOGDEBUG
+#define LOG_INFO logging::ECategory::LOGINFO
+#define LOG_WARN logging::ECategory::LOGWARN
+#define LOG_ERR logging::ECategory::LOGERROR
+
 // Forward Declare ------------------------------------------------------------
 class Logger;
 typedef char const * Message;

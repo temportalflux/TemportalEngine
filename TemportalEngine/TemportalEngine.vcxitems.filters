@@ -191,6 +191,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp">
       <Filter>utility</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -404,5 +407,8 @@
       <Filter>asset</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

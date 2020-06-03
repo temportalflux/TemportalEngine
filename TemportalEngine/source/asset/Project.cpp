@@ -29,7 +29,7 @@ std::string Project::getDisplayName() const
 
 std::filesystem::path Project::getAbsoluteDirectoryPath() const
 {
-	return this->mProjectDirectory;
+	return this->mFilePath.parent_path();
 }
 
 std::filesystem::path Project::getAssetDirectoryFor(std::filesystem::path projectDir)
@@ -45,8 +45,8 @@ std::filesystem::path Project::getAssetDirectory() const
 std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 {
 	auto ptr = asset::AssetManager::makeAsset<Project>();
+	ptr->mFilePath = filePath;
 	ptr->mName = filePath.stem().string();
-	ptr->mProjectDirectory = filePath.parent_path();
 	ptr->writeToDisk(filePath, EAssetSerialization::Json);
 	return ptr;
 }
@@ -71,7 +71,7 @@ std::shared_ptr<Asset> Project::readFromDisk(std::filesystem::path filePath, EAs
 		break;
 	}
 	}
-	ptr->mProjectDirectory = filePath.parent_path();
+	ptr->mFilePath = filePath;
 	return ptr;
 }
 

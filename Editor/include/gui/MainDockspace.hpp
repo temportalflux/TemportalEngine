@@ -35,6 +35,8 @@ private:
 	gui::modal::NewAsset mModalNewProject;
 	gui::modal::OpenAsset mModalOpenProject;
 
+	gui::modal::NewAsset mModalNewAsset;
+
 };
 
 NS_END

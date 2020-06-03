@@ -9,7 +9,11 @@ using namespace gui;
 
 static const char* MODAL_ID_NEW_PROJECT = "new_project";
 
-MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), mId(id)
+MainDockspace::MainDockspace(std::string id, std::string title)
+	: IGui(title), mId(id)
+	, mModalNewProject("New Project")
+	, mModalOpenProject("Open Project")
+	, mModalNewAsset("New Asset")
 {
 	this->mAssetBrowser = gui::AssetBrowser("Asset Browser");
 	this->mLogEditor = gui::Log("Log (Editor)");
@@ -18,8 +22,13 @@ MainDockspace::MainDockspace(std::string id, std::string title) : IGui(title), m
 	{
 		Editor::EDITOR->setProject(asset);
 	};
+	this->mModalNewProject.setAssetType(AssetType_Project);
 	this->mModalNewProject.setCallback(onProjectAsset);
 	this->mModalOpenProject.setCallback(onProjectAsset);
+
+	this->mModalNewAsset.setCallback([](asset::AssetPtrStrong asset) {
+		Editor::EDITOR->openAssetEditor(asset);
+	});
 }
 
 void MainDockspace::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
@@ -41,6 +50,7 @@ void MainDockspace::makeGui()
 	IGui::makeGui();
 	this->mModalNewProject.draw();
 	this->mModalOpenProject.draw();
+	this->mModalNewAsset.draw();
 }
 
 i32 MainDockspace::getFlags() const
@@ -91,6 +101,8 @@ void MainDockspace::renderView()
 		{
 			if (ImGui::MenuItem("New Project", "", false, true)) this->mModalNewProject.open();
 			if (ImGui::MenuItem("Open Project", "", false, true)) this->mModalOpenProject.open();
+			ImGui::Separator();
+			if (ImGui::MenuItem("New Asset", "", false, bHasProject)) this->mModalNewAsset.open();
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Windows"))
