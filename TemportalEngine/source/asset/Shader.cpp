@@ -3,6 +3,8 @@
 #include "asset/AssetManager.hpp"
 
 #include <bitset>
+#include <shaderc/shaderc.hpp>
+#include <vulkan/vulkan.hpp>
 
 using namespace asset;
 
@@ -88,7 +90,7 @@ void Shader::read(cereal::JSONInputArchive &archive)
 	archive(
 		cereal::make_nvp("stage", stageStr)
 	);
-	this->mStage = (ui32)std::bitset<32>("").to_ulong();
+	this->mStage = (ui32)std::bitset<32>(stageStr).to_ulong();
 }
 
 void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
@@ -105,15 +107,16 @@ void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 
 std::string Shader::readSource() const
 {
-	std::ifstream is(Shader::getSourcePathFrom(this->getPath()));
-	return std::string(
+	std::ifstream is(Shader::getSourcePathFrom(this->getPath()), std::ios::in);
+	auto str = std::string(
 		std::istreambuf_iterator<char>(is),
 		std::istreambuf_iterator<char>()
 	);
+	return str;
 }
 
 void Shader::writeSource(std::string content) const
 {
-	std::ofstream os(Shader::getSourcePathFrom(this->getPath()), std::ios::trunc);
+	std::ofstream os(Shader::getSourcePathFrom(this->getPath()), std::ios::out | std::ios::trunc);
 	os << content;
 }

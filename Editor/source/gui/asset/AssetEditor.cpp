@@ -82,7 +82,12 @@ void AssetEditor::renderMenuBar()
 {
 	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
+		this->renderMenuBarItems();
 		ImGui::EndMenuBar();
 	}
+}
+
+void AssetEditor::renderMenuBarItems()
+{
+		if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
 }

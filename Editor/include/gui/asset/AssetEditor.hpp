@@ -40,6 +40,7 @@ protected:
 	}
 	
 	void renderMenuBar();
+	virtual void renderMenuBarItems();
 
 private:
 	asset::AssetPtrStrong mpAsset;

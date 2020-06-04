@@ -23,9 +23,10 @@ Thread::~Thread()
 	}
 }
 
-void Thread::setFunctor(DelegateRun functor)
+void Thread::setFunctor(DelegateRun functor, bool bIterative)
 {
 	mFunctorDelegate = functor;
+	this->mIsFunctorIterative = bIterative;
 }
 
 void Thread::setOnComplete(DelegateOnComplete onComplete)
@@ -40,18 +41,26 @@ bool Thread::isValid() const
 
 void Thread::start()
 {
+	this->bIsActive = true;
 	mpThreadHandle = new std::thread(std::bind(&Thread::run, this));
 }
 
 void Thread::run()
 {
 	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName.c_str());
-	while (mFunctorDelegate());
+	if (this->mIsFunctorIterative) while (mFunctorDelegate());
+	else this->mFunctorDelegate();
 	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName.c_str());
 	if (mOnCompleteDelegate.has_value())
 	{
 		(mOnCompleteDelegate.value())();
 	}
+	this->bIsActive = false;
+}
+
+bool Thread::isActive()
+{
+	return this->bIsActive;
 }
 
 void Thread::join()

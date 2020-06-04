@@ -19,7 +19,7 @@ public:
 	Thread(std::string name, logging::LogSystem *pLogSystem);
 	~Thread();
 
-	void setFunctor(DelegateRun functor);
+	void setFunctor(DelegateRun functor, bool bIterative=true);
 	void setOnComplete(DelegateOnComplete onComplete);
 
 	bool isValid() const;
@@ -32,13 +32,23 @@ public:
 	void start();
 	void join();
 
+	bool isActive();
+
+	template <typename... TArgs>
+	void log(logging::ECategory category, logging::Message format, TArgs... args)
+	{
+		this->mLogger.log(category, format, args...);
+	}
+
 private:
 	std::string mpName;
 	logging::Logger mLogger;
 
+	bool mIsFunctorIterative;
 	DelegateRun mFunctorDelegate;
 	DelegateOnComplete mOnCompleteDelegate;
 
+	bool bIsActive;
 	void* mpThreadHandle;
 
 	void run();

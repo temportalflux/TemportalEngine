@@ -117,6 +117,9 @@
     <ClCompile Include="source\gui\TextEditor.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
+    <ClCompile Include="source\TaskCompileShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -181,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="include\gui\TextEditor.h">
       <Filter>Header Files\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TaskCompileShader.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

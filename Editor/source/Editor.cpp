@@ -36,6 +36,7 @@ std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
 Editor::~Editor()
 {
 	EDITOR = nullptr;
+	this->mAssetEditors.clear();
 	this->mpDockspace.reset();
 	this->mpMemoryGui.reset();
 	this->mpProject.reset();
@@ -142,6 +143,7 @@ void Editor::run(utility::ArgumentMap args)
 	this->mpRenderer.reset();
 
 	this->mpEngine->destroyWindow(this->mpWindow);
+	this->mpWindow.reset();
 	this->mpEngine.reset();
 }
 

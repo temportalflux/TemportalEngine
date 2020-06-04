@@ -2,6 +2,8 @@
 
 #include "asset/Asset.hpp"
 
+#include <optional>
+
 NS_ASSET
 
 #define AssetType_Shader "shader"
@@ -14,6 +16,8 @@ public:
 	DEFINE_ASSET_TYPE(AssetType_Shader);
 
 	Shader() = default;
+
+	ui32 getStage() const { return this->mStage; }
 
 	std::string readSource() const;
 	void writeSource(std::string content) const;
