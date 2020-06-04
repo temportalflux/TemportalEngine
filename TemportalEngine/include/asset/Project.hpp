@@ -18,6 +18,7 @@ public:
 	static std::filesystem::path getAssetDirectoryFor(std::filesystem::path projectDir);
 
 	Project() = default;
+	Project(std::filesystem::path path);
 	Project(std::string name, Version version);
 
 	std::string getName() const;

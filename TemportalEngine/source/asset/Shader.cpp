@@ -8,21 +8,23 @@
 
 using namespace asset;
 
-std::filesystem::path Shader::getSourcePathFrom(std::filesystem::path assetPath)
-{
-	return assetPath.parent_path() / ("." + assetPath.stem().string() + ".glsl");
-}
-
 std::shared_ptr<Asset> Shader::createAsset(std::filesystem::path filePath)
 {
-	auto ptr = asset::AssetManager::makeAsset<Shader>();
-	ptr->mFilePath = filePath;
-	ptr->writeToDisk(filePath, EAssetSerialization::Json);
+	return asset::AssetManager::makeAsset<Shader>(filePath);
+}
+
+Shader::Shader(std::filesystem::path filePath) : Asset(filePath)
+{
+	// Initialize the source file
 	{
 		std::ofstream os(Shader::getSourcePathFrom(filePath));
 		os << "#version 450\n";
 	}
-	return ptr;
+}
+
+std::filesystem::path Shader::getSourcePathFrom(std::filesystem::path assetPath)
+{
+	return assetPath.parent_path() / ("." + assetPath.stem().string() + ".glsl");
 }
 
 void Shader::onAssetDeleted(std::filesystem::path filePath)

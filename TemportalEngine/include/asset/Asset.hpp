@@ -29,6 +29,10 @@ class Asset
 	friend class cereal::access;
 
 public:
+	Asset() = default;
+	// createAsset constructor
+	Asset(std::filesystem::path filePath);
+
 	/**
 	 * The type of this asset. Should be overridden by subclasses using `DEFINE_ASSET_TYPE("my-asset-type");`.
 	 * Used when the asset is written to disk to define the type loaded into `mAssetType` when the asset is loaded.

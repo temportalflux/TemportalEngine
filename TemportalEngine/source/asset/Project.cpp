@@ -6,6 +6,16 @@
 
 using namespace asset;
 
+std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
+{
+	return asset::AssetManager::makeAsset<Project>(filePath);
+}
+
+Project::Project(std::filesystem::path filePath) : Asset(filePath)
+{
+	this->mName = this->getFileName();
+}
+
 Project::Project(std::string name, Version version) : Asset()
 {
 	this->mName = name;
@@ -53,15 +63,6 @@ std::filesystem::path Project::getAssetDirectory() const
 }
 
 #pragma region Serialization
-
-std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
-{
-	auto ptr = asset::AssetManager::makeAsset<Project>();
-	ptr->mFilePath = filePath;
-	ptr->mName = filePath.stem().string();
-	ptr->writeToDisk(filePath, EAssetSerialization::Json);
-	return ptr;
-}
 
 std::shared_ptr<Asset> Project::readFromDisk(std::filesystem::path filePath, EAssetSerialization type)
 {

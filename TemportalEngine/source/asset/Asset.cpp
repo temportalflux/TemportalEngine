@@ -14,6 +14,10 @@ cereal::JSONOutputArchive::Options Asset::JsonFormat = cereal::JSONOutputArchive
 	cereal::JSONOutputArchive::Options::IndentChar::tab, 1
 );
 
+Asset::Asset(std::filesystem::path filePath) : mFilePath(filePath)
+{
+}
+
 std::shared_ptr<Asset> Asset::readAsset(std::filesystem::path filePath, asset::EAssetSerialization type)
 {
 	auto ptr = asset::AssetManager::makeAsset<Asset>();

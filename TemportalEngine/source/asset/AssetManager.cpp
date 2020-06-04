@@ -117,9 +117,10 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 {
 	auto typeMapEntry = this->mAssetTypeMap.find(type);
 	assert(typeMapEntry != this->mAssetTypeMap.end());
-	auto functor = typeMapEntry->second.createAsset;
+	auto asset = typeMapEntry->second.createAsset(filePath);
+	asset->writeToDisk(filePath, EAssetSerialization::Json);
 	this->addScannedAsset({ type, filePath });
-	return functor(filePath);
+	return asset;
 }
 
 void AssetManager::deleteFile(std::filesystem::path filePath)

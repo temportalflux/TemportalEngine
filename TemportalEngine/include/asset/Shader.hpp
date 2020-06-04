@@ -16,6 +16,7 @@ public:
 	DEFINE_ASSET_TYPE(AssetType_Shader);
 
 	Shader() = default;
+	Shader(std::filesystem::path filePath);
 
 	ui32 getStage() const { return this->mStage; }
 

@@ -14,6 +14,7 @@ public:
 	DEFINE_ASSET_TYPE(AssetType_EditorSettings);
 
 	Settings() = default;
+	Settings(std::filesystem::path filePath);
 
 	// Returns the relative path from `asset::Project::getAbsoluteDirectoryPath`
 	std::string getOutputDirectory() const;

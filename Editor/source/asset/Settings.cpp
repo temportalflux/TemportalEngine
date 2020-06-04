@@ -4,6 +4,15 @@
 
 using namespace asset;
 
+std::shared_ptr<Asset> Settings::createAsset(std::filesystem::path filePath)
+{
+	return asset::AssetManager::makeAsset<Settings>(filePath);
+}
+
+Settings::Settings(std::filesystem::path filePath) : Asset(filePath)
+{
+}
+
 std::string Settings::getOutputDirectory() const
 {
 	return this->mOutputDirectoryPath;
@@ -15,14 +24,6 @@ void Settings::setOutputDirectory(std::string path)
 }
 
 #pragma region Serialization
-
-std::shared_ptr<Asset> Settings::createAsset(std::filesystem::path filePath)
-{
-	auto ptr = asset::AssetManager::makeAsset<Settings>();
-	ptr->mFilePath = filePath;
-	ptr->writeToDisk(filePath, EAssetSerialization::Json);
-	return ptr;
-}
 
 std::shared_ptr<Asset> Settings::readFromDisk(std::filesystem::path filePath, EAssetSerialization type)
 {

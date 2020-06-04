@@ -50,11 +50,11 @@ public:
 	std::shared_ptr<memory::MemoryChunk> mpAssetMemory;
 	void setAssetMemory(std::shared_ptr<memory::MemoryChunk> assetMemory);
 	std::shared_ptr<memory::MemoryChunk> getAssetMemory() const;
-
-	template <typename T>
-	static std::shared_ptr<T> makeAsset()
+	
+	template <typename T, typename... Types>
+	static std::shared_ptr<T> makeAsset(Types&& ...args)
 	{
-		return AssetManager::get()->mpAssetMemory->make_shared<T>();
+		return AssetManager::get()->mpAssetMemory->make_shared<T>(args...);
 	}
 
 	/**
