@@ -107,6 +107,8 @@ void MainDockspace::renderView()
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();
 			ImGui::Separator();
 			if (ImGui::MenuItem("New Asset", "", false, bHasProject)) this->mModalNewAsset->open();
+			ImGui::Separator();
+			if (ImGui::MenuItem("Settings", "", false, bHasProject)) Editor::EDITOR->openSettings();
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Windows"))

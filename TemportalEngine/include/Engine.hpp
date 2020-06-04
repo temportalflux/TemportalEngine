@@ -23,14 +23,8 @@
 #include <typeinfo>
 
 class Window;
-
-NS_MEMORY
-class MemoryChunk;
-NS_END
-
-NS_INPUT
-class Queue;
-NS_END
+FORWARD_DEF(NS_MEMORY, class MemoryChunk);
+FORWARD_DEF(NS_INPUT, class Queue);
 
 NS_ENGINE
 
@@ -63,6 +57,7 @@ public:
 	bool hasProject() const;
 	void setProject(asset::ProjectPtrStrong project);
 	asset::ProjectPtrStrong getProject() const;
+
 	utility::SExecutableInfo const *const getInfo() const;
 
 #pragma region Memory

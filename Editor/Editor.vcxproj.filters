@@ -49,6 +49,12 @@
     <Filter Include="Header Files\gui\asset">
       <UniqueIdentifier>{e9b84c61-782e-46a5-ba6e-c967cb45d591}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\asset">
+      <UniqueIdentifier>{5315519d-2e1e-4d41-bb05-480789644e4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\asset">
+      <UniqueIdentifier>{2688941c-17b3-4157-9bfe-a9f89ddabe03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -120,6 +126,12 @@
     <ClCompile Include="source\TaskCompileShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\asset\EditorSettings.cpp">
+      <Filter>Source Files\gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="source\asset\Settings.cpp">
+      <Filter>Source Files\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -187,6 +199,12 @@
     </ClInclude>
     <ClInclude Include="include\TaskCompileShader.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\asset\EditorSettings.hpp">
+      <Filter>Header Files\gui\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="include\asset\Settings.hpp">
+      <Filter>Header Files\asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

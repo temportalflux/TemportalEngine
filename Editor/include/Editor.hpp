@@ -16,6 +16,7 @@ FORWARD_DEF(NS_ENGINE, class Engine)
 FORWARD_DEF(NS_GUI, class AssetEditor)
 FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer)
 FORWARD_DEF(NS_MEMORY, class MemoryChunk)
+FORWARD_DEF(NS_ASSET, class Settings);
 
 class Editor
 {
@@ -40,11 +41,14 @@ public:
 	bool hasProject() const;
 	void setProject(asset::AssetPtrStrong asset);
 	asset::ProjectPtrStrong getProject() const;
+	void loadEditorSettings(std::filesystem::path projectDir);
+	std::shared_ptr<asset::Settings> getEditorSettings() const;
 
 	std::filesystem::path getCurrentAssetDirectory() const;
 	void openAssetEditor(asset::AssetPtrStrong asset);
 	void closeGui(std::string id);
 	void openProjectSettings();
+	void openSettings();
 
 	std::shared_ptr<memory::MemoryChunk> getMemoryGui() const;
 
@@ -64,6 +68,7 @@ private:
 
 	// The project that the editor is currently operating on
 	asset::ProjectPtrStrong mpProject;
+	std::shared_ptr<asset::Settings> mpEditorSettings;
 
 	void initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRenderer);
 	void registerAllCommandlets();

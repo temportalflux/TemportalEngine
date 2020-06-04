@@ -52,6 +52,8 @@ std::filesystem::path Project::getAssetDirectory() const
 	return Project::getAssetDirectoryFor(this->getAbsoluteDirectoryPath());
 }
 
+#pragma region Serialization
+
 std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
 {
 	auto ptr = asset::AssetManager::makeAsset<Project>();
@@ -105,3 +107,5 @@ void Project::writeToDisk(std::filesystem::path filePath, EAssetSerialization ty
 	}
 	}
 }
+
+#pragma endregion

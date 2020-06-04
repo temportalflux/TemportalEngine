@@ -171,6 +171,7 @@
     <ClCompile Include="libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="libs\imgui\imgui_draw.cpp" />
     <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="source\asset\Settings.cpp" />
     <ClCompile Include="source\commandlet\CommandletBuildAssets.cpp" />
     <ClCompile Include="source\Editor.cpp" />
     <ClCompile Include="source\graphics\ImGuiFrame.cpp" />
@@ -179,6 +180,7 @@
     <ClCompile Include="source\gui\asset\AssetEditor.cpp" />
     <ClCompile Include="source\gui\asset\EditorProject.cpp" />
     <ClCompile Include="source\gui\asset\EditorShader.cpp" />
+    <ClCompile Include="source\gui\asset\EditorSettings.cpp" />
     <ClCompile Include="source\gui\IGui.cpp" />
     <ClCompile Include="source\gui\Log.cpp" />
     <ClCompile Include="source\gui\MainDockspace.cpp" />
@@ -193,6 +195,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\asset\Settings.hpp" />
     <ClInclude Include="include\commandlet\Commandlet.hpp" />
     <ClInclude Include="include\commandlet\CommandletBuildAssets.hpp" />
     <ClInclude Include="include\Editor.hpp" />
@@ -202,6 +205,7 @@
     <ClInclude Include="include\gui\asset\AssetEditor.hpp" />
     <ClInclude Include="include\gui\asset\EditorProject.hpp" />
     <ClInclude Include="include\gui\asset\EditorShader.hpp" />
+    <ClInclude Include="include\gui\asset\EditorSettings.hpp" />
     <ClInclude Include="include\gui\IGui.hpp" />
     <ClInclude Include="include\gui\Log.hpp" />
     <ClInclude Include="include\gui\MainDockspace.hpp" />

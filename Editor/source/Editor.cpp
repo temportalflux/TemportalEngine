@@ -2,10 +2,13 @@
 
 #include "Engine.hpp"
 #include "Window.hpp"
+#include "asset/AssetManager.hpp"
 #include "asset/Shader.hpp"
+#include "asset/Settings.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
 #include "gui/asset/EditorProject.hpp"
 #include "gui/asset/EditorShader.hpp"
+#include "gui/asset/EditorSettings.hpp"
 
 #include <memory>
 #include "memory/MemoryChunk.hpp"
@@ -21,6 +24,9 @@ Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
 
 	auto pEngine = engine::Engine::Create(memoryChunkSizes);
 	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
+	pEngine->getAssetManager()->registerType(AssetType_EditorSettings, {
+		"EditorSettings", ".settings", &asset::Settings::createAsset, &asset::Settings::readFromDisk, std::nullopt
+	});
 	
 	auto guiMemorySize = memoryChunkSizes.find("gui");
 	this->mpMemoryGui = guiMemorySize != memoryChunkSizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;
@@ -77,6 +83,7 @@ bool Editor::setup(utility::ArgumentMap args)
 
 void Editor::registerAllAssetEditors()
 {
+	this->registerAssetEditor({ AssetType_EditorSettings, &gui::EditorSettings::create });
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
 	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
 }
@@ -203,6 +210,9 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	{
 		this->mpWindow->setTitle("Editor: " + this->getProject()->getDisplayName());
 	}
+
+	this->mpEditorSettings.reset();
+	this->loadEditorSettings(project->getAbsoluteDirectoryPath());
 	
 	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
 }
@@ -210,6 +220,22 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 asset::ProjectPtrStrong Editor::getProject() const
 {
 	return this->mpProject;
+}
+
+void Editor::loadEditorSettings(std::filesystem::path projectDir)
+{
+	auto assetManager = asset::AssetManager::get();
+	auto settingsPath = projectDir / "config" / ("Editor" + assetManager->getAssetTypeMetadata(AssetType_EditorSettings).fileExtension);
+	std::filesystem::create_directories(settingsPath.parent_path());
+	if (std::filesystem::exists(settingsPath))
+		this->mpEditorSettings = assetManager->readFromDisk<asset::Settings>(settingsPath, asset::EAssetSerialization::Json, false);
+	else
+		this->mpEditorSettings = assetManager->createAssetAs<asset::Settings>(AssetType_EditorSettings, settingsPath);
+}
+
+std::shared_ptr<asset::Settings> Editor::getEditorSettings() const
+{
+	return this->mpEditorSettings;
 }
 
 std::filesystem::path Editor::getCurrentAssetDirectory() const
@@ -240,4 +266,9 @@ void Editor::closeGui(std::string id)
 void Editor::openProjectSettings()
 {
 	this->openAssetEditor(this->getProject());
+}
+
+void Editor::openSettings()
+{
+	this->openAssetEditor(this->getEditorSettings());
 }
