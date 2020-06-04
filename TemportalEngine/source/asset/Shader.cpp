@@ -102,3 +102,12 @@ void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 	Asset::load(archive);
 	archive(this->mStage);
 }
+
+std::string Shader::readSource() const
+{
+	std::ifstream is(Shader::getSourcePathFrom(this->getPath()));
+	return std::string(
+		std::istreambuf_iterator<char>(is),
+		std::istreambuf_iterator<char>()
+	);
+}

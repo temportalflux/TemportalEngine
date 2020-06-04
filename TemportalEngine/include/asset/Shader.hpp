@@ -15,6 +15,8 @@ public:
 
 	Shader() = default;
 
+	std::string readSource() const;
+
 private:
 	static std::filesystem::path getSourcePathFrom(std::filesystem::path assetPath);
 
@@ -28,7 +30,6 @@ private:
 	 * The compiled source of the shader found at `mSourceFileName`.
 	 */
 	std::vector<ui32> mSourceBinary;
-
 
 #pragma region Serialization
 public:

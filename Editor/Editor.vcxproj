@@ -185,6 +185,7 @@
     <ClCompile Include="source\gui\modal\Modal.cpp" />
     <ClCompile Include="source\gui\modal\NewAsset.cpp" />
     <ClCompile Include="source\gui\modal\OpenAsset.cpp" />
+    <ClCompile Include="source\gui\TextEditor.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -206,6 +207,7 @@
     <ClInclude Include="include\gui\modal\Modal.hpp" />
     <ClInclude Include="include\gui\modal\NewAsset.hpp" />
     <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
+    <ClInclude Include="include\gui\TextEditor.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />
     <ClInclude Include="libs\imgui\imgui.h" />

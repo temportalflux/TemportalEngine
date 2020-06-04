@@ -558,7 +558,7 @@ char a3_mem_getHeightSafe(a3_mem_NodeHeader const * const node)
 
 char a3_mem_getBalanceFactor(a3_mem_NodeHeader const * const node)
 {
-	return a3_mem_getHeightSafe(node->right) - a3_mem_getHeightSafe(node->left);
+	return node == 0 ? 0 : a3_mem_getHeightSafe(node->right) - a3_mem_getHeightSafe(node->left);
 }
 
 char a3_mem_calculateHeight(a3_mem_NodeHeader const * const node)
@@ -786,7 +786,7 @@ void a3_mem_connectFreeNodeToParent(a3_mem_ChunkHeader* chunkHeader, a3_mem_Node
 
 void a3_mem_balanceSubtree(a3_mem_ChunkHeader*const chunkHeader, a3_mem_NodeHeader *const node)
 {
-	char bf = a3_mem_getBalanceFactor(node);
+	char bf = node == 0 ? 0 : a3_mem_getBalanceFactor(node);
 	a3_mem_NodeHeader** rootPtr = &(chunkHeader->freeNodeRoot);
 
 	if (bf < 0)

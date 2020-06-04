@@ -3,6 +3,7 @@
 #include "gui/asset/AssetEditor.hpp"
 
 NS_GUI
+class TextEditor;
 
 // Editor for `asset::Shader`
 class EditorShader : public AssetEditor
@@ -16,6 +17,10 @@ public:
 protected:
 	void renderView() override;
 	void saveAsset() override;
+
+private:
+	std::string mSavedShaderContent;
+	std::shared_ptr<TextEditor> mTextEditor;
 
 };
 
