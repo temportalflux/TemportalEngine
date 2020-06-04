@@ -27,6 +27,11 @@ Version Project::getVersion() const
 	return this->mVersion;
 }
 
+void Project::setVersion(Version value)
+{
+	this->mVersion = value;
+}
+
 std::string Project::getDisplayName() const
 {
 	return this->getName() + " (" + this->getVersion().toString() + ")";

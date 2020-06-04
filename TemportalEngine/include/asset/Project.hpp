@@ -22,8 +22,8 @@ public:
 
 	std::string getName() const;
 	void setName(std::string value);
-
 	Version getVersion() const;
+	void setVersion(Version value);
 	std::string getDisplayName() const;
 
 	std::filesystem::path getAbsoluteDirectoryPath() const;

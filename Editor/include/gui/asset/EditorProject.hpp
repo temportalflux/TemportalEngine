@@ -3,6 +3,7 @@
 #include "gui/asset/AssetEditor.hpp"
 
 #include <array>
+#include <version.h>
 
 NS_GUI
 
@@ -22,8 +23,12 @@ protected:
 private:
 	// Input text for project name
 	std::array<char, 32> mInputName;
+	std::array<char, 3> mInputVersionMajor;
+	std::array<char, 3> mInputVersionMinor;
+	std::array<char, 4> mInputVersionPatch;
 
 	std::string getInputName() const;
+	Version getVersion() const;
 
 };
 
