@@ -2,8 +2,10 @@
 
 #include "Engine.hpp"
 #include "Window.hpp"
+#include "asset/Shader.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
 #include "gui/asset/EditorProject.hpp"
+#include "gui/asset/EditorShader.hpp"
 
 #include <memory>
 #include "memory/MemoryChunk.hpp"
@@ -75,6 +77,7 @@ bool Editor::setup(utility::ArgumentMap args)
 void Editor::registerAllAssetEditors()
 {
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
+	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)

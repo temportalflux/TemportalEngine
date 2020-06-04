@@ -111,6 +111,9 @@
     <ClCompile Include="source\gui\asset\EditorProject.cpp">
       <Filter>Source Files\gui\asset</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\asset\EditorShader.cpp">
+      <Filter>Source Files\gui\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -168,6 +171,9 @@
       <Filter>Header Files\gui\asset</Filter>
     </ClInclude>
     <ClInclude Include="include\gui\asset\EditorProject.hpp">
+      <Filter>Header Files\gui\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\asset\EditorShader.hpp">
       <Filter>Header Files\gui\asset</Filter>
     </ClInclude>
   </ItemGroup>
