@@ -16,6 +16,7 @@ public:
 	Shader() = default;
 
 	std::string readSource() const;
+	void writeSource(std::string content) const;
 
 private:
 	static std::filesystem::path getSourcePathFrom(std::filesystem::path assetPath);

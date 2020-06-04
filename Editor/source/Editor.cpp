@@ -114,7 +114,7 @@ void Editor::run(utility::ArgumentMap args)
 
 	this->mpEngine = engine::Engine::Get();
 
-	this->mpWindow = this->mpEngine->createWindow(800, 600, "Editor", WindowFlags::RESIZABLE);
+	this->mpWindow = this->mpEngine->createWindow(1280, 720, "Editor", WindowFlags::RESIZABLE);
 	if (this->mpWindow == nullptr) return;
 	
 	auto pVulkan = this->mpEngine->initializeVulkan(this->mpWindow->querySDLVulkanExtensions());

@@ -111,3 +111,9 @@ std::string Shader::readSource() const
 		std::istreambuf_iterator<char>()
 	);
 }
+
+void Shader::writeSource(std::string content) const
+{
+	std::ofstream os(Shader::getSourcePathFrom(this->getPath()), std::ios::trunc);
+	os << content;
+}

@@ -37,9 +37,6 @@ void EditorShader::renderView()
 	AssetEditor::renderView();
 
 	auto asset = this->get<asset::Shader>();
-	
-	// TODO: Can use this for most UI windows
-	// ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 
 	/* TODO: Can set error markers on lines in the editor
 	TextEditor::ErrorMarkers markers;
@@ -61,8 +58,18 @@ void EditorShader::saveAsset()
 {
 	auto asset = this->get<asset::Shader>();
 	
-	getLog()->log(LOG_DEBUG, this->mTextEditor->GetText().c_str());
-	this->mSavedShaderContent = this->mTextEditor->GetText();
+	if (this->isBitDirty(Bit_ShaderContent))
+	{
+		this->mSavedShaderContent = this->mTextEditor->GetText();
+		asset->writeSource(this->mSavedShaderContent);
+
+		// If the only change is the shader content, then only save that file
+		if (this->getDirtyFlags() == Bit_ShaderContent)
+		{
+			this->markAssetClean();
+			return;
+		}
+	}
 
 	AssetEditor::saveAsset();
 }

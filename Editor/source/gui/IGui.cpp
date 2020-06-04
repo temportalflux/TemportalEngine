@@ -54,6 +54,9 @@ void IGui::makeGui()
 	if (!this->isOpen()) return;
 	if (this->beginView())
 	{
+		// TODO: Allow these parameters to be passed in
+		ImGui::SetWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+
 		this->renderView();
 	}
 	this->endView();

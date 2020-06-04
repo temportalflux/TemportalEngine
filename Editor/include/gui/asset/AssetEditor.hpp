@@ -25,8 +25,11 @@ protected:
 	std::string getId() const override;
 	std::string getTitle() const override;
 
+	ui32 getDirtyFlags() const;
 	virtual bool isAssetDirty() const;
+	bool isBitDirty(ui32 bit) const;
 	void markAssetDirty(ui32 bit, bool isDirty = true);
+	void markAssetClean();
 	virtual void saveAsset();
 	void releaseAsset();
 

@@ -37,9 +37,14 @@ void AssetEditor::makeGui()
 	}
 }
 
+ui32 AssetEditor::getDirtyFlags() const
+{
+	return this->mDirtyFlags;
+}
+
 bool AssetEditor::isAssetDirty() const
 {
-	return this->mDirtyFlags > 0;
+	return this->getDirtyFlags() != 0;
 }
 
 void AssetEditor::markAssetDirty(ui32 bit, bool isDirty)
@@ -47,9 +52,19 @@ void AssetEditor::markAssetDirty(ui32 bit, bool isDirty)
 	this->mDirtyFlags = isDirty ? this->mDirtyFlags | bit : this->mDirtyFlags & (~bit);
 }
 
+bool AssetEditor::isBitDirty(ui32 bit) const
+{
+	return (this->getDirtyFlags() & bit) == bit;
+}
+
 void AssetEditor::saveAsset()
 {
 	this->mpAsset->writeToDisk(this->mpAsset->getPath(), asset::EAssetSerialization::Json);
+	this->markAssetClean();
+}
+
+void AssetEditor::markAssetClean()
+{
 	this->mDirtyFlags = 0;
 }
 
