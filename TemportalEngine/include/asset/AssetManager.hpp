@@ -22,9 +22,10 @@ NS_ASSET
 struct AssetTypeMetadata
 {
 	std::string DisplayName;
+	std::string fileExtension;
 	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath)> createAsset;
 	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath, asset::EAssetSerialization type)> readFromDisk;
-	std::string fileExtension;
+	std::optional<std::function<void(std::filesystem::path filePath)>> onAssetDeleted;
 };
 
 /**
@@ -78,6 +79,7 @@ public:
 	void registerType(AssetType type, AssetTypeMetadata metadata);
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
+	void deleteFile(std::filesystem::path filePath);
 	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned=true);
 
 	template <typename TAsset>
@@ -115,6 +117,8 @@ private:
 	 * Can be modified when assets are created by `createAsset` or when they are destroyed (TODO: Assets cannot yet be destroyed without editing files directly).
 	 */
 	std::unordered_multimap<std::string, AssetMetadata> mScannedAssetMetadataByPath;
+
+	void addScannedAsset(AssetMetadata metadata);
 
 };
 

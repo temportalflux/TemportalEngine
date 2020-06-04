@@ -150,6 +150,7 @@ void AssetBrowser::renderDirectoryContents()
 	for (const auto& entry : std::filesystem::directory_iterator(this->mCurrentPath))
 	{
 		auto itemName = entry.path().stem().string();
+		if (itemName[0] == '.') continue;
 		auto bIsDirectory = entry.is_directory();
 		bool bIsAssetAndOpenForEdit = false;
 		auto entryIsEmpty = std::filesystem::is_empty(entry.path());
@@ -164,7 +165,7 @@ void AssetBrowser::renderDirectoryContents()
 				&& ImGui::BeginPopupContextItem(entry.path().string().c_str()))
 		{
 			if (!bIsDirectory && ImGui::Selectable("Edit")) bIsAssetAndOpenForEdit = true;
-			if (ImGui::Selectable("Delete")) std::filesystem::remove(entry.path());
+			if (ImGui::Selectable("Delete")) asset::AssetManager::get()->deleteFile(entry.path());
 			ImGui::EndPopup();
 		}
 

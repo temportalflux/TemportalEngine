@@ -32,8 +32,8 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, { "Project", &Project::createAsset, &Project::readFromDisk, ".te-project" });
-	this->registerType(AssetType_Shader, { "Shader", &Shader::createAsset, &Shader::readFromDisk, ".te-asset" });
+	this->registerType(AssetType_Project, { "Project", ".te-project", &Project::createAsset, &Project::readFromDisk, std::nullopt });
+	this->registerType(AssetType_Shader, { "Shader", ".te-asset", &Shader::createAsset, &Shader::readFromDisk, &Shader::onAssetDeleted });
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
@@ -50,8 +50,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 		totalFilesScanned++;
 
 		// Ignore all files whose extension is not known
-		auto ext = entry.path().extension().string();
-		if (!this->isValidAssetExtension(ext)) continue;
+		if (!this->isValidAssetExtension(entry.path().extension().string())) continue;
 
 		foundAssetCount++;
 
@@ -60,12 +59,16 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 			assetType = Asset::readAsset(entry.path(), type)->getAssetType();
 		}
 
-		AssetMetadata metadata = { assetType, entry.path() };
-		this->mScannedAssetPathsByExtension.insert(std::make_pair(ext, metadata.path));
-		this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.path.string(), metadata));
+		this->addScannedAsset({ assetType, entry.path() });
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
+}
+
+void AssetManager::addScannedAsset(AssetMetadata metadata)
+{
+	this->mScannedAssetPathsByExtension.insert(std::make_pair(metadata.path.extension().string(), metadata.path));
+	this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.path.string(), metadata));
 }
 
 std::set<AssetType> AssetManager::getAssetTypes() const
@@ -115,7 +118,29 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 	auto typeMapEntry = this->mAssetTypeMap.find(type);
 	assert(typeMapEntry != this->mAssetTypeMap.end());
 	auto functor = typeMapEntry->second.createAsset;
+	this->addScannedAsset({ type, filePath });
 	return functor(filePath);
+}
+
+void AssetManager::deleteFile(std::filesystem::path filePath)
+{
+	if (this->isValidAssetExtension(filePath.extension().string()))
+	{
+		auto assetMeta = this->getAssetMetadata(filePath);
+		if (!assetMeta.has_value())
+		{
+			LOG.log(logging::ECategory::LOGWARN, "Deleting asset %s which has not been scanned.", filePath.string().c_str());
+		}
+		else
+		{
+			auto assetTypeMeta = this->getAssetTypeMetadata(assetMeta.value().type);
+			if (assetTypeMeta.onAssetDeleted.has_value())
+			{
+				assetTypeMeta.onAssetDeleted.value()(filePath);
+			}
+		}
+	}
+	std::filesystem::remove(filePath);
 }
 
 std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
