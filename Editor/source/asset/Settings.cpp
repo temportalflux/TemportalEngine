@@ -4,9 +4,14 @@
 
 using namespace asset;
 
-std::shared_ptr<Asset> Settings::createAsset(std::filesystem::path filePath)
+asset::AssetPtrStrong Settings::createNewAsset(std::filesystem::path filePath)
 {
 	return asset::AssetManager::makeAsset<Settings>(filePath);
+}
+
+asset::AssetPtrStrong Settings::createEmptyAsset()
+{
+	return asset::AssetManager::makeAsset<Settings>();
 }
 
 Settings::Settings(std::filesystem::path filePath) : Asset(filePath)
@@ -25,37 +30,21 @@ void Settings::setOutputDirectory(std::string path)
 
 #pragma region Serialization
 
-std::shared_ptr<Asset> Settings::readFromDisk(std::filesystem::path filePath, EAssetSerialization type)
+void Settings::write(cereal::JSONOutputArchive &archive) const
 {
-	auto ptr = asset::AssetManager::makeAsset<Settings>();
-	switch (type)
-	{
-	case EAssetSerialization::Json:
-	{
-		std::ifstream is(filePath);
-		cereal::JSONInputArchive archive(is);
-		ptr->load(archive);
-		break;
-	}
-	default: break; // not supported
-	}
-	ptr->mFilePath = filePath;
-	return ptr;
+	Asset::write(archive);
+	archive(
+		cereal::make_nvp("outputDirectory", this->mOutputDirectoryPath)
+	);
 }
 
-void Settings::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
+void Settings::read(cereal::JSONInputArchive &archive)
 {
-	switch (type)
-	{
-	case EAssetSerialization::Json:
-	{
-		std::ofstream os(filePath);
-		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
-		this->save(archive);
-		return;
-	}
-	default: break; // not supported
-	}
+	Asset::read(archive);
+	archive(
+		cereal::make_nvp("outputDirectory", this->mOutputDirectoryPath)
+	);
 }
+
 
 #pragma endregion

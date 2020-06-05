@@ -23,8 +23,8 @@ struct AssetTypeMetadata
 {
 	std::string DisplayName;
 	std::string fileExtension;
-	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath)> createAsset;
-	std::function<std::shared_ptr<Asset>(std::filesystem::path filePath, asset::EAssetSerialization type)> readFromDisk;
+	std::function<asset::AssetPtrStrong(std::filesystem::path filePath)> createNewAsset;
+	std::function<asset::AssetPtrStrong()> createEmptyAsset;
 	std::optional<std::function<void(std::filesystem::path filePath)>> onAssetDeleted;
 };
 

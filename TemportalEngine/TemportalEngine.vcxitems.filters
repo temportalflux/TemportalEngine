@@ -410,5 +410,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp">
       <Filter>asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

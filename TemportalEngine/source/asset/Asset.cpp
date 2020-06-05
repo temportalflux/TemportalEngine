@@ -18,35 +18,7 @@ Asset::Asset(std::filesystem::path filePath) : mFilePath(filePath)
 {
 }
 
-std::shared_ptr<Asset> Asset::readAsset(std::filesystem::path filePath, asset::EAssetSerialization type)
-{
-	auto ptr = asset::AssetManager::makeAsset<Asset>();
-	switch (type)
-	{
-	case EAssetSerialization::Json:
-	{
-		std::ifstream is(filePath);
-		cereal::JSONInputArchive archive(is);
-		ptr->load(archive);
-		break;
-	}
-	case EAssetSerialization::Binary:
-	{
-		std::ifstream is(filePath, std::ios::binary);
-		cereal::PortableBinaryInputArchive archive(is);
-		ptr->load(archive);
-		break;
-	}
-	}
-	ptr->mFilePath = filePath;
-	return ptr;
-}
-
-void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
-{
-	// Should always be overriden by subclasses
-	assert(false);
-}
+#pragma region Properties
 
 std::filesystem::path Asset::getPath() const
 {
@@ -57,6 +29,60 @@ std::string Asset::getFileName() const
 {
 	return this->mFilePath.stem().string();
 }
+
+#pragma endregion
+
+#pragma region Serialization
+
+void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
+{
+	switch (type)
+	{
+	case EAssetSerialization::Json:
+	{
+		std::ofstream os(filePath);
+		cereal::JSONOutputArchive archive(os);
+		this->write(archive);
+		return;
+	}
+	case EAssetSerialization::Binary:
+	{
+		std::ofstream os(filePath, std::ios::binary);
+		cereal::PortableBinaryOutputArchive archive(os);
+		this->compile(archive);
+		return;
+	}
+	}
+}
+
+void Asset::readFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type)
+{
+	this->mFilePath = filePath;
+	switch (type)
+	{
+	case EAssetSerialization::Json:
+	{
+		std::ifstream is(filePath);
+		cereal::JSONInputArchive archive(is);
+		this->read(archive);
+		break;
+	}
+	case EAssetSerialization::Binary:
+	{
+		std::ifstream is(filePath, std::ios::binary);
+		cereal::PortableBinaryInputArchive archive(is);
+		this->decompile(archive);
+		break;
+	}
+	}
+}
+
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, Asset::write, cereal::JSONOutputArchive, Asset::serialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(, Asset::read, cereal::JSONInputArchive, Asset::deserialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, Asset::compile, cereal::PortableBinaryOutputArchive, Asset::serialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(, Asset::decompile, cereal::PortableBinaryInputArchive, Asset::deserialize);
+
+#pragma endregion
 
 /*
 std::string Asset::toString()

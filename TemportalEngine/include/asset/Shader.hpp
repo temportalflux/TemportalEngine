@@ -15,6 +15,14 @@ class Shader : public Asset
 public:
 	DEFINE_ASSET_TYPE(AssetType_Shader);
 
+	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
+	static asset::AssetPtrStrong createEmptyAsset();
+	static void onAssetDeleted(std::filesystem::path filePath);
+
+private:
+	static std::filesystem::path getSourcePathFrom(std::filesystem::path assetPath);
+
+public:
 	Shader() = default;
 	Shader(std::filesystem::path filePath);
 
@@ -23,8 +31,8 @@ public:
 	std::string readSource() const;
 	void writeSource(std::string content) const;
 
+#pragma region Properties
 private:
-	static std::filesystem::path getSourcePathFrom(std::filesystem::path assetPath);
 
 	/**
 	 * The Vulkan shader stage flags. Encoded as binary regardless of the file serialization type.
@@ -36,19 +44,14 @@ private:
 	 * The compiled source of the shader found at `mSourceFileName`.
 	 */
 	std::vector<ui32> mSourceBinary;
+#pragma endregion
 
 #pragma region Serialization
-public:
-	static std::shared_ptr<Asset> createAsset(std::filesystem::path filePath);
-	static void onAssetDeleted(std::filesystem::path filePath);
-	static std::shared_ptr<Asset> readFromDisk(std::filesystem::path filePath, EAssetSerialization type);
-	void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const override;
-
-private:
-	void write(cereal::JSONOutputArchive &archive) const;
-	void read(cereal::JSONInputArchive &archive);
-	void compile(cereal::PortableBinaryOutputArchive &archive) const;
-	void decompile(cereal::PortableBinaryInputArchive &archive);
+protected:
+	void write(cereal::JSONOutputArchive &archive) const override;
+	void read(cereal::JSONInputArchive &archive) override;
+	void compile(cereal::PortableBinaryOutputArchive &archive) const override;
+	void decompile(cereal::PortableBinaryInputArchive &archive) override;
 #pragma endregion
 
 };

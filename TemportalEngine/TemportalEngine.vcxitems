@@ -70,6 +70,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp" />

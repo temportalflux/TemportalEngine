@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/AssetType.hpp"
+#include "asset/AssetHelper.hpp"
 
 #include <cereal/access.hpp>
 #include <cereal/archives/json.hpp>
@@ -61,25 +62,23 @@ private:
 
 #pragma region Serialization
 public:
-	/**
-	 * Reads the asset data from the file stream (calling `Asset#load` in the process).
-	 */
-	static std::shared_ptr<Asset> readAsset(std::filesystem::path filePath, asset::EAssetSerialization type);
-	virtual void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const;
-
+	void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const;
+	void readFromDisk(std::filesystem::path filePath, EAssetSerialization type);
 protected:
+	virtual DECLARE_SERIALIZATION_METHOD(write, cereal::JSONOutputArchive, const);
+	virtual DECLARE_SERIALIZATION_METHOD(read, cereal::JSONInputArchive, );
+	virtual DECLARE_SERIALIZATION_METHOD(compile, cereal::PortableBinaryOutputArchive, const);
+	virtual DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, );
 
-	template<class Archive>
-	void save(Archive &archive) const
+	template <typename Archive>
+	void serialize(Archive &archive) const
 	{
-		// Always write the constant-type-per-subclass as the type
 		archive(cereal::make_nvp("type", this->getAssetType()));
 	}
 
-	template<class Archive>
-	void load(Archive &archive)
+	template <typename Archive>
+	void deserialize(Archive &archive)
 	{
-		// Always load the type into the local field
 		archive(cereal::make_nvp("type", this->mAssetType));
 	}
 #pragma endregion

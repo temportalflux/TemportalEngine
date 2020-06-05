@@ -13,6 +13,9 @@ class Settings : public Asset
 public:
 	DEFINE_ASSET_TYPE(AssetType_EditorSettings);
 
+	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
+	static asset::AssetPtrStrong createEmptyAsset();
+	
 	Settings() = default;
 	Settings(std::filesystem::path filePath);
 
@@ -25,30 +28,11 @@ private:
 	std::string mOutputDirectoryPath;
 
 #pragma region Serialization
-public:
-	static std::shared_ptr<Asset> createAsset(std::filesystem::path filePath);
-	static std::shared_ptr<Asset> readFromDisk(std::filesystem::path filePath, EAssetSerialization type);
-	void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const override;
-
-private:
-
-	template <typename Archive>
-	void save(Archive &archive) const
-	{
-		Asset::save(archive);
-		archive(
-			cereal::make_nvp("outputDirectory", this->mOutputDirectoryPath)
-		);
-	}
-
-	template <typename Archive>
-	void load(Archive &archive)
-	{
-		Asset::load(archive);
-		archive(
-			cereal::make_nvp("outputDirectory", this->mOutputDirectoryPath)
-		);
-	}
+protected:
+	DECLARE_SERIALIZATION_METHOD(write, cereal::JSONOutputArchive, const override);
+	DECLARE_SERIALIZATION_METHOD(read, cereal::JSONInputArchive, override);
+	void compile(cereal::PortableBinaryOutputArchive &archive) const override {}
+	void decompile(cereal::PortableBinaryInputArchive &archive) override {}
 #pragma endregion
 };
 

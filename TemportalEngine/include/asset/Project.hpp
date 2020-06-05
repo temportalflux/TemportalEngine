@@ -15,6 +15,9 @@ class Project : public Asset
 public:
 	DEFINE_ASSET_TYPE(AssetType_Project);
 
+	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
+	static asset::AssetPtrStrong createEmptyAsset();
+
 	static std::filesystem::path getAssetDirectoryFor(std::filesystem::path projectDir);
 
 	Project() = default;
@@ -35,17 +38,16 @@ private:
 	Version mVersion;
 
 #pragma region Serialization
-public:
-	static std::shared_ptr<Asset> createAsset(std::filesystem::path filePath);
-	static std::shared_ptr<Asset> readFromDisk(std::filesystem::path filePath, EAssetSerialization type);
-	void writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const override;
-
-private:
+protected:
+	DECLARE_SERIALIZATION_METHOD(write, cereal::JSONOutputArchive, const override);
+	DECLARE_SERIALIZATION_METHOD(read, cereal::JSONInputArchive, override);
+	DECLARE_SERIALIZATION_METHOD(compile, cereal::PortableBinaryOutputArchive, const override);
+	DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 
 	template <typename Archive>
-	void save(Archive &archive) const
+	void serialize(Archive &archive) const
 	{
-		Asset::save(archive);
+		Asset::serialize(archive);
 		archive(
 			cereal::make_nvp("name", this->mName),
 			cereal::make_nvp("version", this->mVersion)
@@ -53,9 +55,9 @@ private:
 	}
 
 	template <typename Archive>
-	void load(Archive &archive)
+	void deserialize(Archive &archive)
 	{
-		Asset::load(archive);
+		Asset::deserialize(archive);
 		archive(
 			cereal::make_nvp("name", this->mName),
 			cereal::make_nvp("version", this->mVersion)

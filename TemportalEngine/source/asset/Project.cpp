@@ -6,9 +6,14 @@
 
 using namespace asset;
 
-std::shared_ptr<Asset> Project::createAsset(std::filesystem::path filePath)
+asset::AssetPtrStrong Project::createNewAsset(std::filesystem::path filePath)
 {
 	return asset::AssetManager::makeAsset<Project>(filePath);
+}
+
+asset::AssetPtrStrong Project::createEmptyAsset()
+{
+	return asset::AssetManager::makeAsset<Project>();
 }
 
 Project::Project(std::filesystem::path filePath) : Asset(filePath)
@@ -21,6 +26,8 @@ Project::Project(std::string name, Version version) : Asset()
 	this->mName = name;
 	this->mVersion = version;
 }
+
+#pragma region Properties
 
 std::string Project::getName() const
 {
@@ -62,51 +69,9 @@ std::filesystem::path Project::getAssetDirectory() const
 	return Project::getAssetDirectoryFor(this->getAbsoluteDirectoryPath());
 }
 
-#pragma region Serialization
-
-std::shared_ptr<Asset> Project::readFromDisk(std::filesystem::path filePath, EAssetSerialization type)
-{
-	auto ptr = asset::AssetManager::makeAsset<Project>();
-	switch (type)
-	{
-	case EAssetSerialization::Json:
-	{
-		std::ifstream is(filePath);
-		cereal::JSONInputArchive archive(is);
-		ptr->load(archive);
-		break;
-	}
-	case EAssetSerialization::Binary:
-	{
-		std::ifstream is(filePath, std::ios::binary);
-		cereal::PortableBinaryInputArchive archive(is);
-		ptr->load(archive);
-		break;
-	}
-	}
-	ptr->mFilePath = filePath;
-	return ptr;
-}
-
-void Project::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
-{
-	switch (type)
-	{
-	case EAssetSerialization::Json:
-	{
-		std::ofstream os(filePath);
-		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
-		this->save(archive);
-		return;
-	}
-	case EAssetSerialization::Binary:
-	{
-		std::ofstream os(filePath, std::ios::trunc | std::ios::binary);
-		cereal::PortableBinaryOutputArchive archive(os);
-		this->save(archive);
-		return;
-	}
-	}
-}
-
 #pragma endregion
+
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, Project::write, cereal::JSONOutputArchive, Project::serialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(, Project::read, cereal::JSONInputArchive, Project::deserialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, Project::compile, cereal::PortableBinaryOutputArchive, Project::serialize);
+CREATE_DEFAULT_SERIALIZATION_DEFINITION(, Project::decompile, cereal::PortableBinaryInputArchive, Project::deserialize);

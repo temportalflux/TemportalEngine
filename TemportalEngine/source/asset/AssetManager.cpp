@@ -32,8 +32,8 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, { "Project", ".te-project", &Project::createAsset, &Project::readFromDisk, std::nullopt });
-	this->registerType(AssetType_Shader, { "Shader", ".te-asset", &Shader::createAsset, &Shader::readFromDisk, &Shader::onAssetDeleted });
+	this->registerType(AssetType_Project, { "Project", ".te-project", &Project::createNewAsset, &Project::createEmptyAsset, std::nullopt });
+	this->registerType(AssetType_Shader, { "Shader", ".te-asset", &Shader::createNewAsset, &Shader::createEmptyAsset, &Shader::onAssetDeleted });
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
@@ -56,7 +56,9 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 
 		AssetType assetType;
 		{
-			assetType = Asset::readAsset(entry.path(), type)->getAssetType();
+			auto asset = makeAsset<Asset>();
+			asset->readFromDisk(entry.path(), type);
+			assetType = asset->getAssetType();
 		}
 
 		this->addScannedAsset({ assetType, entry.path() });
@@ -117,7 +119,7 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 {
 	auto typeMapEntry = this->mAssetTypeMap.find(type);
 	assert(typeMapEntry != this->mAssetTypeMap.end());
-	auto asset = typeMapEntry->second.createAsset(filePath);
+	auto asset = typeMapEntry->second.createNewAsset(filePath);
 	asset->writeToDisk(filePath, EAssetSerialization::Json);
 	this->addScannedAsset({ type, filePath });
 	return asset;
@@ -159,7 +161,9 @@ std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path fil
 	{
 		if (bShouldHaveBeenScanned)
 			LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
-		assetType = Asset::readAsset(filePath, type)->getAssetType();
+		auto asset = makeAsset<Asset>();
+		asset->readFromDisk(filePath, type);
+		assetType = asset->getAssetType();
 	}
 	else
 	{
@@ -169,8 +173,8 @@ std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path fil
 	// Determine the functor for loading this asset type
 	auto typeMapEntry = this->mAssetTypeMap.find(assetType);
 	assert(typeMapEntry != this->mAssetTypeMap.end());
-	auto loadAssetFunctor = typeMapEntry->second.readFromDisk;
 
-	// Actually load the asset type, using the load functor so the type is known
-	return loadAssetFunctor(filePath, type);
+	auto asset = typeMapEntry->second.createEmptyAsset();
+	asset->readFromDisk(filePath, type);
+	return asset;
 }
