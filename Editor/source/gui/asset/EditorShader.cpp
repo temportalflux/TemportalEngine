@@ -110,12 +110,12 @@ void EditorShader::saveAsset()
 
 bool EditorShader::canCompileAsset()
 {
-	return AssetEditor::canCompileAsset() && !this->mpCompilationTask;
+	return !this->mpCompilationTask;
 }
 
 void EditorShader::compileAsset()
 {
-	AssetEditor::saveAsset();
+	this->saveAsset();
 
 	auto asset = this->get<asset::Shader>();
 	// pass in the source so we don't need to perform file read
