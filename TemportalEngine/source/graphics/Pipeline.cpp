@@ -7,13 +7,20 @@
 
 using namespace graphics;
 
-Pipeline& Pipeline::addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader)
+// Explicity deconstructor to make shaded_ptr notes
+Pipeline::~Pipeline()
 {
-	this->mShaderPtrs.insert(std::make_pair(stage, pShader));
+	// These will likely be the only references to the shader objects left, so they will automatically be deallocated
+	this->mShaderPtrs.clear();
+}
+
+Pipeline& Pipeline::addShader(std::shared_ptr<ShaderModule> shader)
+{
+	this->mShaderPtrs.insert(std::make_pair(shader->mStage, shader));
 	return *this;
 }
 
-ShaderModule* Pipeline::getShader(vk::ShaderStageFlagBits stage)
+std::shared_ptr<ShaderModule> Pipeline::getShader(vk::ShaderStageFlagBits stage)
 {
 	auto iter = this->mShaderPtrs.find(stage);
 	return iter != this->mShaderPtrs.end() ? iter->second : nullptr;
@@ -24,9 +31,9 @@ std::vector<vk::PipelineShaderStageCreateInfo> Pipeline::createShaderStages() co
 	auto shaderCount = this->mShaderPtrs.size();
 	auto shaderStages = std::vector<vk::PipelineShaderStageCreateInfo>(shaderCount);
 	uSize i = 0;
-	for (auto [stage, pShader] : this->mShaderPtrs)
+	for (auto [stage, shader] : this->mShaderPtrs)
 	{
-		shaderStages[i++] = pShader->getPipelineInfo().setStage(stage);
+		shaderStages[i++] = shader->getPipelineInfo();
 	}
 	return shaderStages;
 }
@@ -45,9 +52,9 @@ bool Pipeline::isValid() const
 
 Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass)
 {
-	for (auto[stage, shaderPtr] : this->mShaderPtrs)
+	for (auto[stage, shader] : this->mShaderPtrs)
 	{
-		shaderPtr->create(pDevice);
+		shader->create(pDevice);
 	}
 
 	auto vertexShader = this->getShader(vk::ShaderStageFlagBits::eVertex);
@@ -137,9 +144,9 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 
 	this->mPipeline = pDevice->mDevice->createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
 
-	for (auto[stage, shaderPtr] : this->mShaderPtrs)
+	for (auto[stage, shader] : this->mShaderPtrs)
 	{
-		shaderPtr->destroy();
+		shader->destroy();
 	}
 
 	return *this;

@@ -38,9 +38,9 @@ void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
 	mImageViewInfo = info;
 }
 
-void VulkanRenderer::addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader)
+void VulkanRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 {
-	this->mPipeline.addShader(stage, pShader);
+	this->mPipeline.addShader(shader);
 }
 
 void VulkanRenderer::initializeDevices()

@@ -45,9 +45,13 @@ void EditorShader::makeGui()
 			this->mShaderCompilationErrors.clear();
 			// Make the error map by parsing all the errors return from the compilation task
 			auto errors = this->mpCompilationTask->getErrors();
-			auto binary = this->mpCompilationTask->getBinary();
+			if (errors.empty())
+			{
+				asset->setBinary(this->mpCompilationTask->getBinary(), this->mpCompilationTask->getBinaryMetadata());
+				asset->writeToDisk(Editor::EDITOR->getAssetBinaryPath(asset), asset::EAssetSerialization::Binary);
+			}
 			this->mpCompilationTask.reset(); // reset the task so we can release the memory
-			if (errors.size() > 0)
+			if (!errors.empty())
 			{
 				static std::regex RegexParseError(".*:([0-9]+): (.*)");
 				std::smatch regexMatch;
@@ -62,12 +66,6 @@ void EditorShader::makeGui()
 						this->mShaderCompilationErrors.insert(std::make_pair(0, err));
 					}
 				}
-			}
-			else
-			{
-				auto binaryPath = Editor::EDITOR->getAssetBinaryPath(asset);
-				asset->setBinary(binary);
-				asset->writeToDisk(binaryPath, asset::EAssetSerialization::Binary);
 			}
 		}
 	}

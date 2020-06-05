@@ -41,7 +41,7 @@ public:
 	void setImageViewInfo(ImageViewInfo const &info);
 
 	virtual void initializeDevices();
-	void addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader);
+	void addShader(std::shared_ptr<ShaderModule> shader);
 
 	virtual void createInputBuffers(ui32 bufferSize);
 

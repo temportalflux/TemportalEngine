@@ -19,18 +19,19 @@ class Pipeline
 
 public:
 	Pipeline() = default;
+	~Pipeline();
 
-	Pipeline& addShader(vk::ShaderStageFlagBits stage, ShaderModule *pShader);
+	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
 	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
 
-	ShaderModule* getShader(vk::ShaderStageFlagBits stage);
+	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
 
 	bool isValid() const;
 	Pipeline& create(LogicalDevice const *pDevice, RenderPass const *pRenderPass);
 	void destroy();
 
 private:
-	std::unordered_map<vk::ShaderStageFlagBits, ShaderModule*> mShaderPtrs;
+	std::unordered_map<vk::ShaderStageFlagBits, std::shared_ptr<ShaderModule>> mShaderPtrs;
 	vk::Viewport mViewport;
 	vk::Rect2D mScissor;
 

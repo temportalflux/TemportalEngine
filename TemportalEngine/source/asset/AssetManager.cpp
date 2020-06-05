@@ -148,6 +148,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 
 std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
 {
+	filePath = filePath.make_preferred();
 	assert(std::filesystem::exists(filePath));
 	if (!this->isValidAssetExtension(filePath.extension().string()))
 	{

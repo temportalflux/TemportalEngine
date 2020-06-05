@@ -80,6 +80,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Command.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\CommandBuffer.hpp" />
@@ -101,6 +102,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChain.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VertexDescription.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanApi.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp" />

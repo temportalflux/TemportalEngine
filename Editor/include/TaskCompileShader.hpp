@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "thread/Thread.hpp"
+#include "graphics/ShaderMetadata.hpp"
 
 #include <string>
 #include <vector>
@@ -22,6 +23,7 @@ public:
 
 	bool wasCompilationSuccessful() const;
 	std::vector<ui32> getBinary() const;
+	graphics::ShaderMetadata getBinaryMetadata() const;
 	std::vector<std::string> getErrors() const;
 
 private:
@@ -34,9 +36,11 @@ private:
 	bool bIsComplete;
 	std::vector<ui32> mCompiledBinary;
 	std::vector<std::string> mCompilationErrors;
+	graphics::ShaderMetadata mBinaryMetadata;
 
 	bool doCompile();
 	void onComplete();
+	void parseShader();
 
 };
 

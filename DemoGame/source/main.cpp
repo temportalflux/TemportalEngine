@@ -7,6 +7,8 @@
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
+#include "asset/AssetManager.hpp"
+#include "asset/Shader.hpp"
 
 #include <array>
 #include <filesystem>
@@ -152,59 +154,89 @@ int main(int argc, char *argv[])
 		auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
 
 		// Initialize settings
-		renderer.setPhysicalDevicePreference(graphics::PhysicalDevicePreference()
-																				 .addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
-																				 .addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
-																				 .addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
-																				 .addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
-																				 .addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-																				 .addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
-																				 .addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
+		renderer.setPhysicalDevicePreference(
+			graphics::PhysicalDevicePreference()
+			.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
+			.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
+			.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
+			.addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
+			.addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+			.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
+			.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
 		);
-		renderer.setLogicalDeviceInfo(graphics::LogicalDeviceInfo()
-																	.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-																	.addQueueFamily(graphics::QueueFamily::eGraphics)
-																	.addQueueFamily(graphics::QueueFamily::ePresentation)
-																	.setValidationLayers(engine::Engine::VulkanValidationLayers)
+		renderer.setLogicalDeviceInfo(
+			graphics::LogicalDeviceInfo()
+			.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+			.addQueueFamily(graphics::QueueFamily::eGraphics)
+			.addQueueFamily(graphics::QueueFamily::ePresentation)
+			.setValidationLayers(engine::Engine::VulkanValidationLayers)
 		);
-		renderer.setSwapChainInfo(graphics::SwapChainInfo()
-															.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
-															.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
-															.addPresentModePreference(vk::PresentModeKHR::eMailbox)
-															.addPresentModePreference(vk::PresentModeKHR::eFifo)
+		renderer.setSwapChainInfo(
+			graphics::SwapChainInfo()
+			.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
+			.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+			.addPresentModePreference(vk::PresentModeKHR::eMailbox)
+			.addPresentModePreference(vk::PresentModeKHR::eFifo)
 		);
-		renderer.setImageViewInfo({
-			vk::ImageViewType::e2D,
+		renderer.setImageViewInfo(
 			{
-				vk::ComponentSwizzle::eIdentity,
-				vk::ComponentSwizzle::eIdentity,
-				vk::ComponentSwizzle::eIdentity,
-				vk::ComponentSwizzle::eIdentity
+				vk::ImageViewType::e2D,
+				{
+					vk::ComponentSwizzle::eIdentity,
+					vk::ComponentSwizzle::eIdentity,
+					vk::ComponentSwizzle::eIdentity,
+					vk::ComponentSwizzle::eIdentity
+				}
 			}
-															});
+		);
 
 		// Initialize required api connections
 		renderer.initializeDevices();
 
 		// Create shaders
-		auto shaderVertex = graphics::ShaderModule();
-		shaderVertex.setStage(vk::ShaderStageFlagBits::eVertex);
-		shaderVertex.setSource("shaders/triangle.vert");
-		shaderVertex.setVertexDescription(
+		{
+			auto assetManager = asset::AssetManager::get();
+			// Vertex Shader from asset
 			{
-				sizeof(Vertex),
+				std::shared_ptr<graphics::ShaderModule> shaderModule;
+				// Make module from shader binary in asset
 				{
-					{ "position", (ui32)offsetof(Vertex, position) },
-					{ "color", (ui32)offsetof(Vertex, color) }
+					auto asset = assetManager->readFromDisk<asset::Shader>(
+						// TODO: This should use a soft asset path reference in a pipeline asset.
+						// All SoftAssetPath<Asset> should be relative to the projects asset directory.
+						pEngine->getProject()->getAssetDirectory() / "shaders/TriangleVertex.te-asset",
+						asset::EAssetSerialization::Binary
+						);
+					shaderModule = asset->makeModule();
 				}
+				// Set the description for the input
+				shaderModule->setVertexDescription(
+					{
+						sizeof(Vertex),
+						{
+							{ "position", CREATE_ATTRIBUTE(Vertex, position) },
+							{ "color", CREATE_ATTRIBUTE(Vertex, color) }
+						}
+					}
+				);
+				renderer.addShader(shaderModule);
 			}
-		);
-
-		auto shaderFragment = graphics::ShaderModule();
-		shaderFragment.setStage(vk::ShaderStageFlagBits::eFragment);
-		shaderFragment.setSource("shaders/triangle.frag");
-		renderer.addShader(vk::ShaderStageFlagBits::eVertex, &shaderVertex);
-		renderer.addShader(vk::ShaderStageFlagBits::eFragment, &shaderFragment);
+			// Fragment Shader from asset
+			{
+				std::shared_ptr<graphics::ShaderModule> shaderModule;
+				// Make module from shader binary in asset
+				{
+					auto asset = assetManager->readFromDisk<asset::Shader>(
+						// TODO: This should use a soft asset path reference in a pipeline asset.
+						// All SoftAssetPath<Asset> should be relative to the projects asset directory.
+						pEngine->getProject()->getAssetDirectory() / "shaders/TriangleFragment.te-asset",
+						asset::EAssetSerialization::Binary
+					);
+					shaderModule = asset->makeModule();
+				}
+				renderer.addShader(shaderModule);
+			}
+		}
 
 		// Initialize the rendering api connections
 		renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());

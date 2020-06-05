@@ -1,6 +1,9 @@
 #include "asset/Shader.hpp"
 
+#include "Engine.hpp"
 #include "asset/AssetManager.hpp"
+#include "graphics/ShaderModule.hpp"
+#include "memory/MemoryChunk.hpp"
 
 #include <bitset>
 #include <shaderc/shaderc.hpp>
@@ -57,9 +60,10 @@ void Shader::writeSource(std::string content) const
 	os << content;
 }
 
-void Shader::setBinary(std::vector<ui32> &binary)
+void Shader::setBinary(std::vector<ui32> binary, graphics::ShaderMetadata metadata)
 {
 	this->mSourceBinary = binary;
+	this->mBinaryMetadata = metadata;
 }
 
 #pragma endregion
@@ -88,21 +92,59 @@ void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
 {
 	Asset::compile(archive);
 	archive(this->mStage);
+	
+	uSize len;
+
 	// Source binary
-	uSize len = (uSize)this->mSourceBinary.size();
+	len = (uSize)this->mSourceBinary.size();
 	archive(len);
 	archive(cereal::binary_data(this->mSourceBinary.data(), len * sizeof(ui32)));
+
+	// Binary Metadata
+	len = (uSize)this->mBinaryMetadata.inputAttributes.size();
+	archive(len);
+	for (auto& attrib : this->mBinaryMetadata.inputAttributes)
+	{
+		archive(attrib.slot, attrib.propertyName, attrib.byteCount, attrib.format);
+	}
+	
 }
 
 void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 {
 	Asset::decompile(archive);
 	archive(this->mStage);
-	// Source Binary
+
 	uSize len;
+	
+	// Source Binary
 	archive(len);
 	this->mSourceBinary.resize(len);
-	archive(cereal::binary_data(this->mSourceBinary.data(), len));
+	archive(cereal::binary_data(this->mSourceBinary.data(), len * sizeof(ui32)));
+
+	// Binary Metadata
+	archive(len);
+	this->mBinaryMetadata.inputAttributes.resize(len);
+	for (uSize i = 0; i < len; ++i)
+	{
+		archive(this->mBinaryMetadata.inputAttributes[i].slot);
+		archive(this->mBinaryMetadata.inputAttributes[i].propertyName);
+		archive(this->mBinaryMetadata.inputAttributes[i].byteCount);
+		archive(this->mBinaryMetadata.inputAttributes[i].format);
+	}
+
 }
 
 #pragma endregion
+
+// TODO: Needs a ui8 (0/1) for vk::VertexInputRate
+std::shared_ptr<graphics::ShaderModule> Shader::makeModule()
+{
+	// TODO: Change this to dedicated graphics memory
+	auto mem = engine::Engine::Get()->getMiscMemory();
+	auto ptr = mem->make_shared<graphics::ShaderModule>();
+	ptr->setStage((vk::ShaderStageFlagBits)this->mStage);
+	ptr->setBinary(this->mSourceBinary);
+	ptr->setMetadata(this->mBinaryMetadata);
+	return ptr;
+}

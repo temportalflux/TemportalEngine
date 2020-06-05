@@ -2,7 +2,11 @@
 
 #include "asset/Asset.hpp"
 
+#include "graphics/ShaderMetadata.hpp"
+
 #include <optional>
+
+FORWARD_DEF(NS_GRAPHICS, class ShaderModule)
 
 NS_ASSET
 
@@ -30,7 +34,7 @@ public:
 
 	std::string readSource() const;
 	void writeSource(std::string content) const;
-	void setBinary(std::vector<ui32> &binary);
+	void setBinary(std::vector<ui32> binary, graphics::ShaderMetadata metadata);
 
 #pragma region Properties
 private:
@@ -45,6 +49,9 @@ private:
 	 * The compiled source of the shader found at `mSourceFileName`.
 	 */
 	std::vector<ui32> mSourceBinary;
+
+	graphics::ShaderMetadata mBinaryMetadata;
+
 #pragma endregion
 
 #pragma region Serialization
@@ -54,6 +61,12 @@ protected:
 	void compile(cereal::PortableBinaryOutputArchive &archive) const override;
 	void decompile(cereal::PortableBinaryInputArchive &archive) override;
 #pragma endregion
+
+#pragma region Graphics
+public:
+	std::shared_ptr<graphics::ShaderModule> makeModule();
+#pragma endregion
+
 
 };
 

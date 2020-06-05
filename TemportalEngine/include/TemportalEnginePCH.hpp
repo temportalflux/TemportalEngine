@@ -5,6 +5,16 @@
 #include "types/integer.h"
 #include "types/real.h"
 
+#include <array>
+#include <cassert>
+#include <filesystem>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <string>
+#include <vector>
+
 struct IUnknown;
 
 #define FORWARD_DEF(ns_macro, fwd) ns_macro fwd; NS_END

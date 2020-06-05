@@ -3,6 +3,8 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "types/integer.h"
+#include "graphics/ShaderMetadata.hpp"
+#include "graphics/VertexDescription.hpp"
 
 #include <optional>
 #include <string>
@@ -14,23 +16,12 @@
 NS_GRAPHICS
 class LogicalDevice;
 
-// TODO: This class is a great base template as a starting point for abstracting out information about binary assets and serialization
-// readBinary is already implmented and could be abstracted out to a super class.
-// Could even add converter methods to read a binary file and write as plain text or vice-versa.
-// TODO: Can integrate https://github.com/google/shaderc for compiling shaders within the editor
 class ShaderModule
 {
 	friend class Pipeline;
 	friend class VulkanApi;
 
 public:
-	struct VertexDescription
-	{
-		// Total size of 1 vertex structure (all the attributes for 1 vertex)
-		ui32 size;
-		// map of attribute name to the byte-offset of the property in the user's structure
-		std::unordered_map<std::string, ui32> locationToDataOffset;
-	};
 
 	ShaderModule();
 	ShaderModule(ShaderModule &&other);
@@ -38,24 +29,30 @@ public:
 	ShaderModule& operator=(ShaderModule&& other);
 
 	ShaderModule& setStage(vk::ShaderStageFlagBits stage);
-	ShaderModule& setSource(std::string fileName);
+	ShaderModule& setBinary(std::vector<ui32> binary);
+	ShaderModule& setMetadata(graphics::ShaderMetadata metadata);
 
-	ShaderModule& setVertexDescription(VertexDescription vertexData);
+	/**
+	 * Tells the shader module what the byte offset is for a given property from the data that will be sent for rendering.
+	 * The shader must already have metadata initialized, which acts as the bridge from user defined structure to layout location.
+	 */
+	ShaderModule& setVertexDescription(VertexDescription desc);
 
 	bool isLoaded() const;
 	void create(LogicalDevice const *pDevice);
 	void destroy();
 
 private:
-	std::string mFileName;
-	std::string mMainOpName;
 	vk::ShaderStageFlagBits mStage;
-	vk::UniqueShaderModule mShader;
+	std::vector<ui32> mBinary;
+	graphics::ShaderMetadata mMetadata;
+	std::string mMainOpName;
+	std::unordered_map<std::string, uSize> mAttributeByteCount;
 
+	vk::UniqueShaderModule mInternal;
 	vk::VertexInputBindingDescription mBinding;
 	std::unordered_map<std::string, vk::VertexInputAttributeDescription> mAttributes;
 
-	std::optional<std::vector<ui32>> readBinary() const;
 	vk::PipelineShaderStageCreateInfo getPipelineInfo() const;
 	vk::VertexInputBindingDescription createBindings() const;
 	std::vector<vk::VertexInputAttributeDescription> createAttributes() const;
