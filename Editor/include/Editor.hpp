@@ -38,19 +38,26 @@ public:
 	bool setup(utility::ArgumentMap args);
 	void run(utility::ArgumentMap args);
 
+#pragma region Project Being Editted
 	bool hasProject() const;
 	void setProject(asset::AssetPtrStrong asset);
 	asset::ProjectPtrStrong getProject() const;
+	std::filesystem::path getCurrentAssetDirectory() const;
+#pragma endregion
+
+#pragma region Editor Settings per Project
 	void loadEditorSettings(std::filesystem::path projectDir);
 	std::shared_ptr<asset::Settings> getEditorSettings() const;
+	std::filesystem::path getOutputDirectory() const;
+#pragma endregion
 
-	std::filesystem::path getCurrentAssetDirectory() const;
+#pragma region View Management Shortcuts
+	std::shared_ptr<memory::MemoryChunk> getMemoryGui() const;
 	void openAssetEditor(asset::AssetPtrStrong asset);
 	void closeGui(std::string id);
 	void openProjectSettings();
 	void openSettings();
-
-	std::shared_ptr<memory::MemoryChunk> getMemoryGui() const;
+#pragma endregion
 
 private:
 	bool mbShouldRender;

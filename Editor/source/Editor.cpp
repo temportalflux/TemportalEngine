@@ -195,6 +195,8 @@ void Editor::initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRende
 	pRenderer->createRenderChain();
 }
 
+#pragma region Project Being Editted
+
 bool Editor::hasProject() const
 {
 	return (bool)this->mpProject;
@@ -222,6 +224,15 @@ asset::ProjectPtrStrong Editor::getProject() const
 	return this->mpProject;
 }
 
+std::filesystem::path Editor::getCurrentAssetDirectory() const
+{
+	return this->getProject()->getAssetDirectory();
+}
+
+#pragma endregion
+
+#pragma region Editor Settings per Project
+
 void Editor::loadEditorSettings(std::filesystem::path projectDir)
 {
 	auto assetManager = asset::AssetManager::get();
@@ -238,10 +249,16 @@ std::shared_ptr<asset::Settings> Editor::getEditorSettings() const
 	return this->mpEditorSettings;
 }
 
-std::filesystem::path Editor::getCurrentAssetDirectory() const
+std::filesystem::path Editor::getOutputDirectory() const
 {
-	return this->getProject()->getAssetDirectory();
+	assert(this->hasProject());
+	assert(this->mpEditorSettings);
+	return this->mpEditorSettings->getOutputDirectory();
 }
+
+#pragma endregion
+
+#pragma region View Management Shortcuts
 
 void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 {
@@ -272,3 +289,5 @@ void Editor::openSettings()
 {
 	this->openAssetEditor(this->getEditorSettings());
 }
+
+#pragma endregion
