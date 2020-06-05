@@ -2,6 +2,7 @@
 
 #include "Editor.hpp"
 
+#include <chrono>
 #include <imgui.h>
 
 using namespace gui;
@@ -76,6 +77,7 @@ void AssetEditor::releaseAsset()
 void AssetEditor::renderView()
 {
 	this->renderMenuBar();
+	this->renderBinaryInformation();
 }
 
 void AssetEditor::renderMenuBar()
@@ -90,4 +92,30 @@ void AssetEditor::renderMenuBar()
 void AssetEditor::renderMenuBarItems()
 {
 		if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
+}
+
+std::string makeTimeString(std::filesystem::file_time_type time)
+{
+	auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+		time - std::filesystem::file_time_type::clock::now() + std::chrono::system_clock::now()
+	);
+	auto stdTime = std::chrono::system_clock::to_time_t(sctp);
+	struct tm timeinfo;
+	localtime_s(&timeinfo, &stdTime);
+	char timeStr[20]; // ####-##-## ##:##:##\0
+	strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &timeinfo);
+	return std::string(timeStr);
+}
+
+void AssetEditor::renderBinaryInformation()
+{
+	auto binaryPath = Editor::EDITOR->getAssetBinaryPath(this->mpAsset);
+	if (!std::filesystem::exists(binaryPath) || !std::filesystem::is_regular_file(binaryPath))
+	{
+		ImGui::Text("No binary asset compiled");
+		return;
+	}
+	ImGui::Text("Last saved:");
+	ImGui::SameLine();
+	ImGui::Text(makeTimeString(std::filesystem::last_write_time(binaryPath)).c_str());
 }

@@ -256,6 +256,21 @@ std::filesystem::path Editor::getOutputDirectory() const
 	return this->mpEditorSettings->getOutputDirectory();
 }
 
+std::filesystem::path Editor::getAssetBinaryPath(asset::AssetPtrStrong asset) const
+{
+	// Example:
+	// AbsolutePath: asset->getPath() => "C:/Desktop/Engine/DemoGame/assets/shader/Shader1.te-asset"
+	// AbsolutePath: projectDir => "C:/Desktop/Engine/DemoGame/"
+	auto projectDir = this->getProject()->getAbsoluteDirectoryPath();
+	// RelativePath: pathRelativeToProject = "assets/shader/Shader1.te-asset"
+	auto pathRelativeToProject = std::filesystem::relative(asset->getPath(), projectDir);
+	// RelativePath: this->getOutputDirectory() => "../output/DemoGame/"
+	// MixedPath: pathInOutputDir = "C:/Desktop/Engine/DemoGame/../output/DemoGame/assets/shader/Shader1.te-asset"
+	auto pathInOutputDir = projectDir / this->getOutputDirectory() / pathRelativeToProject;
+	// Returns: "C:/Desktop/Engine/output/DemoGame/assets/shader/Shader1.te-asset"
+	return std::filesystem::absolute(pathInOutputDir);
+}
+
 #pragma endregion
 
 #pragma region View Management Shortcuts

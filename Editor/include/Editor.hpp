@@ -49,6 +49,7 @@ public:
 	void loadEditorSettings(std::filesystem::path projectDir);
 	std::shared_ptr<asset::Settings> getEditorSettings() const;
 	std::filesystem::path getOutputDirectory() const;
+	std::filesystem::path getAssetBinaryPath(asset::AssetPtrStrong asset) const;
 #pragma endregion
 
 #pragma region View Management Shortcuts

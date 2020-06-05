@@ -41,6 +41,7 @@ protected:
 	
 	void renderMenuBar();
 	virtual void renderMenuBarItems();
+	void renderBinaryInformation();
 
 private:
 	asset::AssetPtrStrong mpAsset;
