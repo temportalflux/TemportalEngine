@@ -12,12 +12,11 @@ class Settings : public Asset
 
 public:
 	DEFINE_ASSET_TYPE(AssetType_EditorSettings);
-
-	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
-	static asset::AssetPtrStrong createEmptyAsset();
+	DECLARE_NEWASSET_FACTORY()
+	DECLARE_EMPTYASSET_FACTORY()
 	
 	Settings() = default;
-	Settings(std::filesystem::path filePath);
+	CREATE_NEWASSET_CONSTRUCTOR(Settings) {}
 
 	// Returns the relative path from `asset::Project::getAbsoluteDirectoryPath`
 	std::string getOutputDirectory() const;
@@ -31,8 +30,8 @@ private:
 protected:
 	DECLARE_SERIALIZATION_METHOD(write, cereal::JSONOutputArchive, const override);
 	DECLARE_SERIALIZATION_METHOD(read, cereal::JSONInputArchive, override);
-	void compile(cereal::PortableBinaryOutputArchive &archive) const override {}
-	void decompile(cereal::PortableBinaryInputArchive &archive) override {}
+	NOOP_SERIALIZATION_METHOD(compile, cereal::PortableBinaryOutputArchive, const override);
+	NOOP_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 #pragma endregion
 };
 

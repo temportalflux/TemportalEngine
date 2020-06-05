@@ -8,15 +8,8 @@
 
 using namespace asset;
 
-asset::AssetPtrStrong Shader::createNewAsset(std::filesystem::path filePath)
-{
-	return asset::AssetManager::makeAsset<Shader>(filePath);
-}
-
-asset::AssetPtrStrong Shader::createEmptyAsset()
-{
-	return asset::AssetManager::makeAsset<Shader>();
-}
+DEFINE_NEWASSET_FACTORY(Shader)
+DEFINE_EMPTYASSET_FACTORY(Shader)
 
 void Shader::onAssetDeleted(std::filesystem::path filePath)
 {
@@ -34,9 +27,34 @@ Shader::Shader(std::filesystem::path filePath) : Asset(filePath)
 
 #pragma region Properties
 
+ui32 Shader::getStage() const
+{
+	return this->mStage;
+}
+
 std::filesystem::path Shader::getSourcePathFrom(std::filesystem::path assetPath)
 {
 	return assetPath.parent_path() / ("." + assetPath.stem().string() + ".glsl");
+}
+
+#pragma endregion
+
+#pragma region Source Maintinence
+
+std::string Shader::readSource() const
+{
+	std::ifstream is(Shader::getSourcePathFrom(this->getPath()), std::ios::in);
+	auto str = std::string(
+		std::istreambuf_iterator<char>(is),
+		std::istreambuf_iterator<char>()
+	);
+	return str;
+}
+
+void Shader::writeSource(std::string content) const
+{
+	std::ofstream os(Shader::getSourcePathFrom(this->getPath()), std::ios::out | std::ios::trunc);
+	os << content;
 }
 
 #pragma endregion
@@ -71,26 +89,6 @@ void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 {
 	Asset::decompile(archive);
 	archive(this->mStage);
-}
-
-#pragma endregion
-
-#pragma region Source Maintinence
-
-std::string Shader::readSource() const
-{
-	std::ifstream is(Shader::getSourcePathFrom(this->getPath()), std::ios::in);
-	auto str = std::string(
-		std::istreambuf_iterator<char>(is),
-		std::istreambuf_iterator<char>()
-	);
-	return str;
-}
-
-void Shader::writeSource(std::string content) const
-{
-	std::ofstream os(Shader::getSourcePathFrom(this->getPath()), std::ios::out | std::ios::trunc);
-	os << content;
 }
 
 #pragma endregion

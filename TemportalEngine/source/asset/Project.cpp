@@ -6,15 +6,8 @@
 
 using namespace asset;
 
-asset::AssetPtrStrong Project::createNewAsset(std::filesystem::path filePath)
-{
-	return asset::AssetManager::makeAsset<Project>(filePath);
-}
-
-asset::AssetPtrStrong Project::createEmptyAsset()
-{
-	return asset::AssetManager::makeAsset<Project>();
-}
+DEFINE_NEWASSET_FACTORY(Project)
+DEFINE_EMPTYASSET_FACTORY(Project)
 
 Project::Project(std::filesystem::path filePath) : Asset(filePath)
 {

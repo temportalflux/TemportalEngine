@@ -4,19 +4,10 @@
 
 using namespace asset;
 
-asset::AssetPtrStrong Settings::createNewAsset(std::filesystem::path filePath)
-{
-	return asset::AssetManager::makeAsset<Settings>(filePath);
-}
+DEFINE_NEWASSET_FACTORY(Settings)
+DEFINE_EMPTYASSET_FACTORY(Settings)
 
-asset::AssetPtrStrong Settings::createEmptyAsset()
-{
-	return asset::AssetManager::makeAsset<Settings>();
-}
-
-Settings::Settings(std::filesystem::path filePath) : Asset(filePath)
-{
-}
+#pragma region Properties
 
 std::string Settings::getOutputDirectory() const
 {
@@ -27,6 +18,8 @@ void Settings::setOutputDirectory(std::string path)
 {
 	this->mOutputDirectoryPath = path;
 }
+
+#pragma endregion
 
 #pragma region Serialization
 
@@ -45,6 +38,5 @@ void Settings::read(cereal::JSONInputArchive &archive)
 		cereal::make_nvp("outputDirectory", this->mOutputDirectoryPath)
 	);
 }
-
 
 #pragma endregion

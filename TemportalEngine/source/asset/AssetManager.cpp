@@ -32,8 +32,8 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, { "Project", ".te-project", &Project::createNewAsset, &Project::createEmptyAsset, std::nullopt });
-	this->registerType(AssetType_Shader, { "Shader", ".te-asset", &Shader::createNewAsset, &Shader::createEmptyAsset, &Shader::onAssetDeleted });
+	this->registerType(AssetType_Project, CREATE_ASSETTYPE_METADATA(Project, "Project", ".te-project", std::nullopt));
+	this->registerType(AssetType_Shader, CREATE_ASSETTYPE_METADATA(Shader, "Shader", ".te-asset", &Shader::onAssetDeleted));
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)

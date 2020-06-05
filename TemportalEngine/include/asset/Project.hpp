@@ -14,9 +14,8 @@ class Project : public Asset
 	
 public:
 	DEFINE_ASSET_TYPE(AssetType_Project);
-
-	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
-	static asset::AssetPtrStrong createEmptyAsset();
+	DECLARE_NEWASSET_FACTORY()
+	DECLARE_EMPTYASSET_FACTORY()
 
 	static std::filesystem::path getAssetDirectoryFor(std::filesystem::path projectDir);
 

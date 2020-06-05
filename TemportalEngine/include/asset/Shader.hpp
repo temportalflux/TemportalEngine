@@ -14,9 +14,9 @@ class Shader : public Asset
 
 public:
 	DEFINE_ASSET_TYPE(AssetType_Shader);
+	DECLARE_NEWASSET_FACTORY()
+	DECLARE_EMPTYASSET_FACTORY()
 
-	static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
-	static asset::AssetPtrStrong createEmptyAsset();
 	static void onAssetDeleted(std::filesystem::path filePath);
 
 private:
@@ -26,7 +26,7 @@ public:
 	Shader() = default;
 	Shader(std::filesystem::path filePath);
 
-	ui32 getStage() const { return this->mStage; }
+	ui32 getStage() const;
 
 	std::string readSource() const;
 	void writeSource(std::string content) const;

@@ -24,9 +24,9 @@ Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
 
 	auto pEngine = engine::Engine::Create(memoryChunkSizes);
 	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
-	pEngine->getAssetManager()->registerType(AssetType_EditorSettings, {
-		"EditorSettings", ".settings", &asset::Settings::createNewAsset, &asset::Settings::createEmptyAsset, std::nullopt
-	});
+	pEngine->getAssetManager()->registerType(
+		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
+	);
 	
 	auto guiMemorySize = memoryChunkSizes.find("gui");
 	this->mpMemoryGui = guiMemorySize != memoryChunkSizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;

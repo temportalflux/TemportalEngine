@@ -14,10 +14,9 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <cassert>
 
 NS_ASSET
-
-#define DEFINE_ASSET_TYPE(TYPE_STR) virtual AssetType getAssetType() const override { return TYPE_STR; }
 
 enum class EAssetSerialization
 {
