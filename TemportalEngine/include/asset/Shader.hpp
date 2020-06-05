@@ -30,6 +30,7 @@ public:
 
 	std::string readSource() const;
 	void writeSource(std::string content) const;
+	void setBinary(std::vector<ui32> &binary);
 
 #pragma region Properties
 private:

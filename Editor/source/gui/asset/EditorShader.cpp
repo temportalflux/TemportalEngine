@@ -1,6 +1,7 @@
 #include "gui/asset/EditorShader.hpp"
 
 #include "Engine.hpp"
+#include "Editor.hpp"
 #include "TaskCompileShader.hpp"
 #include "asset/Shader.hpp"
 #include "gui/TextEditor.h"
@@ -44,6 +45,7 @@ void EditorShader::makeGui()
 			this->mShaderCompilationErrors.clear();
 			// Make the error map by parsing all the errors return from the compilation task
 			auto errors = this->mpCompilationTask->getErrors();
+			auto binary = this->mpCompilationTask->getBinary();
 			this->mpCompilationTask.reset(); // reset the task so we can release the memory
 			if (errors.size() > 0)
 			{
@@ -61,21 +63,13 @@ void EditorShader::makeGui()
 					}
 				}
 			}
+			else
+			{
+				auto binaryPath = Editor::EDITOR->getAssetBinaryPath(asset);
+				asset->setBinary(binary);
+				asset->writeToDisk(binaryPath, asset::EAssetSerialization::Binary);
+			}
 		}
-	}
-}
-
-void EditorShader::renderMenuBarItems()
-{
-	AssetEditor::renderMenuBarItems();
-	if (ImGui::MenuItem("Compile", "", false, !this->mpCompilationTask))
-	{
-		// Always save current content when attempting to compile the shader
-		this->saveAsset();
-		auto asset = this->get<asset::Shader>();
-		// pass in the source so we don't need to perform file read
-		this->mpCompilationTask = engine::Engine::Get()->getMiscMemory()->make_shared<task::TaskCompileShader>(asset->getFileName());
-		this->mpCompilationTask->compile(this->mSavedShaderContent, asset->getStage());
 	}
 }
 
@@ -114,4 +108,19 @@ void EditorShader::saveAsset()
 	}
 
 	AssetEditor::saveAsset();
+}
+
+bool EditorShader::canCompileAsset()
+{
+	return AssetEditor::canCompileAsset() && !this->mpCompilationTask;
+}
+
+void EditorShader::compileAsset()
+{
+	AssetEditor::saveAsset();
+
+	auto asset = this->get<asset::Shader>();
+	// pass in the source so we don't need to perform file read
+	this->mpCompilationTask = engine::Engine::Get()->getMiscMemory()->make_shared<task::TaskCompileShader>(asset->getFileName());
+	this->mpCompilationTask->compile(this->mSavedShaderContent, asset->getStage());
 }

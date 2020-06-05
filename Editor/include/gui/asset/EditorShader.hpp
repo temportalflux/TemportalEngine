@@ -21,9 +21,10 @@ public:
 	void makeGui() override;
 
 protected:
-	void renderMenuBarItems() override;
 	void renderView() override;
 	void saveAsset() override;
+	bool canCompileAsset() override;
+	void compileAsset() override;
 
 private:
 	std::string mSavedShaderContent;

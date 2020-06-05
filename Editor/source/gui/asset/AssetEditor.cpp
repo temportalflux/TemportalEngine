@@ -38,6 +38,8 @@ void AssetEditor::makeGui()
 	}
 }
 
+#pragma region Asset Status
+
 ui32 AssetEditor::getDirtyFlags() const
 {
 	return this->mDirtyFlags;
@@ -58,21 +60,44 @@ bool AssetEditor::isBitDirty(ui32 bit) const
 	return (this->getDirtyFlags() & bit) == bit;
 }
 
+void AssetEditor::markAssetClean()
+{
+	this->mDirtyFlags = 0;
+}
+
+#pragma endregion
+
+#pragma region Saving
+
 void AssetEditor::saveAsset()
 {
 	this->mpAsset->writeToDisk(this->mpAsset->getPath(), asset::EAssetSerialization::Json);
 	this->markAssetClean();
 }
 
-void AssetEditor::markAssetClean()
+bool AssetEditor::hasCompiledBinary() const
 {
-	this->mDirtyFlags = 0;
+	return std::filesystem::exists(Editor::EDITOR->getAssetBinaryPath(this->mpAsset));
+}
+
+bool AssetEditor::canCompileAsset()
+{
+	return !this->hasCompiledBinary() || this->isAssetDirty();
+}
+
+void AssetEditor::compileAsset()
+{
+	this->saveAsset();
+	auto binaryPath = Editor::EDITOR->getAssetBinaryPath(this->mpAsset);
+	this->mpAsset->writeToDisk(binaryPath, asset::EAssetSerialization::Binary);
 }
 
 void AssetEditor::releaseAsset()
 {
 	this->mpAsset.reset();
 }
+
+#pragma endregion
 
 void AssetEditor::renderView()
 {
@@ -91,7 +116,8 @@ void AssetEditor::renderMenuBar()
 
 void AssetEditor::renderMenuBarItems()
 {
-		if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
+	if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
+	if (ImGui::MenuItem("Compile", "", false, this->canCompileAsset())) this->compileAsset();
 }
 
 std::string makeTimeString(std::filesystem::file_time_type time)

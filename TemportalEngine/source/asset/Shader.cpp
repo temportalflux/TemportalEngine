@@ -57,6 +57,11 @@ void Shader::writeSource(std::string content) const
 	os << content;
 }
 
+void Shader::setBinary(std::vector<ui32> &binary)
+{
+	this->mSourceBinary = binary;
+}
+
 #pragma endregion
 
 #pragma region Serialization
@@ -83,12 +88,21 @@ void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
 {
 	Asset::compile(archive);
 	archive(this->mStage);
+	// Source binary
+	uSize len = (uSize)this->mSourceBinary.size();
+	archive(len);
+	archive(cereal::binary_data(this->mSourceBinary.data(), len * sizeof(ui32)));
 }
 
 void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 {
 	Asset::decompile(archive);
 	archive(this->mStage);
+	// Source Binary
+	uSize len;
+	archive(len);
+	this->mSourceBinary.resize(len);
+	archive(cereal::binary_data(this->mSourceBinary.data(), len));
 }
 
 #pragma endregion

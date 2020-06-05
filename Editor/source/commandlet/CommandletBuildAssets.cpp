@@ -124,6 +124,7 @@ void CommandletBuildAssets::run()
 		auto asset = assetManager->readAssetFromDisk(pathSrc, asset::EAssetSerialization::Json);
 		if (asset != nullptr)
 		{
+			// TODO: Needs to support shaders like the EditorShader does (asynchronous asset compilation)
 			LOG.log(logging::ECategory::LOGINFO, "Compiling %s", pathRelative.string().c_str());
 			asset->writeToDisk(pathDest, asset::EAssetSerialization::Binary);
 		}

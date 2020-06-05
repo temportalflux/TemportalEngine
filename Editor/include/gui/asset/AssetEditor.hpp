@@ -30,7 +30,11 @@ protected:
 	bool isBitDirty(ui32 bit) const;
 	void markAssetDirty(ui32 bit, bool isDirty = true);
 	void markAssetClean();
+
 	virtual void saveAsset();
+	bool hasCompiledBinary() const;
+	virtual bool canCompileAsset();
+	virtual void compileAsset();
 	void releaseAsset();
 
 	template <typename TAsset>
