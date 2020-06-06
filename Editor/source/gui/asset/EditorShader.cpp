@@ -89,11 +89,40 @@ void EditorShader::makeGui()
 
 void EditorShader::renderDetailsPanel()
 {
+	auto asset = this->get<asset::Shader>();
+
 	if (this->mComboStage.render("Stage"))
 	{
 		this->mSavedStage = (ui32)this->mComboStage.value();
-		auto asset = this->get<asset::Shader>();
 		this->markAssetDirty(Bit_Stage, asset->getStage() != this->mSavedStage);
+	}
+
+	if (this->mSavedStage == (ui32)vk::ShaderStageFlagBits::eVertex)
+	{
+		if (ImGui::TreeNode("Generated Metadata"))
+		{
+			// TODO: Shader metadata should have its own type widget
+			auto metadata = asset->getMetadata();
+			if (!metadata.has_value())
+			{
+				ImGui::Text("No metadata. Please compile asset.");
+			}
+			else
+			{
+				if (ImGui::TreeNode("Input Attributes"))
+				{
+					for (auto& attrib : metadata.value().inputAttributes)
+					{
+						ImGui::Text((
+							"Slot " + std::to_string(attrib.slot) + ": "
+							+ attrib.typeName + " " + attrib.propertyName
+						).c_str());
+					}
+					ImGui::TreePop();
+				}
+			}
+			ImGui::TreePop();
+		}
 	}
 }
 

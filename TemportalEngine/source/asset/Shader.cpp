@@ -48,14 +48,15 @@ std::filesystem::path Shader::getSourcePathFrom(std::filesystem::path assetPath)
 
 #pragma region Source Maintinence
 
-std::string Shader::readSource() const
+void Shader::setBinary(std::vector<ui32> binary, graphics::ShaderMetadata metadata)
 {
-	std::ifstream is(Shader::getSourcePathFrom(this->getPath()), std::ios::in);
-	auto str = std::string(
-		std::istreambuf_iterator<char>(is),
-		std::istreambuf_iterator<char>()
-	);
-	return str;
+	this->mSourceBinary = binary;
+	this->mBinaryMetadata = metadata;
+}
+
+std::optional<graphics::ShaderMetadata> Shader::getMetadata()
+{
+	return !this->mSourceBinary.empty() ? std::make_optional(this->mBinaryMetadata) : std::nullopt;
 }
 
 void Shader::writeSource(std::string content) const
@@ -64,10 +65,14 @@ void Shader::writeSource(std::string content) const
 	os << content;
 }
 
-void Shader::setBinary(std::vector<ui32> binary, graphics::ShaderMetadata metadata)
+std::string Shader::readSource() const
 {
-	this->mSourceBinary = binary;
-	this->mBinaryMetadata = metadata;
+	std::ifstream is(Shader::getSourcePathFrom(this->getPath()), std::ios::in);
+	auto str = std::string(
+		std::istreambuf_iterator<char>(is),
+		std::istreambuf_iterator<char>()
+	);
+	return str;
 }
 
 #pragma endregion

@@ -23,7 +23,7 @@ public:
 	void makeGui() override;
 
 protected:
-	bool hasDetailsPanel() const { return true; }
+	f32 getDetailsPanelWidth() const { return 200; }
 	void renderDetailsPanel() override;
 	void renderContent() override;
 	void saveAsset() override;

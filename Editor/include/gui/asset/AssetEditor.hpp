@@ -25,7 +25,7 @@ protected:
 	std::string getTitle() const override;
 
 	virtual void renderView() override;
-	virtual bool hasDetailsPanel() const { return false; }
+	virtual f32 getDetailsPanelWidth() const { return 0; }
 	virtual void renderDetailsPanel() {};
 	virtual void renderContent();
 

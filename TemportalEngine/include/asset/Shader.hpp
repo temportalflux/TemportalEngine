@@ -33,9 +33,10 @@ public:
 	ui32 getStage() const;
 	void setStage(ui32 value);
 
-	std::string readSource() const;
-	void writeSource(std::string content) const;
 	void setBinary(std::vector<ui32> binary, graphics::ShaderMetadata metadata);
+	std::optional<graphics::ShaderMetadata> getMetadata();
+	void writeSource(std::string content) const;
+	std::string readSource() const;
 
 #pragma region Properties
 private:

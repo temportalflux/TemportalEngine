@@ -129,6 +129,7 @@ void TaskCompileShader::parseShader()
 			{
 				/*slot*/ (ui32)std::stoi(regexMatch[1]),
 				/*propertyName*/ regexMatch[3],
+				/*typeName*/ regexMatch[2],
 				/*byteCount*/ shaderTypeToByteCount(regexMatch[2]),
 				/*vk::Format*/ shaderTypeToFormat(regexMatch[2])
 			}

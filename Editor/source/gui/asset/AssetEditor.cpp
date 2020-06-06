@@ -103,9 +103,9 @@ void AssetEditor::renderView()
 {
 	this->renderMenuBar();
 
-	if (this->hasDetailsPanel() && this->mbDetailsPanelOpen)
+	if (this->getDetailsPanelWidth() > 0 && this->mbDetailsPanelOpen)
 	{
-		ImGui::BeginChild("Details", ImVec2(150, 0), false);
+		ImGui::BeginChild("Details", ImVec2(this->getDetailsPanelWidth(), 0), false);
 		this->renderDetailsPanel();
 		ImGui::EndChild();
 		ImGui::SameLine();
@@ -134,7 +134,7 @@ void AssetEditor::renderMenuBarItems()
 
 void AssetEditor::renderContent()
 {
-	if (this->hasDetailsPanel())
+	if (this->getDetailsPanelWidth() > 0)
 	{
 		if (ImGui::ArrowButton("ToggleDetailsPanel",
 			this->mbDetailsPanelOpen ? ImGuiDir_Left : ImGuiDir_Right
