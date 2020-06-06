@@ -212,5 +212,11 @@
     <ClInclude Include="include\gui\widget\Combo.hpp">
       <Filter>Header Files\gui\widget</Filter>
     </ClInclude>
+    <ClInclude Include="include\gui\widget\FieldText.hpp">
+      <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\widget\FieldNumber.hpp">
+      <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

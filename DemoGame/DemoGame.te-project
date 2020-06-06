@@ -1,9 +1,9 @@
 {
-	"type": "project",
-	"name": "DemoGame",
-	"version": {
-		"major": 0,
-		"minor": 1,
-		"patch": 0
-	}
+    "type": "project",
+    "name": "DemoGame",
+    "version": {
+        "major": 0,
+        "minor": 1,
+        "patch": 0
+    }
 }

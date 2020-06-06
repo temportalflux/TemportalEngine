@@ -43,6 +43,7 @@ Editor::~Editor()
 {
 	EDITOR = nullptr;
 	this->mAssetEditors.clear();
+	this->mpEditorSettings.reset();
 	this->mpDockspace.reset();
 	this->mpMemoryGui.reset();
 	this->mpProject.reset();

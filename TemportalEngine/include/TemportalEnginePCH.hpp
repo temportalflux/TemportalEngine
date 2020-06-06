@@ -5,6 +5,7 @@
 #include "types/integer.h"
 #include "types/real.h"
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <filesystem>

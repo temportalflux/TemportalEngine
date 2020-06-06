@@ -19,7 +19,7 @@
 
 #define maximum(n0, n1)		( (n0) > (n1) ? (n0) : (n1) )
 #define minimum(n0, n1)		( (n0) < (n1) ? (n0) : (n1) )
-#define absolute(n)			( (n) >= zero ? (n) : -(n) )
+#define compare_absolute(n)	( (n) >= zero ? (n) : -(n) )
 #define absoluteInt(n)		( (n) >= 0 ? (n) : -(n) )
 #define clamp(n0, n1, v)	( (v) < (n1) ? (v) > (n0) ? (v) : (n0) : (n1) )
 #define lerp(n0, n1, t)		( (n0) + ( (n1) - (n0) )*t )

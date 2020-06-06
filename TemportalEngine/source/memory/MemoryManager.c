@@ -595,7 +595,7 @@ void a3_mem_addNodeToFreeTree(a3_mem_ChunkHeader* chunkHeader, a3_mem_NodeHeader
 		currentNode->height = a3_mem_calculateHeight(currentNode);
 
 		// Balance the subtree if required
-		if (absolute(a3_mem_getBalanceFactor(currentNode)) > 1)
+		if (compare_absolute(a3_mem_getBalanceFactor(currentNode)) > 1)
 		{
 			a3_mem_balanceSubtree(chunkHeader, currentNode);
 		}
