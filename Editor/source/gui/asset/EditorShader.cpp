@@ -14,6 +14,7 @@
 using namespace gui;
 
 #define Bit_ShaderContent 1 << 0
+#define Bit_Stage 1 << 1
 
 std::shared_ptr<AssetEditor> EditorShader::create(std::shared_ptr<memory::MemoryChunk> mem)
 {
@@ -26,9 +27,24 @@ std::shared_ptr<AssetEditor> EditorShader::create(std::shared_ptr<memory::Memory
 
 void EditorShader::setAsset(asset::AssetPtrStrong assetGeneric)
 {
-	AssetEditor::setAsset(assetGeneric);
-	
+	AssetEditor::setAsset(assetGeneric);	
 	auto asset = this->get<asset::Shader>();
+
+	this->mComboStage
+		.setOptions({
+			vk::ShaderStageFlagBits::eVertex,
+			vk::ShaderStageFlagBits::eTessellationControl,
+			vk::ShaderStageFlagBits::eTessellationEvaluation,
+			vk::ShaderStageFlagBits::eGeometry,
+			vk::ShaderStageFlagBits::eFragment,
+			vk::ShaderStageFlagBits::eCompute
+		})
+		.value((vk::ShaderStageFlagBits)(this->mSavedStage = asset->getStage()))
+		.setCallbacks(
+			[](vk::ShaderStageFlagBits flag) { return vk::to_string(flag); },
+			[](vk::ShaderStageFlagBits flag) { return (i32)flag; }
+		);
+
 	this->mSavedShaderContent = asset->readSource();
 	this->mTextEditor->SetText(this->mSavedShaderContent);
 }
@@ -73,7 +89,12 @@ void EditorShader::makeGui()
 
 void EditorShader::renderDetailsPanel()
 {
-	ImGui::Text("Shader Metadata");
+	if (this->mComboStage.render("Stage"))
+	{
+		this->mSavedStage = (ui32)this->mComboStage.value();
+		auto asset = this->get<asset::Shader>();
+		this->markAssetDirty(Bit_Stage, asset->getStage() != this->mSavedStage);
+	}
 }
 
 void EditorShader::renderContent()
@@ -108,6 +129,10 @@ void EditorShader::saveAsset()
 			this->markAssetClean();
 			return;
 		}
+	}
+	if (this->isBitDirty(Bit_Stage))
+	{
+		asset->setStage(this->mSavedStage);
 	}
 
 	AssetEditor::saveAsset();

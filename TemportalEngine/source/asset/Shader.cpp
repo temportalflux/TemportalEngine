@@ -34,6 +34,11 @@ ui32 Shader::getStage() const
 	return this->mStage;
 }
 
+void Shader::setStage(ui32 value)
+{
+	this->mStage = value;
+}
+
 std::filesystem::path Shader::getSourcePathFrom(std::filesystem::path assetPath)
 {
 	return assetPath.parent_path() / ("." + assetPath.stem().string() + ".glsl");

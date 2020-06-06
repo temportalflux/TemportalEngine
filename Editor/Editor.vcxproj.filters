@@ -55,6 +55,9 @@
     <Filter Include="Source Files\asset">
       <UniqueIdentifier>{2688941c-17b3-4157-9bfe-a9f89ddabe03}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui\widget">
+      <UniqueIdentifier>{64bd4a9c-4128-413e-8a45-bad37c77a275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -205,6 +208,9 @@
     </ClInclude>
     <ClInclude Include="include\asset\Settings.hpp">
       <Filter>Header Files\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\widget\Combo.hpp">
+      <Filter>Header Files\gui\widget</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

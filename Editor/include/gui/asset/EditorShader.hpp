@@ -2,7 +2,9 @@
 
 #include "gui/asset/AssetEditor.hpp"
 
-#include <map>
+#include "gui/widget/Combo.hpp"
+
+#include <vulkan/vulkan.hpp>
 
 FORWARD_DEF(NS_TASK, class TaskCompileShader)
 
@@ -29,7 +31,10 @@ protected:
 	void compileAsset() override;
 
 private:
+	ui32 mSavedStage;
 	std::string mSavedShaderContent;
+
+	gui::Combo<vk::ShaderStageFlagBits> mComboStage;
 	std::shared_ptr<TextEditor> mTextEditor;
 
 	std::shared_ptr<task::TaskCompileShader> mpCompilationTask;

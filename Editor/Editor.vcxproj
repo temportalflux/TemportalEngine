@@ -213,6 +213,7 @@
     <ClInclude Include="include\gui\modal\NewAsset.hpp" />
     <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
     <ClInclude Include="include\gui\TextEditor.h" />
+    <ClInclude Include="include\gui\widget\Combo.hpp" />
     <ClInclude Include="include\TaskCompileShader.hpp" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />

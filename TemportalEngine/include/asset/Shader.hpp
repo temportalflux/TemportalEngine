@@ -31,6 +31,7 @@ public:
 	Shader(std::filesystem::path filePath);
 
 	ui32 getStage() const;
+	void setStage(ui32 value);
 
 	std::string readSource() const;
 	void writeSource(std::string content) const;
