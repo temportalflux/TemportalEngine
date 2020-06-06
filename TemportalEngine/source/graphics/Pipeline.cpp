@@ -7,13 +7,6 @@
 
 using namespace graphics;
 
-// Explicity deconstructor to make shaded_ptr notes
-Pipeline::~Pipeline()
-{
-	// These will likely be the only references to the shader objects left, so they will automatically be deallocated
-	this->mShaderPtrs.clear();
-}
-
 Pipeline& Pipeline::addShader(std::shared_ptr<ShaderModule> shader)
 {
 	this->mShaderPtrs.insert(std::make_pair(shader->mStage, shader));
@@ -157,4 +150,10 @@ void Pipeline::destroy()
 	this->mPipeline.reset();
 	this->mCache.reset();
 	this->mLayout.reset();
+}
+
+void Pipeline::clearShaders()
+{
+	// These will likely be the only references to the shader objects left, so they will automatically be deallocated
+	this->mShaderPtrs.clear();
 }

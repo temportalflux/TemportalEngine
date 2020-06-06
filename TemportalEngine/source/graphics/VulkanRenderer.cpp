@@ -75,6 +75,7 @@ void VulkanRenderer::pickPhysicalDevice()
 void VulkanRenderer::invalidate()
 {
 	this->destroyRenderChain();
+	this->mPipeline.clearShaders();
 
 	this->destroyInputBuffers();
 
