@@ -13,7 +13,7 @@
 using namespace engine;
 
 #define ENGINE_VERSION TE_MAKE_VERSION(1, 0, 0)
-#define GET_MEMORY_SIZE(sizes, key, defaultSize) sizes.find(key) != sizes.end() ? sizes.find(key)->second : defaultSize
+#define GET_MEMORY_SIZE(sizes, key, defaultSize) uSize(sizes.find(key) != sizes.end() ? sizes.find(key)->second : defaultSize)
 
 logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 Engine::EnginePtr Engine::spInstance = nullptr;

@@ -23,7 +23,7 @@ To compile shaders, the editor uses libshaderc
 
 1. Download the Debug and Release build zip files from https://github.com/google/shaderc/blob/master/downloads.md
 2. Create `libs\shaderc`
-3. Copy the contents of (Debug build zip) `install\include\shaderc\` to `libs\shaderc\include\Debug\shaderc`
-4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to `libs\shaderc\lib\Debug\shaderc_combined.lib`
-5. Copy the contents of (Release build zip) `install\include\shaderc\` to `libs\shaderc\include\Release\shaderc`
-6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to `libs\shaderc\lib\Release\shaderc_combined.lib`
+3. Copy the contents of (Debug build zip) `install\include\shaderc\` to `Editor\libs\shaderc\include\Debug\shaderc`
+4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Debug\shaderc_combined.lib`
+5. Copy the contents of (Release build zip) `install\include\shaderc\` to ``Editor\libs\shaderc\include\Release\shaderc`
+6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Release\shaderc_combined.lib`

@@ -4,9 +4,6 @@
 #include "types/integer.h"
 
 #include <fstream>
-#include <shaderc/shaderc.hpp>
-
-//#define COMPILE_BINARIES
 
 using namespace graphics;
 
@@ -68,7 +65,7 @@ ShaderModule& ShaderModule::setMetadata(graphics::ShaderMetadata metadata)
 		this->mAttributeByteCount.insert(std::make_pair(attribute.propertyName, attribute.byteCount));
 		totalByteCount += attribute.byteCount;
 	}
-	this->mBinding.setStride(totalByteCount);
+	this->mBinding.setStride((ui32)totalByteCount);
 	return *this;
 }
 
@@ -84,7 +81,7 @@ ShaderModule& ShaderModule::setVertexDescription(VertexDescription desc)
 		assert(this->mAttributeByteCount.find(propertyName) != this->mAttributeByteCount.end());
 		assert(propDesc.size == this->mAttributeByteCount.find(propertyName)->second);
 		// Actually save the offset in the structure for the desired attribute
-		this->mAttributes[propertyName].setOffset(propDesc.offset);
+		this->mAttributes[propertyName].setOffset((ui32)propDesc.offset);
 	}
 	return *this;
 }

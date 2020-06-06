@@ -111,13 +111,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -144,13 +144,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -179,7 +179,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -187,7 +187,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
@@ -216,7 +216,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -224,7 +224,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>

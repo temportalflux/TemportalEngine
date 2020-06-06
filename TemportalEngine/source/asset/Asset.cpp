@@ -36,6 +36,7 @@ std::string Asset::getFileName() const
 
 void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type) const
 {
+	std::filesystem::create_directories(filePath.parent_path());
 	switch (type)
 	{
 	case EAssetSerialization::Json:

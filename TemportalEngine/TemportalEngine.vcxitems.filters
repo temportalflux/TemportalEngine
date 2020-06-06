@@ -413,11 +413,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\ShaderMetadata.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VertexDescription.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
   </ItemGroup>
 </Project>

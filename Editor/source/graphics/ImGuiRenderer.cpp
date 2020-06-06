@@ -226,7 +226,7 @@ void ImGuiRenderer::render()
 	
 	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
 	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), currentFrame->getRawBuffer());
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), (VkCommandBuffer)currentFrame->getRawBuffer());
 	currentFrame->endRenderPass(cmd);
 	currentFrame->submitBuffers(&this->mQueues[QueueFamily::eGraphics], {});
 }

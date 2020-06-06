@@ -6,7 +6,6 @@
 #include "memory/MemoryChunk.hpp"
 
 #include <bitset>
-#include <shaderc/shaderc.hpp>
 #include <vulkan/vulkan.hpp>
 
 using namespace asset;
