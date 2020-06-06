@@ -17,7 +17,7 @@ public:
 	void setAsset(asset::AssetPtrStrong asset) override;
 
 protected:
-	void renderView() override;
+	void renderContent() override;
 	void saveAsset() override;
 
 private:

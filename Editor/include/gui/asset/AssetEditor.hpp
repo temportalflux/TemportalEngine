@@ -18,12 +18,16 @@ public:
 
 	i32 getFlags() const override;
 	virtual void makeGui() override;
-	virtual void renderView() override;
 
 protected:
 
 	std::string getId() const override;
 	std::string getTitle() const override;
+
+	virtual void renderView() override;
+	virtual bool hasDetailsPanel() const { return false; }
+	virtual void renderDetailsPanel() {};
+	virtual void renderContent();
 
 	ui32 getDirtyFlags() const;
 	virtual bool isAssetDirty() const;
@@ -49,6 +53,7 @@ protected:
 
 private:
 	asset::AssetPtrStrong mpAsset;
+	bool mbDetailsPanelOpen;
 	// If any bits are set, then the asset is dirty
 	ui32 mDirtyFlags;
 

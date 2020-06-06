@@ -21,7 +21,9 @@ public:
 	void makeGui() override;
 
 protected:
-	void renderView() override;
+	bool hasDetailsPanel() const { return true; }
+	void renderDetailsPanel() override;
+	void renderContent() override;
 	void saveAsset() override;
 	bool canCompileAsset() override;
 	void compileAsset() override;

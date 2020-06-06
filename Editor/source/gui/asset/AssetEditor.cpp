@@ -102,7 +102,19 @@ void AssetEditor::releaseAsset()
 void AssetEditor::renderView()
 {
 	this->renderMenuBar();
-	this->renderBinaryInformation();
+
+	if (this->hasDetailsPanel() && this->mbDetailsPanelOpen)
+	{
+		ImGui::BeginChild("Details", ImVec2(150, 0), false);
+		this->renderDetailsPanel();
+		ImGui::EndChild();
+		ImGui::SameLine();
+	}
+	{
+		ImGui::BeginChild("Content", ImVec2(0, 0), false);
+		this->renderContent();
+		ImGui::EndChild();
+	}
 }
 
 void AssetEditor::renderMenuBar()
@@ -118,6 +130,18 @@ void AssetEditor::renderMenuBarItems()
 {
 	if (ImGui::MenuItem("Save", "", false, this->isAssetDirty())) this->saveAsset();
 	if (ImGui::MenuItem("Compile", "", false, this->canCompileAsset())) this->compileAsset();
+}
+
+void AssetEditor::renderContent()
+{
+	if (this->hasDetailsPanel())
+	{
+		if (ImGui::ArrowButton("ToggleDetailsPanel",
+			this->mbDetailsPanelOpen ? ImGuiDir_Left : ImGuiDir_Right
+		)) this->mbDetailsPanelOpen = !this->mbDetailsPanelOpen;
+		ImGui::SameLine();
+	}
+	this->renderBinaryInformation();
 }
 
 std::string makeTimeString(std::filesystem::file_time_type time)

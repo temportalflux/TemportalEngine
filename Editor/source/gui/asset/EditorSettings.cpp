@@ -28,9 +28,9 @@ std::string EditorSettings::getOutputDirectory() const
 	return utility::createStringFromFixedArray(this->mInput_OutputDirectory);
 }
 
-void EditorSettings::renderView()
+void EditorSettings::renderContent()
 {
-	AssetEditor::renderView();
+	AssetEditor::renderContent();
 	auto asset = this->get<asset::Settings>();
 	if (ImGui::InputText("Output Directory", this->mInput_OutputDirectory.data(), this->mInput_OutputDirectory.size()))
 	{

@@ -71,9 +71,14 @@ void EditorShader::makeGui()
 	}
 }
 
-void EditorShader::renderView()
+void EditorShader::renderDetailsPanel()
 {
-	AssetEditor::renderView();
+	ImGui::Text("Shader Metadata");
+}
+
+void EditorShader::renderContent()
+{
+	AssetEditor::renderContent();
 
 	this->mTextEditor->SetErrorMarkers(this->mShaderCompilationErrors);
 	this->mTextEditor->Render("TextEditor");

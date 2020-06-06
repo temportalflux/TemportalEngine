@@ -58,9 +58,9 @@ Version EditorProject::getVersion() const
 	return v;
 }
 
-void EditorProject::renderView()
+void EditorProject::renderContent()
 {
-	AssetEditor::renderView();
+	AssetEditor::renderContent();
 
 	auto asset = this->get<asset::Project>();
 	
