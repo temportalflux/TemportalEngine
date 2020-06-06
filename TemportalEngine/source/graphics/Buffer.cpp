@@ -5,6 +5,18 @@
 
 using namespace graphics;
 
+Buffer& Buffer::setUsage(vk::BufferUsageFlags flags)
+{
+	this->mUsageFlags = flags;
+	return *this;
+}
+
+Buffer& Buffer::setMemoryRequirements(vk::MemoryPropertyFlags flags)
+{
+	this->mMemoryFlags = flags;
+	return *this;
+}
+
 Buffer& Buffer::setSize(ui64 size)
 {
 	this->mSize = size;
@@ -22,13 +34,13 @@ void Buffer::create(LogicalDevice const *pDevice)
 
 	this->mInternal = pDevice->mDevice->createBufferUnique(
 		vk::BufferCreateInfo()
-		.setUsage(vk::BufferUsageFlagBits::eVertexBuffer)
+		.setUsage(this->mUsageFlags)
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSize(this->mSize)
 	);
 
 	auto memRequirements = pDevice->mDevice->getBufferMemoryRequirements(this->mInternal.get());
-	auto memoryType = this->findMemoryType(pDevice->mpPhysicalDevice, memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+	auto memoryType = this->findMemoryType(pDevice->mpPhysicalDevice, memRequirements.memoryTypeBits, this->mMemoryFlags);
 	assert(memoryType.has_value());
 
 	// Allocates memory on the physical device/GPU for the buffer

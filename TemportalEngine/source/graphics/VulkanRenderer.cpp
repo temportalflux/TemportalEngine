@@ -11,6 +11,12 @@ VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
 	, mbRenderChainDirty(false)
 {
 	mSurface.swap(surface);
+	this->mVertexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eVertexBuffer)
+		.setMemoryRequirements(
+			vk::MemoryPropertyFlagBits::eHostVisible
+			| vk::MemoryPropertyFlagBits::eHostCoherent
+		);
 }
 
 logging::Logger VulkanRenderer::getLog() const

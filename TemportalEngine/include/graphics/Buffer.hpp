@@ -17,6 +17,8 @@ class Buffer
 
 public:
 
+	Buffer& setUsage(vk::BufferUsageFlags flags);
+	Buffer& setMemoryRequirements(vk::MemoryPropertyFlags flags);
 	Buffer& setSize(ui64 size);
 
 	void create(LogicalDevice const *pDevice);
@@ -31,6 +33,8 @@ public:
 	}
 
 private:
+	vk::BufferUsageFlags mUsageFlags;
+	vk::MemoryPropertyFlags mMemoryFlags;
 	ui64 mSize;
 
 	LogicalDevice const *mpDevice;
