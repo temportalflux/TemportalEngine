@@ -15,7 +15,7 @@ Here are some resources for you (and myself) to get started with Vulkan!
 - Vulkan-HPP: https://github.com/KhronosGroup/Vulkan-Hpp
 - Vulkan SDK tutorial: https://vulkan-tutorial.com/en/Overview
 
-Next Vulkan Task: Staging & Index Buffers https://vulkan-tutorial.com/en/Vertex_buffers/Staging_buffer
+Next Vulkan Task: https://vulkan-tutorial.com/Uniform_buffers/Descriptor_layout_and_buffer
 
 ### Shader Compilation
 
