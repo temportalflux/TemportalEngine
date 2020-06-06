@@ -43,16 +43,29 @@ public:
 	virtual void initializeDevices();
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
-	virtual void createInputBuffers(ui32 bufferSize);
-	void setVertexCount(ui32 count);
+	virtual void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
 
-	template <typename TVertex, ui64 Size>
-	void writeVertexData(ui64 offset, std::array<TVertex, Size> data)
+	template <typename TVertex, ui64 VertexSize>
+	void writeVertexData(ui64 offset, std::array<TVertex, VertexSize> verticies)
 	{
-		this->writeVertexDataRaw(offset, (void*)data.data(), sizeof(TVertex) * data.size());
+		this->writeToBuffer(&this->mVertexBuffer, offset, (void*)verticies.data(), sizeof(TVertex) * verticies.size());
 	}
 
-	void writeVertexDataRaw(ui64 offset, void* data, ui64 size);
+	template <ui64 IndexSize>
+	void writeIndexData(ui64 offset, std::array<ui16, IndexSize> indicies)
+	{
+		this->mIndexBufferUnitType = vk::IndexType::eUint16;
+		this->mIndexCount = (ui32)indicies.size();
+		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui16) * indicies.size());
+	}
+
+	template <ui64 IndexSize>
+	void writeIndexData(ui64 offset, std::array<ui32, IndexSize> indicies)
+	{
+		this->mIndexBufferUnitType = vk::IndexType::eUint32;
+		this->mIndexCount = (ui32)indicies.size();
+		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui32) * indicies.size());
+	}
 	
 	// Creates a swap chain, and all objects that depend on it
 	void createRenderChain();
@@ -108,8 +121,10 @@ protected:
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 
 	CommandPool mCommandPoolTransient;
+	ui32 mIndexCount;
 	Buffer mVertexBuffer;
-	ui32 mVertexCount;
+	Buffer mIndexBuffer;
+	vk::IndexType mIndexBufferUnitType;
 
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
@@ -127,7 +142,8 @@ protected:
 	void destroyRenderChain();
 	void recordCommandBufferInstructions();
 
-	void copyToVertexBuffer(Buffer *sourceBuffer);
+	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
+	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
 
 	bool acquireNextImage();
 	void prepareRender();

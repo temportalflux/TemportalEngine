@@ -27,10 +27,21 @@ struct Vertex
 	glm::vec3 color;
 };
 
+/*
 const std::array<Vertex, 3> vertices = { {
 	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
 	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
 	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+} };
+//*/
+const std::array<Vertex, 4> vertices = { {
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+} };
+const std::array<ui16, 6> indices = { {
+	0, 1, 2, 2, 3, 0
 } };
 
 void initializeNetwork(engine::Engine *pEngine)
@@ -239,9 +250,12 @@ int main(int argc, char *argv[])
 		}
 
 		// Initialize the rendering api connections
-		renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());
-		renderer.setVertexCount((ui32)vertices.size());
+		renderer.createInputBuffers(
+			sizeof(Vertex) * (ui32)vertices.size(),
+			sizeof(ui16) * (ui32)indices.size()
+		);
 		renderer.writeVertexData(0, vertices);
+		renderer.writeIndexData(0, indices);
 
 		renderer.createRenderChain();
 		renderer.finalizeInitialization();

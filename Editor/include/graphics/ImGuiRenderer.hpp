@@ -51,7 +51,7 @@ private:
 protected:
 	void createCommandObjects() override {}
 	void destroyCommandObjects() override {}
-	void createInputBuffers(ui32 bufferSize) override {}
+	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
 	void destroyInputBuffers() override {}
 
 	void createFrames(uSize viewCount) override;

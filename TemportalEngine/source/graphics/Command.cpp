@@ -57,9 +57,15 @@ Command& Command::bindVertexBuffers(std::vector<Buffer*> const pBuffers)
 	return *this;
 }
 
-Command& Command::draw(ui32 vertexCount)
+Command& Command::bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexType indexType)
 {
-	this->mpBuffer->mInternal->draw(vertexCount, 1, 0, 0);
+	this->mpBuffer->mInternal->bindIndexBuffer(*reinterpret_cast<vk::Buffer*>(pBuffer->get()), offset, indexType);
+	return *this;
+}
+
+Command& Command::draw(ui32 indexCount)
+{
+	this->mpBuffer->mInternal->drawIndexed(indexCount, 1, 0, 0, 0);
 	return *this;
 }
 

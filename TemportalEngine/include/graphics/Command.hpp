@@ -29,6 +29,7 @@ public:
 	Command& beginRenderPass(RenderPass const *pRenderPass, FrameBuffer const *pFrameBuffer);
 	Command& bindPipeline(Pipeline const *pPipeline);
 	Command& bindVertexBuffers(std::vector<Buffer*> const pBuffers);
+	Command& bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexType indexType);
 	Command& draw(ui32 vertexCount);
 	Command& endRenderPass();
 	
