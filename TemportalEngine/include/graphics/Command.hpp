@@ -31,6 +31,9 @@ public:
 	Command& bindVertexBuffers(std::vector<Buffer*> const pBuffers);
 	Command& draw(ui32 vertexCount);
 	Command& endRenderPass();
+	
+	// For copying transfer buffers
+	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
 
 	void end();
 

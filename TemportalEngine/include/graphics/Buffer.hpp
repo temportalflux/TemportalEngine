@@ -16,34 +16,32 @@ class Buffer
 {
 
 public:
+	Buffer() = default;
+	Buffer(Buffer &&other);
+	Buffer& operator=(Buffer &&other);
 
 	Buffer& setUsage(vk::BufferUsageFlags flags);
 	Buffer& setMemoryRequirements(vk::MemoryPropertyFlags flags);
 	Buffer& setSize(ui64 size);
+	ui64 getSize() const;
 
 	void create(LogicalDevice const *pDevice);
 	void destroy();
 
 	void* get();
 
-	template <typename T, ui32 Size>
-	void write(std::array<T, Size> const &src)
-	{
-		this->write_internal((void*)src.data(), sizeof(T) * (ui32)src.size());
-	}
+	void write(LogicalDevice const *pDevice, ui64 offset, void* src, ui64 size);
 
 private:
 	vk::BufferUsageFlags mUsageFlags;
 	vk::MemoryPropertyFlags mMemoryFlags;
 	ui64 mSize;
 
-	LogicalDevice const *mpDevice;
 	vk::UniqueBuffer mInternal;
 	vk::UniqueDeviceMemory mBufferMemory;
 
 	std::optional<ui32> findMemoryType(PhysicalDevice const *pDevice, ui32 typeFilter, vk::MemoryPropertyFlags propertyFlags);
 
-	void write_internal(void* src, ui32 size);
 };
 
 NS_END

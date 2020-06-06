@@ -44,13 +44,15 @@ public:
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
 	virtual void createInputBuffers(ui32 bufferSize);
+	void setVertexCount(ui32 count);
 
-	template <typename TVertex, ui32 Size>
-	void writeVertexData(std::array<TVertex, Size> data)
+	template <typename TVertex, ui64 Size>
+	void writeVertexData(ui64 offset, std::array<TVertex, Size> data)
 	{
-		this->mVertexCount = (ui32)data.size();
-		this->mVertexBuffer.write(data);
+		this->writeVertexDataRaw(offset, (void*)data.data(), sizeof(TVertex) * data.size());
 	}
+
+	void writeVertexDataRaw(ui64 offset, void* data, ui64 size);
 	
 	// Creates a swap chain, and all objects that depend on it
 	void createRenderChain();
@@ -105,6 +107,7 @@ protected:
 
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 
+	CommandPool mCommandPoolTransient;
 	Buffer mVertexBuffer;
 	ui32 mVertexCount;
 
@@ -123,6 +126,8 @@ protected:
 	void pickPhysicalDevice();
 	void destroyRenderChain();
 	void recordCommandBufferInstructions();
+
+	void copyToVertexBuffer(Buffer *sourceBuffer);
 
 	bool acquireNextImage();
 	void prepareRender();

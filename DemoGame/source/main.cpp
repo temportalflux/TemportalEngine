@@ -240,7 +240,8 @@ int main(int argc, char *argv[])
 
 		// Initialize the rendering api connections
 		renderer.createInputBuffers(sizeof(Vertex) * (ui32)vertices.size());
-		renderer.writeVertexData(vertices);
+		renderer.setVertexCount((ui32)vertices.size());
+		renderer.writeVertexData(0, vertices);
 
 		renderer.createRenderChain();
 		renderer.finalizeInitialization();

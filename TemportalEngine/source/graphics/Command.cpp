@@ -69,6 +69,17 @@ Command& Command::endRenderPass()
 	return *this;
 }
 
+Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
+{
+	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
+	this->mpBuffer->mInternal->copyBuffer(
+		*reinterpret_cast<vk::Buffer*>(src->get()),
+		*reinterpret_cast<vk::Buffer*>(dest->get()),
+		1, &region
+	);
+	return *this;
+}
+
 void Command::end()
 {
 	this->mpBuffer->endCommand(this);

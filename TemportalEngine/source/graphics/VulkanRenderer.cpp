@@ -12,11 +12,8 @@ VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
 {
 	mSurface.swap(surface);
 	this->mVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(
-			vk::MemoryPropertyFlagBits::eHostVisible
-			| vk::MemoryPropertyFlagBits::eHostCoherent
-		);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 logging::Logger VulkanRenderer::getLog() const
@@ -147,6 +144,7 @@ void VulkanRenderer::createCommandObjects()
 
 void VulkanRenderer::destroyCommandObjects()
 {
+	this->mCommandPoolTransient.destroy();
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
 	this->mPipeline.destroy();
@@ -155,9 +153,52 @@ void VulkanRenderer::destroyCommandObjects()
 
 void VulkanRenderer::createInputBuffers(ui32 bufferSize)
 {
-	auto vertexShader = this->mPipeline.getShader(vk::ShaderStageFlagBits::eVertex);
-	assert(vertexShader != nullptr);
 	this->mVertexBuffer.setSize(bufferSize).create(&this->mLogicalDevice);
+
+	this->mCommandPoolTransient
+		.setQueueFamily(
+			graphics::QueueFamily::eGraphics,
+			this->mPhysicalDevice.queryQueueFamilyGroup()
+		)
+		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
+}
+
+void VulkanRenderer::setVertexCount(ui32 count)
+{
+	this->mVertexCount = count;
+}
+
+void VulkanRenderer::writeVertexDataRaw(ui64 offset, void* data, ui64 size)
+{
+	Buffer& stagingBuffer = Buffer()
+		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+		.setMemoryRequirements(
+			vk::MemoryPropertyFlagBits::eHostVisible
+			| vk::MemoryPropertyFlagBits::eHostCoherent
+		)
+		.setSize(size);
+	stagingBuffer.create(&this->mLogicalDevice);
+	stagingBuffer.write(&this->mLogicalDevice, offset, data, size);
+	this->copyToVertexBuffer(&stagingBuffer);
+	stagingBuffer.destroy();
+}
+
+void VulkanRenderer::copyToVertexBuffer(Buffer *sourceBuffer)
+{
+	// Buffers should be freed when they go out of scope
+	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.copyBuffer(sourceBuffer, &this->mVertexBuffer, sourceBuffer->getSize())
+		.end();
+	auto queue = this->mQueues[QueueFamily::eGraphics];
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		vk::Fence()
+	);
+	queue.waitIdle();
 }
 
 void VulkanRenderer::destroyInputBuffers()

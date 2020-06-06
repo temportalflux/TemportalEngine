@@ -5,6 +5,22 @@
 
 using namespace graphics;
 
+Buffer::Buffer(Buffer &&other)
+{
+	*this = std::move(other);
+}
+
+Buffer& Buffer::operator=(Buffer &&other)
+{
+	this->mUsageFlags = other.mUsageFlags;
+	this->mMemoryFlags = other.mMemoryFlags;
+	this->mSize = other.mSize;
+	this->mInternal.swap(other.mInternal);
+	this->mBufferMemory.swap(other.mBufferMemory);
+	other.destroy();
+	return *this;
+}
+
 Buffer& Buffer::setUsage(vk::BufferUsageFlags flags)
 {
 	this->mUsageFlags = flags;
@@ -23,6 +39,11 @@ Buffer& Buffer::setSize(ui64 size)
 	return *this;
 }
 
+ui64 Buffer::getSize() const
+{
+	return this->mSize;
+}
+
 void* Buffer::get()
 {
 	return &this->mInternal.get();
@@ -30,8 +51,6 @@ void* Buffer::get()
 
 void Buffer::create(LogicalDevice const *pDevice)
 {
-	this->mpDevice = pDevice;
-
 	this->mInternal = pDevice->mDevice->createBufferUnique(
 		vk::BufferCreateInfo()
 		.setUsage(this->mUsageFlags)
@@ -66,16 +85,15 @@ std::optional<ui32> Buffer::findMemoryType(PhysicalDevice const *pDevice, ui32 t
 	return std::nullopt;
 }
 
-void Buffer::write_internal(void* src, ui32 size)
+void Buffer::write(LogicalDevice const *pDevice, ui64 offset, void* src, ui64 size)
 {
-	void* dest = this->mpDevice->mDevice->mapMemory(this->mBufferMemory.get(), /* memory offset*/ 0, this->mSize, /*flags*/ {});
+	void* dest = pDevice->mDevice->mapMemory(this->mBufferMemory.get(), offset, this->mSize, /*flags*/ {});
 	memcpy(dest, src, size);
-	this->mpDevice->mDevice->unmapMemory(this->mBufferMemory.get());
+	pDevice->mDevice->unmapMemory(this->mBufferMemory.get());
 }
 
 void Buffer::destroy()
 {
-	this->mpDevice = nullptr;
 	this->mInternal.reset();
 	this->mBufferMemory.reset();
 }
