@@ -26,7 +26,7 @@ private:
 	Version mSavedVersion;
 	
 	gui::FieldText<32> mFieldName;
-	gui::Field_ui32<3> mFieldVersion;
+	gui::FieldNumber<ui8, 3> mFieldVersion;
 
 };
 

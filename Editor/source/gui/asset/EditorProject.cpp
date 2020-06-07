@@ -28,7 +28,8 @@ void EditorProject::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mSavedVersion = asset->getVersion();
 	this->mFieldVersion[0] = this->mSavedVersion.unpacked.major;
 	this->mFieldVersion[1] = this->mSavedVersion.unpacked.minor;
-	this->mFieldVersion[2] = this->mSavedVersion.unpacked.patch;
+	this->mFieldVersion[2] = (ui8)this->mSavedVersion.unpacked.patch;
+
 }
 
 void EditorProject::renderContent()
@@ -48,9 +49,9 @@ void EditorProject::renderContent()
 		0, 0, "%d"
 	))
 	{
-		this->mSavedVersion.unpacked.major = (ui8)this->mFieldVersion[0];
-		this->mSavedVersion.unpacked.minor = (ui8)this->mFieldVersion[1];
-		this->mSavedVersion.unpacked.patch = (ui8)this->mFieldVersion[2];
+		this->mSavedVersion.unpacked.major = this->mFieldVersion[0];
+		this->mSavedVersion.unpacked.minor = this->mFieldVersion[1];
+		this->mSavedVersion.unpacked.patch = this->mFieldVersion[2];
 		this->markAssetDirty(Bit_Version, this->mSavedVersion.packed != asset->getVersion().packed);
 	}
 }
