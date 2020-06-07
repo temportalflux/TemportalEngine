@@ -2,10 +2,14 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include <string>
-
 NS_ASSET
 
 typedef std::string AssetType;
+
+enum class EAssetSerialization
+{
+	Json,
+	Binary,
+};
 
 NS_END

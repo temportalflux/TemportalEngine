@@ -9,14 +9,11 @@
 #include "utility/StringUtils.hpp"
 #include "asset/AssetManager.hpp"
 #include "asset/Shader.hpp"
+#include "asset/TypedAssetPath.hpp"
 
-#include <array>
-#include <filesystem>
 #include <iostream>
-#include <string>
 #include <stdarg.h>
 #include <time.h>
-#include <unordered_map>
 #include <glm/glm.hpp>
 
 using namespace std;
@@ -212,13 +209,9 @@ int main(int argc, char *argv[])
 				std::shared_ptr<graphics::ShaderModule> shaderModule;
 				// Make module from shader binary in asset
 				{
-					auto asset = assetManager->readFromDisk<asset::Shader>(
-						// TODO: This should use a soft asset path reference in a pipeline asset.
-						// All SoftAssetPath<Asset> should be relative to the projects asset directory.
-						pEngine->getProject()->getAssetDirectory() / "shaders/TriangleVertex.te-asset",
-						asset::EAssetSerialization::Binary
-						);
-					shaderModule = asset->makeModule();
+					shaderModule = asset::TypedAssetPath<asset::Shader>(
+						asset::AssetPath("shader", "assets/shaders/TriangleVertex.te-asset")
+					).load(asset::EAssetSerialization::Binary)->makeModule();
 				}
 				// Set the description for the input
 				shaderModule->setVertexDescription(

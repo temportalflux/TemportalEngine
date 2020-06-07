@@ -18,12 +18,6 @@
 
 NS_ASSET
 
-enum class EAssetSerialization
-{
-	Json,
-	Binary,
-};
-
 class Asset
 {
 	friend class cereal::access;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TemportalEnginePCH.hpp"
+
 #include "asset/AssetPath.hpp"
 #include "asset/AssetManager.hpp"
 
@@ -10,9 +12,11 @@ class TypedAssetPath
 {
 
 public:
-	std::shared_ptr<TAsset> load() const
+	TypedAssetPath(AssetPath path) : mPath(path) {}
+
+	std::shared_ptr<TAsset> load(EAssetSerialization serialization) const
 	{
-		return AssetManager::get()->readFromDisk<TAsset>(this->mPath.toAbsolutePath());
+		return AssetManager::get()->readFromDisk<TAsset>(this->mPath.toAbsolutePath(), serialization);
 	}
 
 	template <typename Archive>

@@ -18,6 +18,8 @@ private:
 	std::filesystem::path mRelativePath;
 
 public:
+	AssetPath(AssetType type, std::filesystem::path path) : mType(type), mRelativePath(path) {}
+
 	std::string toString() const { return this->mType + ":" + this->mRelativePath.string(); }
 	std::string toShortName() const { return this->mType + ":" + this->mRelativePath.stem().string(); }
 
@@ -30,14 +32,20 @@ public:
 	template <typename Archive>
 	void save(Archive &archive) const
 	{
-		archive(this->mType, this->mRelativePath.string());
+		archive(
+			cereal::make_nvp("type", this->mType),
+			cereal::make_nvp("path", this->mRelativePath.string())
+		);
 	}
 
 	template <typename Archive>
 	void load(Archive &archive)
 	{
 		std::string pathStr;
-		archive(this->mType, pathStr);
+		archive(
+			cereal::make_nvp("type", this->mType),
+			cereal::make_nvp("path", pathStr)
+		);
 		this->mRelativePath = pathStr;
 	}
 
