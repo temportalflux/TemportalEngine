@@ -391,9 +391,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetId.hpp">
-      <Filter>asset</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp">
       <Filter>utility</Filter>
     </ClInclude>
@@ -417,5 +414,11 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
+    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\asset\AssetPath.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -71,11 +71,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetId.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
