@@ -194,6 +194,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp">
       <Filter>asset</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\types.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -322,7 +325,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamilyGroup.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -337,9 +339,6 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\LogicalDeviceInfo.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\QueueFamily.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanRenderer.hpp">
@@ -414,11 +413,15 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
-    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\asset\AssetPath.hpp">
-      <Filter>asset</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetPath.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\types.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

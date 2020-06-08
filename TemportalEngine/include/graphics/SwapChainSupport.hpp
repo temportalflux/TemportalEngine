@@ -8,6 +8,7 @@
 
 NS_GRAPHICS
 
+// TODO: Move vulkan impls to cpp
 struct SwapChainSupport
 {
 	vk::SurfaceCapabilitiesKHR capabilities;

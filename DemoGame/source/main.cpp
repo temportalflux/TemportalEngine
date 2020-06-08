@@ -165,18 +165,18 @@ int main(int argc, char *argv[])
 		renderer.setPhysicalDevicePreference(
 			graphics::PhysicalDevicePreference()
 			.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
-			.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
-			.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
-			.addCriteriaDeviceFeature(graphics::PhysicalDeviceFeature::GeometryShader)
+			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::eGraphics)
+			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::ePresentation)
+			.addCriteriaDeviceFeature(graphics::PhysicalDeviceProperties::Feature::Enum::GeometryShader)
 			.addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-			.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnySurfaceFormat)
-			.addCriteriaSwapChain(graphics::PhysicalDevicePreference::PreferenceSwapChain::Type::eHasAnyPresentationMode)
+			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnySurfaceFormat)
+			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnyPresentationMode)
 		);
 		renderer.setLogicalDeviceInfo(
 			graphics::LogicalDeviceInfo()
 			.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
-			.addQueueFamily(graphics::QueueFamily::eGraphics)
-			.addQueueFamily(graphics::QueueFamily::ePresentation)
+			.addQueueFamily(graphics::QueueFamily::Enum::eGraphics)
+			.addQueueFamily(graphics::QueueFamily::Enum::ePresentation)
 			.setValidationLayers(engine::Engine::VulkanValidationLayers)
 		);
 		renderer.setSwapChainInfo(

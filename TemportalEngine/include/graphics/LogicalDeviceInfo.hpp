@@ -4,15 +4,11 @@
 
 #include "types/real.h"
 #include "types/integer.h"
-#include "graphics/QueueFamily.hpp"
+#include "graphics/types.hpp"
 
-#include <map>
-#include <vector>
-#include <set>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-enum class QueueFamily;
 class PhysicalDevice;
 struct QueueFamilyGroup;
 
@@ -31,14 +27,14 @@ class LogicalDeviceInfo
 public:
 	LogicalDeviceInfo() = default;
 
-	LogicalDeviceInfo& addQueueFamily(QueueFamily type);
+	LogicalDeviceInfo& addQueueFamily(QueueFamily::Enum type);
 	LogicalDeviceInfo& addDeviceExtension(char const* name);
 	LogicalDeviceInfo& setValidationLayers(std::vector<char const*> layers);
 
-	std::set<QueueFamily> getQueues() const;
+	std::set<QueueFamily::Enum> getQueues() const;
 
 private:
-	std::vector<QueueFamily> mQueues;
+	std::vector<QueueFamily::Enum> mQueues;
 	std::vector<char const*> mDeviceExtensions;
 	std::vector<char const*> mValidationLayers;
 

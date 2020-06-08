@@ -27,9 +27,9 @@ void LogicalDevice::invalidate()
 	this->mDevice.reset();
 }
 
-std::unordered_map<QueueFamily, vk::Queue> LogicalDevice::findQueues(std::set<QueueFamily> types) const
+std::unordered_map<QueueFamily::Enum, vk::Queue> LogicalDevice::findQueues(std::set<QueueFamily::Enum> types) const
 {
-	auto queues = std::unordered_map<QueueFamily, vk::Queue>();
+	auto queues = std::unordered_map<QueueFamily::Enum, vk::Queue>();
 
 	if (mpPhysicalDevice == nullptr) return queues;
 	auto queueGroup = this->mpPhysicalDevice->queryQueueFamilyGroup();

@@ -19,7 +19,7 @@ ImGuiFrame& ImGuiFrame::setView(ImageView *pView)
 
 ImGuiFrame& ImGuiFrame::setQueueFamilyGroup(QueueFamilyGroup const *group)
 {
-	this->mCommandPool.setQueueFamily(QueueFamily::eGraphics, *group);
+	this->mCommandPool.setQueueFamily(QueueFamily::Enum::eGraphics, *group);
 	return *this;
 }
 

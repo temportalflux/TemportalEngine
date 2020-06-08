@@ -56,7 +56,7 @@ void VulkanRenderer::initializeDevices()
 	this->mQueues = this->mLogicalDevice.findQueues(mLogicalDeviceInfo.getQueues());
 }
 
-vk::Queue& VulkanRenderer::getQueue(QueueFamily type)
+vk::Queue& VulkanRenderer::getQueue(QueueFamily::Enum type)
 {
 	return this->mQueues[type];
 }
@@ -139,7 +139,7 @@ void VulkanRenderer::createCommandObjects()
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass);
 	
 	this->mCommandPool
-		.setQueueFamily(graphics::QueueFamily::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
+		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&this->mLogicalDevice);
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
 	
@@ -162,7 +162,7 @@ void VulkanRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferS
 
 	this->mCommandPoolTransient
 		.setQueueFamily(
-			graphics::QueueFamily::eGraphics,
+			graphics::QueueFamily::Enum::eGraphics,
 			this->mPhysicalDevice.queryQueueFamilyGroup()
 		)
 		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
@@ -191,7 +191,7 @@ void VulkanRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.copyBuffer(src, dest, size)
 		.end();
-	auto queue = this->mQueues[QueueFamily::eGraphics];
+	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
@@ -305,7 +305,7 @@ void VulkanRenderer::render()
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mCommandBuffers[this->mIdxCurrentImage];
-	currentFrame->submitBuffers(&this->mQueues[QueueFamily::eGraphics], { &commandBuffer });
+	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], { &commandBuffer });
 }
 
 bool VulkanRenderer::present()
@@ -315,7 +315,7 @@ bool VulkanRenderer::present()
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
 	{
-		auto result = currentFrame->present(&this->mQueues[QueueFamily::ePresentation], { &mSwapChain }, mIdxCurrentImage);
+		auto result = currentFrame->present(&this->mQueues[QueueFamily::Enum::ePresentation], { &mSwapChain }, mIdxCurrentImage);
 		if (result == vk::Result::eSuboptimalKHR)
 		{
 			if (!this->mbRenderChainDirty) this->markRenderChainDirty();

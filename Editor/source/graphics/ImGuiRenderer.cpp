@@ -3,7 +3,6 @@
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/PhysicalDevice.hpp"
 #include "graphics/LogicalDevice.hpp"
-#include "graphics/QueueFamily.hpp"
 #include "graphics/RenderPass.hpp"
 #include "gui/IGui.hpp"
 
@@ -127,8 +126,8 @@ void ImGuiRenderer::finalizeInitialization()
 		info.PhysicalDevice = *reinterpret_cast<VkPhysicalDevice*>(this->mPhysicalDevice.get());
 		info.Device = *reinterpret_cast<VkDevice*>(this->mLogicalDevice.get());
 		auto queueFamilyGroup = this->mPhysicalDevice.queryQueueFamilyGroup();
-		info.QueueFamily = queueFamilyGroup.getQueueIndex(graphics::QueueFamily::eGraphics).value();
-		info.Queue = (VkQueue)this->mQueues[graphics::QueueFamily::eGraphics];
+		info.QueueFamily = queueFamilyGroup.getQueueIndex(graphics::QueueFamily::Enum::eGraphics).value();
+		info.Queue = (VkQueue)this->mQueues[graphics::QueueFamily::Enum::eGraphics];
 		info.PipelineCache = VK_NULL_HANDLE;
 		info.DescriptorPool = (VkDescriptorPool)mDescriptorPool.get();
 		info.Allocator = nullptr;
@@ -148,7 +147,7 @@ void ImGuiRenderer::submitFonts()
 	{
 		ImGui_ImplVulkan_CreateFontsTexture(*((VkCommandBuffer*)buffer.get()));
 	};
-	this->mGuiFrames[0].submitOneOff(&this->getQueue(QueueFamily::eGraphics), createFonts);
+	this->mGuiFrames[0].submitOneOff(&this->getQueue(QueueFamily::Enum::eGraphics), createFonts);
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
@@ -228,5 +227,5 @@ void ImGuiRenderer::render()
 	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), (VkCommandBuffer)currentFrame->getRawBuffer());
 	currentFrame->endRenderPass(cmd);
-	currentFrame->submitBuffers(&this->mQueues[QueueFamily::eGraphics], {});
+	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], {});
 }

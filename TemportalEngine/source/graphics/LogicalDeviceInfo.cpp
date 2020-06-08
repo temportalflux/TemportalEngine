@@ -7,15 +7,15 @@
 
 using namespace graphics;
 
-LogicalDeviceInfo& LogicalDeviceInfo::addQueueFamily(QueueFamily type)
+LogicalDeviceInfo& LogicalDeviceInfo::addQueueFamily(QueueFamily::Enum type)
 {
 	this->mQueues.push_back(type);
 	return *this;
 }
 
-std::set<QueueFamily> LogicalDeviceInfo::getQueues() const
+std::set<QueueFamily::Enum> LogicalDeviceInfo::getQueues() const
 {
-	return std::set<QueueFamily>(this->mQueues.begin(), this->mQueues.end());
+	return std::set<QueueFamily::Enum>(this->mQueues.begin(), this->mQueues.end());
 }
 
 LogicalDeviceInfo& LogicalDeviceInfo::addDeviceExtension(char const* name)

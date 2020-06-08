@@ -2,14 +2,9 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "types/integer.h"
-
-#include <optional>
-#include <set>
-#include <vector>
+#include "graphics/types.hpp"
 
 NS_GRAPHICS
-enum class QueueFamily;
 
 struct QueueFamilyGroup
 {
@@ -19,8 +14,8 @@ struct QueueFamilyGroup
 	bool hasFoundAllQueues() const;
 	std::set<ui32> uniqueQueues() const;
 	std::vector<ui32> allQueues() const;
-	bool hasQueueFamily(QueueFamily type) const;
-	std::optional<ui32> getQueueIndex(QueueFamily type) const;
+	bool hasQueueFamily(QueueFamily::Enum type) const;
+	std::optional<ui32> getQueueIndex(QueueFamily::Enum type) const;
 
 };
 

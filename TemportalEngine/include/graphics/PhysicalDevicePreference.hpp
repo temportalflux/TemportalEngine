@@ -2,75 +2,14 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "types/integer.h"
-#include "graphics/QueueFamily.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
 #include "graphics/SwapChainSupport.hpp"
+#include "graphics/types.hpp"
 
-#include <optional>
-#include <set>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class PhysicalDevice;
-
-enum class PhysicalDeviceFeature
-{
-	RobustBufferAccess,
-	FullDrawIndex,
-	ImageCubeArray,
-	IndependentBlend,
-	GeometryShader,
-	TessellationShader,
-	SampleRateShading,
-	DualSrcBlend,
-	LogicOp,
-	MultiDrawIndirect,
-	DrawIndirectFirstInstance,
-	DepthClamp,
-	DepthBiasClamp,
-	FillModeNonSolid,
-	DepthBounds,
-	WideLines,
-	LargePoints,
-	AlphaToOne,
-	MultiViewport,
-	SamplerAnisotropy,
-	TextureCompressionETC2,
-	TextureCompressionASTC_LDR,
-	TextureCompressionBC,
-	OcclusionQueryPrecise,
-	PipelineStatisticsQuery,
-	VertexPipelineStoresAndAtomics,
-	FragmentStoresAndAtomics,
-	ShaderTessellationAndGeometryPointSize,
-	ShaderImageGatherExtended,
-	ShaderStorageImageExtendedFormats,
-	ShaderStorageImageMultisample,
-	ShaderStorageImageReadWithoutFormat,
-	ShaderStorageImageWriteWithoutFormat,
-	ShaderUniformBufferArrayDynamicIndexing,
-	ShaderSampledImageArrayDynamicIndexing,
-	ShaderStorageBufferArrayDynamicIndexing,
-	ShaderStorageImageArrayDynamicIndexing,
-	ShaderClipDistance,
-	ShaderCullDistance,
-	ShaderFloat64,
-	ShaderInt64,
-	ShaderInt16,
-	ShaderResourceResidency,
-	ShaderResourceMinLod,
-	SparseBinding,
-	SparseResidencyBuffer,
-	SparseResidencyImage2D,
-	SparseResidencyImage3D,
-	SparseResidency2Samples,
-	SparseResidency4Samples,
-	SparseResidency8Samples,
-	SparseResidency16Samples,
-	SparseResidencyAliased,
-	VariableMultisampleRate,
-};
 
 /**
 	A set of scored preferences for determining the most applicable
@@ -120,7 +59,7 @@ public:
 
 	struct PreferenceFeature : Preference
 	{
-		PhysicalDeviceFeature feature;
+		graphics::PhysicalDeviceProperties::Feature::Enum feature;
 
 		bool operator<(PreferenceFeature const &other) const
 		{
@@ -130,7 +69,7 @@ public:
 
 	struct PreferenceQueueFamily : Preference
 	{
-		QueueFamily queueFamily;
+		QueueFamily::Enum queueFamily;
 
 		bool operator<(PreferenceQueueFamily const &other) const
 		{
@@ -140,12 +79,7 @@ public:
 
 	struct PreferenceSwapChain : Preference
 	{
-		enum class Type
-		{
-			eHasAnySurfaceFormat,
-			eHasAnyPresentationMode,
-		};
-		Type supportType;
+		SwapChainSupportType::Enum supportType;
 
 		bool operator<(PreferenceSwapChain const &other) const
 		{
@@ -153,16 +87,14 @@ public:
 		}
 	};
 
-	bool isSwapChainSupported(SwapChainSupport const &support, PreferenceSwapChain::Type type) const;
-
 public:
 	PhysicalDevicePreference() = default;
 
 	PhysicalDevicePreference& addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaDeviceExtension(std::string extensionName, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaDeviceFeature(PhysicalDeviceFeature feature, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaSwapChain(PreferenceSwapChain::Type optionType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score = std::nullopt);
 	
 	TotalScore scoreDevice(graphics::PhysicalDevice const *pDevice) const;
 

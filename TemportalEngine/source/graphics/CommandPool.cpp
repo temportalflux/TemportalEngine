@@ -4,7 +4,7 @@
 
 using namespace graphics;
 
-CommandPool& CommandPool::setQueueFamily(QueueFamily queueType, QueueFamilyGroup const &group)
+CommandPool& CommandPool::setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group)
 {
 	auto optQueueIdx = group.getQueueIndex(queueType);
 	assert(optQueueIdx.has_value());

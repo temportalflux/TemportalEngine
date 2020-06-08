@@ -3,11 +3,11 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "logging/Logger.hpp"
+#include "graphics/types.hpp"
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/LogicalDeviceInfo.hpp"
 #include "graphics/PhysicalDevice.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
-#include "graphics/QueueFamily.hpp"
 #include "graphics/Surface.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/SwapChainInfo.hpp"
@@ -106,7 +106,7 @@ protected:
 	PhysicalDevice mPhysicalDevice;
 	
 	LogicalDeviceInfo mLogicalDeviceInfo;
-	std::unordered_map<QueueFamily, vk::Queue> mQueues;
+	std::unordered_map<QueueFamily::Enum, vk::Queue> mQueues;
 
 	// if the render chain is out of date and needs to be recreated on next `update`
 	// TODO: Might need a mutex if it can be written to by both render thread (vulkan callbacks) AND via `markRenderChainDirty`
@@ -155,7 +155,7 @@ protected:
 	// TODO: Move to private
 	LogicalDevice mLogicalDevice;
 
-	vk::Queue& getQueue(QueueFamily type);
+	vk::Queue& getQueue(QueueFamily::Enum type);
 
 	virtual void createRenderObjects();
 	virtual void destroyRenderObjects();

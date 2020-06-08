@@ -18,19 +18,19 @@ PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(s
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(PhysicalDeviceFeature feature, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score)
 {
 	mFeatures.insert({ score, feature });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score)
 {
 	mQueueFamilies.insert({ score, queueFamily });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(PreferenceSwapChain::Type optionType, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score)
 {
 	mSwapChain.insert({ score, optionType });
 	return *this;
@@ -57,78 +57,6 @@ QueueFamilyGroup findQueueFamilies(vk::PhysicalDevice const &device, vk::Surface
 		idxQueue++;
 	}
 	return group;
-}
-
-bool doesDeviceIncludeFeatureType(vk::PhysicalDeviceFeatures const &features, PhysicalDeviceFeature type)
-{
-	switch (type)
-	{
-	case PhysicalDeviceFeature::RobustBufferAccess: return features.robustBufferAccess;
-	case PhysicalDeviceFeature::FullDrawIndex: return features.fullDrawIndexUint32;
-	case PhysicalDeviceFeature::ImageCubeArray: return features.imageCubeArray;
-	case PhysicalDeviceFeature::IndependentBlend: return features.independentBlend;
-	case PhysicalDeviceFeature::GeometryShader: return features.geometryShader;
-	case PhysicalDeviceFeature::TessellationShader: return features.tessellationShader;
-	case PhysicalDeviceFeature::SampleRateShading: return features.sampleRateShading;
-	case PhysicalDeviceFeature::DualSrcBlend: return features.dualSrcBlend;
-	case PhysicalDeviceFeature::LogicOp: return features.logicOp;
-	case PhysicalDeviceFeature::MultiDrawIndirect: return features.multiDrawIndirect;
-	case PhysicalDeviceFeature::DrawIndirectFirstInstance: return features.drawIndirectFirstInstance;
-	case PhysicalDeviceFeature::DepthClamp: return features.depthClamp;
-	case PhysicalDeviceFeature::DepthBiasClamp: return features.depthBiasClamp;
-	case PhysicalDeviceFeature::FillModeNonSolid: return features.fillModeNonSolid;
-	case PhysicalDeviceFeature::DepthBounds: return features.depthBounds;
-	case PhysicalDeviceFeature::WideLines: return features.wideLines;
-	case PhysicalDeviceFeature::LargePoints: return features.largePoints;
-	case PhysicalDeviceFeature::AlphaToOne: return features.alphaToOne;
-	case PhysicalDeviceFeature::MultiViewport: return features.multiViewport;
-	case PhysicalDeviceFeature::SamplerAnisotropy: return features.samplerAnisotropy;
-	case PhysicalDeviceFeature::TextureCompressionETC2: return features.textureCompressionETC2;
-	case PhysicalDeviceFeature::TextureCompressionASTC_LDR: return features.textureCompressionASTC_LDR;
-	case PhysicalDeviceFeature::TextureCompressionBC: return features.textureCompressionBC;
-	case PhysicalDeviceFeature::OcclusionQueryPrecise: return features.occlusionQueryPrecise;
-	case PhysicalDeviceFeature::PipelineStatisticsQuery: return features.pipelineStatisticsQuery;
-	case PhysicalDeviceFeature::VertexPipelineStoresAndAtomics: return features.vertexPipelineStoresAndAtomics;
-	case PhysicalDeviceFeature::FragmentStoresAndAtomics: return features.fragmentStoresAndAtomics;
-	case PhysicalDeviceFeature::ShaderTessellationAndGeometryPointSize: return features.shaderTessellationAndGeometryPointSize;
-	case PhysicalDeviceFeature::ShaderImageGatherExtended: return features.shaderImageGatherExtended;
-	case PhysicalDeviceFeature::ShaderStorageImageExtendedFormats: return features.shaderStorageImageExtendedFormats;
-	case PhysicalDeviceFeature::ShaderStorageImageMultisample: return features.shaderStorageImageMultisample;
-	case PhysicalDeviceFeature::ShaderStorageImageReadWithoutFormat: return features.shaderStorageImageReadWithoutFormat;
-	case PhysicalDeviceFeature::ShaderStorageImageWriteWithoutFormat: return features.shaderStorageImageWriteWithoutFormat;
-	case PhysicalDeviceFeature::ShaderUniformBufferArrayDynamicIndexing: return features.shaderUniformBufferArrayDynamicIndexing;
-	case PhysicalDeviceFeature::ShaderSampledImageArrayDynamicIndexing: return features.shaderSampledImageArrayDynamicIndexing;
-	case PhysicalDeviceFeature::ShaderStorageBufferArrayDynamicIndexing: return features.shaderStorageBufferArrayDynamicIndexing;
-	case PhysicalDeviceFeature::ShaderStorageImageArrayDynamicIndexing: return features.shaderStorageImageArrayDynamicIndexing;
-	case PhysicalDeviceFeature::ShaderClipDistance: return features.shaderClipDistance;
-	case PhysicalDeviceFeature::ShaderCullDistance: return features.shaderCullDistance;
-	case PhysicalDeviceFeature::ShaderFloat64: return features.shaderFloat64;
-	case PhysicalDeviceFeature::ShaderInt64: return features.shaderInt64;
-	case PhysicalDeviceFeature::ShaderInt16: return features.shaderInt16;
-	case PhysicalDeviceFeature::ShaderResourceResidency: return features.shaderResourceResidency;
-	case PhysicalDeviceFeature::ShaderResourceMinLod: return features.shaderResourceMinLod;
-	case PhysicalDeviceFeature::SparseBinding: return features.sparseBinding;
-	case PhysicalDeviceFeature::SparseResidencyBuffer: return features.sparseResidencyBuffer;
-	case PhysicalDeviceFeature::SparseResidencyImage2D: return features.sparseResidencyImage2D;
-	case PhysicalDeviceFeature::SparseResidencyImage3D: return features.sparseResidencyImage3D;
-	case PhysicalDeviceFeature::SparseResidency2Samples: return features.sparseResidency2Samples;
-	case PhysicalDeviceFeature::SparseResidency4Samples: return features.sparseResidency4Samples;
-	case PhysicalDeviceFeature::SparseResidency8Samples: return features.sparseResidency8Samples;
-	case PhysicalDeviceFeature::SparseResidency16Samples: return features.sparseResidency16Samples;
-	case PhysicalDeviceFeature::SparseResidencyAliased: return features.sparseResidencyAliased;
-	case PhysicalDeviceFeature::VariableMultisampleRate: return features.variableMultisampleRate;
-	}
-	return false;
-}
-
-bool PhysicalDevicePreference::isSwapChainSupported(SwapChainSupport const &support, PreferenceSwapChain::Type type) const
-{
-	switch (type)
-	{
-	case PreferenceSwapChain::Type::eHasAnySurfaceFormat: return !support.surfaceFormats.empty();
-	case PreferenceSwapChain::Type::eHasAnyPresentationMode: return !support.presentationModes.empty();
-	}
-	return false;
 }
 
 PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevice const *pDevice) const
@@ -184,8 +112,9 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graph
 	auto features = pDevice->getFeatures();
 	for (auto& prefFeature : this->mFeatures)
 	{
-		if (!scorePreference(prefFeature,
-			doesDeviceIncludeFeatureType(features, prefFeature.feature)
+		if (!scorePreference(
+			prefFeature,
+			PhysicalDeviceProperties::Feature::hasFeature(&features, prefFeature.feature)
 		))
 		{
 			return std::nullopt;
@@ -206,8 +135,9 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graph
 	auto swapChainSupport = pDevice->querySwapChainSupport();
 	for (auto& prefSwapChain : this->mSwapChain)
 	{
-		if (!scorePreference(prefSwapChain,
-			this->isSwapChainSupported(swapChainSupport, prefSwapChain.supportType)
+		if (!scorePreference(
+			prefSwapChain,
+			SwapChainSupportType::hasSupport(&swapChainSupport, prefSwapChain.supportType)
 		))
 		{
 			return std::nullopt;

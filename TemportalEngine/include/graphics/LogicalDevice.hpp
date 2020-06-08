@@ -2,12 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "graphics/QueueFamily.hpp"
-
-#include <optional>
-#include <unordered_map>
-#include <set>
-#include <vector>
+#include "graphics/types.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -32,7 +27,7 @@ public:
 	bool isValid() const;
 	void invalidate();
 
-	std::unordered_map<QueueFamily, vk::Queue> findQueues(std::set<QueueFamily> types) const;
+	std::unordered_map<QueueFamily::Enum, vk::Queue> findQueues(std::set<QueueFamily::Enum> types) const;
 	void waitUntilIdle() const;
 
 	vk::UniqueDevice mDevice; // TODO: Make private

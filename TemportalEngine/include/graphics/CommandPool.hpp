@@ -2,12 +2,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "graphics/QueueFamily.hpp"
+#include "graphics/types.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
 #include "graphics/CommandBuffer.hpp"
 #include "types/integer.h"
 
-#include <vector>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -19,7 +18,7 @@ class CommandPool
 public:
 	CommandPool() = default;
 
-	CommandPool& setQueueFamily(QueueFamily queueType, QueueFamilyGroup const &group);
+	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
 	CommandPool& create(LogicalDevice const *pDevice, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
@@ -29,7 +28,7 @@ public:
 	void resetPool();
 
 private:
-	QueueFamily mQueueFamily;
+	QueueFamily::Enum mQueueFamily;
 	ui32 mIdxQueueFamily;
 
 	LogicalDevice const *mpDevice;

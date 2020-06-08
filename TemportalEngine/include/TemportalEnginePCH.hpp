@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
+#include <optional>
 #include <unordered_map>
 #include <set>
 #include <unordered_set>

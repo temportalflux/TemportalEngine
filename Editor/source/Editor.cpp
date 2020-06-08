@@ -159,13 +159,13 @@ void Editor::initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRende
 {
 	pRenderer->setPhysicalDevicePreference(
 		graphics::PhysicalDevicePreference()
-		.addCriteriaQueueFamily(graphics::QueueFamily::eGraphics)
-		.addCriteriaQueueFamily(graphics::QueueFamily::ePresentation)
+		.addCriteriaQueueFamily(graphics::QueueFamily::Enum::eGraphics)
+		.addCriteriaQueueFamily(graphics::QueueFamily::Enum::ePresentation)
 	);
 	pRenderer->setLogicalDeviceInfo(
 		graphics::LogicalDeviceInfo()
-		.addQueueFamily(graphics::QueueFamily::eGraphics)
-		.addQueueFamily(graphics::QueueFamily::ePresentation)
+		.addQueueFamily(graphics::QueueFamily::Enum::eGraphics)
+		.addQueueFamily(graphics::QueueFamily::Enum::ePresentation)
 		.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
 		.setValidationLayers(engine::Engine::VulkanValidationLayers)
 	);
