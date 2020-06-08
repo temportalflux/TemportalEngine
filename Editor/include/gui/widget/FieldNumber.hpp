@@ -28,6 +28,23 @@ public:
 #undef GuiDataTypeMatch
 	}
 
+	static bool InlineSingle(std::string title, T &value)
+	{
+		auto field = gui::FieldNumber<T, Count>();
+		field[0] = value;
+		auto bChanged = field.render(title);
+		if (bChanged) value = field[0];
+		return bChanged;
+	}
+
+	static bool InlineMultiple(std::string title, std::array<T, Count> &value)
+	{
+		auto field = gui::FieldNumber<T, Count>().value(value);
+		auto bChanged = field.render(title);
+		if (bChanged) value = field.mRaw;
+		return bChanged;
+	}
+
 	FieldNumber<T, Count>& value(std::array<T, Count> all)
 	{
 		this->mRaw = all;

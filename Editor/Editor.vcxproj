@@ -216,6 +216,8 @@
     <ClInclude Include="include\gui\widget\Combo.hpp" />
     <ClInclude Include="include\gui\widget\FieldNumber.hpp" />
     <ClInclude Include="include\gui\widget\FieldText.hpp" />
+    <ClInclude Include="include\gui\widget\List.hpp" />
+    <ClInclude Include="include\gui\widget\Optional.hpp" />
     <ClInclude Include="include\TaskCompileShader.hpp" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />

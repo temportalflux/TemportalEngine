@@ -15,6 +15,14 @@ class FieldText
 
 public:
 
+	static bool Inline(std::string title, std::string &value, f32 width = 0)
+	{
+		auto field = gui::FieldText<32>().string(value);
+		auto bChanged = field.render(title, width);
+		if (bChanged) value = field.string();
+		return bChanged;
+	}
+
 	FieldText& string(std::string content)
 	{
 		this->mRawString.fill('\0'); // fills with end of line '\0'

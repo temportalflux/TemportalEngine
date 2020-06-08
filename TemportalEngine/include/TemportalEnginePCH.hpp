@@ -9,6 +9,7 @@
 #include <array>
 #include <cassert>
 #include <filesystem>
+#include <functional>
 #include <map>
 #include <unordered_map>
 #include <set>

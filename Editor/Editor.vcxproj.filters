@@ -58,6 +58,9 @@
     <Filter Include="Header Files\gui\widget">
       <UniqueIdentifier>{64bd4a9c-4128-413e-8a45-bad37c77a275}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\gui\widget">
+      <UniqueIdentifier>{8e9b46b8-4f51-44ff-bc2c-f70e2d679946}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -216,6 +219,12 @@
       <Filter>Header Files\gui\widget</Filter>
     </ClInclude>
     <ClInclude Include="include\gui\widget\FieldNumber.hpp">
+      <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\widget\List.hpp">
+      <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\widget\Optional.hpp">
       <Filter>Header Files\gui\widget</Filter>
     </ClInclude>
   </ItemGroup>

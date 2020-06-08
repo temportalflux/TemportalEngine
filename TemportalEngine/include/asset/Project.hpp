@@ -36,6 +36,8 @@ private:
 	std::string mName;
 	Version mVersion;
 
+	//graphics::PhysicalDevicePreference mGraphicsDevicePreference;
+
 #pragma region Serialization
 protected:
 	DECLARE_SERIALIZATION_METHOD(write, cereal::JSONOutputArchive, const override);
