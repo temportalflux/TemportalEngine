@@ -101,6 +101,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -117,6 +118,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -135,6 +137,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -155,6 +158,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

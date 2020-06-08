@@ -52,7 +52,9 @@ ShaderModule& ShaderModule::setBinary(std::vector<ui32> binary)
 ShaderModule& ShaderModule::setMetadata(graphics::ShaderMetadata metadata)
 {
 	this->mMetadata = metadata;
+#ifndef NDEBUG
 	uSize totalByteCount = 0;
+#endif
 	for (auto& attribute : metadata.inputAttributes)
 	{
 		this->mAttributes.insert(std::make_pair(
@@ -62,10 +64,14 @@ ShaderModule& ShaderModule::setMetadata(graphics::ShaderMetadata metadata)
 			.setLocation(attribute.slot)
 			.setFormat((vk::Format)attribute.format)
 		));
+#ifndef NDEBUG
 		this->mAttributeByteCount.insert(std::make_pair(attribute.propertyName, attribute.byteCount));
 		totalByteCount += attribute.byteCount;
+#endif
 	}
+#ifndef NDEBUG
 	this->mBinding.setStride((ui32)totalByteCount);
+#endif
 	return *this;
 }
 
@@ -73,6 +79,7 @@ ShaderModule& ShaderModule::setVertexDescription(VertexDescription desc)
 {
 	// ByteCount/Size of incoming description must be the same as the total byte count & stride set forth by the metadata/binary compilation
 	assert(desc.size == this->mBinding.stride);
+	this->mBinding.setStride(desc.size);
 	for (const auto& [propertyName, propDesc] : desc.attributes)
 	{
 		// Every provided description must already exist in the metadata from compilation

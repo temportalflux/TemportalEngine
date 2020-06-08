@@ -56,6 +56,19 @@ public:
 			}
 			return bMatches || !bRequired;
 		}
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+
+		}
+
 	};
 
 public:
@@ -68,6 +81,28 @@ public:
 	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score = std::nullopt);
 	
 	std::optional<ui32> scoreDevice(graphics::PhysicalDevice const *pDevice);
+
+	template <typename Archive>
+	void save(Archive &archive) const
+	{
+		ui32 len;
+
+		//len = (ui32)this->mDeviceType.size();
+		//archive(len);
+		//for (auto& pref : this->mDeviceType) archive(pref);
+
+	}
+
+	template <typename Archive>
+	void load(Archive &archive)
+	{
+		ui32 len;
+
+		//archive(len);
+		//this->mDeviceType.resize(len);
+		//for (auto& pref : this->mDeviceType) archive(pref);
+
+	}
 
 private:
 	std::vector<Preference<PhysicalDeviceProperties::Type::Enum>> mDeviceType;

@@ -47,7 +47,9 @@ private:
 	std::vector<ui32> mBinary;
 	graphics::ShaderMetadata mMetadata;
 	std::string mMainOpName;
+#ifndef NDEBUG
 	std::unordered_map<std::string, uSize> mAttributeByteCount;
+#endif
 
 	vk::UniqueShaderModule mInternal;
 	vk::VertexInputBindingDescription mBinding;

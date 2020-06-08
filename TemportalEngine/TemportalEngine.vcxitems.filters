@@ -40,6 +40,9 @@
     <Filter Include="utility">
       <UniqueIdentifier>{750ab6e5-5873-4d05-9993-5816addaf57e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cereal">
+      <UniqueIdentifier>{ea5d7b31-cdd4-47e3-8a3b-c3e2e9522bee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -422,6 +425,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp">
+      <Filter>cereal</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -78,6 +78,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
