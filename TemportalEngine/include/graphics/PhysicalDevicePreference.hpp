@@ -39,7 +39,7 @@ public:
 
 	struct PreferenceDeviceType : Preference
 	{
-		vk::PhysicalDeviceType type;
+		PhysicalDeviceProperties::Type::Enum type;
 
 		bool operator<(PreferenceDeviceType const &other) const
 		{
@@ -49,7 +49,7 @@ public:
 
 	struct PreferenceExtension : Preference
 	{
-		std::string extensionName;
+		PhysicalDeviceProperties::Extension::Type extensionName;
 
 		bool operator<(PreferenceExtension const &other) const
 		{
@@ -90,8 +90,8 @@ public:
 public:
 	PhysicalDevicePreference() = default;
 
-	PhysicalDevicePreference& addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaDeviceExtension(std::string extensionName, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceType(PhysicalDeviceProperties::Type::Enum deviceType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceExtension(PhysicalDeviceProperties::Extension::Type extensionName, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score = std::nullopt);

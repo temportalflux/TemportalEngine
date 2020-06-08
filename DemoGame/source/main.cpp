@@ -164,17 +164,17 @@ int main(int argc, char *argv[])
 		// Initialize settings
 		renderer.setPhysicalDevicePreference(
 			graphics::PhysicalDevicePreference()
-			.addCriteriaDeviceType(vk::PhysicalDeviceType::eDiscreteGpu, 128)
+			.addCriteriaDeviceType(graphics::PhysicalDeviceProperties::Type::Enum::eDiscreteGpu, 128)
 			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::eGraphics)
 			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::ePresentation)
 			.addCriteriaDeviceFeature(graphics::PhysicalDeviceProperties::Feature::Enum::GeometryShader)
-			.addCriteriaDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+			.addCriteriaDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain)
 			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnySurfaceFormat)
 			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnyPresentationMode)
 		);
 		renderer.setLogicalDeviceInfo(
 			graphics::LogicalDeviceInfo()
-			.addDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+			.addDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain.c_str())
 			.addQueueFamily(graphics::QueueFamily::Enum::eGraphics)
 			.addQueueFamily(graphics::QueueFamily::Enum::ePresentation)
 			.setValidationLayers(engine::Engine::VulkanValidationLayers)

@@ -94,6 +94,12 @@ struct PhysicalDeviceProperties
 		static std::string to_string(Enum value);
 		static bool hasFeature(vk::PhysicalDeviceFeatures *features, Enum type);
 	};
+	struct Extension
+	{
+		typedef std::string Type;
+		static Type SwapChain;
+		static Type ALL[1];
+	};
 };
 
 struct QueueFamily

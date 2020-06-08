@@ -6,13 +6,13 @@
 
 using namespace graphics;
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(vk::PhysicalDeviceType deviceType, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(PhysicalDeviceProperties::Type::Enum deviceType, IndividualScore score)
 {
 	mDeviceType.insert({ score, deviceType });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(std::string extensionName, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(PhysicalDeviceProperties::Extension::Type extensionName, IndividualScore score)
 {
 	mDeviceExtensions.insert({ score, extensionName });
 	return *this;
@@ -90,7 +90,7 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graph
 	for (auto& prefDeviceType : this->mDeviceType)
 	{
 		if (!scorePreference(prefDeviceType,
-			deviceProperties.deviceType == prefDeviceType.type
+			deviceProperties.deviceType == (vk::PhysicalDeviceType)prefDeviceType.type
 		))
 		{
 			return std::nullopt;

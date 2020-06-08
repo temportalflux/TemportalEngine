@@ -210,3 +210,9 @@ bool SwapChainSupportType::hasSupport(SwapChainSupport *support, Enum type)
 	}
 	return false;
 }
+
+PhysicalDeviceProperties::Extension::Type PhysicalDeviceProperties::Extension::SwapChain = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+PhysicalDeviceProperties::Extension::Type PhysicalDeviceProperties::Extension::ALL[1] = {
+	Extension::SwapChain,
+};
+
