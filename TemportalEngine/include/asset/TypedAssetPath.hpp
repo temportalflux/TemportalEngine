@@ -14,9 +14,9 @@ class TypedAssetPath
 public:
 	TypedAssetPath(AssetPath path) : mPath(path) {}
 
-	std::shared_ptr<TAsset> load(EAssetSerialization serialization) const
+	std::shared_ptr<TAsset> load(EAssetSerialization serialization, bool bWasScanned=true) const
 	{
-		return AssetManager::get()->readFromDisk<TAsset>(this->mPath.toAbsolutePath(), serialization);
+		return AssetManager::get()->readFromDisk<TAsset>(this->mPath.toAbsolutePath(), serialization, bWasScanned);
 	}
 
 	template <typename Archive>

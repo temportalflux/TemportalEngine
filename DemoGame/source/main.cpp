@@ -105,16 +105,11 @@ int main(int argc, char *argv[])
 		}
 
 		{
-			auto assetManager = pEngine->getAssetManager();
-			auto asset = assetManager->readAssetFromDisk(
-				std::filesystem::absolute("DemoGame.te-project"),
-				asset::EAssetSerialization::Binary,
-				false
-			);
-			asset::ProjectPtrStrong project = std::dynamic_pointer_cast<asset::Project>(asset);
-			assert(project != nullptr);
+			auto project = asset::TypedAssetPath<asset::Project>(
+				asset::AssetPath("project", "DemoGame.te-project", true)
+			).load(asset::EAssetSerialization::Binary, false);
 			pEngine->setProject(project);
-			assetManager->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
+			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 		}
 
 		//initializeNetwork(pEngine);
