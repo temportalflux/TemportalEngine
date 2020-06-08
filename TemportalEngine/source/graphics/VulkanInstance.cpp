@@ -146,7 +146,7 @@ void VulkanInstance::destroy()
 	mInstanceCreated = false;
 }
 
-std::optional<graphics::PhysicalDevice> VulkanInstance::pickPhysicalDevice(PhysicalDevicePreference const & preference, Surface const *pSurface) const
+std::optional<graphics::PhysicalDevice> VulkanInstance::pickPhysicalDevice(PhysicalDevicePreference & preference, Surface const *pSurface) const
 {
 	assert(isValid());
 

@@ -2,11 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "graphics/QueueFamilyGroup.hpp"
-#include "graphics/SwapChainSupport.hpp"
 #include "graphics/types.hpp"
-
-#include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class PhysicalDevice;
@@ -19,71 +15,46 @@ class PhysicalDevicePreference
 {
 public:
 	typedef std::optional<ui8> IndividualScore;
-	typedef std::optional<ui32> TotalScore;
 
+	template <typename T>
 	struct Preference
 	{
 		/**
 			How important this preferences is compared to others.
 			If this value is `std::nullopt`, then the preferences is required
-			and any gpus/physical devices which do not meet this preferences
+			and any GPUs/physical devices which do not meet this preferences
 			are ignored.
 		*/
 		IndividualScore score;
+		T value;
 
-		bool isScoreLessThan(Preference const &other) const
+		bool isLessRequired(Preference<T> const &other) const
 		{
 			return !this->score.has_value() && other.score.has_value();
 		}
-	};
 
-	struct PreferenceDeviceType : Preference
-	{
-		PhysicalDeviceProperties::Type::Enum type;
-
-		bool operator<(PreferenceDeviceType const &other) const
+		bool operator<(Preference<T> const &other) const
 		{
-			return this->isScoreLessThan(other) || std::less()(this->type, other.type);
+			return this->isLessRequired(other) || std::less()(this->value, other.value);
 		}
-	};
 
-	struct PreferenceExtension : Preference
-	{
-		PhysicalDeviceProperties::Extension::Type extensionName;
-
-		bool operator<(PreferenceExtension const &other) const
+		bool doesCriteriaMatch(T const other) const
 		{
-			return this->isScoreLessThan(other) || std::less()(this->extensionName, other.extensionName);
+			return this->value == other;
 		}
-	};
 
-	struct PreferenceFeature : Preference
-	{
-		graphics::PhysicalDeviceProperties::Feature::Enum feature;
-
-		bool operator<(PreferenceFeature const &other) const
+		/**
+		 * Returns true only if the preference matches `other` or the preference is not required.
+		 * `totalScore` will be added to by `score` if and only if the preference matches `other`.
+		 */
+		bool scoreAgainst(bool bMatches, ui32 &totalScore)
 		{
-			return this->isScoreLessThan(other) || std::less()(this->feature, other.feature);
-		}
-	};
-
-	struct PreferenceQueueFamily : Preference
-	{
-		QueueFamily::Enum queueFamily;
-
-		bool operator<(PreferenceQueueFamily const &other) const
-		{
-			return this->isScoreLessThan(other) || std::less()(this->queueFamily, other.queueFamily);
-		}
-	};
-
-	struct PreferenceSwapChain : Preference
-	{
-		SwapChainSupportType::Enum supportType;
-
-		bool operator<(PreferenceSwapChain const &other) const
-		{
-			return this->isScoreLessThan(other) || std::less()(this->supportType, other.supportType);
+			auto bRequired = !this->score.has_value();
+			if (bMatches && !bRequired)
+			{
+				totalScore += this->score.value();
+			}
+			return bMatches || !bRequired;
 		}
 	};
 
@@ -96,14 +67,14 @@ public:
 	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score = std::nullopt);
 	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score = std::nullopt);
 	
-	TotalScore scoreDevice(graphics::PhysicalDevice const *pDevice) const;
+	std::optional<ui32> scoreDevice(graphics::PhysicalDevice const *pDevice);
 
 private:
-	std::set<PreferenceDeviceType> mDeviceType;
-	std::set<PreferenceExtension> mDeviceExtensions;
-	std::set<PreferenceFeature> mFeatures;
-	std::set<PreferenceQueueFamily> mQueueFamilies;
-	std::set<PreferenceSwapChain> mSwapChain;
+	std::vector<Preference<PhysicalDeviceProperties::Type::Enum>> mDeviceType;
+	std::vector<Preference<PhysicalDeviceProperties::Extension::Type>> mDeviceExtensions;
+	std::vector<Preference<graphics::PhysicalDeviceProperties::Feature::Enum>> mFeatures;
+	std::vector<Preference<QueueFamily::Enum>> mQueueFamilies;
+	std::vector<Preference<SwapChainSupportType::Enum>> mSwapChain;
 
 };
 

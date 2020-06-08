@@ -1,6 +1,8 @@
 #include "graphics/PhysicalDevicePreference.hpp"
 
 #include "graphics/PhysicalDevice.hpp"
+#include "graphics/SwapChainSupport.hpp"
+#include "graphics/QueueFamilyGroup.hpp"
 
 #include <unordered_set>
 
@@ -8,92 +10,59 @@ using namespace graphics;
 
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(PhysicalDeviceProperties::Type::Enum deviceType, IndividualScore score)
 {
-	mDeviceType.insert({ score, deviceType });
+	mDeviceType.push_back({ score, deviceType });
 	return *this;
 }
 
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(PhysicalDeviceProperties::Extension::Type extensionName, IndividualScore score)
 {
-	mDeviceExtensions.insert({ score, extensionName });
+	mDeviceExtensions.push_back({ score, extensionName });
 	return *this;
 }
 
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score)
 {
-	mFeatures.insert({ score, feature });
+	mFeatures.push_back({ score, feature });
 	return *this;
 }
 
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score)
 {
-	mQueueFamilies.insert({ score, queueFamily });
+	mQueueFamilies.push_back({ score, queueFamily });
 	return *this;
 }
 
 PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score)
 {
-	mSwapChain.insert({ score, optionType });
+	mSwapChain.push_back({ score, optionType });
 	return *this;
 }
 
-QueueFamilyGroup findQueueFamilies(vk::PhysicalDevice const &device, vk::SurfaceKHR const &surface)
+std::optional<ui32> PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevice const *pDevice)
 {
-	auto group = QueueFamilyGroup();
-	auto familyProps = device.getQueueFamilyProperties();
-	ui32 idxQueue = 0;
-	for (auto& queueFamily : familyProps)
-	{
-		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-		{
-			group.idxGraphicsQueue = idxQueue;
-		}
+	std::sort(this->mDeviceType.begin(), this->mDeviceType.end());
+	std::sort(this->mDeviceExtensions.begin(), this->mDeviceExtensions.end());
+	std::sort(this->mFeatures.begin(), this->mFeatures.end());
+	std::sort(this->mQueueFamilies.begin(), this->mQueueFamilies.end());
+	std::sort(this->mSwapChain.begin(), this->mSwapChain.end());
 
-		if (device.getSurfaceSupportKHR(idxQueue, surface))
-		{
-			group.idxPresentationQueue = idxQueue;
-		}
-
-		if (group.hasFoundAllQueues()) break;
-		idxQueue++;
-	}
-	return group;
-}
-
-PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevice const *pDevice) const
-{
 	// Defines if the scoring should examine all preferences, even if required ones have not been found (prevents returning early).
 	bool bExamineAllPreferences = false;
 	// True if all required preferences have been found.
 	bool bFoundAllReqiuredPreferences = true;
 	// The total score of the device.
 	ui32 score = 0;
-
-	// Updates the `score` and `bFoundAllReqiuredPreferences` based on if a preference is supported.
-	// Returns `bExamineAllPreferences` if the preference is required and is not supported.
-	// Otherwise returns true (required and supported or regardless if it is supported or not).
-	auto scorePreference = [&](Preference pref, bool bIsSupported) {
-		bool bIsRequired = !pref.score.has_value();
-		if (bIsRequired && !bIsSupported)
-		{
-			// Extension is required and not found. Mark device as not applicable and early out if desired.
-			bFoundAllReqiuredPreferences = false;
-			return bExamineAllPreferences;
-		}
-		else if (!bIsRequired && bIsSupported)
-		{
-			score += pref.score.value();
-		}
-		return true;
-	};
-
+			
 	auto deviceProperties = pDevice->getProperties();
 	for (auto& prefDeviceType : this->mDeviceType)
 	{
-		if (!scorePreference(prefDeviceType,
-			deviceProperties.deviceType == (vk::PhysicalDeviceType)prefDeviceType.type
+		if (!prefDeviceType.scoreAgainst(
+			prefDeviceType.doesCriteriaMatch((PhysicalDeviceProperties::Type::Enum)deviceProperties.deviceType),
+			score
 		))
 		{
-			return std::nullopt;
+			bFoundAllReqiuredPreferences = false;
+			if (!bExamineAllPreferences) return std::nullopt;
 		}
 	}
 
@@ -101,46 +70,40 @@ PhysicalDevicePreference::TotalScore PhysicalDevicePreference::scoreDevice(graph
 	auto supportedExtensions = pDevice->getSupportedExtensionNames();
 	for (auto& prefExtension : mDeviceExtensions)
 	{
-		if (!scorePreference(prefExtension,
-			supportedExtensions.count(prefExtension.extensionName) != 0
-		))
+		if (!prefExtension.scoreAgainst(supportedExtensions.count(prefExtension.value) != 0, score))
 		{
-			return std::nullopt;
+			bFoundAllReqiuredPreferences = false;
+			if (!bExamineAllPreferences) return std::nullopt;
 		}
 	}
 
 	auto features = pDevice->getFeatures();
 	for (auto& prefFeature : this->mFeatures)
 	{
-		if (!scorePreference(
-			prefFeature,
-			PhysicalDeviceProperties::Feature::hasFeature(&features, prefFeature.feature)
-		))
+		if (!prefFeature.scoreAgainst(PhysicalDeviceProperties::Feature::hasFeature(&features, prefFeature.value), score))
 		{
-			return std::nullopt;
+			bFoundAllReqiuredPreferences = false;
+			if (!bExamineAllPreferences) return std::nullopt;
 		}
 	}
 
 	auto supportedQueueFamilyGroup = pDevice->queryQueueFamilyGroup();
 	for (auto& prefQueueFamily : this->mQueueFamilies)
 	{
-		if (!scorePreference(prefQueueFamily,
-			supportedQueueFamilyGroup.hasQueueFamily(prefQueueFamily.queueFamily)
-		))
+		if (!prefQueueFamily.scoreAgainst(supportedQueueFamilyGroup.hasQueueFamily(prefQueueFamily.value), score))
 		{
-			return std::nullopt;
+			bFoundAllReqiuredPreferences = false;
+			if (!bExamineAllPreferences) return std::nullopt;
 		}
 	}
 
 	auto swapChainSupport = pDevice->querySwapChainSupport();
 	for (auto& prefSwapChain : this->mSwapChain)
 	{
-		if (!scorePreference(
-			prefSwapChain,
-			SwapChainSupportType::hasSupport(&swapChainSupport, prefSwapChain.supportType)
-		))
+		if (!prefSwapChain.scoreAgainst(SwapChainSupportType::hasSupport(&swapChainSupport, prefSwapChain.value), score))
 		{
-			return std::nullopt;
+			bFoundAllReqiuredPreferences = false;
+			if (!bExamineAllPreferences) return std::nullopt;
 		}
 	}
 

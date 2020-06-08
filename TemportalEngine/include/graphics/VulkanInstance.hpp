@@ -51,8 +51,7 @@ public:
 	*/
 	void destroy();
 
-	std::optional<graphics::PhysicalDevice> pickPhysicalDevice(PhysicalDevicePreference const &preference, Surface const *pSurface) const;
-
+	std::optional<graphics::PhysicalDevice> pickPhysicalDevice(PhysicalDevicePreference &preference, Surface const *pSurface) const;
 
 private:
 	logging::Logger mLogger;
