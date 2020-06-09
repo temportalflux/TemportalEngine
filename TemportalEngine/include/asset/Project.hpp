@@ -6,8 +6,9 @@
 #include "graphics/PhysicalDevicePreference.hpp"
 #include "graphics/LogicalDeviceInfo.hpp"
 
+FORWARD_DEF(NS_ASSET, class Shader)
+
 NS_ASSET
-class Shader;
 
 #define AssetType_Project "project"
 
@@ -48,8 +49,9 @@ private:
 
 	graphics::PhysicalDevicePreference mGraphicsDevicePreference;
 
-	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor when one is available.
-	//TypedAssetPath<asset::Shader> mVertexShader;
+	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor/pipeline asset when one is available.
+	TypedAssetPath<asset::Shader> mVertexShader;
+	TypedAssetPath<asset::Shader> mFragmentShader;
 
 #pragma region Serialization
 protected:
@@ -71,6 +73,8 @@ protected:
 		archive(
 			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
 		);
+		this->mVertexShader.write("vertShader", archive);
+		this->mFragmentShader.write("fragShader", archive);
 	}
 
 	template <typename Archive>
@@ -86,6 +90,8 @@ protected:
 		archive(
 			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
 		);
+		this->mVertexShader.read("vertShader", archive);
+		this->mFragmentShader.read("fragShader", archive);
 	}
 #pragma endregion
 

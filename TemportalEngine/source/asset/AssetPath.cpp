@@ -10,6 +10,11 @@ AssetPath::AssetPath(AssetType type, std::filesystem::path path, bool bIsAbsolut
 	, mbIsAbsolute(bIsAbsolute)
 {}
 
+bool AssetPath::isValid() const
+{
+	return !this->mType.empty() && std::filesystem::exists(this->toAbsolutePath());
+}
+
 std::string AssetPath::toString() const
 {
 	return this->mType + ":" + this->mPath.string();

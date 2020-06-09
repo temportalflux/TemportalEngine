@@ -53,5 +53,7 @@
 				"value": 1
 			}
 		]
-	}
+	},
+	"vertShader": "",
+	"fragShader": ""
 }

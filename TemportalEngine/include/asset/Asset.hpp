@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/AssetType.hpp"
+#include "asset/TypedAssetPath.hpp"
 #include "asset/AssetHelper.hpp"
 
 #include <cereal/access.hpp>
