@@ -185,6 +185,7 @@
     <ClCompile Include="source\gui\asset\EditorProject.cpp" />
     <ClCompile Include="source\gui\asset\EditorShader.cpp" />
     <ClCompile Include="source\gui\asset\EditorSettings.cpp" />
+    <ClCompile Include="source\gui\graphics\PropertyGpuPreference.cpp" />
     <ClCompile Include="source\gui\IGui.cpp" />
     <ClCompile Include="source\gui\Log.cpp" />
     <ClCompile Include="source\gui\MainDockspace.cpp" />
@@ -210,6 +211,7 @@
     <ClInclude Include="include\gui\asset\EditorProject.hpp" />
     <ClInclude Include="include\gui\asset\EditorShader.hpp" />
     <ClInclude Include="include\gui\asset\EditorSettings.hpp" />
+    <ClInclude Include="include\gui\graphics\PropertyGpuPreference.hpp" />
     <ClInclude Include="include\gui\IGui.hpp" />
     <ClInclude Include="include\gui\Log.hpp" />
     <ClInclude Include="include\gui\MainDockspace.hpp" />

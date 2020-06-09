@@ -44,25 +44,32 @@ public:
 		return *this;
 	}
 
-	bool render(std::string id, std::string title, bool bItemsCollapse)
+	static bool Inline(
+		char const* id, char const* title, bool bItemsCollapse,
+		std::vector<TItem> &items,
+		ItemRenderer renderValue, std::optional<ItemRenderer> renderKey = std::nullopt
+	)
 	{
-		assert(this->mValueRenderer);
+		bool bHasChanged = false;
 
-		
 		const auto bShowContent = ImGui::TreeNodeEx(
-			id.c_str(), ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_FramePadding,
-			"%s (%i items)", title.c_str(), this->mItems.size()
+			id, ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_FramePadding,
+			"%s (%i items)", title, items.size()
 		);
-		
+
 		ImGui::SameLine();
-		this->renderPostHeader();
-		
+		if (ImGui::Button("Add"))
+		{
+			items.push_back(TItem());
+			bHasChanged = true;
+		}
+
 		if (bShowContent)
 		{
-			auto iterToRemove = this->mItems.end();
-			for (auto it = this->mItems.begin(); it != this->mItems.end(); ++it)
+			auto iterToRemove = items.end();
+			for (auto it = items.begin(); it != items.end(); ++it)
 			{
-				ui64 idx = it - this->mItems.begin();
+				ui64 idx = it - items.begin();
 				ImGui::PushID((ui32)idx);
 				if (bItemsCollapse)
 				{
@@ -71,10 +78,10 @@ public:
 						ImGuiTreeNodeFlags_::ImGuiTreeNodeFlags_FramePadding,
 						""
 					);
-					if (this->mKeyRenderer)
+					if (renderKey)
 					{
 						ImGui::SameLine();
-						this->mKeyRenderer(*it);
+						(*renderKey)(*it);
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Remove"))
@@ -83,23 +90,23 @@ public:
 					}
 					if (bShowItemContent)
 					{
-						this->mValueRenderer(*it);
+						renderValue(*it);
 						ImGui::TreePop();
 					}
 				}
 				else
 				{
-					if (this->mKeyRenderer)
+					if (renderKey)
 					{
-						this->mKeyRenderer(*it);
+						(*renderKey)(*it);
 						ImGui::SameLine();
 						if (ImGui::Button("Remove"))
 						{
 							iterToRemove = it;
 						}
 					}
-					this->mValueRenderer(*it);
-					if (!this->mKeyRenderer)
+					renderValue(*it);
+					if (!renderKey)
 					{
 						ImGui::SameLine();
 						if (ImGui::Button("Remove"))
@@ -112,26 +119,24 @@ public:
 			}
 			ImGui::TreePop();
 
-			if (iterToRemove != this->mItems.end())
+			if (iterToRemove != items.end())
 			{
-				this->mItems.erase(iterToRemove);
+				items.erase(iterToRemove);
+				bHasChanged = true;
 			}
 		}
-		return false;
+		return bHasChanged;
+	}
+
+	bool render(std::string id, std::string title, bool bItemsCollapse)
+	{
+		return Inline(id.c_str(), title.c_str(), bItemsCollapse, this->mItems, this->mValueRenderer, this->mKeyRenderer);
 	}
 
 private:
 	std::vector<TItem> mItems;
 	ItemRenderer mKeyRenderer;
 	ItemRenderer mValueRenderer;
-
-	void renderPostHeader()
-	{
-		if (ImGui::Button("Add"))
-		{
-			this->mItems.push_back(TItem());
-		}
-	}
 
 };
 

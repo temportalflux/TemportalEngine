@@ -82,7 +82,7 @@ bool AssetEditor::hasCompiledBinary() const
 
 bool AssetEditor::canCompileAsset()
 {
-	return !this->hasCompiledBinary() || this->isAssetDirty();
+	return true;
 }
 
 void AssetEditor::compileAsset()

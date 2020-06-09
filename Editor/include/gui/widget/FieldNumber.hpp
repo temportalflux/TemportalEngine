@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include <imgui.h>
+
 NS_GUI
 
 // T = f32/i32/ui32

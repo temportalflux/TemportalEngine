@@ -61,6 +61,12 @@
     <Filter Include="Source Files\gui\widget">
       <UniqueIdentifier>{8e9b46b8-4f51-44ff-bc2c-f70e2d679946}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\gui\graphics">
+      <UniqueIdentifier>{4e7cc461-f5f1-488f-ae40-cd08bb524fd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\gui\graphics">
+      <UniqueIdentifier>{2e628fcf-1f66-4bb6-9c58-724b31ee686e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp">
@@ -137,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="source\asset\Settings.cpp">
       <Filter>Source Files\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\graphics\PropertyGpuPreference.cpp">
+      <Filter>Source Files\gui\graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -226,6 +235,9 @@
     </ClInclude>
     <ClInclude Include="include\gui\widget\Optional.hpp">
       <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\graphics\PropertyGpuPreference.hpp">
+      <Filter>Header Files\gui\graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

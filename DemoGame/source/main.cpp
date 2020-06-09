@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 
 		{
 			auto project = asset::TypedAssetPath<asset::Project>(
-				asset::AssetPath("project", "DemoGame.te-project", true)
+				asset::AssetPath("project", std::filesystem::absolute("DemoGame.te-project"), true)
 			).load(asset::EAssetSerialization::Binary, false);
 			pEngine->setProject(project);
 			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
@@ -157,15 +157,7 @@ int main(int argc, char *argv[])
 		auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
 
 		// Initialize settings
-		renderer.setPhysicalDevicePreference(
-			graphics::PhysicalDevicePreference()
-			.addCriteriaDeviceType(graphics::PhysicalDeviceProperties::Type::Enum::eDiscreteGpu, 128)
-			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::eGraphics)
-			.addCriteriaQueueFamily(graphics::QueueFamily::Enum::ePresentation)
-			.addCriteriaDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain)
-			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnySurfaceFormat)
-			.addCriteriaSwapChain(graphics::SwapChainSupportType::Enum::eHasAnyPresentationMode)
-		);
+		renderer.setPhysicalDevicePreference(pEngine->getProject()->getPhysicalDevicePreference());
 		renderer.setLogicalDeviceInfo(
 			graphics::LogicalDeviceInfo()
 			.addDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain.c_str())

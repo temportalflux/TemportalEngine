@@ -12,6 +12,7 @@ using namespace gui;
 // Macros for the bits each field of the project asset correspond to in the dirty flags
 #define Bit_Name 1 << 0
 #define Bit_Version 1 << 1
+#define Bit_Graphics_GPUPrefs 1 << 2
 
 std::shared_ptr<AssetEditor> EditorProject::create(std::shared_ptr<memory::MemoryChunk> mem)
 {
@@ -24,28 +25,18 @@ void EditorProject::setAsset(asset::AssetPtrStrong assetGeneric)
 
 	auto asset = this->get<asset::Project>();
 
-	this->mFieldName.string(asset->getName());
-
-	this->mSavedVersion = asset->getVersion();
-	this->mFieldVersion[0] = this->mSavedVersion.unpacked.major;
-	this->mFieldVersion[1] = this->mSavedVersion.unpacked.minor;
-	this->mFieldVersion[2] = (ui8)this->mSavedVersion.unpacked.patch;
-
+	// General
 	{
-		this->mListIntegerTest.setValueRenderer(std::bind(&EditorProject::renderIntegerTestItem, this, std::placeholders::_1));
-		auto items = std::vector<ui32>({
-			4, 2, 5
-		});
-		this->mListIntegerTest.value(items);
+		this->mFieldName.string(asset->getName());
+
+		this->mSavedVersion = asset->getVersion();
+		this->mFieldVersion[0] = this->mSavedVersion.unpacked.major;
+		this->mFieldVersion[1] = this->mSavedVersion.unpacked.minor;
+		this->mFieldVersion[2] = (ui8)this->mSavedVersion.unpacked.patch;
 	}
+	// Graphics
 	{
-		this->mListMapTest.setKeyRenderer(std::bind(&EditorProject::renderMapTestKey, this, std::placeholders::_1));
-		this->mListMapTest.setValueRenderer(std::bind(&EditorProject::renderMapTestValue, this, std::placeholders::_1));
-		auto items = std::map<std::string, std::optional<ui32>>({
-			{ "t1", std::nullopt },
-			{ "t2", 42 }
-		});
-		this->mListMapTest.value(items);
+		this->mGpuPreference = gui::PropertyGpuPreference(asset->getPhysicalDevicePreference());
 	}
 
 }
@@ -73,14 +64,13 @@ void EditorProject::renderContent()
 		this->markAssetDirty(Bit_Version, this->mSavedVersion.packed != asset->getVersion().packed);
 	}
 
-	if (this->mListIntegerTest.render("ITL", "Integer Test List", /*bItemsCollapse*/ false))
+	if (ImGui::TreeNode("Graphics"))
 	{
-
-	}
-
-	if (this->mListMapTest.render("MTL", "Map Test List", /*bItemsCollapse*/ true))
-	{
-
+		if (this->mGpuPreference.render("GPU Preferences"))
+		{
+			this->markAssetDirty(Bit_Graphics_GPUPrefs);
+		}
+		ImGui::TreePop();
 	}
 }
 
@@ -96,7 +86,7 @@ bool EditorProject::renderMapTestKey(std::pair<std::string, std::optional<ui32>>
 
 bool EditorProject::renderMapTestValue(std::pair<std::string, std::optional<ui32>> &item)
 {
-	return gui::Optional<ui32>::Inline("##value", item.second, "Required", false, [](ui32 &value) {
+	return gui::Optional<ui32>::Inline(item.second, "Required", false, [](ui32 &value) {
 		ImGui::SameLine();
 		return gui::FieldNumber<ui32, 1>::InlineSingle("##value", value);
 	});
@@ -107,5 +97,6 @@ void EditorProject::saveAsset()
 	auto asset = this->get<asset::Project>();
 	asset->setName(this->mFieldName.string());
 	asset->setVersion(this->mSavedVersion);
+	asset->setPhysicalDevicePreference(this->mGpuPreference.value());
 	AssetEditor::saveAsset();
 }

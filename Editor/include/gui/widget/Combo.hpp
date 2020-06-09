@@ -13,7 +13,7 @@ class Combo
 public:
 	typedef std::vector<T> OptionsList;
 	typedef std::function<std::string(T)> ToStringFunctor;
-	typedef std::function<i32(T)> ToIdFunctor;
+	typedef std::function<void(T)> PushIdFunctor;
 
 	Combo<T>& setOptions(OptionsList options)
 	{
@@ -32,7 +32,7 @@ public:
 		return this->mSelected;
 	}
 
-	Combo<T>& setCallbacks(ToStringFunctor to_string, ToIdFunctor to_id)
+	Combo<T>& setCallbacks(ToStringFunctor to_string, PushIdFunctor to_id)
 	{
 		this->mfToString = to_string;
 		this->mfToId = to_id;
@@ -41,17 +41,22 @@ public:
 
 	bool render(std::string title)
 	{
+		return Inline(title.c_str(), this->mOptions, this->mSelected, this->mfToString, this->mfToId);
+	}
+
+	static bool Inline(const char* titleId, OptionsList const &options, T &selected, ToStringFunctor toString, PushIdFunctor pushId)
+	{
 		bool bHasChanged = false;
-		if (ImGui::BeginCombo(title.c_str(), this->mfToString(this->mSelected).c_str(), ImGuiComboFlags_None))
+		if (ImGui::BeginCombo(titleId, toString(selected).c_str(), ImGuiComboFlags_None))
 		{
-			for (auto& option : this->mOptions)
+			for (const auto& option : options)
 			{
-				bool bIsSelected = option == this->mSelected;
-				auto optionString = this->mfToString(option);
-				ImGui::PushID(this->mfToId(option));
+				bool bIsSelected = option == selected;
+				auto optionString = toString(option);
+				pushId(option);
 				if (ImGui::Selectable(optionString.c_str(), bIsSelected))
 				{
-					this->mSelected = option;
+					selected = option;
 					bHasChanged = true;
 				}
 				if (bIsSelected) ImGui::SetItemDefaultFocus();
@@ -66,7 +71,7 @@ private:
 	OptionsList mOptions;
 	T mSelected;
 	ToStringFunctor mfToString;
-	ToIdFunctor mfToId;
+	PushIdFunctor mfToId;
 
 };
 

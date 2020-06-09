@@ -42,7 +42,7 @@ void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type
 	case EAssetSerialization::Json:
 	{
 		std::ofstream os(filePath);
-		cereal::JSONOutputArchive archive(os);
+		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
 		this->write(archive);
 		return;
 	}

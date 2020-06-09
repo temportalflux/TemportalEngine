@@ -3,6 +3,7 @@
 #include "asset/Asset.hpp"
 
 #include "version.h"
+#include "graphics/PhysicalDevicePreference.hpp"
 
 NS_ASSET
 
@@ -23,20 +24,25 @@ public:
 	Project(std::filesystem::path path);
 	Project(std::string name, Version version);
 
+	std::filesystem::path getAbsoluteDirectoryPath() const;
+	std::filesystem::path getAssetDirectory() const;
+	
+	// General
 	std::string getName() const;
 	void setName(std::string value);
 	Version getVersion() const;
 	void setVersion(Version value);
 	std::string getDisplayName() const;
-
-	std::filesystem::path getAbsoluteDirectoryPath() const;
-	std::filesystem::path getAssetDirectory() const;
+	
+	// Graphics
+	graphics::PhysicalDevicePreference getPhysicalDevicePreference() const;
+	void setPhysicalDevicePreference(graphics::PhysicalDevicePreference const &prefs);
 
 private:
 	std::string mName;
 	Version mVersion;
 
-	//graphics::PhysicalDevicePreference mGraphicsDevicePreference;
+	graphics::PhysicalDevicePreference mGraphicsDevicePreference;
 
 #pragma region Serialization
 protected:
@@ -49,9 +55,14 @@ protected:
 	void serialize(Archive &archive) const
 	{
 		Asset::serialize(archive);
+		// General
 		archive(
 			cereal::make_nvp("name", this->mName),
 			cereal::make_nvp("version", this->mVersion)
+		);
+		// Graphics
+		archive(
+			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
 		);
 	}
 
@@ -59,9 +70,14 @@ protected:
 	void deserialize(Archive &archive)
 	{
 		Asset::deserialize(archive);
+		// General
 		archive(
 			cereal::make_nvp("name", this->mName),
 			cereal::make_nvp("version", this->mVersion)
+		);
+		// Graphics
+		archive(
+			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
 		);
 	}
 #pragma endregion

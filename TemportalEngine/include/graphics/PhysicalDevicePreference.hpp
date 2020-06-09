@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "cereal/optional.hpp"
+#include "cereal/list.hpp"
 #include "graphics/types.hpp"
 
 NS_GRAPHICS
@@ -60,16 +62,28 @@ public:
 		template <typename Archive>
 		void save(Archive &archive) const
 		{
-
+			archive(
+				cereal::make_nvp("score", this->score),
+				cereal::make_nvp("value", this->value)
+			);
 		}
 
 		template <typename Archive>
 		void load(Archive &archive)
 		{
-
+			archive(
+				cereal::make_nvp("score", this->score),
+				cereal::make_nvp("value", this->value)
+			);
 		}
 
 	};
+
+	typedef std::vector<Preference<PhysicalDeviceProperties::Type::Enum>> ListDeviceType;
+	typedef std::vector<Preference<PhysicalDeviceProperties::Extension::Type>> ListDeviceExtensions;
+	typedef std::vector<Preference<graphics::PhysicalDeviceProperties::Feature::Enum>> ListFeatures;
+	typedef std::vector<Preference<QueueFamily::Enum>> ListQueueFamilies;
+	typedef std::vector<Preference<SwapChainSupportType::Enum>> ListSwapChain;
 
 public:
 	PhysicalDevicePreference() = default;
@@ -82,34 +96,38 @@ public:
 	
 	std::optional<ui32> scoreDevice(graphics::PhysicalDevice const *pDevice);
 
+	ListDeviceType& getDeviceTypes() { return this->mDeviceType; }
+	ListDeviceExtensions& getDeviceExtensions() { return this->mDeviceExtensions; }
+	ListFeatures& getFeatures() { return this->mFeatures; }
+	ListQueueFamilies& getQueueFamilies() { return this->mQueueFamilies; }
+	ListSwapChain& getSwapChain() { return this->mSwapChain; }
+
 	template <typename Archive>
 	void save(Archive &archive) const
 	{
-		ui32 len;
-
-		//len = (ui32)this->mDeviceType.size();
-		//archive(len);
-		//for (auto& pref : this->mDeviceType) archive(pref);
-
+		archive(cereal::make_nvp("type", this->mDeviceType));
+		archive(cereal::make_nvp("extensions", this->mDeviceExtensions));
+		archive(cereal::make_nvp("features", this->mFeatures));
+		archive(cereal::make_nvp("queueFamilies", this->mQueueFamilies));
+		archive(cereal::make_nvp("swapChain", this->mSwapChain));
 	}
 
 	template <typename Archive>
 	void load(Archive &archive)
 	{
-		ui32 len;
-
-		//archive(len);
-		//this->mDeviceType.resize(len);
-		//for (auto& pref : this->mDeviceType) archive(pref);
-
+		archive(cereal::make_nvp("type", this->mDeviceType));
+		archive(cereal::make_nvp("extensions", this->mDeviceExtensions));
+		archive(cereal::make_nvp("features", this->mFeatures));
+		archive(cereal::make_nvp("queueFamilies", this->mQueueFamilies));
+		archive(cereal::make_nvp("swapChain", this->mSwapChain));
 	}
 
 private:
-	std::vector<Preference<PhysicalDeviceProperties::Type::Enum>> mDeviceType;
-	std::vector<Preference<PhysicalDeviceProperties::Extension::Type>> mDeviceExtensions;
-	std::vector<Preference<graphics::PhysicalDeviceProperties::Feature::Enum>> mFeatures;
-	std::vector<Preference<QueueFamily::Enum>> mQueueFamilies;
-	std::vector<Preference<SwapChainSupportType::Enum>> mSwapChain;
+	ListDeviceType mDeviceType;
+	ListDeviceExtensions mDeviceExtensions;
+	ListFeatures mFeatures;
+	ListQueueFamilies mQueueFamilies;
+	ListSwapChain mSwapChain;
 
 };
 

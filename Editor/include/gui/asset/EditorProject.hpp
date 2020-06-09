@@ -2,8 +2,9 @@
 
 #include "gui/asset/AssetEditor.hpp"
 
-#include "gui/widget/FieldText.hpp"
+#include "gui/graphics/PropertyGpuPreference.hpp"
 #include "gui/widget/FieldNumber.hpp"
+#include "gui/widget/FieldText.hpp"
 #include "gui/widget/List.hpp"
 
 #include <version.h>
@@ -26,11 +27,11 @@ protected:
 private:
 	Version mSavedVersion;
 	
+	// General
 	gui::FieldText<32> mFieldName;
 	gui::FieldNumber<ui8, 3> mFieldVersion;
-
-	gui::List<ui32> mListIntegerTest;
-	gui::List<std::pair<std::string, std::optional<ui32>>> mListMapTest;
+	// Graphics
+	gui::PropertyGpuPreference mGpuPreference;
 
 	bool renderIntegerTestItem(ui32 &item);
 	bool renderMapTestKey(std::pair<std::string, std::optional<ui32>> &item);

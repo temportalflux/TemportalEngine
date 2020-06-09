@@ -3,6 +3,7 @@
 #include "asset/AssetManager.hpp"
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/portable_binary.hpp>
+#include "..\..\include\asset\Project.hpp"
 
 using namespace asset;
 
@@ -18,6 +19,21 @@ Project::Project(std::string name, Version version) : Asset()
 {
 	this->mName = name;
 	this->mVersion = version;
+}
+
+std::filesystem::path Project::getAbsoluteDirectoryPath() const
+{
+	return this->mFilePath.parent_path();
+}
+
+std::filesystem::path Project::getAssetDirectoryFor(std::filesystem::path projectDir)
+{
+	return projectDir / "assets";
+}
+
+std::filesystem::path Project::getAssetDirectory() const
+{
+	return Project::getAssetDirectoryFor(this->getAbsoluteDirectoryPath());
 }
 
 #pragma region Properties
@@ -47,19 +63,14 @@ std::string Project::getDisplayName() const
 	return this->getName() + " (" + this->getVersion().toString() + ")";
 }
 
-std::filesystem::path Project::getAbsoluteDirectoryPath() const
+graphics::PhysicalDevicePreference Project::getPhysicalDevicePreference() const
 {
-	return this->mFilePath.parent_path();
+	return this->mGraphicsDevicePreference;
 }
 
-std::filesystem::path Project::getAssetDirectoryFor(std::filesystem::path projectDir)
+void Project::setPhysicalDevicePreference(graphics::PhysicalDevicePreference const &prefs)
 {
-	return projectDir / "assets";
-}
-
-std::filesystem::path Project::getAssetDirectory() const
-{
-	return Project::getAssetDirectoryFor(this->getAbsoluteDirectoryPath());
+	this->mGraphicsDevicePreference = prefs;
 }
 
 #pragma endregion

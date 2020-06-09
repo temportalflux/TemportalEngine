@@ -42,7 +42,7 @@ void EditorShader::setAsset(asset::AssetPtrStrong assetGeneric)
 		.value((vk::ShaderStageFlagBits)(this->mSavedStage = asset->getStage()))
 		.setCallbacks(
 			[](vk::ShaderStageFlagBits flag) { return vk::to_string(flag); },
-			[](vk::ShaderStageFlagBits flag) { return (i32)flag; }
+			[](vk::ShaderStageFlagBits flag) { ImGui::PushID((ui32)flag); }
 		);
 
 	this->mSavedShaderContent = asset->readSource();

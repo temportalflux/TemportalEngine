@@ -1,9 +1,57 @@
 {
-    "type": "project",
-    "name": "DemoGame",
-    "version": {
-        "major": 0,
-        "minor": 1,
-        "patch": 0
-    }
+	"type": "project",
+	"name": "DemoGame",
+	"version": {
+		"major": 0,
+		"minor": 1,
+		"patch": 0
+	},
+	"gpuPreference": {
+		"type": [
+			{
+				"score": {
+					"hasValue": true,
+					"value": 128
+				},
+				"value": 2
+			}
+		],
+		"extensions": [
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": "VK_KHR_swapchain"
+			}
+		],
+		"features": [],
+		"queueFamilies": [
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": 0
+			},
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": 1
+			}
+		],
+		"swapChain": [
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": 0
+			},
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": 1
+			}
+		]
+	}
 }

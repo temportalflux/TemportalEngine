@@ -25,8 +25,14 @@ struct PhysicalDeviceProperties
 			eVirtualGpu = 3,
 			eCpu = 4,
 		};
-		static Enum ALL[5];
+		static std::vector<Enum> ALL;
 		static std::string to_string(Enum value);
+	};
+	struct Extension
+	{
+		typedef std::string Type;
+		static Type SwapChain;
+		static std::vector<Type> ALL;
 	};
 	/**
 	 * Wrapper of `vk::PhysicalDeviceType`
@@ -90,15 +96,9 @@ struct PhysicalDeviceProperties
 			SparseResidencyAliased,
 			VariableMultisampleRate,
 		};
-		static Enum ALL[54];
+		static std::vector<Enum> ALL;
 		static std::string to_string(Enum value);
 		static bool hasFeature(vk::PhysicalDeviceFeatures *features, Enum type);
-	};
-	struct Extension
-	{
-		typedef std::string Type;
-		static Type SwapChain;
-		static Type ALL[1];
 	};
 };
 
@@ -109,6 +109,8 @@ struct QueueFamily
 		eGraphics,
 		ePresentation,
 	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
 };
 
 struct SwapChainSupportType
@@ -118,6 +120,8 @@ struct SwapChainSupportType
 		eHasAnySurfaceFormat,
 		eHasAnyPresentationMode,
 	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
 	static bool hasSupport(SwapChainSupport *support, Enum type);
 };
 

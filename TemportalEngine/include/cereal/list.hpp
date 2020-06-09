@@ -31,7 +31,9 @@ namespace cereal
 	{
 		cereal::size_type size = value.size();
 		archive(cereal::make_size_tag(size));
-		archive(cereal::binary_data(value.data(), size * sizeof(T)));
+		// TODO: Use binary_data for primitives, and direct archive calls for complex/structures
+		//archive(cereal::binary_data(value.data(), size * sizeof(T)));
+		for (uSize i = 0; i < size; ++i) archive(value[i]);
 	}
 
 	template <typename T>
@@ -40,7 +42,8 @@ namespace cereal
 		cereal::size_type size;
 		archive(cereal::make_size_tag(size));
 		value.resize(size);
-		archive(cereal::binary_data(value.data(), size * sizeof(T)));
+		//archive(cereal::binary_data(value.data(), size * sizeof(T)));
+		for (uSize i = 0; i < size; ++i) archive(value[i]);
 	}
 
 }

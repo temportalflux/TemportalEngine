@@ -10,7 +10,7 @@ class Optional
 
 public:
 
-	static bool Inline(std::string titleId, std::optional<T> &item, std::string toggleTitleId, bool bHasValueWhenChecked, std::function<bool(T &value)> renderItem)
+	static bool Inline(std::optional<T> &item, std::string toggleTitleId, bool bHasValueWhenChecked, std::function<bool(T &value)> renderItem)
 	{
 		bool bChanged = false;
 		bool bToggledOn = item.has_value() == bHasValueWhenChecked;

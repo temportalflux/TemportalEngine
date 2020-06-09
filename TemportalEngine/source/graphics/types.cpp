@@ -6,7 +6,9 @@
 
 using namespace graphics;
 
-PhysicalDeviceProperties::Type::Enum PhysicalDeviceProperties::Type::ALL[5] = {
+#pragma region Device Type
+
+std::vector<PhysicalDeviceProperties::Type::Enum> PhysicalDeviceProperties::Type::ALL = {
 	Enum::eIntegratedGpu,
 	Enum::eDiscreteGpu,
 	Enum::eVirtualGpu,
@@ -19,7 +21,20 @@ std::string PhysicalDeviceProperties::Type::to_string(Enum value)
 	return vk::to_string((vk::PhysicalDeviceType)value);
 }
 
-PhysicalDeviceProperties::Feature::Enum PhysicalDeviceProperties::Feature::ALL[54] = {
+#pragma endregion
+
+#pragma region Device Extensions
+
+PhysicalDeviceProperties::Extension::Type PhysicalDeviceProperties::Extension::SwapChain = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+std::vector<PhysicalDeviceProperties::Extension::Type> PhysicalDeviceProperties::Extension::ALL = {
+	Extension::SwapChain,
+};
+
+#pragma endregion
+
+#pragma region Device Features
+
+std::vector<PhysicalDeviceProperties::Feature::Enum> PhysicalDeviceProperties::Feature::ALL = {
 	Enum::RobustBufferAccess,
 	Enum::FullDrawIndex,
 	Enum::ImageCubeArray,
@@ -201,6 +216,44 @@ bool PhysicalDeviceProperties::Feature::hasFeature(vk::PhysicalDeviceFeatures *f
 	return false;
 }
 
+#pragma endregion
+
+#pragma region Queue Families
+
+std::vector<QueueFamily::Enum> QueueFamily::ALL = {
+	Enum::eGraphics,
+	Enum::ePresentation,
+};
+
+std::string QueueFamily::to_string(Enum value)
+{
+	switch (value)
+	{
+	case Enum::eGraphics: return "Graphics";
+	case Enum::ePresentation: return "Presentation";
+	}
+	return "invalid";
+}
+
+#pragma endregion
+
+#pragma region Swap Chain
+
+std::vector<SwapChainSupportType::Enum> SwapChainSupportType::ALL = {
+	Enum::eHasAnySurfaceFormat,
+	Enum::eHasAnyPresentationMode,
+};
+
+std::string SwapChainSupportType::to_string(Enum value)
+{
+	switch (value)
+	{
+	case Enum::eHasAnySurfaceFormat: return "Any Surface Format";
+	case Enum::eHasAnyPresentationMode: return "Any Presentation Mode";
+	}
+	return "invalid";
+}
+
 bool SwapChainSupportType::hasSupport(SwapChainSupport *support, Enum type)
 {
 	switch (type)
@@ -211,8 +264,4 @@ bool SwapChainSupportType::hasSupport(SwapChainSupport *support, Enum type)
 	return false;
 }
 
-PhysicalDeviceProperties::Extension::Type PhysicalDeviceProperties::Extension::SwapChain = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-PhysicalDeviceProperties::Extension::Type PhysicalDeviceProperties::Extension::ALL[1] = {
-	Extension::SwapChain,
-};
-
+#pragma endregion
