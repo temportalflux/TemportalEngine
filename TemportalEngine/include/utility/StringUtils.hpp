@@ -60,6 +60,8 @@ namespace utility
 
 	std::unordered_map<std::string, ui64> parseArgumentInts(ArgumentMap args, std::string prefix, ui64 &sum);
 
+	std::vector<char const*> createTemporaryStringSet(std::vector<std::string> const &strs);
+
 }
 
 #endif STRING_UTILS_H

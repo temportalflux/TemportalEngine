@@ -53,3 +53,12 @@ std::unordered_map<std::string, ui64> utility::parseArgumentInts(ArgumentMap arg
 	});
 }
 
+std::vector<char const*> utility::createTemporaryStringSet(std::vector<std::string> const &strs)
+{
+	auto ret = std::vector<const char*>(strs.size());
+	for (ui32 i = 0; i < strs.size(); ++i)
+	{
+		ret[i] = strs[i].c_str();
+	}
+	return ret;
+}

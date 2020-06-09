@@ -19,7 +19,7 @@ logging::LogSystem Engine::LOG_SYSTEM = logging::LogSystem();
 Engine::EnginePtr Engine::spInstance = nullptr;
 std::shared_ptr<memory::MemoryChunk> Engine::spMainMemory = nullptr;
 
-std::vector<const char*> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
+std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
 #pragma region Singleton
 

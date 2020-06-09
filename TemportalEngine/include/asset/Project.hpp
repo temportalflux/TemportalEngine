@@ -4,6 +4,7 @@
 
 #include "version.h"
 #include "graphics/PhysicalDevicePreference.hpp"
+#include "graphics/LogicalDeviceInfo.hpp"
 
 NS_ASSET
 
@@ -37,6 +38,8 @@ public:
 	// Graphics
 	graphics::PhysicalDevicePreference getPhysicalDevicePreference() const;
 	void setPhysicalDevicePreference(graphics::PhysicalDevicePreference const &prefs);
+
+	graphics::LogicalDeviceInfo getGraphicsDeviceInitInfo() const;
 
 private:
 	std::string mName;

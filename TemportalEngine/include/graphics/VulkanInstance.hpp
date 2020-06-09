@@ -35,7 +35,7 @@ public:
 	VulkanInstance& setApplicationInfo(std::string const &name, Version const &version);
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
-	VulkanInstance& setValidationLayers(std::optional<std::vector<char const*>> layers = std::nullopt);
+	VulkanInstance& setValidationLayers(std::optional<std::vector<std::string>> layers = std::nullopt);
 	std::vector<char const*> getValidationLayers() const;
 
 	bool isValid() const;
@@ -60,7 +60,7 @@ private:
 	std::optional<vk::DebugUtilsMessengerEXT> mDebugMessenger;
 
 	std::unordered_set<char const*> mEnabledExtensions;
-	std::vector<char const*> mValidationLayers;
+	std::vector<std::string> mValidationLayers;
 
 	std::string mInfoAppName; // ensures that the data stored in mInfo isn't gibberish
 	vk::ApplicationInfo mInfo;

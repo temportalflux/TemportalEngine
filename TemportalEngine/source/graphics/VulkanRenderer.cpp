@@ -31,7 +31,14 @@ void VulkanRenderer::setPhysicalDevicePreference(PhysicalDevicePreference const 
 
 void VulkanRenderer::setLogicalDeviceInfo(LogicalDeviceInfo const &info)
 {
+	auto layers = this->mLogicalDeviceInfo.getValidationLayers();
 	mLogicalDeviceInfo = info;
+	this->setValidationLayers(layers);
+}
+
+void VulkanRenderer::setValidationLayers(std::vector<std::string> layers)
+{
+	this->mLogicalDeviceInfo.setValidationLayers(layers);
 }
 
 void VulkanRenderer::setSwapChainInfo(SwapChainInfo const &info)

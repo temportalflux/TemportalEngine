@@ -19,6 +19,11 @@ Project::Project(std::string name, Version version) : Asset()
 {
 	this->mName = name;
 	this->mVersion = version;
+
+	this->mGraphicsDevicePreference
+		.addCriteriaQueueFamily(graphics::QueueFamily::Enum::eGraphics)
+		.addCriteriaQueueFamily(graphics::QueueFamily::Enum::ePresentation)
+		.addCriteriaDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain);
 }
 
 std::filesystem::path Project::getAbsoluteDirectoryPath() const
@@ -71,6 +76,22 @@ graphics::PhysicalDevicePreference Project::getPhysicalDevicePreference() const
 void Project::setPhysicalDevicePreference(graphics::PhysicalDevicePreference const &prefs)
 {
 	this->mGraphicsDevicePreference = prefs;
+}
+
+graphics::LogicalDeviceInfo Project::getGraphicsDeviceInitInfo() const
+{
+	auto info = graphics::LogicalDeviceInfo();
+	for (const auto& prefExtension : this->mGraphicsDevicePreference.getDeviceExtensions())
+	{
+		if (!prefExtension.isRequired()) continue;
+		info.addDeviceExtension(prefExtension.value);
+	}
+	for (const auto& prefQueueFamily : this->mGraphicsDevicePreference.getQueueFamilies())
+	{
+		if (!prefQueueFamily.isRequired()) continue;
+		info.addQueueFamily(prefQueueFamily.value);
+	}
+	return info;
 }
 
 #pragma endregion

@@ -18,16 +18,21 @@ std::set<QueueFamily::Enum> LogicalDeviceInfo::getQueues() const
 	return std::set<QueueFamily::Enum>(this->mQueues.begin(), this->mQueues.end());
 }
 
-LogicalDeviceInfo& LogicalDeviceInfo::addDeviceExtension(char const* name)
+LogicalDeviceInfo& LogicalDeviceInfo::addDeviceExtension(std::string name)
 {
 	this->mDeviceExtensions.push_back(name);
 	return *this;
 }
 
-LogicalDeviceInfo& LogicalDeviceInfo::setValidationLayers(std::vector<char const*> layers)
+LogicalDeviceInfo& LogicalDeviceInfo::setValidationLayers(std::vector<std::string> layers)
 {
 	this->mValidationLayers = layers;
 	return *this;
+}
+
+std::vector<std::string> LogicalDeviceInfo::getValidationLayers() const
+{
+	return this->mValidationLayers;
 }
 
 vk::DeviceQueueCreateInfo QueueInfo::makeInfo() const

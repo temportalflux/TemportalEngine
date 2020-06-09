@@ -30,6 +30,8 @@ public:
 		IndividualScore score;
 		T value;
 
+		bool isRequired() const { return !this->score; }
+
 		bool isLessRequired(Preference<T> const &other) const
 		{
 			return !this->score.has_value() && other.score.has_value();
@@ -98,8 +100,10 @@ public:
 
 	ListDeviceType& getDeviceTypes() { return this->mDeviceType; }
 	ListDeviceExtensions& getDeviceExtensions() { return this->mDeviceExtensions; }
+	ListDeviceExtensions getDeviceExtensions() const { return this->mDeviceExtensions; }
 	ListFeatures& getFeatures() { return this->mFeatures; }
 	ListQueueFamilies& getQueueFamilies() { return this->mQueueFamilies; }
+	ListQueueFamilies getQueueFamilies() const { return this->mQueueFamilies; }
 	ListSwapChain& getSwapChain() { return this->mSwapChain; }
 
 	template <typename Archive>

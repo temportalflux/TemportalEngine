@@ -37,6 +37,7 @@ public:
 
 	void setPhysicalDevicePreference(PhysicalDevicePreference const &preference);
 	void setLogicalDeviceInfo(LogicalDeviceInfo const &info);
+	void setValidationLayers(std::vector<std::string> layers);
 	void setSwapChainInfo(SwapChainInfo const &info);
 	void setImageViewInfo(ImageViewInfo const &info);
 

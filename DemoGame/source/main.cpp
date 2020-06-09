@@ -154,17 +154,15 @@ int main(int argc, char *argv[])
 
 #pragma region Vulkan
 		auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+		// TODO: Wrap these methods in a renderer creation method in engine
 		auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
-
-		// Initialize settings
 		renderer.setPhysicalDevicePreference(pEngine->getProject()->getPhysicalDevicePreference());
-		renderer.setLogicalDeviceInfo(
-			graphics::LogicalDeviceInfo()
-			.addDeviceExtension(graphics::PhysicalDeviceProperties::Extension::SwapChain.c_str())
-			.addQueueFamily(graphics::QueueFamily::Enum::eGraphics)
-			.addQueueFamily(graphics::QueueFamily::Enum::ePresentation)
-			.setValidationLayers(engine::Engine::VulkanValidationLayers)
-		);
+		renderer.setLogicalDeviceInfo(pEngine->getProject()->getGraphicsDeviceInitInfo());
+#ifndef NDEBUG
+		renderer.setValidationLayers(engine::Engine::VulkanValidationLayers);
+#endif
+
+
 		renderer.setSwapChainInfo(
 			graphics::SwapChainInfo()
 			.addFormatPreference(vk::Format::eB8G8R8A8Srgb)

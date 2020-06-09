@@ -2,10 +2,9 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "types/real.h"
-#include "types/integer.h"
 #include "graphics/types.hpp"
 
+// TODO: Move vulkan to only cpp. Only used by QueueInfo
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -28,15 +27,17 @@ public:
 	LogicalDeviceInfo() = default;
 
 	LogicalDeviceInfo& addQueueFamily(QueueFamily::Enum type);
-	LogicalDeviceInfo& addDeviceExtension(char const* name);
-	LogicalDeviceInfo& setValidationLayers(std::vector<char const*> layers);
+	LogicalDeviceInfo& addDeviceExtension(std::string name);
+	LogicalDeviceInfo& setValidationLayers(std::vector<std::string> layers);
+
+	std::vector<std::string> getValidationLayers() const;
 
 	std::set<QueueFamily::Enum> getQueues() const;
 
 private:
 	std::vector<QueueFamily::Enum> mQueues;
-	std::vector<char const*> mDeviceExtensions;
-	std::vector<char const*> mValidationLayers;
+	std::vector<std::string> mDeviceExtensions;
+	std::vector<std::string> mValidationLayers;
 
 	std::vector<QueueInfo> makeQueueInfo(QueueFamilyGroup const *pAvailableQueues) const;
 

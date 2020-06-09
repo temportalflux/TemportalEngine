@@ -2,6 +2,7 @@
 
 #include "graphics/Surface.hpp"
 #include "graphics/LogicalDeviceInfo.hpp"
+#include "utility/StringUtils.hpp"
 
 using namespace graphics;
 
@@ -105,13 +106,15 @@ LogicalDevice PhysicalDevice::createLogicalDevice(LogicalDeviceInfo const * pInf
 	auto queueCreateInfo = std::vector<vk::DeviceQueueCreateInfo>(queueInfo.size());
 	for (uSize i = 0; i < queueInfo.size(); ++i)
 		queueCreateInfo[i] = queueInfo[i].makeInfo();
+	auto extNames = utility::createTemporaryStringSet(pInfo->mDeviceExtensions);
+	auto layerNames = utility::createTemporaryStringSet(pInfo->mValidationLayers);
 	auto info = vk::DeviceCreateInfo()
 		.setQueueCreateInfoCount((ui32)queueCreateInfo.size())
 		.setPQueueCreateInfos(queueCreateInfo.data())
-		.setEnabledExtensionCount((ui32)pInfo->mDeviceExtensions.size())
-		.setPpEnabledExtensionNames(pInfo->mDeviceExtensions.data())
-		.setEnabledLayerCount((ui32)pInfo->mValidationLayers.size())
-		.setPpEnabledLayerNames(pInfo->mValidationLayers.data());
+		.setEnabledExtensionCount((ui32)extNames.size())
+		.setPpEnabledExtensionNames(extNames.data())
+		.setEnabledLayerCount((ui32)layerNames.size())
+		.setPpEnabledLayerNames(layerNames.data());
 	vk::UniqueDevice device = mDevice.createDeviceUnique(info);
 	return LogicalDevice(this, device);
 }

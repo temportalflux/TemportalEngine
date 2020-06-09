@@ -43,7 +43,7 @@ private:
 public:
 	typedef std::shared_ptr<Engine> EnginePtr;
 	static logging::LogSystem LOG_SYSTEM;
-	static std::vector<const char*> VulkanValidationLayers;
+	static std::vector<std::string> VulkanValidationLayers;
 
 #pragma region Singleton
 	static EnginePtr Create(std::unordered_map<std::string, ui64> memoryChunkSizes);

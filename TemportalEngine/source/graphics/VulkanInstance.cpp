@@ -2,6 +2,7 @@
 
 #include "graphics/Surface.hpp"
 #include "types/integer.h"
+#include "utility/StringUtils.hpp"
 
 #include <set>
 #include <map>
@@ -60,18 +61,18 @@ VulkanInstance& VulkanInstance::setRequiredExtensions(std::vector<char const*> e
 	return *this;
 }
 
-VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<char const*>> layers)
+VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<std::string>> layers)
 {
 	assert(!mInstanceCreated);
 	// Check that all layers are actually available. Will be optimized out in a non-debug build
 	if (layers.has_value())
 	{
-		std::set<char const*> desiredLayers(layers.value().begin(), layers.value().end());
+		std::set<std::string> desiredLayers(layers.value().begin(), layers.value().end());
 		for (const auto& availableLayer : vk::enumerateInstanceLayerProperties())
 		{
 			for (auto iter = layers.value().begin(); iter != layers.value().end(); ++iter)
 			{
-				bool bIsDesiredLayer = strcmp(availableLayer.layerName, *iter) == 0;
+				bool bIsDesiredLayer = strcmp(availableLayer.layerName, iter->c_str()) == 0;
 				if (bIsDesiredLayer)
 				{
 					desiredLayers.erase(*iter);
@@ -83,11 +84,6 @@ VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<ch
 		mValidationLayers = layers.value();
 	}
 	return *this;
-}
-
-std::vector<char const*> VulkanInstance::getValidationLayers() const
-{
-	return mValidationLayers;
 }
 
 bool VulkanInstance::isValid() const
@@ -112,8 +108,9 @@ void VulkanInstance::initialize()
 	mCreateInfo.setPpEnabledExtensionNames(extensionNames.data());
 
 	auto validationLayerCount = (ui32)mValidationLayers.size();
+	auto layers = utility::createTemporaryStringSet(this->mValidationLayers);
 	mCreateInfo.setEnabledLayerCount(validationLayerCount);
-	mCreateInfo.setPpEnabledLayerNames(validationLayerCount > 0 ? mValidationLayers.data() : nullptr);
+	mCreateInfo.setPpEnabledLayerNames(validationLayerCount > 0 ? layers.data() : nullptr);
 
 	auto appVersion = TE_GET_VERSION(mInfo.applicationVersion);
 	auto engineVersion = TE_GET_VERSION(mInfo.engineVersion);
