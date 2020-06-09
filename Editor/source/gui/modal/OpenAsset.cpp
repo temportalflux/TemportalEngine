@@ -37,7 +37,7 @@ void OpenAsset::drawContents()
 void OpenAsset::submit()
 {
 	auto filePath = utility::createStringFromFixedArray(this->mInputPath);
-	auto asset = asset::AssetManager::get()->readAssetFromDisk(filePath, asset::EAssetSerialization::Json);
+	auto asset = asset::readAssetFromDisk(filePath, asset::EAssetSerialization::Json);
 	this->close();
 	this->mOnAssetOpened(asset);
 }

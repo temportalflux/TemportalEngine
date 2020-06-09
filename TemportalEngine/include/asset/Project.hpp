@@ -7,6 +7,7 @@
 #include "graphics/LogicalDeviceInfo.hpp"
 
 NS_ASSET
+class Shader;
 
 #define AssetType_Project "project"
 
@@ -46,6 +47,9 @@ private:
 	Version mVersion;
 
 	graphics::PhysicalDevicePreference mGraphicsDevicePreference;
+
+	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor when one is available.
+	//TypedAssetPath<asset::Shader> mVertexShader;
 
 #pragma region Serialization
 protected:

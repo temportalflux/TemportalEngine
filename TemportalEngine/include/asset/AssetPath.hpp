@@ -2,7 +2,6 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "Engine.hpp"
 #include "asset/AssetType.hpp"
 
 NS_ASSET
@@ -19,24 +18,19 @@ private:
 	bool mbIsAbsolute;
 
 public:
-	AssetPath(AssetType type, std::filesystem::path path, bool bIsAbsolute=false) : mType(type), mPath(path), mbIsAbsolute(bIsAbsolute) {}
+	AssetPath(AssetType type, std::filesystem::path path, bool bIsAbsolute = false);
 
-	std::string toString() const { return this->mType + ":" + this->mPath.string(); }
-	std::string toShortName() const { return this->mType + ":" + this->mPath.stem().string(); }
-
-	std::filesystem::path toAbsolutePath() const
-	{
-		if (this->mbIsAbsolute) return this->mPath;
-		assert(engine::Engine::Get()->hasProject());
-		return std::filesystem::absolute(engine::Engine::Get()->getProject()->getAbsoluteDirectoryPath() / this->mPath);
-	}
+	std::string toString() const;
+	std::string toShortName() const;
+	std::filesystem::path toAbsolutePath() const;
 
 	template <typename Archive>
 	void save(Archive &archive) const
 	{
 		archive(
 			cereal::make_nvp("type", this->mType),
-			cereal::make_nvp("path", this->mRelativePath.string())
+			cereal::make_nvp("path", this->mPath.string()),
+			cereal::make_nvp("pathIsAbsolute", this->mbIsAbsolute)
 		);
 	}
 
@@ -46,9 +40,10 @@ public:
 		std::string pathStr;
 		archive(
 			cereal::make_nvp("type", this->mType),
-			cereal::make_nvp("path", pathStr)
+			cereal::make_nvp("path", pathStr),
+			cereal::make_nvp("pathIsAbsolute", this->mbIsAbsolute)
 		);
-		this->mRelativePath = pathStr;
+		this->mPath = pathStr;
 	}
 
 };

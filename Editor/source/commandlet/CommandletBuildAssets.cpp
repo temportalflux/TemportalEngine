@@ -69,7 +69,7 @@ void CommandletBuildAssets::run()
 	LOG.log(logging::ECategory::LOGINFO, "Output: %s", this->mPathOutputDir.string().c_str());
 
 	auto assetManager = asset::AssetManager::get();
-	auto assetProj = assetManager->readFromDisk<asset::Project>(this->mPathProjectAsset, asset::EAssetSerialization::Json, false);
+	auto assetProj = asset::readFromDisk<asset::Project>(this->mPathProjectAsset, asset::EAssetSerialization::Json, false);
 	assert(assetProj != nullptr);
 
 	LOG.log(logging::ECategory::LOGINFO, "Loaded project %s", assetProj->getDisplayName().c_str());
@@ -121,7 +121,7 @@ void CommandletBuildAssets::run()
 		}
 		
 		// TODO: confirm that each asset's serialization functions are correctly called
-		auto asset = assetManager->readAssetFromDisk(pathSrc, asset::EAssetSerialization::Json);
+		auto asset = asset::readAssetFromDisk(pathSrc, asset::EAssetSerialization::Json);
 		if (asset != nullptr)
 		{
 			// TODO: Needs to support shaders like the EditorShader does (asynchronous asset compilation)

@@ -16,8 +16,10 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -78,6 +80,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\utils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />

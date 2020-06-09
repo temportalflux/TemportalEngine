@@ -240,7 +240,7 @@ void Editor::loadEditorSettings(std::filesystem::path projectDir)
 	auto settingsPath = projectDir / "config" / ("Editor" + assetManager->getAssetTypeMetadata(AssetType_EditorSettings).fileExtension);
 	std::filesystem::create_directories(settingsPath.parent_path());
 	if (std::filesystem::exists(settingsPath))
-		this->mpEditorSettings = assetManager->readFromDisk<asset::Settings>(settingsPath, asset::EAssetSerialization::Json, false);
+		this->mpEditorSettings = asset::readFromDisk<asset::Settings>(settingsPath, asset::EAssetSerialization::Json, false);
 	else
 		this->mpEditorSettings = assetManager->createAssetAs<asset::Settings>(AssetType_EditorSettings, settingsPath);
 }

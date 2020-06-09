@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/Asset.hpp"
+#include "asset/TypedAssetPath.hpp"
 #include "memory/MemoryChunk.hpp"
 
 #include <filesystem>
@@ -80,17 +81,11 @@ public:
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
 	void deleteFile(std::filesystem::path filePath);
-	std::shared_ptr<Asset> readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned=true);
 
 	template <typename TAsset>
 	std::shared_ptr<TAsset> createAssetAs(AssetType type, std::filesystem::path filePath)
 	{
 		return std::dynamic_pointer_cast<TAsset>(this->createAsset(type, filePath));
-	}
-	template <typename TAsset>
-	std::shared_ptr<TAsset> readFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true)
-	{
-		return std::dynamic_pointer_cast<TAsset>(this->readAssetFromDisk(filePath, type, bShouldHaveBeenScanned));
 	}
 
 private:

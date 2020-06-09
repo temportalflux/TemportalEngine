@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 		renderer.setValidationLayers(engine::Engine::VulkanValidationLayers);
 #endif
 
-
+		// TODO: Configure this per project
 		renderer.setSwapChainInfo(
 			graphics::SwapChainInfo()
 			.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
@@ -170,6 +170,9 @@ int main(int argc, char *argv[])
 			.addPresentModePreference(vk::PresentModeKHR::eMailbox)
 			.addPresentModePreference(vk::PresentModeKHR::eFifo)
 		);
+
+		// TODO: Configure this per image view (render target)
+		// TODO: Image views only need the format from the swapchain. They can be created independently of it too.
 		renderer.setImageViewInfo(
 			{
 				vk::ImageViewType::e2D,
@@ -214,7 +217,7 @@ int main(int argc, char *argv[])
 				std::shared_ptr<graphics::ShaderModule> shaderModule;
 				// Make module from shader binary in asset
 				{
-					auto asset = assetManager->readFromDisk<asset::Shader>(
+					auto asset = asset::readFromDisk<asset::Shader>(
 						// TODO: This should use a soft asset path reference in a pipeline asset.
 						// All SoftAssetPath<Asset> should be relative to the projects asset directory.
 						pEngine->getProject()->getAssetDirectory() / "shaders/TriangleFragment.te-asset",

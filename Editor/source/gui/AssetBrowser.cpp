@@ -186,8 +186,7 @@ void AssetBrowser::renderDirectoryContents()
 
 		if (bIsAssetAndOpenForEdit)
 		{
-			auto asset = asset::AssetManager::get()->readAssetFromDisk(entry.path(), asset::EAssetSerialization::Json);
-			Editor::EDITOR->openAssetEditor(asset);
+			Editor::EDITOR->openAssetEditor(asset::readAssetFromDisk(entry.path(), asset::EAssetSerialization::Json));
 		}
 	}
 	if (newPath.has_value())

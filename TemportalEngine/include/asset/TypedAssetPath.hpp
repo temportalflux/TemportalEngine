@@ -3,22 +3,21 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/AssetPath.hpp"
-#include "asset/AssetManager.hpp"
+#include "asset/utils.hpp"
 
 NS_ASSET
 
 template <class TAsset>
 class TypedAssetPath
 {
-
 public:
 	TypedAssetPath(AssetPath path) : mPath(path) {}
 
-	std::shared_ptr<TAsset> load(EAssetSerialization serialization, bool bWasScanned=true) const
+	std::shared_ptr<TAsset> load(asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true)
 	{
-		return AssetManager::get()->readFromDisk<TAsset>(this->mPath.toAbsolutePath(), serialization, bWasScanned);
+		return asset::readFromDisk<TAsset>(this->mPath.toAbsolutePath(), type, bShouldHaveBeenScanned);
 	}
-
+	
 	template <typename Archive>
 	void save(Archive &archive) const
 	{

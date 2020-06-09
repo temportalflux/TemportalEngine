@@ -145,37 +145,3 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 	}
 	std::filesystem::remove(filePath);
 }
-
-std::shared_ptr<Asset> AssetManager::readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
-{
-	filePath = filePath.make_preferred();
-	assert(std::filesystem::exists(filePath));
-	if (!this->isValidAssetExtension(filePath.extension().string()))
-	{
-		return nullptr;
-	}
-
-	// Read the asset using the base asset class to determine the asset type that is stored
-	auto assetMetadata = this->getAssetMetadata(filePath);
-	AssetType assetType;
-	if (!assetMetadata.has_value())
-	{
-		if (bShouldHaveBeenScanned)
-			LOG.log(logging::ECategory::LOGWARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
-		auto asset = makeAsset<Asset>();
-		asset->readFromDisk(filePath, type);
-		assetType = asset->getAssetType();
-	}
-	else
-	{
-		assetType = assetMetadata->type;
-	}
-
-	// Determine the functor for loading this asset type
-	auto typeMapEntry = this->mAssetTypeMap.find(assetType);
-	assert(typeMapEntry != this->mAssetTypeMap.end());
-
-	auto asset = typeMapEntry->second.createEmptyAsset();
-	asset->readFromDisk(filePath, type);
-	return asset;
-}
