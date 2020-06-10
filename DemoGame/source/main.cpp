@@ -196,9 +196,7 @@ int main(int argc, char *argv[])
 				std::shared_ptr<graphics::ShaderModule> shaderModule;
 				// Make module from shader binary in asset
 				{
-					shaderModule = asset::TypedAssetPath<asset::Shader>(
-						asset::AssetPath("shader", "assets/shaders/TriangleVertex.te-asset")
-					).load(asset::EAssetSerialization::Binary)->makeModule();
+					shaderModule = pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule();
 				}
 				// Set the description for the input
 				shaderModule->setVertexDescription(
@@ -213,20 +211,7 @@ int main(int argc, char *argv[])
 				renderer.addShader(shaderModule);
 			}
 			// Fragment Shader from asset
-			{
-				std::shared_ptr<graphics::ShaderModule> shaderModule;
-				// Make module from shader binary in asset
-				{
-					auto asset = asset::readFromDisk<asset::Shader>(
-						// TODO: This should use a soft asset path reference in a pipeline asset.
-						// All SoftAssetPath<Asset> should be relative to the projects asset directory.
-						pEngine->getProject()->getAssetDirectory() / "shaders/TriangleFragment.te-asset",
-						asset::EAssetSerialization::Binary
-					);
-					shaderModule = asset->makeModule();
-				}
-				renderer.addShader(shaderModule);
-			}
+			renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
 		}
 
 		// Initialize the rendering api connections

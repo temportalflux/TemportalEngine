@@ -14,6 +14,7 @@ using namespace gui;
 #define Bit_Name 1 << 0
 #define Bit_Version 1 << 1
 #define Bit_Graphics_GPUPrefs 1 << 2
+#define Bit_Graphics_Shader 1 << 3
 
 std::shared_ptr<AssetEditor> EditorProject::create(std::shared_ptr<memory::MemoryChunk> mem)
 {
@@ -42,6 +43,8 @@ void EditorProject::setAsset(asset::AssetPtrStrong assetGeneric)
 
 	this->mSavedShaderVert = asset->mVertexShader;
 	this->mFieldShaderVert.updateAssetList(asset->mVertexShader.getTypeFilter());
+	this->mSavedShaderFrag = asset->mFragmentShader;
+	this->mFieldShaderFrag.updateAssetList(asset->mFragmentShader.getTypeFilter());
 
 }
 
@@ -83,7 +86,11 @@ void EditorProject::renderContent()
 	//ImGui::SameLine();
 	if (this->mFieldShaderVert.render("vertShader", "Vertex Shader", this->mSavedShaderVert.path()))
 	{
-
+		this->markAssetDirty(Bit_Graphics_Shader);
+	}
+	if (this->mFieldShaderFrag.render("fragShader", "Fragment Shader", this->mSavedShaderFrag.path()))
+	{
+		this->markAssetDirty(Bit_Graphics_Shader);
 	}
 
 }
@@ -94,5 +101,7 @@ void EditorProject::saveAsset()
 	asset->setName(this->mFieldName.string());
 	asset->setVersion(this->mSavedVersion);
 	asset->setPhysicalDevicePreference(this->mGpuPreference.value());
+	asset->mVertexShader = this->mSavedShaderVert;
+	asset->mFragmentShader = this->mSavedShaderFrag;
 	AssetEditor::saveAsset();
 }

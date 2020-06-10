@@ -61,7 +61,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 			assetType = asset->getAssetType();
 		}
 
-		this->addScannedAsset(AssetPath(assetType, entry.path()));
+		this->addScannedAsset(AssetPath(assetType, std::filesystem::relative(entry.path(), directory.parent_path())));
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);

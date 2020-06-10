@@ -38,6 +38,8 @@ private:
 
 	asset::TypedAssetPath<asset::Shader> mSavedShaderVert;
 	gui::FieldAsset mFieldShaderVert;
+	asset::TypedAssetPath<asset::Shader> mSavedShaderFrag;
+	gui::FieldAsset mFieldShaderFrag;
 
 };
 

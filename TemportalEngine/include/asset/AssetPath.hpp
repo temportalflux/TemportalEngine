@@ -24,6 +24,7 @@ public:
 	operator bool() const { return this->isValid(); }
 	bool isValid() const;
 	AssetType type() const { return this->mType; }
+	std::string pathStr() const { return this->mPath.string(); }
 	std::string toString() const;
 	std::string toShortName() const;
 	std::string filename() const;

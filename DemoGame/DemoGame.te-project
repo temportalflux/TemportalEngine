@@ -54,6 +54,6 @@
 			}
 		]
 	},
-	"vertShader": "",
-	"fragShader": ""
+	"vertShader": "shader:assets/shaders/TriangleVertex.te-asset",
+	"fragShader": "shader:assets/shaders/TriangleFragment.te-asset"
 }

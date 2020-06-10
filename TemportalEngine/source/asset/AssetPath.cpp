@@ -17,7 +17,7 @@ bool AssetPath::isValid() const
 
 std::string AssetPath::toString() const
 {
-	return this->mType + ":" + this->mPath.string();
+	return this->mType + ":" + this->mPath.generic_string();
 }
 
 std::string AssetPath::toShortName() const
