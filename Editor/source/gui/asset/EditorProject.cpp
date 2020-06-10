@@ -4,6 +4,7 @@
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 #include "gui/widget/Optional.hpp"
+#include "asset/Shader.hpp"
 
 #include <imgui.h>
 
@@ -39,6 +40,9 @@ void EditorProject::setAsset(asset::AssetPtrStrong assetGeneric)
 		this->mGpuPreference = gui::PropertyGpuPreference(asset->getPhysicalDevicePreference());
 	}
 
+	this->mSavedShaderVert = asset->mVertexShader;
+	this->mFieldShaderVert.updateAssetList(asset->mVertexShader.getTypeFilter());
+
 }
 
 void EditorProject::renderContent()
@@ -72,24 +76,16 @@ void EditorProject::renderContent()
 		}
 		ImGui::TreePop();
 	}
-}
 
-bool EditorProject::renderIntegerTestItem(ui32 &item)
-{
-	return gui::FieldNumber<ui32, 1>::InlineSingle("##value", item);
-}
+	// TEMPORARY ASSETPATH PROPERTIES
+	//auto str = this->mSavedShaderVert.toString();
+	//ImGui::InputText("Vertex Shader", str.data(), str.size(), ImGuiInputTextFlags_ReadOnly);
+	//ImGui::SameLine();
+	if (this->mFieldShaderVert.render("vertShader", "Vertex Shader", this->mSavedShaderVert.path()))
+	{
 
-bool EditorProject::renderMapTestKey(std::pair<std::string, std::optional<ui32>> &item)
-{
-	return gui::FieldText<32>::Inline("##value", item.first);
-}
+	}
 
-bool EditorProject::renderMapTestValue(std::pair<std::string, std::optional<ui32>> &item)
-{
-	return gui::Optional<ui32>::Inline(item.second, "Required", false, [](ui32 &value) {
-		ImGui::SameLine();
-		return gui::FieldNumber<ui32, 1>::InlineSingle("##value", value);
-	});
 }
 
 void EditorProject::saveAsset()

@@ -193,6 +193,7 @@
     <ClCompile Include="source\gui\modal\NewAsset.cpp" />
     <ClCompile Include="source\gui\modal\OpenAsset.cpp" />
     <ClCompile Include="source\gui\TextEditor.cpp" />
+    <ClCompile Include="source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\TaskCompileShader.cpp" />
   </ItemGroup>
@@ -220,6 +221,7 @@
     <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
     <ClInclude Include="include\gui\TextEditor.h" />
     <ClInclude Include="include\gui\widget\Combo.hpp" />
+    <ClInclude Include="include\gui\widget\FieldAsset.hpp" />
     <ClInclude Include="include\gui\widget\FieldNumber.hpp" />
     <ClInclude Include="include\gui\widget\FieldText.hpp" />
     <ClInclude Include="include\gui\widget\List.hpp" />

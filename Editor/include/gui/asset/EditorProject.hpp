@@ -2,12 +2,15 @@
 
 #include "gui/asset/AssetEditor.hpp"
 
+#include "asset/TypedAssetPath.hpp"
 #include "gui/graphics/PropertyGpuPreference.hpp"
 #include "gui/widget/FieldNumber.hpp"
 #include "gui/widget/FieldText.hpp"
-#include "gui/widget/List.hpp"
+#include "gui/widget/FieldAsset.hpp"
 
 #include <version.h>
+
+FORWARD_DEF(NS_ASSET, class Shader);
 
 NS_GUI
 
@@ -33,9 +36,8 @@ private:
 	// Graphics
 	gui::PropertyGpuPreference mGpuPreference;
 
-	bool renderIntegerTestItem(ui32 &item);
-	bool renderMapTestKey(std::pair<std::string, std::optional<ui32>> &item);
-	bool renderMapTestValue(std::pair<std::string, std::optional<ui32>> &item);
+	asset::TypedAssetPath<asset::Shader> mSavedShaderVert;
+	gui::FieldAsset mFieldShaderVert;
 
 };
 

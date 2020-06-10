@@ -61,16 +61,16 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 			assetType = asset->getAssetType();
 		}
 
-		this->addScannedAsset({ assetType, entry.path() });
+		this->addScannedAsset(AssetPath(assetType, entry.path()));
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
 }
 
-void AssetManager::addScannedAsset(AssetMetadata metadata)
+void AssetManager::addScannedAsset(AssetPath metadata)
 {
-	this->mScannedAssetPathsByExtension.insert(std::make_pair(metadata.path.extension().string(), metadata.path));
-	this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.path.string(), metadata));
+	this->mScannedAssetPathsByExtension.insert(std::make_pair(metadata.extension(), metadata));
+	this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.toAbsolutePath().string(), metadata));
 }
 
 std::set<AssetType> AssetManager::getAssetTypes() const
@@ -109,10 +109,30 @@ void AssetManager::registerType(AssetType type, AssetTypeMetadata metadata)
 	}
 }
 
-std::optional<AssetMetadata> AssetManager::getAssetMetadata(std::filesystem::path filePath) const
+std::optional<AssetPath> AssetManager::getAssetMetadata(std::filesystem::path filePath) const
 {
 	auto iter = this->mScannedAssetMetadataByPath.find(filePath.string());
 	return iter == this->mScannedAssetMetadataByPath.end() ? std::nullopt : std::make_optional(iter->second);
+}
+
+std::vector<AssetPath> AssetManager::getAssetList() const
+{
+	auto paths = std::vector<AssetPath>();
+	std::transform(
+		this->mScannedAssetPathsByExtension.begin(),
+		this->mScannedAssetPathsByExtension.end(),
+		std::back_inserter(paths), [](auto pair) { return pair.second; }
+	);
+	return paths;
+}
+
+std::vector<AssetPath> AssetManager::getAssetList(AssetType type) const
+{
+	auto metadata = this->getAssetTypeMetadata(type);
+	auto iters = this->mScannedAssetPathsByExtension.equal_range(metadata.fileExtension);
+	auto paths = std::vector<AssetPath>(std::distance(iters.first, iters.second));
+	std::transform(iters.first, iters.second, paths.begin(), [](auto pair) { return pair.second; });
+	return paths;
 }
 
 std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem::path filePath)
@@ -136,7 +156,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 		}
 		else
 		{
-			auto assetTypeMeta = this->getAssetTypeMetadata(assetMeta.value().type);
+			auto assetTypeMeta = this->getAssetTypeMetadata(assetMeta.value().type());
 			if (assetTypeMeta.onAssetDeleted.has_value())
 			{
 				assetTypeMeta.onAssetDeleted.value()(filePath);

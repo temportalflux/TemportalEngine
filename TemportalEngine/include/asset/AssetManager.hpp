@@ -29,19 +29,6 @@ struct AssetTypeMetadata
 	std::optional<std::function<void(std::filesystem::path filePath)>> onAssetDeleted;
 };
 
-/**
- * Metadata information about a specific asset instance.
- * TODO: This is basically the asset-id (type and path).
- */
-struct AssetMetadata
-{
-	AssetType type;
-	/**
-	 * The location of the asset relative to the directory passed to `AssetManager#scanAssetDirectory`.
-	 */
-	std::filesystem::path path;
-};
-
 class AssetManager
 {
 
@@ -68,16 +55,20 @@ public:
 	 * Recursively scans all files in the directory and catalogs any files
 	 * whose extensions are known (based on asset types cataloged by `registerType`).
 	 * Performs a read operation on each file with a known extension to determine its `AssetType`.
-	 * Generally collects `AssetMetadata`.
+	 * Generally collects `AssetPath`.
 	 */
 	void scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type);
 
+	void registerType(AssetType type, AssetTypeMetadata metadata);
 	std::set<AssetType> getAssetTypes() const;
 	bool isValidAssetExtension(std::string extension) const;
+
 	AssetTypeMetadata getAssetTypeMetadata(AssetType type) const;
 	std::string getAssetTypeDisplayName(AssetType type) const;
-	std::optional<AssetMetadata> getAssetMetadata(std::filesystem::path filePath) const;
-	void registerType(AssetType type, AssetTypeMetadata metadata);
+	std::optional<AssetPath> getAssetMetadata(std::filesystem::path filePath) const;
+
+	std::vector<AssetPath> getAssetList() const;
+	std::vector<AssetPath> getAssetList(AssetType type) const;
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
 	void deleteFile(std::filesystem::path filePath);
@@ -110,15 +101,15 @@ private:
 	 * Initially populated by `scanAssetDirectory`.
 	 * Can be modified when assets are created by `createAsset` or when they are destroyed (TODO: Assets cannot yet be destroyed without editing files directly).
 	 */
-	std::unordered_multimap<std::string, std::filesystem::path> mScannedAssetPathsByExtension;
+	std::unordered_multimap<std::string, AssetPath> mScannedAssetPathsByExtension;
 	/**
 	 * A map of an asset's path (relative to the directory passed to `scanAssetDirectory`) to all known assets.
 	 * Initially populated by `scanAssetDirectory`.
 	 * Can be modified when assets are created by `createAsset` or when they are destroyed (TODO: Assets cannot yet be destroyed without editing files directly).
 	 */
-	std::unordered_multimap<std::string, AssetMetadata> mScannedAssetMetadataByPath;
+	std::unordered_map<std::string, AssetPath> mScannedAssetMetadataByPath;
 
-	void addScannedAsset(AssetMetadata metadata);
+	void addScannedAsset(AssetPath metadata);
 
 };
 

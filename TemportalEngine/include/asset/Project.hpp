@@ -43,15 +43,15 @@ public:
 
 	graphics::LogicalDeviceInfo getGraphicsDeviceInitInfo() const;
 
+	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor/pipeline asset when one is available.
+	TypedAssetPath<asset::Shader> mVertexShader;
+	TypedAssetPath<asset::Shader> mFragmentShader;
+
 private:
 	std::string mName;
 	Version mVersion;
 
 	graphics::PhysicalDevicePreference mGraphicsDevicePreference;
-
-	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor/pipeline asset when one is available.
-	TypedAssetPath<asset::Shader> mVertexShader;
-	TypedAssetPath<asset::Shader> mFragmentShader;
 
 #pragma region Serialization
 protected:

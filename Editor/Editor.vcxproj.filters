@@ -147,6 +147,9 @@
     <ClCompile Include="source\gui\graphics\PropertyGpuPreference.cpp">
       <Filter>Source Files\gui\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\widget\FieldAsset.cpp">
+      <Filter>Source Files\gui\widget</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -238,6 +241,9 @@
     </ClInclude>
     <ClInclude Include="include\gui\graphics\PropertyGpuPreference.hpp">
       <Filter>Header Files\gui\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\widget\FieldAsset.hpp">
+      <Filter>Header Files\gui\widget</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

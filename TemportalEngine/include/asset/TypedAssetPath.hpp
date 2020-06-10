@@ -19,7 +19,10 @@ public:
 		return TypedAssetPath<TAsset>(AssetPath::fromString(fullStr));
 	}
 
+	AssetType getTypeFilter() const { return TAsset::StaticType(); }
+
 	std::string toString() const { return this->mPath.toString(); }
+	AssetPath& path() { return this->mPath; }
 
 	std::shared_ptr<TAsset> load(asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true)
 	{

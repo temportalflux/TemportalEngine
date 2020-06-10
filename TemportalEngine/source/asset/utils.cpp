@@ -18,7 +18,7 @@ std::shared_ptr<asset::Asset> asset::readAssetFromDisk(std::filesystem::path fil
 
 	// Read the asset using the base asset class to determine the asset type that is stored
 	auto assetMetadata = assetManager->getAssetMetadata(filePath);
-	AssetType assetType = assetMetadata ? assetMetadata->type : "invalid";
+	AssetType assetType = assetMetadata ? assetMetadata->type() : "invalid";
 	if (!assetMetadata)
 	{
 		if (bShouldHaveBeenScanned)

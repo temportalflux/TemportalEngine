@@ -23,8 +23,11 @@ public:
 
 	operator bool() const { return this->isValid(); }
 	bool isValid() const;
+	AssetType type() const { return this->mType; }
 	std::string toString() const;
 	std::string toShortName() const;
+	std::string filename() const;
+	std::string extension() const;
 	std::filesystem::path toAbsolutePath() const;
 
 	static AssetPath fromString(std::string fullStr)

@@ -15,10 +15,10 @@ class FieldText
 
 public:
 
-	static bool Inline(std::string title, std::string &value, f32 width = 0)
+	static bool Inline(std::string title, std::string &value, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None)
 	{
 		auto field = gui::FieldText<32>().string(value);
-		auto bChanged = field.render(title, width);
+		auto bChanged = field.render(title, flags);
 		if (bChanged) value = field.string();
 		return bChanged;
 	}
@@ -35,12 +35,9 @@ public:
 		return utility::createStringFromFixedArray(this->mRawString);
 	}
 
-	bool render(std::string title, f32 width=0)
+	bool render(std::string title, ImGuiInputTextFlags flags = ImGuiInputTextFlags_None)
 	{
-		ImGui::PushItemWidth(width);
-		auto bHasChanged = ImGui::InputText(title.c_str(), this->mRawString.data(), this->mRawString.size());
-		ImGui::PopItemWidth();
-		return bHasChanged;
+		return ImGui::InputText(title.c_str(), this->mRawString.data(), this->mRawString.size(), flags);
 	}
 
 private:

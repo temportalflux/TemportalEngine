@@ -44,10 +44,10 @@ public:
 		return Inline(title.c_str(), this->mOptions, this->mSelected, this->mfToString, this->mfToId);
 	}
 
-	static bool Inline(const char* titleId, OptionsList const &options, T &selected, ToStringFunctor toString, PushIdFunctor pushId)
+	static bool Inline(const char* titleId, OptionsList const &options, T &selected, ToStringFunctor toString, PushIdFunctor pushId, ImGuiComboFlags flags = ImGuiComboFlags_None)
 	{
 		bool bHasChanged = false;
-		if (ImGui::BeginCombo(titleId, toString(selected).c_str(), ImGuiComboFlags_None))
+		if (ImGui::BeginCombo(titleId, toString(selected).c_str(), flags))
 		{
 			for (const auto& option : options)
 			{

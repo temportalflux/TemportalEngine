@@ -25,6 +25,16 @@ std::string AssetPath::toShortName() const
 	return this->mType + ":" + this->mPath.stem().string();
 }
 
+std::string AssetPath::filename() const
+{
+	return this->mPath.stem().string();
+}
+
+std::string AssetPath::extension() const
+{
+	return this->mPath.extension().string();
+}
+
 std::filesystem::path AssetPath::toAbsolutePath() const
 {
 	if (this->mbIsAbsolute) return this->mPath;
