@@ -257,7 +257,6 @@ int main(int argc, char *argv[])
 #pragma endregion
 
 			pEngine->start();
-			//mvp.model = glm::mat4(1);
 			auto prevTime = std::chrono::high_resolution_clock::now();
 			float deltaTime = 0.0f;
 			while (pEngine->isActive())
