@@ -28,6 +28,7 @@ NS_GRAPHICS
 class VulkanInstance;
 class PhysicalDevicePreference;
 class ShaderModule;
+class Uniform;
 
 class VulkanRenderer
 {
@@ -46,7 +47,7 @@ public:
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
 	virtual void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
-	void setUniformData(void* ptr, uSize size);
+	void addUniform(std::shared_ptr<Uniform> uniform);
 
 	template <typename TVertex, ui64 VertexSize>
 	void writeVertexData(ui64 offset, std::array<TVertex, VertexSize> verticies)
@@ -128,10 +129,10 @@ protected:
 	Buffer mVertexBuffer;
 	Buffer mIndexBuffer;
 	vk::IndexType mIndexBufferUnitType;
+
+	std::vector<std::shared_ptr<Uniform>> mUniformPts;
+	ui64 mTotalUniformSize;
 	std::vector<Buffer> mUniformBuffers;
-	// TODO: Find a safer way to store uniform information
-	void* mpUniformObject;
-	uSize mUniformObjectSize;
 	vk::UniqueDescriptorPool mDescriptorPool;
 	vk::UniqueDescriptorSetLayout mDescriptorLayout;
 	std::vector<vk::DescriptorSet> mDescriptorSets;

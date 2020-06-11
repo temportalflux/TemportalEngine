@@ -411,7 +411,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp">
       <Filter>asset</Filter>
     </ClInclude>
@@ -442,6 +441,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\utils.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Uniform.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
+      <Filter>memory</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

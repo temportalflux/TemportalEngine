@@ -143,6 +143,25 @@ public:
 		return std::allocate_shared<T>(internalAllocator, args...);
 	}
 
+	template <typename T>
+	T* allocate()
+	{
+		void* ptr = nullptr;
+		this->mLock.lock();
+		uSize size = sizeof(T);
+		a3_mem_manager_alloc(this->mpMemoryManager, size, &ptr);
+		this->mLock.unlock();
+		return static_cast<T*>(ptr);
+	}
+
+	template <typename T>
+	void deallocate(T* ptr)
+	{
+		this->mLock.lock();
+		a3_mem_manager_dealloc(this->mpMemoryManager, ptr);
+		this->mLock.unlock();
+	}
+
 private:
 	bool bUsedMalloc;
 

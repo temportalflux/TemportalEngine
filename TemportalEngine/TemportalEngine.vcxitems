@@ -109,6 +109,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\types.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Uniform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VertexDescription.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanApi.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp" />

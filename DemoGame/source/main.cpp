@@ -4,6 +4,7 @@
 #include "Window.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
+#include "graphics/Uniform.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -34,6 +35,13 @@ struct ModelViewProjection
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
+
+	ModelViewProjection()
+	{
+		model = glm::mat4(1);
+		view = glm::mat4(1);
+		proj = glm::mat4(1);
+	}
 };
 
 /*
@@ -119,7 +127,7 @@ int main(int argc, char *argv[])
 		{
 			auto project = asset::TypedAssetPath<asset::Project>(
 				asset::AssetPath("project", std::filesystem::absolute("DemoGame.te-project"), true)
-			).load(asset::EAssetSerialization::Binary, false);
+				).load(asset::EAssetSerialization::Binary, false);
 			pEngine->setProject(project);
 			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 		}
@@ -164,109 +172,117 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		ModelViewProjection mvp;
+		{
+			// Will release memory allocated when it goes out of scope
+			// TODO: Use dedicated graphics memory
+			auto mvpUniform = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
 
 #pragma region Vulkan
-		auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
-		// TODO: Wrap these methods in a renderer creation method in engine
-		auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
-		renderer.setPhysicalDevicePreference(pEngine->getProject()->getPhysicalDevicePreference());
-		renderer.setLogicalDeviceInfo(pEngine->getProject()->getGraphicsDeviceInitInfo());
+			auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+			// TODO: Wrap these methods in a renderer creation method in engine
+			auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
+			renderer.setPhysicalDevicePreference(pEngine->getProject()->getPhysicalDevicePreference());
+			renderer.setLogicalDeviceInfo(pEngine->getProject()->getGraphicsDeviceInitInfo());
 #ifndef NDEBUG
-		renderer.setValidationLayers(engine::Engine::VulkanValidationLayers);
+			renderer.setValidationLayers(engine::Engine::VulkanValidationLayers);
 #endif
 
-		// TODO: Configure this per project
-		renderer.setSwapChainInfo(
-			graphics::SwapChainInfo()
-			.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
-			.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
-			.addPresentModePreference(vk::PresentModeKHR::eMailbox)
-			.addPresentModePreference(vk::PresentModeKHR::eFifo)
-		);
+			// TODO: Configure this per project
+			renderer.setSwapChainInfo(
+				graphics::SwapChainInfo()
+				.addFormatPreference(vk::Format::eB8G8R8A8Srgb)
+				.setColorSpace(vk::ColorSpaceKHR::eSrgbNonlinear)
+				.addPresentModePreference(vk::PresentModeKHR::eMailbox)
+				.addPresentModePreference(vk::PresentModeKHR::eFifo)
+			);
 
-		// TODO: Configure this per image view (render target)
-		// TODO: Image views only need the format from the swapchain. They can be created independently of it too.
-		renderer.setImageViewInfo(
-			{
-				vk::ImageViewType::e2D,
+			// TODO: Configure this per image view (render target)
+			// TODO: Image views only need the format from the swapchain. They can be created independently of it too.
+			renderer.setImageViewInfo(
 				{
-					vk::ComponentSwizzle::eIdentity,
-					vk::ComponentSwizzle::eIdentity,
-					vk::ComponentSwizzle::eIdentity,
-					vk::ComponentSwizzle::eIdentity
-				}
-			}
-		);
-
-		renderer.setUniformData(&mvp, sizeof(mvp));
-
-		// Initialize required api connections
-		renderer.initializeDevices();
-
-		// Create shaders
-		{
-			auto assetManager = asset::AssetManager::get();
-			// Vertex Shader from asset
-			{
-				std::shared_ptr<graphics::ShaderModule> shaderModule;
-				// Make module from shader binary in asset
-				{
-					shaderModule = pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule();
-				}
-				// Set the description for the input
-				shaderModule->setVertexDescription(
+					vk::ImageViewType::e2D,
 					{
-						sizeof(Vertex),
-						{
-							{ "position", CREATE_ATTRIBUTE(Vertex, position) },
-							{ "color", CREATE_ATTRIBUTE(Vertex, color) }
-						}
+						vk::ComponentSwizzle::eIdentity,
+						vk::ComponentSwizzle::eIdentity,
+						vk::ComponentSwizzle::eIdentity,
+						vk::ComponentSwizzle::eIdentity
 					}
-				);
-				renderer.addShader(shaderModule);
+				}
+			);
+
+			renderer.addUniform(mvpUniform);
+
+			// Initialize required api connections
+			renderer.initializeDevices();
+
+			// Create shaders
+			{
+				auto assetManager = asset::AssetManager::get();
+				// Vertex Shader from asset
+				{
+					std::shared_ptr<graphics::ShaderModule> shaderModule;
+					// Make module from shader binary in asset
+					{
+						shaderModule = pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule();
+					}
+					// Set the description for the input
+					shaderModule->setVertexDescription(
+						{
+							sizeof(Vertex),
+							{
+								{ "position", CREATE_ATTRIBUTE(Vertex, position) },
+								{ "color", CREATE_ATTRIBUTE(Vertex, color) }
+							}
+						}
+					);
+					renderer.addShader(shaderModule);
+				}
+				// Fragment Shader from asset
+				renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
 			}
-			// Fragment Shader from asset
-			renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
-		}
 
-		// Initialize the rendering api connections
-		renderer.createInputBuffers(
-			sizeof(Vertex) * (ui32)vertices.size(),
-			sizeof(ui16) * (ui32)indices.size()
-		);
-		renderer.writeVertexData(0, vertices);
-		renderer.writeIndexData(0, indices);
+			// Initialize the rendering api connections
+			renderer.createInputBuffers(
+				sizeof(Vertex) * (ui32)vertices.size(),
+				sizeof(ui16) * (ui32)indices.size()
+			);
+			renderer.writeVertexData(0, vertices);
+			renderer.writeIndexData(0, indices);
 
-		renderer.createRenderChain();
-		renderer.finalizeInitialization();
+			renderer.createRenderChain();
+			renderer.finalizeInitialization();
 
-		// Give the window its renderer
-		pWindow->setRenderer(&renderer);
+			// Give the window its renderer
+			pWindow->setRenderer(&renderer);
 #pragma endregion
 
-		pEngine->start();
-		mvp.model = glm::mat4(1);
-		auto prevTime = std::chrono::high_resolution_clock::now();
-		float deltaTime = 0.0f;
-		while (pEngine->isActive())
-		{
-			mvp.model = glm::rotate(mvp.model, deltaTime * glm::radians(90.0f), glm::vec3(0, 0, 1));
-			mvp.view = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 0, 1));
-			mvp.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
-			mvp.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+			pEngine->start();
+			//mvp.model = glm::mat4(1);
+			auto prevTime = std::chrono::high_resolution_clock::now();
+			float deltaTime = 0.0f;
+			while (pEngine->isActive())
+			{
+				{
+					auto uniData = mvpUniform->read<ModelViewProjection>();
+					uniData.model = glm::rotate(uniData.model, deltaTime * glm::radians(90.0f), glm::vec3(0, 0, 1));
+					uniData.view = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 0, 1));
+					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
+					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+					mvpUniform->write(&uniData);
+				}
 
-			pEngine->update();
+				pEngine->update();
 
-			auto nextTime = std::chrono::high_resolution_clock::now();
-			deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
-			prevTime = nextTime;
+				auto nextTime = std::chrono::high_resolution_clock::now();
+				deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
+				prevTime = nextTime;
+			}
+			pEngine->joinThreads();
+
+			// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
+
+			renderer.invalidate();
 		}
-		pEngine->joinThreads();
-
-		// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
-
-		renderer.invalidate();
 
 		engine::Engine::Get()->destroyWindow(pWindow);
 		pWindow.reset();

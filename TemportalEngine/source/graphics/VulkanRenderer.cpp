@@ -2,6 +2,7 @@
 
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/ShaderModule.hpp"
+#include "graphics/Uniform.hpp"
 
 using namespace graphics;
 
@@ -62,10 +63,10 @@ void VulkanRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 	this->mPipeline.addShader(shader);
 }
 
-void VulkanRenderer::setUniformData(void* ptr, uSize size)
+void VulkanRenderer::addUniform(std::shared_ptr<Uniform> uniform)
 {
-	this->mpUniformObject = ptr;
-	this->mUniformObjectSize = size;
+	this->mUniformPts.push_back(uniform);
+	this->mTotalUniformSize += uniform->size();
 }
 
 void VulkanRenderer::initializeDevices()
@@ -238,7 +239,7 @@ void VulkanRenderer::createUniformBuffers()
 		buffer
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
 			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-			.setSize(this->mUniformObjectSize)
+			.setSize(this->mTotalUniformSize)
 			.create(&this->mLogicalDevice);
 	}
 }
@@ -251,21 +252,33 @@ void VulkanRenderer::destroyUniformBuffers()
 void VulkanRenderer::createDescriptorPool()
 {
 	auto setCount = (ui32)this->mImageViews.size();
-	auto poolSize = vk::DescriptorPoolSize()
-		.setType(vk::DescriptorType::eUniformBuffer)
-		.setDescriptorCount(setCount);
+	auto uniformDescriptorCount = (ui32)this->mUniformPts.size();
+	auto idxUniformBufferBinding = 0;
+
+	std::vector<vk::DescriptorPoolSize> poolSizes = {
+		// Uniform Buffer Pool size
+		vk::DescriptorPoolSize()
+			.setType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(setCount * uniformDescriptorCount)
+	};
 	this->mDescriptorPool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
-		.setPoolSizeCount(1).setPPoolSizes(&poolSize)
+		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(setCount)
 	);
 
-	auto bindingInfo = vk::DescriptorSetLayoutBinding()
-		.setBinding(0).setDescriptorType(vk::DescriptorType::eUniformBuffer)
-		.setDescriptorCount(1)
-		.setStageFlags(vk::ShaderStageFlagBits::eVertex);
-	auto layoutInfo = vk::DescriptorSetLayoutCreateInfo().setBindingCount(1).setPBindings(&bindingInfo);
-	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(layoutInfo);
+	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
+		// Uniform Buffer Binding
+		vk::DescriptorSetLayoutBinding()
+		.setBinding(idxUniformBufferBinding)
+		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorCount(uniformDescriptorCount)
+		.setStageFlags(vk::ShaderStageFlagBits::eVertex)
+	};
+	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
+		vk::DescriptorSetLayoutCreateInfo()
+		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
+	);
 
 	std::vector<vk::DescriptorSetLayout> layouts(setCount, this->mDescriptorLayout.get());
 	// will be deallocated when the pool is destroyed
@@ -278,16 +291,20 @@ void VulkanRenderer::createDescriptorPool()
 
 	for (uSize i = 0; i < setCount; ++i)
 	{
-		auto bufferInfo = vk::DescriptorBufferInfo()
+		auto uniformBufferInfo = vk::DescriptorBufferInfo()
 			.setBuffer(*reinterpret_cast<vk::Buffer*>(this->mUniformBuffers[i].get()))
-			.setOffset(0).setRange(this->mUniformObjectSize);
-		auto descriptorWrite = vk::WriteDescriptorSet()
-			.setDstSet(this->mDescriptorSets[i])
-			.setDstBinding(0).setDstArrayElement(0)
+			.setOffset(0)
+			.setRange(this->mTotalUniformSize);
+
+		auto writeDescriptorUniform = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDescriptorCount(1)
-			.setPBufferInfo(&bufferInfo).setPImageInfo(nullptr).setPTexelBufferView(nullptr);
-		this->mLogicalDevice.mDevice->updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+			.setDescriptorCount(uniformDescriptorCount)
+			.setDstSet(this->mDescriptorSets[i])
+			.setDstBinding(idxUniformBufferBinding).setDstArrayElement(0)
+			.setPBufferInfo(&uniformBufferInfo);
+
+		std::vector<vk::WriteDescriptorSet> writes = { writeDescriptorUniform };
+		this->mLogicalDevice.mDevice->updateDescriptorSets((ui32)writes.size(), writes.data(), 0, nullptr);
 	}
 }
 
@@ -396,7 +413,15 @@ bool VulkanRenderer::acquireNextImage()
 
 void VulkanRenderer::updateUniformBuffer(ui32 idxImageView)
 {
-	this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, 0, this->mpUniformObject, this->mUniformObjectSize);
+	ui64 offset = 0;
+	for (auto& uniformPtr : this->mUniformPts)
+	{
+		auto uniformSize = uniformPtr->size();
+		uniformPtr->beginReading();
+		this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, offset, uniformPtr->data(), uniformSize);
+		uniformPtr->endReading();
+		offset += uniformSize;
+	}
 }
 
 void VulkanRenderer::render()
