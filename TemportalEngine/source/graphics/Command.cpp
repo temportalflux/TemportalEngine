@@ -43,6 +43,15 @@ Command& Command::bindPipeline(Pipeline const *pPipeline)
 	return *this;
 }
 
+Command& Command::bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set)
+{
+	this->mpBuffer->mInternal->bindDescriptorSets(
+		vk::PipelineBindPoint::eGraphics, pPipeline->mLayout.get(),
+		0, 1, set, 0, nullptr
+	);
+	return *this;
+}
+
 Command& Command::bindVertexBuffers(std::vector<Buffer*> const pBuffers)
 {
 	ui32 bufferCount = (ui32)pBuffers.size();

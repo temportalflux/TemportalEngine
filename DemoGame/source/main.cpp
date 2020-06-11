@@ -14,7 +14,11 @@
 #include <iostream>
 #include <stdarg.h>
 #include <time.h>
+
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <chrono>
 
 using namespace std;
 
@@ -22,6 +26,14 @@ struct Vertex
 {
 	glm::vec2 position;
 	glm::vec3 color;
+};
+
+// UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
+struct ModelViewProjection
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
 };
 
 /*
@@ -152,6 +164,8 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
+		ModelViewProjection mvp;
+
 #pragma region Vulkan
 		auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
 		// TODO: Wrap these methods in a renderer creation method in engine
@@ -184,6 +198,8 @@ int main(int argc, char *argv[])
 				}
 			}
 		);
+
+		renderer.setUniformData(&mvp, sizeof(mvp));
 
 		// Initialize required api connections
 		renderer.initializeDevices();
@@ -230,9 +246,21 @@ int main(int argc, char *argv[])
 #pragma endregion
 
 		pEngine->start();
+		mvp.model = glm::mat4(1);
+		auto prevTime = std::chrono::high_resolution_clock::now();
+		float deltaTime = 0.0f;
 		while (pEngine->isActive())
 		{
+			mvp.model = glm::rotate(mvp.model, deltaTime * glm::radians(90.0f), glm::vec3(0, 0, 1));
+			mvp.view = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 0, 1));
+			mvp.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
+			mvp.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+
 			pEngine->update();
+
+			auto nextTime = std::chrono::high_resolution_clock::now();
+			deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
+			prevTime = nextTime;
 		}
 		pEngine->joinThreads();
 

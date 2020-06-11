@@ -43,7 +43,7 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass)
+Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<vk::DescriptorSetLayout> layouts)
 {
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
@@ -78,7 +78,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eClockwise)
+		.setFrontFace(vk::FrontFace::eCounterClockwise)
 		.setDepthBiasEnable(false)
 		.setDepthBiasConstantFactor(0.0f)
 		.setDepthBiasClamp(0.0f)
@@ -111,8 +111,9 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		.setPDynamicStates(dynamicStates);
 	// TODO (END)
 
-	this->mLayout = pDevice->mDevice->createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo()
-		.setSetLayoutCount(0).setPushConstantRangeCount(0)
+	this->mLayout = pDevice->mDevice->createPipelineLayoutUnique(
+		vk::PipelineLayoutCreateInfo().setPushConstantRangeCount(0)
+		.setSetLayoutCount((ui32)layouts.size()).setPSetLayouts(layouts.data())
 	);
 	this->mCache = pDevice->mDevice->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 

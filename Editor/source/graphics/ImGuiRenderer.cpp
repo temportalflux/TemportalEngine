@@ -35,7 +35,7 @@ ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : Vulk
 void ImGuiRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
-	this->mDescriptorPool = this->createDescriptorPool();
+	this->mDescriptorPool = this->createDescriptorPoolImgui();
 }
 
 void ImGuiRenderer::invalidate()
@@ -55,7 +55,7 @@ void ImGuiRenderer::invalidate()
 	VulkanRenderer::invalidate();
 }
 
-vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPool()
+vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPoolImgui()
 {
 	ui32 const poolSize = 1000;
 	std::vector<vk::DescriptorType> poolTypes = {

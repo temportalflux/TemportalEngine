@@ -40,11 +40,13 @@ public:
 	void setValidationLayers(std::vector<std::string> layers);
 	void setSwapChainInfo(SwapChainInfo const &info);
 	void setImageViewInfo(ImageViewInfo const &info);
+	f32 getAspectRatio() const;
 
 	virtual void initializeDevices();
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
 	virtual void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
+	void setUniformData(void* ptr, uSize size);
 
 	template <typename TVertex, ui64 VertexSize>
 	void writeVertexData(ui64 offset, std::array<TVertex, VertexSize> verticies)
@@ -126,6 +128,13 @@ protected:
 	Buffer mVertexBuffer;
 	Buffer mIndexBuffer;
 	vk::IndexType mIndexBufferUnitType;
+	std::vector<Buffer> mUniformBuffers;
+	// TODO: Find a safer way to store uniform information
+	void* mpUniformObject;
+	uSize mUniformObjectSize;
+	vk::UniqueDescriptorPool mDescriptorPool;
+	vk::UniqueDescriptorSetLayout mDescriptorLayout;
+	std::vector<vk::DescriptorSet> mDescriptorSets;
 
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
@@ -163,6 +172,12 @@ protected:
 	virtual void createCommandObjects();
 	virtual void destroyCommandObjects();
 	virtual void destroyInputBuffers();
+	virtual void createUniformBuffers();
+	virtual void destroyUniformBuffers();
+	virtual void createDescriptorPool();
+	virtual void destroyDescriptorPool();
+
+	virtual void updateUniformBuffer(ui32 idxImageView);
 
 	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
 	virtual void createFrames(uSize viewCount);

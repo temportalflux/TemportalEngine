@@ -38,7 +38,7 @@ private:
 	vk::UniqueDescriptorPool mDescriptorPool;
 	std::vector<graphics::ImGuiFrame> mGuiFrames;
 
-	vk::UniqueDescriptorPool createDescriptorPool();
+	vk::UniqueDescriptorPool createDescriptorPoolImgui();
 	void submitFonts();
 
 	std::unordered_map<std::string, std::shared_ptr<gui::IGui>> mGuis;
@@ -53,6 +53,11 @@ protected:
 	void destroyCommandObjects() override {}
 	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
 	void destroyInputBuffers() override {}
+	void createUniformBuffers() override {}
+	void destroyUniformBuffers() override {}
+	void updateUniformBuffer(ui32 idxImageView) override {}
+	void createDescriptorPool() override {}
+	void destroyDescriptorPool() override {}
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

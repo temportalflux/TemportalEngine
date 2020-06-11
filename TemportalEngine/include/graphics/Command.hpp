@@ -28,6 +28,7 @@ public:
 
 	Command& beginRenderPass(RenderPass const *pRenderPass, FrameBuffer const *pFrameBuffer);
 	Command& bindPipeline(Pipeline const *pPipeline);
+	Command& bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set);
 	Command& bindVertexBuffers(std::vector<Buffer*> const pBuffers);
 	Command& bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexType indexType);
 	Command& draw(ui32 vertexCount);

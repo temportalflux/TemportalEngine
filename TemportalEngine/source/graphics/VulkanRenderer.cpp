@@ -51,9 +51,21 @@ void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
 	mImageViewInfo = info;
 }
 
+f32 VulkanRenderer::getAspectRatio() const
+{
+	auto resolution = this->mSwapChain.getResolution();
+	return resolution.width / (f32)resolution.height;
+}
+
 void VulkanRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 {
 	this->mPipeline.addShader(shader);
+}
+
+void VulkanRenderer::setUniformData(void* ptr, uSize size)
+{
+	this->mpUniformObject = ptr;
+	this->mUniformObjectSize = size;
 }
 
 void VulkanRenderer::initializeDevices()
@@ -99,6 +111,8 @@ void VulkanRenderer::invalidate()
 void VulkanRenderer::createRenderChain()
 {
 	this->createRenderObjects();
+	this->createUniformBuffers();
+	this->createDescriptorPool();
 	this->createCommandObjects();
 	this->createFrames(this->mImageViews.size());
 }
@@ -107,6 +121,8 @@ void VulkanRenderer::destroyRenderChain()
 {
 	this->destroyFrames();
 	this->destroyCommandObjects();
+	this->destroyDescriptorPool();
+	this->destroyUniformBuffers();
 	this->destroyRenderObjects();
 }
 
@@ -143,7 +159,7 @@ void VulkanRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass);
+	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout.get()));
 	
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -214,6 +230,74 @@ void VulkanRenderer::destroyInputBuffers()
 	this->mIndexBuffer.destroy();
 }
 
+void VulkanRenderer::createUniformBuffers()
+{
+	this->mUniformBuffers.resize(this->mImageViews.size());
+	for (auto& buffer : this->mUniformBuffers)
+	{
+		buffer
+			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
+			.setSize(this->mUniformObjectSize)
+			.create(&this->mLogicalDevice);
+	}
+}
+
+void VulkanRenderer::destroyUniformBuffers()
+{
+	this->mUniformBuffers.clear();
+}
+
+void VulkanRenderer::createDescriptorPool()
+{
+	auto setCount = (ui32)this->mImageViews.size();
+	auto poolSize = vk::DescriptorPoolSize()
+		.setType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorCount(setCount);
+	this->mDescriptorPool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
+		vk::DescriptorPoolCreateInfo()
+		.setPoolSizeCount(1).setPPoolSizes(&poolSize)
+		.setMaxSets(setCount)
+	);
+
+	auto bindingInfo = vk::DescriptorSetLayoutBinding()
+		.setBinding(0).setDescriptorType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorCount(1)
+		.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+	auto layoutInfo = vk::DescriptorSetLayoutCreateInfo().setBindingCount(1).setPBindings(&bindingInfo);
+	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(layoutInfo);
+
+	std::vector<vk::DescriptorSetLayout> layouts(setCount, this->mDescriptorLayout.get());
+	// will be deallocated when the pool is destroyed
+	this->mDescriptorSets = this->mLogicalDevice.mDevice->allocateDescriptorSets(
+		vk::DescriptorSetAllocateInfo()
+		.setDescriptorPool(this->mDescriptorPool.get())
+		.setDescriptorSetCount(setCount)
+		.setPSetLayouts(layouts.data())
+	);
+
+	for (uSize i = 0; i < setCount; ++i)
+	{
+		auto bufferInfo = vk::DescriptorBufferInfo()
+			.setBuffer(*reinterpret_cast<vk::Buffer*>(this->mUniformBuffers[i].get()))
+			.setOffset(0).setRange(this->mUniformObjectSize);
+		auto descriptorWrite = vk::WriteDescriptorSet()
+			.setDstSet(this->mDescriptorSets[i])
+			.setDstBinding(0).setDstArrayElement(0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorCount(1)
+			.setPBufferInfo(&bufferInfo).setPImageInfo(nullptr).setPTexelBufferView(nullptr);
+		this->mLogicalDevice.mDevice->updateDescriptorSets(1, &descriptorWrite, 0, nullptr);
+	}
+}
+
+void VulkanRenderer::destroyDescriptorPool()
+{
+	this->mDescriptorSets.clear();
+	this->mDescriptorLayout.reset();
+	this->mDescriptorPool.reset();
+}
+
 void VulkanRenderer::createFrames(uSize viewCount)
 {
 	this->mFrames.resize(viewCount);
@@ -246,6 +330,7 @@ void VulkanRenderer::recordCommandBufferInstructions()
 			.clear({ 0.0f, 0.0f, 0.0f, 1.0f })
 			.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i])
 			.bindPipeline(&this->mPipeline)
+			.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSets[i])
 			.bindVertexBuffers({ &this->mVertexBuffer })
 			.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
 			.draw(this->mIndexCount)
@@ -285,6 +370,8 @@ void VulkanRenderer::prepareRender()
 
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
 	currentFrame->markNotInFlight();
+
+	this->updateUniformBuffer((ui32)this->mIdxCurrentFrame);
 }
 
 bool VulkanRenderer::acquireNextImage()
@@ -305,6 +392,11 @@ bool VulkanRenderer::acquireNextImage()
 		return false;
 	}
 	return true;
+}
+
+void VulkanRenderer::updateUniformBuffer(ui32 idxImageView)
+{
+	this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, 0, this->mpUniformObject, this->mUniformObjectSize);
 }
 
 void VulkanRenderer::render()
