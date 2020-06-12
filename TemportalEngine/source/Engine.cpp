@@ -7,6 +7,7 @@
 #include "memory/MemoryManager.h"
 #include <string>
 #include "input/Queue.hpp"
+#include "graphics/VulkanRenderer.hpp"
 //#include "network/client/ServiceClient.hpp"
 //#include "network/server/ServiceServer.hpp"
 
@@ -197,6 +198,18 @@ graphics::VulkanInstance* Engine::initializeVulkan(std::vector<const char*> requ
 	this->mVulkanInstance.setRequiredExtensions(requiredExtensions);
 	this->mVulkanInstance.initialize();
 	return &this->mVulkanInstance;
+}
+
+void Engine::initializeRenderer(graphics::VulkanRenderer *renderer, std::shared_ptr<Window> pWindow)
+{
+	renderer->setInstance(&this->mVulkanInstance);
+	renderer->takeOwnershipOfSurface(pWindow->createSurface().initialize(&this->mVulkanInstance));
+	renderer->setPhysicalDevicePreference(this->getProject()->getPhysicalDevicePreference());
+	renderer->setLogicalDeviceInfo(this->getProject()->getGraphicsDeviceInitInfo());
+#ifndef NDEBUG
+	renderer->setValidationLayers(engine::Engine::VulkanValidationLayers);
+#endif
+	renderer->initializeDevices();
 }
 
 #pragma endregion

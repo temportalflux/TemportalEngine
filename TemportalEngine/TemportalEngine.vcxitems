@@ -29,6 +29,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Frame.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDeviceInfo.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Command.hpp" />

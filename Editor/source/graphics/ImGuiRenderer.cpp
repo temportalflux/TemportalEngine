@@ -13,7 +13,7 @@
 
 using namespace graphics;
 
-ImGuiRenderer::ImGuiRenderer(VulkanInstance *pInstance, Surface &surface) : VulkanRenderer(pInstance, surface)
+ImGuiRenderer::ImGuiRenderer() : VulkanRenderer()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

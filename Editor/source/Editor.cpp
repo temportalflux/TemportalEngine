@@ -126,10 +126,10 @@ void Editor::run(utility::ArgumentMap args)
 	this->mpWindow = this->mpEngine->createWindow(1280, 720, "Editor", WindowFlags::RESIZABLE);
 	if (this->mpWindow == nullptr) return;
 	
+	this->mpRenderer = this->mpMemoryGui->make_shared<graphics::ImGuiRenderer>();
 	auto pVulkan = this->mpEngine->initializeVulkan(this->mpWindow->querySDLVulkanExtensions());
-	this->mpRenderer = this->mpMemoryGui->make_shared<graphics::ImGuiRenderer>(
-		pVulkan, this->mpWindow->createSurface().initialize(pVulkan)
-	);
+	this->mpRenderer->setInstance(pVulkan);
+	this->mpRenderer->takeOwnershipOfSurface(this->mpWindow->createSurface().initialize(pVulkan));
 	this->initializeRenderer(this->mpRenderer);
 	this->mpRenderer->finalizeInitialization();
 

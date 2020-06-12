@@ -2,7 +2,7 @@
 #include "Engine.hpp"
 #include "WindowFlags.hpp"
 #include "Window.hpp"
-#include "graphics/VulkanRenderer.hpp"
+#include "graphics/GameRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
 #include "graphics/Uniform.hpp"
 
@@ -178,14 +178,9 @@ int main(int argc, char *argv[])
 			auto mvpUniform = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
 
 #pragma region Vulkan
-			auto pVulkan = pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
-			// TODO: Wrap these methods in a renderer creation method in engine
-			auto renderer = graphics::VulkanRenderer(pVulkan, pWindow->createSurface().initialize(pVulkan));
-			renderer.setPhysicalDevicePreference(pEngine->getProject()->getPhysicalDevicePreference());
-			renderer.setLogicalDeviceInfo(pEngine->getProject()->getGraphicsDeviceInitInfo());
-#ifndef NDEBUG
-			renderer.setValidationLayers(engine::Engine::VulkanValidationLayers);
-#endif
+			auto renderer = graphics::GameRenderer();
+			pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
+			pEngine->initializeRenderer(&renderer, pWindow);
 
 			// TODO: Configure this per project
 			renderer.setSwapChainInfo(
@@ -211,9 +206,6 @@ int main(int argc, char *argv[])
 			);
 
 			renderer.addUniform(mvpUniform);
-
-			// Initialize required api connections
-			renderer.initializeDevices();
 
 			// Create shaders
 			{

@@ -6,18 +6,26 @@
 
 using namespace graphics;
 
-VulkanRenderer::VulkanRenderer(VulkanInstance *pInstance, Surface &surface)
-	: mpInstance(pInstance)
-	, mIdxCurrentFrame(0)
+VulkanRenderer::VulkanRenderer()
+	: mIdxCurrentFrame(0)
 	, mbRenderChainDirty(false)
 {
-	mSurface.swap(surface);
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 	this->mIndexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+}
+
+void VulkanRenderer::setInstance(VulkanInstance *pInstance)
+{
+	this->mpInstance = pInstance;
+}
+
+void VulkanRenderer::takeOwnershipOfSurface(Surface &surface)
+{
+	this->mSurface.swap(surface);
 }
 
 logging::Logger VulkanRenderer::getLog() const

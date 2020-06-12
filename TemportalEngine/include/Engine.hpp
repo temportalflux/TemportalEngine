@@ -25,6 +25,7 @@
 class Window;
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
 FORWARD_DEF(NS_INPUT, class Queue);
+FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
 
 NS_ENGINE
 
@@ -80,6 +81,7 @@ public:
 #pragma region Graphics
 	bool setupVulkan();
 	graphics::VulkanInstance* initializeVulkan(std::vector<const char*> requiredExtensions);
+	void initializeRenderer(graphics::VulkanRenderer *renderer, std::shared_ptr<Window> pWindow);
 #pragma endregion
 
 #pragma region Game Loop

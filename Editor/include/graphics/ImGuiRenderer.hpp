@@ -20,7 +20,7 @@ class ImGuiRenderer : public VulkanRenderer
 {
 
 public:
-	ImGuiRenderer(VulkanInstance *pInstance, Surface &surface);
+	ImGuiRenderer();
 	
 	void initializeDevices() override;
 	void finalizeInitialization() override;

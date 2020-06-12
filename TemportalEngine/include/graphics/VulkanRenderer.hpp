@@ -34,7 +34,10 @@ class VulkanRenderer
 {
 
 public:
-	VulkanRenderer(VulkanInstance *pInstance, Surface &surface);
+	VulkanRenderer();
+
+	void setInstance(VulkanInstance *pInstance);
+	void takeOwnershipOfSurface(Surface &surface);
 
 	void setPhysicalDevicePreference(PhysicalDevicePreference const &preference);
 	void setLogicalDeviceInfo(LogicalDeviceInfo const &info);
@@ -145,9 +148,7 @@ protected:
 	std::vector<Frame> mFrames;
 	uSize mIdxCurrentFrame;
 	ui32 mIdxCurrentImage;
-
-	VulkanRenderer() = default;
-
+	
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
 	void destroyRenderChain();
