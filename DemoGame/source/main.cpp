@@ -5,6 +5,7 @@
 #include "graphics/GameRenderer.hpp"
 #include "graphics/ShaderModule.hpp"
 #include "graphics/Uniform.hpp"
+#include "WorldObject.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -43,23 +44,6 @@ struct ModelViewProjection
 		proj = glm::mat4(1);
 	}
 };
-
-/*
-const std::array<Vertex, 3> vertices = { {
-	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-} };
-//*/
-const std::array<Vertex, 4> vertices = { {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
-} };
-const std::array<ui16, 6> indices = { {
-	0, 1, 2, 2, 3, 0
-} };
 
 void initializeNetwork(engine::Engine *pEngine)
 {
@@ -173,6 +157,32 @@ int main(int argc, char *argv[])
 		}
 
 		{
+			auto plane = WorldObject();
+			{
+				auto idxTL = plane.pushVertex({ {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} });
+				auto idxTR = plane.pushVertex({ {+0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} });
+				auto idxBR = plane.pushVertex({ {+0.5f, +0.5f}, {1.0f, 0.0f, 0.0f} });
+				auto idxBL = plane.pushVertex({ {-0.5f, +0.5f}, {0.0f, 0.0f, 1.0f} });
+				plane.pushIndex(idxTL);
+				plane.pushIndex(idxTR);
+				plane.pushIndex(idxBR);
+				plane.pushIndex(idxBR);
+				plane.pushIndex(idxBL);
+				plane.pushIndex(idxTL);
+			}
+
+			/*
+			auto triangle = WorldObject();
+			{
+				plane.pushVertex({ {+0.0f, -0.5f}, {1.0f, 0.0f, 0.0f} });
+				plane.pushVertex({ {+0.5f, +0.5f}, {0.0f, 1.0f, 0.0f} });
+				plane.pushVertex({ {-0.5f, +0.5f}, {0.0f, 0.0f, 1.0f} });
+				plane.pushIndex(0);
+				plane.pushIndex(1);
+				plane.pushIndex(2);
+			}
+			//*/
+
 			// Will release memory allocated when it goes out of scope
 			// TODO: Use dedicated graphics memory
 			auto mvpUniform = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
@@ -234,12 +244,9 @@ int main(int argc, char *argv[])
 			}
 
 			// Initialize the rendering api connections
-			renderer.createInputBuffers(
-				sizeof(Vertex) * (ui32)vertices.size(),
-				sizeof(ui16) * (ui32)indices.size()
-			);
-			renderer.writeVertexData(0, vertices);
-			renderer.writeIndexData(0, indices);
+			renderer.createInputBuffers(plane.getVertexBufferSize(), plane.getIndexBufferSize());
+			renderer.writeVertexData(0, plane.verticies());
+			renderer.writeIndexData(0, plane.indicies());
 
 			renderer.createRenderChain();
 			renderer.finalizeInitialization();

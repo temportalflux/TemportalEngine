@@ -52,14 +52,13 @@ public:
 	virtual void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
 	void addUniform(std::shared_ptr<Uniform> uniform);
 
-	template <typename TVertex, ui64 VertexSize>
-	void writeVertexData(ui64 offset, std::array<TVertex, VertexSize> verticies)
+	template <typename TVertex>
+	void writeVertexData(ui64 offset, std::vector<TVertex> verticies)
 	{
 		this->writeToBuffer(&this->mVertexBuffer, offset, (void*)verticies.data(), sizeof(TVertex) * verticies.size());
 	}
 
-	template <ui64 IndexSize>
-	void writeIndexData(ui64 offset, std::array<ui16, IndexSize> indicies)
+	void writeIndexData(ui64 offset, std::vector<ui16> indicies)
 	{
 		this->mIndexBufferUnitType = vk::IndexType::eUint16;
 		this->mIndexCount = (ui32)indicies.size();
