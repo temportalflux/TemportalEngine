@@ -260,9 +260,10 @@ int main(int argc, char *argv[])
 			float deltaTime = 0.0f;
 			while (pEngine->isActive())
 			{
+				plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
-					uniData.model = glm::rotate(uniData.model, deltaTime * glm::radians(90.0f), glm::vec3(0, 0, 1));
+					uniData.model = plane.getModelMatrix();
 					uniData.view = glm::lookAt(glm::vec3(2), glm::vec3(0), glm::vec3(0, 0, 1));
 					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
 					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan

@@ -15,6 +15,7 @@ public:
 
 	struct Vertex
 	{
+		// TODO: vec3 position
 		glm::vec2 position;
 		glm::vec3 color;
 	};
@@ -23,9 +24,10 @@ public:
 
 	WorldObject& setPosition(glm::vec3 const &pos);
 	WorldObject& setRotation(glm::vec3 const &axis, float const &radians);
+	void rotate(glm::vec3 const &axis, float const &radians);
 	WorldObject& setScale(glm::vec3 const &size);
 
-	// TODO: Create you own matrix type
+	// TODO: Create TemportalEngine math matrix type
 	glm::mat4 getModelMatrix() const;
 
 	ui16 pushVertex(Vertex v);
@@ -41,6 +43,8 @@ private:
 	glm::vec3 mPosition;
 	glm::quat mRotation;
 	glm::vec3 mScale;
+	glm::mat4 mModelMatrix;
+	glm::mat4 computeModelMatrix();
 
 	// TODO: Move to model component
 	std::vector<Vertex> mVertices;
