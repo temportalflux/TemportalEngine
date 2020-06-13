@@ -7,7 +7,6 @@
 #include "dependency/SDL.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "input/InputWatcher.hpp"
-#include "input/types.h"
 //#include "network/common/Service.hpp"
 #include "thread/Thread.hpp"
 #include "version.h"
@@ -35,7 +34,7 @@ NS_ENGINE
 #define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
 
-class TEMPORTALENGINE_API Engine
+class TEMPORTALENGINE_API Engine : public std::enable_shared_from_this<Engine>
 {
 private:
 	static std::shared_ptr<Engine> spInstance;
@@ -55,6 +54,10 @@ public:
 	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes);
 	~Engine();
 
+	void initializeInput();
+
+	std::shared_ptr<asset::AssetManager> getAssetManager();
+
 	bool hasProject() const;
 	void setProject(asset::ProjectPtrStrong project);
 	asset::ProjectPtrStrong getProject() const;
@@ -70,8 +73,6 @@ public:
 	bool initializeDependencies(bool bShouldRender = true);
 	void terminateDependencies();
 #pragma endregion
-
-	std::shared_ptr<asset::AssetManager> getAssetManager() { return mpAssetManager; }
 
 #pragma region Windows
 	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
@@ -124,7 +125,6 @@ private:
 #pragma region Input
 	input::InputWatcher mpInputWatcher[1];
 	std::shared_ptr<input::Queue> mpInputQueue;
-	input::ListenerHandle mInputHandle;
 #pragma endregion
 
 	bool mbShouldContinueRunning;

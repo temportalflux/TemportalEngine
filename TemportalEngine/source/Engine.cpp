@@ -29,6 +29,7 @@ Engine::EnginePtr Engine::Create(std::unordered_map<std::string, ui64> memoryChu
 	assert(Engine::spInstance == nullptr);
 	spMainMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "main", 1 << 16));
 	Engine::spInstance = spMainMemory->make_shared<Engine>(spMainMemory, memoryChunkSizes);
+	Engine::spInstance->initializeInput();
 	return Engine::Get();
 }
 
@@ -70,12 +71,6 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 		&Engine::enqueueInput, this, std::placeholders::_1
 	));
 
-	// TODO: allocate from a sub-chunk of main memory
-	this->mpInputQueue = this->mpMainMemory->make_shared<input::Queue>();
-	this->mInputHandle = this->mpInputQueue->addListener(input::EInputType::QUIT,
-		std::bind(&Engine::processInput, this, std::placeholders::_1)
-	);
-
 	this->mpAssetManager = this->mpMainMemory->make_shared<asset::AssetManager>();
 	this->mpAssetManager->setAssetMemory(memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "asset", 1 << 16)));
 	this->mpAssetManager->queryAssetTypes();
@@ -91,6 +86,9 @@ Engine::~Engine()
 		this->mVulkanInstance.destroy();
 	}
 	this->terminateDependencies();
+
+	// A good deconstructor example of how to unbind, but not necessary for the engine to do
+	this->mpInputQueue->OnInputEvent.unbindExpired(input::EInputType::QUIT);
 
 	this->mpInputQueue.reset();
 	assert(!this->mpInputQueue);
@@ -108,6 +106,21 @@ Engine::~Engine()
 	assert(!this->mpMainMemory);
 
 	LogEngineInfo("Engine Destroyed");
+}
+
+void Engine::initializeInput()
+{
+	// TODO: allocate from a sub-chunk of main memory
+	this->mpInputQueue = this->mpMainMemory->make_shared<input::Queue>();
+	this->mpInputQueue->OnInputEvent.bind(
+		input::EInputType::QUIT, this->weak_from_this(),
+		std::bind(&Engine::processInput, this, std::placeholders::_1)
+	);
+}
+
+std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
+{
+	return mpAssetManager;
 }
 
 bool Engine::hasProject() const

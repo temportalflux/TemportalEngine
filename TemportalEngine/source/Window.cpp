@@ -111,7 +111,8 @@ bool Window::isValid()
 
 void Window::addInputListeners(std::shared_ptr<input::Queue> pQueue)
 {
-	mInputHandleQuit = pQueue->addListener(input::EInputType::QUIT,
+	pQueue->OnInputEvent.bind(
+		input::EInputType::QUIT, this->weak_from_this(),
 		std::bind(&Window::onInputQuit, this, std::placeholders::_1)
 	);
 }

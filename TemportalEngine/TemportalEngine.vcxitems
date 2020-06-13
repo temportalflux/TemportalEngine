@@ -124,7 +124,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Key.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Mouse.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Queue.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\logging\Logger.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\compare.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\pow.hpp" />

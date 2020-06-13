@@ -244,9 +244,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Queue.hpp">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\types.h">
-      <Filter>input</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\logging\Logger.hpp">
       <Filter>logging</Filter>
     </ClInclude>

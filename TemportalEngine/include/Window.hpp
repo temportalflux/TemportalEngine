@@ -6,7 +6,6 @@
 #include "WindowFlags.hpp"
 #include "types/integer.h"
 #include "input/Event.hpp"
-#include "input/types.h"
 #include "graphics/Surface.hpp"
 #include "thread/Thread.hpp"
 
@@ -29,7 +28,7 @@ NS_UTILITY
 struct SExecutableInfo;
 NS_END
 
-class TEMPORTALENGINE_API Window
+class TEMPORTALENGINE_API Window : public std::enable_shared_from_this<Window>
 {
 private:
 	ui16 mWidth, mHeight;
@@ -39,7 +38,6 @@ private:
 	ui32 mId;
 	void* mpJoystick;
 	bool mIsPendingClose;
-	input::ListenerHandle mInputHandleQuit;
 
 	WindowFlags mFlags;
 	bool hasFlag(WindowFlags flag) const;

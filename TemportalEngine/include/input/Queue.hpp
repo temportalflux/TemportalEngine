@@ -4,9 +4,9 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "types/integer.h"
-#include "input/types.h"
 #include "thread/MutexLock.hpp"
 #include "Event.hpp"
+#include "Delegate.hpp"
 
 NS_INPUT
 
@@ -21,8 +21,6 @@ private:
 	Event mpBuffer[MAX_COUNT_PENDING];
 	TMaxSize mIndexHead, mIndexTail;
 
-	ListenerMap mListenersByEvent;
-
 	Event const dequeueRaw();
 	bool enqueueRaw(Event const &evt);
 	void dispatchRaw();
@@ -30,9 +28,8 @@ private:
 public:
 	Queue();
 
-	ListenerHandle addListener(EInputType evt, Listener listener);
-	void removeListener(ListenerHandle &handle);
-
+	KeyedBroadcastDelegate<EInputType, void(Event const &)> OnInputEvent;
+	
 	bool hasPending() const;
 	bool enqueue(Event const& evt);
 	void dispatch();

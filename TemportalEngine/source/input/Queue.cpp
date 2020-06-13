@@ -11,17 +11,6 @@ Queue::Queue()
 	mIndexTail = 0;
 }
 
-ListenerHandle Queue::addListener(EInputType evt, Listener listener)
-{
-	ListenerMap::iterator handle = this->mListenersByEvent.insert(std::make_pair(evt, listener));
-	return handle;
-}
-
-void Queue::removeListener(ListenerHandle &handle)
-{
-	this->mListenersByEvent.erase(handle);
-}
-
 bool Queue::hasPending() const
 {
 	return mIndexHead != mIndexTail;
@@ -56,16 +45,8 @@ void Queue::dispatchRaw()
 {
 	// If there are no pending requests, do nothing.
 	if (mIndexHead == mIndexTail) return;
-
 	Event const& evt = this->dequeueRaw();
-
-	// Iterate over all iterators whose key matches the event type
-	std::pair<ListenerMap::iterator, ListenerMap::iterator> listeners = this->mListenersByEvent.equal_range(evt.type);
-	for (auto iter = listeners.first; iter != listeners.second; ++iter)
-	{
-		// Execute each listener
-		(iter->second)(evt);
-	}
+	this->OnInputEvent.broadcast(evt.type, evt);
 }
 
 void Queue::dispatch()
