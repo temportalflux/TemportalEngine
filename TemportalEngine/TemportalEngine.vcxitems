@@ -70,6 +70,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
@@ -159,5 +160,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
   </ItemGroup>
 </Project>

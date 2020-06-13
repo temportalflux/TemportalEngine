@@ -209,6 +209,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -452,5 +453,6 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
   </ItemGroup>
 </Project>
