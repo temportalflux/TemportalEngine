@@ -72,6 +72,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp" />

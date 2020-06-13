@@ -454,5 +454,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
   </ItemGroup>
 </Project>
