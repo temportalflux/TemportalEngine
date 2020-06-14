@@ -74,7 +74,7 @@ public:
 	}
 	
 	// Creates a swap chain, and all objects that depend on it
-	void createRenderChain();
+	virtual void createRenderChain();
 
 	virtual void finalizeInitialization() {}
 	virtual void onInputEvent(void* evt) {}
@@ -144,14 +144,12 @@ protected:
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
 	
-	std::vector<Frame> mFrames;
 	uSize mIdxCurrentFrame;
 	ui32 mIdxCurrentImage;
 	
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
-	void destroyRenderChain();
-	void recordCommandBufferInstructions();
+	virtual void destroyRenderChain();
 
 	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
 	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
@@ -170,21 +168,22 @@ protected:
 
 	virtual void createRenderObjects();
 	virtual void destroyRenderObjects();
-	virtual void createCommandObjects();
-	virtual void destroyCommandObjects();
+
+	virtual void createUniformBuffers() = 0;
+	virtual void destroyUniformBuffers() = 0;
+	virtual void createDescriptorPool() = 0;
+	virtual void destroyDescriptorPool() = 0;
+	virtual void createCommandObjects() = 0;
+	virtual void destroyCommandObjects() = 0;
+
 	virtual void destroyInputBuffers();
-	virtual void createUniformBuffers();
-	virtual void destroyUniformBuffers();
-	virtual void createDescriptorPool();
-	virtual void destroyDescriptorPool();
 
 	virtual void updateUniformBuffer(ui32 idxImageView);
 
-	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
-	virtual void createFrames(uSize viewCount);
-	virtual uSize getNumberOfFrames() const;
-	virtual graphics::Frame* getFrameAt(uSize idx);
-	virtual void destroyFrames();
+	virtual void createFrames(uSize viewCount) = 0;
+	virtual uSize getNumberOfFrames() const = 0;
+	virtual graphics::Frame* getFrameAt(uSize idx) = 0;
+	virtual void destroyFrames() = 0;
 
 };
 
