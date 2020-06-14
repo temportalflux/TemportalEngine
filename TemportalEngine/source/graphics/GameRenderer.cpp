@@ -25,10 +25,9 @@ void GameRenderer::invalidate()
 	VulkanRenderer::invalidate();
 }
 
-void GameRenderer::addUniform(std::shared_ptr<Uniform> uniform)
+void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
 {
-	this->mUniformPts.push_back(uniform);
-	this->mTotalUniformSize += uniform->size();
+	this->mpUniformStatic = uniform;
 }
 
 void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize)
@@ -114,26 +113,28 @@ void GameRenderer::destroyRenderChain()
 
 void GameRenderer::createUniformBuffers()
 {
-	this->mUniformBuffers.resize(this->mImageViews.size());
-	for (auto& buffer : this->mUniformBuffers)
+	this->mUniformStaticBuffersPerFrame.resize(this->mImageViews.size());
+	for (auto& buffer : this->mUniformStaticBuffersPerFrame)
 	{
 		buffer
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+			// Host Coherent means this entire buffer will be automatially flushed per write.
+			// This can be optimized later by only flushing the portion of the buffer which actually changed.
 			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-			.setSize(this->mTotalUniformSize)
+			.setSize(this->mpUniformStatic->size())
 			.create(&this->mLogicalDevice);
 	}
 }
 
 void GameRenderer::destroyUniformBuffers()
 {
-	this->mUniformBuffers.clear();
+	this->mUniformStaticBuffersPerFrame.clear();
 }
 
 void GameRenderer::createDescriptorPool()
 {
 	auto setCount = (ui32)this->mImageViews.size();
-	auto uniformDescriptorCount = (ui32)this->mUniformPts.size();
+	auto uniformDescriptorCount = 1;
 	auto idxUniformBufferBinding = 0;
 
 	std::vector<vk::DescriptorPoolSize> poolSizes = {
@@ -142,7 +143,7 @@ void GameRenderer::createDescriptorPool()
 			.setType(vk::DescriptorType::eUniformBuffer)
 			.setDescriptorCount(setCount * uniformDescriptorCount)
 	};
-	this->mDescriptorPool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
+	this->mDescriptorPool_StaticUniform = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(setCount)
@@ -156,16 +157,16 @@ void GameRenderer::createDescriptorPool()
 		.setDescriptorCount(uniformDescriptorCount)
 		.setStageFlags(vk::ShaderStageFlagBits::eVertex)
 	};
-	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
+	this->mDescriptorLayout_StaticUniform = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
 		vk::DescriptorSetLayoutCreateInfo()
 		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
 	);
 
-	std::vector<vk::DescriptorSetLayout> layouts(setCount, this->mDescriptorLayout.get());
+	std::vector<vk::DescriptorSetLayout> layouts(setCount, this->mDescriptorLayout_StaticUniform.get());
 	// will be deallocated when the pool is destroyed
-	this->mDescriptorSets = this->mLogicalDevice.mDevice->allocateDescriptorSets(
+	this->mDescriptorSetPerFrame_StaticUniform = this->mLogicalDevice.mDevice->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
-		.setDescriptorPool(this->mDescriptorPool.get())
+		.setDescriptorPool(this->mDescriptorPool_StaticUniform.get())
 		.setDescriptorSetCount(setCount)
 		.setPSetLayouts(layouts.data())
 	);
@@ -173,14 +174,14 @@ void GameRenderer::createDescriptorPool()
 	for (uSize i = 0; i < setCount; ++i)
 	{
 		auto uniformBufferInfo = vk::DescriptorBufferInfo()
-			.setBuffer(*reinterpret_cast<vk::Buffer*>(this->mUniformBuffers[i].get()))
+			.setBuffer(*reinterpret_cast<vk::Buffer*>(this->mUniformStaticBuffersPerFrame[i].get()))
 			.setOffset(0)
-			.setRange(this->mTotalUniformSize);
+			.setRange(this->mpUniformStatic->size());
 
 		auto writeDescriptorUniform = vk::WriteDescriptorSet()
 			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 			.setDescriptorCount(uniformDescriptorCount)
-			.setDstSet(this->mDescriptorSets[i])
+			.setDstSet(this->mDescriptorSetPerFrame_StaticUniform[i])
 			.setDstBinding(idxUniformBufferBinding).setDstArrayElement(0)
 			.setPBufferInfo(&uniformBufferInfo);
 
@@ -191,9 +192,9 @@ void GameRenderer::createDescriptorPool()
 
 void GameRenderer::destroyDescriptorPool()
 {
-	this->mDescriptorSets.clear();
-	this->mDescriptorLayout.reset();
-	this->mDescriptorPool.reset();
+	this->mDescriptorSetPerFrame_StaticUniform.clear();
+	this->mDescriptorLayout_StaticUniform.reset();
+	this->mDescriptorPool_StaticUniform.reset();
 }
 
 void GameRenderer::createCommandObjects()
@@ -228,7 +229,7 @@ void GameRenderer::createCommandObjects()
 			.setVertexAttributeDescriptionCount((ui32)attributes.size())
 			.setPVertexAttributeDescriptions(attributes.data());
 	}
-	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout.get()));
+	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout_StaticUniform.get()));
 
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -240,16 +241,16 @@ void GameRenderer::createCommandObjects()
 
 void GameRenderer::recordCommandBufferInstructions()
 {
-	for (uSize i = 0; i < this->mCommandBuffers.size(); ++i)
+	for (uSize idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
 	{
-		auto cmd = this->mCommandBuffers[i].beginCommand();
+		auto cmd = this->mCommandBuffers[idxFrame].beginCommand();
 		cmd.clear({ 0.0f, 0.0f, 0.0f, 1.0f });
-		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i]);
+		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
 			// TODO: This should perform a draw call for each object type being rendered
 			// TODO: This should handle instancing of each object type and send model or model-view matrix via instanced uniform data
 			cmd
-				.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSets[i])
+				.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame_StaticUniform[idxFrame])
 				.bindPipeline(&this->mPipeline)
 				.bindVertexBuffers({ &this->mVertexBuffer })
 				.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
@@ -301,6 +302,7 @@ void GameRenderer::prepareRender(ui32 idxCurrentFrame)
 
 void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 {
+	/*
 	ui64 offset = 0;
 	for (auto& uniformPtr : this->mUniformPts)
 	{
@@ -310,6 +312,12 @@ void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 		uniformPtr->endReading();
 		offset += uniformSize;
 	}
+	//*/
+	this->mpUniformStatic->beginReading();
+	this->mUniformStaticBuffersPerFrame[idxImageView].write(&this->mLogicalDevice,
+		/*offset*/ 0, this->mpUniformStatic->data(), this->mpUniformStatic->size()
+	);
+	this->mpUniformStatic->endReading();
 }
 
 void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)

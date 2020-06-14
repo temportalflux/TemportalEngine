@@ -16,7 +16,7 @@ class GameRenderer : public VulkanRenderer
 public:
 	GameRenderer();
 
-	void addUniform(std::shared_ptr<Uniform> uniform);
+	void setStaticUniform(std::shared_ptr<Uniform> uniform);
 	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
 
 	template <typename TVertex>
@@ -74,12 +74,11 @@ private:
 	Buffer mIndexBuffer;
 	vk::IndexType mIndexBufferUnitType;
 
-	std::vector<std::shared_ptr<Uniform>> mUniformPts;
-	ui64 mTotalUniformSize;
-	std::vector<Buffer> mUniformBuffers;
-	vk::UniqueDescriptorPool mDescriptorPool;
-	vk::UniqueDescriptorSetLayout mDescriptorLayout;
-	std::vector<vk::DescriptorSet> mDescriptorSets;
+	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
+	std::vector<Buffer> mUniformStaticBuffersPerFrame;
+	vk::UniqueDescriptorPool mDescriptorPool_StaticUniform;
+	vk::UniqueDescriptorSetLayout mDescriptorLayout_StaticUniform;
+	std::vector<vk::DescriptorSet> mDescriptorSetPerFrame_StaticUniform;
 
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;

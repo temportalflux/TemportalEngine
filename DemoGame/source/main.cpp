@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 				}
 			);
 
-			renderer.addUniform(mvpUniform);
+			renderer.setStaticUniform(mvpUniform);
 
 			// Create shaders
 			{
