@@ -51,9 +51,6 @@ private:
 protected:
 	void createRenderChain() override;
 	void destroyRenderChain() override;
-	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
-	void destroyInputBuffers() override {}
-	void updateUniformBuffer(ui32 idxImageView) override {}
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

@@ -49,9 +49,6 @@ public:
 	virtual void initializeDevices();
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
-	virtual void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
-	void addUniform(std::shared_ptr<Uniform> uniform);
-
 	template <typename TVertex>
 	void writeVertexData(ui64 offset, std::vector<TVertex> verticies)
 	{
@@ -155,7 +152,7 @@ protected:
 	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
 
 	bool acquireNextImage();
-	void prepareRender();
+	virtual void prepareRender();
 	virtual void render();
 	bool present();
 
@@ -169,9 +166,7 @@ protected:
 	virtual void createRenderObjects();
 	virtual void destroyRenderObjects();
 	
-	virtual void destroyInputBuffers();
-
-	virtual void updateUniformBuffer(ui32 idxImageView);
+	virtual void destroyInputBuffers() {}
 
 	virtual void createFrames(uSize viewCount) = 0;
 	virtual uSize getNumberOfFrames() const = 0;

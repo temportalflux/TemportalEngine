@@ -1,11 +1,38 @@
 #include "graphics/GameRenderer.hpp"
 
+#include "graphics/Uniform.hpp"
+
 using namespace graphics;
 
 GameRenderer::GameRenderer()
 	: VulkanRenderer()
 {
 
+}
+
+void GameRenderer::addUniform(std::shared_ptr<Uniform> uniform)
+{
+	this->mUniformPts.push_back(uniform);
+	this->mTotalUniformSize += uniform->size();
+}
+
+void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize)
+{
+	this->mVertexBuffer.setSize(vertexBufferSize).create(&this->mLogicalDevice);
+	this->mIndexBuffer.setSize(indexBufferSize).create(&this->mLogicalDevice);
+
+	this->mCommandPoolTransient
+		.setQueueFamily(
+			graphics::QueueFamily::Enum::eGraphics,
+			this->mPhysicalDevice.queryQueueFamilyGroup()
+		)
+		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
+}
+
+void GameRenderer::destroyInputBuffers()
+{
+	this->mVertexBuffer.destroy();
+	this->mIndexBuffer.destroy();
 }
 
 void GameRenderer::createRenderChain()
@@ -181,4 +208,23 @@ graphics::Frame* GameRenderer::getFrameAt(uSize idx)
 void GameRenderer::destroyFrames()
 {
 	this->mFrames.clear();
+}
+
+void GameRenderer::prepareRender()
+{
+	VulkanRenderer::prepareRender();
+	this->updateUniformBuffer((ui32)this->mIdxCurrentFrame);
+}
+
+void GameRenderer::updateUniformBuffer(ui32 idxImageView)
+{
+	ui64 offset = 0;
+	for (auto& uniformPtr : this->mUniformPts)
+	{
+		auto uniformSize = uniformPtr->size();
+		uniformPtr->beginReading();
+		this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, offset, uniformPtr->data(), uniformSize);
+		uniformPtr->endReading();
+		offset += uniformSize;
+	}
 }

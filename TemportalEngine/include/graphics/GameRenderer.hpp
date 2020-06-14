@@ -13,8 +13,10 @@ class GameRenderer : public VulkanRenderer
 public:
 	GameRenderer();
 
+	void addUniform(std::shared_ptr<Uniform> uniform);
+	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
+
 	void createRenderChain() override;
-	//void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
 
 protected:
 
@@ -24,6 +26,9 @@ protected:
 	void destroyFrames() override;
 
 private:
+
+	void destroyInputBuffers();
+
 	void destroyRenderChain() override;
 
 	void createUniformBuffers();
@@ -34,9 +39,8 @@ private:
 	void destroyCommandObjects();
 	void recordCommandBufferInstructions();
 
-	// TODO: Move these from vulkan to game
-	//void destroyInputBuffers() override {}
-	//void updateUniformBuffer(ui32 idxImageView) override {}
+	void prepareRender() override;
+	void updateUniformBuffer(ui32 idxImageView);
 
 private:
 

@@ -2,7 +2,6 @@
 
 #include "graphics/VulkanInstance.hpp"
 #include "graphics/ShaderModule.hpp"
-#include "graphics/Uniform.hpp"
 
 using namespace graphics;
 
@@ -71,12 +70,6 @@ void VulkanRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 	this->mPipeline.addShader(shader);
 }
 
-void VulkanRenderer::addUniform(std::shared_ptr<Uniform> uniform)
-{
-	this->mUniformPts.push_back(uniform);
-	this->mTotalUniformSize += uniform->size();
-}
-
 void VulkanRenderer::initializeDevices()
 {
 	this->pickPhysicalDevice();
@@ -137,19 +130,6 @@ void VulkanRenderer::destroyRenderObjects()
 	this->mSwapChain.destroy();
 }
 
-void VulkanRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize)
-{
-	this->mVertexBuffer.setSize(vertexBufferSize).create(&this->mLogicalDevice);
-	this->mIndexBuffer.setSize(indexBufferSize).create(&this->mLogicalDevice);
-
-	this->mCommandPoolTransient
-		.setQueueFamily(
-			graphics::QueueFamily::Enum::eGraphics,
-			this->mPhysicalDevice.queryQueueFamilyGroup()
-		)
-		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
-}
-
 void VulkanRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size)
 {
 	Buffer& stagingBuffer = Buffer()
@@ -183,12 +163,6 @@ void VulkanRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
 	queue.waitIdle();
 }
 
-void VulkanRenderer::destroyInputBuffers()
-{
-	this->mVertexBuffer.destroy();
-	this->mIndexBuffer.destroy();
-}
-
 void VulkanRenderer::drawFrame()
 {
 	if (this->mbRenderChainDirty) return;
@@ -220,8 +194,6 @@ void VulkanRenderer::prepareRender()
 
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
 	currentFrame->markNotInFlight();
-
-	this->updateUniformBuffer((ui32)this->mIdxCurrentFrame);
 }
 
 bool VulkanRenderer::acquireNextImage()
@@ -242,19 +214,6 @@ bool VulkanRenderer::acquireNextImage()
 		return false;
 	}
 	return true;
-}
-
-void VulkanRenderer::updateUniformBuffer(ui32 idxImageView)
-{
-	ui64 offset = 0;
-	for (auto& uniformPtr : this->mUniformPts)
-	{
-		auto uniformSize = uniformPtr->size();
-		uniformPtr->beginReading();
-		this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, offset, uniformPtr->data(), uniformSize);
-		uniformPtr->endReading();
-		offset += uniformSize;
-	}
 }
 
 void VulkanRenderer::render()
