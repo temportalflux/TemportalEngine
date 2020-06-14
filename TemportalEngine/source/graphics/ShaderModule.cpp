@@ -10,7 +10,7 @@ using namespace graphics;
 ShaderModule::ShaderModule()
 	: mMainOpName("main")
 {
-	// TODO: Make this dynamic based on shader compilation
+	// TODO: This should not be controlled by the shader, but rather, by the input attributes. Instancing will need to make another one of these.
 	this->mBinding = vk::VertexInputBindingDescription().setBinding(0).setInputRate(vk::VertexInputRate::eVertex);
 }
 
