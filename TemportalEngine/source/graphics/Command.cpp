@@ -52,7 +52,7 @@ Command& Command::bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet
 	return *this;
 }
 
-Command& Command::bindVertexBuffers(std::vector<Buffer*> const pBuffers)
+Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers)
 {
 	ui32 bufferCount = (ui32)pBuffers.size();
 	auto buffers = std::vector<vk::Buffer>(bufferCount);
@@ -62,7 +62,7 @@ Command& Command::bindVertexBuffers(std::vector<Buffer*> const pBuffers)
 		buffers[i] = *reinterpret_cast<vk::Buffer*>(pBuffers[i]->get());
 		offsets[i] = 0; // NOTE: should probably be passed in or stored in buffer wrapper
 	}
-	this->mpBuffer->mInternal->bindVertexBuffers(0, { bufferCount, buffers.data() }, { bufferCount, offsets.data() });
+	this->mpBuffer->mInternal->bindVertexBuffers(bindingIndex, { bufferCount, buffers.data() }, { bufferCount, offsets.data() });
 	return *this;
 }
 
@@ -72,9 +72,12 @@ Command& Command::bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexT
 	return *this;
 }
 
-Command& Command::draw(ui32 indexCount)
+Command& Command::draw(ui32 indexCount, ui32 instanceCount)
 {
-	this->mpBuffer->mInternal->drawIndexed(indexCount, 1, 0, 0, 0);
+	this->mpBuffer->mInternal->drawIndexed(
+		indexCount, instanceCount,
+		/*firstIndex*/ 0, /*vertexOffset*/ 0, /*firstInstace*/ 0
+	);
 	return *this;
 }
 

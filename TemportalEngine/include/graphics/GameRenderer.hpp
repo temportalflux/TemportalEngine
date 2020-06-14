@@ -17,15 +17,22 @@ public:
 	GameRenderer();
 
 	void setStaticUniform(std::shared_ptr<Uniform> uniform);
-	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize);
+	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize, ui64 instanceBufferSize);
 
 	template <typename TVertex>
-	void writeVertexData(ui64 offset, std::vector<TVertex> verticies)
+	void writeVertexData(ui64 offset, std::vector<TVertex> const &verticies)
 	{
 		this->writeToBuffer(&this->mVertexBuffer, offset, (void*)verticies.data(), sizeof(TVertex) * verticies.size());
 	}
 
-	void writeIndexData(ui64 offset, std::vector<ui16> indicies)
+	template <typename TData>
+	void writeInstanceData(ui64 offset, std::vector<TData> const &dataSet)
+	{
+		this->mInstanceCount = (ui32)dataSet.size();
+		this->writeToBuffer(&this->mInstanceBuffer, offset, (void*)dataSet.data(), sizeof(TData) * this->mInstanceCount);
+	}
+
+	void writeIndexData(ui64 offset, std::vector<ui16> const &indicies)
 	{
 		this->mIndexBufferUnitType = vk::IndexType::eUint16;
 		this->mIndexCount = (ui32)indicies.size();
@@ -71,6 +78,8 @@ private:
 	CommandPool mCommandPoolTransient;
 	ui32 mIndexCount;
 	Buffer mVertexBuffer;
+	Buffer mInstanceBuffer;
+	ui32 mInstanceCount;
 	Buffer mIndexBuffer;
 	vk::IndexType mIndexBufferUnitType;
 

@@ -10,6 +10,9 @@ GameRenderer::GameRenderer()
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mInstanceBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 	this->mIndexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -30,9 +33,10 @@ void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
 	this->mpUniformStatic = uniform;
 }
 
-void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize)
+void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize, ui64 instanceBufferSize)
 {
 	this->mVertexBuffer.setSize(vertexBufferSize).create(&this->mLogicalDevice);
+	this->mInstanceBuffer.setSize(instanceBufferSize).create(&this->mLogicalDevice);
 	this->mIndexBuffer.setSize(indexBufferSize).create(&this->mLogicalDevice);
 
 	this->mCommandPoolTransient
@@ -76,11 +80,11 @@ void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
 	queue.waitIdle();
 }
 
-
 void GameRenderer::destroyInputBuffers()
 {
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
+	this->mInstanceBuffer.destroy();
 }
 
 void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
@@ -224,25 +228,6 @@ void GameRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	{
-		std::vector<vk::VertexInputBindingDescription> bindings = {
-			vk::VertexInputBindingDescription()
-			.setBinding(/*index of binding in bindings*/ 0)
-			.setInputRate(/*per vertex or per instance*/ vk::VertexInputRate::eVertex)
-			.setStride(/*size*/ 0)
-		};
-		std::vector<vk::VertexInputAttributeDescription> attributes = {
-			vk::VertexInputAttributeDescription()
-			.setBinding(/*index of binding in bindings that this attrib is connected to*/ 0)
-			.setLocation(/*layout(location = slot) ...*/ 0)
-			.setFormat(/*data type of the attribute*/ vk::Format::eR32G32B32Sfloat /*= float vec3*/)
-		};
-		auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
-			.setVertexBindingDescriptionCount((ui32)bindings.size())
-			.setPVertexBindingDescriptions(bindings.data())
-			.setVertexAttributeDescriptionCount((ui32)attributes.size())
-			.setPVertexAttributeDescriptions(attributes.data());
-	}
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout_StaticUniform.get()));
 
 	this->mCommandPool
@@ -266,9 +251,10 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd
 				.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame_StaticUniform[idxFrame])
 				.bindPipeline(&this->mPipeline)
-				.bindVertexBuffers({ &this->mVertexBuffer })
+				.bindVertexBuffers(0, { &this->mVertexBuffer })
+				.bindVertexBuffers(1, { &this->mInstanceBuffer })
 				.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
-				.draw(this->mIndexCount);
+				.draw(this->mIndexCount, this->mInstanceCount);
 		}
 		cmd.endRenderPass();
 		cmd.end();

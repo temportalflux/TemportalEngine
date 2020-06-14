@@ -152,6 +152,7 @@ int main(int argc, char *argv[])
 
 		{
 			auto plane = WorldObject();
+			auto instances = std::vector<WorldObject::InstanceData>();
 			{
 				auto idxTL = plane.pushVertex({ {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} });
 				auto idxTR = plane.pushVertex({ {+0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} });
@@ -163,6 +164,10 @@ int main(int argc, char *argv[])
 				plane.pushIndex(idxBR);
 				plane.pushIndex(idxBL);
 				plane.pushIndex(idxTL);
+			}
+			{
+				plane.setPosition(glm::vec3(3, 0, 0));
+				instances.push_back({ plane.getModelMatrix() });
 			}
 
 			/*
@@ -215,24 +220,7 @@ int main(int argc, char *argv[])
 			{
 				auto assetManager = asset::AssetManager::get();
 				// Vertex Shader from asset
-				{
-					std::shared_ptr<graphics::ShaderModule> shaderModule;
-					// Make module from shader binary in asset
-					{
-						shaderModule = pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule();
-					}
-					// Set the description for the input
-					shaderModule->setVertexDescription(
-						{
-							sizeof(WorldObject::VertexData),
-							{
-								{ "position", CREATE_ATTRIBUTE(WorldObject::VertexData, position) },
-								{ "color", CREATE_ATTRIBUTE(WorldObject::VertexData, color) }
-							}
-						}
-					);
-					renderer.addShader(shaderModule);
-				}
+				renderer.addShader(pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule());
 				// Fragment Shader from asset
 				renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
 			}
@@ -242,9 +230,14 @@ int main(int argc, char *argv[])
 			renderer.setBindings(WorldObject::bindings());
 
 			// Initialize the rendering api connections
-			renderer.createInputBuffers(plane.getVertexBufferSize(), plane.getIndexBufferSize());
+			renderer.createInputBuffers(
+				plane.getVertexBufferSize(),
+				plane.getIndexBufferSize(),
+				(ui32)instances.size() * sizeof(WorldObject::InstanceData)
+			);
 			renderer.writeVertexData(0, plane.verticies());
 			renderer.writeIndexData(0, plane.indicies());
+			renderer.writeInstanceData(0, instances);
 
 			renderer.createRenderChain();
 			renderer.finalizeInitialization();
@@ -258,7 +251,7 @@ int main(int argc, char *argv[])
 			float deltaTime = 0.0f;
 			while (pEngine->isActive())
 			{
-				plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
+				//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
 					uniData.model = plane.getModelMatrix();
