@@ -7,7 +7,22 @@ using namespace graphics;
 GameRenderer::GameRenderer()
 	: VulkanRenderer()
 {
+	this->mVertexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mIndexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+}
 
+void GameRenderer::invalidate()
+{
+	this->destroyRenderChain();
+	this->mPipeline.clearShaders();
+
+	this->destroyInputBuffers();
+
+	VulkanRenderer::invalidate();
 }
 
 void GameRenderer::addUniform(std::shared_ptr<Uniform> uniform)
@@ -29,10 +44,49 @@ void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSiz
 		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
 }
 
+void GameRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size)
+{
+	Buffer& stagingBuffer = Buffer()
+		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+		.setMemoryRequirements(
+			vk::MemoryPropertyFlagBits::eHostVisible
+			| vk::MemoryPropertyFlagBits::eHostCoherent
+		)
+		.setSize(size);
+	stagingBuffer.create(&this->mLogicalDevice);
+	stagingBuffer.write(&this->mLogicalDevice, offset, data, size);
+	this->copyBetweenBuffers(&stagingBuffer, buffer, size);
+	stagingBuffer.destroy();
+}
+
+void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
+{
+	// Buffers should be freed when they go out of scope
+	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.copyBuffer(src, dest, size)
+		.end();
+	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		vk::Fence()
+	);
+	queue.waitIdle();
+}
+
+
 void GameRenderer::destroyInputBuffers()
 {
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
+}
+
+void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
+{
+	this->mPipeline.addShader(shader);
 }
 
 void GameRenderer::createRenderChain()
@@ -227,4 +281,12 @@ void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 		uniformPtr->endReading();
 		offset += uniformSize;
 	}
+}
+
+void GameRenderer::render()
+{
+	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
+	// Submit the command buffer to the graphics queue
+	auto& commandBuffer = this->mCommandBuffers[this->mIdxCurrentImage];
+	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], { &commandBuffer });
 }

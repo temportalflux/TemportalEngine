@@ -52,6 +52,7 @@ void ImGuiRenderer::invalidate()
 
 	this->mDescriptorPool.reset();
 
+	this->destroyRenderChain();
 	VulkanRenderer::invalidate();
 }
 

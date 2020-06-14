@@ -28,7 +28,6 @@ NS_GRAPHICS
 class VulkanInstance;
 class PhysicalDevicePreference;
 class ShaderModule;
-class Uniform;
 
 class VulkanRenderer
 {
@@ -47,28 +46,6 @@ public:
 	f32 getAspectRatio() const;
 
 	virtual void initializeDevices();
-	void addShader(std::shared_ptr<ShaderModule> shader);
-
-	template <typename TVertex>
-	void writeVertexData(ui64 offset, std::vector<TVertex> verticies)
-	{
-		this->writeToBuffer(&this->mVertexBuffer, offset, (void*)verticies.data(), sizeof(TVertex) * verticies.size());
-	}
-
-	void writeIndexData(ui64 offset, std::vector<ui16> indicies)
-	{
-		this->mIndexBufferUnitType = vk::IndexType::eUint16;
-		this->mIndexCount = (ui32)indicies.size();
-		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui16) * indicies.size());
-	}
-
-	template <ui64 IndexSize>
-	void writeIndexData(ui64 offset, std::array<ui32, IndexSize> indicies)
-	{
-		this->mIndexBufferUnitType = vk::IndexType::eUint32;
-		this->mIndexCount = (ui32)indicies.size();
-		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui32) * indicies.size());
-	}
 	
 	// Creates a swap chain, and all objects that depend on it
 	virtual void createRenderChain() = 0;
@@ -105,73 +82,46 @@ protected:
 	VulkanInstance *mpInstance;
 	Surface mSurface;
 
+#pragma region Devices, API, & Queues
 	PhysicalDevicePreference mPhysicalDevicePreference;
 	PhysicalDevice mPhysicalDevice;
-	
+	LogicalDevice mLogicalDevice;
 	LogicalDeviceInfo mLogicalDeviceInfo;
 	std::unordered_map<QueueFamily::Enum, vk::Queue> mQueues;
+#pragma endregion
 
+#pragma region Render Objects
 	// if the render chain is out of date and needs to be recreated on next `update`
 	// TODO: Might need a mutex if it can be written to by both render thread (vulkan callbacks) AND via `markRenderChainDirty`
 	bool mbRenderChainDirty;
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
 	ImageViewInfo mImageViewInfo;
-	
 	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
+#pragma endregion
 
-	// TOOD: Create GameRenderer class which performs these operations instead of just overriding them
-
-	CommandPool mCommandPoolTransient;
-	ui32 mIndexCount;
-	Buffer mVertexBuffer;
-	Buffer mIndexBuffer;
-	vk::IndexType mIndexBufferUnitType;
-
-	std::vector<std::shared_ptr<Uniform>> mUniformPts;
-	ui64 mTotalUniformSize;
-	std::vector<Buffer> mUniformBuffers;
-	vk::UniqueDescriptorPool mDescriptorPool;
-	vk::UniqueDescriptorSetLayout mDescriptorLayout;
-	std::vector<vk::DescriptorSet> mDescriptorSets;
-
-	std::vector<FrameBuffer> mFrameBuffers;
-	Pipeline mPipeline;
-	CommandPool mCommandPool;
-	std::vector<CommandBuffer> mCommandBuffers;
-	
 	uSize mIdxCurrentFrame;
 	ui32 mIdxCurrentImage;
 	
 	logging::Logger getLog() const;
+
 	void pickPhysicalDevice();
-	virtual void destroyRenderChain() = 0;
-
-	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
-	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
-
-	bool acquireNextImage();
-	virtual void prepareRender();
-	virtual void render();
-	bool present();
-
-protected:
-
-	// TODO: Move to private
-	LogicalDevice mLogicalDevice;
-
 	vk::Queue& getQueue(QueueFamily::Enum type);
 
+	virtual void destroyRenderChain() = 0;
 	virtual void createRenderObjects();
 	virtual void destroyRenderObjects();
-	
-	virtual void destroyInputBuffers() {}
 
 	virtual void createFrames(uSize viewCount) = 0;
 	virtual uSize getNumberOfFrames() const = 0;
 	virtual graphics::Frame* getFrameAt(uSize idx) = 0;
 	virtual void destroyFrames() = 0;
+
+	bool acquireNextImage();
+	virtual void prepareRender();
+	virtual void render() = 0;
+	bool present();
 
 };
 

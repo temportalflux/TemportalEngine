@@ -9,12 +9,6 @@ VulkanRenderer::VulkanRenderer()
 	: mIdxCurrentFrame(0)
 	, mbRenderChainDirty(false)
 {
-	this->mVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	this->mIndexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 void VulkanRenderer::setInstance(VulkanInstance *pInstance)
@@ -65,11 +59,6 @@ f32 VulkanRenderer::getAspectRatio() const
 	return resolution.width / (f32)resolution.height;
 }
 
-void VulkanRenderer::addShader(std::shared_ptr<ShaderModule> shader)
-{
-	this->mPipeline.addShader(shader);
-}
-
 void VulkanRenderer::initializeDevices()
 {
 	this->pickPhysicalDevice();
@@ -95,11 +84,6 @@ void VulkanRenderer::pickPhysicalDevice()
 
 void VulkanRenderer::invalidate()
 {
-	this->destroyRenderChain();
-	this->mPipeline.clearShaders();
-
-	this->destroyInputBuffers();
-
 	this->mQueues.clear();
 	this->mLogicalDevice.invalidate();
 	this->mPhysicalDevice.invalidate();
@@ -128,39 +112,6 @@ void VulkanRenderer::destroyRenderObjects()
 	this->mRenderPass.destroy();
 	this->mImageViews.clear();
 	this->mSwapChain.destroy();
-}
-
-void VulkanRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size)
-{
-	Buffer& stagingBuffer = Buffer()
-		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-		.setMemoryRequirements(
-			vk::MemoryPropertyFlagBits::eHostVisible
-			| vk::MemoryPropertyFlagBits::eHostCoherent
-		)
-		.setSize(size);
-	stagingBuffer.create(&this->mLogicalDevice);
-	stagingBuffer.write(&this->mLogicalDevice, offset, data, size);
-	this->copyBetweenBuffers(&stagingBuffer, buffer, size);
-	stagingBuffer.destroy();
-}
-
-void VulkanRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
-{
-	// Buffers should be freed when they go out of scope
-	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
-	buffers[0]
-		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.copyBuffer(src, dest, size)
-		.end();
-	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
-	queue.submit(
-		vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
-		vk::Fence()
-	);
-	queue.waitIdle();
 }
 
 void VulkanRenderer::drawFrame()
@@ -214,14 +165,6 @@ bool VulkanRenderer::acquireNextImage()
 		return false;
 	}
 	return true;
-}
-
-void VulkanRenderer::render()
-{
-	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
-	// Submit the command buffer to the graphics queue
-	auto& commandBuffer = this->mCommandBuffers[this->mIdxCurrentImage];
-	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], { &commandBuffer });
 }
 
 bool VulkanRenderer::present()
