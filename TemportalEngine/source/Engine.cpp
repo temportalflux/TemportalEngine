@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 
 #include "memory/MemoryChunk.hpp"
+#include "ITickable.hpp"
 
 #include "Window.hpp"
 #include "math/Vector.hpp"
@@ -116,6 +117,11 @@ void Engine::initializeInput()
 		input::EInputType::QUIT, this->weak_from_this(),
 		std::bind(&Engine::processInput, this, std::placeholders::_1)
 	);
+}
+
+std::shared_ptr<input::Queue> Engine::getInputQueue() const
+{
+	return this->mpInputQueue;
 }
 
 std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
@@ -249,10 +255,15 @@ bool const Engine::isActive() const
 	return this->mbShouldContinueRunning;
 }
 
-void Engine::update()
+void Engine::update(f32 deltaTime)
 {
 	this->pollInput();
 	mpInputQueue->dispatchAll();
+	for (auto tickable : this->mTickers)
+	{
+		if (tickable.expired()) continue;
+		tickable.lock()->tick(deltaTime);
+	}
 	for (auto[id, pWindow] : this->mWindowPtrs)
 	{
 		pWindow->update();
@@ -291,32 +302,6 @@ void Engine::enqueueInput(input::Event const & evt)
 
 void Engine::processInput(input::Event const & evt)
 {
-	//LogEngineDebug("Received Input Event| Type:%i", (i32)evt.type);
-	if (evt.type == input::EInputType::KEY)
-	{
-		if (evt.inputKey.action == input::EAction::PRESS)
-			LogEngineDebug("%i Press", (i32)evt.inputKey.key);
-		if (evt.inputKey.action == input::EAction::REPEAT)
-			LogEngineDebug("%i Repeat", (i32)evt.inputKey.key);
-		if (evt.inputKey.action == input::EAction::RELEASE)
-			LogEngineDebug("%i Release", (i32)evt.inputKey.key);
-	}
-	else if (evt.type == input::EInputType::MOUSE_MOVE)
-	{
-		//LogEngineDebug("MOVE by (%i, %i) to (%i, %i)", evt.inputMouseMove.xDelta, evt.inputMouseMove.yDelta, evt.inputMouseMove.xCoord, evt.inputMouseMove.yCoord);
-	}
-	else if (evt.type == input::EInputType::MOUSE_BUTTON)
-	{
-		if (evt.inputMouseButton.action == input::EAction::PRESS)
-			LogEngineDebug("Mouse %i Press (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
-		if (evt.inputKey.action == input::EAction::RELEASE)
-			LogEngineDebug("Mouse %i Release (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
-	}
-	else if (evt.type == input::EInputType::MOUSE_SCROLL)
-	{
-		LogEngineDebug("Scroll by (%i, %i)", evt.inputScroll.delta[0], evt.inputScroll.delta[1]);
-	}
-
 	if (evt.type == input::EInputType::QUIT)
 	{
 		this->markShouldStop();
@@ -371,3 +356,8 @@ std::optional<network::Service* const> Engine::getNetworkService() const
 	return std::nullopt;
 }
 //*/
+
+void Engine::addTicker(std::weak_ptr<ITickable> tickable)
+{
+	this->mTickers.push_back(tickable);
+}

@@ -22,6 +22,7 @@
 #include <typeinfo>
 
 class Window;
+class ITickable;
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
 FORWARD_DEF(NS_INPUT, class Queue);
 FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
@@ -55,6 +56,7 @@ public:
 	~Engine();
 
 	void initializeInput();
+	std::shared_ptr<input::Queue> getInputQueue() const;
 
 	std::shared_ptr<asset::AssetManager> getAssetManager();
 
@@ -88,7 +90,7 @@ public:
 #pragma region Game Loop
 	void start();
 	bool const isActive() const;
-	void update();
+	void update(f32 deltaTime);
 	void joinThreads();
 	void markShouldStop();
 #pragma endregion
@@ -97,6 +99,8 @@ public:
 	void createClient(char const *address, ui16 port);
 	bool const hasNetwork() const;
 	//std::optional<network::Service* const> getNetworkService() const;
+
+	void addTicker(std::weak_ptr<ITickable> tickable);
 
 private:
 	asset::ProjectPtrStrong mProject;
@@ -128,6 +132,8 @@ private:
 #pragma endregion
 
 	bool mbShouldContinueRunning;
+
+	std::vector<std::weak_ptr<ITickable>> mTickers;
 
 	//network::Service *mpNetworkService;
 

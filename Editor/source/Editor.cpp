@@ -141,7 +141,7 @@ void Editor::run(utility::ArgumentMap args)
 	this->mpEngine->start();
 	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mpDockspace->isOpen())
 	{
-		this->mpEngine->update();
+		this->mpEngine->update(0);
 	}
 	this->mpEngine->joinThreads();
 

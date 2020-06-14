@@ -20,6 +20,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\utils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
@@ -129,6 +131,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Mouse.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\Queue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\logging\Logger.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\compare.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\pow.hpp" />

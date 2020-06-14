@@ -43,6 +43,9 @@
     <Filter Include="cereal">
       <UniqueIdentifier>{ea5d7b31-cdd4-47e3-8a3b-c3e2e9522bee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="controller">
+      <UniqueIdentifier>{5eb93bd5-8d39-4a31-846c-b840d80d276f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -212,6 +215,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\RenderCube.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp">
+      <Filter>controller</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -463,5 +469,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp">
+      <Filter>controller</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
   </ItemGroup>
 </Project>
