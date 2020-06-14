@@ -55,6 +55,9 @@ public:
 	void* getWindowHandle() const;
 	void setTitle(std::string title);
 
+	void showCursor(bool show);
+	void consumeCursor(bool consume);
+
 	std::vector<const char*> querySDLVulkanExtensions() const;
 	graphics::Surface createSurface() const;
 

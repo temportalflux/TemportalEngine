@@ -43,8 +43,8 @@ struct TEMPORTALENGINE_API Event
 		{
 			union
 			{
-				struct { i32 xDelta, yDelta; };
-				math::Vector2Int delta;
+				struct { f32 xDelta, yDelta; };
+				math::Vector2 delta;
 			};
 			union
 			{

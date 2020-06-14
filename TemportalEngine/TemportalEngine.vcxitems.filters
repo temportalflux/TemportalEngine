@@ -473,5 +473,6 @@
       <Filter>controller</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Camera.hpp" />
   </ItemGroup>
 </Project>

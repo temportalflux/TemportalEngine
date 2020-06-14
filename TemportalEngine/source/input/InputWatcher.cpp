@@ -75,11 +75,14 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 #pragma region Mouse
 	case SDL_MOUSEMOTION:
 	{
+		i32 width, height;
+		SDL_GetWindowSize(SDL_GetWindowFromID(evtIn.motion.windowID), &width, &height);
+
 		evtOut.type = input::EInputType::MOUSE_MOVE;
 		evtOut.inputMouseMove.xCoord = evtIn.motion.x;
 		evtOut.inputMouseMove.yCoord = evtIn.motion.y;
-		evtOut.inputMouseMove.xDelta = evtIn.motion.xrel;
-		evtOut.inputMouseMove.yDelta = evtIn.motion.yrel;
+		evtOut.inputMouseMove.xDelta = evtIn.motion.xrel / (f32)width;
+		evtOut.inputMouseMove.yDelta = evtIn.motion.yrel / (f32)height;
 		return true;
 	}
 	case SDL_MOUSEBUTTONDOWN:

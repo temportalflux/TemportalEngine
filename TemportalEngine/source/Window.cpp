@@ -61,6 +61,16 @@ void Window::setTitle(std::string title)
 	SDL_SetWindowTitle(reinterpret_cast<SDL_Window*>(this->getWindowHandle()), this->mpTitle.c_str());
 }
 
+void Window::showCursor(bool show)
+{
+	SDL_ShowCursor(show ? SDL_ENABLE : SDL_DISABLE);
+}
+
+void Window::consumeCursor(bool consume)
+{
+	SDL_SetRelativeMouseMode(consume ? SDL_TRUE : SDL_FALSE);
+}
+
 std::vector<const char*> Window::querySDLVulkanExtensions() const
 {
 	ui32 extCount = 0;
@@ -141,6 +151,11 @@ void Window::onEvent(void* pSdlEvent)
 		{
 		case SDL_WINDOWEVENT_RESIZED:
 		{
+			i32 w, h;
+			SDL_GetWindowSize(reinterpret_cast<SDL_Window*>(this->getWindowHandle()), &w, &h);
+			this->mWidth = (ui16)w;
+			this->mHeight = (ui16)h;
+
 			this->mpRenderer->markRenderChainDirty();
 			break;
 		}

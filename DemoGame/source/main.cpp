@@ -8,6 +8,7 @@
 #include "WorldObject.hpp"
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
+#include "Camera.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -149,6 +150,8 @@ int main(int argc, char *argv[])
 			engine::Engine::Destroy();
 			return 1;
 		}
+		pWindow->showCursor(false);
+		pWindow->consumeCursor(true);
 
 		{
 			auto renderCube = RenderCube();
@@ -245,33 +248,41 @@ int main(int argc, char *argv[])
 			pWindow->setRenderer(&renderer);
 #pragma endregion
 
+			// TODO: Allocate from entity pool
+			auto camera = pEngine->getMainMemory()->make_shared<Camera>();
+			camera->move(glm::vec3(0, 0, 10));
+
+			// TODO: Allocate from entity pool
+			auto controller = pEngine->getMainMemory()->make_shared<Controller>();
+			pEngine->addTicker(controller);
+			controller->subscribeToInput();
+			controller->assignCamera(camera);
+
+			pEngine->start();
+			auto prevTime = std::chrono::high_resolution_clock::now();
+			f32 deltaTime = 0.0f;
+			while (pEngine->isActive())
 			{
-				auto controller = pEngine->getMainMemory()->make_shared<Controller>();
-				controller->subscribeToInput();
-				pEngine->addTicker(controller);
-
-				pEngine->start();
-				auto prevTime = std::chrono::high_resolution_clock::now();
-				f32 deltaTime = 0.0f;
-				while (pEngine->isActive())
+				//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
-					//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
-					{
-						auto uniData = mvpUniform->read<ModelViewProjection>();
-						uniData.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0), glm::vec3(0, 1, 0));
-						uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
-						uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
-						mvpUniform->write(&uniData);
-					}
-
-					pEngine->update(deltaTime);
-
-					auto nextTime = std::chrono::high_resolution_clock::now();
-					deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
-					prevTime = nextTime;
+					auto uniData = mvpUniform->read<ModelViewProjection>();
+					auto fwd = camera->forward();
+					uniData.view = glm::lookAt(camera->position(), camera->position() + fwd, camera->up());
+					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
+					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+					mvpUniform->write(&uniData);
 				}
-				pEngine->joinThreads();
+
+				pEngine->update(deltaTime);
+
+				auto nextTime = std::chrono::high_resolution_clock::now();
+				deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
+				prevTime = nextTime;
 			}
+			pEngine->joinThreads();
+
+			controller.reset();
+			camera.reset();
 
 			// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
