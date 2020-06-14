@@ -14,13 +14,6 @@ class WorldObject
 {
 
 public:
-
-	struct VertexData
-	{
-		// TODO: vec3 position
-		glm::vec2 position;
-		glm::vec3 color;
-	};
 	struct InstanceData
 	{
 		glm::mat4 model;
@@ -36,13 +29,7 @@ public:
 	// TODO: Create TemportalEngine math matrix type
 	glm::mat4 getModelMatrix() const;
 
-	static std::vector<graphics::AttributeBinding> bindings();
-	ui16 pushVertex(VertexData v);
-	void pushIndex(ui16 i);
-	uSize getVertexBufferSize() const;
-	uSize getIndexBufferSize() const;
-	std::vector<VertexData> verticies() const;
-	std::vector<ui16> indicies() const;
+	static std::vector<graphics::AttributeBinding> bindings(ui8 &slot);
 
 private:
 
@@ -52,9 +39,5 @@ private:
 	glm::vec3 mScale;
 	glm::mat4 mModelMatrix;
 	glm::mat4 computeModelMatrix();
-
-	// TODO: Move to model component
-	std::vector<VertexData> mVertices;
-	std::vector<ui16> mIndicies;
 
 };

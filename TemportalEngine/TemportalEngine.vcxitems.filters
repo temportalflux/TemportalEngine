@@ -210,6 +210,7 @@
       <Filter>graphics</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -457,5 +458,6 @@
     <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 #include "graphics/ShaderModule.hpp"
 #include "graphics/Uniform.hpp"
 #include "WorldObject.hpp"
+#include "Model.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -27,13 +28,11 @@ using namespace std;
 // UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
 struct ModelViewProjection
 {
-	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 
 	ModelViewProjection()
 	{
-		model = glm::mat4(1);
 		view = glm::mat4(1);
 		proj = glm::mat4(1);
 	}
@@ -151,23 +150,28 @@ int main(int argc, char *argv[])
 		}
 
 		{
-			auto plane = WorldObject();
+			auto modelPlane = Model();
 			auto instances = std::vector<WorldObject::InstanceData>();
 			{
-				auto idxTL = plane.pushVertex({ {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f} });
-				auto idxTR = plane.pushVertex({ {+0.5f, -0.5f}, {0.0f, 1.0f, 0.0f} });
-				auto idxBR = plane.pushVertex({ {+0.5f, +0.5f}, {1.0f, 0.0f, 0.0f} });
-				auto idxBL = plane.pushVertex({ {-0.5f, +0.5f}, {0.0f, 0.0f, 1.0f} });
-				plane.pushIndex(idxTL);
-				plane.pushIndex(idxTR);
-				plane.pushIndex(idxBR);
-				plane.pushIndex(idxBR);
-				plane.pushIndex(idxBL);
-				plane.pushIndex(idxTL);
+				auto idxTL = modelPlane.pushVertex({ {-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} });
+				auto idxTR = modelPlane.pushVertex({ {+0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} });
+				auto idxBR = modelPlane.pushVertex({ {+0.5f, +0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} });
+				auto idxBL = modelPlane.pushVertex({ {-0.5f, +0.5f, 0.0f}, {0.0f, 0.0f, 1.0f} });
+				modelPlane.pushIndex(idxTL);
+				modelPlane.pushIndex(idxTR);
+				modelPlane.pushIndex(idxBR);
+				modelPlane.pushIndex(idxBR);
+				modelPlane.pushIndex(idxBL);
+				modelPlane.pushIndex(idxTL);
 			}
 			{
-				plane.setPosition(glm::vec3(3, 0, 0));
-				instances.push_back({ plane.getModelMatrix() });
+				for (i32 x = -3; x <= 3; ++x)
+					for (i32 y = -3; y <= 3; ++y)
+						instances.push_back({
+							WorldObject()
+							.setPosition(glm::vec3(x, y, 0))
+							.getModelMatrix()
+						});
 			}
 
 			/*
@@ -227,16 +231,36 @@ int main(int argc, char *argv[])
 
 			// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly
 			// TODO: Vertex bindings should validate against the shader
-			renderer.setBindings(WorldObject::bindings());
+			{
+				auto bindings = std::vector<graphics::AttributeBinding>();
+				ui8 slot = 0;
+				{
+					auto additionalBindings = Model::bindings(slot);
+					bindings.insert(
+						std::end(bindings),
+						std::begin(additionalBindings),
+						std::end(additionalBindings)
+					);
+				}
+				{
+					auto additionalBindings = WorldObject::bindings(slot);
+					bindings.insert(
+						std::end(bindings),
+						std::begin(additionalBindings),
+						std::end(additionalBindings)
+					);
+				}
+				renderer.setBindings(bindings);
+			}
 
 			// Initialize the rendering api connections
 			renderer.createInputBuffers(
-				plane.getVertexBufferSize(),
-				plane.getIndexBufferSize(),
+				modelPlane.getVertexBufferSize(),
+				modelPlane.getIndexBufferSize(),
 				(ui32)instances.size() * sizeof(WorldObject::InstanceData)
 			);
-			renderer.writeVertexData(0, plane.verticies());
-			renderer.writeIndexData(0, plane.indicies());
+			renderer.writeVertexData(0, modelPlane.verticies());
+			renderer.writeIndexData(0, modelPlane.indicies());
 			renderer.writeInstanceData(0, instances);
 
 			renderer.createRenderChain();
@@ -254,7 +278,6 @@ int main(int argc, char *argv[])
 				//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
-					uniData.model = plane.getModelMatrix();
 					uniData.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0), glm::vec3(0, 1, 0));
 					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), 0.1f, 10.0f);
 					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan

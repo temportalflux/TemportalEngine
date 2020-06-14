@@ -51,53 +51,16 @@ glm::mat4 WorldObject::getModelMatrix() const
 	return this->mModelMatrix;
 }
 
-std::vector<graphics::AttributeBinding> WorldObject::bindings()
+std::vector<graphics::AttributeBinding> WorldObject::bindings(ui8 &slot)
 {
 	return {
-		// Data per vertex of object instance
-		graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-		.setStructType<VertexData>()
-		.addAttribute({ /*slot*/ 0, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(VertexData, position) })
-		.addAttribute({ /*slot*/ 1, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(VertexData, color) }),
 		// Data per object instance - this is only for objects which dont more, rotate, or scale
 		graphics::AttributeBinding(graphics::AttributeBinding::Rate::eInstance)
 		.setStructType<InstanceData>()
 		// mat4 using 4 slots
-		.addAttribute({ /*slot*/ 2, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (0 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ 3, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (1 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ 4, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (2 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ 5, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (3 * sizeof(glm::vec4))})
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (0 * sizeof(glm::vec4))})
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (1 * sizeof(glm::vec4))})
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (2 * sizeof(glm::vec4))})
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (3 * sizeof(glm::vec4))})
 	};
-}
-
-ui16 WorldObject::pushVertex(VertexData v)
-{
-	auto i = (ui16)this->mVertices.size();
-	this->mVertices.push_back(v);
-	return i;
-}
-
-void WorldObject::pushIndex(ui16 i)
-{
-	this->mIndicies.push_back(i);
-}
-
-uSize WorldObject::getVertexBufferSize() const
-{
-	return sizeof(VertexData) * (uSize)this->mVertices.size();
-}
-
-uSize WorldObject::getIndexBufferSize() const
-{
-	return sizeof(ui16) * (uSize)this->mIndicies.size();
-}
-
-std::vector<WorldObject::VertexData> WorldObject::verticies() const
-{
-	return this->mVertices;
-}
-
-std::vector<ui16> WorldObject::indicies() const
-{
-	return this->mIndicies;
 }
