@@ -136,6 +136,7 @@ void GameRenderer::createDescriptorPool()
 {
 	this->createDescriptors(
 		vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex,
+		this->mUniformStaticBuffersPerFrame, this->mpUniformStatic->size(),
 		&this->mDescriptorPool_StaticUniform, &this->mDescriptorLayout_StaticUniform,
 		this->mDescriptorSetPerFrame_StaticUniform
 	);
@@ -143,29 +144,29 @@ void GameRenderer::createDescriptorPool()
 
 void GameRenderer::createDescriptors(
 	vk::DescriptorType type, vk::ShaderStageFlags stage,
+	std::vector<Buffer> &bufferPerFrame, ui64 bufferRange,
 	vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
 )
 {
-	auto setCount = (ui32)this->mImageViews.size();
+	auto frameCount = (ui32)bufferPerFrame.size();
 	auto uniformDescriptorCount = 1;
-	auto idxUniformBufferBinding = 0;
 
 	std::vector<vk::DescriptorPoolSize> poolSizes = {
 		// Uniform Buffer Pool size
 		vk::DescriptorPoolSize()
 			.setType(type)
-			.setDescriptorCount(setCount * uniformDescriptorCount)
+			.setDescriptorCount(frameCount * uniformDescriptorCount)
 	};
 	*pool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
-		.setMaxSets(setCount)
+		.setMaxSets(frameCount)
 	);
 
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		// Uniform Buffer Binding
 		vk::DescriptorSetLayoutBinding()
-		.setBinding(idxUniformBufferBinding)
+		.setBinding(/*index of binding in bindings*/ 0)
 		.setDescriptorType(type)
 		.setDescriptorCount(uniformDescriptorCount)
 		.setStageFlags(stage)
@@ -175,27 +176,27 @@ void GameRenderer::createDescriptors(
 		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
 	);
 
-	std::vector<vk::DescriptorSetLayout> layouts(setCount, layout->get());
+	std::vector<vk::DescriptorSetLayout> layouts(frameCount, layout->get());
 	// will be deallocated when the pool is destroyed
 	sets = this->mLogicalDevice.mDevice->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
 		.setDescriptorPool(pool->get())
-		.setDescriptorSetCount(setCount)
+		.setDescriptorSetCount(frameCount)
 		.setPSetLayouts(layouts.data())
 	);
 
-	for (uSize i = 0; i < setCount; ++i)
+	for (uSize i = 0; i < frameCount; ++i)
 	{
 		auto uniformBufferInfo = vk::DescriptorBufferInfo()
-			.setBuffer(*reinterpret_cast<vk::Buffer*>(this->mUniformStaticBuffersPerFrame[i].get()))
+			.setBuffer(*reinterpret_cast<vk::Buffer*>(bufferPerFrame[i].get()))
 			.setOffset(0)
-			.setRange(this->mpUniformStatic->size());
+			.setRange(bufferRange);
 
 		auto writeDescriptorUniform = vk::WriteDescriptorSet()
 			.setDescriptorType(type)
 			.setDescriptorCount(uniformDescriptorCount)
 			.setDstSet(sets[i])
-			.setDstBinding(idxUniformBufferBinding).setDstArrayElement(0)
+			.setDstBinding(/*index of the desired binding in bindings*/ 0).setDstArrayElement(0)
 			.setPBufferInfo(&uniformBufferInfo);
 
 		std::vector<vk::WriteDescriptorSet> writes = { writeDescriptorUniform };

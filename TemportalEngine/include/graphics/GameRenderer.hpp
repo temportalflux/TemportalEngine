@@ -82,6 +82,7 @@ private:
 
 	void createDescriptors(
 		vk::DescriptorType type, vk::ShaderStageFlags stage,
+		std::vector<Buffer> &bufferPerFrame, ui64 bufferRange,
 		vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
 	);
 
