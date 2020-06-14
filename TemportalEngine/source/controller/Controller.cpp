@@ -8,12 +8,12 @@ Controller::Controller()
 {
 	f32 moveSpeed = 2.0f;
 	// TODO: These are using y up directions (it should really be Z up)
-	this->mForward = { glm::vec3(0, 1, 0), moveSpeed };
-	this->mBackward = { glm::vec3(0, -1, 0), moveSpeed };
+	this->mForward = { glm::vec3(0, 0, -1), moveSpeed };
+	this->mBackward = { glm::vec3(0, 0, 1), moveSpeed };
 	this->mStrafeLeft = { glm::vec3(-1, 0, 0), moveSpeed };
 	this->mStrafeRight = { glm::vec3(1, 0, 0), moveSpeed };
-	this->mUp = { glm::vec3(0, 0, 1), moveSpeed };
-	this->mDown = { glm::vec3(0, 0, -1), moveSpeed };
+	this->mUp = { glm::vec3(0, 1, 0), moveSpeed };
+	this->mDown = { glm::vec3(0, -1, 0), moveSpeed };
 	this->mInputMappings = {
 		{ input::EKey::W, &this->mForward },
 		{ input::EKey::S, &this->mBackward },
@@ -92,7 +92,7 @@ void Controller::tick(f32 deltaTime)
 	for (auto&[key, mapping] : this->mInputMappings)
 	{
 		if (!mapping->bIsActive) continue;
-		this->mCamera->move(mapping->direction * deltaTime * mapping->speed);
+		this->mCamera->move((mapping->direction * this->mCamera->rotation()) * deltaTime * mapping->speed);
 	}
 
 	// Testing with roll
@@ -101,13 +101,13 @@ void Controller::tick(f32 deltaTime)
 	// TODO: This isn't really frame independent (doesnt use deltaTime)
 	if (std::abs(this->mLookHorizontal.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		this->mCamera->rotate(this->mLookHorizontal.axis, (this->mLookHorizontal.radians) * this->mLookHorizontal.delta);
+		this->mCamera->rotate(this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta);
 		this->mLookHorizontal.delta = 0.0f;
 	}
 	
 	if (std::abs(this->mLookVertical.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		this->mCamera->rotate(this->mLookVertical.axis, (this->mLookVertical.radians) * this->mLookVertical.delta);
+		this->mCamera->rotate(this->mLookVertical.axis, this->mLookVertical.radians * this->mLookVertical.delta);
 		this->mLookVertical.delta = 0.0f;
 	}
 }
