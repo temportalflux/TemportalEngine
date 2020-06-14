@@ -80,6 +80,11 @@ private:
 	vk::UniqueDescriptorSetLayout mDescriptorLayout_StaticUniform;
 	std::vector<vk::DescriptorSet> mDescriptorSetPerFrame_StaticUniform;
 
+	void createDescriptors(
+		vk::DescriptorType type, vk::ShaderStageFlags stage,
+		vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
+	);
+
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;

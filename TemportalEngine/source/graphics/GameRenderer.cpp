@@ -113,10 +113,11 @@ void GameRenderer::destroyRenderChain()
 
 void GameRenderer::createUniformBuffers()
 {
-	this->mUniformStaticBuffersPerFrame.resize(this->mImageViews.size());
-	for (auto& buffer : this->mUniformStaticBuffersPerFrame)
+	auto frameCount = this->mImageViews.size();
+	this->mUniformStaticBuffersPerFrame.resize(frameCount);
+	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
 	{
-		buffer
+		this->mUniformStaticBuffersPerFrame[idxFrame]
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
 			// Host Coherent means this entire buffer will be automatially flushed per write.
 			// This can be optimized later by only flushing the portion of the buffer which actually changed.
@@ -133,6 +134,18 @@ void GameRenderer::destroyUniformBuffers()
 
 void GameRenderer::createDescriptorPool()
 {
+	this->createDescriptors(
+		vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex,
+		&this->mDescriptorPool_StaticUniform, &this->mDescriptorLayout_StaticUniform,
+		this->mDescriptorSetPerFrame_StaticUniform
+	);
+}
+
+void GameRenderer::createDescriptors(
+	vk::DescriptorType type, vk::ShaderStageFlags stage,
+	vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
+)
+{
 	auto setCount = (ui32)this->mImageViews.size();
 	auto uniformDescriptorCount = 1;
 	auto idxUniformBufferBinding = 0;
@@ -140,10 +153,10 @@ void GameRenderer::createDescriptorPool()
 	std::vector<vk::DescriptorPoolSize> poolSizes = {
 		// Uniform Buffer Pool size
 		vk::DescriptorPoolSize()
-			.setType(vk::DescriptorType::eUniformBuffer)
+			.setType(type)
 			.setDescriptorCount(setCount * uniformDescriptorCount)
 	};
-	this->mDescriptorPool_StaticUniform = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
+	*pool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(setCount)
@@ -153,20 +166,20 @@ void GameRenderer::createDescriptorPool()
 		// Uniform Buffer Binding
 		vk::DescriptorSetLayoutBinding()
 		.setBinding(idxUniformBufferBinding)
-		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorType(type)
 		.setDescriptorCount(uniformDescriptorCount)
-		.setStageFlags(vk::ShaderStageFlagBits::eVertex)
+		.setStageFlags(stage)
 	};
-	this->mDescriptorLayout_StaticUniform = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
+	*layout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
 		vk::DescriptorSetLayoutCreateInfo()
 		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
 	);
 
-	std::vector<vk::DescriptorSetLayout> layouts(setCount, this->mDescriptorLayout_StaticUniform.get());
+	std::vector<vk::DescriptorSetLayout> layouts(setCount, layout->get());
 	// will be deallocated when the pool is destroyed
-	this->mDescriptorSetPerFrame_StaticUniform = this->mLogicalDevice.mDevice->allocateDescriptorSets(
+	sets = this->mLogicalDevice.mDevice->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
-		.setDescriptorPool(this->mDescriptorPool_StaticUniform.get())
+		.setDescriptorPool(pool->get())
 		.setDescriptorSetCount(setCount)
 		.setPSetLayouts(layouts.data())
 	);
@@ -179,9 +192,9 @@ void GameRenderer::createDescriptorPool()
 			.setRange(this->mpUniformStatic->size());
 
 		auto writeDescriptorUniform = vk::WriteDescriptorSet()
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setDescriptorType(type)
 			.setDescriptorCount(uniformDescriptorCount)
-			.setDstSet(this->mDescriptorSetPerFrame_StaticUniform[i])
+			.setDstSet(sets[i])
 			.setDstBinding(idxUniformBufferBinding).setDstArrayElement(0)
 			.setPBufferInfo(&uniformBufferInfo);
 
