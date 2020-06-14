@@ -218,16 +218,21 @@ void GameRenderer::recordCommandBufferInstructions()
 {
 	for (uSize i = 0; i < this->mCommandBuffers.size(); ++i)
 	{
-		this->mCommandBuffers[i].beginCommand()
-			.clear({ 0.0f, 0.0f, 0.0f, 1.0f })
-			.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i])
-			.bindPipeline(&this->mPipeline)
-			.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSets[i])
-			.bindVertexBuffers({ &this->mVertexBuffer })
-			.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
-			.draw(this->mIndexCount)
-			.endRenderPass()
-			.end();
+		auto cmd = this->mCommandBuffers[i].beginCommand();
+		cmd.clear({ 0.0f, 0.0f, 0.0f, 1.0f });
+		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[i]);
+		{
+			// TODO: This should perform a draw call for each object type being rendered
+			// TODO: This should handle instancing of each object type and send model or model-view matrix via instanced uniform data
+			cmd
+				.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSets[i])
+				.bindPipeline(&this->mPipeline)
+				.bindVertexBuffers({ &this->mVertexBuffer })
+				.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
+				.draw(this->mIndexCount);
+		}
+		cmd.endRenderPass();
+		cmd.end();
 	}
 }
 
