@@ -14,7 +14,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)include\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
@@ -54,6 +53,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionRejected.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\ServiceClient.cpp" />
