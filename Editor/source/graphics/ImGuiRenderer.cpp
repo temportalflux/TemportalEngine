@@ -55,6 +55,18 @@ void ImGuiRenderer::invalidate()
 	VulkanRenderer::invalidate();
 }
 
+void ImGuiRenderer::createRenderChain()
+{
+	this->createRenderObjects();
+	this->createFrames(this->mImageViews.size());
+}
+
+void ImGuiRenderer::destroyRenderChain()
+{
+	this->destroyFrames();
+	this->destroyRenderObjects();
+}
+
 vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPoolImgui()
 {
 	ui32 const poolSize = 1000;

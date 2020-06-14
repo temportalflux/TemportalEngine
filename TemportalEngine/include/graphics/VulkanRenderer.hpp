@@ -74,7 +74,7 @@ public:
 	}
 	
 	// Creates a swap chain, and all objects that depend on it
-	virtual void createRenderChain();
+	virtual void createRenderChain() = 0;
 
 	virtual void finalizeInitialization() {}
 	virtual void onInputEvent(void* evt) {}
@@ -149,7 +149,7 @@ protected:
 	
 	logging::Logger getLog() const;
 	void pickPhysicalDevice();
-	virtual void destroyRenderChain();
+	virtual void destroyRenderChain() = 0;
 
 	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
 	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
@@ -168,14 +168,7 @@ protected:
 
 	virtual void createRenderObjects();
 	virtual void destroyRenderObjects();
-
-	virtual void createUniformBuffers() = 0;
-	virtual void destroyUniformBuffers() = 0;
-	virtual void createDescriptorPool() = 0;
-	virtual void destroyDescriptorPool() = 0;
-	virtual void createCommandObjects() = 0;
-	virtual void destroyCommandObjects() = 0;
-
+	
 	virtual void destroyInputBuffers();
 
 	virtual void updateUniformBuffer(ui32 idxImageView);

@@ -49,15 +49,11 @@ private:
 	void endGuiFrame();
 
 protected:
-	void createCommandObjects() override {}
-	void destroyCommandObjects() override {}
+	void createRenderChain() override;
+	void destroyRenderChain() override;
 	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
 	void destroyInputBuffers() override {}
-	void createUniformBuffers() override {}
-	void destroyUniformBuffers() override {}
 	void updateUniformBuffer(ui32 idxImageView) override {}
-	void createDescriptorPool() override {}
-	void destroyDescriptorPool() override {}
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

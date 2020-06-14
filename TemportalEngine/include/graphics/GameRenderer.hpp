@@ -17,7 +17,6 @@ public:
 	//void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize) override {}
 
 protected:
-	void destroyRenderChain() override;
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;
@@ -25,12 +24,14 @@ protected:
 	void destroyFrames() override;
 
 private:
-	void createUniformBuffers() override;
-	void destroyUniformBuffers() override;
-	void createDescriptorPool() override;
-	void destroyDescriptorPool() override;
-	void createCommandObjects() override;
-	void destroyCommandObjects() override;
+	void destroyRenderChain() override;
+
+	void createUniformBuffers();
+	void destroyUniformBuffers();
+	void createDescriptorPool();
+	void destroyDescriptorPool();
+	void createCommandObjects();
+	void destroyCommandObjects();
 	void recordCommandBufferInstructions();
 
 	// TODO: Move these from vulkan to game

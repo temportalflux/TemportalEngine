@@ -117,24 +117,6 @@ void VulkanRenderer::invalidate()
 	mpInstance = nullptr;
 }
 
-void VulkanRenderer::createRenderChain()
-{
-	this->createRenderObjects();
-	this->createUniformBuffers();
-	this->createDescriptorPool();
-	this->createCommandObjects();
-	this->createFrames(this->mImageViews.size());
-}
-
-void VulkanRenderer::destroyRenderChain()
-{
-	this->destroyFrames();
-	this->destroyCommandObjects();
-	this->destroyDescriptorPool();
-	this->destroyUniformBuffers();
-	this->destroyRenderObjects();
-}
-
 void VulkanRenderer::createRenderObjects()
 {
 	this->mSwapChain

@@ -10,13 +10,20 @@ GameRenderer::GameRenderer()
 
 void GameRenderer::createRenderChain()
 {
-	VulkanRenderer::createRenderChain();
-
+	this->createRenderObjects();
+	this->createUniformBuffers();
+	this->createDescriptorPool();
+	this->createCommandObjects();
+	this->createFrames(this->mImageViews.size());
 }
 
 void GameRenderer::destroyRenderChain()
 {
-	VulkanRenderer::destroyRenderChain();
+	this->destroyFrames();
+	this->destroyCommandObjects();
+	this->destroyDescriptorPool();
+	this->destroyUniformBuffers();
+	this->destroyRenderObjects();
 }
 
 void GameRenderer::createUniformBuffers()
