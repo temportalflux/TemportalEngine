@@ -4,6 +4,8 @@
 
 #include "graphics/AttributeBinding.hpp"
 
+class IRender;
+
 NS_GRAPHICS
 class Uniform;
 
@@ -16,29 +18,19 @@ class GameRenderer : public VulkanRenderer
 public:
 	GameRenderer();
 
+	void addRender(IRender *render);
+
 	void setStaticUniform(std::shared_ptr<Uniform> uniform);
-	void createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize, ui64 instanceBufferSize);
+	void initializeBufferHelpers();
+	void initializeBuffer(graphics::Buffer &buffer);
 
-	template <typename TVertex>
-	void writeVertexData(ui64 offset, std::vector<TVertex> const &verticies)
-	{
-		this->writeToBuffer(&this->mVertexBuffer, offset, (void*)verticies.data(), sizeof(TVertex) * verticies.size());
-	}
-
+	// TODO: Move this to the buffer object
 	template <typename TData>
-	void writeInstanceData(ui64 offset, std::vector<TData> const &dataSet)
+	void writeBufferData(graphics::Buffer &buffer, ui64 offset, std::vector<TData> const &dataSet)
 	{
-		this->mInstanceCount = (ui32)dataSet.size();
-		this->writeToBuffer(&this->mInstanceBuffer, offset, (void*)dataSet.data(), sizeof(TData) * this->mInstanceCount);
+		this->writeToBuffer(&buffer, offset, (void*)dataSet.data(), sizeof(TData) * dataSet.size());
 	}
-
-	void writeIndexData(ui64 offset, std::vector<ui16> const &indicies)
-	{
-		this->mIndexBufferUnitType = vk::IndexType::eUint16;
-		this->mIndexCount = (ui32)indicies.size();
-		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui16) * indicies.size());
-	}
-
+	
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
@@ -57,7 +49,6 @@ private:
 
 	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
 	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
-	void destroyInputBuffers();
 
 	void destroyRenderChain() override;
 
@@ -76,12 +67,7 @@ private:
 private:
 
 	CommandPool mCommandPoolTransient;
-	ui32 mIndexCount;
-	Buffer mVertexBuffer;
-	Buffer mInstanceBuffer;
-	ui32 mInstanceCount;
-	Buffer mIndexBuffer;
-	vk::IndexType mIndexBufferUnitType;
+	std::vector<IRender*> mpRenders;
 
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;

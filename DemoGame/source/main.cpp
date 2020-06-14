@@ -233,7 +233,9 @@ int main(int argc, char *argv[])
 				renderer.setBindings(bindings);
 			}
 
+			renderer.initializeBufferHelpers();
 			renderCube.init(&renderer, instances);
+			renderer.addRender(&renderCube);
 
 			renderer.createRenderChain();
 			renderer.finalizeInitialization();
@@ -266,6 +268,7 @@ int main(int argc, char *argv[])
 
 			// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
+			renderCube.invalidate();
 			renderer.invalidate();
 		}
 

@@ -1,31 +1,25 @@
 #include "graphics/GameRenderer.hpp"
 
 #include "graphics/Uniform.hpp"
+#include "IRender.hpp"
 
 using namespace graphics;
 
 GameRenderer::GameRenderer()
 	: VulkanRenderer()
 {
-	this->mVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	this->mInstanceBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	this->mIndexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 void GameRenderer::invalidate()
 {
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
-
-	this->destroyInputBuffers();
-
 	VulkanRenderer::invalidate();
+}
+
+void GameRenderer::addRender(IRender *render)
+{
+	this->mpRenders.push_back(render);
 }
 
 void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
@@ -33,18 +27,19 @@ void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
 	this->mpUniformStatic = uniform;
 }
 
-void GameRenderer::createInputBuffers(ui64 vertexBufferSize, ui64 indexBufferSize, ui64 instanceBufferSize)
+void GameRenderer::initializeBufferHelpers()
 {
-	this->mVertexBuffer.setSize(vertexBufferSize).create(&this->mLogicalDevice);
-	this->mInstanceBuffer.setSize(instanceBufferSize).create(&this->mLogicalDevice);
-	this->mIndexBuffer.setSize(indexBufferSize).create(&this->mLogicalDevice);
-
 	this->mCommandPoolTransient
 		.setQueueFamily(
 			graphics::QueueFamily::Enum::eGraphics,
 			this->mPhysicalDevice.queryQueueFamilyGroup()
 		)
 		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
+}
+
+void GameRenderer::initializeBuffer(graphics::Buffer &buffer)
+{
+	buffer.create(&this->mLogicalDevice);
 }
 
 void GameRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size)
@@ -78,13 +73,6 @@ void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
 		vk::Fence()
 	);
 	queue.waitIdle();
-}
-
-void GameRenderer::destroyInputBuffers()
-{
-	this->mVertexBuffer.destroy();
-	this->mIndexBuffer.destroy();
-	this->mInstanceBuffer.destroy();
 }
 
 void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
@@ -246,15 +234,13 @@ void GameRenderer::recordCommandBufferInstructions()
 		cmd.clear({ 0.0f, 0.0f, 0.0f, 1.0f });
 		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
-			// TODO: This should perform a draw call for each object type being rendered
-			// TODO: This should handle instancing of each object type and send model or model-view matrix via instanced uniform data
-			cmd
-				.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame_StaticUniform[idxFrame])
-				.bindPipeline(&this->mPipeline)
-				.bindVertexBuffers(0, { &this->mVertexBuffer })
-				.bindVertexBuffers(1, { &this->mInstanceBuffer })
-				.bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType)
-				.draw(this->mIndexCount, this->mInstanceCount);
+			// TODO: Should each render system have control over the descriptor set and pipeline?
+			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame_StaticUniform[idxFrame]);
+			cmd.bindPipeline(&this->mPipeline);
+			for (auto* pRender : this->mpRenders)
+			{
+				pRender->draw(&cmd);
+			}
 		}
 		cmd.endRenderPass();
 		cmd.end();

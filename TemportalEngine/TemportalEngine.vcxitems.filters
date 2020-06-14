@@ -462,5 +462,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ModelCube.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\RenderCube.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
   </ItemGroup>
 </Project>
