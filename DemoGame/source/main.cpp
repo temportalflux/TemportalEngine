@@ -24,12 +24,6 @@
 
 using namespace std;
 
-struct Vertex
-{
-	glm::vec2 position;
-	glm::vec3 color;
-};
-
 // UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
 struct ModelViewProjection
 {
@@ -186,7 +180,7 @@ int main(int argc, char *argv[])
 			// Will release memory allocated when it goes out of scope
 			// TODO: Use dedicated graphics memory
 			auto mvpUniform = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
-
+			
 #pragma region Vulkan
 			auto renderer = graphics::GameRenderer();
 			pEngine->initializeVulkan(pWindow->querySDLVulkanExtensions());
@@ -230,10 +224,10 @@ int main(int argc, char *argv[])
 					// Set the description for the input
 					shaderModule->setVertexDescription(
 						{
-							sizeof(Vertex),
+							sizeof(WorldObject::VertexData),
 							{
-								{ "position", CREATE_ATTRIBUTE(Vertex, position) },
-								{ "color", CREATE_ATTRIBUTE(Vertex, color) }
+								{ "position", CREATE_ATTRIBUTE(WorldObject::VertexData, position) },
+								{ "color", CREATE_ATTRIBUTE(WorldObject::VertexData, color) }
 							}
 						}
 					);
@@ -242,6 +236,10 @@ int main(int argc, char *argv[])
 				// Fragment Shader from asset
 				renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
 			}
+
+			// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly
+			// TODO: Vertex bindings should validate against the shader
+			renderer.setBindings(WorldObject::bindings());
 
 			// Initialize the rendering api connections
 			renderer.createInputBuffers(plane.getVertexBufferSize(), plane.getIndexBufferSize());

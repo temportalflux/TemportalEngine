@@ -2,8 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include <vector>
-#include <unordered_map>
+#include "graphics/AttributeBinding.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -20,6 +19,7 @@ class Pipeline
 public:
 	Pipeline() = default;
 
+	Pipeline& setBindings(std::vector<AttributeBinding> bindings);
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
 	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
 
@@ -38,6 +38,8 @@ private:
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipelineCache mCache;
 	vk::UniquePipeline mPipeline;
+
+	std::vector<AttributeBinding> mAttributeBindings;
 
 	// Creates shader stage info items from `mpShaders`. Not safe to use if mpShaders change or any element is deleted before it is used.
 	std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const;

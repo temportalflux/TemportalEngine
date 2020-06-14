@@ -454,5 +454,8 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
+    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\graphics\AttributeBinding.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

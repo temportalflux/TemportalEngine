@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "graphics/AttributeBinding.hpp"
+
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
@@ -13,11 +15,15 @@ class WorldObject
 
 public:
 
-	struct Vertex
+	struct VertexData
 	{
 		// TODO: vec3 position
 		glm::vec2 position;
 		glm::vec3 color;
+	};
+	struct InstanceData
+	{
+		glm::mat4 model;
 	};
 
 	WorldObject();
@@ -30,11 +36,12 @@ public:
 	// TODO: Create TemportalEngine math matrix type
 	glm::mat4 getModelMatrix() const;
 
-	ui16 pushVertex(Vertex v);
+	static std::vector<graphics::AttributeBinding> bindings();
+	ui16 pushVertex(VertexData v);
 	void pushIndex(ui16 i);
 	uSize getVertexBufferSize() const;
 	uSize getIndexBufferSize() const;
-	std::vector<Vertex> verticies() const;
+	std::vector<VertexData> verticies() const;
 	std::vector<ui16> indicies() const;
 
 private:
@@ -47,7 +54,7 @@ private:
 	glm::mat4 computeModelMatrix();
 
 	// TODO: Move to model component
-	std::vector<Vertex> mVertices;
+	std::vector<VertexData> mVertices;
 	std::vector<ui16> mIndicies;
 
 };

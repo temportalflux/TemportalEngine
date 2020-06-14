@@ -125,21 +125,3 @@ vk::PipelineShaderStageCreateInfo ShaderModule::getPipelineInfo() const
 		.setStage(mStage).setPName(mMainOpName.c_str())
 		.setModule(this->mInternal.get()).setPSpecializationInfo(nullptr);
 }
-
-// TODO: rename to getBindings
-vk::VertexInputBindingDescription ShaderModule::createBindings() const
-{
-	return this->mBinding;
-}
-
-// TODO: rename to getAttributes
-std::vector<vk::VertexInputAttributeDescription> ShaderModule::createAttributes() const
-{
-	std::vector<vk::VertexInputAttributeDescription> attributes(this->mAttributes.size());
-	ui32 i = 0;
-	for (auto[propertyName, desc] : this->mAttributes)
-	{
-		attributes[i++] = desc;
-	}
-	return attributes;
-}

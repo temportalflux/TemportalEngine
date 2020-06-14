@@ -56,8 +56,6 @@ private:
 	std::unordered_map<std::string, vk::VertexInputAttributeDescription> mAttributes;
 
 	vk::PipelineShaderStageCreateInfo getPipelineInfo() const;
-	vk::VertexInputBindingDescription createBindings() const;
-	std::vector<vk::VertexInputAttributeDescription> createAttributes() const;
 
 };
 

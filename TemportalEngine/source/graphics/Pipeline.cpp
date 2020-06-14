@@ -7,6 +7,12 @@
 
 using namespace graphics;
 
+Pipeline& Pipeline::setBindings(std::vector<AttributeBinding> bindings)
+{
+	this->mAttributeBindings = bindings;
+	return *this;
+}
+
 Pipeline& Pipeline::addShader(std::shared_ptr<ShaderModule> shader)
 {
 	this->mShaderPtrs.insert(std::make_pair(shader->mStage, shader));
@@ -50,16 +56,31 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		shader->create(pDevice);
 	}
 
-	auto vertexShader = this->getShader(vk::ShaderStageFlagBits::eVertex);
-	assert(vertexShader != nullptr);
-	vk::VertexInputBindingDescription binding = vertexShader->createBindings();
-	std::vector<vk::VertexInputAttributeDescription> attributes = vertexShader->createAttributes();
-
-	auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
-		.setVertexBindingDescriptionCount(1)
-		.setPVertexBindingDescriptions(&binding)
-		.setVertexAttributeDescriptionCount((ui32)attributes.size())
-		.setPVertexAttributeDescriptions(attributes.data());
+	auto bindingCount = (ui32)this->mAttributeBindings.size();
+	auto bindingDescs = std::vector<vk::VertexInputBindingDescription>();
+	auto attribDescs = std::vector<vk::VertexInputAttributeDescription>();
+	for (ui32 i = 0; i < bindingCount; ++i)
+	{
+		bindingDescs.push_back(
+			vk::VertexInputBindingDescription().setBinding(i)
+			.setInputRate((vk::VertexInputRate)this->mAttributeBindings[i].mInputRate)
+			.setStride(this->mAttributeBindings[i].mSize)
+		);
+		for (const auto& attribute : this->mAttributeBindings[i].mAttributes)
+		{
+			attribDescs.push_back(
+				vk::VertexInputAttributeDescription().setBinding(i)
+				.setLocation(attribute.slot)
+				.setFormat((vk::Format)attribute.format)
+				.setOffset(attribute.offset)
+			);
+		}
+	}
+	auto vertexBindingInfo = vk::PipelineVertexInputStateCreateInfo()
+		.setVertexBindingDescriptionCount((ui32)bindingDescs.size())
+		.setPVertexBindingDescriptions(bindingDescs.data())
+		.setVertexAttributeDescriptionCount((ui32)attribDescs.size())
+		.setPVertexAttributeDescriptions(attribDescs.data());
 
 	// TODO (START): These need to go in configurable objects
 	auto infoAssembly = vk::PipelineInputAssemblyStateCreateInfo()
@@ -125,7 +146,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		.setSubpass(0)
 		.setLayout(mLayout.get())
 		// Configurables
-		.setPVertexInputState(&infoInputVertex)
+		.setPVertexInputState(&vertexBindingInfo)
 		.setPInputAssemblyState(&infoAssembly)
 		.setPViewportState(&infoViewportState)
 		.setPRasterizationState(&infoRasterization)

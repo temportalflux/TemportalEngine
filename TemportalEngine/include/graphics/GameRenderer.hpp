@@ -2,6 +2,8 @@
 
 #include "graphics/VulkanRenderer.hpp"
 
+#include "graphics/AttributeBinding.hpp"
+
 NS_GRAPHICS
 class Uniform;
 
@@ -30,6 +32,7 @@ public:
 		this->writeToBuffer(&this->mIndexBuffer, offset, (void*)indicies.data(), sizeof(ui16) * indicies.size());
 	}
 
+	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
 	void createRenderChain() override;

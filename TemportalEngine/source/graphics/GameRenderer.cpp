@@ -84,6 +84,11 @@ void GameRenderer::destroyInputBuffers()
 	this->mIndexBuffer.destroy();
 }
 
+void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
+{
+	this->mPipeline.setBindings(bindings);
+}
+
 void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 {
 	this->mPipeline.addShader(shader);
@@ -204,6 +209,25 @@ void GameRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
+	{
+		std::vector<vk::VertexInputBindingDescription> bindings = {
+			vk::VertexInputBindingDescription()
+			.setBinding(/*index of binding in bindings*/ 0)
+			.setInputRate(/*per vertex or per instance*/ vk::VertexInputRate::eVertex)
+			.setStride(/*size*/ 0)
+		};
+		std::vector<vk::VertexInputAttributeDescription> attributes = {
+			vk::VertexInputAttributeDescription()
+			.setBinding(/*index of binding in bindings that this attrib is connected to*/ 0)
+			.setLocation(/*layout(location = slot) ...*/ 0)
+			.setFormat(/*data type of the attribute*/ vk::Format::eR32G32B32Sfloat /*= float vec3*/)
+		};
+		auto infoInputVertex = vk::PipelineVertexInputStateCreateInfo()
+			.setVertexBindingDescriptionCount((ui32)bindings.size())
+			.setPVertexBindingDescriptions(bindings.data())
+			.setVertexAttributeDescriptionCount((ui32)attributes.size())
+			.setPVertexAttributeDescriptions(attributes.data());
+	}
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout.get()));
 
 	this->mCommandPool
