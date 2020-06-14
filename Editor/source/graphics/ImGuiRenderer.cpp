@@ -232,9 +232,9 @@ void ImGuiRenderer::endGuiFrame()
 	ImGui::Render();
 }
 
-void ImGuiRenderer::render()
+void ImGuiRenderer::render(graphics::Frame* frame, ui32 idxCurrentImage)
 {
-	auto* currentFrame = reinterpret_cast<ImGuiFrame*>(this->getFrameAt(this->mIdxCurrentFrame));
+	auto* currentFrame = reinterpret_cast<ImGuiFrame*>(frame);
 	
 	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
 	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);

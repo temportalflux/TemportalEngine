@@ -57,7 +57,7 @@ protected:
 	graphics::Frame* getFrameAt(uSize idx) override;
 	void destroyFrames() override;
 
-	void render() override;
+	void render(graphics::Frame* frame, ui32 idxCurrentImage) override;
 
 };
 

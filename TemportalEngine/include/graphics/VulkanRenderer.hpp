@@ -100,9 +100,6 @@ protected:
 	std::vector<ImageView> mImageViews;
 	RenderPass mRenderPass;
 #pragma endregion
-
-	uSize mIdxCurrentFrame;
-	ui32 mIdxCurrentImage;
 	
 	logging::Logger getLog() const;
 
@@ -119,9 +116,14 @@ protected:
 	virtual void destroyFrames() = 0;
 
 	bool acquireNextImage();
-	virtual void prepareRender();
-	virtual void render() = 0;
+	virtual void prepareRender(ui32 idxCurrentFrame);
+	virtual void render(graphics::Frame* frame, ui32 idxCurrentImage) = 0;
 	bool present();
+
+private:
+
+	uSize mIdxCurrentFrame;
+	ui32 mIdxCurrentImage;
 
 };
 

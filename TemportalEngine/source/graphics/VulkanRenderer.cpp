@@ -122,19 +122,19 @@ void VulkanRenderer::drawFrame()
 	currentFrame->waitUntilNotInFlight();
 	
 	if (!this->acquireNextImage()) return;
-	this->prepareRender();
-	this->render();
+	this->prepareRender((ui32)this->mIdxCurrentFrame);
+	this->render(currentFrame, this->mIdxCurrentImage);
 	if (!this->present()) return;
 	
 	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->getNumberOfFrames();
 }
 
-void VulkanRenderer::prepareRender()
+void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 {
-	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
+	auto* currentFrame = this->getFrameAt(idxCurrentFrame);
 
 	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
-	auto& imageView = this->mImageViews[mIdxCurrentImage];
+	auto& imageView = this->mImageViews[this->mIdxCurrentImage];
 	if (imageView.isInFlight())
 	{
 		imageView.waitUntilNotInFlight(&this->mLogicalDevice);

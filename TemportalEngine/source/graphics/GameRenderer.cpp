@@ -264,10 +264,10 @@ void GameRenderer::destroyFrames()
 	this->mFrames.clear();
 }
 
-void GameRenderer::prepareRender()
+void GameRenderer::prepareRender(ui32 idxCurrentFrame)
 {
-	VulkanRenderer::prepareRender();
-	this->updateUniformBuffer((ui32)this->mIdxCurrentFrame);
+	VulkanRenderer::prepareRender(idxCurrentFrame);
+	this->updateUniformBuffer(idxCurrentFrame);
 }
 
 void GameRenderer::updateUniformBuffer(ui32 idxImageView)
@@ -283,10 +283,9 @@ void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 	}
 }
 
-void GameRenderer::render()
+void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
-	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	// Submit the command buffer to the graphics queue
-	auto& commandBuffer = this->mCommandBuffers[this->mIdxCurrentImage];
+	auto& commandBuffer = this->mCommandBuffers[idxCurrentImage];
 	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], { &commandBuffer });
 }

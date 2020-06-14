@@ -59,9 +59,9 @@ private:
 	void destroyCommandObjects();
 	void recordCommandBufferInstructions();
 
-	void prepareRender() override;
+	void prepareRender(ui32 idxCurrentFrame) override;
 	void updateUniformBuffer(ui32 idxImageView);
-	void render() override;
+	void render(graphics::Frame* frame, ui32 idxCurrentImage) override;
 
 private:
 
