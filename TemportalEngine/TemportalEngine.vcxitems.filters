@@ -211,6 +211,7 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\RenderCube.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -459,5 +460,7 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ModelCube.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\RenderCube.hpp" />
   </ItemGroup>
 </Project>

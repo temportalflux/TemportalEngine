@@ -18,12 +18,14 @@ public:
 
 	static std::vector<graphics::AttributeBinding> bindings(ui8 &slot);
 
-	ui16 pushVertex(Vertex v);
-	void pushIndex(ui16 i);
 	uSize getVertexBufferSize() const;
 	uSize getIndexBufferSize() const;
 	std::vector<Vertex> verticies() const;
 	std::vector<ui16> indicies() const;
+
+protected:
+	ui16 pushVertex(Vertex v);
+	void pushIndex(ui16 i);
 
 private:
 

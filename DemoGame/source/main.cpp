@@ -6,7 +6,7 @@
 #include "graphics/ShaderModule.hpp"
 #include "graphics/Uniform.hpp"
 #include "WorldObject.hpp"
-#include "Model.hpp"
+#include "RenderCube.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -150,28 +150,15 @@ int main(int argc, char *argv[])
 		}
 
 		{
-			auto modelPlane = Model();
-			auto instances = std::vector<WorldObject::InstanceData>();
-			{
-				auto idxTL = modelPlane.pushVertex({ {-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} });
-				auto idxTR = modelPlane.pushVertex({ {+0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f} });
-				auto idxBR = modelPlane.pushVertex({ {+0.5f, +0.5f, 0.0f}, {1.0f, 0.0f, 0.0f} });
-				auto idxBL = modelPlane.pushVertex({ {-0.5f, +0.5f, 0.0f}, {0.0f, 0.0f, 1.0f} });
-				modelPlane.pushIndex(idxTL);
-				modelPlane.pushIndex(idxTR);
-				modelPlane.pushIndex(idxBR);
-				modelPlane.pushIndex(idxBR);
-				modelPlane.pushIndex(idxBL);
-				modelPlane.pushIndex(idxTL);
-			}
+			auto renderCube = RenderCube();
+			auto instances = std::vector<WorldObject>();
 			{
 				for (i32 x = -3; x <= 3; ++x)
 					for (i32 y = -3; y <= 3; ++y)
-						instances.push_back({
+						instances.push_back(
 							WorldObject()
 							.setPosition(glm::vec3(x, y, 0))
-							.getModelMatrix()
-						});
+						);
 			}
 
 			/*
@@ -234,14 +221,7 @@ int main(int argc, char *argv[])
 			{
 				auto bindings = std::vector<graphics::AttributeBinding>();
 				ui8 slot = 0;
-				{
-					auto additionalBindings = Model::bindings(slot);
-					bindings.insert(
-						std::end(bindings),
-						std::begin(additionalBindings),
-						std::end(additionalBindings)
-					);
-				}
+				renderCube.appendBindings(bindings, slot);
 				{
 					auto additionalBindings = WorldObject::bindings(slot);
 					bindings.insert(
@@ -253,15 +233,7 @@ int main(int argc, char *argv[])
 				renderer.setBindings(bindings);
 			}
 
-			// Initialize the rendering api connections
-			renderer.createInputBuffers(
-				modelPlane.getVertexBufferSize(),
-				modelPlane.getIndexBufferSize(),
-				(ui32)instances.size() * sizeof(WorldObject::InstanceData)
-			);
-			renderer.writeVertexData(0, modelPlane.verticies());
-			renderer.writeIndexData(0, modelPlane.indicies());
-			renderer.writeInstanceData(0, instances);
+			renderCube.init(&renderer, instances);
 
 			renderer.createRenderChain();
 			renderer.finalizeInitialization();
