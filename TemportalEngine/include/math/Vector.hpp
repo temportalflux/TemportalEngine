@@ -44,7 +44,6 @@ class TEMPORTALENGINE_API Vector
 
 private:
 
-	// NOTE: Not using std::array due to linker issues.
 	/** The actual components/data of the vector. */
 	TValue mValues[TDimension];
 

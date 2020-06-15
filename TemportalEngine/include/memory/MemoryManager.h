@@ -12,6 +12,13 @@ extern "C"
 // Public functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 /**
+ * Purpose: Determine the maximum additional memory needed for a buffer with a known number of nodes.
+ * Pre: Caller must know the exact number of allocations possible.
+ * Post: Returns the amount of extra space needed in the chunk to be able to track allocations.
+ */
+ui64 a3_mem_manager_totalChunkSize(ui64 nodeCount);
+
+/**
 * Purpose: Initialize a block of memory
 * Pre: Requires the memory address (void*) and size (a3_size) of an uninitialized memory block.
 * Post: The memory block will be formatted. Will return 0 if successful.
