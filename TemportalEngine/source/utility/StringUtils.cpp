@@ -42,12 +42,12 @@ utility::ArgumentMap utility::getArgumentsWithPrefix(ArgumentMap args, std::stri
 	return filtered;
 }
 
-std::unordered_map<std::string, ui64> utility::parseArgumentInts(ArgumentMap args, std::string prefix, ui64 &sum)
+std::unordered_map<std::string, uSize> utility::parseArgumentInts(ArgumentMap args, std::string prefix, uSize &sum)
 {
-	return utility::parseArgumentsWithPrefix<ui64>(args, prefix, [&sum](std::string arg, std::optional<std::string> value) -> std::optional<ui64>
+	return utility::parseArgumentsWithPrefix<uSize>(args, prefix, [&sum](std::string arg, std::optional<std::string> value) -> std::optional<uSize>
 	{
 		if (!value.has_value()) return std::nullopt;
-		auto size = (ui64)std::stoi(value.value());
+		auto size = (uSize)std::stoi(value.value());
 		sum += size;
 		return size;
 	});

@@ -33,13 +33,13 @@ Buffer& Buffer::setMemoryRequirements(vk::MemoryPropertyFlags flags)
 	return *this;
 }
 
-Buffer& Buffer::setSize(ui64 size)
+Buffer& Buffer::setSize(uSize size)
 {
 	this->mSize = size;
 	return *this;
 }
 
-ui64 Buffer::getSize() const
+uSize Buffer::getSize() const
 {
 	return this->mSize;
 }
@@ -55,7 +55,7 @@ void Buffer::create(LogicalDevice const *pDevice)
 		vk::BufferCreateInfo()
 		.setUsage(this->mUsageFlags)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSize(this->mSize)
+		.setSize((ui64)this->mSize)
 	);
 
 	auto memRequirements = pDevice->mDevice->getBufferMemoryRequirements(this->mInternal.get());
@@ -85,7 +85,7 @@ std::optional<ui32> Buffer::findMemoryType(PhysicalDevice const *pDevice, ui32 t
 	return std::nullopt;
 }
 
-void Buffer::write(LogicalDevice const *pDevice, ui64 offset, void* src, ui64 size)
+void Buffer::write(LogicalDevice const *pDevice, uSize offset, void* src, uSize size)
 {
 	void* dest = pDevice->mDevice->mapMemory(this->mBufferMemory.get(), offset, this->mSize, /*flags*/ {});
 	memcpy(dest, src, size);

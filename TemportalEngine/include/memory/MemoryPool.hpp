@@ -11,10 +11,10 @@ NS_MEMORY
 /**
  * A `MemoryChunk` where all memory allocations are of the same type/size.
  */
-template <typename TObject, ui64 Count>
+template <typename TObject, uSize Count>
 class MemoryPool
 {
-	constexpr static ui64 chunkSize()
+	constexpr static uSize chunkSize()
 	{
 		return a3_mem_manager_totalChunkSize(Count) + Count * allocationSize();
 	}
@@ -26,14 +26,13 @@ class MemoryPool
 #ifdef _WIN64
 		return 40;
 #elif _WIN32
-		assert(false);
-		return 0;
+		return 24;
 #else
 		return 0;
 #endif
 	}
 
-	constexpr static ui64 allocationSize()
+	constexpr static uSize allocationSize()
 	{
 		return allocationHeaderSize() + sizeof(TObject);
 	}

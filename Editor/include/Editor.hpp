@@ -29,7 +29,7 @@ class Editor
 public:
 	static Editor* EDITOR;
 
-	Editor(std::unordered_map<std::string, ui64> memoryChunkSizes);
+	Editor(std::unordered_map<std::string, uSize> memoryChunkSizes);
 	~Editor();
 
 	void registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet);

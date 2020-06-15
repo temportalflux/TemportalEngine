@@ -42,7 +42,7 @@ void GameRenderer::initializeBuffer(graphics::Buffer &buffer)
 	buffer.create(&this->mLogicalDevice);
 }
 
-void GameRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size)
+void GameRenderer::writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size)
 {
 	Buffer& stagingBuffer = Buffer()
 		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
@@ -57,7 +57,7 @@ void GameRenderer::writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 s
 	stagingBuffer.destroy();
 }
 
-void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size)
+void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size)
 {
 	// Buffers should be freed when they go out of scope
 	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);

@@ -311,7 +311,7 @@ a3_mem_NodeHeader* a3_mem_findSmallestNodeWithMinimumSize(a3_mem_ChunkHeader* ch
 
 // Public functions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-ui64 a3_mem_manager_totalChunkSize(ui64 nodeCount)
+uSize a3_mem_manager_totalChunkSize(uSize nodeCount)
 {
 	return sizeof(a3_mem_ChunkHeader) + (nodeCount * sizeof(a3_mem_NodeHeader));
 }

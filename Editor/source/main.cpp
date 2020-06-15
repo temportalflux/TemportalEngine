@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
 	auto args = utility::parseArguments(argc, argv);
 
-	ui64 totalMem = 0;
+	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
 	std::string logFileName = "TemportalEngine_Editor_" + logging::LogSystem::getCurrentTimeString() + ".log";

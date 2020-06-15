@@ -26,9 +26,9 @@ public:
 
 	// TODO: Move this to the buffer object
 	template <typename TData>
-	void writeBufferData(graphics::Buffer &buffer, ui64 offset, std::vector<TData> const &dataSet)
+	void writeBufferData(graphics::Buffer &buffer, uSize offset, std::vector<TData> const &dataSet)
 	{
-		this->writeToBuffer(&buffer, offset, (void*)dataSet.data(), sizeof(TData) * dataSet.size());
+		this->writeToBuffer(&buffer, offset, (void*)dataSet.data(), sizeof(TData) * (uSize)dataSet.size());
 	}
 	
 	void setBindings(std::vector<AttributeBinding> bindings);
@@ -47,8 +47,8 @@ protected:
 
 private:
 
-	void writeToBuffer(Buffer* buffer, ui64 offset, void* data, ui64 size);
-	void copyBetweenBuffers(Buffer *src, Buffer *dest, ui64 size);
+	void writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size);
+	void copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size);
 
 	void destroyRenderChain() override;
 

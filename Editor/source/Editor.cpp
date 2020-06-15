@@ -17,7 +17,7 @@
 
 Editor* Editor::EDITOR = nullptr;
 
-Editor::Editor(std::unordered_map<std::string, ui64> memoryChunkSizes)
+Editor::Editor(std::unordered_map<std::string, uSize> memoryChunkSizes)
 {
 	assert(EDITOR == nullptr);
 	EDITOR = this;

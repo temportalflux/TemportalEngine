@@ -25,7 +25,7 @@ std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_va
 
 #pragma region Singleton
 
-Engine::EnginePtr Engine::Create(std::unordered_map<std::string, ui64> memoryChunkSizes)
+Engine::EnginePtr Engine::Create(std::unordered_map<std::string, uSize> memoryChunkSizes)
 {
 	assert(Engine::spInstance == nullptr);
 	spMainMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "main", 1 << 16));
@@ -54,7 +54,7 @@ void Engine::Destroy()
 
 #pragma endregion
 
-Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes)
+Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, uSize> memoryChunkSizes)
 	: mpMainMemory(mainMemory)
 	, mbShouldContinueRunning(false)
 	//, mpNetworkService(nullptr)

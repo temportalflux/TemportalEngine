@@ -16,7 +16,7 @@ public:
 	{
 		auto ptr = chunk->make_shared<Uniform>();
 		ptr->mpMemoryChunk = chunk;
-		ptr->mDataSize = (ui64)sizeof(T);
+		ptr->mDataSize = (uSize)sizeof(T);
 		ptr->mpData = chunk->allocate<T>();
 		new (ptr->mpData)T();
 		return ptr;
@@ -46,7 +46,7 @@ public:
 	template <typename T>
 	T read()
 	{
-		assert(this->mDataSize == (ui64)sizeof(T));
+		assert(this->mDataSize == (uSize)sizeof(T));
 		this->beginReading();
 		T copiedData = *((T*)this->mpData);
 		this->endReading();
@@ -54,13 +54,13 @@ public:
 	}
 
 	void* data() const { return this->mpData; }
-	ui64 size() const { return this->mDataSize; }
+	uSize size() const { return this->mDataSize; }
 
 	template <typename T>
 	void write(T *data)
 	{
 		assert(this->mpData != nullptr);
-		assert(this->mDataSize == (ui64)sizeof(T));
+		assert(this->mDataSize == (uSize)sizeof(T));
 		this->mLock.lock();
 		memcpy(this->mpData, data, this->mDataSize);
 		this->mLock.unlock();
@@ -77,7 +77,7 @@ private:
 	/**
 	 * The size of the data pointed at by `mpData`
 	 */
-	ui64 mDataSize;
+	uSize mDataSize;
 
 	thread::MutexLock mLock;
 

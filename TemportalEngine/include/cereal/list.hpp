@@ -22,7 +22,7 @@ namespace cereal
 	{
 		cereal::size_type size;
 		archive(cereal::make_size_tag(size));
-		value.resize(size);
+		value.resize((uSize)size);
 		for (uSize i = 0; i < size; ++i) archive(value[i]);
 	}
 
@@ -41,7 +41,7 @@ namespace cereal
 	{
 		cereal::size_type size;
 		archive(cereal::make_size_tag(size));
-		value.resize(size);
+		value.resize((uSize)size);
 		//archive(cereal::binary_data(value.data(), size * sizeof(T)));
 		for (uSize i = 0; i < size; ++i) archive(value[i]);
 	}

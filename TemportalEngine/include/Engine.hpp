@@ -47,12 +47,12 @@ public:
 	static std::vector<std::string> VulkanValidationLayers;
 
 #pragma region Singleton
-	static EnginePtr Create(std::unordered_map<std::string, ui64> memoryChunkSizes);
+	static EnginePtr Create(std::unordered_map<std::string, uSize> memoryChunkSizes);
 	static EnginePtr Get();
 	static void Destroy();
 #pragma endregion
 
-	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, ui64> memoryChunkSizes);
+	Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, uSize> memoryChunkSizes);
 	~Engine();
 
 	void initializeInput();

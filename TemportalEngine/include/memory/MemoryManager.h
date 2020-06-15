@@ -16,7 +16,7 @@ extern "C"
  * Pre: Caller must know the exact number of allocations possible.
  * Post: Returns the amount of extra space needed in the chunk to be able to track allocations.
  */
-ui64 a3_mem_manager_totalChunkSize(ui64 nodeCount);
+uSize a3_mem_manager_totalChunkSize(uSize nodeCount);
 
 /**
  * Purpose: Determine the index of a pointer in the memory assuming all objects are the size `uniformSize`.
