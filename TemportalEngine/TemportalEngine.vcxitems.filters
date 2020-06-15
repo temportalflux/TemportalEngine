@@ -218,6 +218,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp">
       <Filter>controller</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -474,5 +477,8 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Camera.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

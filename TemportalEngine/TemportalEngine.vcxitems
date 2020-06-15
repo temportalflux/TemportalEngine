@@ -71,6 +71,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\MutexLock.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\integer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
