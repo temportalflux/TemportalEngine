@@ -19,6 +19,11 @@ extern "C"
 ui64 a3_mem_manager_totalChunkSize(ui64 nodeCount);
 
 /**
+ * Purpose: Determine the index of a pointer in the memory assuming all objects are the size `uniformSize`.
+ */
+uSize a3_mem_manager_indexOfPtr(void* block, void* ptr, uSize uniformSize);
+
+/**
 * Purpose: Initialize a block of memory
 * Pre: Requires the memory address (void*) and size (a3_size) of an uninitialized memory block.
 * Post: The memory block will be formatted. Will return 0 if successful.

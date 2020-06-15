@@ -46,6 +46,9 @@
     <Filter Include="controller">
       <UniqueIdentifier>{5eb93bd5-8d39-4a31-846c-b840d80d276f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs">
+      <UniqueIdentifier>{f6d28b4f-41b3-4215-9226-bbbf3a2b7c4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -474,11 +477,14 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Camera.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
-      <Filter>utility</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp">
+      <Filter>ecs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryPool.hpp">
       <Filter>memory</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

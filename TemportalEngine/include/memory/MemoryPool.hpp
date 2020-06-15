@@ -14,7 +14,29 @@ NS_MEMORY
 template <typename TObject, ui64 Count>
 class MemoryPool
 {
-	constexpr static ui64 chunkSize() { return a3_mem_manager_totalChunkSize(Count) + sizeof(TObject) * Count; }
+	constexpr static ui64 chunkSize()
+	{
+		return a3_mem_manager_totalChunkSize(Count) + Count * allocationSize();
+	}
+
+	constexpr static uSize allocationHeaderSize()
+	{
+		// std::allocate_shared wraps the TObject in some std::_Ref_count_obj_alloc template
+		// This template is not available at compile time, but is 40 bytes on x64 machines
+#ifdef _WIN64
+		return 40;
+#elif _WIN32
+		assert(false);
+		return 0;
+#else
+		return 0;
+#endif
+	}
+
+	constexpr static ui64 allocationSize()
+	{
+		return allocationHeaderSize() + sizeof(TObject);
+	}
 
 public:
 	static std::shared_ptr<MemoryPool<TObject, Count>> create()
@@ -33,10 +55,11 @@ public:
 
 	~MemoryPool()
 	{
-		if (this->bUsedMalloc)
+		if (this->bUsedMalloc && this->mpMemoryManager != nullptr)
 		{
 			assert(this->mpMemoryManager != nullptr);
 			free(this->mpMemoryManager);
+			this->mpMemoryManager = nullptr;
 		}
 	}
 
@@ -49,21 +72,11 @@ public:
 		return std::allocate_shared<TObject>(internalAllocator, args...);
 	}
 
-	TObject* allocate()
+	uSize indexOf(std::shared_ptr<TObject> ptr)
 	{
-		void* ptr = nullptr;
-		this->mLock.lock();
-		uSize size = sizeof(TObject);
-		a3_mem_manager_alloc(this->mpMemoryManager, size, &ptr);
-		this->mLock.unlock();
-		return static_cast<TObject*>(ptr);
-	}
-
-	void deallocate(TObject* ptr)
-	{
-		this->mLock.lock();
-		a3_mem_manager_dealloc(this->mpMemoryManager, ptr);
-		this->mLock.unlock();
+		uSize raw = (uSize)ptr.get();
+		raw -= allocationHeaderSize();
+		return a3_mem_manager_indexOfPtr(this->mpMemoryManager, (void*)raw, allocationSize());
 	}
 
 private:

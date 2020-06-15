@@ -316,6 +316,17 @@ ui64 a3_mem_manager_totalChunkSize(ui64 nodeCount)
 	return sizeof(a3_mem_ChunkHeader) + (nodeCount * sizeof(a3_mem_NodeHeader));
 }
 
+uSize a3_mem_manager_indexOfPtr(void* block, void* ptr, uSize uniformSize)
+{
+	// Get the node for a ptr by casting a ptr to a node ptr (changing its interpreted size & properties)
+	// and shifting it back by one (aligning it to the actual ptr for the node).
+	// Then interpret as an unknown type
+	void* nodePtr = ((a3_mem_NodeHeader*)ptr) - 1;
+	uSize totalSizePerAllocation = sizeof(a3_mem_NodeHeader) + uniformSize;
+	void* firstNodePtr = a3_mem_getFirstNode((a3_mem_ChunkHeader*)block);
+	return ((uSize)nodePtr - (uSize)firstNodePtr) / totalSizePerAllocation;
+}
+
 ui8 a3_mem_manager_init(void* block, uSize size)
 {
 
@@ -375,7 +386,7 @@ ui8 a3_mem_manager_alloc(void* block, uSize size, void** requestedMemory)
 	uSize sizeToAlloc = size + sizeOfNodeHeader;
 
 	// Find the best free node to put the allocation in
-	char* freeNodeLocation = (char*)a3_mem_findSmallestNodeWithMinimumSize(chunkHeader, sizeToAlloc);
+	char* freeNodeLocation = (char*)a3_mem_findSmallestNodeWithMinimumSize(chunkHeader, size);
 
 	// If no node was returned, we cannot allocate
 	if (freeNodeLocation <= 0)
@@ -394,7 +405,7 @@ ui8 a3_mem_manager_alloc(void* block, uSize size, void** requestedMemory)
 		a3_mem_removeNodeFromFreeTree(chunkHeader, freeNode);
 		freeNode = 0;
 
-		if (formerFreeNode.size - sizeToAlloc >= 0)
+		if (formerFreeNode.size - size > 0)
 		{
 			// Slot off a new portion for the free header to occupy
 			a3_mem_NodeHeader* nextNodeHeader = (a3_mem_NodeHeader*)(freeNodeLocation + sizeToAlloc);
