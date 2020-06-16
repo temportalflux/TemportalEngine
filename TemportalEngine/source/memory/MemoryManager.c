@@ -469,6 +469,14 @@ ui8 a3_mem_manager_alloc(void* block, uSize size, void** requestedMemory)
 	return 1;
 }
 
+void a3_mem_manager_deallocUniform(void* block, uSize idx, uSize uniformSize)
+{
+	uSize totalSizePerAllocation = sizeof(a3_mem_NodeHeader) + uniformSize;
+	void* firstNodePtr = a3_mem_getFirstNode((a3_mem_ChunkHeader*)block);
+	uSize nodeAtIdx = (uSize)firstNodePtr + (idx * totalSizePerAllocation);
+	a3_mem_manager_deallocAndClear(block, (void*)(nodeAtIdx + sizeof(a3_mem_NodeHeader)), 0);
+}
+
 void a3_mem_manager_dealloc(void* block, void* allocatedLocation)
 {
 	a3_mem_manager_deallocAndClear(block, allocatedLocation, 0);
@@ -509,6 +517,21 @@ void a3_mem_manager_deallocAndClear(void* block, void* allocatedLocation, char c
 
 	if (clear != 0) memset((char*)node, 0, node->size + sizeof(a3_mem_NodeHeader));
 
+}
+
+void* a3_mem_manager_nodeAtUniformIndex(void* block, uSize uniformSize, uSize idx)
+{
+	a3_mem_ChunkHeader* chunkHeader = (a3_mem_ChunkHeader*)block;
+	uSize node = (uSize)a3_mem_getFirstNode(chunkHeader);
+	uSize totalSizePerAllocation = sizeof(a3_mem_NodeHeader) + uniformSize;
+	return (a3_mem_NodeHeader*)(node + (idx * totalSizePerAllocation));
+}
+
+void* a3_mem_manager_atUniformIndex(void* block, uSize uniformSize, uSize idx, ui8 *isAllocated)
+{
+	a3_mem_NodeHeader* nodeAtIdx = a3_mem_manager_nodeAtUniformIndex(block, uniformSize, idx);
+	*isAllocated = nodeAtIdx->isAllocated;
+	return (void*)(nodeAtIdx + 1);
 }
 
 // Linear Memory: Getters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1001,7 +1024,16 @@ a3_mem_NodeHeader* a3_mem_findSmallestNodeWithMinimumSize(a3_mem_ChunkHeader* ch
 			// totalSize <= node size
 			// If best node is current nil, this is the best node
 			// otherwise the best node is the one with the smallest size
-			if (bestNode == 0 || currentNode->size < bestNode->size)
+			// If the sizes are equal, choose the one that is the left-most
+			if (bestNode == 0)
+			{
+				bestNode = currentNode;
+			}
+			else if (currentNode->size < bestNode->size)
+			{
+				bestNode = currentNode;
+			}
+			else if (currentNode < bestNode)
 			{
 				bestNode = currentNode;
 			}

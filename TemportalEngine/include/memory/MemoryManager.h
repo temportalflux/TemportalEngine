@@ -37,6 +37,8 @@ ui8 a3_mem_manager_init(void* block, uSize size);
 */
 ui8 a3_mem_manager_alloc(void* block, uSize size, void** allocatedLocation);
 
+void a3_mem_manager_deallocUniform(void* block, uSize idx, uSize uniformSize);
+
 /**
 * Purpose: Mark memory as no longer in use.
 * Pre: allocatedLocation - allocatedLocation by a3_mem_alloc
@@ -51,6 +53,8 @@ void a3_mem_manager_dealloc(void* block, void* allocatedLocation);
 * Post: The memory at the allocatedLocation will be marked as no longer in use.
 */
 void a3_mem_manager_deallocAndClear(void* block, void* allocatedLocation, char clear);
+
+void* a3_mem_manager_atUniformIndex(void* block, uSize uniformSize, uSize idx, ui8 *isAllocated);
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
