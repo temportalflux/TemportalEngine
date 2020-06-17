@@ -2,6 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "ecs/component/Transform.hpp"
 #include <glm/glm.hpp>
 #include "glm/gtc/quaternion.hpp"
 
@@ -21,7 +22,12 @@ public:
 
 	void rotate(glm::vec3 axis, f32 radians)
 	{
-		this->mRotation = glm::rotate(this->mRotation, radians, axis);
+		this->transform.orientation = math::Quaternion({ this->mRotation.x,  this->mRotation.y, this->mRotation.z, this->mRotation.w });
+		this->transform.rotate(math::Vector3({ axis.x, axis.y, axis.z }), radians);
+		this->mRotation.x = this->transform.orientation.x();
+		this->mRotation.y = this->transform.orientation.y();
+		this->mRotation.z = this->transform.orientation.z();
+		this->mRotation.w = this->transform.orientation.w();
 	}
 
 	glm::vec3 position() const { return this->mPosition; }
@@ -48,4 +54,5 @@ public:
 private:
 	glm::vec3 mPosition;
 	glm::quat mRotation;
+	ecs::ComponentTransform transform;
 };

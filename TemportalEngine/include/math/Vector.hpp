@@ -50,11 +50,11 @@ private:
 public:
 
 	/** The zero vector for this format. */
-	static Vector const ZERO;
+	static Vector<TValue, TDimension> const ZERO;
 
 	constexpr Vector()
 	{
-		memset(mValues, 0, TDimension);
+		memset(mValues, 0, TDimension * sizeof(TValue));
 	}
 
 	/**
@@ -64,7 +64,7 @@ public:
 	*/
 	constexpr Vector(TValue values[TDimension])
 	{
-		memcpy_s(mValues, TDimension, values, TDimension);
+		memcpy_s(mValues, TDimension * sizeof(TValue), values, TDimension * sizeof(TValue));
 	}
 
 	/**
@@ -80,7 +80,7 @@ public:
 	*/
 	constexpr Vector(VectorFormat const &other)
 	{
-		memcpy_s(mValues, TDimension, other.mValues, TDimension);
+		memcpy_s(mValues, TDimension * sizeof(TValue), other.mValues, TDimension * sizeof(TValue));
 	}
 
 	/**
@@ -99,8 +99,8 @@ public:
 	template <ui32 TDimensionOther>
 	constexpr Vector(Vector<TValue, TDimensionOther> const &other)
 	{
-		memset(mValues, 0, TDimension);
-		other.toArray(mValues);
+		memset(mValues, 0, TDimension * sizeof(TValue));
+		other.copyTo<TDimension>(mValues);
 	}
 
 	// Operations: General ----------------------------------------------------
@@ -126,9 +126,17 @@ public:
 	* Copies data to an array with length equal to dimension count.
 	* Inverse of Vector(TValue[]) constructor.
 	*/
-	constexpr void toArray(TValue out[TDimension]) const
+	template <ui32 TDimensionOther>
+	constexpr void copyTo(TValue other[TDimensionOther], ui32 componentOffset = 0) const
 	{
-		memcpy_s(out, TDimension, mValues, TDimension);
+		uSize destComponentCount = TDimensionOther + componentOffset;
+		uSize copySize = (TDimension < destComponentCount ? TDimension : destComponentCount) * sizeof(TValue);
+		memcpy_s(other + componentOffset, copySize, mValues + componentOffset, copySize);
+	}
+
+	TValue* data()
+	{
+		return this->mValues;
 	}
 
 	/**
@@ -254,7 +262,7 @@ public:
 	*/
 	constexpr void operator=(VectorFormat const &other)
 	{
-		other.toArray(mValues);
+		other.copyTo<TDimension>(mValues);
 	}
 
 	/**
@@ -262,6 +270,7 @@ public:
 	*/
 	constexpr void operator+=(VectorFormat const &other)
 	{
+		// TODO: There is definitely a way to apply scalar addition to a set of scalars in assembly in constant time
 		for (ui8 i = 0; i < TDimension; ++i)
 			mValues[i] += other.mValues[i];
 	}
@@ -375,6 +384,7 @@ public:
 
 	/**
 	* Calculates the cross product of this and another vector of the same format.
+	* {x1, y1, z1} x {x2, y2, z2} = {y1z2 - z1y2, z1x2 - x1z2, x1y2 - y1x2}
 	* @param other The other vector
 	* @return this x other
 	*/
@@ -479,15 +489,16 @@ typedef Vector<i32, 3> Vector3Int;
 typedef Vector<ui32, 2> Vector2UInt;
 typedef Vector<ui32, 3> Vector3UInt;
 
-Vector2 const Vector2unitX, Vector2unitY;
-Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
-Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
-Quaternion const QuaternionIdentity;
+extern Vector2 const Vector2unitX, Vector2unitY;
+extern Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
+extern Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
+extern Quaternion const QuaternionIdentity;
 
 Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRad);
 Quaternion const QuaternionConjugate(Quaternion const quat);
 Quaternion const QuaternionInverse(Quaternion const quat);
-Quaternion const QuaternionConcatenate(Quaternion const a, Quaternion const b);
+// Performs the Hamilton Product to rotate first by `b` then by `a`.
+Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b);
 Vector3 const RotateVector(Vector3 const vector, Quaternion const rotation);
 Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat);
 
