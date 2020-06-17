@@ -2,35 +2,13 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "FixedSortedArray.hpp"
 #include "ObjectPool.hpp"
-
-#define ECS_MAX_ENTITY_COUNT 1024
-#define ECS_MAX_COMPONENT_COUNT 1024
-#define ECS_ENTITY_MAX_COMPONENT_COUNT 32
-#define ECS_MAX_COMPONENT_TYPE_COUNT 16
+#include "ecs/types.h"
+#include "ecs/component/Component.hpp"
+#include "logging/Logger.hpp"
 
 NS_ECS
-
-// TODO: Might be worth considering if guids are really worth it (they are 16 bytes a pop). Might be able to use ui16 instead (max of 65536)
-typedef utility::Guid Identifier;
-//typedef ui16 Identifier;
-
-struct Entity
-{
-	Identifier id;
-};
-
-struct Component
-{
-	Identifier id;
-};
-
-struct ComponentTransform : public Component
-{
-	f32 x, y, z;
-
-	ComponentTransform() : x(1), y(2), z(3) {}
-};
 
 struct ComponentTypeMetadata
 {
@@ -45,11 +23,11 @@ class Core
 	using TComponentHashMap = FixedHashMap<std::string, TValue, ECS_MAX_COMPONENT_TYPE_COUNT>;
 
 public:
-	typedef uSize ComponentTypeId;
 
 	Core()
 	{
 		this->mpComponentMemory = nullptr;
+		this->mRegisteredTypeCount = 0;
 	}
 
 	~Core()
@@ -61,22 +39,31 @@ public:
 		}
 	}
 
-	Identifier nextId()
+	Core& setLog(logging::Logger log)
 	{
-		return utility::Guid::create();
-		//return 0;
+		this->mLog = log;
+		return *this;
+	}
+
+	template <typename... TArgs>
+	void log(logging::ECategory category, logging::Message format, TArgs... args)
+	{
+		this->mLog.log(category, format, args...);
 	}
 
 	template <typename TComponent>
-	ComponentTypeId registerType()
+	ComponentTypeId registerType(char const *name)
 	{
-		ComponentTypeId typeId = this->mRegisteredTypeCount;
-		this->mComponentMetadataByType[typeId] = {
+		TComponent::TypeId = this->mRegisteredTypeCount;
+		this->mComponentMetadataByType[TComponent::TypeId] = {
 			sizeof(TComponent),
 			sizeof(ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>)
 		};
 		this->mRegisteredTypeCount++;
-		return typeId;
+		this->log(LOG_INFO, "Registered ECS component type %s with id %i and size %i",
+			name, TComponent::TypeId, this->mComponentMetadataByType[TComponent::TypeId].size
+		);
+		return TComponent::TypeId;
 	}
 
 	void constructComponentPools()
@@ -101,32 +88,48 @@ public:
 		}
 	}
 
+	// TODO: Core should lock everything about the component type when creating a new component
 	template <typename TComponent, typename... TArgs>
-	TComponent* create(ComponentTypeId const &type, TArgs... args)
+	TComponent* create(TArgs... args)
 	{
+		ComponentTypeId const type = TComponent::TypeId;
 		auto pool = this->lookupPool<TComponent>(type);
 		if (pool == nullptr) return nullptr;
-		auto id = this->nextId();
+		auto id = this->nextId(type, pool);
 		TComponent* ptr = pool->create(id, args...);
-		((ecs::Component*)ptr)->id = id;
+		ptr->id = id;
 		return ptr;
 	}
 
 	template <typename TComponent>
-	TComponent* lookup(ComponentTypeId const &type, Identifier const &componentId)
+	TComponent* lookup(Identifier const &componentId)
 	{
+		ComponentTypeId const type = TComponent::TypeId;
 		auto pool = this->lookupPool<TComponent>(type);
 		if (pool == nullptr) return nullptr;
 		return pool->lookup(componentId);
 	}
 
+	// TODO: Core should lock everything about the component type when destroying a component
+	template <typename TComponent>
+	void destroyComponent(Identifier const &id)
+	{
+		ComponentTypeId const type = TComponent::TypeId;
+		auto pool = this->lookupPool<TComponent>(type);
+		if (pool == nullptr) return;
+		pool->destroy(id);
+		this->mUnusedComponentIds[type].insert(id);
+	}
+
 private:
+	logging::Logger mLog;
 
 	ObjectPool<Identifier, Entity, ECS_MAX_ENTITY_COUNT> mEntities;
 
 	ComponentTypeMetadata mComponentMetadataByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
 
+	FixedSortedArray<Identifier, ECS_MAX_COMPONENT_COUNT> mUnusedComponentIds[ECS_MAX_COMPONENT_TYPE_COUNT];
 	void* mComponentPoolsByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 
 	/**
@@ -137,7 +140,6 @@ private:
 	 */
 	void* mpComponentMemory;
 
-
 	template <typename TComponent>
 	ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)
 	{
@@ -146,6 +148,18 @@ private:
 		);
 	}
 
+	template <typename TComponent>
+	Identifier nextId(ComponentTypeId const &type, ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>* pool)
+	{
+		auto& unusedIds = this->mUnusedComponentIds[type];
+		return unusedIds.size() > 0 ? unusedIds.dequeue() : this->createId(pool);
+	}
+
+	template <typename TComponent>
+	Identifier createId(ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>* pool)
+	{
+		return (Identifier)pool->size();
+	}
 
 };
 

@@ -49,6 +49,9 @@
     <Filter Include="ecs">
       <UniqueIdentifier>{f6d28b4f-41b3-4215-9226-bbbf3a2b7c4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs\component">
+      <UniqueIdentifier>{9dea8749-c600-454e-89c8-58cdd941aae4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -220,6 +223,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp">
       <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Transform.cpp">
+      <Filter>ecs\component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -488,5 +494,16 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Transform.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h">
+      <Filter>ecs</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -8,8 +8,11 @@
 #include "WorldObject.hpp"
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
+
 #include "Camera.hpp"
 #include "ecs/Core.hpp"
+#include "ecs/component/Transform.hpp"
+#include "FixedSortedArray.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -85,24 +88,33 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main(int argc, char *argv[])
 {
-	auto mapsize = sizeof(FixedHashMap<utility::Guid, uSize, 1024>);
-
-	auto core = ecs::Core();
-	auto trps = core.registerType<ecs::ComponentTransform>();
-	core.constructComponentPools();
-
-	auto* transform = core.create<ecs::ComponentTransform>(trps);
-	auto* transformCopy = core.lookup<ecs::ComponentTransform>(trps, transform->id);
-
-	return 0;
-
 	auto args = utility::parseArguments(argc, argv);
 
 	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
-	
+
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
+
+	/*
+	// TMP: START
+	{
+		auto core = ecs::Core().setLog(DeclareLog("ECS"));
+		core.registerType<ecs::ComponentTransform>("Transform");
+		core.constructComponentPools();
+
+		ecs::Identifier idTransform;
+		{
+			auto* transform = core.create<ecs::ComponentTransform>();
+			idTransform = transform->id;
+			auto* transformCopy = core.lookup<ecs::ComponentTransform>(transform->id);
+		}
+		core.destroyComponent<ecs::ComponentTransform>(idTransform);
+
+		engine::Engine::LOG_SYSTEM.close();
+		return 0;
+	}
+	// TMP: END */
 
 	{
 		auto pEngine = engine::Engine::Create(memoryChunkSizes);

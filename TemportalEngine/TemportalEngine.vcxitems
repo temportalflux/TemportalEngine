@@ -23,6 +23,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Transform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Command.cpp" />
@@ -93,10 +94,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Transform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />
