@@ -11,14 +11,17 @@
 
 NS_ECS
 
+// TODO: Might be worth considering if guids are really worth it (they are 16 bytes a pop). Might be able to use ui16 instead (max of 65536)
+typedef utility::Guid Identifer;
+
 struct Entity
 {
-	utility::Guid id;
+	Identifer id;
 };
 
 struct Component
 {
-	utility::Guid id;
+	Identifer id;
 };
 
 struct ComponentTransform : public Component
@@ -63,7 +66,7 @@ public:
 		ComponentTypeId typeId = this->mRegisteredTypeCount;
 		this->mComponentMetadataByType[typeId] = {
 			sizeof(TComponent),
-			sizeof(ObjectPool<TComponent, ECS_MAX_COMPONENT_COUNT>)
+			sizeof(ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>)
 		};
 		this->mRegisteredTypeCount++;
 		return typeId;
@@ -96,9 +99,10 @@ public:
 	{
 		auto pool = this->lookupPool<TComponent>(type);
 		if (pool == nullptr) return nullptr;
-		auto info = pool->create(args...);
-		((ecs::Component*)info.ptr)->id = info.id;
-		return info.ptr;
+		auto id = utility::Guid::create();
+		TComponent* ptr = pool->create(id, args...);
+		((ecs::Component*)ptr)->id = id;
+		return ptr;
 	}
 
 	template <typename TComponent>
@@ -111,7 +115,7 @@ public:
 
 private:
 
-	ObjectPool<Entity, ECS_MAX_ENTITY_COUNT> mEntities;
+	ObjectPool<Identifer, Entity, ECS_MAX_ENTITY_COUNT> mEntities;
 
 	ComponentTypeMetadata mComponentMetadataByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
@@ -128,9 +132,9 @@ private:
 
 
 	template <typename TComponent>
-	ObjectPool<TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)
+	ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)
 	{
-		return reinterpret_cast<ObjectPool<TComponent, ECS_MAX_COMPONENT_COUNT>*>(
+		return reinterpret_cast<ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>*>(
 			this->mComponentPoolsByType[type]
 		);
 	}

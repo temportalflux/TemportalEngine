@@ -7,17 +7,11 @@
 #include "memory/MemoryPool.hpp"
 #include "thread/MutexLock.hpp"
 
-template <typename TObject, uSize Capacity>
+template <typename TIdentifier, typename TObject, uSize Capacity>
 class ObjectPool
 {
 
 public:
-	struct CreateInfo
-	{
-		utility::Guid id;
-		TObject* ptr;
-	};
-
 	constexpr uSize capacity() const { return Capacity; }
 
 	uSize size() const { return this->mIdToMemoryIdx.size(); }
@@ -25,18 +19,17 @@ public:
 	ObjectPool() = default;
 
 	template <typename... TArgs>
-	CreateInfo create(TArgs... args)
+	TObject* create(TIdentifier const& id, TArgs... args)
 	{
-		auto id = utility::Guid::create();
 		this->mLock.lock();
 		auto idxInMemory = this->mMemory.allocate(args...);
 		this->mIdToMemoryIdx.insert(id, idxInMemory);
 		this->mLock.unlock();
-		return { id, &this->mMemory[idxInMemory] };
+		return &this->mMemory[idxInMemory];
 	}
 	
 	// TODO: Can this be done in batches to limit the amount of decrementation iteration over FixedHashMap? Currently this is O(n) because of that operation
-	void destroy(utility::Guid const &id)
+	void destroy(TIdentifier const &id)
 	{
 		this->mLock.lock();
 		
@@ -65,7 +58,7 @@ public:
 		this->mLock.unlock();
 	}
 
-	TObject* lookup(utility::Guid const &id)
+	TObject* lookup(TIdentifier const &id)
 	{
 		auto lookupPtr = this->mIdToMemoryIdx.lookup(id);
 		if (lookupPtr == nullptr) return nullptr;
@@ -74,10 +67,10 @@ public:
 
 private:
 	thread::MutexLock mLock;
-	// NOTE: Keeping track of ids like this nearly doubles the size of the pool depending on the object
-	// i.e. Capacity of 1024 for a 28 byte structure (3 floats + id) takes a total pool size of 53272, 24584 of which is this map
-	// TODO: Might be worth considering if guids are really worth it (they are 16 bytes a pop)
-	FixedHashMap<utility::Guid, uSize, Capacity> mIdToMemoryIdx;
+	// NOTE: Keeping track of ids like this nearly doubles the size of the pool depending on the object and identifier
+	// i.e. Capacity of 1024 for a 28 byte structure (3 floats + id) takes a total pool size of 53272, 24584 of which is this map (if using guids)
+	// Contains 2 arrays of length Capacity. If TIdentifier=ui16 and this is a x64 build (uSize=ui64), thats (2 + 16 bytes)*1024 = 18432 bytes (+ size count)
+	FixedHashMap<TIdentifier, uSize, Capacity> mIdToMemoryIdx;
 	memory::MemoryPool<TObject, Capacity> mMemory;
 
 };
