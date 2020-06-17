@@ -99,7 +99,7 @@ private:
 		auto aHash = hasher(a), bHash = hasher(b);
 		if (aHash < bHash) return true;
 		else if (aHash > bHash) return false;
-		else return ((std::string)a).compare((std::string)b) < 0;
+		else return a < b;
 	}
 
 	uSize find(TKey const &key) const

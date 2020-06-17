@@ -12,16 +12,17 @@
 NS_ECS
 
 // TODO: Might be worth considering if guids are really worth it (they are 16 bytes a pop). Might be able to use ui16 instead (max of 65536)
-typedef utility::Guid Identifer;
+typedef utility::Guid Identifier;
+//typedef ui16 Identifier;
 
 struct Entity
 {
-	Identifer id;
+	Identifier id;
 };
 
 struct Component
 {
-	Identifer id;
+	Identifier id;
 };
 
 struct ComponentTransform : public Component
@@ -60,13 +61,19 @@ public:
 		}
 	}
 
+	Identifier nextId()
+	{
+		return utility::Guid::create();
+		//return 0;
+	}
+
 	template <typename TComponent>
 	ComponentTypeId registerType()
 	{
 		ComponentTypeId typeId = this->mRegisteredTypeCount;
 		this->mComponentMetadataByType[typeId] = {
 			sizeof(TComponent),
-			sizeof(ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>)
+			sizeof(ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>)
 		};
 		this->mRegisteredTypeCount++;
 		return typeId;
@@ -99,14 +106,14 @@ public:
 	{
 		auto pool = this->lookupPool<TComponent>(type);
 		if (pool == nullptr) return nullptr;
-		auto id = utility::Guid::create();
+		auto id = this->nextId();
 		TComponent* ptr = pool->create(id, args...);
 		((ecs::Component*)ptr)->id = id;
 		return ptr;
 	}
 
 	template <typename TComponent>
-	TComponent* lookup(ComponentTypeId const &type, utility::Guid const &componentId)
+	TComponent* lookup(ComponentTypeId const &type, Identifier const &componentId)
 	{
 		auto pool = this->lookupPool<TComponent>(type);
 		if (pool == nullptr) return nullptr;
@@ -115,7 +122,7 @@ public:
 
 private:
 
-	ObjectPool<Identifer, Entity, ECS_MAX_ENTITY_COUNT> mEntities;
+	ObjectPool<Identifier, Entity, ECS_MAX_ENTITY_COUNT> mEntities;
 
 	ComponentTypeMetadata mComponentMetadataByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
@@ -132,9 +139,9 @@ private:
 
 
 	template <typename TComponent>
-	ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)
+	ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)
 	{
-		return reinterpret_cast<ObjectPool<Identifer, TComponent, ECS_MAX_COMPONENT_COUNT>*>(
+		return reinterpret_cast<ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>*>(
 			this->mComponentPoolsByType[type]
 		);
 	}
