@@ -5,6 +5,7 @@
 #define NS_ASSET namespace asset {
 #define NS_DEPENDENCY namespace dependency {
 #define NS_ENGINE namespace engine {
+#define NS_ECS namespace ecs {
 #define NS_GRAPHICS namespace graphics {
 #define NS_GUI namespace gui {
 #define NS_INPUT namespace input {

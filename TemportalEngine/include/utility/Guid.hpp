@@ -22,6 +22,7 @@ public:
 	 * `########-####-####-####-############` (8-4-4-4-12)
 	 */
 	std::string toString() const;
+	operator std::string() const;
 
 	bool operator<(Guid const &other) const;
 	bool operator>(Guid const &other) const;
@@ -47,3 +48,15 @@ private:
 };
 
 NS_END
+
+namespace std
+{
+	template<>
+	struct hash<utility::Guid>
+	{
+		inline size_t operator()(utility::Guid const &guid) const
+		{
+			return guid.hash();
+		}
+	};
+}

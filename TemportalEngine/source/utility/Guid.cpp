@@ -4,6 +4,7 @@
 #pragma comment(lib, "rpcrt4.lib")  // UuidCreate - Minimum supported OS Win 2000
 #include "Windows.h"
 #include "Rpc.h"
+#include "..\..\include\utility\Guid.hpp"
 #endif
 
 using namespace utility;
@@ -77,6 +78,11 @@ std::string Guid::toString() const
 	assert(false);
 #endif
 	return str;
+}
+
+Guid::operator std::string() const
+{
+	return this->toString();
 }
 
 bool Guid::operator<(Guid const &other) const

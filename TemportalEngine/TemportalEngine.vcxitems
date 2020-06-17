@@ -96,6 +96,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Service.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\RenderCube.hpp" />

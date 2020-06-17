@@ -486,5 +486,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
   </ItemGroup>
 </Project>

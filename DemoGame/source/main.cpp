@@ -9,7 +9,7 @@
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
 #include "Camera.hpp"
-#include "memory/MemoryPool.hpp"
+#include "ecs/Core.hpp"
 
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
@@ -85,34 +85,15 @@ void initializeNetwork(engine::Engine *pEngine)
 
 int main(int argc, char *argv[])
 {
-	{
-		auto pool = memory::MemoryPool<char, 16>::create();
-		for (ui32 i = 0; i < pool->size(); ++i)
-		{
-			auto iter = pool->allocate();
-			*iter = 'A' + i;
-		}
-		for (auto iter = pool->begin(); iter != pool->end(); ++iter)
-		{
-			std::cout << *iter << '\n';
-		}
-		std::cout << "------------------\n";
-		pool->deallocate(2);
-		pool->deallocate(7);
-		pool->deallocate(12);
-		for (auto iter = pool->begin(); iter != pool->end(); ++iter)
-		{
-			std::cout << *iter << '\n';
-		}
-		std::cout << "------------------\n";
-		*(pool->allocate()) = 'A' + 2;
-		*(pool->allocate()) = 'A' + 7;
-		*(pool->allocate()) = 'A' + 12;
-		for (auto iter = pool->begin(); iter != pool->end(); ++iter)
-		{
-			std::cout << *iter << '\n';
-		}
-	}
+	auto mapsize = sizeof(FixedHashMap<utility::Guid, uSize, 1024>);
+
+	auto core = ecs::Core();
+	auto trps = core.registerType<ecs::ComponentTransform>();
+	core.constructComponentPools();
+
+	auto* transform = core.create<ecs::ComponentTransform>(trps);
+	auto* transformCopy = core.lookup<ecs::ComponentTransform>(trps, transform->id);
+
 	return 0;
 
 	auto args = utility::parseArguments(argc, argv);
