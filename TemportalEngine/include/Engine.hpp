@@ -6,6 +6,8 @@
 #include "WindowFlags.hpp"
 #include "dependency/SDL.hpp"
 #include "graphics/VulkanInstance.hpp"
+
+#include "ecs/Core.hpp"
 #include "input/InputWatcher.hpp"
 //#include "network/common/Service.hpp"
 #include "thread/Thread.hpp"
@@ -76,6 +78,9 @@ public:
 	void terminateDependencies();
 #pragma endregion
 
+	void initializeECS();
+	ecs::Core& getECS();
+
 #pragma region Windows
 	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
 	void destroyWindow(std::shared_ptr<Window> &pWindow);
@@ -117,6 +122,8 @@ private:
 #pragma endregion
 
 	std::shared_ptr<asset::AssetManager> mpAssetManager;
+
+	ecs::Core mECS;
 	
 #pragma region Windows
 	std::map<ui32, std::shared_ptr<Window>> mWindowPtrs;

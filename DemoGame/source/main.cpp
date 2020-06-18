@@ -95,33 +95,6 @@ int main(int argc, char *argv[])
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
-	///*
-	// TMP: START
-	{
-		auto core = ecs::Core().setLog(DeclareLog("ECS"));
-		core.registerType<ecs::ComponentTransform>("Transform");
-		core.constructComponentPools();
-
-		{
-			auto ent = core.createEntity();
-			auto entC = core.getEntity(ent->id);
-		}
-
-		/*
-		ecs::Identifier idTransform;
-		{
-			auto* transform = core.create<ecs::ComponentTransform>();
-			idTransform = transform->id;
-			auto* transformCopy = core.lookup<ecs::ComponentTransform>(transform->id);
-		}
-		core.destroyComponent<ecs::ComponentTransform>(idTransform);
-		//*/
-
-		engine::Engine::LOG_SYSTEM.close();
-		return 0;
-	}
-	// TMP: END */
-
 	{
 		auto pEngine = engine::Engine::Create(memoryChunkSizes);
 		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
@@ -132,6 +105,8 @@ int main(int argc, char *argv[])
 			engine::Engine::Destroy();
 			return 1;
 		}
+
+		pEngine->initializeECS();
 
 		{
 			auto project = asset::TypedAssetPath<asset::Project>(
@@ -278,6 +253,13 @@ int main(int argc, char *argv[])
 			pWindow->setRenderer(&renderer);
 #pragma endregion
 
+			auto camera = pEngine->getECS().createEntity();
+			{
+				//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();
+				//camera->components[0] = { ecs::ComponentTransform::TypeId, comp->id };
+				//camera->componentCount++;
+			}
+			
 			auto cameraTransform = ecs::ComponentTransform();
 			cameraTransform.setPosition(math::Vector3unitZ * 10);
 

@@ -1,16 +1,16 @@
 #include "Engine.hpp"
 
-#include "memory/MemoryChunk.hpp"
 #include "ITickable.hpp"
-
 #include "Window.hpp"
-#include "math/Vector.hpp"
-#include "memory/MemoryManager.h"
-#include <string>
-#include "input/Queue.hpp"
+#include "ecs/component/Transform.hpp"
 #include "graphics/VulkanRenderer.hpp"
+#include "input/Queue.hpp"
+#include "memory/MemoryChunk.hpp"
+
 //#include "network/client/ServiceClient.hpp"
 //#include "network/server/ServiceServer.hpp"
+
+#include <string>
 
 using namespace engine;
 
@@ -127,6 +127,18 @@ std::shared_ptr<input::Queue> Engine::getInputQueue() const
 std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 {
 	return mpAssetManager;
+}
+
+void Engine::initializeECS()
+{
+	this->mECS.setLog(DeclareLog("ECS"));
+	this->mECS.registerType<ecs::ComponentTransform>("Transform");
+	this->mECS.constructComponentPools();
+}
+
+ecs::Core& Engine::getECS()
+{
+	return this->mECS;
 }
 
 bool Engine::hasProject() const

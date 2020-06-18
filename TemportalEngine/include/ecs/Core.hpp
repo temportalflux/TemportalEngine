@@ -5,6 +5,7 @@
 #include "FixedSortedArray.hpp"
 #include "ObjectPool.hpp"
 #include "ecs/types.h"
+#include "ecs/Entity.hpp"
 #include "ecs/component/Component.hpp"
 #include "logging/Logger.hpp"
 
@@ -32,6 +33,9 @@ public:
 
 	~Core()
 	{
+		// Must not have any more entities lying about
+		assert(this->mEntities.size() <= 0);
+
 		if (this->mpComponentMemory != nullptr)
 		{
 			free(this->mpComponentMemory);

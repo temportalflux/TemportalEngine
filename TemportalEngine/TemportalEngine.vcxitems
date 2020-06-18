@@ -96,6 +96,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Transform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Entity.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
