@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-class Camera;
+FORWARD_DEF(NS_ECS, struct ComponentTransform)
 
 class Controller : public ITickable
 {
@@ -15,18 +15,20 @@ public:
 	Controller();
 
 	void subscribeToInput();
-	void assignCamera(std::shared_ptr<Camera> camera);
+	// TODO: This should be an ecs entity or component id
+	void assignCameraTransform(ecs::ComponentTransform *transform);
 
 private:
 	struct InputMapping
 	{
-		glm::vec3 direction;
+		math::Vector3 direction;
+		bool bIsGlobal;
 		f32 speed;
 		bool bIsActive;
 	};
 	struct InputAxis
 	{
-		glm::vec3 axis; // turning axis
+		math::Vector3 axis;
 		f32 radians;
 		f32 delta;
 	};
@@ -41,7 +43,6 @@ private:
 	void processInput(input::Event const & evt);
 	void tick(f32 deltaTime) override;
 
-	// TODO: Make this a generic "entity" with a transform
-	std::shared_ptr<Camera> mCamera;
+	ecs::ComponentTransform *mpCameraTransform;
 
 };

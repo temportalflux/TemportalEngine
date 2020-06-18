@@ -9,7 +9,6 @@
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
 
-#include "Camera.hpp"
 #include "ecs/Core.hpp"
 #include "ecs/component/Transform.hpp"
 #include "FixedSortedArray.hpp"
@@ -34,12 +33,12 @@ using namespace std;
 // UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
 struct ModelViewProjection
 {
-	glm::mat4 view;
+	math::Matrix4x4 view;
 	glm::mat4 proj;
 
 	ModelViewProjection()
 	{
-		view = glm::mat4(1);
+		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
 	}
 };
@@ -272,15 +271,14 @@ int main(int argc, char *argv[])
 			pWindow->setRenderer(&renderer);
 #pragma endregion
 
-			// TODO: Allocate from entity pool
-			auto camera = pEngine->getMainMemory()->make_shared<Camera>();
-			camera->move(glm::vec3(0, 0, 10));
+			auto cameraTransform = ecs::ComponentTransform();
+			cameraTransform.setPosition(math::Vector3unitZ * 10);
 
 			// TODO: Allocate from entity pool
 			auto controller = pEngine->getMainMemory()->make_shared<Controller>();
 			pEngine->addTicker(controller);
 			controller->subscribeToInput();
-			controller->assignCamera(camera);
+			controller->assignCameraTransform(&cameraTransform);
 
 			pEngine->start();
 			auto prevTime = std::chrono::high_resolution_clock::now();
@@ -290,8 +288,7 @@ int main(int argc, char *argv[])
 				//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
-					auto fwd = camera->forward();
-					uniData.view = glm::lookAt(camera->position(), camera->position() + fwd, camera->up());
+					uniData.view = cameraTransform.calculateView();
 					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
 					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
 					mvpUniform->write(&uniData);
@@ -306,7 +303,6 @@ int main(int argc, char *argv[])
 			pEngine->joinThreads();
 
 			controller.reset();
-			camera.reset();
 
 			// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 

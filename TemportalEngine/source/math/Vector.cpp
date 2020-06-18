@@ -61,18 +61,14 @@ Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b)
 	return Quaternion(vec) + QuaternionIdentity * w;
 }
 
-Vector3 const RotateVector(Vector3 const vector, Quaternion const rotation)
+// v' = q*v*q'
+Vector3 const RotateVector(Vector3 const v, Quaternion const q)
 {
-	// vPrime = rot * v * rotConjugate
-	// OR
-	// r = quaternion vector
-	// vPrime = v + 2r x (r x v + wv)
-	return vector + Vector3::cross(
-		rotation.createSubvector<3>() * 2,
-		Vector3::cross(
-			rotation.createSubvector<3>(), vector
-		) * rotation.w() * vector
-	);
+	auto p = QuaternionInverse(q); // q'
+	auto pVec = p.createSubvector<3>();
+	auto pxv = Vector3::cross(pVec, v);
+	auto pxpxv = Vector3::cross(pVec, pxv);
+	return v + (((pxv * p.w()) + pxpxv) * 2);
 }
 
 Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat)

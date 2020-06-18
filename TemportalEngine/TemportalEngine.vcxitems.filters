@@ -505,5 +505,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h">
       <Filter>ecs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Matrix.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\transform.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

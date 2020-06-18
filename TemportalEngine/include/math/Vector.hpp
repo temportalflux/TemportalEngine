@@ -26,7 +26,7 @@ NS_MATH
 * @param TValue The data type (floats and signed/unsigned ints supported).
 * @param TDimension The number of components.
 */
-template <typename TValue, ui32 TDimension>
+template <typename TValue, ui8 TDimension>
 class TEMPORTALENGINE_API Vector
 {
 	static_assert(
@@ -143,7 +143,7 @@ public:
 	* Set a value at a given dimension index. Can modify this value
 	*	and the change will be reflected in the vector.
 	*/
-	constexpr TValue& operator[](ui32 const i)
+	constexpr TValue& operator[](ui8 const i)
 	{
 		assert(i < TDimension);
 		return mValues[i];
@@ -152,7 +152,7 @@ public:
 	/**
 	* Get a value at a given dimension index. Cannot modify the value.
 	*/
-	constexpr TValue const & operator[](ui32 const i) const
+	constexpr TValue const & operator[](ui8 const i) const
 	{
 		assert(i < TDimension);
 		return mValues[i];
@@ -336,12 +336,31 @@ public:
 	}
 
 	/**
+	* Divides this vector by a scalar.
+	*/
+	constexpr void operator/=(TValue const other)
+	{
+		for (ui8 i = 0; i < TDimension; ++i)
+			mValues[i] /= other;
+	}
+
+	/**
 	* Multiplies this vector by a scalar and returns the result.
 	*/
 	constexpr VectorFormat const operator*(TValue const other) const
 	{
 		VectorFormat ret = *this;
 		ret *= other;
+		return ret;
+	}
+
+	/**
+	* Divides this vector by a scalar and returns the result.
+	*/
+	constexpr VectorFormat const operator/(TValue const other) const
+	{
+		VectorFormat ret = *this;
+		ret /= other;
 		return ret;
 	}
 
@@ -369,7 +388,7 @@ public:
 	{
 		TValue scalarProduct = 0;
 		for (ui8 i = 0; i < TDimension; ++i)
-			scalarProduct += mValues[i] * other.mValues[1];
+			scalarProduct += mValues[i] * other.mValues[i];
 		return scalarProduct;
 	}
 
