@@ -95,13 +95,19 @@ int main(int argc, char *argv[])
 	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
-	/*
+	///*
 	// TMP: START
 	{
 		auto core = ecs::Core().setLog(DeclareLog("ECS"));
 		core.registerType<ecs::ComponentTransform>("Transform");
 		core.constructComponentPools();
 
+		{
+			auto ent = core.createEntity();
+			auto entC = core.getEntity(ent->id);
+		}
+
+		/*
 		ecs::Identifier idTransform;
 		{
 			auto* transform = core.create<ecs::ComponentTransform>();
@@ -109,6 +115,7 @@ int main(int argc, char *argv[])
 			auto* transformCopy = core.lookup<ecs::ComponentTransform>(transform->id);
 		}
 		core.destroyComponent<ecs::ComponentTransform>(idTransform);
+		//*/
 
 		engine::Engine::LOG_SYSTEM.close();
 		return 0;

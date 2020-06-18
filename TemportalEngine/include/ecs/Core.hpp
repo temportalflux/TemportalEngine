@@ -88,6 +88,21 @@ public:
 		}
 	}
 
+	std::shared_ptr<Entity> createEntity()
+	{
+		auto id = this->nextEntityId();
+		auto shared = std::shared_ptr<Entity>(this->mEntities.create(id), std::bind(&Core::destroyEntity, this, std::placeholders::_1));
+		shared->id = id;
+		this->mEntityPtrs.insert(std::make_pair(id, shared));
+		return shared;
+	}
+
+	std::shared_ptr<Entity> getEntity(Identifier const &id)
+	{
+		auto iter = this->mEntityPtrs.find(id);
+		return iter != this->mEntityPtrs.end() ? iter->second.lock() : nullptr;
+	}
+
 	// TODO: Core should lock everything about the component type when creating a new component
 	template <typename TComponent, typename... TArgs>
 	TComponent* create(TArgs... args)
@@ -124,7 +139,10 @@ public:
 private:
 	logging::Logger mLog;
 
-	ObjectPool<Identifier, Entity, ECS_MAX_ENTITY_COUNT> mEntities;
+	typedef ObjectPool<Identifier, Entity, ECS_MAX_ENTITY_COUNT> EntityPool;
+	FixedSortedArray<Identifier, ECS_MAX_COMPONENT_COUNT> mUnusedEntityIds;
+	EntityPool mEntities;
+	std::unordered_map<Identifier, std::weak_ptr<Entity>> mEntityPtrs;
 
 	ComponentTypeMetadata mComponentMetadataByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
@@ -139,6 +157,24 @@ private:
 	 * ahead of time, so dynamic memory management is not needed here.
 	 */
 	void* mpComponentMemory;
+
+	Identifier nextEntityId()
+	{
+		return this->mUnusedEntityIds.size() > 0 ? this->mUnusedEntityIds.dequeue() : this->createEntityId();
+	}
+
+	Identifier createEntityId()
+	{
+		return (Identifier)this->mEntities.size();
+	}
+
+	void destroyEntity(Entity* p)
+	{
+		// TODO: This should be threadsafe
+		this->mUnusedEntityIds.insert(p->id);
+		this->mEntityPtrs.erase(this->mEntityPtrs.find(p->id));
+		this->mEntities.destroy(p->id);
+	}
 
 	template <typename TComponent>
 	ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>* lookupPool(ComponentTypeId const &type)

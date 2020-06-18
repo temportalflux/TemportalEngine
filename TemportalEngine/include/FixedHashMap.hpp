@@ -13,6 +13,7 @@ public:
 
 	FixedHashMap()
 	{
+		this->mSize = 0;
 		memset(this->mKeys, 0, capacity() * sizeof(TKey));
 		memset(this->mValues, 0, capacity() * sizeof(TValue));
 	}
