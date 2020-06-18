@@ -482,7 +482,6 @@
       <Filter>controller</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Camera.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp">
       <Filter>ecs</Filter>
     </ClInclude>
