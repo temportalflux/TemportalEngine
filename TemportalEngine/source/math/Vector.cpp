@@ -9,6 +9,30 @@ Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRa
 		+ QuaternionIdentity * std::cos(halfAngle);
 }
 
+// See https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
+Vector3 QuaternionEuler(Quaternion const &q)
+{
+	Vector3 euler;
+
+	euler.x(std::atan2(
+		2 * (q.w() * q.x() + q.y() * q.z()),
+		1 - 2 * (q.x() * q.x() + q.y() * q.y())
+	));
+
+	auto sinp = 2 * (q.w() * q.y() - q.z() * q.x());
+	euler.y(
+		// use 90 degrees if out of range
+		std::abs(sinp) >= 1 ? std::copysign((f32)math::pi2(), sinp) : std::asin(sinp)
+	);
+
+	euler.z(std::atan2(
+		2 * (q.w() * q.z() + q.x() * q.y()),
+		1 - 2 * (q.y() * q.y() + q.z() * q.z())
+	));
+
+	return euler;
+}
+
 Quaternion const QuaternionConjugate(Quaternion const quat)
 {
 	// <-x, -y, -z, w>
@@ -64,11 +88,18 @@ Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b)
 // v' = q*v*q'
 Vector3 const RotateVector(Vector3 const v, Quaternion const q)
 {
+	/*
 	auto p = QuaternionInverse(q); // q'
 	auto pVec = p.createSubvector<3>();
 	auto pxv = Vector3::cross(pVec, v);
 	auto pxpxv = Vector3::cross(pVec, pxv);
 	return v + (((pxv * p.w()) + pxpxv) * 2);
+	//*/
+	auto qVec = q.createSubvector<3>();
+	auto a = 2 * qVec.dot(v) * qVec;
+	auto b = (q.w() * q.w() - qVec.magnitudeSq()) * v;
+	auto c = 2 * q.w() * Vector3::cross(qVec, v);
+	return a + b + c;
 }
 
 Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat)

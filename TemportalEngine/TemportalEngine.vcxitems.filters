@@ -513,5 +513,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Entity.hpp">
       <Filter>ecs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\values.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

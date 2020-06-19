@@ -495,6 +495,15 @@ public:
 			mValues[i] = mValues[i] / magnitude;
 	}
 
+	// Returns the sum of all components
+	TValue sum() const
+	{
+		TValue scalar = 0;
+		for (ui8 i = 0; i < TDimension; ++i)
+			scalar += mValues[i];
+		return scalar;
+	}
+
 };
 
 typedef Vector<f32, 2> Vector2;
@@ -514,6 +523,7 @@ extern Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
 extern Quaternion const QuaternionIdentity;
 
 Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRad);
+Vector3 QuaternionEuler(Quaternion const &quat);
 Quaternion const QuaternionConjugate(Quaternion const quat);
 Quaternion const QuaternionInverse(Quaternion const quat);
 // Performs the Hamilton Product to rotate first by `b` then by `a`.

@@ -18,17 +18,23 @@ struct ComponentTransform : public Component
 
 	math::Vector3 forward() const
 	{
-		return math::RotateVector(-math::Vector3unitZ, this->orientation);
+		return math::RotateVector(math::Vector3unitY, this->orientation);
 	}
-	math::Vector3 backward() const { return -this->forward(); }
+	math::Vector3 backward() const
+	{
+		return math::RotateVector(-math::Vector3unitY, this->orientation);
+	}
 	math::Vector3 right() const
 	{
 		return math::RotateVector(math::Vector3unitX, this->orientation);
 	}
-	math::Vector3 left() const { return -this->forward(); }
+	math::Vector3 left() const
+	{
+		return math::RotateVector(-math::Vector3unitX, this->orientation);
+	}
 	math::Vector3 up() const
 	{
-		return math::Vector3unitY;
+		return math::Vector3unitZ;
 	}
 	math::Vector3 down() const { return -this->up(); }
 

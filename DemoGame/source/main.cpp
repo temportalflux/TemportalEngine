@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 			}
 			
 			auto cameraTransform = ecs::ComponentTransform();
-			cameraTransform.setPosition(math::Vector3unitZ * 10);
+			cameraTransform.setPosition(math::Vector3unitZ * 3);
 
 			// TODO: Allocate from entity pool
 			auto controller = pEngine->getMainMemory()->make_shared<Controller>();
@@ -274,7 +274,6 @@ int main(int argc, char *argv[])
 			f32 deltaTime = 0.0f;
 			while (pEngine->isActive())
 			{
-				//plane.rotate(glm::vec3(0, 0, 1), deltaTime * glm::radians(90.0f));
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
 					uniData.view = cameraTransform.calculateView();

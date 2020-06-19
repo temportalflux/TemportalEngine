@@ -146,6 +146,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Matrix.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\pow.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\transform.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\values.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Vector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\VectorType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp" />

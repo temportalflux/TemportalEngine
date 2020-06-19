@@ -4,6 +4,7 @@
 #include "Namespace.hpp"
 #include "types/integer.h"
 #include "types/real.h"
+#include "math/values.hpp"
 
 #include <algorithm>
 #include <array>

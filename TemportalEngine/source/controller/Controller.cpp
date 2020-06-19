@@ -8,12 +8,12 @@ Controller::Controller()
 {
 	f32 moveSpeed = 2.0f;
 	// TODO: These are using y up directions (it should really be Z up)
-	this->mForward = { -math::Vector3unitZ, false, moveSpeed };
-	this->mBackward = { math::Vector3unitZ, false, moveSpeed };
-	this->mStrafeLeft = { -math::Vector3unitX, false, moveSpeed };
+	this->mForward = { math::Vector3unitY, false, moveSpeed };
+	this->mBackward = { -math::Vector3unitY, false, moveSpeed };
 	this->mStrafeRight = { math::Vector3unitX, false, moveSpeed };
-	this->mUp = { math::Vector3unitY, true, moveSpeed };
-	this->mDown = { -math::Vector3unitY, true, moveSpeed };
+	this->mStrafeLeft = { -math::Vector3unitX, false, moveSpeed };
+	this->mUp = { math::Vector3unitZ, true, moveSpeed };
+	this->mDown = { -math::Vector3unitZ, true, moveSpeed };
 	this->mInputMappings = {
 		{ input::EKey::W, &this->mForward },
 		{ input::EKey::S, &this->mBackward },
@@ -22,8 +22,8 @@ Controller::Controller()
 		{ input::EKey::E, &this->mUp },
 		{ input::EKey::Q, &this->mDown },
 	};
-	this->mLookHorizontal = { math::Vector3unitY, glm::radians(90.0f) };
-	this->mLookVertical = { math::Vector3unitX, glm::radians(90.0f) };
+	this->mLookHorizontal = { -math::Vector3unitZ, glm::radians(90.0f) };
+	this->mLookVertical = { -math::Vector3unitX, glm::radians(90.0f) };
 }
 
 void Controller::assignCameraTransform(ecs::ComponentTransform *transform)
@@ -89,10 +89,12 @@ void Controller::processInput(input::Event const & evt)
 
 void Controller::tick(f32 deltaTime)
 {
+	auto euler = math::QuaternionEuler(this->mpCameraTransform->orientation);
+	auto rot = math::QuaternionFromAxisAngle(math::Vector3unitZ, euler.z());
 	for (auto&[key, mapping] : this->mInputMappings)
 	{
 		if (!mapping->bIsActive) continue;
-		auto dir = mapping->bIsGlobal ? mapping->direction : math::RotateVector(mapping->direction, this->mpCameraTransform->orientation);
+		auto dir = mapping->bIsGlobal ? mapping->direction : math::RotateVector(mapping->direction, rot);
 		this->mpCameraTransform->move(dir * deltaTime * mapping->speed);
 	}
 
@@ -105,7 +107,7 @@ void Controller::tick(f32 deltaTime)
 		this->mpCameraTransform->rotate(this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta);
 		this->mLookHorizontal.delta = 0.0f;
 	}
-	
+
 	if (std::abs(this->mLookVertical.delta) > std::numeric_limits<f32>::epsilon())
 	{
 		this->mpCameraTransform->rotate(this->mLookVertical.axis, this->mLookVertical.radians * this->mLookVertical.delta);
