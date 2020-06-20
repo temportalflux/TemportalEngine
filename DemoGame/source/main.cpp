@@ -8,6 +8,7 @@
 #include "WorldObject.hpp"
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
+#include "asset/Image.hpp"
 
 #include "ecs/Core.hpp"
 #include "ecs/component/Transform.hpp"
@@ -225,6 +226,8 @@ int main(int argc, char *argv[])
 				renderer.addShader(pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule());
 				// Fragment Shader from asset
 				renderer.addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
+
+				//auto asset = asset::TypedAssetPath<asset::Image>::Create("assets/textures/block/Dirt.te-asset").load(asset::EAssetSerialization::Binary);
 			}
 
 			// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly

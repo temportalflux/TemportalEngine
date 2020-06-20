@@ -11,6 +11,11 @@ template <class TAsset>
 class TypedAssetPath
 {
 public:
+	static TypedAssetPath<TAsset> Create(std::filesystem::path path)
+	{
+		return TypedAssetPath<TAsset>(AssetPath(TAsset::StaticType(), path, path.is_absolute()));
+	}
+
 	TypedAssetPath() = default;
 	TypedAssetPath(AssetPath path) : mPath(path) {}
 

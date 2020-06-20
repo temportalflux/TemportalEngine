@@ -1,5 +1,6 @@
 #pragma once
 
+// TODO: Can `StaticType()` be constexpr?
 #define DEFINE_ASSET_TYPE(TYPE_STR) static AssetType StaticType() { return TYPE_STR; } virtual AssetType getAssetType() const override { return TYPE_STR; }
 #define CREATE_ASSETTYPE_METADATA(ClassType, Name, Extension, DeleteMethod) { Name, Extension, &ClassType::createNewAsset, &ClassType::createEmptyAsset, DeleteMethod }
 
