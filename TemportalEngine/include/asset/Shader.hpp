@@ -4,8 +4,6 @@
 
 #include "graphics/ShaderMetadata.hpp"
 
-#include <optional>
-
 FORWARD_DEF(NS_GRAPHICS, class ShaderModule)
 
 NS_ASSET

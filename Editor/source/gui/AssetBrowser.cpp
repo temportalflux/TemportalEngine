@@ -20,6 +20,7 @@ AssetBrowser::AssetBrowser(std::string title)
 	, mModalNewAsset("New Asset (Asset Browser)")
 {
 	this->mModalNewAsset.setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
+	this->bShowingNonAssets = false;
 }
 
 void AssetBrowser::open()
@@ -95,6 +96,8 @@ void AssetBrowser::renderMenuBar()
 			this->mModalNewAsset.setDirectory(this->getCurrentRelativePath()).open();
 		if (ImGui::MenuItem("New Folder", "", false, true))
 			std::filesystem::create_directory(this->mCurrentPath / "New Folder");
+		if (ImGui::MenuItem(((this->bShowingNonAssets ? "Hide" : "Show") + std::string(" Misc Files###AssetToggle")).c_str(), "", false, true))
+			this->bShowingNonAssets = !this->bShowingNonAssets;
 		ImGui::EndMenuBar();
 	}
 }
@@ -144,7 +147,9 @@ void AssetBrowser::renderDirectoryContents()
 	}
 
 	// TODO: Provide renaming of folders and assets
+	// TODO: Add context menu option for compiling an asset w/o opening the editor
 
+	auto assetManager = asset::AssetManager::get();
 	std::optional<std::filesystem::path> newPath = std::nullopt;
 	ImGui::Columns(2); // name | ext/dir
 	for (const auto& entry : std::filesystem::directory_iterator(this->mCurrentPath))
@@ -152,6 +157,7 @@ void AssetBrowser::renderDirectoryContents()
 		auto itemName = entry.path().stem().string();
 		if (itemName[0] == '.') continue;
 		auto bIsDirectory = entry.is_directory();
+		if (!bIsDirectory && !this->bShowingNonAssets && !assetManager->isValidAssetExtension(entry.path().extension().string())) continue;
 		bool bIsAssetAndOpenForEdit = false;
 		auto entryIsEmpty = std::filesystem::is_empty(entry.path());
 

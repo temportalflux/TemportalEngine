@@ -19,6 +19,7 @@ public:
 	OpenAsset() = default;
 	OpenAsset(char const *title);
 
+	void setDefaultPath(std::filesystem::path path);
 	void setCallback(AssetOpenedCallback callback);
 
 protected:

@@ -171,12 +171,24 @@ public:
 		return mValues[0];
 	}
 
+	TValue& x()
+	{
+		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
+		return mValues[0];
+	}
+
 	/**
 	* Get the value at the second dimension (y).
 	* Cannot modify this value.
 	* Equivalent to vector[1].
 	*/
 	constexpr TValue const & y() const
+	{
+		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
+		return mValues[1];
+	}
+
+	TValue& y()
 	{
 		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
 		return mValues[1];
@@ -193,12 +205,24 @@ public:
 		return mValues[2];
 	}
 
+	TValue& z()
+	{
+		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
+		return mValues[2];
+	}
+
 	/**
 	* Get the value at the fourth dimension (w).
 	* Cannot modify this value.
 	* Equivalent to vector[3].
 	*/
 	constexpr TValue const & w() const
+	{
+		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
+		return mValues[3];
+	}
+
+	TValue& w()
 	{
 		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
 		return mValues[3];

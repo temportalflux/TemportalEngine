@@ -98,7 +98,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -115,7 +115,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -134,7 +134,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -155,7 +155,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -182,6 +182,7 @@
     <ClCompile Include="source\graphics\ImGuiRenderer.cpp" />
     <ClCompile Include="source\gui\AssetBrowser.cpp" />
     <ClCompile Include="source\gui\asset\AssetEditor.cpp" />
+    <ClCompile Include="source\gui\asset\EditorImage.cpp" />
     <ClCompile Include="source\gui\asset\EditorProject.cpp" />
     <ClCompile Include="source\gui\asset\EditorShader.cpp" />
     <ClCompile Include="source\gui\asset\EditorSettings.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="source\gui\modal\Modal.cpp" />
     <ClCompile Include="source\gui\modal\NewAsset.cpp" />
     <ClCompile Include="source\gui\modal\OpenAsset.cpp" />
+    <ClCompile Include="source\gui\modal\PathModal.cpp" />
     <ClCompile Include="source\gui\TextEditor.cpp" />
     <ClCompile Include="source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="source\main.cpp" />
@@ -209,6 +211,7 @@
     <ClInclude Include="include\graphics\ImGuiRenderer.hpp" />
     <ClInclude Include="include\gui\AssetBrowser.hpp" />
     <ClInclude Include="include\gui\asset\AssetEditor.hpp" />
+    <ClInclude Include="include\gui\asset\EditorImage.hpp" />
     <ClInclude Include="include\gui\asset\EditorProject.hpp" />
     <ClInclude Include="include\gui\asset\EditorShader.hpp" />
     <ClInclude Include="include\gui\asset\EditorSettings.hpp" />
@@ -219,6 +222,7 @@
     <ClInclude Include="include\gui\modal\Modal.hpp" />
     <ClInclude Include="include\gui\modal\NewAsset.hpp" />
     <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
+    <ClInclude Include="include\gui\modal\PathModal.hpp" />
     <ClInclude Include="include\gui\TextEditor.h" />
     <ClInclude Include="include\gui\widget\Combo.hpp" />
     <ClInclude Include="include\gui\widget\FieldAsset.hpp" />

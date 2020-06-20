@@ -227,6 +227,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Transform.cpp">
       <Filter>ecs\component</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Image.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -515,6 +518,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\values.hpp">
       <Filter>math</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Image.hpp">
+      <Filter>asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

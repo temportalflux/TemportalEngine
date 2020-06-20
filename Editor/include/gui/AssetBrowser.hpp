@@ -23,6 +23,7 @@ protected:
 	i32 getFlags() const override;
 
 private:
+	bool bShowingNonAssets;
 	std::filesystem::path mDefaultPath;
 	std::filesystem::path mCurrentPath;
 	std::vector<std::filesystem::path> mBreadcrumbs;

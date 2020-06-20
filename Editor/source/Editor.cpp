@@ -3,12 +3,14 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "asset/AssetManager.hpp"
-#include "asset/Shader.hpp"
+#include "asset/Image.hpp"
 #include "asset/Settings.hpp"
+#include "asset/Shader.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
+#include "gui/asset/EditorImage.hpp"
 #include "gui/asset/EditorProject.hpp"
-#include "gui/asset/EditorShader.hpp"
 #include "gui/asset/EditorSettings.hpp"
+#include "gui/asset/EditorShader.hpp"
 
 #include <memory>
 #include "memory/MemoryChunk.hpp"
@@ -87,6 +89,7 @@ void Editor::registerAllAssetEditors()
 	this->registerAssetEditor({ AssetType_EditorSettings, &gui::EditorSettings::create });
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
 	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
+	this->registerAssetEditor({ AssetType_Image, &gui::EditorImage::create });
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)

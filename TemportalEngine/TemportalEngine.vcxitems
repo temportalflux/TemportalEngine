@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Image.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
@@ -84,6 +85,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Image.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />

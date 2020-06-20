@@ -150,6 +150,12 @@
     <ClCompile Include="source\gui\widget\FieldAsset.cpp">
       <Filter>Source Files\gui\widget</Filter>
     </ClCompile>
+    <ClCompile Include="source\gui\asset\EditorImage.cpp">
+      <Filter>Source Files\gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gui\modal\PathModal.cpp">
+      <Filter>Source Files\gui\modal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -244,6 +250,12 @@
     </ClInclude>
     <ClInclude Include="include\gui\widget\FieldAsset.hpp">
       <Filter>Header Files\gui\widget</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\asset\EditorImage.hpp">
+      <Filter>Header Files\gui\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gui\modal\PathModal.hpp">
+      <Filter>Header Files\gui\modal</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

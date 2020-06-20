@@ -81,7 +81,7 @@ void NewAsset::drawContents()
 	}
 	
 	ImGui::InputText("Directory", this->mInputDirectory.data(), this->mInputDirectory.size());
-	ImGui::InputText("Project Name", this->mInputName.data(), this->mInputName.size());
+	ImGui::InputText("Name", this->mInputName.data(), this->mInputName.size());
 	
 	if (ImGui::Button("Create"))
 	{
