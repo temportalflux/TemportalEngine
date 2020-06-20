@@ -54,11 +54,13 @@ void EditorImage::compileAsset()
 	auto srcPathStr = asset->getAbsoluteSourcePath().string();
 	auto srcDimensions = math::Vector2Int();
 	i32 srcChannels;
+	
 	ui8* data = stbi_load(srcPathStr.c_str(), &srcDimensions.x(), &srcDimensions.y(), &srcChannels, STBI_rgb_alpha);
 	std::vector<ui8> imageData(srcDimensions.x() * srcDimensions.y() * LOAD_MODE_SIZE);
 	memcpy(imageData.data(), data, imageData.capacity());
-	asset->setSourceBinary(imageData);
 	stbi_image_free(data);
+
+	asset->setSourceBinary(imageData, { (ui32)srcDimensions.x(), (ui32)srcDimensions.y() });
 
 	AssetEditor::compileAsset();
 }

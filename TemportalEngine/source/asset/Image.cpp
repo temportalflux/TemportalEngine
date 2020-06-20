@@ -22,9 +22,10 @@ std::filesystem::path Image::getAbsoluteSourcePath() const
 	return std::filesystem::absolute(this->getPath().parent_path() / this->mSourceFilePath);
 }
 
-void Image::setSourceBinary(std::vector<ui8> const &binary)
+void Image::setSourceBinary(std::vector<ui8> const &binary, math::Vector2UInt size)
 {
 	this->mSourceBinary = binary;
+	this->mSourceSize = size;
 }
 
 #pragma region Serialization
@@ -44,12 +45,17 @@ void Image::read(cereal::JSONInputArchive &archive)
 void Image::compile(cereal::PortableBinaryOutputArchive &archive) const
 {
 	Asset::compile(archive);
+	// TODO: Make cerealizer for vectors
+	archive(this->mSourceSize.x());
+	archive(this->mSourceSize.y());
 	archive(this->mSourceBinary);
 }
 
 void Image::decompile(cereal::PortableBinaryInputArchive &archive)
 {
 	Asset::decompile(archive);
+	archive(this->mSourceSize.x());
+	archive(this->mSourceSize.y());
 	archive(this->mSourceBinary);
 }
 
