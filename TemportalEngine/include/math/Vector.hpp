@@ -504,6 +504,36 @@ public:
 		return scalar;
 	}
 
+	/**
+	 * Converts a unit vector to a bit mask where each dimension consumes 2 bits.
+	 * Examples:
+	 *   < 0, 0, 0, 0> = 00000000
+	 *   < 1, 0, 0, 0> = 00000001
+	 *   <-1, 0, 0, 0> = 00000010
+	 *   < 0, 1, 0, 0> = 00000100
+	 *   < 0,-1, 0, 0> = 00001000
+	 *   < 0, 0, 1, 0> = 00010000
+	 *   < 0, 0,-1, 0> = 00100000
+	 *   < 0, 0, 0, 1> = 01000000
+	 *   < 0, 0, 0,-1> = 10000000
+	 *   < 1, 1, 1, 1> = 01010101
+	 *   <-1,-1,-1,-1> = 10101010
+	 * Treats all positives as 1 and all negatives as -1.
+	 * Complexity: O(n) where n is the number of dimensions
+	 */
+	ui8 toBitMask() const
+	{
+		// ui8 is 8 bits, and with each dimension occupying 2 bits, this function can only handle 4 dimensions
+		static_assert(TDimension <= 4, "BitMask only value for vectors of max size 4");
+		ui8 mask = 0;
+		for (ui8 i = 0; i < TDimension; ++i)
+		{
+			if (mValues[i] == 0) continue;
+			mask |= (1 << ((i * 2) + (ui8)(mValues[i] < 0)));
+		}
+		return mask;
+	}
+
 };
 
 typedef Vector<f32, 2> Vector2;
