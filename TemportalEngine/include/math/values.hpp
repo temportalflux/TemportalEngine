@@ -9,7 +9,8 @@ constexpr f64 pi2() { return pi() / 2.0f; }
 constexpr f64 pi4() { return pi() / 4.0f; }
 constexpr f64 epsilon() { return 1.19e-07; }
 
-constexpr f32 toDegrees(f32 const radians) { return radians * 57.295779513082320876798154814105f; }
+constexpr f32 rad2deg() { return 57.295779513082320876798154814105f; }
+constexpr f32 toDegrees(f32 const radians) { return radians * rad2deg(); }
 constexpr f32 toRadians(f32 const degrees) { return degrees * 0.01745329251994329576923690768489f; }
 
 template <typename TNum>

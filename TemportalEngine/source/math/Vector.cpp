@@ -33,6 +33,19 @@ Vector3 QuaternionEuler(Quaternion const &q)
 	return euler;
 }
 
+Quaternion QuaternionFromEuler(Vector3 euler)
+{
+	Quaternion quat;
+	euler * 0.5f;
+	auto sin = Vector3({ std::sin(euler.x()), std::sin(euler.y()), std::sin(euler.z()) });
+	auto cos = Vector3({ std::cos(euler.x()), std::cos(euler.y()), std::cos(euler.z()) });
+	quat.w(cos.x() * cos.y() * cos.z() - sin.x() * sin.y() * sin.z());
+	quat.x(sin.x() * sin.y() * cos.z() + cos.x() * cos.y() * sin.z());
+	quat.y(sin.x() * cos.y() * cos.z() + cos.x() * sin.y() * sin.z());
+	quat.z(cos.x() * sin.y() * cos.z() - sin.x() * cos.y() * sin.z());
+	return quat;
+}
+
 Quaternion const QuaternionConjugate(Quaternion const quat)
 {
 	// <-x, -y, -z, w>

@@ -34,7 +34,8 @@ struct ComponentTransform : public Component
 	}
 	math::Vector3 up() const
 	{
-		return math::Vector3unitZ;
+		return math::RotateVector(math::Vector3unitZ, this->orientation);
+		//return math::Vector3unitZ;
 	}
 	math::Vector3 down() const { return -this->up(); }
 

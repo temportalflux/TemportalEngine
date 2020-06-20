@@ -524,6 +524,7 @@ extern Quaternion const QuaternionIdentity;
 
 Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRad);
 Vector3 QuaternionEuler(Quaternion const &quat);
+Quaternion QuaternionFromEuler(Vector3 euler);
 Quaternion const QuaternionConjugate(Quaternion const quat);
 Quaternion const QuaternionInverse(Quaternion const quat);
 // Performs the Hamilton Product to rotate first by `b` then by `a`.

@@ -3,6 +3,7 @@
 #include "Engine.hpp"
 #include "input/Queue.hpp"
 #include "ecs/component/Transform.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 Controller::Controller()
 {
@@ -91,6 +92,7 @@ void Controller::tick(f32 deltaTime)
 {
 	auto euler = math::QuaternionEuler(this->mpCameraTransform->orientation);
 	auto rot = math::QuaternionFromAxisAngle(math::Vector3unitZ, euler.z());
+	
 	for (auto&[key, mapping] : this->mInputMappings)
 	{
 		if (!mapping->bIsActive) continue;
@@ -101,16 +103,27 @@ void Controller::tick(f32 deltaTime)
 	// Testing with roll
 	//this->mCamera->rotate(glm::vec3(0, 0, 1), glm::radians(90.0f) * deltaTime);
 
-	// TODO: This isn't really frame independent (doesnt use deltaTime)
+	// TODO: This isn't really frame independent (doesn't use deltaTime)
+	auto orientation = this->mpCameraTransform->orientation;
+
 	if (std::abs(this->mLookHorizontal.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		this->mpCameraTransform->rotate(this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta);
+		orientation = math::QuaternionConcatenate(orientation, math::QuaternionFromAxisAngle(
+			this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta
+		));
 		this->mLookHorizontal.delta = 0.0f;
 	}
 
 	if (std::abs(this->mLookVertical.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		this->mpCameraTransform->rotate(this->mLookVertical.axis, this->mLookVertical.radians * this->mLookVertical.delta);
+		orientation = math::QuaternionConcatenate(orientation, math::QuaternionFromAxisAngle(
+			this->mLookVertical.axis, this->mLookVertical.radians * this->mLookVertical.delta
+		));
 		this->mLookVertical.delta = 0.0f;
 	}
+
+	euler = math::QuaternionEuler(orientation);
+	euler.y(0);
+	//orientation = math::QuaternionFromEuler(euler);
+	this->mpCameraTransform->orientation = orientation;
 }

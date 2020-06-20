@@ -159,6 +159,8 @@ int main(int argc, char *argv[])
 		pWindow->consumeCursor(true);
 
 		{
+			auto mainLog = DeclareLog("main");
+
 			auto renderCube = RenderCube();
 			auto instances = std::vector<WorldObject>();
 			{
@@ -272,8 +274,15 @@ int main(int argc, char *argv[])
 			pEngine->start();
 			auto prevTime = std::chrono::high_resolution_clock::now();
 			f32 deltaTime = 0.0f;
+			ui32 i = 0;
 			while (pEngine->isActive())
 			{
+				if (i == 0)
+				{
+					auto rot = math::QuaternionEuler(cameraTransform.orientation) * math::rad2deg();
+					mainLog.log(LOG_DEBUG, "<%.5f, %.5f, %.5f>", rot.x(), rot.y(), rot.z());
+				}
+
 				{
 					auto uniData = mvpUniform->read<ModelViewProjection>();
 					uniData.view = cameraTransform.calculateView();
@@ -287,6 +296,7 @@ int main(int argc, char *argv[])
 				auto nextTime = std::chrono::high_resolution_clock::now();
 				deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
 				prevTime = nextTime;
+				i = (i + 1) % 6000;
 			}
 			pEngine->joinThreads();
 
