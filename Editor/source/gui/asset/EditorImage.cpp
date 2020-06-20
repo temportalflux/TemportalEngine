@@ -58,6 +58,7 @@ void EditorImage::compileAsset()
 	std::vector<ui8> imageData(srcDimensions.x() * srcDimensions.y() * LOAD_MODE_SIZE);
 	memcpy(imageData.data(), data, imageData.capacity());
 	asset->setSourceBinary(imageData);
+	stbi_image_free(data);
 
 	AssetEditor::compileAsset();
 }
