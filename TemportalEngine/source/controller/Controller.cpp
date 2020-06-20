@@ -23,8 +23,8 @@ Controller::Controller()
 		{ input::EKey::E, &this->mUp },
 		{ input::EKey::Q, &this->mDown },
 	};
-	this->mLookHorizontal = { -math::Vector3unitZ, glm::radians(90.0f) };
-	this->mLookVertical = { -math::Vector3unitX, glm::radians(90.0f) };
+	this->mLookHorizontal = { math::Vector3unitZ, glm::radians(-90.0f) };
+	this->mLookVertical = { math::Vector3unitX, glm::radians(-90.0f) };
 }
 
 void Controller::assignCameraTransform(ecs::ComponentTransform *transform)
@@ -57,40 +57,12 @@ void Controller::onMouseMove(input::Event const & evt)
 {
 	this->mLookHorizontal.delta = evt.inputMouseMove.xDelta;
 	this->mLookVertical.delta = evt.inputMouseMove.yDelta;
-	//LogEngineDebug("MouseMove: (%.3f, %.3f)", this->mLookHorizontal.delta, this->mLookVertical.delta);
-}
-
-void Controller::processInput(input::Event const & evt)
-{
-	if (evt.type == input::EInputType::KEY)
-	{
-		if (evt.inputKey.action == input::EAction::PRESS)
-			LogEngineDebug("%i Press", (i32)evt.inputKey.key);
-		if (evt.inputKey.action == input::EAction::REPEAT)
-			LogEngineDebug("%i Repeat", (i32)evt.inputKey.key);
-		if (evt.inputKey.action == input::EAction::RELEASE)
-			LogEngineDebug("%i Release", (i32)evt.inputKey.key);
-	}
-	else if (evt.type == input::EInputType::MOUSE_MOVE)
-	{
-		LogEngineDebug("MOVE by (%.3f, %.3f) to (%i, %i)", evt.inputMouseMove.xDelta, evt.inputMouseMove.yDelta, evt.inputMouseMove.xCoord, evt.inputMouseMove.yCoord);
-	}
-	else if (evt.type == input::EInputType::MOUSE_BUTTON)
-	{
-		if (evt.inputMouseButton.action == input::EAction::PRESS)
-			LogEngineDebug("Mouse %i Press (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
-		if (evt.inputKey.action == input::EAction::RELEASE)
-			LogEngineDebug("Mouse %i Release (%i) at (%i, %i)", (i32)evt.inputMouseButton.button, evt.inputMouseButton.clickCount, evt.inputMouseButton.coord[0], evt.inputMouseButton.coord[1]);
-	}
-	else if (evt.type == input::EInputType::MOUSE_SCROLL)
-	{
-		LogEngineDebug("Scroll by (%i, %i)", evt.inputScroll.delta[0], evt.inputScroll.delta[1]);
-	}
 }
 
 void Controller::tick(f32 deltaTime)
 {
-	auto euler = math::QuaternionEuler(this->mpCameraTransform->orientation);
+	auto orientation = this->mpCameraTransform->orientation;
+	auto euler = math::QuaternionEuler(orientation);
 	auto rot = math::QuaternionFromAxisAngle(math::Vector3unitZ, euler.z());
 	
 	for (auto&[key, mapping] : this->mInputMappings)
@@ -100,20 +72,12 @@ void Controller::tick(f32 deltaTime)
 		this->mpCameraTransform->move(dir * deltaTime * mapping->speed);
 	}
 
-	// Testing with roll
-	//this->mCamera->rotate(glm::vec3(0, 0, 1), glm::radians(90.0f) * deltaTime);
+	/* NOTE: on rotational drift
+		To account for multi-axis rotations, the axes are applied as different orders of concatenation
+		See: https://gamedev.stackexchange.com/a/136175
+	*/
 
 	// TODO: This isn't really frame independent (doesn't use deltaTime)
-	auto orientation = this->mpCameraTransform->orientation;
-
-	if (std::abs(this->mLookHorizontal.delta) > std::numeric_limits<f32>::epsilon())
-	{
-		orientation = math::QuaternionConcatenate(orientation, math::QuaternionFromAxisAngle(
-			this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta
-		));
-		this->mLookHorizontal.delta = 0.0f;
-	}
-
 	if (std::abs(this->mLookVertical.delta) > std::numeric_limits<f32>::epsilon())
 	{
 		orientation = math::QuaternionConcatenate(orientation, math::QuaternionFromAxisAngle(
@@ -122,8 +86,13 @@ void Controller::tick(f32 deltaTime)
 		this->mLookVertical.delta = 0.0f;
 	}
 
-	euler = math::QuaternionEuler(orientation);
-	euler.y(0);
-	//orientation = math::QuaternionFromEuler(euler);
+	if (std::abs(this->mLookHorizontal.delta) > std::numeric_limits<f32>::epsilon())
+	{
+		orientation = math::QuaternionConcatenate(math::QuaternionFromAxisAngle(
+			this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta
+		), orientation);
+		this->mLookHorizontal.delta = 0.0f;
+	}
+	
 	this->mpCameraTransform->orientation = orientation;
 }

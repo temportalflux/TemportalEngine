@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
 				if (i == 0)
 				{
 					auto rot = math::QuaternionEuler(cameraTransform.orientation) * math::rad2deg();
-					mainLog.log(LOG_DEBUG, "<%.5f, %.5f, %.5f>", rot.x(), rot.y(), rot.z());
+					mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f>", rot.x(), rot.y(), rot.z());
 				}
 
 				{

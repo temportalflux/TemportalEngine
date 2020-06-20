@@ -40,7 +40,6 @@ private:
 
 	void onKeyInput(input::Event const & evt);
 	void onMouseMove(input::Event const & evt);
-	void processInput(input::Event const & evt);
 	void tick(f32 deltaTime) override;
 
 	ecs::ComponentTransform *mpCameraTransform;
