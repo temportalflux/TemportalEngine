@@ -94,19 +94,21 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 	auto views = std::vector<ImageView>(imageCount);
 	for (uSize i = 0; i < imageCount; ++i)
 	{
-		auto viewHandle = mpDevice->mDevice->createImageViewUnique(vk::ImageViewCreateInfo()
-			.setImage(images[i])
-			.setFormat(mSurfaceFormat.format)
-			.setViewType(info.type)
-			.setComponents(info.swizzle)
+		// Setup constant properties on each view
+		views[i]
+			.setFormat(this->mSurfaceFormat.format)
+			.setViewType(info.type).setComponentMapping(info.swizzle)
 			// TODO: These can be configured by something in the future
-			.setSubresourceRange(vk::ImageSubresourceRange()
+			.setRange(
+				vk::ImageSubresourceRange()
 				.setAspectMask(vk::ImageAspectFlagBits::eColor)
 				.setBaseMipLevel(0).setLevelCount(1)
 				.setBaseArrayLayer(0).setLayerCount(1)
-			)
-		);
-		views[i].mInternal.swap(viewHandle);
+			);
+		// Set the image on the view that has actually changed
+		views[i].setRawImage(images[i]);
+		// Construct the view for the provided data
+		views[i].create(this->mpDevice);
 	}
 	return views;
 }
