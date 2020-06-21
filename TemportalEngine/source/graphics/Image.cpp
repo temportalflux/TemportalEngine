@@ -10,6 +10,11 @@ Image& Image::setFormat(vk::Format format)
 	return *this;
 }
 
+vk::Format Image::getFormat() const
+{
+	return this->mFormat;
+}
+
 Image& Image::setTiling(vk::ImageTiling tiling)
 {
 	this->mTiling = tiling;
@@ -36,7 +41,7 @@ math::Vector3UInt Image::getSize() const
 void Image::create(LogicalDevice *device)
 {
 	auto info = vk::ImageCreateInfo()
-		.setImageType(vk::ImageType::e2D)
+		.setImageType(this->mType)
 		.setExtent(
 			vk::Extent3D()
 			.setWidth(this->mImageSize.x())

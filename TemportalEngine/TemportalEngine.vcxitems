@@ -34,6 +34,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Image.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageSampler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDeviceInfo.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryBacked.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />

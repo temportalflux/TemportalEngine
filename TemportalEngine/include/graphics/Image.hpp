@@ -13,9 +13,11 @@ class Image : public MemoryBacked
 {
 
 public:
-	Image() = default;
+	Image() : mType(vk::ImageType::e2D) {}
 
+	vk::ImageType getType() const { return this->mType; }
 	Image& setFormat(vk::Format format);
+	vk::Format getFormat() const;
 	Image& setTiling(vk::ImageTiling tiling);
 	Image& setUsage(vk::ImageUsageFlags usage);
 	Image& setSize(math::Vector3UInt const &size);
@@ -28,6 +30,7 @@ public:
 	uSize getExpectedDataSize() const;
 
 private:
+	vk::ImageType mType;
 	vk::Format mFormat;
 	vk::ImageTiling mTiling;
 	vk::ImageUsageFlags mUsage;

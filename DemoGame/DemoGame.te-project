@@ -24,7 +24,14 @@
 				"value": "VK_KHR_swapchain"
 			}
 		],
-		"features": [],
+		"features": [
+			{
+				"score": {
+					"hasValue": false
+				},
+				"value": 19
+			}
+		],
 		"queueFamilies": [
 			{
 				"score": {

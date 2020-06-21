@@ -29,7 +29,21 @@ ImageView::~ImageView()
 ImageView& ImageView::setImage(Image *image)
 {
 	this->setRawImage(*reinterpret_cast<vk::Image*>(image->get()));
-	//this->setFormat(image)
+	this->setFormat(image->getFormat());
+	this->setViewType(vk::ImageViewType::e2D);
+	this->setComponentMapping(
+		vk::ComponentMapping()
+		.setR(vk::ComponentSwizzle::eIdentity)
+		.setG(vk::ComponentSwizzle::eIdentity)
+		.setB(vk::ComponentSwizzle::eIdentity)
+		.setA(vk::ComponentSwizzle::eIdentity)
+	);
+	this->setRange(
+		vk::ImageSubresourceRange()
+		.setAspectMask(vk::ImageAspectFlagBits::eColor)
+		.setBaseMipLevel(0).setLevelCount(1)
+		.setBaseArrayLayer(0).setLayerCount(1)
+	);
 	return *this;
 }
 
