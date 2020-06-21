@@ -28,6 +28,8 @@ public:
 	ImageView& setRange(vk::ImageSubresourceRange range);
 
 	ImageView& create(LogicalDevice const *device);
+	void* get();
+	void invalidate();
 
 private:
 	vk::Image mImage;

@@ -62,7 +62,7 @@ f32 VulkanRenderer::getAspectRatio() const
 void VulkanRenderer::initializeDevices()
 {
 	this->pickPhysicalDevice();
-	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&mLogicalDeviceInfo);
+	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&mLogicalDeviceInfo, &mPhysicalDevicePreference);
 	this->mQueues = this->mLogicalDevice.findQueues(mLogicalDeviceInfo.getQueues());
 }
 

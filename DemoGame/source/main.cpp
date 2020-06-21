@@ -249,11 +249,15 @@ int main(int argc, char *argv[])
 			renderCube.init(&renderer, instances);
 			renderer.addRender(&renderCube);
 
+			// TODO: pass an asset to configure from
 			{
-				auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
-					"assets/textures/block/Dirt.te-asset"
-				).load(asset::EAssetSerialization::Binary);
-				auto& dirtImage = renderer.createTextureAssetImage(dirtTexture);
+				auto idxSampler = renderer.createTextureSampler();
+				{
+					auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
+						"assets/textures/block/Dirt.te-asset"
+					).load(asset::EAssetSerialization::Binary);
+					renderer.createTextureAssetImage(dirtTexture, idxSampler);
+				}
 			}
 
 			renderer.createRenderChain();

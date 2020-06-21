@@ -23,7 +23,7 @@ ImageView& ImageView::operator=(ImageView &&other)
 
 ImageView::~ImageView()
 {
-	this->mInternal.reset();
+	this->invalidate();
 }
 
 ImageView& ImageView::setImage(Image *image)
@@ -88,4 +88,14 @@ ImageView& ImageView::create(LogicalDevice const *device)
 		.setSubresourceRange(this->mSubresourceRange)
 	);
 	return *this;
+}
+
+void* ImageView::get()
+{
+	return &this->mInternal.get();
+}
+
+void ImageView::invalidate()
+{
+	this->mInternal.reset();
 }

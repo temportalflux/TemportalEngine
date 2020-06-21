@@ -154,7 +154,7 @@ std::string PhysicalDeviceProperties::Feature::to_string(Enum value)
 	return "invalid";
 }
 
-bool PhysicalDeviceProperties::Feature::hasFeature(vk::PhysicalDeviceFeatures *features, Enum type)
+bool PhysicalDeviceProperties::Feature::hasFeature(vk::PhysicalDeviceFeatures const *features, Enum type)
 {
 	switch (type)
 	{
@@ -212,6 +212,68 @@ bool PhysicalDeviceProperties::Feature::hasFeature(vk::PhysicalDeviceFeatures *f
 	case PhysicalDeviceProperties::Feature::Enum::SparseResidency16Samples: return features->sparseResidency16Samples;
 	case PhysicalDeviceProperties::Feature::Enum::SparseResidencyAliased: return features->sparseResidencyAliased;
 	case PhysicalDeviceProperties::Feature::Enum::VariableMultisampleRate: return features->variableMultisampleRate;
+	}
+	return false;
+}
+
+bool PhysicalDeviceProperties::Feature::enableFeature(vk::PhysicalDeviceFeatures *features, Enum type)
+{
+	switch (type)
+	{
+	case PhysicalDeviceProperties::Feature::Enum::RobustBufferAccess: features->robustBufferAccess = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::FullDrawIndex: features->fullDrawIndexUint32 = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ImageCubeArray: features->imageCubeArray = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::IndependentBlend: features->independentBlend = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::GeometryShader: features->geometryShader = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::TessellationShader: features->tessellationShader = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SampleRateShading: features->sampleRateShading = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::DualSrcBlend: features->dualSrcBlend = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::LogicOp: features->logicOp = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::MultiDrawIndirect: features->multiDrawIndirect = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::DrawIndirectFirstInstance: features->drawIndirectFirstInstance = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::DepthClamp: features->depthClamp = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::DepthBiasClamp: features->depthBiasClamp = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::FillModeNonSolid: features->fillModeNonSolid = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::DepthBounds: features->depthBounds = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::WideLines: features->wideLines = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::LargePoints: features->largePoints = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::AlphaToOne: features->alphaToOne = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::MultiViewport: features->multiViewport = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SamplerAnisotropy: features->samplerAnisotropy = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::TextureCompressionETC2: features->textureCompressionETC2 = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::TextureCompressionASTC_LDR: features->textureCompressionASTC_LDR = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::TextureCompressionBC: features->textureCompressionBC = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::OcclusionQueryPrecise: features->occlusionQueryPrecise = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::PipelineStatisticsQuery: features->pipelineStatisticsQuery = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::VertexPipelineStoresAndAtomics: features->vertexPipelineStoresAndAtomics = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::FragmentStoresAndAtomics: features->fragmentStoresAndAtomics = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderTessellationAndGeometryPointSize: features->shaderTessellationAndGeometryPointSize = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderImageGatherExtended: features->shaderImageGatherExtended = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageImageExtendedFormats: features->shaderStorageImageExtendedFormats = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageImageMultisample: features->shaderStorageImageMultisample = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageImageReadWithoutFormat: features->shaderStorageImageReadWithoutFormat = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageImageWriteWithoutFormat: features->shaderStorageImageWriteWithoutFormat = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderUniformBufferArrayDynamicIndexing: features->shaderUniformBufferArrayDynamicIndexing = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderSampledImageArrayDynamicIndexing: features->shaderSampledImageArrayDynamicIndexing = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageBufferArrayDynamicIndexing: features->shaderStorageBufferArrayDynamicIndexing = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderStorageImageArrayDynamicIndexing: features->shaderStorageImageArrayDynamicIndexing = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderClipDistance: features->shaderClipDistance = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderCullDistance: features->shaderCullDistance = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderFloat64: features->shaderFloat64 = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderInt64: features->shaderInt64 = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderInt16: features->shaderInt16 = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderResourceResidency: features->shaderResourceResidency = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::ShaderResourceMinLod: features->shaderResourceMinLod = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseBinding: features->sparseBinding = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidencyBuffer: features->sparseResidencyBuffer = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidencyImage2D: features->sparseResidencyImage2D = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidencyImage3D: features->sparseResidencyImage3D = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidency2Samples: features->sparseResidency2Samples = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidency4Samples: features->sparseResidency4Samples = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidency8Samples: features->sparseResidency8Samples = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidency16Samples: features->sparseResidency16Samples = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::SparseResidencyAliased: features->sparseResidencyAliased = true; break;
+	case PhysicalDeviceProperties::Feature::Enum::VariableMultisampleRate: features->variableMultisampleRate = true; break;
 	}
 	return false;
 }

@@ -36,7 +36,6 @@ public:
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
 	VulkanInstance& setValidationLayers(std::optional<std::vector<std::string>> layers = std::nullopt);
-	std::vector<char const*> getValidationLayers() const;
 
 	bool isValid() const;
 

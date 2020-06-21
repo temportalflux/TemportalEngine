@@ -3,7 +3,6 @@
 #include "IRender.hpp"
 #include "asset/Texture.hpp"
 #include "graphics/Uniform.hpp"
-#include "graphics/Image.hpp"
 
 using namespace graphics;
 
@@ -14,6 +13,11 @@ GameRenderer::GameRenderer()
 
 void GameRenderer::invalidate()
 {
+	this->mTextureDescriptorPairs.clear();
+	this->mTextureViews.clear();
+	this->mTextureImages.clear();
+	this->mTextureSamplers.clear();
+
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
 	VulkanRenderer::invalidate();
@@ -87,36 +91,62 @@ void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 	this->mPipeline.addShader(shader);
 }
 
-Image& GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> texture)
+uIndex GameRenderer::createTextureSampler()
+{
+	uIndex idx = this->mTextureSamplers.size();
+	this->mTextureSamplers.push_back(graphics::ImageSampler());
+	this->mTextureSamplers[idx]
+		.setFilter(vk::Filter::eNearest, vk::Filter::eNearest)
+		.setAddressMode({
+			vk::SamplerAddressMode::eClampToEdge,
+			vk::SamplerAddressMode::eClampToEdge,
+			vk::SamplerAddressMode::eClampToEdge
+		})
+		.setAnistropy(16.0f)
+		.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+		.setCompare(vk::CompareOp::eAlways);
+	this->mTextureSamplers[idx].create(&this->mLogicalDevice);
+	return idx;
+}
+
+uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler)
 {
 	std::vector<ui8> data = texture->getSourceBinary();
 	auto dataMemSize = data.size() * sizeof(ui8);
 
-	auto& image = graphics::Image()
+	auto idxImage = this->mTextureImages.size();
+	this->mTextureImages.push_back(graphics::Image());
+	this->mTextureImages[idxImage]
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
 		.setSize(math::Vector3UInt(texture->getSourceSize()).z(1))
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	image.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	image.create(&this->mLogicalDevice);
+	this->mTextureImages[idxImage].setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mTextureImages[idxImage].create(&this->mLogicalDevice);
 
-	this->transitionImageToLayout(&image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+	this->transitionImageToLayout(&this->mTextureImages[idxImage], vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 	{
 		Buffer& stagingBuffer = Buffer()
 			.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-			.setSize(image.getMemorySize());
+			.setSize(this->mTextureImages[idxImage].getMemorySize());
 		stagingBuffer.setMemoryRequirements(
 			vk::MemoryPropertyFlagBits::eHostVisible
 			| vk::MemoryPropertyFlagBits::eHostCoherent
 		);
 		stagingBuffer.create(&this->mLogicalDevice);
 		stagingBuffer.write(&this->mLogicalDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
-		this->copyBufferToImage(&stagingBuffer, &image);
+		this->copyBufferToImage(&stagingBuffer, &this->mTextureImages[idxImage]);
 		stagingBuffer.destroy();
 	}
-	this->transitionImageToLayout(&image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+	this->transitionImageToLayout(&this->mTextureImages[idxImage], vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
-	return image;
+	uIndex idx = this->mTextureViews.size();
+	this->mTextureViews.push_back(graphics::ImageView());
+	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage]).create(&this->mLogicalDevice);
+
+	this->mTextureDescriptorPairs.push_back(std::make_pair(idx, idxSampler));
+
+	return idx;
 }
 
 void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
@@ -207,30 +237,25 @@ void GameRenderer::destroyUniformBuffers()
 
 void GameRenderer::createDescriptorPool()
 {
-	this->createDescriptors(
-		vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex,
-		this->mUniformStaticBuffersPerFrame, this->mpUniformStatic->size(),
-		&this->mDescriptorPool_StaticUniform, &this->mDescriptorLayout_StaticUniform,
-		this->mDescriptorSetPerFrame_StaticUniform
-	);
-}
-
-void GameRenderer::createDescriptors(
-	vk::DescriptorType type, vk::ShaderStageFlags stage,
-	std::vector<Buffer> &bufferPerFrame, ui64 bufferRange,
-	vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
-)
-{
-	auto frameCount = (ui32)bufferPerFrame.size();
+	auto frameCount = (ui32)this->mFrameImageViews.size();
+	
 	auto uniformDescriptorCount = 1;
+	auto& uniformBufferPerFrame = this->mUniformStaticBuffersPerFrame;
+	auto uniformBufferRange = this->mpUniformStatic->size();
+
+	ui32 samplerDescriptorCount = (ui32)this->mTextureSamplers.size();
 
 	std::vector<vk::DescriptorPoolSize> poolSizes = {
 		// Uniform Buffer Pool size
 		vk::DescriptorPoolSize()
-			.setType(type)
-			.setDescriptorCount(frameCount * uniformDescriptorCount)
+		.setType(vk::DescriptorType::eUniformBuffer)
+		.setDescriptorCount(frameCount * uniformDescriptorCount),
+		// Texture Images
+		vk::DescriptorPoolSize()
+		.setType(vk::DescriptorType::eCombinedImageSampler)
+		.setDescriptorCount(frameCount * samplerDescriptorCount)
 	};
-	*pool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
+	this->mDescriptorPool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(frameCount)
@@ -240,48 +265,77 @@ void GameRenderer::createDescriptors(
 		// Uniform Buffer Binding
 		vk::DescriptorSetLayoutBinding()
 		.setBinding(/*index of binding in bindings*/ 0)
-		.setDescriptorType(type)
+		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 		.setDescriptorCount(uniformDescriptorCount)
-		.setStageFlags(stage)
+		.setStageFlags(vk::ShaderStageFlagBits::eVertex),
+		// Texture Images
+		vk::DescriptorSetLayoutBinding()
+		.setBinding(/*index of binding in bindings*/ 1)
+		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+		.setDescriptorCount(samplerDescriptorCount)
+		.setStageFlags(vk::ShaderStageFlagBits::eFragment)
 	};
-	*layout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
+	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
 		vk::DescriptorSetLayoutCreateInfo()
 		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
 	);
 
-	std::vector<vk::DescriptorSetLayout> layouts(frameCount, layout->get());
+	std::vector<vk::DescriptorSetLayout> layouts(frameCount, this->mDescriptorLayout.get());
 	// will be deallocated when the pool is destroyed
-	sets = this->mLogicalDevice.mDevice->allocateDescriptorSets(
+	this->mDescriptorSetPerFrame = this->mLogicalDevice.mDevice->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
-		.setDescriptorPool(pool->get())
+		.setDescriptorPool(this->mDescriptorPool.get())
 		.setDescriptorSetCount(frameCount)
 		.setPSetLayouts(layouts.data())
 	);
 
 	for (uSize i = 0; i < frameCount; ++i)
 	{
+		std::vector<vk::WriteDescriptorSet> writes;
+
 		auto uniformBufferInfo = vk::DescriptorBufferInfo()
-			.setBuffer(*reinterpret_cast<vk::Buffer*>(bufferPerFrame[i].get()))
+			.setBuffer(*reinterpret_cast<vk::Buffer*>(uniformBufferPerFrame[i].get()))
 			.setOffset(0)
-			.setRange(bufferRange);
-
-		auto writeDescriptorUniform = vk::WriteDescriptorSet()
-			.setDescriptorType(type)
+			.setRange(uniformBufferRange);
+		writes.push_back(
+			vk::WriteDescriptorSet()
+			.setDstSet(this->mDescriptorSetPerFrame[i])
+			.setDstBinding(/*index of the desired binding in bindings*/ 0)
+			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
 			.setDescriptorCount(uniformDescriptorCount)
-			.setDstSet(sets[i])
-			.setDstBinding(/*index of the desired binding in bindings*/ 0).setDstArrayElement(0)
-			.setPBufferInfo(&uniformBufferInfo);
+			.setDstArrayElement(0)
+			.setPBufferInfo(&uniformBufferInfo)
+		);
 
-		std::vector<vk::WriteDescriptorSet> writes = { writeDescriptorUniform };
+		for (uIndex idxSamplerPair = 0; idxSamplerPair < samplerDescriptorCount; ++idxSamplerPair)
+		{
+			auto pair = this->mTextureDescriptorPairs[idxSamplerPair];
+			auto samplerInfo = vk::DescriptorImageInfo()
+				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+			samplerInfo
+				.setImageView(*reinterpret_cast<vk::ImageView*>(this->mTextureViews[pair.first].get()));
+			samplerInfo
+				.setSampler(*reinterpret_cast<vk::Sampler*>(this->mTextureSamplers[pair.second].get()));
+			writes.push_back(
+				vk::WriteDescriptorSet()
+				.setDstSet(this->mDescriptorSetPerFrame[i])
+				.setDstBinding(/*index of the desired binding in bindings*/ 1)
+				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+				.setDescriptorCount(samplerDescriptorCount)
+				.setDstArrayElement(0)
+				.setPImageInfo(&samplerInfo)
+			);
+		}
+
 		this->mLogicalDevice.mDevice->updateDescriptorSets((ui32)writes.size(), writes.data(), 0, nullptr);
 	}
 }
 
 void GameRenderer::destroyDescriptorPool()
 {
-	this->mDescriptorSetPerFrame_StaticUniform.clear();
-	this->mDescriptorLayout_StaticUniform.reset();
-	this->mDescriptorPool_StaticUniform.reset();
+	this->mDescriptorSetPerFrame.clear();
+	this->mDescriptorLayout.reset();
+	this->mDescriptorPool.reset();
 }
 
 void GameRenderer::createCommandObjects()
@@ -297,7 +351,7 @@ void GameRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout_StaticUniform.get()));
+	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout.get()));
 
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -316,7 +370,7 @@ void GameRenderer::recordCommandBufferInstructions()
 		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
 			// TODO: Should each render system have control over the descriptor set and pipeline?
-			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame_StaticUniform[idxFrame]);
+			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame[idxFrame]);
 			cmd.bindPipeline(&this->mPipeline);
 			for (auto* pRender : this->mpRenders)
 			{

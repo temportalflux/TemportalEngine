@@ -3,6 +3,9 @@
 #include "graphics/VulkanRenderer.hpp"
 
 #include "graphics/AttributeBinding.hpp"
+#include "graphics/Image.hpp"
+#include "graphics/ImageSampler.hpp"
+#include "graphics/ImageView.hpp"
 
 class IRender;
 FORWARD_DEF(NS_ASSET, class Texture)
@@ -36,8 +39,14 @@ public:
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
-	// Creates a `graphics::Image` from a `asset::Texture`
-	Image& createTextureAssetImage(std::shared_ptr<asset::Texture> texture);
+	// Creates an image sampler from some asset
+	// TODO: Take in an asset object
+	// Returns the idx of the sampler in `mTextureSamplers`
+	uIndex createTextureSampler();
+
+	// Creates a `graphics::Image` from a `asset::Texture`.
+	// Returns the idx of the image view in `mTextureViews`
+	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
 
 	void createRenderChain() override;
 
@@ -78,15 +87,16 @@ private:
 
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;
-	vk::UniqueDescriptorPool mDescriptorPool_StaticUniform;
-	vk::UniqueDescriptorSetLayout mDescriptorLayout_StaticUniform;
-	std::vector<vk::DescriptorSet> mDescriptorSetPerFrame_StaticUniform;
+	vk::UniqueDescriptorPool mDescriptorPool;
+	vk::UniqueDescriptorSetLayout mDescriptorLayout;
+	std::vector<vk::DescriptorSet> mDescriptorSetPerFrame;
 
-	void createDescriptors(
-		vk::DescriptorType type, vk::ShaderStageFlags stage,
-		std::vector<Buffer> &bufferPerFrame, ui64 bufferRange,
-		vk::UniqueDescriptorPool *pool, vk::UniqueDescriptorSetLayout *layout, std::vector<vk::DescriptorSet> &sets
-	);
+	std::vector<ImageSampler> mTextureSamplers;
+	std::vector<Image> mTextureImages;
+	std::vector<ImageView> mTextureViews;
+	// First value of each pair is the image view idx of `mTextureViews`
+	// Second value of each pair is the image sampler idx of `mTextureSamplers`
+	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
 
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;

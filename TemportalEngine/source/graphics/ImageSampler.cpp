@@ -15,7 +15,28 @@ ImageSampler::ImageSampler()
 
 ImageSampler::~ImageSampler()
 {
-	this->mInternal.reset();
+	this->invalidate();
+}
+
+ImageSampler::ImageSampler(ImageSampler &&other)
+{
+	*this = std::move(other);
+}
+
+ImageSampler& ImageSampler::operator=(ImageSampler &&other)
+{
+	this->mFilterMag = other.mFilterMag;
+	this->mFilterMin = other.mFilterMin;
+	this->mAddressModes = other.mAddressModes;
+	this->mAnistropy = other.mAnistropy;
+	this->mBorderColor = other.mBorderColor;
+	this->mbNormalizeCoordinates = other.mbNormalizeCoordinates;
+	this->mCompareOp = other.mCompareOp;
+	this->mMipLODMode = other.mMipLODMode;
+	this->mMipLODBias = other.mMipLODBias;
+	this->mMipLODRange = other.mMipLODRange;
+	this->mInternal = std::move(other.mInternal);
+	return *this;
 }
 
 ImageSampler& ImageSampler::setFilter(vk::Filter magnified, vk::Filter minified)
@@ -25,7 +46,7 @@ ImageSampler& ImageSampler::setFilter(vk::Filter magnified, vk::Filter minified)
 	return *this;
 }
 
-ImageSampler& ImageSampler::setAddressMode(math::Vector<ui8, 3> uvwMode)
+ImageSampler& ImageSampler::setAddressMode(std::array<vk::SamplerAddressMode, 3> uvwMode)
 {
 	this->mAddressModes = uvwMode;
 	return *this;
@@ -68,13 +89,13 @@ ImageSampler& ImageSampler::create(LogicalDevice *device)
 	this->mInternal = device->mDevice->createSamplerUnique(
 		vk::SamplerCreateInfo()
 		.setMagFilter(this->mFilterMag).setMinFilter(this->mFilterMin)
-		.setAddressModeU((vk::SamplerAddressMode)this->mAddressModes.x())
-		.setAddressModeV((vk::SamplerAddressMode)this->mAddressModes.y())
-		.setAddressModeW((vk::SamplerAddressMode)this->mAddressModes.z())
+		.setAddressModeU(this->mAddressModes[0])
+		.setAddressModeV(this->mAddressModes[1])
+		.setAddressModeW(this->mAddressModes[2])
 		.setAnisotropyEnable((bool)this->mAnistropy)
 		.setMaxAnisotropy(this->mAnistropy ? *this->mAnistropy : 1.0f)
 		.setBorderColor(this->mBorderColor)
-		.setUnnormalizedCoordinates(this->mbNormalizeCoordinates)
+		.setUnnormalizedCoordinates(!this->mbNormalizeCoordinates)
 		.setCompareEnable((bool)this->mCompareOp)
 		.setCompareOp(this->mCompareOp ? *this->mCompareOp : vk::CompareOp::eAlways)
 		.setMipmapMode(this->mMipLODMode)
@@ -85,6 +106,12 @@ ImageSampler& ImageSampler::create(LogicalDevice *device)
 	return *this;
 }
 
+void* ImageSampler::get()
+{
+	return &this->mInternal.get();
+}
+
 void ImageSampler::invalidate()
 {
+	this->mInternal.reset();
 }

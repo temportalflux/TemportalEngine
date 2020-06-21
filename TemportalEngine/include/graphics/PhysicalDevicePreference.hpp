@@ -102,6 +102,7 @@ public:
 	ListDeviceExtensions& getDeviceExtensions() { return this->mDeviceExtensions; }
 	ListDeviceExtensions getDeviceExtensions() const { return this->mDeviceExtensions; }
 	ListFeatures& getFeatures() { return this->mFeatures; }
+	ListFeatures getFeatures() const { return this->mFeatures; }
 	ListQueueFamilies& getQueueFamilies() { return this->mQueueFamilies; }
 	ListQueueFamilies getQueueFamilies() const { return this->mQueueFamilies; }
 	ListSwapChain& getSwapChain() { return this->mSwapChain; }

@@ -13,6 +13,7 @@ NS_GRAPHICS
 class VulkanInstance;
 class Surface;
 class LogicalDeviceInfo;
+class PhysicalDevicePreference;
 
 class PhysicalDevice
 {
@@ -34,7 +35,7 @@ public:
 
 	void invalidate();
 
-	LogicalDevice createLogicalDevice(LogicalDeviceInfo const *pInfo) const;
+	LogicalDevice createLogicalDevice(LogicalDeviceInfo const *pInfo, PhysicalDevicePreference const *prefs) const;
 
 private:
 	graphics::Surface const *mpSurface;

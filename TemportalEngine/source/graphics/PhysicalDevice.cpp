@@ -2,6 +2,7 @@
 
 #include "graphics/Surface.hpp"
 #include "graphics/LogicalDeviceInfo.hpp"
+#include "graphics/PhysicalDevicePreference.hpp"
 #include "utility/StringUtils.hpp"
 
 using namespace graphics;
@@ -99,22 +100,39 @@ vk::PhysicalDeviceMemoryProperties PhysicalDevice::getMemoryProperties() const
 	return this->mDevice.getMemoryProperties();
 }
 
-LogicalDevice PhysicalDevice::createLogicalDevice(LogicalDeviceInfo const * pInfo) const
+LogicalDevice PhysicalDevice::createLogicalDevice(
+	LogicalDeviceInfo const * pInfo,
+	PhysicalDevicePreference const *prefs
+) const
 {
 	auto queueFamilies = this->queryQueueFamilyGroup();
 	auto queueInfo = pInfo->makeQueueInfo(&queueFamilies);
 	auto queueCreateInfo = std::vector<vk::DeviceQueueCreateInfo>(queueInfo.size());
 	for (uSize i = 0; i < queueInfo.size(); ++i)
 		queueCreateInfo[i] = queueInfo[i].makeInfo();
+
 	auto extNames = utility::createTemporaryStringSet(pInfo->mDeviceExtensions);
 	auto layerNames = utility::createTemporaryStringSet(pInfo->mValidationLayers);
-	auto info = vk::DeviceCreateInfo()
+
+	vk::PhysicalDeviceFeatures const supportedFeatures = this->getFeatures();
+	vk::PhysicalDeviceFeatures desiredFeatures;
+	for (auto& pref : prefs->getFeatures())
+	{
+		if (pref.isRequired() || PhysicalDeviceProperties::Feature::hasFeature(&supportedFeatures, pref.value))
+		{
+			PhysicalDeviceProperties::Feature::enableFeature(&desiredFeatures, pref.value);
+		}
+	}
+	
+	vk::UniqueDevice device = mDevice.createDeviceUnique(
+		vk::DeviceCreateInfo()
 		.setQueueCreateInfoCount((ui32)queueCreateInfo.size())
 		.setPQueueCreateInfos(queueCreateInfo.data())
 		.setEnabledExtensionCount((ui32)extNames.size())
 		.setPpEnabledExtensionNames(extNames.data())
 		.setEnabledLayerCount((ui32)layerNames.size())
-		.setPpEnabledLayerNames(layerNames.data());
-	vk::UniqueDevice device = mDevice.createDeviceUnique(info);
+		.setPpEnabledLayerNames(layerNames.data())
+		.setPEnabledFeatures(&desiredFeatures)
+	);
 	return LogicalDevice(this, device);
 }

@@ -98,7 +98,8 @@ struct PhysicalDeviceProperties
 		};
 		static std::vector<Enum> ALL;
 		static std::string to_string(Enum value);
-		static bool hasFeature(vk::PhysicalDeviceFeatures *features, Enum type);
+		static bool hasFeature(vk::PhysicalDeviceFeatures const *features, Enum type);
+		static bool enableFeature(vk::PhysicalDeviceFeatures *features, Enum type);
 	};
 };
 
