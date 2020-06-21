@@ -102,7 +102,14 @@ void VulkanRenderer::createRenderObjects()
 		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&mLogicalDevice, &mSurface);
 
-	this->mImageViews = this->mSwapChain.createImageViews(mImageViewInfo);
+	{
+		auto views = this->mSwapChain.createImageViews(mImageViewInfo);
+		auto viewCount = views.size();
+		this->mFrameImageViews.resize(viewCount);
+		this->mFrameImageFences.resize(viewCount);
+		for (uSize i = 0; i < viewCount; ++i)
+			this->mFrameImageViews[i] = std::move(views[i]);
+	}
 
 	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
 }
@@ -110,7 +117,7 @@ void VulkanRenderer::createRenderObjects()
 void VulkanRenderer::destroyRenderObjects()
 {
 	this->mRenderPass.destroy();
-	this->mImageViews.clear();
+	this->mFrameImageViews.clear();
 	this->mSwapChain.destroy();
 }
 
@@ -134,14 +141,14 @@ void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 	auto* currentFrame = this->getFrameAt(idxCurrentFrame);
 
 	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
-	auto& imageView = this->mImageViews[this->mIdxCurrentImage];
-	if (imageView.isInFlight())
+	auto& frameImageFence = this->mFrameImageFences[this->mIdxCurrentImage];
+	if (frameImageFence)
 	{
-		imageView.waitUntilNotInFlight(&this->mLogicalDevice);
+		this->mLogicalDevice.mDevice->waitForFences(frameImageFence, true, UINT64_MAX);
 	}
 
 	// Ensure that the image view is marked as in-flight as long as the frame is
-	currentFrame->setImageViewInFlight(&imageView);
+	frameImageFence = currentFrame->getInFlightFence();
 
 	// Mark frame and image view as not in flight (will be in flight when queue is submitted)
 	currentFrame->markNotInFlight();

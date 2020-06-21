@@ -59,7 +59,7 @@ void ImGuiRenderer::invalidate()
 void ImGuiRenderer::createRenderChain()
 {
 	this->createRenderObjects();
-	this->createFrames(this->mImageViews.size());
+	this->createFrames(this->mFrameImageViews.size());
 }
 
 void ImGuiRenderer::destroyRenderChain()
@@ -106,7 +106,7 @@ void ImGuiRenderer::createFrames(uSize viewCount)
 	{
 		this->mGuiFrames[i]
 			.setRenderPass(&this->mRenderPass)
-			.setView(&this->mImageViews[i])
+			.setView(&this->mFrameImageViews[i])
 			.setQueueFamilyGroup(&queueFamilyGroup)
 			.create(&this->mLogicalDevice);
 	}
@@ -145,8 +145,8 @@ void ImGuiRenderer::finalizeInitialization()
 		info.DescriptorPool = (VkDescriptorPool)mDescriptorPool.get();
 		info.Allocator = nullptr;
 		info.MSAASamples = (VkSampleCountFlagBits)vk::SampleCountFlagBits::e1;
-		info.MinImageCount = (ui32)this->mImageViews.size();
-		info.ImageCount = (ui32)this->mImageViews.size();
+		info.MinImageCount = (ui32)this->mFrameImageViews.size();
+		info.ImageCount = (ui32)this->mFrameImageViews.size();
 		info.CheckVkResultFn = nullptr;
 		ImGui_ImplVulkan_Init(&info, *reinterpret_cast<VkRenderPass*>(this->mRenderPass.get()));
 	}

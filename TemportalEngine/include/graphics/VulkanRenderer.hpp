@@ -97,7 +97,9 @@ protected:
 	SwapChainInfo mSwapChainInfo;
 	SwapChain mSwapChain;
 	ImageViewInfo mImageViewInfo;
-	std::vector<ImageView> mImageViews;
+	std::vector<ImageView> mFrameImageViews;
+	// fence is active while a frame is drawing to this view
+	std::vector<vk::Fence> mFrameImageFences;
 	RenderPass mRenderPass;
 #pragma endregion
 	

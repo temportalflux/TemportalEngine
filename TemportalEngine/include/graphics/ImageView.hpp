@@ -14,16 +14,12 @@ class ImageView
 
 public:
 	ImageView() = default;
+	ImageView(ImageView &&other);
 	~ImageView();
-
-	void setInFlightFence(vk::Fence &fence);
-	bool isInFlight() const;
-	void waitUntilNotInFlight(LogicalDevice const *pDevice);
+	ImageView& operator=(ImageView &&other);
 
 private:
 	vk::UniqueImageView mInternal;
-	// fence is active while a frame is drawing to this view
-	vk::Fence mFence_ImageInFlight;
 
 };
 

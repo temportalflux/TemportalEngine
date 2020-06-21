@@ -55,9 +55,9 @@ vk::ResultValue<ui32> Frame::acquireNextImage(SwapChain const *pSwapChain) const
 	return pSwapChain->acquireNextImage(this->mSemaphore_ImageAvailable.get());
 }
 
-void Frame::setImageViewInFlight(ImageView *pView)
+vk::Fence& Frame::getInFlightFence()
 {
-	pView->setInFlightFence(this->mFence_FrameInFlight.get());
+	return this->mFence_FrameInFlight.get();
 }
 
 void Frame::markNotInFlight()

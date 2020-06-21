@@ -171,7 +171,7 @@ void GameRenderer::createRenderChain()
 	this->createUniformBuffers();
 	this->createDescriptorPool();
 	this->createCommandObjects();
-	this->createFrames(this->mImageViews.size());
+	this->createFrames(this->mFrameImageViews.size());
 }
 
 void GameRenderer::destroyRenderChain()
@@ -185,7 +185,7 @@ void GameRenderer::destroyRenderChain()
 
 void GameRenderer::createUniformBuffers()
 {
-	auto frameCount = this->mImageViews.size();
+	auto frameCount = this->mFrameImageViews.size();
 	this->mUniformStaticBuffersPerFrame.resize(frameCount);
 	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
 	{
@@ -288,7 +288,7 @@ void GameRenderer::createCommandObjects()
 {
 	auto resolution = this->mSwapChain.getResolution();
 
-	this->mFrameBuffers = this->mRenderPass.createFrameBuffers(this->mImageViews);
+	this->mFrameBuffers = this->mRenderPass.createFrameBuffers(this->mFrameImageViews);
 
 	this->mPipeline.setViewArea(
 		vk::Viewport()
@@ -302,7 +302,7 @@ void GameRenderer::createCommandObjects()
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&this->mLogicalDevice);
-	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mImageViews.size());
+	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mFrameImageViews.size());
 
 	this->recordCommandBufferInstructions();
 }

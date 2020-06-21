@@ -26,7 +26,7 @@ public:
 
 	void waitUntilNotInFlight() const;
 	vk::ResultValue<ui32> acquireNextImage(SwapChain const *pSwapChain) const;
-	void setImageViewInFlight(ImageView *pView);
+	vk::Fence& getInFlightFence();
 	void markNotInFlight();
 	virtual void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
 	vk::Result present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
