@@ -227,8 +227,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Transform.cpp">
       <Filter>ecs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Image.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Image.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Desktop\TemportalEngine\TemportalEngine\source\asset\Texture.cpp">
       <Filter>asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\MemoryBacked.cpp">
+      <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -519,8 +525,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\values.hpp">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Image.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Desktop\TemportalEngine\TemportalEngine\include\asset\Texture.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryBacked.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

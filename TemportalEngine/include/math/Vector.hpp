@@ -233,11 +233,11 @@ public:
 	* Can modify this value.
 	* Equivalent to vector[0].
 	*/
-	constexpr TValue& x(TValue const &value)
+	constexpr VectorFormat& x(TValue const &value)
 	{
 		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
 		mValues[0] = value;
-		return mValues[0];
+		return *this;
 	}
 
 	/**
@@ -245,11 +245,11 @@ public:
 	* Can modify this value.
 	* Equivalent to vector[1].
 	*/
-	constexpr TValue& y(TValue const &value)
+	constexpr VectorFormat& y(TValue const &value)
 	{
 		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
 		mValues[1] = value;
-		return mValues[1];
+		return *this;
 	}
 
 	/**
@@ -257,11 +257,11 @@ public:
 	* Can modify this value.
 	* Equivalent to vector[2].
 	*/
-	constexpr TValue& z(TValue const &value)
+	constexpr VectorFormat& z(TValue const &value)
 	{
 		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
 		mValues[2] = value;
-		return mValues[2];
+		return *this;
 	}
 
 	/**
@@ -269,11 +269,11 @@ public:
 	* Can modify this value.
 	* Equivalent to vector[3].
 	*/
-	constexpr TValue& w(TValue const &value)
+	constexpr VectorFormat& w(TValue const &value)
 	{
 		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
 		mValues[3] = value;
-		return mValues[3];
+		return *this;
 	}
 
 	// Operators --------------------------------------------------------------

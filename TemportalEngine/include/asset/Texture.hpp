@@ -8,7 +8,7 @@ NS_ASSET
 
 #define AssetType_Image "image"
 
-class Image : public Asset
+class Texture : public Asset
 {
 	friend class cereal::access;
 
@@ -18,12 +18,14 @@ public:
 	DECLARE_EMPTYASSET_FACTORY()
 
 public:
-	Image() = default;
-	Image(std::filesystem::path filePath);
+	Texture() = default;
+	Texture(std::filesystem::path filePath);
 
 	void setSourcePath(std::filesystem::path sourceFilePath);
 	std::filesystem::path getAbsoluteSourcePath() const;
 	void setSourceBinary(std::vector<ui8> const &binary, math::Vector2UInt size);
+	std::vector<ui8> getSourceBinary() const;
+	math::Vector2UInt getSourceSize() const;
 
 private:
 	std::string mSourceFilePath;

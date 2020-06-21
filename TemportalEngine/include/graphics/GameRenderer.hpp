@@ -5,9 +5,11 @@
 #include "graphics/AttributeBinding.hpp"
 
 class IRender;
+FORWARD_DEF(NS_ASSET, class Texture)
 
 NS_GRAPHICS
 class Uniform;
+class Image;
 
 /**
  * A Vulkan renderer tailored for rendering to a single surface using multiple view buffers.
@@ -34,6 +36,9 @@ public:
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
 
+	// Creates a `graphics::Image` from a `asset::Texture`
+	Image& createTextureAssetImage(std::shared_ptr<asset::Texture> texture);
+
 	void createRenderChain() override;
 
 	void invalidate() override;
@@ -49,6 +54,8 @@ private:
 
 	void writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size);
 	void copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size);
+	void copyBufferToImage(Buffer *src, Image *dest);
+	void transitionImageToLayout(Image *image, vk::ImageLayout prev, vk::ImageLayout next);
 
 	void destroyRenderChain() override;
 

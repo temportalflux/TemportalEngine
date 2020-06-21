@@ -1,7 +1,9 @@
 #include "graphics/GameRenderer.hpp"
 
-#include "graphics/Uniform.hpp"
 #include "IRender.hpp"
+#include "asset/Texture.hpp"
+#include "graphics/Uniform.hpp"
+#include "graphics/Image.hpp"
 
 using namespace graphics;
 
@@ -46,11 +48,11 @@ void GameRenderer::writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize
 {
 	Buffer& stagingBuffer = Buffer()
 		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-		.setMemoryRequirements(
-			vk::MemoryPropertyFlagBits::eHostVisible
-			| vk::MemoryPropertyFlagBits::eHostCoherent
-		)
 		.setSize(size);
+	stagingBuffer.setMemoryRequirements(
+		vk::MemoryPropertyFlagBits::eHostVisible
+		| vk::MemoryPropertyFlagBits::eHostCoherent
+	);
 	stagingBuffer.create(&this->mLogicalDevice);
 	stagingBuffer.write(&this->mLogicalDevice, offset, data, size);
 	this->copyBetweenBuffers(&stagingBuffer, buffer, size);
@@ -85,6 +87,84 @@ void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 	this->mPipeline.addShader(shader);
 }
 
+Image& GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> texture)
+{
+	std::vector<ui8> data = texture->getSourceBinary();
+	auto dataMemSize = data.size() * sizeof(ui8);
+
+	auto& image = graphics::Image()
+		.setFormat(vk::Format::eR8G8B8A8Srgb)
+		.setSize(math::Vector3UInt(texture->getSourceSize()).z(1))
+		.setTiling(vk::ImageTiling::eOptimal)
+		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+	image.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	image.create(&this->mLogicalDevice);
+
+	this->transitionImageToLayout(&image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+	{
+		Buffer& stagingBuffer = Buffer()
+			.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+			.setSize(image.getMemorySize());
+		stagingBuffer.setMemoryRequirements(
+			vk::MemoryPropertyFlagBits::eHostVisible
+			| vk::MemoryPropertyFlagBits::eHostCoherent
+		);
+		stagingBuffer.create(&this->mLogicalDevice);
+		stagingBuffer.write(&this->mLogicalDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
+		this->copyBufferToImage(&stagingBuffer, &image);
+		stagingBuffer.destroy();
+	}
+	this->transitionImageToLayout(&image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+	return image;
+}
+
+void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
+{
+	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.copyBufferToImage(src, dest)
+		.end();
+	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		vk::Fence()
+	);
+	/*
+		TODO: This causes all commands to be synchronous.
+		For higher throughput, this should not be called, and the command buffers should rely entirely
+		on the pipeline barriers.
+		This means multiple images could be sent to GPU at once.
+	*/
+	queue.waitIdle();
+}
+
+void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, vk::ImageLayout next)
+{
+	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.setPipelineImageBarrier(image, prev, next)
+		.end();
+	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		vk::Fence()
+	);
+	/*
+		TODO: This causes all commands to be synchronous.
+		For higher throughput, this should not be called, and the command buffers should rely entirely
+		on the pipeline barriers.
+		This means multiple images could be sent to GPU at once.
+	*/
+	queue.waitIdle();
+}
+
 void GameRenderer::createRenderChain()
 {
 	this->createRenderObjects();
@@ -111,11 +191,12 @@ void GameRenderer::createUniformBuffers()
 	{
 		this->mUniformStaticBuffersPerFrame[idxFrame]
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+			.setSize(this->mpUniformStatic->size());
+		this->mUniformStaticBuffersPerFrame[idxFrame]
 			// Host Coherent means this entire buffer will be automatially flushed per write.
 			// This can be optimized later by only flushing the portion of the buffer which actually changed.
-			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent)
-			.setSize(this->mpUniformStatic->size())
-			.create(&this->mLogicalDevice);
+			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+		this->mUniformStaticBuffersPerFrame[idxFrame].create(&this->mLogicalDevice);
 	}
 }
 

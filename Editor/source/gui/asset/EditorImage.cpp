@@ -1,7 +1,7 @@
 #include "gui/asset/EditorImage.hpp"
 
 #include "asset/AssetManager.hpp"
-#include "asset/Image.hpp"
+#include "asset/Texture.hpp"
 #include "gui/modal/PathModal.hpp"
 #include "memory/MemoryChunk.hpp"
 
@@ -40,7 +40,7 @@ void EditorImage::makeGui()
 
 void EditorImage::onImportConfirmed(std::filesystem::path path)
 {
-	auto asset = this->get<asset::Image>();
+	auto asset = this->get<asset::Texture>();
 	asset->setSourcePath(std::filesystem::relative(path, asset->getPath().parent_path()));
 	this->saveAsset();
 }
@@ -50,7 +50,7 @@ void EditorImage::compileAsset()
 	static i32 LOAD_MODE = STBI_rgb_alpha;
 	static ui32 LOAD_MODE_SIZE = 4; // 4 bytes per pixel
 
-	auto asset = this->get<asset::Image>();
+	auto asset = this->get<asset::Texture>();
 	auto srcPathStr = asset->getAbsoluteSourcePath().string();
 	auto srcDimensions = math::Vector2Int();
 	i32 srcChannels;

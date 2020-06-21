@@ -6,7 +6,7 @@
 #include "asset/Asset.hpp"
 #include "asset/Project.hpp"
 #include "asset/Shader.hpp"
-#include "asset/Image.hpp"
+#include "asset/Texture.hpp"
 
 #include <filesystem>
 #include <cereal/types/polymorphic.hpp>
@@ -35,7 +35,7 @@ void AssetManager::queryAssetTypes()
 {
 	this->registerType(AssetType_Project, CREATE_ASSETTYPE_METADATA(Project, "Project", ".te-project", std::nullopt));
 	this->registerType(AssetType_Shader, CREATE_ASSETTYPE_METADATA(Shader, "Shader", ".te-asset", &Shader::onAssetDeleted));
-	this->registerType(AssetType_Image, CREATE_ASSETTYPE_METADATA(Image, "Image", ".te-asset", std::nullopt));
+	this->registerType(AssetType_Image, CREATE_ASSETTYPE_METADATA(Texture, "Texture", ".te-asset", std::nullopt));
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)

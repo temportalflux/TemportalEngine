@@ -5,6 +5,7 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/Pipeline.hpp"
 #include "graphics/Buffer.hpp"
+#include "graphics/Image.hpp"
 
 using namespace graphics;
 
@@ -17,6 +18,84 @@ Command::Command(CommandBuffer *pBuffer)
 Command& Command::clear(std::array<f32, 4U> color)
 {
 	this->mClearValue = vk::ClearValue().setColor(vk::ClearColorValue(color));
+	return *this;
+}
+
+Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
+{
+	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
+	this->mpBuffer->mInternal->copyBuffer(
+		*reinterpret_cast<vk::Buffer*>(src->get()),
+		*reinterpret_cast<vk::Buffer*>(dest->get()),
+		1, &region
+	);
+	return *this;
+}
+
+Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayout, vk::ImageLayout nextLayout)
+{
+	auto& barrier = vk::ImageMemoryBarrier()
+		.setOldLayout(prevLayout).setNewLayout(nextLayout)
+		.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+		.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+		.setImage(*reinterpret_cast<vk::Image*>(image->get()))
+		.setSubresourceRange(
+			vk::ImageSubresourceRange()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setBaseMipLevel(0).setLevelCount(1)
+			.setBaseArrayLayer(0).setLayerCount(1)
+		)
+		.setSrcAccessMask(vk::AccessFlags())
+		.setDstAccessMask(vk::AccessFlags());
+	vk::PipelineStageFlags srcStage;
+	vk::PipelineStageFlags dstStage;
+	if (prevLayout == vk::ImageLayout::eUndefined && nextLayout == vk::ImageLayout::eTransferDstOptimal)
+	{
+		barrier.setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
+		srcStage = vk::PipelineStageFlagBits::eTopOfPipe;
+		dstStage = vk::PipelineStageFlagBits::eTransfer;
+	}
+	else if (prevLayout == vk::ImageLayout::eTransferDstOptimal && nextLayout == vk::ImageLayout::eShaderReadOnlyOptimal)
+	{
+		barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite);
+		barrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
+		srcStage = vk::PipelineStageFlagBits::eTransfer;
+		dstStage = vk::PipelineStageFlagBits::eFragmentShader;
+	}
+	else
+	{
+		throw std::invalid_argument("unsupported layout transition");
+	}
+	this->mpBuffer->mInternal->pipelineBarrier(srcStage, dstStage, vk::DependencyFlags(), {}, {}, { barrier });
+	return *this;
+}
+
+Command& Command::copyBufferToImage(Buffer *src, Image *dest)
+{
+	auto imgSize = dest->getSize();
+	auto region = vk::BufferImageCopy()
+		.setBufferOffset(0)
+		.setBufferRowLength(0)
+		.setBufferImageHeight(0)
+		.setImageSubresource(
+			vk::ImageSubresourceLayers()
+			.setAspectMask(vk::ImageAspectFlagBits::eColor)
+			.setMipLevel(0)
+			.setBaseArrayLayer(0).setLayerCount(1)
+		)
+		.setImageOffset(vk::Offset3D().setX(0).setY(0).setZ(0))
+		.setImageExtent(
+			vk::Extent3D()
+			.setWidth(imgSize.x())
+			.setHeight(imgSize.y())
+			.setDepth(imgSize.z())
+		);
+	this->mpBuffer->mInternal->copyBufferToImage(
+		*reinterpret_cast<vk::Buffer*>(src->get()),
+		*reinterpret_cast<vk::Image*>(dest->get()),
+		vk::ImageLayout::eTransferDstOptimal,
+		{ region }
+	);
 	return *this;
 }
 
@@ -84,17 +163,6 @@ Command& Command::draw(ui32 indexCount, ui32 instanceCount)
 Command& Command::endRenderPass()
 {
 	this->mpBuffer->mInternal->endRenderPass();
-	return *this;
-}
-
-Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
-{
-	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
-	this->mpBuffer->mInternal->copyBuffer(
-		*reinterpret_cast<vk::Buffer*>(src->get()),
-		*reinterpret_cast<vk::Buffer*>(dest->get()),
-		1, &region
-	);
 	return *this;
 }
 

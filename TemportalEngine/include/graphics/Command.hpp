@@ -16,6 +16,7 @@ class RenderPass;
 class FrameBuffer;
 class Pipeline;
 class Buffer;
+class Image;
 
 class Command
 {
@@ -26,6 +27,12 @@ public:
 	// TODO: pass engine vector instead of std array
 	Command& clear(std::array<f32, 4U> color);
 
+	// For copying transfer buffers
+	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
+
+	Command& setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayout, vk::ImageLayout nextLayout);
+	Command& copyBufferToImage(Buffer *src, Image *dest);
+
 	Command& beginRenderPass(RenderPass const *pRenderPass, FrameBuffer const *pFrameBuffer);
 	Command& bindPipeline(Pipeline const *pPipeline);
 	Command& bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set);
@@ -33,9 +40,6 @@ public:
 	Command& bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexType indexType);
 	Command& draw(ui32 vertexCount, ui32 instanceCount = 1);
 	Command& endRenderPass();
-	
-	// For copying transfer buffers
-	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
 
 	void end();
 

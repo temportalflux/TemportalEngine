@@ -3,7 +3,7 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "asset/AssetManager.hpp"
-#include "asset/Image.hpp"
+#include "asset/Texture.hpp"
 #include "asset/Settings.hpp"
 #include "asset/Shader.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
