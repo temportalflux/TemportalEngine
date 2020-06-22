@@ -26,7 +26,7 @@ NS_MATH
 * @param TValue The data type (floats and signed/unsigned ints supported).
 * @param TDimension The number of components.
 */
-template <typename TValue, ui8 TDimension>
+template <typename TValue, const ui8 TDimension>
 class TEMPORTALENGINE_API Vector
 {
 	static_assert(
@@ -38,6 +38,8 @@ class TEMPORTALENGINE_API Vector
 		|| std::is_same<TValue, ui32>::value,
 		"Invalid Vector value type"
 	);
+
+protected:
 
 	/** The format of this vector class, composed of the value and dimension. */
 	typedef Vector<TValue, TDimension> VectorFormat;
@@ -560,10 +562,37 @@ public:
 
 };
 
+class Quaternion : public Vector<f32, 4>
+{
+public:
+	static Quaternion const Identity;
+
+	constexpr Quaternion() : Vector() {}
+	constexpr Quaternion(f32 values[4]) : Vector(values) {}
+	constexpr Quaternion(std::initializer_list<f32> values) : Vector(values) {}
+	constexpr Quaternion(VectorFormat const &other) : Vector(other) {}
+
+	template <ui32 TDimensionOther>
+	constexpr Quaternion(Vector<f32, TDimensionOther> const &other) : Vector(other) {}
+
+	static Quaternion FromAxisAngle(Vector<f32, 3> axis, f32 radians);
+	static Quaternion FromEuler(Vector<f32, 3> euler);
+
+	Vector<f32, 3> euler() const;
+	Quaternion conjugate() const;
+	Quaternion inverseQuat() const;
+
+	// Performs the Hamilton Product to rotate first by `b` then by `a`.
+	static Quaternion concat(Quaternion const &a, Quaternion const &b);
+
+	// v' = q*v*q'
+	Vector<f32, 3> rotate(Vector<f32, 3> const v) const;
+
+};
+
 typedef Vector<f32, 2> Vector2;
 typedef Vector<f32, 3> Vector3;
 typedef Vector<f32, 4> Vector4;
-typedef Vector4 Quaternion;
 
 typedef Vector<i32, 2> Vector2Int;
 typedef Vector<i32, 3> Vector3Int;
@@ -574,16 +603,6 @@ typedef Vector<ui32, 3> Vector3UInt;
 extern Vector2 const Vector2unitX, Vector2unitY;
 extern Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
 extern Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
-extern Quaternion const QuaternionIdentity;
-
-Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRad);
-Vector3 QuaternionEuler(Quaternion const &quat);
-Quaternion QuaternionFromEuler(Vector3 euler);
-Quaternion const QuaternionConjugate(Quaternion const quat);
-Quaternion const QuaternionInverse(Quaternion const quat);
-// Performs the Hamilton Product to rotate first by `b` then by `a`.
-Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b);
-Vector3 const RotateVector(Vector3 const vector, Quaternion const rotation);
 Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat);
 
 // TODO: This should really be in a physics thing, not a math thing

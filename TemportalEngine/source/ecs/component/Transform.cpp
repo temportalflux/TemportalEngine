@@ -10,7 +10,7 @@ ComponentTransform::ComponentTransform()
 {
 	this->position = math::Vector3::ZERO;
 	this->orientation = math::Vector4unitW;
-	this->orientation = math::QuaternionIdentity;
+	this->orientation = math::Quaternion::Identity;
 	this->size = math::Vector3({ 1, 1, 1 });
 }
 
@@ -27,13 +27,13 @@ void ComponentTransform::move(math::Vector3 const &v)
 
 ComponentTransform& ComponentTransform::setOrientation(math::Vector3 const &axis, f32 const &radians)
 {
-	this->orientation = math::QuaternionFromAxisAngle(axis, radians);
+	this->orientation = math::Quaternion::FromAxisAngle(axis, radians);
 	return *this;
 }
 
 void ComponentTransform::rotate(math::Vector3 const &axis, f32 const &radians)
 {
-	this->orientation = math::QuaternionConcatenate(this->orientation, math::QuaternionFromAxisAngle(axis, radians));
+	this->orientation = math::Quaternion::concat(this->orientation, math::Quaternion::FromAxisAngle(axis, radians));
 }
 
 ComponentTransform& ComponentTransform::setSize(math::Vector3 const &size)

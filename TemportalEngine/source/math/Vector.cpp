@@ -2,38 +2,14 @@
 
 NS_MATH
 
-Quaternion const QuaternionFromAxisAngle(Vector3 const axis, float const angleRad)
+Quaternion Quaternion::FromAxisAngle(Vector<f32, 3> axis, f32 radians)
 {
-	auto halfAngle = angleRad * 0.5f;
+	auto halfAngle = radians * 0.5f;
 	return Quaternion(axis * std::sin(halfAngle))
-		+ QuaternionIdentity * std::cos(halfAngle);
+		+ Quaternion::Identity * std::cos(halfAngle);
 }
 
-// See https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
-Vector3 QuaternionEuler(Quaternion const &q)
-{
-	Vector3 euler;
-
-	euler.x(std::atan2(
-		2 * (q.w() * q.x() + q.y() * q.z()),
-		1 - 2 * (q.x() * q.x() + q.y() * q.y())
-	));
-
-	auto sinp = 2 * (q.w() * q.y() - q.z() * q.x());
-	euler.y(
-		// use 90 degrees if out of range
-		std::abs(sinp) >= 1 ? std::copysign((f32)math::pi2(), sinp) : std::asin(sinp)
-	);
-
-	euler.z(std::atan2(
-		2 * (q.w() * q.z() + q.x() * q.y()),
-		1 - 2 * (q.y() * q.y() + q.z() * q.z())
-	));
-
-	return euler;
-}
-
-Quaternion QuaternionFromEuler(Vector3 euler)
+Quaternion Quaternion::FromEuler(Vector<f32, 3> euler)
 {
 	Quaternion quat;
 	euler * 0.5f;
@@ -46,16 +22,39 @@ Quaternion QuaternionFromEuler(Vector3 euler)
 	return quat;
 }
 
-Quaternion const QuaternionConjugate(Quaternion const quat)
+// See https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
+Vector<f32, 3> Quaternion::euler() const
 {
-	// <-x, -y, -z, w>
-	return Quaternion(-quat.createSubvector<3>())
-		+ QuaternionIdentity * quat.w();
+	Vector3 euler;
+
+	euler.x(std::atan2(
+		2 * (this->w() * this->x() + this->y() * this->z()),
+		1 - 2 * (this->x() * this->x() + this->y() * this->y())
+	));
+
+	auto sinp = 2 * (this->w() * this->y() - this->z() * this->x());
+	euler.y(
+		// use 90 degrees if out of range
+		std::abs(sinp) >= 1 ? std::copysign((f32)math::pi2(), sinp) : std::asin(sinp)
+	);
+
+	euler.z(std::atan2(
+		2 * (this->w() * this->z() + this->x() * this->y()),
+		1 - 2 * (this->y() * this->y() + this->z() * this->z())
+	));
+
+	return euler;
 }
 
-Quaternion const QuaternionInverse(Quaternion const quat)
+Quaternion Quaternion::conjugate() const
 {
-	return QuaternionConjugate(quat).normalized();
+	// <-x, -y, -z, w>
+	return Quaternion(-createSubvector<3>()) + Quaternion::Identity * w();
+}
+
+Quaternion Quaternion::inverseQuat() const
+{
+	return this->conjugate().normalized();
 }
 
 /* glm::rotate
@@ -64,8 +63,7 @@ Quaternion const QuaternionInverse(Quaternion const quat)
 	this->y = p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z;
 	this->z = p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x;
 */
-
-Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b)
+Quaternion Quaternion::concat(Quaternion const &a, Quaternion const &b)
 {
 	/* https://en.wikipedia.org/wiki/Quaternion#Hamilton_product
 		a1a2 - b1b2 - c1c2 - d1d2
@@ -95,23 +93,15 @@ Quaternion const QuaternionConcatenate(Quaternion const &a, Quaternion const &b)
 		z: awbz + azbw + (axby - aybx)
 	*/
 	Vector3 vec = (a.w() * bRealVec) + (b.w() * aRealVec) + crossReal;
-	return Quaternion(vec) + QuaternionIdentity * w;
+	return Quaternion(vec) + Quaternion::Identity * w;
 }
 
-// v' = q*v*q'
-Vector3 const RotateVector(Vector3 const v, Quaternion const q)
+Vector<f32, 3> Quaternion::rotate(Vector<f32, 3> const v) const
 {
-	/*
-	auto p = QuaternionInverse(q); // q'
-	auto pVec = p.createSubvector<3>();
-	auto pxv = Vector3::cross(pVec, v);
-	auto pxpxv = Vector3::cross(pVec, pxv);
-	return v + (((pxv * p.w()) + pxpxv) * 2);
-	//*/
-	auto qVec = q.createSubvector<3>();
+	auto qVec = createSubvector<3>();
 	auto a = 2 * qVec.dot(v) * qVec;
-	auto b = (q.w() * q.w() - qVec.magnitudeSq()) * v;
-	auto c = 2 * q.w() * Vector3::cross(qVec, v);
+	auto b = (w() * w() - qVec.magnitudeSq()) * v;
+	auto c = 2 * w() * Vector3::cross(qVec, v);
 	return a + b + c;
 }
 
@@ -122,7 +112,7 @@ Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat)
 	return Quaternion(
 		Vector3::cross(vector, quat.createSubvector<3>())
 		+ vector * quat.w()
-	) + QuaternionIdentity * -Vector3::dot(vector, quat.createSubvector<3>());
+	) + Quaternion::Identity * -Vector3::dot(vector, quat.createSubvector<3>());
 }
 
 Quaternion const IntegrateKinematic(Quaternion const rotation,
@@ -155,7 +145,7 @@ Vector4 const Vector4unitX = { 1, 0, 0, 0 };
 Vector4 const Vector4unitY = { 0, 1, 0, 0 };
 Vector4 const Vector4unitZ = { 0, 0, 1, 0 };
 Vector4 const Vector4unitW = { 0, 0, 0, 1 };
-Quaternion const QuaternionIdentity = math::Vector4unitW;
+Quaternion const Quaternion::Identity = math::Vector4unitW;
 
 Vector2Int const Vector2Int::ZERO = { 0, 0 };
 Vector3Int const Vector3Int::ZERO = { 0, 0, 0 };

@@ -62,13 +62,13 @@ void Controller::onMouseMove(input::Event const & evt)
 void Controller::tick(f32 deltaTime)
 {
 	auto orientation = this->mpCameraTransform->orientation;
-	auto euler = math::QuaternionEuler(orientation);
-	auto rot = math::QuaternionFromAxisAngle(math::Vector3unitZ, euler.z());
+	auto euler = orientation.euler();
+	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitZ, euler.z());
 	
 	for (auto&[key, mapping] : this->mInputMappings)
 	{
 		if (!mapping->bIsActive) continue;
-		auto dir = mapping->bIsGlobal ? mapping->direction : math::RotateVector(mapping->direction, rot);
+		auto dir = mapping->bIsGlobal ? mapping->direction : rot.rotate(mapping->direction);
 		this->mpCameraTransform->move(dir * deltaTime * mapping->speed);
 	}
 
@@ -80,7 +80,7 @@ void Controller::tick(f32 deltaTime)
 	// TODO: This isn't really frame independent (doesn't use deltaTime)
 	if (std::abs(this->mLookVertical.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		orientation = math::QuaternionConcatenate(orientation, math::QuaternionFromAxisAngle(
+		orientation = math::Quaternion::concat(orientation, math::Quaternion::FromAxisAngle(
 			this->mLookVertical.axis, this->mLookVertical.radians * this->mLookVertical.delta
 		));
 		this->mLookVertical.delta = 0.0f;
@@ -88,7 +88,7 @@ void Controller::tick(f32 deltaTime)
 
 	if (std::abs(this->mLookHorizontal.delta) > std::numeric_limits<f32>::epsilon())
 	{
-		orientation = math::QuaternionConcatenate(math::QuaternionFromAxisAngle(
+		orientation = math::Quaternion::concat(math::Quaternion::FromAxisAngle(
 			this->mLookHorizontal.axis, this->mLookHorizontal.radians * this->mLookHorizontal.delta
 		), orientation);
 		this->mLookHorizontal.delta = 0.0f;
