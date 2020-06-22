@@ -14,6 +14,7 @@ public:
 	{
 		glm::vec3 position;
 		glm::vec3 color;
+		glm::vec2 texCoord;
 	};
 
 	static std::vector<graphics::AttributeBinding> bindings(ui8 &slot);

@@ -10,6 +10,7 @@ std::vector<graphics::AttributeBinding> Model::bindings(ui8 &slot)
 		.setStructType<Vertex>()
 		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) })
 		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color) })
+		.addAttribute({ /*slot*/ slot++, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord) })
 	};
 }
 
