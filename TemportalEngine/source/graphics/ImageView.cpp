@@ -26,7 +26,7 @@ ImageView::~ImageView()
 	this->invalidate();
 }
 
-ImageView& ImageView::setImage(Image *image)
+ImageView& ImageView::setImage(Image *image, vk::ImageAspectFlags subresourceFlags)
 {
 	this->setRawImage(*reinterpret_cast<vk::Image*>(image->get()));
 	this->setFormat(image->getFormat());
@@ -40,7 +40,7 @@ ImageView& ImageView::setImage(Image *image)
 	);
 	this->setRange(
 		vk::ImageSubresourceRange()
-		.setAspectMask(vk::ImageAspectFlagBits::eColor)
+		.setAspectMask(subresourceFlags)
 		.setBaseMipLevel(0).setLevelCount(1)
 		.setBaseArrayLayer(0).setLayerCount(1)
 	);

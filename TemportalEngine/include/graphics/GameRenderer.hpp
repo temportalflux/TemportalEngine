@@ -23,10 +23,11 @@ class GameRenderer : public VulkanRenderer
 public:
 	GameRenderer();
 
+	void initializeDevices() override;
+
 	void addRender(IRender *render);
 
 	void setStaticUniform(std::shared_ptr<Uniform> uniform);
-	void initializeBufferHelpers();
 	void initializeBuffer(graphics::Buffer &buffer);
 
 	// TODO: Move this to the buffer object
@@ -70,6 +71,8 @@ private:
 
 	void createUniformBuffers();
 	void destroyUniformBuffers();
+	void createDepthResources(vk::Extent2D const &resolution);
+	void destroyDepthResources();
 	void createDescriptorPool();
 	void destroyDescriptorPool();
 	void createCommandObjects();
@@ -98,12 +101,17 @@ private:
 	// Second value of each pair is the image sampler idx of `mTextureSamplers`
 	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
 
+	Image mDepthImage;
+	ImageView mDepthView;
+
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline;
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
 
 	std::vector<Frame> mFrames;
+
+	void initializeTransientCommandPool();
 
 };
 

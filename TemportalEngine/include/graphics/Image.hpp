@@ -18,6 +18,7 @@ public:
 	vk::ImageType getType() const { return this->mType; }
 	Image& setFormat(vk::Format format);
 	vk::Format getFormat() const;
+	bool hasStencilComponent() const;
 	Image& setTiling(vk::ImageTiling tiling);
 	Image& setUsage(vk::ImageUsageFlags usage);
 	Image& setSize(math::Vector3UInt const &size);

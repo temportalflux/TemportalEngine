@@ -94,31 +94,44 @@ void VulkanRenderer::invalidate()
 	mpInstance = nullptr;
 }
 
-void VulkanRenderer::createRenderObjects()
+void VulkanRenderer::createSwapChain()
 {
 	this->mSwapChain
 		.setInfo(mSwapChainInfo)
 		.setSupport(mPhysicalDevice.querySwapChainSupport())
 		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup())
 		.create(&mLogicalDevice, &mSurface);
-
-	{
-		auto views = this->mSwapChain.createImageViews(mImageViewInfo);
-		auto viewCount = views.size();
-		this->mFrameImageViews.resize(viewCount);
-		this->mFrameImageFences.resize(viewCount);
-		for (uSize i = 0; i < viewCount; ++i)
-			this->mFrameImageViews[i] = std::move(views[i]);
-	}
-
-	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice);
 }
 
-void VulkanRenderer::destroyRenderObjects()
+void VulkanRenderer::createFrameImageViews()
+{
+	auto views = this->mSwapChain.createImageViews(this->mImageViewInfo);
+	auto viewCount = views.size();
+	this->mFrameImageViews.resize(viewCount);
+	this->mFrameImageFences.resize(viewCount);
+	for (uSize i = 0; i < viewCount; ++i)
+		this->mFrameImageViews[i] = std::move(views[i]);
+}
+
+void VulkanRenderer::createRenderPass(std::optional<vk::Format> depthBufferFormat)
+{
+	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice, depthBufferFormat);
+}
+
+void VulkanRenderer::destroySwapChain()
+{
+	this->mSwapChain.destroy();
+}
+
+void VulkanRenderer::destroyFrameImageViews()
+{
+	this->mFrameImageViews.clear();
+	this->mFrameImageFences.clear();
+}
+
+void VulkanRenderer::destroyRenderPass()
 {
 	this->mRenderPass.destroy();
-	this->mFrameImageViews.clear();
-	this->mSwapChain.destroy();
 }
 
 void VulkanRenderer::drawFrame()

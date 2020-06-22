@@ -23,6 +23,12 @@ void GameRenderer::invalidate()
 	VulkanRenderer::invalidate();
 }
 
+void GameRenderer::initializeDevices()
+{
+	VulkanRenderer::initializeDevices();
+	this->initializeTransientCommandPool();
+}
+
 void GameRenderer::addRender(IRender *render)
 {
 	this->mpRenders.push_back(render);
@@ -33,7 +39,7 @@ void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
 	this->mpUniformStatic = uniform;
 }
 
-void GameRenderer::initializeBufferHelpers()
+void GameRenderer::initializeTransientCommandPool()
 {
 	this->mCommandPoolTransient
 		.setQueueFamily(
@@ -142,7 +148,7 @@ uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> tex
 
 	uIndex idx = this->mTextureViews.size();
 	this->mTextureViews.push_back(graphics::ImageView());
-	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage]).create(&this->mLogicalDevice);
+	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(&this->mLogicalDevice);
 
 	this->mTextureDescriptorPairs.push_back(std::make_pair(idx, idxSampler));
 
@@ -197,20 +203,37 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 
 void GameRenderer::createRenderChain()
 {
-	this->createRenderObjects();
+	if (!this->mCommandPoolTransient.isValid())
+	{
+		this->initializeTransientCommandPool();
+	}
+
+	this->createSwapChain();
+	this->createFrameImageViews();
+	this->createDepthResources(this->mSwapChain.getResolution());
+	this->createRenderPass(this->mDepthImage.getFormat());
+
 	this->createUniformBuffers();
 	this->createDescriptorPool();
 	this->createCommandObjects();
+
 	this->createFrames(this->mFrameImageViews.size());
 }
 
 void GameRenderer::destroyRenderChain()
 {
 	this->destroyFrames();
+
 	this->destroyCommandObjects();
 	this->destroyDescriptorPool();
 	this->destroyUniformBuffers();
-	this->destroyRenderObjects();
+
+	this->destroyRenderPass();
+	this->destroyDepthResources();
+	this->destroyFrameImageViews();
+	this->destroySwapChain();
+
+	this->mCommandPoolTransient.destroy();
 }
 
 void GameRenderer::createUniformBuffers()
@@ -233,6 +256,36 @@ void GameRenderer::createUniformBuffers()
 void GameRenderer::destroyUniformBuffers()
 {
 	this->mUniformStaticBuffersPerFrame.clear();
+}
+
+void GameRenderer::createDepthResources(vk::Extent2D const &resolution)
+{
+
+	auto supportedFormat = this->mPhysicalDevice.pickFirstSupportedFormat(
+		{ vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint },
+		vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment
+	);
+	if (!supportedFormat) throw std::runtime_error("failed to find supported depth buffer format");
+
+	this->mDepthImage.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mDepthImage
+		.setFormat(*supportedFormat)
+		.setSize({ resolution.width, resolution.height, 1 })
+		.setTiling(vk::ImageTiling::eOptimal)
+		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+		.create(&this->mLogicalDevice);
+
+	this->transitionImageToLayout(&this->mDepthImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+	this->mDepthView
+		.setImage(&this->mDepthImage, vk::ImageAspectFlagBits::eDepth)
+		.create(&this->mLogicalDevice);
+}
+
+void GameRenderer::destroyDepthResources()
+{
+	this->mDepthView.invalidate();
+	this->mDepthImage.invalidate();
 }
 
 void GameRenderer::createDescriptorPool()
@@ -342,7 +395,18 @@ void GameRenderer::createCommandObjects()
 {
 	auto resolution = this->mSwapChain.getResolution();
 
-	this->mFrameBuffers = this->mRenderPass.createFrameBuffers(this->mFrameImageViews);
+	{
+		auto viewCount = this->mFrameImageViews.size();
+		this->mFrameBuffers.resize(viewCount);
+		for (uSize i = 0; i < viewCount; ++i)
+		{
+			this->mFrameBuffers[i]
+				.setRenderPass(&this->mRenderPass)
+				.addAttachment(&this->mFrameImageViews[i])
+				.addAttachment(&this->mDepthView)
+				.create(&this->mLogicalDevice);
+		}
+	}
 
 	this->mPipeline.setViewArea(
 		vk::Viewport()
@@ -366,7 +430,9 @@ void GameRenderer::recordCommandBufferInstructions()
 	for (uSize idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
 	{
 		auto cmd = this->mCommandBuffers[idxFrame].beginCommand();
-		cmd.clear({ 0.0f, 0.0f, 0.0f, 1.0f });
+		// Clear commands MUST be passed in the same order as the attachments on framebuffers
+		cmd.clearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
+		cmd.clearDepth(1.0f, 0);
 		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
 			// TODO: Should each render system have control over the descriptor set and pipeline?

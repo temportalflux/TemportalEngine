@@ -37,6 +37,11 @@ public:
 
 	LogicalDevice createLogicalDevice(LogicalDeviceInfo const *pInfo, PhysicalDevicePreference const *prefs) const;
 
+	std::optional<vk::Format> pickFirstSupportedFormat(
+		std::vector<vk::Format> const &candidates,
+		vk::ImageTiling tiling, vk::FormatFeatureFlags flags
+	) const;
+
 private:
 	graphics::Surface const *mpSurface;
 	vk::PhysicalDevice mDevice;

@@ -15,6 +15,11 @@ vk::Format Image::getFormat() const
 	return this->mFormat;
 }
 
+bool Image::hasStencilComponent() const
+{
+	return this->mFormat == vk::Format::eD32SfloatS8Uint || this->mFormat == vk::Format::eD24UnormS8Uint;
+}
+
 Image& Image::setTiling(vk::ImageTiling tiling)
 {
 	this->mTiling = tiling;

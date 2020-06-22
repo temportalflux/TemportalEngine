@@ -30,9 +30,9 @@ FrameBuffer& FrameBuffer::setRenderPass(RenderPass const *pRenderPass)
 	return *this;
 }
 
-FrameBuffer& FrameBuffer::setView(ImageView const *pView)
+FrameBuffer& FrameBuffer::addAttachment(ImageView *pView)
 {
-	mpView = pView;
+	this->mAttachments.push_back(*reinterpret_cast<vk::ImageView*>(pView->get()));
 	return *this;
 }
 
@@ -40,8 +40,8 @@ FrameBuffer& FrameBuffer::create(LogicalDevice const *pDevice)
 {
 	auto info = vk::FramebufferCreateInfo()
 		.setRenderPass(mpRenderPass->mRenderPass.get())
-		.setAttachmentCount(1)
-		.setPAttachments(&this->mpView->mInternal.get())
+		.setAttachmentCount((ui32)this->mAttachments.size())
+		.setPAttachments(this->mAttachments.data())
 		.setWidth(mpRenderPass->mResolution.width)
 		.setHeight(mpRenderPass->mResolution.height)
 		.setLayers(1);

@@ -27,12 +27,10 @@ public:
 	void* get();
 
 	bool isValid() const;
-	RenderPass& create(LogicalDevice const *pDevice);
+	RenderPass& create(LogicalDevice const *pDevice, std::optional<vk::Format> depthBufferFormat);
 	void destroy();
 
 	vk::RenderPass getRenderPass() const;
-
-	std::vector<FrameBuffer> createFrameBuffers(std::vector<ImageView> const &views) const;
 
 private:
 	vk::Format mFormat;

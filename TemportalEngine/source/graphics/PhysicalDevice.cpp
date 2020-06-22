@@ -136,3 +136,23 @@ LogicalDevice PhysicalDevice::createLogicalDevice(
 	);
 	return LogicalDevice(this, device);
 }
+
+std::optional<vk::Format> PhysicalDevice::pickFirstSupportedFormat(
+	std::vector<vk::Format> const &candidates,
+	vk::ImageTiling tiling, vk::FormatFeatureFlags flags
+) const
+{
+	for (auto format : candidates)
+	{
+		auto properties = this->mDevice.getFormatProperties(format);
+		if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & flags) == flags)
+		{
+			return format;
+		}
+		else if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & flags) == flags)
+		{
+			return format;
+		}
+	}
+	return std::nullopt;
+}

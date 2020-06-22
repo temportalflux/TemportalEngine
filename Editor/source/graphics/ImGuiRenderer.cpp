@@ -58,14 +58,18 @@ void ImGuiRenderer::invalidate()
 
 void ImGuiRenderer::createRenderChain()
 {
-	this->createRenderObjects();
+	this->createSwapChain();
+	this->createFrameImageViews();
+	this->createRenderPass();
 	this->createFrames(this->mFrameImageViews.size());
 }
 
 void ImGuiRenderer::destroyRenderChain()
 {
 	this->destroyFrames();
-	this->destroyRenderObjects();
+	this->destroyRenderPass();
+	this->destroyFrameImageViews();
+	this->destroySwapChain();
 }
 
 vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPoolImgui()

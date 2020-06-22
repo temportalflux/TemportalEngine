@@ -25,6 +25,7 @@
 #include <time.h>
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE // perspective needs to use [0,1] range for Vulkan
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
@@ -165,12 +166,20 @@ int main(int argc, char *argv[])
 			auto renderCube = RenderCube();
 			auto instances = std::vector<WorldObject>();
 			{
+				///*
 				for (i32 x = -3; x <= 3; ++x)
 					for (i32 y = -3; y <= 3; ++y)
 						instances.push_back(
 							WorldObject()
 							.setPosition(glm::vec3(x, y, 0))
 						);
+				//*/
+				/*
+				instances.push_back(
+					WorldObject()
+					.setPosition(glm::vec3(0, 0, 0))
+				);
+				//*/
 			}
 
 			/*
@@ -245,7 +254,6 @@ int main(int argc, char *argv[])
 				renderer.setBindings(bindings);
 			}
 
-			renderer.initializeBufferHelpers();
 			renderCube.init(&renderer, instances);
 			renderer.addRender(&renderCube);
 

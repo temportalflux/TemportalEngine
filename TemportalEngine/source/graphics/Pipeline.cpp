@@ -130,6 +130,12 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 	auto infoDynamicStates = vk::PipelineDynamicStateCreateInfo()
 		.setDynamicStateCount(2)
 		.setPDynamicStates(dynamicStates);
+
+	auto infoDepthStencil = vk::PipelineDepthStencilStateCreateInfo()
+		.setDepthTestEnable(true).setDepthWriteEnable(true)
+		.setDepthCompareOp(vk::CompareOp::eLess)
+		.setDepthBoundsTestEnable(false).setMinDepthBounds(0.0f).setMaxDepthBounds(1.0f)
+		.setStencilTestEnable(false).setFront(vk::StencilOpState()).setBack(vk::StencilOpState());
 	// TODO (END)
 
 	this->mLayout = pDevice->mDevice->createPipelineLayoutUnique(
@@ -152,7 +158,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		.setPRasterizationState(&infoRasterization)
 		.setPMultisampleState(&infoMultisampling)
 		.setPColorBlendState(&infoColorBlendState)
-		.setPDepthStencilState(nullptr)
+		.setPDepthStencilState(&infoDepthStencil)
 		.setPDynamicState(nullptr)
 		//.setPDynamicState(&infoDynamicStates)
 		.setBasePipelineHandle({});

@@ -11,13 +11,18 @@ using namespace graphics;
 
 Command::Command(CommandBuffer *pBuffer)
 	: mpBuffer(pBuffer)
-	, mClearValue(std::nullopt)
 {
 }
 
-Command& Command::clear(std::array<f32, 4U> color)
+Command& Command::clearColor(std::array<f32, 4U> color)
 {
-	this->mClearValue = vk::ClearValue().setColor(vk::ClearColorValue(color));
+	this->mClearValues.push_back(vk::ClearValue().setColor(vk::ClearColorValue(color)));
+	return *this;
+}
+
+Command& Command::clearDepth(f32 depth, ui32 stencil)
+{
+	this->mClearValues.push_back(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(depth, stencil)));
 	return *this;
 }
 
@@ -47,6 +52,16 @@ Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayo
 		)
 		.setSrcAccessMask(vk::AccessFlags())
 		.setDstAccessMask(vk::AccessFlags());
+
+	if (nextLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+	{
+		barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		if (image->hasStencilComponent())
+		{
+			barrier.subresourceRange.aspectMask |= vk::ImageAspectFlagBits::eStencil;
+		}
+	}
+
 	vk::PipelineStageFlags srcStage;
 	vk::PipelineStageFlags dstStage;
 	if (prevLayout == vk::ImageLayout::eUndefined && nextLayout == vk::ImageLayout::eTransferDstOptimal)
@@ -61,6 +76,15 @@ Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayo
 		barrier.setDstAccessMask(vk::AccessFlagBits::eShaderRead);
 		srcStage = vk::PipelineStageFlagBits::eTransfer;
 		dstStage = vk::PipelineStageFlagBits::eFragmentShader;
+	}
+	else if (prevLayout == vk::ImageLayout::eUndefined && nextLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+	{
+		barrier.setDstAccessMask(
+			vk::AccessFlagBits::eDepthStencilAttachmentRead
+			| vk::AccessFlagBits::eDepthStencilAttachmentWrite
+		);
+		srcStage = vk::PipelineStageFlagBits::eTopOfPipe;
+		dstStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
 	}
 	else
 	{
@@ -105,8 +129,8 @@ Command& Command::beginRenderPass(RenderPass const *pRenderPass, FrameBuffer con
 		vk::RenderPassBeginInfo()
 		.setRenderPass(pRenderPass->mRenderPass.get())
 		.setFramebuffer(pFrameBuffer->mInternal.get())
-		.setClearValueCount(this->mClearValue.has_value() ? 1 : 0)
-		.setPClearValues(this->mClearValue.has_value() ? &this->mClearValue.value() : nullptr)
+		.setClearValueCount((ui32)this->mClearValues.size())
+		.setPClearValues(this->mClearValues.data())
 		.setRenderArea(vk::Rect2D()
 			.setOffset({ 0, 0 })
 			.setExtent(pRenderPass->mResolution)

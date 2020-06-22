@@ -13,7 +13,7 @@ ImGuiFrame& ImGuiFrame::setRenderPass(RenderPass const *pRenderPass)
 
 ImGuiFrame& ImGuiFrame::setView(ImageView *pView)
 {
-	this->mFrameBuffer.setView(pView);
+	this->mFrameBuffer.addAttachment(pView);
 	return *this;
 }
 
@@ -63,7 +63,7 @@ Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32,
 	this->mCommandPool.resetPool();
 	return this->mCommandBuffer
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.clear(clearcolor)
+		.clearColor(clearcolor)
 		.beginRenderPass(this->mpRenderPass, &this->mFrameBuffer);
 }
 

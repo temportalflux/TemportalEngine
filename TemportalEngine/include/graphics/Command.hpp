@@ -25,7 +25,8 @@ class Command
 public:
 
 	// TODO: pass engine vector instead of std array
-	Command& clear(std::array<f32, 4U> color);
+	Command& clearColor(std::array<f32, 4U> color);
+	Command& clearDepth(f32 depth, ui32 stencil);
 
 	// For copying transfer buffers
 	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
@@ -45,7 +46,7 @@ public:
 
 private:
 	CommandBuffer *mpBuffer;
-	std::optional<vk::ClearValue> mClearValue;
+	std::vector<vk::ClearValue> mClearValues;
 	
 	Command(CommandBuffer *pBuffer);
 

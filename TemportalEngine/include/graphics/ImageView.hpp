@@ -19,7 +19,7 @@ public:
 	~ImageView();
 	ImageView& operator=(ImageView &&other);
 
-	ImageView& setImage(Image *image);
+	ImageView& setImage(Image *image, vk::ImageAspectFlags subresourceFlags);
 	ImageView& setRawImage(vk::Image const &image);
 
 	ImageView& setFormat(vk::Format format);

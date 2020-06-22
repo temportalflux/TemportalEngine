@@ -109,8 +109,12 @@ protected:
 	vk::Queue& getQueue(QueueFamily::Enum type);
 
 	virtual void destroyRenderChain() = 0;
-	virtual void createRenderObjects();
-	virtual void destroyRenderObjects();
+	void createSwapChain();
+	void createFrameImageViews();
+	void createRenderPass(std::optional<vk::Format> depthBufferFormat = std::nullopt);
+	void destroySwapChain();
+	void destroyFrameImageViews();
+	void destroyRenderPass();
 
 	virtual void createFrames(uSize viewCount) = 0;
 	virtual uSize getNumberOfFrames() const = 0;

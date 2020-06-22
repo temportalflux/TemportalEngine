@@ -24,8 +24,7 @@ public:
 	~FrameBuffer();
 
 	FrameBuffer& setRenderPass(RenderPass const *pRenderPass);
-	// TODO: Make private-unless-friend or take a wrapper of ImageView
-	FrameBuffer& setView(ImageView const *pView);
+	FrameBuffer& addAttachment(ImageView *pView);
 
 	FrameBuffer& create(LogicalDevice const *pDevice);
 	void destroy();
@@ -35,6 +34,7 @@ public:
 private:
 	RenderPass const *mpRenderPass;
 	ImageView const *mpView;
+	std::vector<vk::ImageView> mAttachments;
 	vk::UniqueFramebuffer mInternal;
 
 };
