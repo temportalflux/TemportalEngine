@@ -36,6 +36,7 @@ void AssetManager::queryAssetTypes()
 	this->registerType(AssetType_Project, CREATE_ASSETTYPE_METADATA(Project, "Project", ".te-project", std::nullopt));
 	this->registerType(AssetType_Shader, CREATE_ASSETTYPE_METADATA(Shader, "Shader", ".te-asset", &Shader::onAssetDeleted));
 	this->registerType(AssetType_Image, CREATE_ASSETTYPE_METADATA(Texture, "Texture", ".te-asset", std::nullopt));
+	this->OnRegisterAssetTypes.broadcast(AssetManager::get());
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)

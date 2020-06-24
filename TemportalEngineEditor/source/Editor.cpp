@@ -22,23 +22,21 @@ Editor* Editor::EDITOR = nullptr;
 Editor::Editor(int argc, char *argv[])
 {
 	this->mArgs = utility::parseArguments(argc, argv);
-
-	uSize totalMem = 0;
-	auto memoryChunkSizes = utility::parseArgumentInts(this->mArgs, "memory-", totalMem);
-
-	this->initialize(memoryChunkSizes);
 }
 
-void Editor::initialize(std::unordered_map<std::string, uSize> memoryChunkSizes)
+void Editor::initialize()
 {
 	assert(EDITOR == nullptr);
 	EDITOR = this;
 
+	uSize totalMem = 0;
+	auto memoryChunkSizes = utility::parseArgumentInts(this->mArgs, "memory-", totalMem);
+
 	auto pEngine = engine::Engine::Create(memoryChunkSizes);
 	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
-	pEngine->getAssetManager()->registerType(
-		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
-	);
+	pEngine->getAssetManager()->OnRegisterAssetTypes.bind(this->weak_from_this(), std::bind(&Editor::registerEditorAssets, this, std::placeholders::_1));
+	this->OnEngineCreated.execute(pEngine);
+	pEngine->initializeAssetManager();
 	
 	auto guiMemorySize = memoryChunkSizes.find("gui");
 	this->mpMemoryGui = guiMemorySize != memoryChunkSizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;
@@ -61,6 +59,13 @@ Editor::~Editor()
 	this->mpProject.reset();
 	this->mCommandlets.clear();
 	engine::Engine::Destroy();
+}
+
+void Editor::registerEditorAssets(std::shared_ptr<asset::AssetManager> assetManager)
+{
+	assetManager->registerType(
+		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
+	);
 }
 
 void Editor::registerAllCommandlets()
@@ -100,6 +105,7 @@ void Editor::registerAllAssetEditors()
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
 	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
 	this->registerAssetEditor({ AssetType_Image, &gui::EditorImage::create });
+	this->OnRegisterAssetEditors.execute(this);
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)

@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
 	{
 		auto pEngine = engine::Engine::Create(memoryChunkSizes);
 		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+		pEngine->initializeAssetManager();
 
 		if (!pEngine->initializeDependencies())
 		{

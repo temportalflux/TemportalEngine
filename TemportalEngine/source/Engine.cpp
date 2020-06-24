@@ -85,7 +85,6 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 
 	this->mpAssetManager = this->mpMainMemory->make_shared<asset::AssetManager>();
 	this->mpAssetManager->setAssetMemory(memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "asset", 1 << 16)));
-	this->mpAssetManager->queryAssetTypes();
 }
 
 Engine::~Engine()
@@ -138,6 +137,11 @@ std::shared_ptr<input::Queue> Engine::getInputQueue() const
 std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 {
 	return mpAssetManager;
+}
+
+void Engine::initializeAssetManager()
+{
+	this->mpAssetManager->queryAssetTypes();
 }
 
 void Engine::initializeECS()

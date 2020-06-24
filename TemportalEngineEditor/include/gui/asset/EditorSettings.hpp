@@ -16,6 +16,7 @@ public:
 protected:
 	void setAsset(asset::AssetPtrStrong asset) override;
 	void renderContent() override;
+	bool canCompileAsset() override { return false; }
 	void saveAsset() override;
 
 private:
