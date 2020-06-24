@@ -64,7 +64,6 @@ public:
 	std::shared_ptr<input::Queue> getInputQueue() const;
 
 	std::shared_ptr<asset::AssetManager> getAssetManager();
-	void initializeAssetManager();
 
 	bool hasProject() const;
 	void setProject(asset::ProjectPtrStrong project);

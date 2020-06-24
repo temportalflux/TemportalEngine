@@ -2,7 +2,6 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "Delegate.hpp"
 #include "asset/Project.hpp"
 #include "commandlet/Commandlet.hpp"
 #include "graphics/ImGuiRenderer.hpp"
@@ -17,7 +16,7 @@ FORWARD_DEF(NS_GUI, class AssetEditor)
 FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer)
 FORWARD_DEF(NS_MEMORY, class MemoryChunk)
 
-class Editor : public std::enable_shared_from_this<Editor>
+class Editor
 {
 	struct RegistryEntryAssetEditor
 	{
@@ -27,9 +26,6 @@ class Editor : public std::enable_shared_from_this<Editor>
 
 public:
 	static Editor* EDITOR;
-
-	ExecuteDelegate<void(Editor*)> OnRegisterAssetEditors;
-	ExecuteDelegate<void(std::shared_ptr<engine::Engine>)> OnEngineCreated;
 
 	Editor(int argc, char *argv[]);
 	~Editor();
@@ -63,13 +59,22 @@ public:
 	void openSettings();
 #pragma endregion
 
+protected:
+
+	void createEngine();
+	virtual void registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManager);
+
+	virtual void registerAssetEditors();
+	bool hasRegisteredAssetEditor(asset::AssetType type) const;
+	
+	virtual void registerAllCommandlets();
+
 private:
 	bool mbShouldRender;
 
 	utility::ArgumentMap mArgs;
+	std::unordered_map<std::string, uSize> mMemorySizes;
 	std::shared_ptr<engine::Engine> mpEngine;
-
-	void registerEditorAssets(std::shared_ptr<asset::AssetManager> assetManager);
 
 	std::unordered_map<std::string, std::shared_ptr<editor::Commandlet>> mCommandlets;
 	// TODO: Make a registry class that handles the storage of register items
@@ -85,8 +90,5 @@ private:
 	std::shared_ptr<asset::Settings> mpEditorSettings;
 
 	void initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRenderer);
-	void registerAllCommandlets();
-	void registerAllAssetEditors();
-	bool hasRegisteredAssetEditor(asset::AssetType type) const;
 
 };

@@ -139,11 +139,6 @@ std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 	return mpAssetManager;
 }
 
-void Engine::initializeAssetManager()
-{
-	this->mpAssetManager->queryAssetTypes();
-}
-
 void Engine::initializeECS()
 {
 	this->mECS.setLog(DeclareLog("ECS"));

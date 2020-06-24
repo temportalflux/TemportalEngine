@@ -180,6 +180,9 @@
       <Project>{abde6299-5814-4811-91d4-5908ce699b57}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\GameEditor.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets" Condition="Exists('..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets')" />

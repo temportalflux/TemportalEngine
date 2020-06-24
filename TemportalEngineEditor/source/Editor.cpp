@@ -30,18 +30,25 @@ void Editor::initialize()
 	EDITOR = this;
 
 	uSize totalMem = 0;
-	auto memoryChunkSizes = utility::parseArgumentInts(this->mArgs, "memory-", totalMem);
+	this->mMemorySizes = utility::parseArgumentInts(this->mArgs, "memory-", totalMem);
 
-	auto pEngine = engine::Engine::Create(memoryChunkSizes);
-	pEngine->setProject(pEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
-	pEngine->getAssetManager()->OnRegisterAssetTypes.bind(this->weak_from_this(), std::bind(&Editor::registerEditorAssets, this, std::placeholders::_1));
-	this->OnEngineCreated.execute(pEngine);
-	pEngine->initializeAssetManager();
+	this->createEngine();
 	
-	auto guiMemorySize = memoryChunkSizes.find("gui");
-	this->mpMemoryGui = guiMemorySize != memoryChunkSizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;
+	auto guiMemorySize = this->mMemorySizes.find("gui");
+	this->mpMemoryGui = guiMemorySize != this->mMemorySizes.end() ? memory::MemoryChunk::Create(guiMemorySize->second) : nullptr;
 
 	this->registerAllCommandlets();
+}
+
+void Editor::createEngine()
+{
+	this->mpEngine = engine::Engine::Create(this->mMemorySizes);
+	
+	// TODO: Project should be specified by GameEditor
+	// TODO: The engine should not need to retain the asset loaded in memory as a shared_ptr
+	this->mpEngine->setProject(this->mpEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
+
+	this->registerAssetTypes(this->mpEngine->getAssetManager());
 }
 
 std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
@@ -61,8 +68,9 @@ Editor::~Editor()
 	engine::Engine::Destroy();
 }
 
-void Editor::registerEditorAssets(std::shared_ptr<asset::AssetManager> assetManager)
+void Editor::registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManager)
 {
+	assetManager->queryAssetTypes();
 	assetManager->registerType(
 		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
 	);
@@ -93,19 +101,18 @@ bool Editor::setup()
 		assert(this->mpMemoryGui != nullptr);
 		this->mpDockspace = this->mpMemoryGui->make_shared<gui::MainDockspace>("Editor::MainDockspace", "Editor");
 		this->mpDockspace->open();
-		this->registerAllAssetEditors();
+		this->registerAssetEditors();
 	}
 	
 	return true;
 }
 
-void Editor::registerAllAssetEditors()
+void Editor::registerAssetEditors()
 {
 	this->registerAssetEditor({ AssetType_EditorSettings, &gui::EditorSettings::create });
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
 	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
 	this->registerAssetEditor({ AssetType_Image, &gui::EditorImage::create });
-	this->OnRegisterAssetEditors.execute(this);
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)
@@ -139,8 +146,6 @@ void Editor::run()
 		}
 		return;
 	}
-
-	this->mpEngine = engine::Engine::Get();
 
 	this->mpWindow = this->mpEngine->createWindow(1280, 720, "Editor", WindowFlags::RESIZABLE);
 	if (this->mpWindow == nullptr) return;

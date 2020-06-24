@@ -2,7 +2,6 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "Delegate.hpp"
 #include "asset/Asset.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "memory/MemoryChunk.hpp"
@@ -35,8 +34,6 @@ class AssetManager
 
 public:
 	static std::shared_ptr<AssetManager> get();
-
-	BroadcastDelegate<void(std::shared_ptr<AssetManager>)> OnRegisterAssetTypes;
 
 	std::shared_ptr<memory::MemoryChunk> mpAssetMemory;
 	void setAssetMemory(std::shared_ptr<memory::MemoryChunk> assetMemory);
