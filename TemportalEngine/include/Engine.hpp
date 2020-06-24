@@ -48,6 +48,9 @@ public:
 	static logging::LogSystem LOG_SYSTEM;
 	static std::vector<std::string> VulkanValidationLayers;
 
+	static void startLogSystem(std::string const name);
+	static void stopLogSystem();
+
 #pragma region Singleton
 	static EnginePtr Create(std::unordered_map<std::string, uSize> memoryChunkSizes);
 	static EnginePtr Get();

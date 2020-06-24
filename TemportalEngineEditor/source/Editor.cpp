@@ -11,15 +11,25 @@
 #include "gui/asset/EditorProject.hpp"
 #include "gui/asset/EditorSettings.hpp"
 #include "gui/asset/EditorShader.hpp"
-
-#include <memory>
 #include "memory/MemoryChunk.hpp"
+#include "utility/StringUtils.hpp"
+
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
 
 Editor* Editor::EDITOR = nullptr;
 
-Editor::Editor(std::unordered_map<std::string, uSize> memoryChunkSizes)
+Editor::Editor(int argc, char *argv[])
+{
+	this->mArgs = utility::parseArguments(argc, argv);
+
+	uSize totalMem = 0;
+	auto memoryChunkSizes = utility::parseArgumentInts(this->mArgs, "memory-", totalMem);
+
+	this->initialize(memoryChunkSizes);
+}
+
+void Editor::initialize(std::unordered_map<std::string, uSize> memoryChunkSizes)
 {
 	assert(EDITOR == nullptr);
 	EDITOR = this;
@@ -65,9 +75,9 @@ void Editor::registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet)
 	this->mCommandlets.insert(std::make_pair(cmdlet->getId(), cmdlet));
 }
 
-bool Editor::setup(utility::ArgumentMap args)
+bool Editor::setup()
 {
-	this->mbShouldRender = args.find("noui") == args.end();
+	this->mbShouldRender = this->mArgs.find("noui") == this->mArgs.end();
 
 	auto pEngine = engine::Engine::Get();
 	if (!pEngine->initializeDependencies(this->mbShouldRender)) return false;
@@ -103,7 +113,7 @@ bool Editor::hasRegisteredAssetEditor(asset::AssetType type) const
 	return this->mAssetEditors.find(type) != this->mAssetEditors.end();
 }
 
-void Editor::run(utility::ArgumentMap args)
+void Editor::run()
 {
 	if (!this->mbShouldRender)
 	{
@@ -111,13 +121,13 @@ void Editor::run(utility::ArgumentMap args)
 		DeclareLog("Editor").log(logging::ECategory::LOGINFO, "no u(i)");
 
 		std::string cmdletPrefix("cmdlet-");
-		utility::ArgumentMap cmdlets = utility::getArgumentsWithPrefix(args, cmdletPrefix);
+		utility::ArgumentMap cmdlets = utility::getArgumentsWithPrefix(this->mArgs, cmdletPrefix);
 		for (const auto& [cmdletId, _] : cmdlets)
 		{
 			auto cmdletIter = this->mCommandlets.find(cmdletId);
 			if (cmdletIter != this->mCommandlets.end())
 			{
-				cmdletIter->second->initialize(utility::getArgumentsWithPrefix(args, cmdletPrefix + cmdletId + "-"));
+				cmdletIter->second->initialize(utility::getArgumentsWithPrefix(this->mArgs, cmdletPrefix + cmdletId + "-"));
 				cmdletIter->second->run();
 			}
 		}

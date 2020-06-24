@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{414D3B1A-BB7A-4935-B679-3C92B7F0ADBF}</ProjectGuid>
-    <RootNamespace>Editor</RootNamespace>
+    <ProjectGuid>{3AD6343C-1563-4DE2-B16D-20031AE18E2B}</ProjectGuid>
+    <RootNamespace>DemoGameEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -55,9 +55,12 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
     <Import Project="..\libs\cereal.vcxitems" Label="Shared" />
+    <Import Project="..\libs\glm.vcxitems" Label="Shared" />
+    <Import Project="..\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
+    <Import Project="..\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
     <Import Project="..\libs\vulkan.vcxitems" Label="Shared" />
+    <Import Project="..\TemportalEngineEditor\libs\imgui.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -75,55 +78,55 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <RuntimeLibrary>
+    </RuntimeLibrary>
     <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <RuntimeLibrary>
+    </RuntimeLibrary>
     <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,17 +137,16 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,86 +157,28 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(ProjectDir)libs\imgui;$(ProjectDir)libs\shaderc\include\$(Configuration);$(ProjectDir)libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(ProjectDir)libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libs\imgui\examples\imgui_impl_sdl.cpp" />
-    <ClCompile Include="libs\imgui\examples\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="libs\imgui\imgui.cpp" />
-    <ClCompile Include="libs\imgui\imgui_demo.cpp" />
-    <ClCompile Include="libs\imgui\imgui_draw.cpp" />
-    <ClCompile Include="libs\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="source\asset\Settings.cpp" />
-    <ClCompile Include="source\commandlet\CommandletBuildAssets.cpp" />
-    <ClCompile Include="source\Editor.cpp" />
-    <ClCompile Include="source\graphics\ImGuiFrame.cpp" />
-    <ClCompile Include="source\graphics\ImGuiRenderer.cpp" />
-    <ClCompile Include="source\gui\AssetBrowser.cpp" />
-    <ClCompile Include="source\gui\asset\AssetEditor.cpp" />
-    <ClCompile Include="source\gui\asset\EditorImage.cpp" />
-    <ClCompile Include="source\gui\asset\EditorProject.cpp" />
-    <ClCompile Include="source\gui\asset\EditorShader.cpp" />
-    <ClCompile Include="source\gui\asset\EditorSettings.cpp" />
-    <ClCompile Include="source\gui\graphics\PropertyGpuPreference.cpp" />
-    <ClCompile Include="source\gui\IGui.cpp" />
-    <ClCompile Include="source\gui\Log.cpp" />
-    <ClCompile Include="source\gui\MainDockspace.cpp" />
-    <ClCompile Include="source\gui\modal\Modal.cpp" />
-    <ClCompile Include="source\gui\modal\NewAsset.cpp" />
-    <ClCompile Include="source\gui\modal\OpenAsset.cpp" />
-    <ClCompile Include="source\gui\modal\PathModal.cpp" />
-    <ClCompile Include="source\gui\TextEditor.cpp" />
-    <ClCompile Include="source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\TaskCompileShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\asset\Settings.hpp" />
-    <ClInclude Include="include\commandlet\Commandlet.hpp" />
-    <ClInclude Include="include\commandlet\CommandletBuildAssets.hpp" />
-    <ClInclude Include="include\Editor.hpp" />
-    <ClInclude Include="include\graphics\ImGuiFrame.hpp" />
-    <ClInclude Include="include\graphics\ImGuiRenderer.hpp" />
-    <ClInclude Include="include\gui\AssetBrowser.hpp" />
-    <ClInclude Include="include\gui\asset\AssetEditor.hpp" />
-    <ClInclude Include="include\gui\asset\EditorImage.hpp" />
-    <ClInclude Include="include\gui\asset\EditorProject.hpp" />
-    <ClInclude Include="include\gui\asset\EditorShader.hpp" />
-    <ClInclude Include="include\gui\asset\EditorSettings.hpp" />
-    <ClInclude Include="include\gui\graphics\PropertyGpuPreference.hpp" />
-    <ClInclude Include="include\gui\IGui.hpp" />
-    <ClInclude Include="include\gui\Log.hpp" />
-    <ClInclude Include="include\gui\MainDockspace.hpp" />
-    <ClInclude Include="include\gui\modal\Modal.hpp" />
-    <ClInclude Include="include\gui\modal\NewAsset.hpp" />
-    <ClInclude Include="include\gui\modal\OpenAsset.hpp" />
-    <ClInclude Include="include\gui\modal\PathModal.hpp" />
-    <ClInclude Include="include\gui\TextEditor.h" />
-    <ClInclude Include="include\gui\widget\Combo.hpp" />
-    <ClInclude Include="include\gui\widget\FieldAsset.hpp" />
-    <ClInclude Include="include\gui\widget\FieldNumber.hpp" />
-    <ClInclude Include="include\gui\widget\FieldText.hpp" />
-    <ClInclude Include="include\gui\widget\List.hpp" />
-    <ClInclude Include="include\gui\widget\Optional.hpp" />
-    <ClInclude Include="include\TaskCompileShader.hpp" />
-    <ClInclude Include="libs\imgui\examples\imgui_impl_sdl.h" />
-    <ClInclude Include="libs\imgui\examples\imgui_impl_vulkan.h" />
-    <ClInclude Include="libs\imgui\imgui.h" />
-    <ClInclude Include="libs\imgui\imgui_internal.h" />
+    <ProjectReference Include="..\DemoGame\DemoGame.vcxproj">
+      <Project>{abde6299-5814-4811-91d4-5908ce699b57}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

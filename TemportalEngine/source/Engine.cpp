@@ -23,6 +23,17 @@ std::shared_ptr<memory::MemoryChunk> Engine::spMainMemory = nullptr;
 
 std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
+void Engine::startLogSystem(std::string const name)
+{
+	std::string logFileName = name + "_" + logging::LogSystem::getCurrentTimeString() + ".log";
+	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
+}
+
+void Engine::stopLogSystem()
+{
+	engine::Engine::LOG_SYSTEM.close();
+}
+
 #pragma region Singleton
 
 Engine::EnginePtr Engine::Create(std::unordered_map<std::string, uSize> memoryChunkSizes)

@@ -8,9 +8,6 @@
 #include "gui/MainDockspace.hpp"
 #include "utility/StringUtils.hpp"
 
-#include <unordered_map>
-#include <functional>
-
 class Window;
 FORWARD_DEF(NS_ENGINE, class Engine)
 FORWARD_DEF(NS_GUI, class AssetEditor)
@@ -29,14 +26,15 @@ class Editor
 public:
 	static Editor* EDITOR;
 
-	Editor(std::unordered_map<std::string, uSize> memoryChunkSizes);
+	Editor(int argc, char *argv[]);
 	~Editor();
 
 	void registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet);
 	void registerAssetEditor(RegistryEntryAssetEditor entry);
 
-	bool setup(utility::ArgumentMap args);
-	void run(utility::ArgumentMap args);
+	void initialize(std::unordered_map<std::string, uSize> memoryChunkSizes);
+	bool setup();
+	void run();
 
 #pragma region Project Being Editted
 	bool hasProject() const;
@@ -63,6 +61,7 @@ public:
 private:
 	bool mbShouldRender;
 
+	utility::ArgumentMap mArgs;
 	std::shared_ptr<engine::Engine> mpEngine;
 
 	std::unordered_map<std::string, std::shared_ptr<editor::Commandlet>> mCommandlets;

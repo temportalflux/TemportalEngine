@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{a48e2e14-7909-4a4e-9a1b-d6231fe8cfc2}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\Commandlet.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\CommandletBuildAssets.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiFrame.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetBrowser.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\AssetEditor.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorImage.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorProject.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorSettings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorShader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\graphics\PropertyGpuPreference.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\IGui.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\Log.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\MainDockspace.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\Modal.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\NewAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\OpenAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\PathModal.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\TextEditor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Combo.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldNumber.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldText.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\TaskCompileShader.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\commandlet\CommandletBuildAssets.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiFrame.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetBrowser.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\AssetEditor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorImage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorProject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorShader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\graphics\PropertyGpuPreference.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\IGui.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\Log.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\MainDockspace.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\Modal.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\NewAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\OpenAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\PathModal.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\TaskCompileShader.cpp" />
+  </ItemGroup>
+</Project>
