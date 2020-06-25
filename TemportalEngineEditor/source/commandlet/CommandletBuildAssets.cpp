@@ -72,7 +72,6 @@ bool buildAsset(asset::AssetPtrStrong asset, std::filesystem::path outPath)
 	{
 		LOG.log(LOG_INFO, "Building: %s", asset->getPath().filename().string().c_str());
 
-		// the project file is just a straight save to the non-assets director
 		builder->setOutputPath(outPath);
 		auto errors = builder->compile();
 		if (errors.empty())

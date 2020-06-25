@@ -58,7 +58,7 @@ void Thread::run()
 	this->bIsActive = false;
 }
 
-bool Thread::isActive()
+bool Thread::isActive() const
 {
 	return this->bIsActive;
 }

@@ -4,7 +4,7 @@
 
 #include "asset/AssetType.hpp"
 
-FORWARD_DEF(NS_ASSET, class Asset)
+FORWARD_DEF(NS_ASSET, class Asset);
 
 NS_ASSET
 

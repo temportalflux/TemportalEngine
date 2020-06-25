@@ -2,7 +2,6 @@
 
 #include "Engine.hpp"
 #include "Editor.hpp"
-#include "TaskCompileShader.hpp"
 #include "asset/Shader.hpp"
 #include "gui/TextEditor.h"
 #include "logging/Logger.hpp"
@@ -27,7 +26,8 @@ std::shared_ptr<AssetEditor> EditorShader::create(std::shared_ptr<memory::Memory
 
 void EditorShader::setAsset(asset::AssetPtrStrong assetGeneric)
 {
-	AssetEditor::setAsset(assetGeneric);	
+	AssetEditor::setAsset(assetGeneric);
+
 	auto asset = this->get<asset::Shader>();
 
 	this->mComboStage
@@ -47,44 +47,6 @@ void EditorShader::setAsset(asset::AssetPtrStrong assetGeneric)
 
 	this->mSavedShaderContent = asset->readSource();
 	this->mTextEditor->SetText(this->mSavedShaderContent);
-}
-
-void EditorShader::makeGui()
-{
-	AssetEditor::makeGui();
-	// while the ui may be closed, always ensure that if there is a compilation task running, it will get cleaned up
-	if (this->mpCompilationTask)
-	{
-		if (this->mpCompilationTask->queryForCompletion())
-		{
-			auto asset = this->get<asset::Shader>();
-			this->mShaderCompilationErrors.clear();
-			// Make the error map by parsing all the errors return from the compilation task
-			auto errors = this->mpCompilationTask->getErrors();
-			if (errors.empty())
-			{
-				asset->setBinary(this->mpCompilationTask->getBinary(), this->mpCompilationTask->getBinaryMetadata());
-				asset->writeToDisk(Editor::EDITOR->getAssetBinaryPath(asset), asset::EAssetSerialization::Binary);
-			}
-			this->mpCompilationTask.reset(); // reset the task so we can release the memory
-			if (!errors.empty())
-			{
-				static std::regex RegexParseError(".*:([0-9]+): (.*)");
-				std::smatch regexMatch;
-				for (auto& err : errors)
-				{
-					if (std::regex_match(err, regexMatch, RegexParseError))
-					{
-						this->mShaderCompilationErrors.insert(std::make_pair(std::stoi(regexMatch[1].str()), regexMatch[2].str()));
-					}
-					else
-					{
-						this->mShaderCompilationErrors.insert(std::make_pair(0, err));
-					}
-				}
-			}
-		}
-	}
 }
 
 void EditorShader::renderDetailsPanel()
@@ -167,17 +129,19 @@ void EditorShader::saveAsset()
 	AssetEditor::saveAsset();
 }
 
-bool EditorShader::canCompileAsset()
+void EditorShader::onBuildFailure(std::vector<std::string> const &errors)
 {
-	return !this->mpCompilationTask;
-}
-
-void EditorShader::compileAsset()
-{
-	this->saveAsset();
-
-	auto asset = this->get<asset::Shader>();
-	// pass in the source so we don't need to perform file read
-	this->mpCompilationTask = engine::Engine::Get()->getMiscMemory()->make_shared<task::TaskCompileShader>(asset->getFileName());
-	this->mpCompilationTask->compile(this->mSavedShaderContent, asset->getStage());
+	static std::regex RegexParseError(".*:([0-9]+): (.*)");
+	std::smatch regexMatch;
+	for (auto& err : errors)
+	{
+		if (std::regex_match(err, regexMatch, RegexParseError))
+		{
+			this->mShaderCompilationErrors.insert(std::make_pair(std::stoi(regexMatch[1].str()), regexMatch[2].str()));
+		}
+		else
+		{
+			this->mShaderCompilationErrors.insert(std::make_pair(0, err));
+		}
+	}
 }

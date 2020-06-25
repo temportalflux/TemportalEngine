@@ -11,6 +11,7 @@ void AssetEditor::setAsset(asset::AssetPtrStrong asset)
 {
 	this->mpAsset = asset;
 	this->setTitle(asset->getFileName());
+	this->mbIsBuildingAsset = false;
 }
 
 std::string AssetEditor::getId() const
@@ -31,7 +32,19 @@ i32 AssetEditor::getFlags() const
 void AssetEditor::makeGui()
 {
 	IGui::makeGui();
-	if (!this->isOpen())
+	// while the ui may be closed, always ensure that if there is a compilation task running, it will get cleaned up
+	if (this->mbIsBuildingAsset && !Editor::EDITOR->isBuildingAssets())
+	{
+		// Extracts the build info and releases the build thread
+		auto buildStates = Editor::EDITOR->extractBuildState();
+		this->mbIsBuildingAsset = false;
+		
+		if (!buildStates[0].wasSuccessful() && this->isOpen())
+		{
+			this->onBuildFailure(buildStates[0].errors);
+		}
+	}
+	if (!this->mbIsBuildingAsset && !this->isOpen())
 	{
 		Editor::EDITOR->closeGui(this->mpAsset->getPath().string());
 		this->releaseAsset();
@@ -82,14 +95,19 @@ bool AssetEditor::hasCompiledBinary() const
 
 bool AssetEditor::canCompileAsset()
 {
-	return true;
+	return !Editor::EDITOR->isBuildingAssets();
 }
 
 void AssetEditor::compileAsset()
 {
 	this->saveAsset();
-	auto binaryPath = Editor::EDITOR->getAssetBinaryPath(this->mpAsset);
-	this->mpAsset->writeToDisk(binaryPath, asset::EAssetSerialization::Binary);
+
+	this->mbIsBuildingAsset = true;
+	Editor::EDITOR->buildAssets({ this->mpAsset });
+}
+
+void AssetEditor::onBuildFailure(std::vector<std::string> const &errors)
+{
 }
 
 void AssetEditor::releaseAsset()

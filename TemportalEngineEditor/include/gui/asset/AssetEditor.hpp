@@ -39,6 +39,7 @@ protected:
 	bool hasCompiledBinary() const;
 	virtual bool canCompileAsset();
 	virtual void compileAsset();
+	virtual void onBuildFailure(std::vector<std::string> const &errors);
 	void releaseAsset();
 
 	template <typename TAsset>
@@ -56,6 +57,7 @@ private:
 	bool mbDetailsPanelOpen;
 	// If any bits are set, then the asset is dirty
 	ui32 mDirtyFlags;
+	bool mbIsBuildingAsset;
 
 };
 

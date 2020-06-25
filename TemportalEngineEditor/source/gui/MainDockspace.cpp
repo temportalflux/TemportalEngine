@@ -11,7 +11,7 @@ using namespace gui;
 static const char* MODAL_ID_NEW_PROJECT = "new_project";
 
 MainDockspace::MainDockspace(std::string id, std::string title)
-	: IGui(title), mId(id)
+	: IGui(title), mId(id), mbIsBuildingAssets(false)
 {
 	auto memory = Editor::EDITOR->getMemoryGui();
 
@@ -54,6 +54,31 @@ void MainDockspace::makeGui()
 	this->mModalNewProject->draw();
 	this->mModalOpenProject->draw();
 	this->mModalNewAsset->draw();
+
+	if (this->mbIsBuildingAssets && !Editor::EDITOR->isBuildingAssets())
+	{
+		// Extracts the build info and releases the build thread
+		auto buildStates = Editor::EDITOR->extractBuildState();
+		this->mbIsBuildingAssets = false;
+
+		std::string errorMessage = "Build Errors:\n";
+		bool bHadBuildErrors = false;
+		for (auto& state : buildStates)
+		{
+			if (!state.wasSuccessful())
+			{
+				bHadBuildErrors = true;
+				for (auto err : state.errors)
+				{
+					errorMessage += std::string("[") + state.asset->getFileName() + "] " + err + "\n";
+				}
+			}
+		}
+		if (bHadBuildErrors)
+		{
+			this->getLog()->log(LOG_ERR, errorMessage.c_str());
+		}
+	}
 }
 
 i32 MainDockspace::getFlags() const
@@ -113,6 +138,11 @@ void MainDockspace::renderView()
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();
 			ImGui::Separator();
 			if (ImGui::MenuItem("New Asset", "", false, bHasProject)) this->mModalNewAsset->open();
+			if (ImGui::MenuItem("Build", "", false, bHasProject && !Editor::EDITOR->isBuildingAssets()))
+			{
+				this->mbIsBuildingAssets = true;
+				Editor::EDITOR->buildAllAssets();
+			}
 			ImGui::Separator();
 			if (ImGui::MenuItem("Settings", "", false, bHasProject)) Editor::EDITOR->openSettings();
 			ImGui::EndMenu();

@@ -98,6 +98,39 @@ std::shared_ptr<build::BuildAsset> Editor::createAssetBuilder(asset::AssetPtrStr
 	else return entry->second(asset);
 }
 
+void Editor::buildAllAssets()
+{
+	auto assetManager = asset::AssetManager::get();
+	auto scannedAssetList = assetManager->getAssetList();
+	auto assets = std::vector<asset::AssetPtrStrong>(scannedAssetList.size() + 1);
+	uIndex i = 0;
+	assets[i++] = this->getProject();
+	for (auto& assetPath : scannedAssetList)
+	{
+		assets[i++] = asset::readAssetFromDisk(
+			std::filesystem::absolute(this->getProject()->getAbsoluteDirectoryPath() / assetPath.pathStr()),
+			asset::EAssetSerialization::Json
+		);
+	}
+	this->buildAssets(assets);
+}
+
+void Editor::buildAssets(std::vector<asset::AssetPtrStrong> assets)
+{
+	assert(!this->isBuildingAssets());
+	this->mBuildThread.start(assets);
+}
+
+bool Editor::isBuildingAssets() const
+{
+	return this->mBuildThread.isBuilding();
+}
+
+std::vector<build::BuildThread::BuildState> Editor::extractBuildState()
+{
+	return this->mBuildThread.extractState();
+}
+
 void Editor::registerAllCommandlets()
 {
 	auto miscMemory = engine::Engine::Get()->getMiscMemory();

@@ -17,6 +17,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\BuildThread.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\Commandlet.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\CommandletBuildAssets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
@@ -43,12 +44,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldText.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\TaskCompileShader.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\BuildThread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\commandlet\CommandletBuildAssets.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiFrame.cpp" />
@@ -69,6 +70,5 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\PathModal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\TaskCompileShader.cpp" />
   </ItemGroup>
 </Project>

@@ -20,15 +20,12 @@ public:
 
 	void setAsset(asset::AssetPtrStrong asset) override;
 	
-	void makeGui() override;
-
 protected:
 	f32 getDetailsPanelWidth() const { return 200; }
 	void renderDetailsPanel() override;
 	void renderContent() override;
 	void saveAsset() override;
-	bool canCompileAsset() override;
-	void compileAsset() override;
+	void onBuildFailure(std::vector<std::string> const &errors) override;
 
 private:
 	ui32 mSavedStage;
@@ -37,7 +34,6 @@ private:
 	gui::Combo<vk::ShaderStageFlagBits> mComboStage;
 	std::shared_ptr<TextEditor> mTextEditor;
 
-	std::shared_ptr<task::TaskCompileShader> mpCompilationTask;
 	std::map<i32, std::string> mShaderCompilationErrors;
 
 };

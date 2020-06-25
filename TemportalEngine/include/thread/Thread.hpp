@@ -32,7 +32,7 @@ public:
 	void start();
 	void join();
 
-	bool isActive();
+	bool isActive() const;
 
 	template <typename... TArgs>
 	void log(logging::ECategory category, logging::Message format, TArgs... args)

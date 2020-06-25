@@ -7,6 +7,7 @@
 #include "graphics/ImGuiRenderer.hpp"
 #include "gui/MainDockspace.hpp"
 #include "utility/StringUtils.hpp"
+#include "build/BuildThread.hpp"
 
 class Window;
 FORWARD_DEF(NS_ASSET, class AssetManager);
@@ -58,6 +59,15 @@ public:
 #pragma endregion
 
 	std::shared_ptr<build::BuildAsset> createAssetBuilder(asset::AssetPtrStrong asset) const;
+	
+	/*
+	 Editor building uses a common builder to enforce that assets and only be build by one builder at a time.
+	 Downside is that you cannot build multiple assets in editor at the same time (because they all use th same build thread).
+	*/
+	void buildAllAssets();
+	void buildAssets(std::vector<asset::AssetPtrStrong> assets);
+	bool isBuildingAssets() const;
+	std::vector<build::BuildThread::BuildState> extractBuildState();
 
 protected:
 	typedef std::function<std::shared_ptr<build::BuildAsset>(asset::AssetPtrStrong asset)> AssetBuilderFactory;
@@ -83,6 +93,7 @@ private:
 	std::shared_ptr<engine::Engine> mpEngine;
 
 	std::unordered_map<asset::AssetType, AssetBuilderFactory> mAssetBuilderFactories;
+	build::BuildThread mBuildThread;
 
 	std::unordered_map<std::string, std::shared_ptr<editor::Commandlet>> mCommandlets;
 	// TODO: Make a registry class that handles the storage of register items

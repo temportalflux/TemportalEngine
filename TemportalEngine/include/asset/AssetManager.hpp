@@ -107,6 +107,7 @@ private:
 	 * Initially populated by `scanAssetDirectory`.
 	 * Can be modified when assets are created by `createAsset` or when they are destroyed (TODO: Assets cannot yet be destroyed without editing files directly).
 	 */
+	// TODO: This is so redundant. Its a map of path to path.
 	std::unordered_map<std::string, AssetPath> mScannedAssetMetadataByPath;
 
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);

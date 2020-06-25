@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\TaskCompileShader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp">
       <Filter>asset</Filter>
     </ClInclude>
@@ -87,6 +86,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp">
       <Filter>build\asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\BuildThread.hpp">
+      <Filter>build</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -121,7 +123,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\TaskCompileShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp">
       <Filter>asset</Filter>
     </ClCompile>
@@ -188,6 +189,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp">
       <Filter>build\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\BuildThread.cpp">
+      <Filter>build</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

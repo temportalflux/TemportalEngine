@@ -29,6 +29,8 @@ protected:
 	void renderView() override;
 
 private:
+	bool mbIsBuildingAssets;
+
 	std::shared_ptr<gui::AssetBrowser> mAssetBrowser;
 	std::shared_ptr<gui::Log> mLogEditor;
 
