@@ -65,6 +65,7 @@ bool Thread::isActive() const
 
 void Thread::join()
 {
+	if (this->mpThreadHandle == nullptr) return;
 	std::thread *pThread = (std::thread *)this->mpThreadHandle;
 	pThread->join();
 
