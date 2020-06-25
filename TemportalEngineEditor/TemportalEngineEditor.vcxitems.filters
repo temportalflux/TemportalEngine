@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TaskCompileShader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp">
       <Filter>asset</Filter>
@@ -81,6 +80,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorShader.hpp">
       <Filter>gui\asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildAsset.hpp">
+      <Filter>build\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp">
+      <Filter>build\asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -107,9 +113,14 @@
     <Filter Include="gui\widget">
       <UniqueIdentifier>{918175cf-7c23-4cd3-9394-7cdbbde60a2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="build">
+      <UniqueIdentifier>{17ac035b-2da3-4724-a413-5e43f8424cf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build\asset">
+      <UniqueIdentifier>{37dc1dbf-27f2-46ad-aabb-356f8af20a94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\TaskCompileShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp">
       <Filter>asset</Filter>
@@ -170,6 +181,13 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorShader.cpp">
       <Filter>gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildAsset.cpp">
+      <Filter>build\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp">
+      <Filter>build\asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

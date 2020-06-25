@@ -13,6 +13,8 @@
 #include "gui/asset/EditorShader.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
+#include "build/asset/BuildAsset.hpp"
+#include "build/asset/BuildShader.hpp"
 
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
@@ -49,6 +51,7 @@ void Editor::createEngine()
 	this->mpEngine->setProject(this->mpEngine->getMiscMemory()->make_shared<asset::Project>(asset::Project("Editor", TE_GET_VERSION(TE_MAKE_VERSION(0, 0, 1)))));
 
 	this->registerAssetTypes(this->mpEngine->getAssetManager());
+	this->registerAssetBuilders();
 }
 
 std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
@@ -74,6 +77,25 @@ void Editor::registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManage
 	assetManager->registerType(
 		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
 	);
+}
+
+void Editor::registerAssetBuilders()
+{
+	this->registerAssetBuilder(AssetType_Project, &build::BuildAsset::create);
+	this->registerAssetBuilder(AssetType_Shader, &build::BuildShader::create);
+	this->registerAssetBuilder(AssetType_Image, &build::BuildAsset::create);
+}
+
+void Editor::registerAssetBuilder(asset::AssetType type, AssetBuilderFactory factory)
+{
+	this->mAssetBuilderFactories.insert(std::make_pair(type, factory));
+}
+
+std::shared_ptr<build::BuildAsset> Editor::createAssetBuilder(asset::AssetPtrStrong asset) const
+{
+	auto entry = this->mAssetBuilderFactories.find(asset->getAssetType());
+	if (entry == this->mAssetBuilderFactories.end()) return nullptr;
+	else return entry->second(asset);
 }
 
 void Editor::registerAllCommandlets()
@@ -144,6 +166,7 @@ void Editor::run()
 				cmdletIter->second->run();
 			}
 		}
+		this->mpEngine.reset();
 		return;
 	}
 

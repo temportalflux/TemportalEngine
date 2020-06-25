@@ -7,7 +7,7 @@
 		<element name="extArgs" optional="y"/>
 		<sequential>
 			<echo message="Running editor on ${cfg} ${platform}" />
-			<exec dir="output/Editor" executable="Binaries/Build/${cfg}/${platform}/Editor/Editor.exe">
+			<exec dir="output/DemoGameEditor" executable="Binaries/Build/${cfg}/${platform}/DemoGameEditor/DemoGameEditor.exe">
 				<arg line="memory-main=16384" />
 				<arg line="memory-asset=65536" />
 				<arg line="memory-misc=65536" />
@@ -15,6 +15,13 @@
 			</exec>
 		</sequential>
 	</macrodef>
+
+	<target name="open" description="Opens the file in Sublime Text. Use `-Dfile=[filename]`">
+		<echo message="${file}" />
+		<exec executable="C:\Program Files\Sublime Text 3\sublime_text.exe">
+			<arg line="${file}" />
+		</exec>
+	</target>
 
 	<target name="run.editor" description="Runs the editor with UI">
 		<run_editor>

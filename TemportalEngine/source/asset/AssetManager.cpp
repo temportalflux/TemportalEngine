@@ -63,16 +63,16 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 			assetType = asset->getAssetType();
 		}
 
-		this->addScannedAsset(AssetPath(assetType, std::filesystem::relative(entry.path(), directory.parent_path())));
+		this->addScannedAsset(AssetPath(assetType, std::filesystem::relative(entry.path(), directory.parent_path())), entry.path());
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
 }
 
-void AssetManager::addScannedAsset(AssetPath metadata)
+void AssetManager::addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath)
 {
 	this->mScannedAssetPathsByExtension.insert(std::make_pair(metadata.extension(), metadata));
-	this->mScannedAssetMetadataByPath.insert(std::make_pair(metadata.toAbsolutePath().string(), metadata));
+	this->mScannedAssetMetadataByPath.insert(std::make_pair(absolutePath.string(), metadata));
 }
 
 std::set<AssetType> AssetManager::getAssetTypes() const
@@ -143,7 +143,7 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 	assert(typeMapEntry != this->mAssetTypeMap.end());
 	auto asset = typeMapEntry->second.createNewAsset(filePath);
 	asset->writeToDisk(filePath, EAssetSerialization::Json);
-	this->addScannedAsset({ type, filePath });
+	this->addScannedAsset({ type, filePath }, filePath);
 	return asset;
 }
 

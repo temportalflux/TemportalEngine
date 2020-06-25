@@ -15,6 +15,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\Commandlet.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\CommandletBuildAssets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
@@ -45,6 +47,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\commandlet\CommandletBuildAssets.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiFrame.cpp" />

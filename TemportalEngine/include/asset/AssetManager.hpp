@@ -109,7 +109,7 @@ private:
 	 */
 	std::unordered_map<std::string, AssetPath> mScannedAssetMetadataByPath;
 
-	void addScannedAsset(AssetPath metadata);
+	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 
 };
 

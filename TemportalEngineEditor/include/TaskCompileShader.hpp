@@ -2,8 +2,9 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "thread/Thread.hpp"
+#include "build/asset/BuildShader.hpp"
 #include "graphics/ShaderMetadata.hpp"
+#include "thread/Thread.hpp"
 
 #include <string>
 #include <vector>
@@ -34,13 +35,11 @@ private:
 	Thread mThread;
 
 	bool bIsComplete;
-	std::vector<ui32> mCompiledBinary;
+	build::BuildShader mBuilder;
 	std::vector<std::string> mCompilationErrors;
-	graphics::ShaderMetadata mBinaryMetadata;
 
 	bool doCompile();
 	void onComplete();
-	void parseShader();
 
 };
 

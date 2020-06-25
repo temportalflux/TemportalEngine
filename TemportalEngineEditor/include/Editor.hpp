@@ -9,12 +9,13 @@
 #include "utility/StringUtils.hpp"
 
 class Window;
-FORWARD_DEF(NS_ASSET, class AssetManager)
-FORWARD_DEF(NS_ASSET, class Settings)
-FORWARD_DEF(NS_ENGINE, class Engine)
-FORWARD_DEF(NS_GUI, class AssetEditor)
-FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer)
-FORWARD_DEF(NS_MEMORY, class MemoryChunk)
+FORWARD_DEF(NS_ASSET, class AssetManager);
+FORWARD_DEF(NS_ASSET, class Settings);
+FORWARD_DEF(NS_BUILD, class BuildAsset);
+FORWARD_DEF(NS_ENGINE, class Engine);
+FORWARD_DEF(NS_GUI, class AssetEditor);
+FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
+FORWARD_DEF(NS_MEMORY, class MemoryChunk);
 
 class Editor
 {
@@ -29,9 +30,6 @@ public:
 
 	Editor(int argc, char *argv[]);
 	~Editor();
-
-	void registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet);
-	void registerAssetEditor(RegistryEntryAssetEditor entry);
 
 	void initialize();
 	bool setup();
@@ -59,15 +57,23 @@ public:
 	void openSettings();
 #pragma endregion
 
+	std::shared_ptr<build::BuildAsset> createAssetBuilder(asset::AssetPtrStrong asset) const;
+
 protected:
+	typedef std::function<std::shared_ptr<build::BuildAsset>(asset::AssetPtrStrong asset)> AssetBuilderFactory;
 
 	void createEngine();
 	virtual void registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManager);
 
+	virtual void registerAssetBuilders();
+	void registerAssetBuilder(asset::AssetType type, AssetBuilderFactory factory);
+
 	virtual void registerAssetEditors();
+	void registerAssetEditor(RegistryEntryAssetEditor entry);
 	bool hasRegisteredAssetEditor(asset::AssetType type) const;
 	
 	virtual void registerAllCommandlets();
+	void registerCommandlet(std::shared_ptr<editor::Commandlet> cmdlet);
 
 private:
 	bool mbShouldRender;
@@ -75,6 +81,8 @@ private:
 	utility::ArgumentMap mArgs;
 	std::unordered_map<std::string, uSize> mMemorySizes;
 	std::shared_ptr<engine::Engine> mpEngine;
+
+	std::unordered_map<asset::AssetType, AssetBuilderFactory> mAssetBuilderFactories;
 
 	std::unordered_map<std::string, std::shared_ptr<editor::Commandlet>> mCommandlets;
 	// TODO: Make a registry class that handles the storage of register items
