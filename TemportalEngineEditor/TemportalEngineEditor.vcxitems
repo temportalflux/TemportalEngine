@@ -16,6 +16,7 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\BuildThread.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\commandlet\Commandlet.hpp" />
@@ -25,7 +26,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetBrowser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\AssetEditor.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorImage.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorProject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorSettings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorShader.hpp" />
@@ -48,6 +49,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\BuildThread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\commandlet\CommandletBuildAssets.cpp" />
@@ -56,7 +58,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetBrowser.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\AssetEditor.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorImage.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorProject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorShader.cpp" />

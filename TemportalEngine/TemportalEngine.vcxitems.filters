@@ -236,7 +236,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageSampler.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Texture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Texture.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -535,6 +537,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Texture.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Texture.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

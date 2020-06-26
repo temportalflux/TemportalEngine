@@ -6,7 +6,7 @@ NS_GUI
 
 namespace modal { class PathModal; }
 
-class EditorImage : public AssetEditor
+class EditorTexture : public AssetEditor
 {
 public:
 	static std::shared_ptr<AssetEditor> create(std::shared_ptr<memory::MemoryChunk> mem);
@@ -16,7 +16,6 @@ public:
 
 protected:
 	void renderMenuBarItems() override;
-	void compileAsset() override;
 	
 private:
 	std::shared_ptr<gui::modal::PathModal> mModalImport;

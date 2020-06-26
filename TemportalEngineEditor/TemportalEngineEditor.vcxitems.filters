@@ -67,9 +67,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\AssetEditor.hpp">
       <Filter>gui\asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorImage.hpp">
-      <Filter>gui\asset</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorProject.hpp">
       <Filter>gui\asset</Filter>
     </ClInclude>
@@ -88,6 +85,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\BuildThread.hpp">
       <Filter>build</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\build\asset\BuildTexture.hpp">
+      <Filter>build\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\gui\asset\EditorTexture.hpp">
+      <Filter>gui\asset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -171,9 +174,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\AssetEditor.cpp">
       <Filter>gui\asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorImage.cpp">
-      <Filter>gui\asset</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorProject.cpp">
       <Filter>gui\asset</Filter>
     </ClCompile>
@@ -192,6 +192,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\BuildThread.cpp">
       <Filter>build</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\build\asset\BuildTexture.cpp">
+      <Filter>build\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\gui\asset\EditorTexture.cpp">
+      <Filter>gui\asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

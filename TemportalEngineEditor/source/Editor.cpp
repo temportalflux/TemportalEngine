@@ -7,14 +7,15 @@
 #include "asset/Settings.hpp"
 #include "asset/Shader.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
-#include "gui/asset/EditorImage.hpp"
 #include "gui/asset/EditorProject.hpp"
 #include "gui/asset/EditorSettings.hpp"
 #include "gui/asset/EditorShader.hpp"
+#include "gui/asset/EditorTexture.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 #include "build/asset/BuildAsset.hpp"
 #include "build/asset/BuildShader.hpp"
+#include "build/asset/BuildTexture.hpp"
 
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
@@ -83,7 +84,7 @@ void Editor::registerAssetBuilders()
 {
 	this->registerAssetBuilder(AssetType_Project, &build::BuildAsset::create);
 	this->registerAssetBuilder(AssetType_Shader, &build::BuildShader::create);
-	this->registerAssetBuilder(AssetType_Image, &build::BuildAsset::create);
+	this->registerAssetBuilder(AssetType_Image, &build::BuildTexture::create);
 }
 
 void Editor::registerAssetBuilder(asset::AssetType type, AssetBuilderFactory factory)
@@ -167,7 +168,7 @@ void Editor::registerAssetEditors()
 	this->registerAssetEditor({ AssetType_EditorSettings, &gui::EditorSettings::create });
 	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
 	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
-	this->registerAssetEditor({ AssetType_Image, &gui::EditorImage::create });
+	this->registerAssetEditor({ AssetType_Image, &gui::EditorTexture::create });
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)
