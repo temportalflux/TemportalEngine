@@ -3,9 +3,11 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "asset/AssetManager.hpp"
-#include "asset/Texture.hpp"
+#include "asset/Project.hpp"
 #include "asset/Settings.hpp"
 #include "asset/Shader.hpp"
+#include "asset/Texture.hpp"
+#include "asset/TextureSampler.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
 #include "gui/asset/EditorProject.hpp"
 #include "gui/asset/EditorSettings.hpp"
@@ -75,16 +77,14 @@ Editor::~Editor()
 void Editor::registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManager)
 {
 	assetManager->queryAssetTypes();
-	assetManager->registerType(
-		AssetType_EditorSettings, CREATE_ASSETTYPE_METADATA(asset::Settings, "EditorSettings", ".settings", std::nullopt)
-	);
+	assetManager->registerType<asset::Settings>();
 }
 
 void Editor::registerAssetBuilders()
 {
-	this->registerAssetBuilder(AssetType_Project, &build::BuildAsset::create);
-	this->registerAssetBuilder(AssetType_Shader, &build::BuildShader::create);
-	this->registerAssetBuilder(AssetType_Image, &build::BuildTexture::create);
+	this->registerAssetBuilder(asset::Project::StaticType(), &build::BuildAsset::create);
+	this->registerAssetBuilder(asset::Shader::StaticType(), &build::BuildShader::create);
+	this->registerAssetBuilder(asset::Texture::StaticType(), &build::BuildTexture::create);
 }
 
 void Editor::registerAssetBuilder(asset::AssetType type, AssetBuilderFactory factory)
@@ -165,10 +165,10 @@ bool Editor::setup()
 
 void Editor::registerAssetEditors()
 {
-	this->registerAssetEditor({ AssetType_EditorSettings, &gui::EditorSettings::create });
-	this->registerAssetEditor({ AssetType_Project, &gui::EditorProject::create });
-	this->registerAssetEditor({ AssetType_Shader, &gui::EditorShader::create });
-	this->registerAssetEditor({ AssetType_Image, &gui::EditorTexture::create });
+	this->registerAssetEditor({ asset::Settings::StaticType(), &gui::EditorSettings::create });
+	this->registerAssetEditor({ asset::Project::StaticType(), &gui::EditorProject::create });
+	this->registerAssetEditor({ asset::Shader::StaticType(), &gui::EditorShader::create });
+	this->registerAssetEditor({ asset::Texture::StaticType(), &gui::EditorTexture::create });
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)
@@ -318,12 +318,12 @@ std::filesystem::path Editor::getCurrentAssetDirectory() const
 void Editor::loadEditorSettings(std::filesystem::path projectDir)
 {
 	auto assetManager = asset::AssetManager::get();
-	auto settingsPath = projectDir / "config" / ("Editor" + assetManager->getAssetTypeMetadata(AssetType_EditorSettings).fileExtension);
+	auto settingsPath = projectDir / "config" / ("Editor" + assetManager->getAssetTypeMetadata(asset::Settings::StaticType()).fileExtension);
 	std::filesystem::create_directories(settingsPath.parent_path());
 	if (std::filesystem::exists(settingsPath))
 		this->mpEditorSettings = asset::readFromDisk<asset::Settings>(settingsPath, asset::EAssetSerialization::Json, false);
 	else
-		this->mpEditorSettings = assetManager->createAssetAs<asset::Settings>(AssetType_EditorSettings, settingsPath);
+		this->mpEditorSettings = assetManager->createAssetAs<asset::Settings>(asset::Settings::StaticType(), settingsPath);
 }
 
 std::shared_ptr<asset::Settings> Editor::getEditorSettings() const

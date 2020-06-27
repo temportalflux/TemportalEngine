@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
 	// Direct the engine as to where the log should be stored.
 	// Log file name will be formatted as "$(WorkingDir)<FileName>_<Timestamp>.log"
-	engine::Engine::startLogSystem("DemoGame-Editor");
+	engine::Engine::startLogSystem("Editor");
 	{
 		// Create the editor object which manages all the behind the scenes stuff.
 		auto editor = GameEditor(argc, argv);

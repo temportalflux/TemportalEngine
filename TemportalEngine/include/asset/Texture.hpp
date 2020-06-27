@@ -6,16 +6,13 @@
 
 NS_ASSET
 
-#define AssetType_Image "image"
-
 class Texture : public Asset
 {
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_TYPE(AssetType_Image);
-	DECLARE_NEWASSET_FACTORY()
-	DECLARE_EMPTYASSET_FACTORY()
+	DEFINE_ASSET_STATICS("texture", "Texture", DEFAULT_ASSET_EXTENSION);
+	DECLARE_FACTORY_ASSET_METADATA()
 
 public:
 	Texture() = default;

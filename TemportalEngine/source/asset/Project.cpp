@@ -3,12 +3,10 @@
 #include "asset/AssetManager.hpp"
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/portable_binary.hpp>
-#include "..\..\include\asset\Project.hpp"
 
 using namespace asset;
 
-DEFINE_NEWASSET_FACTORY(Project)
-DEFINE_EMPTYASSET_FACTORY(Project)
+DEFINE_FACTORY_ASSET_METADATA(Project)
 
 Project::Project(std::filesystem::path filePath) : Asset(filePath)
 {

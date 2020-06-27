@@ -19,7 +19,7 @@ MainDockspace::MainDockspace(std::string id, std::string title)
 	this->mLogEditor = memory->make_shared<gui::Log>("Log (Editor)");
 
 	this->mModalNewProject = memory->make_shared<gui::modal::NewAsset>("New Project");
-	this->mModalNewProject->setAssetType(AssetType_Project);
+	this->mModalNewProject->setAssetType(asset::Project::StaticType());
 	this->mModalOpenProject = memory->make_shared<gui::modal::OpenAsset>("Open Project");
 	this->mModalNewAsset = memory->make_shared<gui::modal::NewAsset>("New Asset");
 

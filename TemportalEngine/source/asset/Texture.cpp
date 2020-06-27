@@ -5,8 +5,7 @@
 
 using namespace asset;
 
-DEFINE_NEWASSET_FACTORY(Texture)
-DEFINE_EMPTYASSET_FACTORY(Texture)
+DEFINE_FACTORY_ASSET_METADATA(Texture)
 
 Texture::Texture(std::filesystem::path filePath) : Asset(filePath)
 {

@@ -4,16 +4,13 @@
 
 NS_ASSET
 
-#define AssetType_EditorSettings "editorSettings"
-
 class Settings : public Asset
 {
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_TYPE(AssetType_EditorSettings);
-	DECLARE_NEWASSET_FACTORY()
-	DECLARE_EMPTYASSET_FACTORY()
+	DEFINE_ASSET_STATICS("editorSettings", "Editor Settings", ".settings");
+	DECLARE_FACTORY_ASSET_METADATA()
 	
 	Settings() = default;
 	CREATE_NEWASSET_CONSTRUCTOR(Settings) {}

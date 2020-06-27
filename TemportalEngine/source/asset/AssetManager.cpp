@@ -7,6 +7,7 @@
 #include "asset/Project.hpp"
 #include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
+#include "asset/TextureSampler.hpp"
 
 #include <filesystem>
 #include <cereal/types/polymorphic.hpp>
@@ -33,9 +34,10 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType(AssetType_Project, CREATE_ASSETTYPE_METADATA(Project, "Project", ".te-project", std::nullopt));
-	this->registerType(AssetType_Shader, CREATE_ASSETTYPE_METADATA(Shader, "Shader", ".te-asset", &Shader::onAssetDeleted));
-	this->registerType(AssetType_Image, CREATE_ASSETTYPE_METADATA(Texture, "Texture", ".te-asset", std::nullopt));
+	this->registerType<Project>();
+	this->registerType<Shader>();
+	this->registerType<Texture>();
+	this->registerType<TextureSampler>();
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
@@ -159,10 +161,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 		else
 		{
 			auto assetTypeMeta = this->getAssetTypeMetadata(assetMeta.value().type());
-			if (assetTypeMeta.onAssetDeleted.has_value())
-			{
-				assetTypeMeta.onAssetDeleted.value()(filePath);
-			}
+			assetTypeMeta.onAssetDeleted(filePath);
 		}
 	}
 	std::filesystem::remove(filePath);

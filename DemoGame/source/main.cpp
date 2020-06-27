@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
-	std::string logFileName = "TemportalEngine_" + logging::LogSystem::getCurrentTimeString() + ".log";
+	std::string logFileName = "DemoGame_" + logging::LogSystem::getCurrentTimeString() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 
 	{

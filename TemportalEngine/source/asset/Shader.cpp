@@ -11,8 +11,8 @@
 
 using namespace asset;
 
-DEFINE_NEWASSET_FACTORY(Shader)
-DEFINE_EMPTYASSET_FACTORY(Shader)
+DEFINE_FACTORY_ASSET_NEW(Shader)
+DEFINE_FACTORY_ASSET_EMPTY(Shader)
 
 void Shader::onAssetDeleted(std::filesystem::path filePath)
 {

@@ -50,7 +50,7 @@ std::string LogSystem::getCurrentTimeString()
 	// M = ##
 	// S = ##
 	char timeStr[20];
-	strftime(timeStr, sizeof(timeStr), "%Y-%m-%d-%H-%M-%S", &timeinfo);
+	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d-%H.%M.%S", &timeinfo);
 	return timeStr;
 }
 

@@ -26,7 +26,7 @@ struct AssetTypeMetadata
 	std::string fileExtension;
 	std::function<asset::AssetPtrStrong(std::filesystem::path filePath)> createNewAsset;
 	std::function<asset::AssetPtrStrong()> createEmptyAsset;
-	std::optional<std::function<void(std::filesystem::path filePath)>> onAssetDeleted;
+	std::function<void(std::filesystem::path filePath)> onAssetDeleted;
 };
 
 class AssetManager
@@ -59,6 +59,11 @@ public:
 	 */
 	void scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type);
 
+	template <typename TAsset>
+	void registerType()
+	{
+		this->registerType(TAsset::StaticType(), ASSET_TYPE_METADATA(TAsset));
+	}
 	void registerType(AssetType type, AssetTypeMetadata metadata);
 	std::set<AssetType> getAssetTypes() const;
 	bool isValidAssetExtension(std::string extension) const;

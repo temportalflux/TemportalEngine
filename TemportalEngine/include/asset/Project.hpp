@@ -10,16 +10,13 @@ FORWARD_DEF(NS_ASSET, class Shader)
 
 NS_ASSET
 
-#define AssetType_Project "project"
-
 class Project : public Asset
 {
 	friend class cereal::access;
 	
 public:
-	DEFINE_ASSET_TYPE(AssetType_Project);
-	DECLARE_NEWASSET_FACTORY()
-	DECLARE_EMPTYASSET_FACTORY()
+	DEFINE_ASSET_STATICS("project", "Project", ".te-project");
+	DECLARE_FACTORY_ASSET_METADATA()
 
 	static std::filesystem::path getAssetDirectoryFor(std::filesystem::path projectDir);
 

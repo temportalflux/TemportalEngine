@@ -4,8 +4,7 @@
 
 using namespace asset;
 
-DEFINE_NEWASSET_FACTORY(Settings)
-DEFINE_EMPTYASSET_FACTORY(Settings)
+DEFINE_FACTORY_ASSET_METADATA(Settings)
 
 #pragma region Properties
 

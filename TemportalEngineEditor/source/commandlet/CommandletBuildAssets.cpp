@@ -36,7 +36,7 @@ void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 	}
 	// TODO: get file extension from engine asset manager
 	if (!std::filesystem::is_regular_file(this->mPathProjectAsset)
-			|| this->mPathProjectAsset.extension() != assetManager->getAssetTypeMetadata(AssetType_Project).fileExtension)
+			|| this->mPathProjectAsset.extension() != assetManager->getAssetTypeMetadata(asset::Project::StaticType()).fileExtension)
 	{
 		LOG.log(logging::ECategory::LOGERROR, "Project file asset path does not exist.");
 		return;

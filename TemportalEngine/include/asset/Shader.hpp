@@ -8,18 +8,13 @@ FORWARD_DEF(NS_GRAPHICS, class ShaderModule)
 
 NS_ASSET
 
-#define AssetType_Shader "shader"
-
 class Shader : public Asset
 {
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_TYPE(AssetType_Shader);
-	DECLARE_NEWASSET_FACTORY()
-	DECLARE_EMPTYASSET_FACTORY()
-
-	static void onAssetDeleted(std::filesystem::path filePath);
+	DEFINE_ASSET_STATICS("shader", "Shader", DEFAULT_ASSET_EXTENSION);
+	DECLARE_FACTORY_ASSET_METADATA()
 
 private:
 	static std::filesystem::path getSourcePathFrom(std::filesystem::path assetPath);
