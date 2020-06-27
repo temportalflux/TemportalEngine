@@ -85,6 +85,7 @@ void Editor::registerAssetBuilders()
 	this->registerAssetBuilder(asset::Project::StaticType(), &build::BuildAsset::create);
 	this->registerAssetBuilder(asset::Shader::StaticType(), &build::BuildShader::create);
 	this->registerAssetBuilder(asset::Texture::StaticType(), &build::BuildTexture::create);
+	this->registerAssetBuilder(asset::TextureSampler::StaticType(), &build::BuildAsset::create);
 }
 
 void Editor::registerAssetBuilder(asset::AssetType type, AssetBuilderFactory factory)

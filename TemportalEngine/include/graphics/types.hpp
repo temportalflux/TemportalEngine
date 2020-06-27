@@ -126,4 +126,77 @@ struct SwapChainSupportType
 	static bool hasSupport(SwapChainSupport *support, Enum type);
 };
 
+struct FilterMode
+{
+	// Mirrors vk::Filter
+	enum class Enum : ui8
+	{
+		Nearest = 0,
+		Linear = 1,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct SamplerAddressMode
+{
+	// Mirrors vk::SamplerAddressMode
+	enum class Enum : ui8
+	{
+		Repeat = 0,
+		MirroredRepeat = 1,
+		ClampToEdge = 2,
+		ClampToBorder = 3,
+		MirrorClampToEdge = 4,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct BorderColor
+{
+	// Mirrors vk::BorderColor
+	enum class Enum
+	{
+		BlackTransparentFloat = 0,
+		BlackTransparentInt = 1,
+		BlackOpaqueFloat = 2,
+		BlackOpaqueInt = 3,
+		WhiteOpaqueFloat = 4,
+		WhiteOpaqueInt = 5,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct CompareOp
+{
+	// Mirrors vk::CompareOp
+	enum class Enum
+	{
+		Never = 0,
+		Less = 1,
+		Equal = 2,
+		LessOrEqual = 3,
+		Greater = 4,
+		NotEqual = 5,
+		GreaterOrEqual = 6,
+		Always = 7,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct SamplerLODMode
+{
+	// Mirrors vk::SamplerMipmapMode
+	enum class Enum
+	{
+		Nearest = 0,
+		Linear = 1,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
 NS_END

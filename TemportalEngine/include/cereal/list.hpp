@@ -46,4 +46,36 @@ namespace cereal
 		for (uSize i = 0; i < size; ++i) archive(value[i]);
 	}
 
+	template <typename T, ui32 C>
+	void save(cereal::JSONOutputArchive &archive, std::array<T, C> const &value)
+	{
+		cereal::size_type size = C;
+		archive(cereal::make_size_tag(size));
+		for (ui32 i = 0; i < C; ++i) archive(value[i]);
+	}
+
+	template <typename T, ui32 C>
+	void load(cereal::JSONInputArchive &archive, std::array<T, C> &value)
+	{
+		cereal::size_type size;
+		archive(cereal::make_size_tag(size));
+		for (ui32 i = 0; i < C; ++i) archive(value[i]);
+	}
+
+	template <typename T, ui32 C>
+	void save(cereal::PortableBinaryOutputArchive &archive, std::array<T, C> const &value)
+	{
+		cereal::size_type size = C;
+		archive(cereal::make_size_tag(size));
+		for (ui32 i = 0; i < C; ++i) archive(value[i]);
+	}
+
+	template <typename T, ui32 C>
+	void load(cereal::PortableBinaryInputArchive &archive, std::array<T, C> &value)
+	{
+		cereal::size_type size;
+		archive(cereal::make_size_tag(size));
+		for (ui32 i = 0; i < C; ++i) archive(value[i]);
+	}
+
 }

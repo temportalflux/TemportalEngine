@@ -546,5 +546,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TextureSampler.hpp">
       <Filter>asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

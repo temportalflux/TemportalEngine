@@ -96,6 +96,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\utils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />

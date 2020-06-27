@@ -327,3 +327,87 @@ bool SwapChainSupportType::hasSupport(SwapChainSupport *support, Enum type)
 }
 
 #pragma endregion
+
+#pragma region FilterMode
+
+std::vector<FilterMode::Enum> FilterMode::ALL = {
+	Enum::Nearest,
+	Enum::Linear,
+};
+
+std::string FilterMode::to_string(Enum value)
+{
+	return vk::to_string((vk::Filter)value);
+}
+
+#pragma endregion
+
+#pragma region SamplerAddressMode
+
+std::vector<SamplerAddressMode::Enum> SamplerAddressMode::ALL = {
+	Enum::Repeat,
+	Enum::MirroredRepeat,
+	Enum::ClampToEdge,
+	Enum::ClampToBorder,
+	Enum::MirrorClampToEdge,
+};
+
+std::string SamplerAddressMode::to_string(Enum value)
+{
+	return vk::to_string((vk::SamplerAddressMode)value);
+}
+
+#pragma endregion
+
+#pragma region BorderColor
+
+std::vector<BorderColor::Enum> BorderColor::ALL = {
+	Enum::BlackTransparentFloat,
+	Enum::BlackTransparentInt,
+	Enum::BlackOpaqueFloat,
+	Enum::BlackOpaqueInt,
+	Enum::WhiteOpaqueFloat,
+	Enum::WhiteOpaqueInt,
+};
+
+std::string BorderColor::to_string(Enum value)
+{
+	return vk::to_string((vk::BorderColor)value);
+}
+
+#pragma endregion
+
+#pragma region CompareOp
+
+std::vector<CompareOp::Enum> CompareOp::ALL = {
+	Enum::Never,
+	Enum::Less,
+	Enum::Equal,
+	Enum::LessOrEqual,
+	Enum::Greater,
+	Enum::NotEqual,
+	Enum::GreaterOrEqual,
+	Enum::Always,
+};
+
+std::string CompareOp::to_string(Enum value)
+{
+	return vk::to_string((vk::CompareOp)value);
+}
+
+#pragma endregion
+
+#pragma region SamplerLODMode
+
+std::vector<SamplerLODMode::Enum> SamplerLODMode::ALL = {
+	Enum::Nearest,
+	Enum::Linear,
+};
+
+std::string SamplerLODMode::to_string(Enum value)
+{
+	return vk::to_string((vk::SamplerMipmapMode)value);
+}
+
+#pragma endregion
+
