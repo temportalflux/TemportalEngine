@@ -1,26 +1,26 @@
 {
-  "type": "sampler",
-  "filterMagnified": 0,
-  "filterMinified": 0,
-  "addressModes": [
-    2,
-    2,
-    2
-  ],
-  "anistropy": {
-    "hasValue": true,
-    "value": 16.0
-  },
-  "borderColor": 3,
-  "normalizeCoords": true,
-  "compareOperation": {
-    "hasValue": true,
-    "value": 7
-  },
-  "lodMode": 1,
-  "lodBias": 0.0,
-  "lodRange": [
-    0.0,
-    0.0
-  ]
+	"type": "sampler",
+	"filterMagnified": 0,
+	"filterMinified": 0,
+	"addressModes": [
+		2,
+		2,
+		2
+	],
+	"anisotropy": {
+		"hasValue": true,
+		"value": 16.0
+	},
+	"borderColor": 3,
+	"normalizeCoords": true,
+	"compareOperation": {
+		"hasValue": true,
+		"value": 7
+	},
+	"lodMode": 1,
+	"lodBias": 0.0,
+	"lodRange": [
+		0.0,
+		0.0
+	]
 }

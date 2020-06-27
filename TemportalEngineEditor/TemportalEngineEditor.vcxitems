@@ -30,6 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorProject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorSettings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorShader.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorTextureSampler.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\graphics\PropertyGpuPreference.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\IGui.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\Log.hpp" />
@@ -62,6 +63,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorProject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorShader.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorTextureSampler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\graphics\PropertyGpuPreference.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\IGui.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\Log.cpp" />

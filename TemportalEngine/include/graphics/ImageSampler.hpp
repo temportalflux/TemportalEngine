@@ -33,7 +33,7 @@ public:
 private:
 	vk::Filter mFilterMag, mFilterMin;
 	std::array<vk::SamplerAddressMode, 3> mAddressModes;
-	std::optional<f32> mAnistropy;
+	std::optional<f32> mAnisotropy;
 	vk::BorderColor mBorderColor;
 	bool mbNormalizeCoordinates;
 	std::optional<vk::CompareOp> mCompareOp;

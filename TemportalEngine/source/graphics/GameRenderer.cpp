@@ -100,7 +100,7 @@ void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 
 uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)
 {
-	auto addressModes = sampler->getAddressMode();
+	auto addressModes = sampler->getAddressModes();
 	auto compareOp = sampler->getCompareOperation();
 	uIndex idx = this->mTextureSamplers.size();
 	this->mTextureSamplers.push_back(graphics::ImageSampler());
@@ -114,7 +114,7 @@ uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler>
 			(vk::SamplerAddressMode)addressModes[1],
 			(vk::SamplerAddressMode)addressModes[2]
 		})
-		.setAnistropy(sampler->getAnistropy())
+		.setAnistropy(sampler->getAnisotropy())
 		.setBorderColor((vk::BorderColor)sampler->getBorderColor())
 		.setNormalizeCoordinates(sampler->areCoordinatesNormalized())
 		.setCompare(compareOp ? std::make_optional((vk::CompareOp)(*compareOp)) : std::nullopt)

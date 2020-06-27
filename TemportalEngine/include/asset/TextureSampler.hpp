@@ -21,21 +21,31 @@ public:
 	TextureSampler() = default;
 	CREATE_NEWASSET_CONSTRUCTOR(TextureSampler) {}
 
+	void setFilterModeMagnified(graphics::FilterMode::Enum v);
 	graphics::FilterMode::Enum getFilterModeMagnified() const;
+	void setFilterModeMinified(graphics::FilterMode::Enum v);
 	graphics::FilterMode::Enum getFilterModeMinified() const;
-	std::array<graphics::SamplerAddressMode::Enum, 3> getAddressMode() const;
-	std::optional<f32> getAnistropy() const;
+	void setAddressModes(std::array<graphics::SamplerAddressMode::Enum, 3> modes);
+	std::array<graphics::SamplerAddressMode::Enum, 3> getAddressModes() const;
+	void setAnisotropy(std::optional<f32> v);
+	std::optional<f32> getAnisotropy() const;
+	void setBorderColor(graphics::BorderColor::Enum v);
 	graphics::BorderColor::Enum getBorderColor() const;
+	void setCoordinatesNormalized(bool enabled);
 	bool areCoordinatesNormalized() const;
+	void setCompareOperation(std::optional<graphics::CompareOp::Enum> v);
 	std::optional<graphics::CompareOp::Enum> getCompareOperation() const;
+	void setLodMode(graphics::SamplerLODMode::Enum v);
 	graphics::SamplerLODMode::Enum getLodMode() const;
+	void setLodBias(f32 v);
 	f32 getLodBias() const;
+	void setLodRange(math::Vector2 v);
 	math::Vector2 getLodRange() const;
 
 private:
 	graphics::FilterMode::Enum mFilterModeMagnified, mFilterModeMinified;
 	std::array<graphics::SamplerAddressMode::Enum, 3> mAddressModesUVW;
-	std::optional<f32> mAnistropy;
+	std::optional<f32> mAnisotropy;
 	graphics::BorderColor::Enum mBorderColor;
 	bool mbNormalizeCoordinates;
 	std::optional<graphics::CompareOp::Enum> mCompareOp;
@@ -55,9 +65,9 @@ protected:
 	{
 		Asset::serialize(archive);
 		archive(cereal::make_nvp("filterMagnified", this->mFilterModeMagnified));
-		archive(cereal::make_nvp("filterMinified", this->mFilterModeMagnified));
+		archive(cereal::make_nvp("filterMinified", this->mFilterModeMinified));
 		archive(cereal::make_nvp("addressModes", this->mAddressModesUVW));
-		archive(cereal::make_nvp("anistropy", this->mAnistropy));
+		archive(cereal::make_nvp("anisotropy", this->mAnisotropy));
 		archive(cereal::make_nvp("borderColor", this->mBorderColor));
 		archive(cereal::make_nvp("normalizeCoords", this->mbNormalizeCoordinates));
 		archive(cereal::make_nvp("compareOperation", this->mCompareOp));
@@ -71,9 +81,9 @@ protected:
 	{
 		Asset::deserialize(archive);
 		archive(cereal::make_nvp("filterMagnified", this->mFilterModeMagnified));
-		archive(cereal::make_nvp("filterMinified", this->mFilterModeMagnified));
+		archive(cereal::make_nvp("filterMinified", this->mFilterModeMinified));
 		archive(cereal::make_nvp("addressModes", this->mAddressModesUVW));
-		archive(cereal::make_nvp("anistropy", this->mAnistropy));
+		archive(cereal::make_nvp("anisotropy", this->mAnisotropy));
 		archive(cereal::make_nvp("borderColor", this->mBorderColor));
 		archive(cereal::make_nvp("normalizeCoords", this->mbNormalizeCoordinates));
 		archive(cereal::make_nvp("compareOperation", this->mCompareOp));

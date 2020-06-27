@@ -15,6 +15,8 @@ public:
 	typedef std::function<std::string(T)> ToStringFunctor;
 	typedef std::function<void(T)> PushIdFunctor;
 
+	Combo() {}
+
 	Combo<T>& setOptions(OptionsList options)
 	{
 		this->mOptions = options;

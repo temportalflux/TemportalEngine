@@ -47,6 +47,8 @@ public:
 		return bChanged;
 	}
 
+	FieldNumber() {}
+
 	FieldNumber<T, Count>& value(std::array<T, Count> all)
 	{
 		this->mRaw = all;

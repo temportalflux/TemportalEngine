@@ -28,7 +28,7 @@ ImageSampler& ImageSampler::operator=(ImageSampler &&other)
 	this->mFilterMag = other.mFilterMag;
 	this->mFilterMin = other.mFilterMin;
 	this->mAddressModes = other.mAddressModes;
-	this->mAnistropy = other.mAnistropy;
+	this->mAnisotropy = other.mAnisotropy;
 	this->mBorderColor = other.mBorderColor;
 	this->mbNormalizeCoordinates = other.mbNormalizeCoordinates;
 	this->mCompareOp = other.mCompareOp;
@@ -54,7 +54,7 @@ ImageSampler& ImageSampler::setAddressMode(std::array<vk::SamplerAddressMode, 3>
 
 ImageSampler& ImageSampler::setAnistropy(std::optional<f32> anistropy)
 {
-	this->mAnistropy = anistropy;
+	this->mAnisotropy = anistropy;
 	return *this;
 }
 
@@ -92,8 +92,8 @@ ImageSampler& ImageSampler::create(LogicalDevice *device)
 		.setAddressModeU(this->mAddressModes[0])
 		.setAddressModeV(this->mAddressModes[1])
 		.setAddressModeW(this->mAddressModes[2])
-		.setAnisotropyEnable((bool)this->mAnistropy)
-		.setMaxAnisotropy(this->mAnistropy ? *this->mAnistropy : 1.0f)
+		.setAnisotropyEnable((bool)this->mAnisotropy)
+		.setMaxAnisotropy(this->mAnisotropy ? *this->mAnisotropy : 1.0f)
 		.setBorderColor(this->mBorderColor)
 		.setUnnormalizedCoordinates(!this->mbNormalizeCoordinates)
 		.setCompareEnable((bool)this->mCompareOp)

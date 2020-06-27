@@ -13,6 +13,7 @@
 #include "gui/asset/EditorSettings.hpp"
 #include "gui/asset/EditorShader.hpp"
 #include "gui/asset/EditorTexture.hpp"
+#include "gui/asset/EditorTextureSampler.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 #include "build/asset/BuildAsset.hpp"
@@ -170,6 +171,7 @@ void Editor::registerAssetEditors()
 	this->registerAssetEditor({ asset::Project::StaticType(), &gui::EditorProject::create });
 	this->registerAssetEditor({ asset::Shader::StaticType(), &gui::EditorShader::create });
 	this->registerAssetEditor({ asset::Texture::StaticType(), &gui::EditorTexture::create });
+	this->registerAssetEditor({ asset::TextureSampler::StaticType(), &gui::EditorTextureSampler::create });
 }
 
 void Editor::registerAssetEditor(RegistryEntryAssetEditor entry)
