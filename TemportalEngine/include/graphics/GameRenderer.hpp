@@ -9,6 +9,7 @@
 
 class IRender;
 FORWARD_DEF(NS_ASSET, class Texture)
+FORWARD_DEF(NS_ASSET, class TextureSampler)
 
 NS_GRAPHICS
 class Uniform;
@@ -43,7 +44,7 @@ public:
 	// Creates an image sampler from some asset
 	// TODO: Take in an asset object
 	// Returns the idx of the sampler in `mTextureSamplers`
-	uIndex createTextureSampler();
+	uIndex createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler);
 
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`

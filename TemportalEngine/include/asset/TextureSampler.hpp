@@ -21,6 +21,17 @@ public:
 	TextureSampler() = default;
 	CREATE_NEWASSET_CONSTRUCTOR(TextureSampler) {}
 
+	graphics::FilterMode::Enum getFilterModeMagnified() const;
+	graphics::FilterMode::Enum getFilterModeMinified() const;
+	std::array<graphics::SamplerAddressMode::Enum, 3> getAddressMode() const;
+	std::optional<f32> getAnistropy() const;
+	graphics::BorderColor::Enum getBorderColor() const;
+	bool areCoordinatesNormalized() const;
+	std::optional<graphics::CompareOp::Enum> getCompareOperation() const;
+	graphics::SamplerLODMode::Enum getLodMode() const;
+	f32 getLodBias() const;
+	math::Vector2 getLodRange() const;
+
 private:
 	graphics::FilterMode::Enum mFilterModeMagnified, mFilterModeMinified;
 	std::array<graphics::SamplerAddressMode::Enum, 3> mAddressModesUVW;

@@ -2,6 +2,7 @@
 
 #include "IRender.hpp"
 #include "asset/Texture.hpp"
+#include "asset/TextureSampler.hpp"
 #include "graphics/Uniform.hpp"
 
 using namespace graphics;
@@ -97,20 +98,30 @@ void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 	this->mPipeline.addShader(shader);
 }
 
-uIndex GameRenderer::createTextureSampler()
+uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)
 {
+	auto addressModes = sampler->getAddressMode();
+	auto compareOp = sampler->getCompareOperation();
 	uIndex idx = this->mTextureSamplers.size();
 	this->mTextureSamplers.push_back(graphics::ImageSampler());
 	this->mTextureSamplers[idx]
-		.setFilter(vk::Filter::eNearest, vk::Filter::eNearest)
+		.setFilter(
+			(vk::Filter)sampler->getFilterModeMagnified(),
+			(vk::Filter)sampler->getFilterModeMinified()
+		)
 		.setAddressMode({
-			vk::SamplerAddressMode::eClampToEdge,
-			vk::SamplerAddressMode::eClampToEdge,
-			vk::SamplerAddressMode::eClampToEdge
+			(vk::SamplerAddressMode)addressModes[0],
+			(vk::SamplerAddressMode)addressModes[1],
+			(vk::SamplerAddressMode)addressModes[2]
 		})
-		.setAnistropy(16.0f)
-		.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
-		.setCompare(vk::CompareOp::eAlways);
+		.setAnistropy(sampler->getAnistropy())
+		.setBorderColor((vk::BorderColor)sampler->getBorderColor())
+		.setNormalizeCoordinates(sampler->areCoordinatesNormalized())
+		.setCompare(compareOp ? std::make_optional((vk::CompareOp)(*compareOp)) : std::nullopt)
+		.setMipLOD(
+			(vk::SamplerMipmapMode)sampler->getLodMode(),
+			sampler->getLodBias(), sampler->getLodRange()
+		);
 	this->mTextureSamplers[idx].create(&this->mLogicalDevice);
 	return idx;
 }

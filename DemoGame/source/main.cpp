@@ -9,6 +9,7 @@
 #include "RenderCube.hpp"
 #include "controller/Controller.hpp"
 #include "asset/Texture.hpp"
+#include "asset/TextureSampler.hpp"
 
 #include "ecs/Core.hpp"
 #include "ecs/component/Transform.hpp"
@@ -260,13 +261,15 @@ int main(int argc, char *argv[])
 
 			// TODO: pass an asset to configure from
 			{
-				auto idxSampler = renderer.createTextureSampler();
-				{
-					auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
-						"assets/textures/block/Dirt.te-asset"
-					).load(asset::EAssetSerialization::Binary);
-					renderer.createTextureAssetImage(dirtTexture, idxSampler);
-				}
+				auto sampler = asset::TypedAssetPath<asset::TextureSampler>::Create(
+					"assets/textures/NearestNeighborSampler.te-asset"
+				).load(asset::EAssetSerialization::Binary);
+				auto idxSampler = renderer.createTextureSampler(sampler);
+
+				auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
+					"assets/textures/block/Dirt.te-asset"
+				).load(asset::EAssetSerialization::Binary);
+				renderer.createTextureAssetImage(dirtTexture, idxSampler);
 			}
 
 			renderer.createRenderChain();
