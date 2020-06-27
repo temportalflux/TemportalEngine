@@ -107,12 +107,6 @@ bool MainDockspace::beginView()
 	return isOpen;
 }
 
-void openProject(std::shared_ptr<gui::modal::OpenAsset> modal)
-{
-	modal->setDefaultPath(std::filesystem::absolute("../../DemoGame/DemoGame.te-project"));
-	modal->open();
-}
-
 void MainDockspace::renderView()
 {
 	bool bHasProject = Editor::EDITOR->hasProject();
@@ -125,7 +119,7 @@ void MainDockspace::renderView()
 		ImGui::Text("You have not opened a project.");
 		if (ImGui::Button("Open Project"))
 		{
-			openProject(this->mModalOpenProject);
+			this->mModalOpenProject->open();
 		}
 	}
 
@@ -134,7 +128,7 @@ void MainDockspace::renderView()
 		if (ImGui::BeginMenu("File"))
 		{
 			if (ImGui::MenuItem("New Project", "", false, true)) this->mModalNewProject->open();
-			if (ImGui::MenuItem("Open Project", "", false, true)) openProject(this->mModalOpenProject);
+			if (ImGui::MenuItem("Open Project", "", false, true)) this->mModalOpenProject->open();
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();
 			ImGui::Separator();
 			if (ImGui::MenuItem("New Asset", "", false, bHasProject)) this->mModalNewAsset->open();
