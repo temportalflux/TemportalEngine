@@ -21,6 +21,11 @@ ui16 Model::pushVertex(Vertex v)
 	return i;
 }
 
+ui16 Model::pushVertex(math::Vector3 pos, math::Vector2 texCoord)
+{
+	return this->pushVertex({ {pos.x(), pos.y(), pos.z()}, {0, 0, 0}, {texCoord.x(), texCoord.y()} });
+}
+
 void Model::pushIndex(ui16 i)
 {
 	this->mIndicies.push_back(i);

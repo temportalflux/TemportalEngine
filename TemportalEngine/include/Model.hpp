@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "graphics/AttributeBinding.hpp"
+#include "math/Vector.hpp"
 
 #include "glm/glm.hpp"
 
@@ -26,6 +27,7 @@ public:
 
 protected:
 	ui16 pushVertex(Vertex v);
+	ui16 pushVertex(math::Vector3 pos, math::Vector2 texCoord);
 	void pushIndex(ui16 i);
 
 private:

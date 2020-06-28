@@ -6,7 +6,7 @@
 #include "graphics/ShaderModule.hpp"
 #include "graphics/Uniform.hpp"
 #include "WorldObject.hpp"
-#include "RenderCube.hpp"
+#include "render/RenderCube.hpp"
 #include "controller/Controller.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
@@ -304,7 +304,11 @@ int main(int argc, char *argv[])
 				if (i == 0)
 				{
 					auto rot = cameraTransform.orientation.euler() * math::rad2deg();
-					mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f>", rot.x(), rot.y(), rot.z());
+					auto fwd = cameraTransform.forward();
+					mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f> fwd:<%.2f, %.2f, %.2f>",
+						rot.x(), rot.y(), rot.z(),
+						fwd.x(), fwd.y(), fwd.z()
+					);
 				}
 
 				{

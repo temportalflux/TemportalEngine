@@ -1,8 +1,8 @@
-#include "RenderCube.hpp"
+#include "render/RenderCube.hpp"
 
 #include "graphics/GameRenderer.hpp"
 #include "graphics/Command.hpp"
-#include "ModelCube.hpp"
+#include "model/ModelCube.hpp"
 
 RenderCube::RenderCube()
 {

@@ -247,12 +247,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\model\ModelCube.cpp" />
+    <ClCompile Include="source\render\RenderCube.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Block.hpp" />
+    <ClInclude Include="include\model\ModelCube.hpp" />
+    <ClInclude Include="include\render\RenderCube.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

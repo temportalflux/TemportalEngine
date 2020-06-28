@@ -217,7 +217,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\RenderCube.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp">
       <Filter>controller</Filter>
     </ClCompile>
@@ -487,8 +486,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ModelCube.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\RenderCube.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
