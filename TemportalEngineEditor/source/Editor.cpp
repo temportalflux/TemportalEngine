@@ -3,11 +3,16 @@
 #include "Engine.hpp"
 #include "Window.hpp"
 #include "asset/AssetManager.hpp"
+#include "asset/Font.hpp"
 #include "asset/Project.hpp"
 #include "asset/Settings.hpp"
 #include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "build/asset/BuildAsset.hpp"
+#include "build/asset/BuildFont.hpp"
+#include "build/asset/BuildShader.hpp"
+#include "build/asset/BuildTexture.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
 #include "gui/asset/EditorProject.hpp"
 #include "gui/asset/EditorSettings.hpp"
@@ -16,9 +21,6 @@
 #include "gui/asset/EditorTextureSampler.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
-#include "build/asset/BuildAsset.hpp"
-#include "build/asset/BuildShader.hpp"
-#include "build/asset/BuildTexture.hpp"
 
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
@@ -83,6 +85,7 @@ void Editor::registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManage
 
 void Editor::registerAssetBuilders()
 {
+	this->registerAssetBuilder(asset::Font::StaticType(), &build::BuildFont::create);
 	this->registerAssetBuilder(asset::Project::StaticType(), &build::BuildAsset::create);
 	this->registerAssetBuilder(asset::Shader::StaticType(), &build::BuildShader::create);
 	this->registerAssetBuilder(asset::Texture::StaticType(), &build::BuildTexture::create);

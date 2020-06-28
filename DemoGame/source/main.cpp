@@ -11,6 +11,8 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 
+#include "asset/Font.hpp"
+
 #include "ecs/Core.hpp"
 #include "ecs/component/Transform.hpp"
 #include "FixedSortedArray.hpp"
@@ -118,6 +120,13 @@ int main(int argc, char *argv[])
 				).load(asset::EAssetSerialization::Binary, false);
 			pEngine->setProject(project);
 			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
+		}
+
+		{
+			auto font = asset::TypedAssetPath<asset::Font>::Create(
+				"assets/font/Montserrat Regular.te-asset"
+			).load(asset::EAssetSerialization::Binary);
+			assert(font->supportsFontSize(12));
 		}
 
 		//initializeNetwork(pEngine);

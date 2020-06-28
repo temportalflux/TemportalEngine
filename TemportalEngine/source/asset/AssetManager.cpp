@@ -4,6 +4,7 @@
 #include "logging/Logger.hpp"
 
 #include "asset/Asset.hpp"
+#include "asset/Font.hpp"
 #include "asset/Project.hpp"
 #include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
@@ -34,6 +35,7 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
+	this->registerType<Font>();
 	this->registerType<Project>();
 	this->registerType<Shader>();
 	this->registerType<Texture>();

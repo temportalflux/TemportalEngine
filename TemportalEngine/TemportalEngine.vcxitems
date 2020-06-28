@@ -17,6 +17,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Font.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Texture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Project.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp" />
@@ -31,6 +32,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Command.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FontGlyph.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Frame.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp" />
@@ -88,6 +90,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetType.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Font.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Texture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Project.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Shader.hpp" />
@@ -110,6 +113,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp" />
