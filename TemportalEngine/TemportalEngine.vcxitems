@@ -14,6 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Asset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp" />

@@ -100,13 +100,15 @@ std::vector<std::string> buildFontSize(FT_Face &face, ui8 size, math::Vector2UIn
 	std::vector<std::string> glyphErrors;
 
 	ui32 idxGlyph, charCode;
+	ui32 idxFontGlyph = 0;
 	charCode = FT_Get_First_Char(face, &idxGlyph);
 	graphics::FontGlyph glyph;
 	while (idxGlyph != 0)
 	{
 		if (renderGlyph(face, (char)charCode, idxGlyph, glyph, glyphErrors))
 		{
-			glyphSet.supportedCharacters.emplace((char)charCode, std::move(glyph));
+			glyphSet.glyphs.push_back(std::move(glyph));
+			glyphSet.codeToGlyphIdx.insert(std::make_pair(charCode, idxFontGlyph++));
 		}
 		charCode = FT_Get_Next_Char(face, charCode, &idxGlyph);
 	}
@@ -136,8 +138,8 @@ bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &g
 		return false;
 	}
 
-	glyph.offset = { slot->bitmap_left, slot->bitmap_top };
-	glyph.size = { static_cast<i32>(slot->metrics.width / 64), static_cast<i32>(slot->metrics.height / 64) };
+	glyph.metricsOffset = { slot->bitmap_left, slot->bitmap_top };
+	glyph.metricsSize = { static_cast<i32>(slot->metrics.width / 64), static_cast<i32>(slot->metrics.height / 64) };
 	glyph.advance = static_cast<i32>(slot->advance.x / 64);
 	glyph.bufferSize = { slot->bitmap.width, slot->bitmap.rows };
 

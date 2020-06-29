@@ -247,6 +247,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FontGlyph.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\FontAtlas.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -556,6 +559,9 @@
       <Filter>asset</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\FontAtlas.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

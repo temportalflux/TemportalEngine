@@ -4,18 +4,25 @@
 
 #include "math/Vector.hpp"
 
+#include <limits>
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/cereal.hpp>
 
 NS_GRAPHICS
 
-struct FontGlyph
+struct FontGlyphMeta
 {
-	math::Vector2Int offset;
-	math::Vector2Int size;
+	math::Vector2Int metricsOffset;
+	math::Vector2Int metricsSize;
 	i32 advance;
 	math::Vector2UInt bufferSize;
+
+	operator bool() const { return this->advance > 0; }
+};
+
+struct FontGlyph : public FontGlyphMeta
+{
 	std::vector<ui8> buffer;
 
 	FontGlyph() = default;
@@ -26,7 +33,8 @@ struct FontGlyph
 
 struct FontGlyphSet
 {
-	std::unordered_map<char, FontGlyph> supportedCharacters;
+	std::unordered_map<ui32, ui32> codeToGlyphIdx;
+	std::vector<FontGlyph> glyphs;
 
 	FontGlyphSet() = default;
 	FontGlyphSet(FontGlyphSet &&other);

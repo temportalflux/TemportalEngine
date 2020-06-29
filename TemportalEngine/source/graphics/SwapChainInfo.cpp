@@ -1,6 +1,7 @@
 #include "graphics/SwapChainInfo.hpp"
 
 #include "types/integer.h"
+#include "math/values.hpp"
 
 #include <map>
 #include <unordered_set>
@@ -30,10 +31,10 @@ vk::Extent2D SwapChainInfo::getAdjustedResolution(vk::Extent2D drawableSize, vk:
 	if (capabilities.currentExtent.width != UINT32_MAX) return capabilities.currentExtent;
 	return vk::Extent2D()
 		.setWidth(
-			max(capabilities.minImageExtent.width, min(capabilities.maxImageExtent.width, drawableSize.width))
+			math::max(capabilities.minImageExtent.width, math::min(capabilities.maxImageExtent.width, drawableSize.width))
 		)
 		.setHeight(
-			max(capabilities.minImageExtent.height, min(capabilities.maxImageExtent.height, drawableSize.height))
+			math::max(capabilities.minImageExtent.height, math::min(capabilities.maxImageExtent.height, drawableSize.height))
 		);
 }
 

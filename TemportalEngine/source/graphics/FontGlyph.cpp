@@ -14,8 +14,8 @@ FontGlyph::FontGlyph(FontGlyph &&other)
 
 FontGlyph& FontGlyph::operator=(FontGlyph &&other)
 {
-	this->offset = other.offset;
-	this->size = other.size;
+	this->metricsOffset = other.metricsOffset;
+	this->metricsSize = other.metricsSize;
 	this->advance = other.advance;
 	this->bufferSize = other.bufferSize;
 	this->buffer = std::move(other.buffer);
@@ -29,8 +29,8 @@ FontGlyphSet::FontGlyphSet(FontGlyphSet &&other)
 
 FontGlyphSet& FontGlyphSet::operator=(FontGlyphSet &&other)
 {
-	this->supportedCharacters = std::move(other.supportedCharacters);
-	other.supportedCharacters.clear();
+	this->codeToGlyphIdx = std::move(other.codeToGlyphIdx);
+	this->glyphs = std::move(other.glyphs);
 	return *this;
 }
 
@@ -46,13 +46,14 @@ void cereal::load(cereal::JSONInputArchive &archive, graphics::FontGlyphSet &val
 
 void cereal::save(cereal::PortableBinaryOutputArchive &archive, graphics::FontGlyphSet const &value)
 {
-	cereal::save(archive, value.supportedCharacters);
+	cereal::save(archive, value.codeToGlyphIdx);
+	cereal::save(archive, value.glyphs);
 }
 
 void cereal::save(cereal::PortableBinaryOutputArchive &archive, graphics::FontGlyph const &value)
 {
-	archive(value.offset);
-	archive(value.size);
+	archive(value.metricsOffset);
+	archive(value.metricsSize);
 	archive(value.advance);
 	archive(value.bufferSize);
 	archive(value.buffer);
@@ -60,13 +61,14 @@ void cereal::save(cereal::PortableBinaryOutputArchive &archive, graphics::FontGl
 
 void cereal::load(cereal::PortableBinaryInputArchive &archive, graphics::FontGlyphSet &value)
 {
-	cereal::load(archive, value.supportedCharacters);
+	cereal::load(archive, value.codeToGlyphIdx);
+	cereal::load(archive, value.glyphs);
 }
 
 void cereal::load(cereal::PortableBinaryInputArchive &archive, graphics::FontGlyph &value)
 {
-	archive(value.offset);
-	archive(value.size);
+	archive(value.metricsOffset);
+	archive(value.metricsSize);
 	archive(value.advance);
 	archive(value.bufferSize);
 	archive(value.buffer);

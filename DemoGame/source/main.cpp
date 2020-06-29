@@ -12,6 +12,7 @@
 #include "asset/TextureSampler.hpp"
 
 #include "asset/Font.hpp"
+#include "graphics/FontAtlas.hpp"
 
 #include "ecs/Core.hpp"
 #include "ecs/component/Transform.hpp"
@@ -127,6 +128,8 @@ int main(int argc, char *argv[])
 				"assets/font/Montserrat Regular.te-asset"
 			).load(asset::EAssetSerialization::Binary);
 			assert(font->supportsFontSize(12));
+			auto atlas = graphics::Font();
+			atlas.loadGlyphSets(font->getFontSizes(), font->glyphSets());
 		}
 
 		//initializeNetwork(pEngine);

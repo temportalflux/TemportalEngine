@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -148,7 +148,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -172,7 +172,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
