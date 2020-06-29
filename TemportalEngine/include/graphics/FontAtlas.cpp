@@ -43,8 +43,15 @@ void Font::Face::loadGlyphSet(FontGlyphSet const &src)
 	this->atlasSize = this->calculateAtlasLayout();
 
 	// Create the atlas texture
+	this->textureData.resize(this->atlasSize.x() * this->atlasSize.y() * 4); // 4 channels RGBA
 
 	// Write glyph buffer data to the face's atlas texture
+	for (auto&[charCode, glyphIdx] : src.codeToGlyphIdx)
+	{
+		const auto& pos = this->glyphs[glyphIdx].atlasOffset;
+		const auto& alphaBuffer = src.glyphs[glyphIdx].buffer;
+		this->writeAlphaToTexture(pos, alphaBuffer);
+	}
 	
 }
 
@@ -75,8 +82,58 @@ math::Vector2UInt Font::Face::calculateAtlasLayout()
 	// Its very unlikely that the atlas could fit all the glyphs in a size smaller than 256x256
 	math::Vector2UInt atlasSize = { 256, 256 };
 
-	// Bumps atlas size to the next power of 2
-	atlasSize = { atlasSize.x() << 1, atlasSize.y() << 1 };
+	bool bCanFitAllGlyphs;
+	do
+	{
+		bCanFitAllGlyphs = true;
+
+		math::Vector2UInt rowSize, rowPos;
+		for (auto& glyph : this->glyphs)
+		{
+			if (!(glyph.bufferSize.x() > 0 && glyph.bufferSize.y() > 0)) continue;
+			// Row will be exceeded if the glyph is appended to the current row.
+			if (rowSize.x() + glyph.bufferSize.x() > atlasSize.x())
+			{
+				// Atlas height will be exceeded if the row is shifted, atlas needs to be bigger
+				if (rowPos.y() + rowSize.y() > atlasSize.y())
+				{
+					bCanFitAllGlyphs = false;
+					// Bumps atlas size to the next power of 2
+					atlasSize = { atlasSize.x() << 1, atlasSize.y() << 1 };
+					break;
+				}
+				// Shift the next row down by the largest size recorded
+				rowPos.y() += rowSize.y();
+				// Reset the size of the row
+				rowSize.x(0).y(0);
+			}
+			glyph.atlasOffset = { rowSize.x(), rowPos.y() };
+			rowSize.x() += glyph.bufferSize.x();
+			rowSize.y() = math::max(rowSize.y(), glyph.bufferSize.y());
+		}
+	}
+	while (!bCanFitAllGlyphs);
 
 	return atlasSize;
+}
+
+void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, std::vector<ui8> const &alpha)
+{
+	// Convert alpha data to 4 channel white + alpha
+	auto pixelCount = alpha.size();
+	auto pixelDataSize = pixelCount * 4; // 4 channels for rgb+a
+	auto pixels = std::vector<ui8>(pixelDataSize);
+	// Set all data to white/opaque
+	memset(pixels.data(), 0xff, pixelDataSize * sizeof(ui8));
+	// copy alpha data to desired locations
+	for (uIndex i = 0; i < pixelCount; ++i) pixels[i * 4] = alpha[i];
+
+	ui32 sizeOfPixel = sizeof(ui8) * 4;
+	uSize dataOffset = (uSize)((pos * sizeOfPixel).sum());
+	this->writePixelData(dataOffset, pixels);
+}
+
+void Font::Face::writePixelData(uSize offset, std::vector<ui8> const &pixels)
+{
+	memcpy((void*)((uSize)this->textureData.data() + offset), pixels.data(), pixels.size() * sizeof(ui8));
 }

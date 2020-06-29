@@ -26,9 +26,12 @@ public:
 		std::unordered_map<ui32, ui32> codeToGlyphIdx;
 		std::vector<GlyphSprite> glyphs;
 		math::Vector2UInt atlasSize;
+		std::vector<ui8> textureData;
 		void loadGlyphSet(FontGlyphSet const &src);
 		// Determines the glyph offsets and atlas size
 		math::Vector2UInt calculateAtlasLayout();
+		void writeAlphaToTexture(math::Vector2UInt const &pos, std::vector<ui8> const &alpha);
+		void writePixelData(uSize offset, std::vector<ui8> const &pixels);
 	};
 
 	void loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);

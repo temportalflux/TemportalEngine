@@ -49,6 +49,7 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
+	void createImage();
 
 	void createRenderChain() override;
 
