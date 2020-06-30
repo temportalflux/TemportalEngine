@@ -26,6 +26,7 @@ void GameRenderer::invalidate()
 
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
+	this->mPipelineUI.clearShaders();
 	VulkanRenderer::invalidate();
 }
 
@@ -101,6 +102,11 @@ void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
 void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 {
 	this->mPipeline.addShader(shader);
+}
+
+void GameRenderer::setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings)
+{
+	this->mPipelineUI.addShader(shaderVert).addShader(shaderFrag).setBindings(bindings);
 }
 
 uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)
@@ -387,14 +393,14 @@ void GameRenderer::createCommandObjects()
 		}
 	}
 
-	this->mPipeline.setViewArea(
-		vk::Viewport()
+	auto& fullViewport = vk::Viewport()
 		.setX(0).setY(0)
 		.setWidth((f32)resolution.width).setHeight((f32)resolution.height)
-		.setMinDepth(0.0f).setMaxDepth(1.0f),
-		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
-	);
+		.setMinDepth(0.0f).setMaxDepth(1.0f);
+	this->mPipeline.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution));
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
+	this->mPipelineUI.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution));
+	this->mPipelineUI.create(&this->mLogicalDevice, &this->mRenderPass, {});
 
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -421,6 +427,8 @@ void GameRenderer::recordCommandBufferInstructions()
 			{
 				pRender->draw(&cmd);
 			}
+
+
 		}
 		cmd.endRenderPass();
 		cmd.end();

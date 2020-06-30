@@ -49,6 +49,13 @@ struct ModelViewProjection
 	}
 };
 
+struct UIVertex
+{
+	math::Vector2 position;
+	math::Vector4 color;
+	math::Vector2 texCoord;
+};
+
 void initializeNetwork(engine::Engine *pEngine)
 {
 	char selection;
@@ -257,6 +264,21 @@ int main(int argc, char *argv[])
 					);
 				}
 				renderer.setBindings(bindings);
+			}
+
+			// Setup UI Shader Pipeline
+			{
+				renderer.setUIShaderBindings(
+					asset::TypedAssetPath<asset::Shader>::Create("assets/shaders/TextVertex.te-asset").load(asset::EAssetSerialization::Binary)->makeModule(),
+					asset::TypedAssetPath<asset::Shader>::Create("assets/shaders/TextFragment.te-asset").load(asset::EAssetSerialization::Binary)->makeModule(),
+					{
+						graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
+						.setStructType<UIVertex>()
+						.addAttribute({ 0, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(UIVertex, position) })
+						.addAttribute({ 1, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(UIVertex, color) })
+						.addAttribute({ 2, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(UIVertex, texCoord) })
+					}
+				);
 			}
 
 			renderCube.init(&renderer, instances);

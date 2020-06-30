@@ -43,6 +43,7 @@ public:
 	
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
+	void setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings);
 
 	// Creates an image sampler from some asset
 	// TODO: Take in an asset object
@@ -111,7 +112,7 @@ private:
 	ImageView mDepthView;
 
 	std::vector<FrameBuffer> mFrameBuffers;
-	Pipeline mPipeline;
+	Pipeline mPipeline, mPipelineUI;
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
 
