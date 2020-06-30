@@ -7,6 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
+class DescriptorGroup;
 class LogicalDevice;
 class RenderPass;
 class ShaderModule;
@@ -26,7 +27,7 @@ public:
 	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
 
 	bool isValid() const;
-	Pipeline& create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<vk::DescriptorSetLayout> layouts);
+	Pipeline& create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<DescriptorGroup*> descriptors);
 	void destroy();
 	void clearShaders();
 

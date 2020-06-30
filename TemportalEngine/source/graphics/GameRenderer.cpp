@@ -11,6 +11,10 @@ using namespace graphics;
 GameRenderer::GameRenderer()
 	: VulkanRenderer()
 {
+	this->mDescriptorPool.setPoolSize({
+		{ vk::DescriptorType::eUniformBuffer, 64 },
+		{ vk::DescriptorType::eCombinedImageSampler, 64 },
+	});
 }
 
 void GameRenderer::invalidate()
@@ -276,7 +280,8 @@ void GameRenderer::createRenderChain()
 	this->createRenderPass(this->mDepthImage.getFormat());
 
 	this->createUniformBuffers();
-	this->createDescriptorPool();
+	this->mDescriptorPool.create(&this->mLogicalDevice, (ui32)this->mFrameImageViews.size());
+	this->createDescriptors();
 	this->createCommandObjects();
 
 	this->createFrames(this->mFrameImageViews.size());
@@ -287,7 +292,8 @@ void GameRenderer::destroyRenderChain()
 	this->destroyFrames();
 
 	this->destroyCommandObjects();
-	this->destroyDescriptorPool();
+	this->mDescriptorGroup.invalidate();
+	this->mDescriptorPool.invalidate();
 	this->destroyUniformBuffers();
 
 	this->destroyRenderPass();
@@ -308,7 +314,7 @@ void GameRenderer::createUniformBuffers()
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
 			.setSize(this->mpUniformStatic->size());
 		this->mUniformStaticBuffersPerFrame[idxFrame]
-			// Host Coherent means this entire buffer will be automatially flushed per write.
+			// Host Coherent means this entire buffer will be automatically flushed per write.
 			// This can be optimized later by only flushing the portion of the buffer which actually changed.
 			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
 		this->mUniformStaticBuffersPerFrame[idxFrame].create(&this->mLogicalDevice);
@@ -350,107 +356,18 @@ void GameRenderer::destroyDepthResources()
 	this->mDepthImage.invalidate();
 }
 
-void GameRenderer::createDescriptorPool()
-{
-	auto frameCount = (ui32)this->mFrameImageViews.size();
-	
-	auto uniformDescriptorCount = 1;
-	auto& uniformBufferPerFrame = this->mUniformStaticBuffersPerFrame;
-	auto uniformBufferRange = this->mpUniformStatic->size();
-
-	ui32 samplerDescriptorCount = (ui32)this->mTextureSamplers.size();
-
-	std::vector<vk::DescriptorPoolSize> poolSizes = {
-		// Uniform Buffer Pool size
-		vk::DescriptorPoolSize()
-		.setType(vk::DescriptorType::eUniformBuffer)
-		.setDescriptorCount(frameCount * uniformDescriptorCount),
-		// Texture Images
-		vk::DescriptorPoolSize()
-		.setType(vk::DescriptorType::eCombinedImageSampler)
-		.setDescriptorCount(frameCount * samplerDescriptorCount)
-	};
-	this->mDescriptorPool = this->mLogicalDevice.mDevice->createDescriptorPoolUnique(
-		vk::DescriptorPoolCreateInfo()
-		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
-		.setMaxSets(frameCount)
-	);
-
-	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
-		// Uniform Buffer Binding
-		vk::DescriptorSetLayoutBinding()
-		.setBinding(/*index of binding in bindings*/ 0)
-		.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-		.setDescriptorCount(uniformDescriptorCount)
-		.setStageFlags(vk::ShaderStageFlagBits::eVertex),
-		// Texture Images
-		vk::DescriptorSetLayoutBinding()
-		.setBinding(/*index of binding in bindings*/ 1)
-		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-		.setDescriptorCount(samplerDescriptorCount)
-		.setStageFlags(vk::ShaderStageFlagBits::eFragment)
-	};
-	this->mDescriptorLayout = this->mLogicalDevice.mDevice->createDescriptorSetLayoutUnique(
-		vk::DescriptorSetLayoutCreateInfo()
-		.setBindingCount((ui32)bindings.size()).setPBindings(bindings.data())
-	);
-
-	std::vector<vk::DescriptorSetLayout> layouts(frameCount, this->mDescriptorLayout.get());
-	// will be deallocated when the pool is destroyed
-	this->mDescriptorSetPerFrame = this->mLogicalDevice.mDevice->allocateDescriptorSets(
-		vk::DescriptorSetAllocateInfo()
-		.setDescriptorPool(this->mDescriptorPool.get())
-		.setDescriptorSetCount(frameCount)
-		.setPSetLayouts(layouts.data())
-	);
-
-	for (uSize i = 0; i < frameCount; ++i)
-	{
-		std::vector<vk::WriteDescriptorSet> writes;
-
-		auto uniformBufferInfo = vk::DescriptorBufferInfo()
-			.setBuffer(*reinterpret_cast<vk::Buffer*>(uniformBufferPerFrame[i].get()))
-			.setOffset(0)
-			.setRange(uniformBufferRange);
-		writes.push_back(
-			vk::WriteDescriptorSet()
-			.setDstSet(this->mDescriptorSetPerFrame[i])
-			.setDstBinding(/*index of the desired binding in bindings*/ 0)
-			.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-			.setDescriptorCount(uniformDescriptorCount)
-			.setDstArrayElement(0)
-			.setPBufferInfo(&uniformBufferInfo)
-		);
-
-		for (uIndex idxSamplerPair = 0; idxSamplerPair < samplerDescriptorCount; ++idxSamplerPair)
-		{
-			auto pair = this->mTextureDescriptorPairs[idxSamplerPair];
-			auto samplerInfo = vk::DescriptorImageInfo()
-				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
-			samplerInfo
-				.setImageView(*reinterpret_cast<vk::ImageView*>(this->mTextureViews[pair.first].get()));
-			samplerInfo
-				.setSampler(*reinterpret_cast<vk::Sampler*>(this->mTextureSamplers[pair.second].get()));
-			writes.push_back(
-				vk::WriteDescriptorSet()
-				.setDstSet(this->mDescriptorSetPerFrame[i])
-				.setDstBinding(/*index of the desired binding in bindings*/ 1)
-				.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-				.setDescriptorCount(samplerDescriptorCount)
-				.setDstArrayElement(0)
-				.setPImageInfo(&samplerInfo)
-			);
-		}
-
-		this->mLogicalDevice.mDevice->updateDescriptorSets((ui32)writes.size(), writes.data(), 0, nullptr);
-	}
-}
-
-void GameRenderer::destroyDescriptorPool()
-{
-	this->mDescriptorSetPerFrame.clear();
-	this->mDescriptorLayout.reset();
-	this->mDescriptorPool.reset();
+void GameRenderer::createDescriptors()
+{	
+	auto& samplerPair = this->mTextureDescriptorPairs[0];
+	this->mDescriptorGroup
+		.setBindingCount(2)
+		.setAmount((ui32)this->mFrameImageViews.size())
+		.addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
+		.attachToBinding(0, this->mUniformStaticBuffersPerFrame, 0)
+		.addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
+		.attachToBinding(1, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second])
+		.create(&this->mLogicalDevice, &this->mDescriptorPool)
+		.writeAttachments(&this->mLogicalDevice);
 }
 
 void GameRenderer::createCommandObjects()
@@ -477,7 +394,7 @@ void GameRenderer::createCommandObjects()
 		.setMinDepth(0.0f).setMaxDepth(1.0f),
 		vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution)
 	);
-	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, std::vector<vk::DescriptorSetLayout>(1, this->mDescriptorLayout.get()));
+	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
 
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -489,7 +406,7 @@ void GameRenderer::createCommandObjects()
 
 void GameRenderer::recordCommandBufferInstructions()
 {
-	for (uSize idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
+	for (uIndex idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
 	{
 		auto cmd = this->mCommandBuffers[idxFrame].beginCommand();
 		// Clear commands MUST be passed in the same order as the attachments on framebuffers
@@ -498,7 +415,7 @@ void GameRenderer::recordCommandBufferInstructions()
 		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
 			// TODO: Should each render system have control over the descriptor set and pipeline?
-			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorSetPerFrame[idxFrame]);
+			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorGroup[idxFrame]);
 			cmd.bindPipeline(&this->mPipeline);
 			for (auto* pRender : this->mpRenders)
 			{

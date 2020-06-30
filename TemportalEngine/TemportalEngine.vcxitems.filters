@@ -247,7 +247,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FontGlyph.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\FontAtlas.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorPool.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\source\graphics\DescriptorGroup.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -561,7 +565,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\FontAtlas.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\DescriptorGroup.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

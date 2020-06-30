@@ -6,6 +6,8 @@
 #include "graphics/Image.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/ImageView.hpp"
+#include "graphics/DescriptorPool.hpp"
+#include "graphics/DescriptorGroup.hpp"
 
 class IRender;
 FORWARD_DEF(NS_ASSET, class Texture)
@@ -76,8 +78,7 @@ private:
 	void destroyUniformBuffers();
 	void createDepthResources(vk::Extent2D const &resolution);
 	void destroyDepthResources();
-	void createDescriptorPool();
-	void destroyDescriptorPool();
+	void createDescriptors();
 	void createCommandObjects();
 	void destroyCommandObjects();
 	void recordCommandBufferInstructions();
@@ -91,18 +92,20 @@ private:
 	CommandPool mCommandPoolTransient;
 	std::vector<IRender*> mpRenders;
 
+	// Pool for all descriptors that are used in this renderer
+	DescriptorPool mDescriptorPool;
+
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;
-	vk::UniqueDescriptorPool mDescriptorPool;
-	vk::UniqueDescriptorSetLayout mDescriptorLayout;
-	std::vector<vk::DescriptorSet> mDescriptorSetPerFrame;
-
+	
 	std::vector<ImageSampler> mTextureSamplers;
 	std::vector<Image> mTextureImages;
 	std::vector<ImageView> mTextureViews;
 	// First value of each pair is the image view idx of `mTextureViews`
 	// Second value of each pair is the image sampler idx of `mTextureSamplers`
 	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
+
+	DescriptorGroup mDescriptorGroup;
 
 	Image mDepthImage;
 	ImageView mDepthView;

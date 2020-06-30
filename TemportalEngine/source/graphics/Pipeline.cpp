@@ -1,9 +1,9 @@
 #include "graphics/Pipeline.hpp"
 
+#include "graphics/DescriptorGroup.hpp"
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/ShaderModule.hpp"
 #include "graphics/RenderPass.hpp"
-#include "types/integer.h"
 
 using namespace graphics;
 
@@ -49,7 +49,7 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<vk::DescriptorSetLayout> layouts)
+Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<DescriptorGroup*> descriptors)
 {
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
@@ -138,9 +138,16 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 		.setStencilTestEnable(false).setFront(vk::StencilOpState()).setBack(vk::StencilOpState());
 	// TODO (END)
 
+	auto descriptorLayouts = std::vector<vk::DescriptorSetLayout>(descriptors.size());
+	std::transform(
+		descriptors.begin(), descriptors.end(), descriptorLayouts.begin(),
+		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
+	);
 	this->mLayout = pDevice->mDevice->createPipelineLayoutUnique(
-		vk::PipelineLayoutCreateInfo().setPushConstantRangeCount(0)
-		.setSetLayoutCount((ui32)layouts.size()).setPSetLayouts(layouts.data())
+		vk::PipelineLayoutCreateInfo()
+		.setPushConstantRangeCount(0)
+		.setSetLayoutCount((ui32)descriptorLayouts.size())
+		.setPSetLayouts(descriptorLayouts.data())
 	);
 	this->mCache = pDevice->mDevice->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 
