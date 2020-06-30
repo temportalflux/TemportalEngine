@@ -3,6 +3,7 @@
 #include "IRender.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "graphics/FontAtlas.hpp"
 #include "graphics/Uniform.hpp"
 
 using namespace graphics;
@@ -210,6 +211,56 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 		This means multiple images could be sent to GPU at once.
 	*/
 	queue.waitIdle();
+}
+
+void GameRenderer::addFont(graphics::Font *font)
+{
+	for (auto& face : font->faces())
+	{
+		face.sampler()
+			.setFilter(vk::Filter::eLinear, vk::Filter::eLinear)
+			.setAddressMode({ vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge })
+			.setAnistropy(std::nullopt)
+			.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+			.setNormalizeCoordinates(false)
+			.setCompare(std::nullopt)
+			.setMipLOD(vk::SamplerMipmapMode::eNearest, 0, { 0, 0 })
+			.create(&this->mLogicalDevice);
+		
+		auto& image = face.image();
+		image
+			.setFormat(vk::Format::eR8G8B8A8Srgb)
+			.setSize(math::Vector3UInt(face.getAtlasSize()).z(1))
+			.setTiling(vk::ImageTiling::eOptimal)
+			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+		image.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		image.create(&this->mLogicalDevice);
+
+		auto& data = face.getPixelData();
+		auto dataMemSize = data.size() * sizeof(ui8);
+
+		this->transitionImageToLayout(&image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+		{
+			Buffer& stagingBuffer = Buffer()
+				.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+				.setSize(image.getMemorySize());
+			stagingBuffer.setMemoryRequirements(
+				vk::MemoryPropertyFlagBits::eHostVisible
+				| vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+			stagingBuffer.create(&this->mLogicalDevice);
+			stagingBuffer.write(&this->mLogicalDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
+			this->copyBufferToImage(&stagingBuffer, &image);
+			stagingBuffer.destroy();
+		}
+		this->transitionImageToLayout(&image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+		data.clear();
+
+		face.view()
+			.setImage(&image, vk::ImageAspectFlagBits::eColor)
+			.create(&this->mLogicalDevice);
+	}
 }
 
 void GameRenderer::createRenderChain()

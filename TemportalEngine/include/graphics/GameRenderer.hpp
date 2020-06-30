@@ -14,6 +14,7 @@ FORWARD_DEF(NS_ASSET, class TextureSampler)
 NS_GRAPHICS
 class Uniform;
 class Image;
+class Font;
 
 /**
  * A Vulkan renderer tailored for rendering to a single surface using multiple view buffers.
@@ -49,7 +50,7 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
-	void createImage();
+	void addFont(graphics::Font *font);
 
 	void createRenderChain() override;
 

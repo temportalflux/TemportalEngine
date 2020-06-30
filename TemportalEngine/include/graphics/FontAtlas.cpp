@@ -15,7 +15,37 @@ Font::Face& Font::getFace(ui8 size)
 	return this->mGlyphFaces[*idxSet];
 }
 
-void Font::loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets)
+std::vector<Font::Face>& Font::faces()
+{
+	return this->mGlyphFaces;
+}
+
+graphics::ImageSampler& Font::Face::sampler()
+{
+	return this->mSampler;
+}
+
+graphics::Image& Font::Face::image()
+{
+	return this->mImage;
+}
+
+graphics::ImageView& Font::Face::view()
+{
+	return this->mView;
+}
+
+math::Vector2UInt Font::Face::getAtlasSize() const
+{
+	return this->atlasSize;
+}
+
+std::vector<ui8>& Font::Face::getPixelData()
+{
+	return this->textureData;
+}
+
+Font& Font::loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets)
 {
 	assert(fontSizes.size() == glyphSets.size());
 	uSize setCount = fontSizes.size();
@@ -26,6 +56,7 @@ void Font::loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics
 		this->mGlyphFaces[idxSet].fontSize = this->mSupportedSizes[idxSet];
 		this->mGlyphFaces[idxSet].loadGlyphSet(glyphSets[idxSet]);
 	}
+	return *this;
 }
 
 void Font::Face::loadGlyphSet(FontGlyphSet const &src)

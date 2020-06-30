@@ -123,15 +123,6 @@ int main(int argc, char *argv[])
 			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 		}
 
-		{
-			auto font = asset::TypedAssetPath<asset::Font>::Create(
-				"assets/font/Montserrat Regular.te-asset"
-			).load(asset::EAssetSerialization::Binary);
-			assert(font->supportsFontSize(12));
-			auto atlas = graphics::Font();
-			atlas.loadGlyphSets(font->getFontSizes(), font->glyphSets());
-		}
-
 		//initializeNetwork(pEngine);
 
 		std::string title = "Demo Game";
@@ -291,59 +282,71 @@ int main(int argc, char *argv[])
 			pWindow->setRenderer(&renderer);
 #pragma endregion
 
-			auto camera = pEngine->getECS().createEntity();
 			{
-				//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();
-				//camera->components[0] = { ecs::ComponentTransform::TypeId, comp->id };
-				//camera->componentCount++;
-			}
+				graphics::Font fontMontserratReg;
+				{
+					auto font = asset::TypedAssetPath<asset::Font>::Create(
+						"assets/font/Montserrat Regular.te-asset"
+					).load(asset::EAssetSerialization::Binary);
+					assert(font->supportsFontSize(12));
+					fontMontserratReg.loadGlyphSets(font->getFontSizes(), font->glyphSets());
+				}
+				renderer.addFont(&fontMontserratReg);
+
+				auto camera = pEngine->getECS().createEntity();
+				{
+					//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();
+					//camera->components[0] = { ecs::ComponentTransform::TypeId, comp->id };
+					//camera->componentCount++;
+				}
 			
-			auto cameraTransform = ecs::ComponentTransform();
-			cameraTransform.setPosition(math::Vector3unitZ * 3);
+				auto cameraTransform = ecs::ComponentTransform();
+				cameraTransform.setPosition(math::Vector3unitZ * 3);
 
-			// TODO: Allocate from entity pool
-			auto controller = pEngine->getMainMemory()->make_shared<Controller>();
-			pEngine->addTicker(controller);
-			controller->subscribeToInput();
-			controller->assignCameraTransform(&cameraTransform);
+				// TODO: Allocate from entity pool
+				auto controller = pEngine->getMainMemory()->make_shared<Controller>();
+				pEngine->addTicker(controller);
+				controller->subscribeToInput();
+				controller->assignCameraTransform(&cameraTransform);
 
-			pEngine->start();
-			auto prevTime = std::chrono::high_resolution_clock::now();
-			f32 deltaTime = 0.0f;
-			ui32 i = 0;
-			while (pEngine->isActive())
-			{
-				if (i == 0)
+				pEngine->start();
+				auto prevTime = std::chrono::high_resolution_clock::now();
+				f32 deltaTime = 0.0f;
+				ui32 i = 0;
+				while (pEngine->isActive())
 				{
-					auto rot = cameraTransform.orientation.euler() * math::rad2deg();
-					auto fwd = cameraTransform.forward();
-					mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f> fwd:<%.2f, %.2f, %.2f>",
-						rot.x(), rot.y(), rot.z(),
-						fwd.x(), fwd.y(), fwd.z()
-					);
+					if (i == 0)
+					{
+						auto rot = cameraTransform.orientation.euler() * math::rad2deg();
+						auto fwd = cameraTransform.forward();
+						mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f> fwd:<%.2f, %.2f, %.2f>",
+							rot.x(), rot.y(), rot.z(),
+							fwd.x(), fwd.y(), fwd.z()
+						);
+					}
+
+					{
+						auto uniData = mvpUniform->read<ModelViewProjection>();
+						uniData.view = cameraTransform.calculateView();
+						uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
+						uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+						mvpUniform->write(&uniData);
+					}
+
+					pEngine->update(deltaTime);
+
+					auto nextTime = std::chrono::high_resolution_clock::now();
+					deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
+					prevTime = nextTime;
+					i = (i + 1) % 6000;
 				}
+				pEngine->joinThreads();
 
-				{
-					auto uniData = mvpUniform->read<ModelViewProjection>();
-					uniData.view = cameraTransform.calculateView();
-					uniData.proj = glm::perspective(glm::radians(45.0f), renderer.getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
-					uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
-					mvpUniform->write(&uniData);
-				}
+				controller.reset();
 
-				pEngine->update(deltaTime);
+				// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
 
-				auto nextTime = std::chrono::high_resolution_clock::now();
-				deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
-				prevTime = nextTime;
-				i = (i + 1) % 6000;
 			}
-			pEngine->joinThreads();
-
-			controller.reset();
-
-			// TODO: Headless https://github.com/temportalflux/ChampNet/blob/feature/final/ChampNet/ChampNetPluginTest/source/StateApplication.cpp#L61
-
 			renderCube.invalidate();
 			renderer.invalidate();
 		}
