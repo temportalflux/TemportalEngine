@@ -18,10 +18,10 @@ public:
 
 	uSize getMemorySize() const;
 
-	void createMemory(LogicalDevice const *pDevice, vk::MemoryRequirements const &req);
+	void createMemory(LogicalDevice *pDevice, vk::MemoryRequirements const &req);
 	void invalidate();
 
-	void write(LogicalDevice const *pDevice, uSize offset, void* src, uSize size);
+	void write(LogicalDevice *pDevice, uSize offset, void* src, uSize size);
 
 protected:
 	vk::MemoryPropertyFlags mMemoryFlags;
@@ -29,7 +29,7 @@ protected:
 	uSize mMemorySize;
 
 	std::optional<ui32> findMemoryType(PhysicalDevice const *pDevice, ui32 typeFilter, vk::MemoryPropertyFlags propertyFlags);
-	virtual void bind(LogicalDevice const *pDevice, vk::DeviceMemory &mem, uSize offset = 0) = 0;
+	virtual void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) = 0;
 
 };
 

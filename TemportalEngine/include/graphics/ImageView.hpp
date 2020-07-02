@@ -27,7 +27,7 @@ public:
 	ImageView& setComponentMapping(vk::ComponentMapping mapping);
 	ImageView& setRange(vk::ImageSubresourceRange range);
 
-	ImageView& create(LogicalDevice const *device);
+	ImageView& create(LogicalDevice *device);
 	void* get();
 	void invalidate();
 

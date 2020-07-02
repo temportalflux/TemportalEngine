@@ -1,6 +1,7 @@
 #include "graphics/DescriptorPool.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -22,7 +23,7 @@ void DescriptorPool::create(LogicalDevice *device, ui32 const &frameCount)
 			.setDescriptorCount(frameCount * pair.second);
 	});
 
-	this->mInternal = device->mDevice->createDescriptorPoolUnique(
+	this->mInternal = extract<vk::Device>(device).createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(this->mMaxSets)

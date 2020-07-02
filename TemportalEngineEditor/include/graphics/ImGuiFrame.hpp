@@ -19,7 +19,7 @@ public:
 	ImGuiFrame& setView(ImageView *pView);
 	ImGuiFrame& setQueueFamilyGroup(QueueFamilyGroup const *group);
 
-	void create(LogicalDevice const *pDevice) override;
+	void create(LogicalDevice *pDevice) override;
 	void destroy() override;
 
 	void submitOneOff(

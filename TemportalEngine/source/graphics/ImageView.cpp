@@ -2,6 +2,7 @@
 
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/Image.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -28,7 +29,7 @@ ImageView::~ImageView()
 
 ImageView& ImageView::setImage(Image *image, vk::ImageAspectFlags subresourceFlags)
 {
-	this->setRawImage(*reinterpret_cast<vk::Image*>(image->get()));
+	this->setRawImage(extract<vk::Image>(image));
 	this->setFormat(image->getFormat());
 	this->setViewType(vk::ImageViewType::e2D);
 	this->setComponentMapping(
@@ -77,9 +78,9 @@ ImageView& ImageView::setRange(vk::ImageSubresourceRange range)
 	return *this;
 }
 
-ImageView& ImageView::create(LogicalDevice const *device)
+ImageView& ImageView::create(LogicalDevice *device)
 {
-	this->mInternal = device->mDevice->createImageViewUnique(
+	this->mInternal = extract<vk::Device>(device).createImageViewUnique(
 		vk::ImageViewCreateInfo()
 		.setImage(this->mImage)
 		.setFormat(this->mFormat)

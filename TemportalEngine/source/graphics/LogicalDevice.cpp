@@ -7,24 +7,24 @@ using namespace graphics;
 LogicalDevice::LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDevice &device)
 {
 	mpPhysicalDevice = pPhysicalDevice;
-	mDevice.swap(device);
+	this->mInternal.swap(device);
 }
 
 void* LogicalDevice::get()
 {
-	return &this->mDevice.get();
+	return &this->mInternal.get();
 }
 
 bool LogicalDevice::isValid() const
 {
 	// Checks underlying structure for VK_NULL_HANDLE
-	return (bool)this->mDevice;
+	return (bool)this->mInternal;
 }
 
 void LogicalDevice::invalidate()
 {
 	this->mpPhysicalDevice = nullptr;
-	this->mDevice.reset();
+	this->mInternal.reset();
 }
 
 std::unordered_map<QueueFamily::Enum, vk::Queue> LogicalDevice::findQueues(std::set<QueueFamily::Enum> types) const
@@ -41,7 +41,7 @@ std::unordered_map<QueueFamily::Enum, vk::Queue> LogicalDevice::findQueues(std::
 		{
 			queues.insert(std::make_pair(
 				queueFamilyType,
-				mDevice->getQueue(idxQueueFamily.value(), /*subqueue index*/ 0)
+				this->mInternal->getQueue(idxQueueFamily.value(), /*subqueue index*/ 0)
 			));
 		}
 	}
@@ -51,5 +51,10 @@ std::unordered_map<QueueFamily::Enum, vk::Queue> LogicalDevice::findQueues(std::
 
 void LogicalDevice::waitUntilIdle() const
 {
-	this->mDevice->waitIdle();
+	this->mInternal->waitIdle();
+}
+
+void LogicalDevice::waitFor(std::vector<vk::Fence> fences, bool bAll, ui64 timeout)
+{
+	this->mInternal->waitForFences(fences, bAll, timeout);
 }

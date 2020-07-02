@@ -2,6 +2,7 @@
 
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/Surface.hpp"
+#include "graphics/VulkanApi.hpp"
 #include "types/math.h"
 
 using namespace graphics;
@@ -28,7 +29,7 @@ SwapChain& SwapChain::setQueueFamilyGroup(QueueFamilyGroup const &qfg)
 	return *this;
 }
 
-SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurface)
+SwapChain& SwapChain::create(LogicalDevice *pDevice, Surface const *pSurface)
 {
 	mpDevice = pDevice;
 
@@ -73,7 +74,7 @@ SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurfa
 		info.setPQueueFamilyIndices(nullptr);
 	}
 
-	this->mInternal = mpDevice->mDevice->createSwapchainKHRUnique(info);
+	this->mInternal = extract<vk::Device>(pDevice).createSwapchainKHRUnique(info);
 	return *this;
 }
 
@@ -90,7 +91,7 @@ math::Vector2UInt SwapChain::getResolution() const
 std::vector<vk::Image> SwapChain::queryImages() const
 {
 	assert(mpDevice != nullptr);
-	return mpDevice->mDevice->getSwapchainImagesKHR(this->mInternal.get());
+	return extract<vk::Device>(mpDevice).getSwapchainImagesKHR(this->mInternal.get());
 }
 
 std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
@@ -130,7 +131,7 @@ vk::ResultValue<ui32> SwapChain::acquireNextImage(
 	std::optional<vk::Fence> waitFence
 ) const
 {
-	return mpDevice->mDevice->acquireNextImageKHR(
+	return extract<vk::Device>(mpDevice).acquireNextImageKHR(
 		this->mInternal.get(), UINT64_MAX,
 		waitSemaphore.has_value() ? waitSemaphore.value() : vk::Semaphore(),
 		waitFence.has_value() ? waitFence.value() : vk::Fence()

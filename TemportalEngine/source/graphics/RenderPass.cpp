@@ -1,6 +1,7 @@
 #include "graphics/RenderPass.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -41,7 +42,7 @@ bool RenderPass::isValid() const
 	return (bool)this->mRenderPass;
 }
 
-RenderPass& RenderPass::create(LogicalDevice const *pDevice, std::optional<vk::Format> depthBufferFormat)
+RenderPass& RenderPass::create(LogicalDevice *pDevice, std::optional<vk::Format> depthBufferFormat)
 {
 	assert(!isValid());
 
@@ -107,7 +108,7 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice, std::optional<vk::F
 		.setDependencyCount(1)
 		.setPDependencies(&subpassDependency);
 
-	mRenderPass = pDevice->mDevice->createRenderPassUnique(info);
+	mRenderPass = extract<vk::Device>(pDevice).createRenderPassUnique(info);
 	return *this;
 }
 

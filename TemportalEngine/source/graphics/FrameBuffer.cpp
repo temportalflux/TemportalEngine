@@ -3,6 +3,7 @@
 #include "graphics/ImageView.hpp"
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/RenderPass.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -26,18 +27,18 @@ FrameBuffer::~FrameBuffer()
 
 FrameBuffer& FrameBuffer::setRenderPass(RenderPass *pRenderPass)
 {
-	this->mRenderPass = *reinterpret_cast<vk::RenderPass*>(pRenderPass->get());
+	this->mRenderPass = extract<vk::RenderPass>(pRenderPass);
 	this->mResolution = pRenderPass->getScissorResolution();
 	return *this;
 }
 
 FrameBuffer& FrameBuffer::addAttachment(ImageView *pView)
 {
-	this->mAttachments.push_back(*reinterpret_cast<vk::ImageView*>(pView->get()));
+	this->mAttachments.push_back(extract<vk::ImageView>(pView));
 	return *this;
 }
 
-FrameBuffer& FrameBuffer::create(LogicalDevice const *pDevice)
+FrameBuffer& FrameBuffer::create(LogicalDevice *pDevice)
 {
 	auto info = vk::FramebufferCreateInfo()
 		.setRenderPass(this->mRenderPass)
@@ -46,7 +47,7 @@ FrameBuffer& FrameBuffer::create(LogicalDevice const *pDevice)
 		.setWidth(this->mResolution.x())
 		.setHeight(this->mResolution.y())
 		.setLayers(1);
-	mInternal = pDevice->mDevice->createFramebufferUnique(info);
+	mInternal = extract<vk::Device>(pDevice).createFramebufferUnique(info);
 	return *this;
 }
 

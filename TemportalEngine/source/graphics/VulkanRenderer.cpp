@@ -160,7 +160,7 @@ void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 	auto& frameImageFence = this->mFrameImageFences[this->mIdxCurrentImage];
 	if (frameImageFence)
 	{
-		this->mLogicalDevice.mDevice->waitForFences(frameImageFence, true, UINT64_MAX);
+		this->mLogicalDevice.waitFor({ frameImageFence }, true, UINT64_MAX);
 	}
 
 	// Ensure that the image view is marked as in-flight as long as the frame is

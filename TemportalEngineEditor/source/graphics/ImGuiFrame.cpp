@@ -24,7 +24,7 @@ ImGuiFrame& ImGuiFrame::setQueueFamilyGroup(QueueFamilyGroup const *group)
 	return *this;
 }
 
-void ImGuiFrame::create(LogicalDevice const *pDevice)
+void ImGuiFrame::create(LogicalDevice *pDevice)
 {
 	this->mFrameBuffer.create(pDevice);
 	this->mCommandPool.create(pDevice, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);

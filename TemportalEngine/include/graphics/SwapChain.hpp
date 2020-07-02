@@ -29,7 +29,7 @@ public:
 	SwapChain& setSupport(SwapChainSupport const &support);
 	SwapChain& setQueueFamilyGroup(QueueFamilyGroup const &qfg);
 
-	SwapChain& create(LogicalDevice const *pDevice, Surface const *pSurface);
+	SwapChain& create(LogicalDevice *pDevice, Surface const *pSurface);
 	void destroy();
 
 	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
@@ -47,7 +47,7 @@ private:
 	SwapChainSupport mSupport;
 	QueueFamilyGroup mQueueFamilyGroup;
 
-	LogicalDevice const *mpDevice;
+	LogicalDevice *mpDevice;
 
 	vk::Extent2D mDrawableSize;
 	math::Vector2UInt mResolution;

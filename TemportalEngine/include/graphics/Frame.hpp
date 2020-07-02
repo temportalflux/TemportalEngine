@@ -21,7 +21,7 @@ public:
 	Frame& operator=(Frame&& other);
 	~Frame();
 
-	virtual void create(LogicalDevice const *pDevice);
+	virtual void create(LogicalDevice *pDevice);
 	virtual void destroy();
 
 	void waitUntilNotInFlight() const;
@@ -32,7 +32,7 @@ public:
 	vk::Result present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
 
 protected:
-	LogicalDevice const *mpDevice;
+	LogicalDevice *mpDevice;
 
 	vk::UniqueFence mFence_FrameInFlight; // active while the frame is being drawn to by GPU
 	vk::UniqueSemaphore mSemaphore_ImageAvailable; // signaled to indicate the graphics queue has grabbed the image and can begin drawing

@@ -20,7 +20,7 @@ public:
 	Buffer& setSize(uSize size);
 	uSize getSize() const;
 
-	void create(LogicalDevice const *pDevice);
+	void create(LogicalDevice *pDevice);
 	void destroy();
 
 	void* get();
@@ -30,7 +30,7 @@ private:
 	uSize mSize;
 	vk::UniqueBuffer mInternal;
 
-	void bind(LogicalDevice const *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
+	void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
 
 };
 

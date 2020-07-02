@@ -4,6 +4,7 @@
 #include "graphics/SwapChain.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/CommandBuffer.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -26,17 +27,18 @@ Frame::~Frame()
 	this->destroy();
 }
 
-void Frame::create(LogicalDevice const *pDevice)
+void Frame::create(LogicalDevice *pDevice)
 {
-	mpDevice = pDevice;
-	this->mFence_FrameInFlight = pDevice->mDevice->createFenceUnique(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
-	this->mSemaphore_ImageAvailable = pDevice->mDevice->createSemaphoreUnique(vk::SemaphoreCreateInfo());
-	this->mSemaphore_RenderComplete = pDevice->mDevice->createSemaphoreUnique(vk::SemaphoreCreateInfo());
+	this->mpDevice = pDevice;
+	auto& device = extract<vk::Device>(this->mpDevice);
+	this->mFence_FrameInFlight = device.createFenceUnique(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
+	this->mSemaphore_ImageAvailable = device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
+	this->mSemaphore_RenderComplete = device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
 }
 
 void Frame::destroy()
 {
-	mpDevice = nullptr;
+	this->mpDevice = nullptr;
 	this->mFence_FrameInFlight.reset();
 	this->mSemaphore_ImageAvailable.reset();
 	this->mSemaphore_RenderComplete.reset();
@@ -44,7 +46,7 @@ void Frame::destroy()
 
 void Frame::waitUntilNotInFlight() const
 {
-	this->mpDevice->mDevice->waitForFences(
+	extract<vk::Device>(this->mpDevice).waitForFences(
 		this->mFence_FrameInFlight.get(),
 		true, UINT64_MAX
 	);
@@ -62,7 +64,7 @@ vk::Fence& Frame::getInFlightFence()
 
 void Frame::markNotInFlight()
 {
-	mpDevice->mDevice->resetFences(this->mFence_FrameInFlight.get());
+	extract<vk::Device>(this->mpDevice).resetFences(this->mFence_FrameInFlight.get());
 }
 
 void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers)

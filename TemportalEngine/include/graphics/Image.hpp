@@ -38,7 +38,7 @@ private:
 	math::Vector3UInt mImageSize;
 	vk::UniqueImage mInternal;
 
-	void bind(LogicalDevice const *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
+	void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
 
 };
 

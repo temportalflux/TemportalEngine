@@ -29,10 +29,11 @@ public:
 
 	std::unordered_map<QueueFamily::Enum, vk::Queue> findQueues(std::set<QueueFamily::Enum> types) const;
 	void waitUntilIdle() const;
+	void waitFor(std::vector<vk::Fence> fence, bool bAll, ui64 timeout);
 
-	vk::UniqueDevice mDevice; // TODO: Make private
 	PhysicalDevice const *mpPhysicalDevice; // TODO: Make Private
 private:
+	vk::UniqueDevice mInternal;
 
 	LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDevice &device);
 

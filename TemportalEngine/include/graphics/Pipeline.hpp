@@ -27,7 +27,7 @@ public:
 	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
 
 	bool isValid() const;
-	Pipeline& create(LogicalDevice const *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
+	Pipeline& create(LogicalDevice *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
 	void destroy();
 	void clearShaders();
 

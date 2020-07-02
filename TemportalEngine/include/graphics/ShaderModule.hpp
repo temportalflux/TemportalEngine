@@ -39,7 +39,7 @@ public:
 	ShaderModule& setVertexDescription(VertexDescription desc);
 
 	bool isLoaded() const;
-	void create(LogicalDevice const *pDevice);
+	void create(LogicalDevice *pDevice);
 	void destroy();
 
 private:

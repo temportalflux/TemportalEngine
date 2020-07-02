@@ -115,9 +115,10 @@ DescriptorGroup& DescriptorGroup::attachToBinding(
 	return *this;
 }
 
-DescriptorGroup& DescriptorGroup::create(LogicalDevice *device, DescriptorPool *pool)
+DescriptorGroup& DescriptorGroup::create(LogicalDevice *pDevice, DescriptorPool *pool)
 {
-	this->mInternalLayout = device->mDevice->createDescriptorSetLayoutUnique(
+	auto& device = extract<vk::Device>(pDevice);
+	this->mInternalLayout = device.createDescriptorSetLayoutUnique(
 		vk::DescriptorSetLayoutCreateInfo()
 		.setBindingCount((ui32)this->mBindings.size())
 		.setPBindings(this->mBindings.data())
@@ -125,7 +126,7 @@ DescriptorGroup& DescriptorGroup::create(LogicalDevice *device, DescriptorPool *
 
 	std::vector<vk::DescriptorSetLayout> layouts(this->mSetCount, this->mInternalLayout.get());
 	// will be deallocated when the pool is destroyed
-	this->mInternalSets = device->mDevice->allocateDescriptorSets(
+	this->mInternalSets = device.allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
 		.setDescriptorPool(extract<vk::DescriptorPool>(pool))
 		.setDescriptorSetCount(this->mSetCount)
@@ -135,8 +136,9 @@ DescriptorGroup& DescriptorGroup::create(LogicalDevice *device, DescriptorPool *
 	return *this;
 }
 
-DescriptorGroup& DescriptorGroup::writeAttachments(LogicalDevice *device)
+DescriptorGroup& DescriptorGroup::writeAttachments(LogicalDevice *pDevice)
 {
+	auto& device = extract<vk::Device>(pDevice);
 	for (uIndex i = 0; i < this->mSetCount; ++i)
 	{
 		auto writes = std::vector<vk::WriteDescriptorSet>(this->mWriteInstructions[i].writes);
@@ -144,7 +146,7 @@ DescriptorGroup& DescriptorGroup::writeAttachments(LogicalDevice *device)
 		{
 			write.setDstSet(this->mInternalSets[i]);
 		}
-		device->mDevice->updateDescriptorSets((ui32)writes.size(), writes.data(), 0, nullptr);
+		device.updateDescriptorSets((ui32)writes.size(), writes.data(), 0, nullptr);
 	}
 	return *this;
 }

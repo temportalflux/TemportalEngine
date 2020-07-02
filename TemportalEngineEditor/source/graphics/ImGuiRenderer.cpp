@@ -100,7 +100,7 @@ vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPoolImgui()
 		.setMaxSets(poolSize)
 		.setPoolSizeCount((ui32)poolSizes.size())
 		.setPPoolSizes(poolSizes.data());
-	return this->mLogicalDevice.mDevice->createDescriptorPoolUnique(info);
+	return extract<vk::Device>(&this->mLogicalDevice).createDescriptorPoolUnique(info);
 }
 
 void ImGuiRenderer::createFrames(uSize viewCount)
@@ -140,9 +140,9 @@ void ImGuiRenderer::finalizeInitialization()
 
 	{
 		ImGui_ImplVulkan_InitInfo info;
-		info.Instance = *reinterpret_cast<VkInstance*>(this->mpInstance->get());
-		info.PhysicalDevice = *reinterpret_cast<VkPhysicalDevice*>(this->mPhysicalDevice.get());
-		info.Device = *reinterpret_cast<VkDevice*>(this->mLogicalDevice.get());
+		info.Instance = extract<VkInstance>(this->mpInstance);
+		info.PhysicalDevice = extract<VkPhysicalDevice>(&this->mPhysicalDevice);
+		info.Device = extract<VkDevice>(&this->mLogicalDevice);
 		auto queueFamilyGroup = this->mPhysicalDevice.queryQueueFamilyGroup();
 		info.QueueFamily = queueFamilyGroup.getQueueIndex(graphics::QueueFamily::Enum::eGraphics).value();
 		info.Queue = (VkQueue)this->mQueues[graphics::QueueFamily::Enum::eGraphics];
@@ -153,7 +153,7 @@ void ImGuiRenderer::finalizeInitialization()
 		info.MinImageCount = (ui32)this->mFrameImageViews.size();
 		info.ImageCount = (ui32)this->mFrameImageViews.size();
 		info.CheckVkResultFn = nullptr;
-		ImGui_ImplVulkan_Init(&info, *reinterpret_cast<VkRenderPass*>(this->mRenderPass.get()));
+		ImGui_ImplVulkan_Init(&info, extract<VkRenderPass>(&this->mRenderPass));
 	}
 	
 	this->submitFonts();

@@ -2,6 +2,7 @@
 
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/PhysicalDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -16,7 +17,7 @@ uSize MemoryBacked::getMemorySize() const
 	return this->mMemorySize;
 }
 
-void MemoryBacked::createMemory(LogicalDevice const *pDevice, vk::MemoryRequirements const &req)
+void MemoryBacked::createMemory(LogicalDevice *pDevice, vk::MemoryRequirements const &req)
 {
 	auto memoryType = this->findMemoryType(pDevice->mpPhysicalDevice, req.memoryTypeBits, this->mMemoryFlags);
 	assert(memoryType.has_value());
@@ -24,7 +25,7 @@ void MemoryBacked::createMemory(LogicalDevice const *pDevice, vk::MemoryRequirem
 	// Allocates memory on the physical device/GPU for the buffer
 	this->mMemorySize = req.size;
 	auto allocInfo = vk::MemoryAllocateInfo().setAllocationSize(this->mMemorySize).setMemoryTypeIndex(memoryType.value());
-	this->mBufferMemory = pDevice->mDevice->allocateMemoryUnique(allocInfo);
+	this->mBufferMemory = extract<vk::Device>(pDevice).allocateMemoryUnique(allocInfo);
 
 	// NOTE: Multiple objects could share the same memory. Somehow, this class should account for that
 	this->bind(pDevice, this->mBufferMemory.get(), /*memory offset*/ 0);
@@ -45,11 +46,12 @@ std::optional<ui32> MemoryBacked::findMemoryType(PhysicalDevice const *pDevice, 
 	return std::nullopt;
 }
 
-void MemoryBacked::write(LogicalDevice const *pDevice, uSize offset, void* src, uSize size)
+void MemoryBacked::write(LogicalDevice *pDevice, uSize offset, void* src, uSize size)
 {
-	void* dest = pDevice->mDevice->mapMemory(this->mBufferMemory.get(), offset, this->mMemorySize, /*flags*/{});
+	auto& device = extract<vk::Device>(pDevice);
+	void* dest = device.mapMemory(this->mBufferMemory.get(), offset, this->mMemorySize, /*flags*/{});
 	memcpy(dest, src, size);
-	pDevice->mDevice->unmapMemory(this->mBufferMemory.get());
+	device.unmapMemory(this->mBufferMemory.get());
 }
 
 void MemoryBacked::invalidate()

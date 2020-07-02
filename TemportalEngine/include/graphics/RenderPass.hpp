@@ -28,7 +28,7 @@ public:
 	void* get();
 
 	bool isValid() const;
-	RenderPass& create(LogicalDevice const *pDevice, std::optional<vk::Format> depthBufferFormat);
+	RenderPass& create(LogicalDevice *pDevice, std::optional<vk::Format> depthBufferFormat);
 	void destroy();
 
 	vk::RenderPass getRenderPass() const;

@@ -21,7 +21,7 @@ public:
 	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
-	CommandPool& create(LogicalDevice const *pDevice, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
+	CommandPool& create(LogicalDevice *pDevice, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
 	void destroy();
 
 	std::vector<CommandBuffer> createCommandBuffers(uSize count) const;
@@ -31,7 +31,7 @@ private:
 	QueueFamily::Enum mQueueFamily;
 	ui32 mIdxQueueFamily;
 
-	LogicalDevice const *mpDevice;
+	LogicalDevice *mpDevice;
 
 	vk::UniqueCommandPool mInternal;
 

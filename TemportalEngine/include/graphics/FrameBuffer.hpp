@@ -24,7 +24,7 @@ public:
 	FrameBuffer& setRenderPass(RenderPass *pRenderPass);
 	FrameBuffer& addAttachment(ImageView *pView);
 
-	FrameBuffer& create(LogicalDevice const *pDevice);
+	FrameBuffer& create(LogicalDevice *pDevice);
 	void* get();
 	void destroy();
 

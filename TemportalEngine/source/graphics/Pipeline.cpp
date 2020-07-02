@@ -50,8 +50,10 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
+Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
 {
+	auto& device = extract<vk::Device>(pDevice);
+
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
 		shader->create(pDevice);
@@ -144,13 +146,13 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass *pRenderPass
 		descriptors.begin(), descriptors.end(), descriptorLayouts.begin(),
 		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
 	);
-	this->mLayout = pDevice->mDevice->createPipelineLayoutUnique(
+	this->mLayout = device.createPipelineLayoutUnique(
 		vk::PipelineLayoutCreateInfo()
 		.setPushConstantRangeCount(0)
 		.setSetLayoutCount((ui32)descriptorLayouts.size())
 		.setPSetLayouts(descriptorLayouts.data())
 	);
-	this->mCache = pDevice->mDevice->createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
+	this->mCache = device.createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
 
 	auto stages = this->createShaderStages();
 	
@@ -171,7 +173,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass *pRenderPass
 		//.setPDynamicState(&infoDynamicStates)
 		.setBasePipelineHandle({});
 
-	this->mPipeline = pDevice->mDevice->createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
+	this->mPipeline = device.createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
 
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
