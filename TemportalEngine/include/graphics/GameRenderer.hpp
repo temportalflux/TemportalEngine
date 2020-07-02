@@ -3,13 +3,15 @@
 #include "graphics/VulkanRenderer.hpp"
 
 #include "graphics/AttributeBinding.hpp"
+#include "graphics/DescriptorPool.hpp"
+#include "graphics/DescriptorGroup.hpp"
+#include "graphics/FontAtlas.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/ImageView.hpp"
-#include "graphics/DescriptorPool.hpp"
-#include "graphics/DescriptorGroup.hpp"
 
 class IRender;
+FORWARD_DEF(NS_ASSET, class Font)
 FORWARD_DEF(NS_ASSET, class Texture)
 FORWARD_DEF(NS_ASSET, class TextureSampler)
 
@@ -53,7 +55,7 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
-	void addFont(graphics::Font *font);
+	void setFont(std::shared_ptr<asset::Font> font);
 
 	void createRenderChain() override;
 
@@ -107,12 +109,14 @@ private:
 	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
 
 	DescriptorGroup mDescriptorGroup;
+	DescriptorGroup mDescriptorGroupUI;
 
 	Image mDepthImage;
 	ImageView mDepthView;
 
 	std::vector<FrameBuffer> mFrameBuffers;
 	Pipeline mPipeline, mPipelineUI;
+	graphics::Font mFont;
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
 

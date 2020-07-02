@@ -1,9 +1,9 @@
 #include "graphics/GameRenderer.hpp"
 
 #include "IRender.hpp"
+#include "asset/Font.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
-#include "graphics/FontAtlas.hpp"
 #include "graphics/Uniform.hpp"
 
 using namespace graphics;
@@ -223,9 +223,10 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 	queue.waitIdle();
 }
 
-void GameRenderer::addFont(graphics::Font *font)
+void GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 {
-	for (auto& face : font->faces())
+	this->mFont.loadGlyphSets(font->getFontSizes(), font->glyphSets());
+	for (auto& face : this->mFont.faces())
 	{
 		face.sampler()
 			.setFilter(vk::Filter::eLinear, vk::Filter::eLinear)
@@ -374,6 +375,13 @@ void GameRenderer::createDescriptors()
 		.attachToBinding(1, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second])
 		.create(&this->mLogicalDevice, &this->mDescriptorPool)
 		.writeAttachments(&this->mLogicalDevice);
+	this->mDescriptorGroupUI
+		.setBindingCount(1)
+		.setAmount((ui32)this->mFrameImageViews.size())
+		.addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
+		.attachToBinding(0, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mFont.faces()[0].view(), &this->mFont.faces()[0].sampler())
+		.create(&this->mLogicalDevice, &this->mDescriptorPool)
+		.writeAttachments(&this->mLogicalDevice);
 }
 
 void GameRenderer::createCommandObjects()
@@ -428,7 +436,13 @@ void GameRenderer::recordCommandBufferInstructions()
 				pRender->draw(&cmd);
 			}
 
-
+			/*
+			cmd.bindDescriptorSet(&this->mPipelineUI, &this->mDescriptorGroupUI[idxFrame]);
+			cmd.bindPipeline(&this->mPipeline);
+			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
+			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, this->mIndexBufferUnitTypeUI);
+			cmd.draw(this->mIndexCountUI, 1);
+			//*/
 		}
 		cmd.endRenderPass();
 		cmd.end();

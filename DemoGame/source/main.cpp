@@ -311,9 +311,8 @@ int main(int argc, char *argv[])
 						"assets/font/Montserrat Regular.te-asset"
 					).load(asset::EAssetSerialization::Binary);
 					assert(font->supportsFontSize(12));
-					fontMontserratReg.loadGlyphSets(font->getFontSizes(), font->glyphSets());
+					renderer.setFont(font);
 				}
-				renderer.addFont(&fontMontserratReg);
 
 				auto camera = pEngine->getECS().createEntity();
 				{
