@@ -15,7 +15,7 @@ class ImGuiFrame : public Frame
 
 public:
 
-	ImGuiFrame& setRenderPass(RenderPass const *pRenderPass);
+	ImGuiFrame& setRenderPass(RenderPass *pRenderPass);
 	ImGuiFrame& setView(ImageView *pView);
 	ImGuiFrame& setQueueFamilyGroup(QueueFamilyGroup const *group);
 
@@ -27,12 +27,12 @@ public:
 		std::function<void(CommandBuffer &buffer)> write
 	);
 	Command beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearColor);
-	vk::CommandBuffer getRawBuffer();
+	CommandBuffer& cmdBuffer();
 	void endRenderPass(Command &cmd);
 	void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers) override;
 
 private:
-	RenderPass const *mpRenderPass;
+	RenderPass *mpRenderPass;
 	FrameBuffer mFrameBuffer;
 	CommandPool mCommandPool;
 	CommandBuffer mCommandBuffer;

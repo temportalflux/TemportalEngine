@@ -79,7 +79,7 @@ private:
 
 	void createUniformBuffers();
 	void destroyUniformBuffers();
-	void createDepthResources(vk::Extent2D const &resolution);
+	void createDepthResources(math::Vector2UInt const &resolution);
 	void destroyDepthResources();
 	void createDescriptors();
 	void createCommandObjects();

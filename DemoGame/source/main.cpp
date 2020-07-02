@@ -297,6 +297,14 @@ int main(int argc, char *argv[])
 				renderer.createTextureAssetImage(dirtTexture, idxSampler);
 			}
 
+			{
+				auto font = asset::TypedAssetPath<asset::Font>::Create(
+					"assets/font/Montserrat Regular.te-asset"
+				).load(asset::EAssetSerialization::Binary);
+				assert(font->supportsFontSize(12));
+				renderer.setFont(font);
+			}
+
 			renderer.createRenderChain();
 			renderer.finalizeInitialization();
 
@@ -305,15 +313,6 @@ int main(int argc, char *argv[])
 #pragma endregion
 
 			{
-				graphics::Font fontMontserratReg;
-				{
-					auto font = asset::TypedAssetPath<asset::Font>::Create(
-						"assets/font/Montserrat Regular.te-asset"
-					).load(asset::EAssetSerialization::Binary);
-					assert(font->supportsFontSize(12));
-					renderer.setFont(font);
-				}
-
 				auto camera = pEngine->getECS().createEntity();
 				{
 					//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();

@@ -1,10 +1,11 @@
 #include "graphics/ImGuiFrame.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
-ImGuiFrame& ImGuiFrame::setRenderPass(RenderPass const *pRenderPass)
+ImGuiFrame& ImGuiFrame::setRenderPass(RenderPass *pRenderPass)
 {
 	this->mpRenderPass = pRenderPass;
 	this->mFrameBuffer.setRenderPass(pRenderPass);
@@ -67,9 +68,9 @@ Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32,
 		.beginRenderPass(this->mpRenderPass, &this->mFrameBuffer);
 }
 
-vk::CommandBuffer ImGuiFrame::getRawBuffer()
+CommandBuffer& ImGuiFrame::cmdBuffer()
 {
-	return *reinterpret_cast<vk::CommandBuffer*>(this->mCommandBuffer.get());
+	return this->mCommandBuffer;
 }
 
 void ImGuiFrame::endRenderPass(Command &cmd)
@@ -84,7 +85,7 @@ void ImGuiFrame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> bu
 		vk::SubmitInfo()
 		.setWaitSemaphoreCount(1).setPWaitSemaphores(&this->mSemaphore_ImageAvailable.get())
 		.setPWaitDstStageMask(&pipelineStage)
-		.setCommandBufferCount(1).setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(this->mCommandBuffer.get()))
+		.setCommandBufferCount(1).setPCommandBuffers(&graphics::extract<vk::CommandBuffer>(&this->mCommandBuffer))
 		.setSignalSemaphoreCount(1).setPSignalSemaphores(&this->mSemaphore_RenderComplete.get()),
 		this->mFence_FrameInFlight.get()
 	);

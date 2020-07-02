@@ -5,13 +5,14 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "graphics/Uniform.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
 GameRenderer::GameRenderer()
 	: VulkanRenderer()
 {
-	this->mDescriptorPool.setPoolSize({
+	this->mDescriptorPool.setPoolSize(64, {
 		{ vk::DescriptorType::eUniformBuffer, 64 },
 		{ vk::DescriptorType::eCombinedImageSampler, 64 },
 	});
@@ -23,6 +24,8 @@ void GameRenderer::invalidate()
 	this->mTextureViews.clear();
 	this->mTextureImages.clear();
 	this->mTextureSamplers.clear();
+
+	this->mFont.invalidate();
 
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
@@ -88,7 +91,7 @@ void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size)
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
-		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
 		vk::Fence()
 	);
 	queue.waitIdle();
@@ -188,7 +191,7 @@ void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
-		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
 		vk::Fence()
 	);
 	/*
@@ -211,7 +214,7 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
-		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(buffers[0].get())),
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
 		vk::Fence()
 	);
 	/*
@@ -299,6 +302,7 @@ void GameRenderer::destroyRenderChain()
 	this->destroyFrames();
 
 	this->destroyCommandObjects();
+	this->mDescriptorGroupUI.invalidate();
 	this->mDescriptorGroup.invalidate();
 	this->mDescriptorPool.invalidate();
 	this->destroyUniformBuffers();
@@ -333,7 +337,7 @@ void GameRenderer::destroyUniformBuffers()
 	this->mUniformStaticBuffersPerFrame.clear();
 }
 
-void GameRenderer::createDepthResources(vk::Extent2D const &resolution)
+void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
 {
 
 	auto supportedFormat = this->mPhysicalDevice.pickFirstSupportedFormat(
@@ -345,7 +349,7 @@ void GameRenderer::createDepthResources(vk::Extent2D const &resolution)
 	this->mDepthImage.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 	this->mDepthImage
 		.setFormat(*supportedFormat)
-		.setSize({ resolution.width, resolution.height, 1 })
+		.setSize({ resolution.x(), resolution.y(), 1 })
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
 		.create(&this->mLogicalDevice);
@@ -403,11 +407,11 @@ void GameRenderer::createCommandObjects()
 
 	auto& fullViewport = vk::Viewport()
 		.setX(0).setY(0)
-		.setWidth((f32)resolution.width).setHeight((f32)resolution.height)
+		.setWidth((f32)resolution.x()).setHeight((f32)resolution.y())
 		.setMinDepth(0.0f).setMaxDepth(1.0f);
-	this->mPipeline.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution));
+	this->mPipeline.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }));
 	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
-	this->mPipelineUI.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent(resolution));
+	this->mPipelineUI.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }));
 	this->mPipelineUI.create(&this->mLogicalDevice, &this->mRenderPass, {});
 
 	this->mCommandPool
@@ -455,6 +459,7 @@ void GameRenderer::destroyCommandObjects()
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
 	this->mPipeline.destroy();
+	this->mPipelineUI.destroy();
 	this->mFrameBuffers.clear();
 }
 

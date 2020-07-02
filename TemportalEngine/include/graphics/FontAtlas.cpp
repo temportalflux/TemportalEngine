@@ -168,3 +168,19 @@ void Font::Face::writePixelData(uSize offset, std::vector<ui8> const &pixels)
 {
 	memcpy((void*)((uSize)this->textureData.data() + offset), pixels.data(), pixels.size() * sizeof(ui8));
 }
+
+void Font::invalidate()
+{
+	for (auto& face : this->mGlyphFaces)
+	{
+		face.invalidate();
+	}
+	this->mGlyphFaces.clear();
+}
+
+void Font::Face::invalidate()
+{
+	this->mView.invalidate();
+	this->mImage.invalidate();
+	this->mSampler.invalidate();
+}

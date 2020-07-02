@@ -4,6 +4,7 @@
 #include "graphics/ImageSampler.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -126,7 +127,7 @@ DescriptorGroup& DescriptorGroup::create(LogicalDevice *device, DescriptorPool *
 	// will be deallocated when the pool is destroyed
 	this->mInternalSets = device->mDevice->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
-		.setDescriptorPool(*reinterpret_cast<vk::DescriptorPool*>(pool->get()))
+		.setDescriptorPool(extract<vk::DescriptorPool>(pool))
 		.setDescriptorSetCount(this->mSetCount)
 		.setPSetLayouts(layouts.data())
 	);

@@ -167,9 +167,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanApi.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
@@ -251,9 +248,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorPool.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\source\graphics\DescriptorGroup.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -569,8 +564,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\DescriptorGroup.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp" />
   </ItemGroup>
 </Project>

@@ -6,12 +6,19 @@
 #include "graphics/Pipeline.hpp"
 #include "graphics/Buffer.hpp"
 #include "graphics/Image.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
 Command::Command(CommandBuffer *pBuffer)
 	: mpBuffer(pBuffer)
 {
+	this->mpVulkanBuffer = this->mpBuffer->get();
+}
+
+vk::CommandBuffer* castBuf(void* ptr)
+{
+	return reinterpret_cast<vk::CommandBuffer*>(ptr);
 }
 
 Command& Command::clearColor(std::array<f32, 4U> color)
@@ -29,9 +36,9 @@ Command& Command::clearDepth(f32 depth, ui32 stencil)
 Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 {
 	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
-	this->mpBuffer->mInternal->copyBuffer(
-		*reinterpret_cast<vk::Buffer*>(src->get()),
-		*reinterpret_cast<vk::Buffer*>(dest->get()),
+	castBuf(this->mpVulkanBuffer)->copyBuffer(
+		extract<vk::Buffer>(src),
+		extract<vk::Buffer>(dest),
 		1, &region
 	);
 	return *this;
@@ -43,7 +50,7 @@ Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayo
 		.setOldLayout(prevLayout).setNewLayout(nextLayout)
 		.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
 		.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-		.setImage(*reinterpret_cast<vk::Image*>(image->get()))
+		.setImage(extract<vk::Image>(image))
 		.setSubresourceRange(
 			vk::ImageSubresourceRange()
 			.setAspectMask(vk::ImageAspectFlagBits::eColor)
@@ -90,7 +97,7 @@ Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayo
 	{
 		throw std::invalid_argument("unsupported layout transition");
 	}
-	this->mpBuffer->mInternal->pipelineBarrier(srcStage, dstStage, vk::DependencyFlags(), {}, {}, { barrier });
+	castBuf(this->mpVulkanBuffer)->pipelineBarrier(srcStage, dstStage, vk::DependencyFlags(), {}, {}, { barrier });
 	return *this;
 }
 
@@ -114,26 +121,27 @@ Command& Command::copyBufferToImage(Buffer *src, Image *dest)
 			.setHeight(imgSize.y())
 			.setDepth(imgSize.z())
 		);
-	this->mpBuffer->mInternal->copyBufferToImage(
-		*reinterpret_cast<vk::Buffer*>(src->get()),
-		*reinterpret_cast<vk::Image*>(dest->get()),
+	castBuf(this->mpVulkanBuffer)->copyBufferToImage(
+		extract<vk::Buffer>(src),
+		extract<vk::Image>(dest),
 		vk::ImageLayout::eTransferDstOptimal,
 		{ region }
 	);
 	return *this;
 }
 
-Command& Command::beginRenderPass(RenderPass const *pRenderPass, FrameBuffer const *pFrameBuffer)
+Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer)
 {
-	this->mpBuffer->mInternal->beginRenderPass(
+	castBuf(this->mpVulkanBuffer)->beginRenderPass(
 		vk::RenderPassBeginInfo()
-		.setRenderPass(pRenderPass->mRenderPass.get())
-		.setFramebuffer(pFrameBuffer->mInternal.get())
+		.setRenderPass(extract<vk::RenderPass>(pRenderPass))
+		.setFramebuffer(extract<vk::Framebuffer>(pFrameBuffer))
 		.setClearValueCount((ui32)this->mClearValues.size())
 		.setPClearValues(this->mClearValues.data())
-		.setRenderArea(vk::Rect2D()
-			.setOffset({ 0, 0 })
-			.setExtent(pRenderPass->mResolution)
+		.setRenderArea(
+			vk::Rect2D()
+			.setOffset({ pRenderPass->getScissorOffset().x(), pRenderPass->getScissorOffset().y() })
+			.setExtent({ pRenderPass->getScissorResolution().x(), pRenderPass->getScissorResolution().y() })
 		),
 		vk::SubpassContents::eInline
 	);
@@ -142,13 +150,13 @@ Command& Command::beginRenderPass(RenderPass const *pRenderPass, FrameBuffer con
 
 Command& Command::bindPipeline(Pipeline const *pPipeline)
 {
-	this->mpBuffer->mInternal->bindPipeline(vk::PipelineBindPoint::eGraphics, pPipeline->mPipeline.get());
+	castBuf(this->mpVulkanBuffer)->bindPipeline(vk::PipelineBindPoint::eGraphics, pPipeline->mPipeline.get());
 	return *this;
 }
 
 Command& Command::bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set)
 {
-	this->mpBuffer->mInternal->bindDescriptorSets(
+	castBuf(this->mpVulkanBuffer)->bindDescriptorSets(
 		vk::PipelineBindPoint::eGraphics, pPipeline->mLayout.get(),
 		0, 1, set, 0, nullptr
 	);
@@ -162,22 +170,22 @@ Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> cons
 	auto offsets = std::vector<ui64>(bufferCount);
 	for (ui32 i = 0; i < bufferCount; ++i)
 	{
-		buffers[i] = *reinterpret_cast<vk::Buffer*>(pBuffers[i]->get());
+		buffers[i] = extract<vk::Buffer>(pBuffers[i]);
 		offsets[i] = 0; // NOTE: should probably be passed in or stored in buffer wrapper
 	}
-	this->mpBuffer->mInternal->bindVertexBuffers(bindingIndex, { bufferCount, buffers.data() }, { bufferCount, offsets.data() });
+	castBuf(this->mpVulkanBuffer)->bindVertexBuffers(bindingIndex, { bufferCount, buffers.data() }, { bufferCount, offsets.data() });
 	return *this;
 }
 
-Command& Command::bindIndexBuffer(ui64 offset, Buffer* const pBuffer, vk::IndexType indexType)
+Command& Command::bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType)
 {
-	this->mpBuffer->mInternal->bindIndexBuffer(*reinterpret_cast<vk::Buffer*>(pBuffer->get()), offset, indexType);
+	castBuf(this->mpVulkanBuffer)->bindIndexBuffer(extract<vk::Buffer>(pBuffer), offset, indexType);
 	return *this;
 }
 
 Command& Command::draw(ui32 indexCount, ui32 instanceCount)
 {
-	this->mpBuffer->mInternal->drawIndexed(
+	castBuf(this->mpVulkanBuffer)->drawIndexed(
 		indexCount, instanceCount,
 		/*firstIndex*/ 0, /*vertexOffset*/ 0, /*firstInstace*/ 0
 	);
@@ -186,7 +194,7 @@ Command& Command::draw(ui32 indexCount, ui32 instanceCount)
 
 Command& Command::endRenderPass()
 {
-	this->mpBuffer->mInternal->endRenderPass();
+	castBuf(this->mpVulkanBuffer)->endRenderPass();
 	return *this;
 }
 

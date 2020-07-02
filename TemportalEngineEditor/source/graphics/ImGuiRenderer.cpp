@@ -4,6 +4,7 @@
 #include "graphics/PhysicalDevice.hpp"
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/RenderPass.hpp"
+#include "graphics/VulkanApi.hpp"
 #include "gui/IGui.hpp"
 
 #include <imgui.h>
@@ -162,7 +163,7 @@ void ImGuiRenderer::submitFonts()
 {
 	auto createFonts = [&](CommandBuffer &buffer)
 	{
-		ImGui_ImplVulkan_CreateFontsTexture(*((VkCommandBuffer*)buffer.get()));
+		ImGui_ImplVulkan_CreateFontsTexture(graphics::extract<VkCommandBuffer>(&buffer));
 	};
 	this->mGuiFrames[0].submitOneOff(&this->getQueue(QueueFamily::Enum::eGraphics), createFonts);
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -242,7 +243,7 @@ void ImGuiRenderer::render(graphics::Frame* frame, ui32 idxCurrentImage)
 	
 	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
 	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), (VkCommandBuffer)currentFrame->getRawBuffer());
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), graphics::extract<VkCommandBuffer>(&currentFrame->cmdBuffer()));
 	currentFrame->endRenderPass(cmd);
 	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], {});
 }

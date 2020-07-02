@@ -1,7 +1,6 @@
 #include "graphics/RenderPass.hpp"
 
 #include "graphics/LogicalDevice.hpp"
-#include "graphics/SwapChain.hpp"
 
 using namespace graphics;
 
@@ -9,11 +8,27 @@ RenderPass::RenderPass()
 {
 }
 
-RenderPass& RenderPass::initFromSwapChain(SwapChain const *pSwapChain)
+RenderPass& RenderPass::setFormat(ui32 const formatValue)
 {
-	mFormat = pSwapChain->mSurfaceFormat.format;
-	mResolution = pSwapChain->mResolution; // for usage in FrameBuffer
+	this->mFormatValue = formatValue;
 	return *this;
+}
+
+RenderPass& RenderPass::setScissorBounds(math::Vector2Int const offset, math::Vector2UInt const resolution)
+{
+	this->mScissorOffset = offset;
+	this->mScissorResolution = resolution;
+	return *this;
+}
+
+math::Vector2Int const& RenderPass::getScissorOffset() const
+{
+	return this->mScissorOffset;
+}
+
+math::Vector2UInt const& RenderPass::getScissorResolution() const
+{
+	return this->mScissorResolution;
 }
 
 void* RenderPass::get()
@@ -30,13 +45,12 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice, std::optional<vk::F
 {
 	assert(!isValid());
 
-	mpDevice = pDevice;
 	std::vector<vk::AttachmentDescription> attachments;
 
 	// TODO: All of these can be configured by a static class/structure asset in editor
 
 	auto colorAttachment = vk::AttachmentDescription()
-		.setFormat(mFormat)
+		.setFormat((vk::Format)this->mFormatValue)
 		.setSamples(vk::SampleCountFlagBits::e1)
 		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eStore)
@@ -45,7 +59,7 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice, std::optional<vk::F
 		.setInitialLayout(vk::ImageLayout::eUndefined)
 		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
 
-	// Attachs an image to a property in the shader:
+	// Attaches an image to a property in the shader:
 	// layout(location = 0) out vec4 outColor
 	auto refColorAttachment = vk::AttachmentReference()
 		.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
@@ -93,7 +107,7 @@ RenderPass& RenderPass::create(LogicalDevice const *pDevice, std::optional<vk::F
 		.setDependencyCount(1)
 		.setPDependencies(&subpassDependency);
 
-	mRenderPass = mpDevice->mDevice->createRenderPassUnique(info);
+	mRenderPass = pDevice->mDevice->createRenderPassUnique(info);
 	return *this;
 }
 

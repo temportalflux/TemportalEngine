@@ -1,10 +1,10 @@
 #include "graphics/Surface.hpp"
 
 #include "graphics/VulkanInstance.hpp"
+#include "graphics/VulkanApi.hpp"
 
 #include <SDL.h>
 #include <SDL_vulkan.h>
-#include "..\..\include\graphics\Surface.hpp"
 
 using namespace graphics;
 
@@ -39,12 +39,12 @@ vk::Extent2D Surface::getDrawableSize() const
 	return vk::Extent2D().setWidth((ui32)w).setHeight((ui32)h);
 }
 
-Surface& Surface::initialize(VulkanInstance const *pVulkan)
+Surface& Surface::initialize(VulkanInstance *pVulkan)
 {
 	assert(mpWindowHandle != nullptr);
 	VkSurfaceKHR surface;
 	SDL_Window* pWindow = reinterpret_cast<SDL_Window*>(this->mpWindowHandle);
-	if (!SDL_Vulkan_CreateSurface(pWindow, (VkInstance)pVulkan->mInstance.get(), &surface))
+	if (!SDL_Vulkan_CreateSurface(pWindow, graphics::extract<VkInstance>(pVulkan), &surface))
 	{
 		//pVulkan->mLogger.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface: %s", SDL_GetError());
 		return *this;
@@ -53,8 +53,8 @@ Surface& Surface::initialize(VulkanInstance const *pVulkan)
 	return *this;
 }
 
-void Surface::destroy(VulkanInstance const *pVulkan)
+void Surface::destroy(VulkanInstance *pVulkan)
 {
 	auto surface = mSurface.release();
-	pVulkan->mInstance->destroySurfaceKHR(surface);
+	graphics::extract<vk::Instance>(pVulkan).destroySurfaceKHR(surface);
 }

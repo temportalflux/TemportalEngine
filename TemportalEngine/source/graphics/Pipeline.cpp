@@ -4,6 +4,7 @@
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/ShaderModule.hpp"
 #include "graphics/RenderPass.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -49,7 +50,7 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRenderPass, std::vector<DescriptorGroup*> descriptors)
+Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
 {
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
@@ -155,7 +156,7 @@ Pipeline& Pipeline::create(LogicalDevice const *pDevice, RenderPass const *pRend
 	
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount((ui32)stages.size()).setPStages(stages.data())
-		.setRenderPass(pRenderPass->mRenderPass.get())
+		.setRenderPass(graphics::extract<vk::RenderPass>(pRenderPass))
 		.setSubpass(0)
 		.setLayout(mLayout.get())
 		// Configurables

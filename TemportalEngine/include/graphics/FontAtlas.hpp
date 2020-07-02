@@ -43,11 +43,14 @@ public:
 		math::Vector2UInt calculateAtlasLayout();
 		void writeAlphaToTexture(math::Vector2UInt const &pos, std::vector<ui8> const &alpha);
 		void writePixelData(uSize offset, std::vector<ui8> const &pixels);
+		void invalidate();
 	};
 
 	Font& loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
 	Face& getFace(ui8 size);
 	std::vector<Face>& faces();
+
+	void invalidate();
 
 private:
 	std::vector<ui8> mSupportedSizes;

@@ -33,7 +33,8 @@ public:
 	void destroy();
 
 	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
-	vk::Extent2D getResolution() const;
+	ui32 getFormat() const;
+	math::Vector2UInt getResolution() const;
 
 	vk::ResultValue<ui32> acquireNextImage(
 		std::optional<vk::Semaphore> waitSemaphore = std::nullopt,
@@ -49,7 +50,7 @@ private:
 	LogicalDevice const *mpDevice;
 
 	vk::Extent2D mDrawableSize;
-	vk::Extent2D mResolution;
+	math::Vector2UInt mResolution;
 	vk::SurfaceFormatKHR mSurfaceFormat;
 	vk::PresentModeKHR mPresentationMode;
 

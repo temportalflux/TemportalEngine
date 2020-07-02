@@ -4,8 +4,9 @@
 
 using namespace graphics;
 
-void DescriptorPool::setPoolSize(std::unordered_map<vk::DescriptorType, ui32> const &sizes)
+void DescriptorPool::setPoolSize(ui32 maxSets, std::unordered_map<vk::DescriptorType, ui32> const &sizes)
 {
+	this->mMaxSets = maxSets;
 	this->mAvailableAllocationsPerType = sizes;
 }
 
@@ -24,7 +25,7 @@ void DescriptorPool::create(LogicalDevice *device, ui32 const &frameCount)
 	this->mInternal = device->mDevice->createDescriptorPoolUnique(
 		vk::DescriptorPoolCreateInfo()
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
-		.setMaxSets(frameCount)
+		.setMaxSets(this->mMaxSets)
 	);
 }
 

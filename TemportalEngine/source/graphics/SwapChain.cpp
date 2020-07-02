@@ -33,7 +33,8 @@ SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurfa
 	mpDevice = pDevice;
 
 	mDrawableSize = pSurface->getDrawableSize();
-	mResolution = mInfo.getAdjustedResolution(mDrawableSize, mSupport.capabilities);
+	auto resolution = mInfo.getAdjustedResolution(mDrawableSize, mSupport.capabilities);
+	this->mResolution = { resolution.width, resolution.height };
 	mSurfaceFormat = mInfo.selectSurfaceFormat(mSupport.surfaceFormats);
 	mPresentationMode = mInfo.selectPresentationMode(mSupport.presentationModes);
 	// Adding at least 1 more to the chain will help avoid waiting on the GPU to complete internal ops before showing the next buffer.
@@ -46,7 +47,7 @@ SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurfa
 		.setPreTransform(mSupport.capabilities.currentTransform) // IMGUI by default was using VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 		.setOldSwapchain(nullptr) // swap chain must be recreated if the window is resized. this is not yet handled
 		// Determined above
-		.setImageExtent(mResolution)
+		.setImageExtent(resolution)
 		.setImageFormat(mSurfaceFormat.format)
 		.setImageColorSpace(mSurfaceFormat.colorSpace)
 		.setPresentMode(mPresentationMode)
@@ -76,7 +77,12 @@ SwapChain& SwapChain::create(LogicalDevice const *pDevice, Surface const *pSurfa
 	return *this;
 }
 
-vk::Extent2D SwapChain::getResolution() const
+ui32 SwapChain::getFormat() const
+{
+	return (ui32)this->mSurfaceFormat.format;
+}
+
+math::Vector2UInt SwapChain::getResolution() const
 {
 	return mResolution;
 }

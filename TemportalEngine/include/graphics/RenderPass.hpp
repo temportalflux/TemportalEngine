@@ -4,25 +4,26 @@
 
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/ImageView.hpp"
+#include "math/Vector.hpp"
 
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class LogicalDevice;
-class SwapChain;
 
 class RenderPass
 {
-	friend class VulkanApi;
-	friend class Pipeline;
-	friend class FrameBuffer;
-	friend class Command;
 
 public:
 	RenderPass();
 
-	RenderPass& initFromSwapChain(SwapChain const *pSwapChain);
+	RenderPass& setFormat(ui32 const formatValue);
+	// Sets the portion of the viewport to render this pass to
+	RenderPass& setScissorBounds(math::Vector2Int const offset, math::Vector2UInt const resolution);
+
+	math::Vector2Int const& getScissorOffset() const;
+	math::Vector2UInt const& getScissorResolution() const;
 
 	void* get();
 
@@ -33,10 +34,9 @@ public:
 	vk::RenderPass getRenderPass() const;
 
 private:
-	vk::Format mFormat;
-	vk::Extent2D mResolution;
-
-	LogicalDevice const *mpDevice;
+	ui32 mFormatValue;
+	math::Vector2Int mScissorOffset;
+	math::Vector2UInt mScissorResolution;
 
 	vk::UniqueRenderPass mRenderPass;
 

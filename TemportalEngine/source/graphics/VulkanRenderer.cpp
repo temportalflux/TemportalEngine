@@ -56,7 +56,7 @@ void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
 f32 VulkanRenderer::getAspectRatio() const
 {
 	auto resolution = this->mSwapChain.getResolution();
-	return resolution.width / (f32)resolution.height;
+	return resolution.x() / (f32)resolution.y();
 }
 
 void VulkanRenderer::initializeDevices()
@@ -115,7 +115,10 @@ void VulkanRenderer::createFrameImageViews()
 
 void VulkanRenderer::createRenderPass(std::optional<vk::Format> depthBufferFormat)
 {
-	this->mRenderPass.initFromSwapChain(&this->mSwapChain).create(&this->mLogicalDevice, depthBufferFormat);
+	this->mRenderPass
+		.setFormat(this->mSwapChain.getFormat())
+		.setScissorBounds({ 0, 0 }, this->mSwapChain.getResolution())
+		.create(&this->mLogicalDevice, depthBufferFormat);
 }
 
 void VulkanRenderer::destroySwapChain()
