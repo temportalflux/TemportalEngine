@@ -32,6 +32,7 @@ public:
 	Command& copyBufferToImage(Buffer *src, Image *dest);
 
 	Command& beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer);
+	Command& setViewport(vk::Viewport const &viewport);
 	Command& bindPipeline(Pipeline const *pPipeline);
 	Command& bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set);
 	Command& bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers);

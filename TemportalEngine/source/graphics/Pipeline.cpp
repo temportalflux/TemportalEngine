@@ -45,6 +45,17 @@ Pipeline& Pipeline::setViewArea(vk::Viewport const &viewport, vk::Rect2D const &
 	return *this;
 }
 
+vk::Viewport const& Pipeline::getViewport() const
+{
+	return this->mViewport;
+}
+
+Pipeline& Pipeline::setFrontFace(vk::FrontFace const face)
+{
+	this->mFrontFace = face;
+	return *this;
+}
+
 bool Pipeline::isValid() const
 {
 	return (bool)this->mPipeline;
@@ -102,7 +113,7 @@ Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std:
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eCounterClockwise)
+		.setFrontFace(this->mFrontFace)
 		.setDepthBiasEnable(false)
 		.setDepthBiasConstantFactor(0.0f)
 		.setDepthBiasClamp(0.0f)

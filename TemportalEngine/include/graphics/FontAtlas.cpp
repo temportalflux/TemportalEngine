@@ -79,9 +79,15 @@ void Font::Face::loadGlyphSet(FontGlyphSet const &src)
 	// Write glyph buffer data to the face's atlas texture
 	for (auto&[charCode, glyphIdx] : src.codeToGlyphIdx)
 	{
-		const auto& pos = this->glyphs[glyphIdx].atlasOffset;
 		const auto& alphaBuffer = src.glyphs[glyphIdx].buffer;
-		this->writeAlphaToTexture(pos, alphaBuffer);
+		if (alphaBuffer.size() > 0)
+		{
+			this->writeAlphaToTexture(
+				this->glyphs[glyphIdx].atlasOffset,
+				this->glyphs[glyphIdx].bufferSize,
+				alphaBuffer
+			);
+		}
 	}
 	
 }
@@ -148,25 +154,20 @@ math::Vector2UInt Font::Face::calculateAtlasLayout()
 	return atlasSize;
 }
 
-void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, std::vector<ui8> const &alpha)
+void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha)
 {
-	// Convert alpha data to 4 channel white + alpha
-	auto pixelCount = alpha.size();
-	auto pixelDataSize = pixelCount * 4; // 4 channels for rgb+a
-	auto pixels = std::vector<ui8>(pixelDataSize);
-	// Set all data to white/opaque
-	memset(pixels.data(), 0xff, pixelDataSize * sizeof(ui8));
-	// copy alpha data to desired locations
-	for (uIndex i = 0; i < pixelCount; ++i) pixels[i * 4] = alpha[i];
-
-	ui32 sizeOfPixel = sizeof(ui8) * 4;
-	uSize dataOffset = (uSize)((pos * sizeOfPixel).sum());
-	this->writePixelData(dataOffset, pixels);
-}
-
-void Font::Face::writePixelData(uSize offset, std::vector<ui8> const &pixels)
-{
-	memcpy((void*)((uSize)this->textureData.data() + offset), pixels.data(), pixels.size() * sizeof(ui8));
+	ui32 const channelCountPerPixel = 4; // 4 channels for rgb+a
+	for (ui32 x = 0; x < dimensions.x(); ++x) for (ui32 y = 0; y < dimensions.y(); ++y)
+	{
+		uIndex idxAlpha = y * dimensions.x() + x;
+		math::Vector2UInt pixelPos = pos + math::Vector2UInt({ x, y });
+		uIndex const idxPixel = pixelPos.y() * this->atlasSize.x() + pixelPos.x();
+		uIndex const idxData = idxPixel * channelCountPerPixel;
+		this->textureData[idxData + 0] = 0xff;
+		this->textureData[idxData + 1] = 0xff;
+		this->textureData[idxData + 2] = 0xff;
+		this->textureData[idxData + 3] = alpha[idxAlpha];
+	}
 }
 
 void Font::invalidate()

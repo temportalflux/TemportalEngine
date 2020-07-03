@@ -16,6 +16,12 @@ GameRenderer::GameRenderer()
 		{ vk::DescriptorType::eUniformBuffer, 64 },
 		{ vk::DescriptorType::eCombinedImageSampler, 64 },
 	});
+	this->mVertexBufferUI
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mIndexBufferUI
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
+		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 void GameRenderer::invalidate()
@@ -30,6 +36,10 @@ void GameRenderer::invalidate()
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
 	this->mPipelineUI.clearShaders();
+
+	this->mVertexBufferUI.destroy();
+	this->mIndexBufferUI.destroy();
+
 	VulkanRenderer::invalidate();
 }
 
@@ -236,7 +246,7 @@ void GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			.setAddressMode({ vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge })
 			.setAnistropy(std::nullopt)
 			.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
-			.setNormalizeCoordinates(false)
+			.setNormalizeCoordinates(true)
 			.setCompare(std::nullopt)
 			.setMipLOD(vk::SamplerMipmapMode::eNearest, 0, { 0, 0 })
 			.create(&this->mLogicalDevice);
@@ -268,8 +278,6 @@ void GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			stagingBuffer.destroy();
 		}
 		this->transitionImageToLayout(&image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
-
-		data.clear();
 
 		face.view()
 			.setImage(&image, vk::ImageAspectFlagBits::eColor)
@@ -453,10 +461,14 @@ void GameRenderer::createCommandObjects()
 		.setX(0).setY(0)
 		.setWidth((f32)resolution.x()).setHeight((f32)resolution.y())
 		.setMinDepth(0.0f).setMaxDepth(1.0f);
-	this->mPipeline.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }));
-	this->mPipeline.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
-	this->mPipelineUI.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }));
-	this->mPipelineUI.create(&this->mLogicalDevice, &this->mRenderPass, {});
+	this->mPipeline
+		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
+		.setFrontFace(vk::FrontFace::eCounterClockwise)
+		.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
+	this->mPipelineUI
+		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
+		.setFrontFace(vk::FrontFace::eClockwise)
+		.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
 
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
@@ -485,13 +497,11 @@ void GameRenderer::recordCommandBufferInstructions()
 				pRender->draw(&cmd);
 			}
 
-			/*
 			cmd.bindDescriptorSet(&this->mPipelineUI, &this->mDescriptorGroupUI[idxFrame]);
-			cmd.bindPipeline(&this->mPipeline);
+			cmd.bindPipeline(&this->mPipelineUI);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
-			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, this->mIndexBufferUnitTypeUI);
-			cmd.draw(this->mIndexCountUI, 1);
-			//*/
+			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
+			cmd.draw(6, 1);
 		}
 		cmd.endRenderPass();
 		cmd.end();

@@ -23,8 +23,10 @@ public:
 	Pipeline& setBindings(std::vector<AttributeBinding> bindings);
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
 	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
+	Pipeline& setFrontFace(vk::FrontFace const face);
 
 	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
+	vk::Viewport const& getViewport() const;
 
 	bool isValid() const;
 	Pipeline& create(LogicalDevice *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
@@ -35,6 +37,7 @@ private:
 	std::unordered_map<vk::ShaderStageFlagBits, std::shared_ptr<ShaderModule>> mShaderPtrs;
 	vk::Viewport mViewport;
 	vk::Rect2D mScissor;
+	vk::FrontFace mFrontFace;
 
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipelineCache mCache;

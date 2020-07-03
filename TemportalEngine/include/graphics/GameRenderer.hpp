@@ -56,6 +56,21 @@ public:
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
 	void setFont(std::shared_ptr<asset::Font> font);
+	
+	template <typename TData>
+	void setTextToRender(std::vector<TData> const &verticies, std::vector<ui16> const &indicies)
+	{
+		this->mVertexBufferUI.setSize((uSize)verticies.size() * sizeof(TData));
+		this->initializeBuffer(this->mVertexBufferUI);
+
+		this->mIndexBufferUI.setSize((uSize)indicies.size() * sizeof(ui16));
+		//this->mIndexBufferUnitType = vk::IndexType::eUint16;
+		//this->mIndexCount = (ui32)model.indicies().size();
+		this->initializeBuffer(this->mIndexBufferUI);
+
+		this->writeBufferData(this->mVertexBufferUI, 0, verticies);
+		this->writeBufferData(this->mIndexBufferUI, 0, indicies);
+	}
 
 	void createRenderChain() override;
 	void createRenderPass() override;
@@ -112,16 +127,19 @@ private:
 	// First value of each pair is the image view idx of `mTextureViews`
 	// Second value of each pair is the image sampler idx of `mTextureSamplers`
 	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
-
-	DescriptorGroup mDescriptorGroup;
-	DescriptorGroup mDescriptorGroupUI;
-
 	Image mDepthImage;
 	ImageView mDepthView;
 
 	std::vector<FrameBuffer> mFrameBuffers;
-	Pipeline mPipeline, mPipelineUI;
+
+	DescriptorGroup mDescriptorGroup;
+	Pipeline mPipeline;
+
 	graphics::Font mFont;
+	DescriptorGroup mDescriptorGroupUI;
+	Pipeline mPipelineUI;
+	Buffer mVertexBufferUI, mIndexBufferUI;
+
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;
 

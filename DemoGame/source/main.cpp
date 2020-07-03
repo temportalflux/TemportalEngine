@@ -303,6 +303,15 @@ int main(int argc, char *argv[])
 				).load(asset::EAssetSerialization::Binary);
 				assert(font->supportsFontSize(12));
 				renderer.setFont(font);
+				renderer.setTextToRender<UIVertex>(
+					{
+						{ { 0, 0 }, { 1, 1, 1, 1 }, { 0, 0 } },
+						{ { 1, 0 }, { 1, 1, 1, 1 }, { 1, 0 } },
+						{ { 1, 1 }, { 1, 1, 1, 1 }, { 1, 1 } },
+						{ { 0, 1 }, { 1, 1, 1, 1 }, { 0, 1 } }
+					},
+					{ 0, 1, 2, 2, 3, 0 }
+				);
 			}
 
 			renderer.createRenderChain();

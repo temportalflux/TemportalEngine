@@ -155,6 +155,12 @@ Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBu
 	return *this;
 }
 
+Command& Command::setViewport(vk::Viewport const &viewport)
+{
+	castBuf(this->mpVulkanBuffer)->setViewport(0, { viewport });
+	return *this;
+}
+
 Command& Command::bindPipeline(Pipeline const *pPipeline)
 {
 	castBuf(this->mpVulkanBuffer)->bindPipeline(vk::PipelineBindPoint::eGraphics, pPipeline->mPipeline.get());

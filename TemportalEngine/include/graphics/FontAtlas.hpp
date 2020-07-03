@@ -41,8 +41,7 @@ public:
 		void loadGlyphSet(FontGlyphSet const &src);
 		// Determines the glyph offsets and atlas size
 		math::Vector2UInt calculateAtlasLayout();
-		void writeAlphaToTexture(math::Vector2UInt const &pos, std::vector<ui8> const &alpha);
-		void writePixelData(uSize offset, std::vector<ui8> const &pixels);
+		void writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha);
 		void invalidate();
 	};
 
