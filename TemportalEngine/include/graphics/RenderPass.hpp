@@ -98,13 +98,10 @@ public:
 	 */
 	RenderPass& addDependency(DependencyItem const dependee, DependencyItem const depender);
 
-	void* get();
-
-	bool isValid() const;
 	RenderPass& create(LogicalDevice *pDevice);
+	bool isValid() const;
+	void* get();
 	void destroy();
-
-	vk::RenderPass getRenderPass() const;
 
 private:
 	std::vector<RenderPassAttachment> mAttachments;

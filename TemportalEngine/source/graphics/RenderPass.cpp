@@ -113,16 +113,6 @@ RenderPass& RenderPass::addDependency(DependencyItem const dependee, DependencyI
 	return *this;
 }
 
-void* RenderPass::get()
-{
-	return &this->mRenderPass.get();
-}
-
-bool RenderPass::isValid() const
-{
-	return (bool)this->mRenderPass;
-}
-
 RenderPass& RenderPass::create(LogicalDevice *pDevice)
 {
 	assert(!isValid());
@@ -151,12 +141,17 @@ RenderPass& RenderPass::create(LogicalDevice *pDevice)
 	return *this;
 }
 
+bool RenderPass::isValid() const
+{
+	return (bool)this->mRenderPass;
+}
+
+void* RenderPass::get()
+{
+	return &this->mRenderPass.get();
+}
+
 void RenderPass::destroy()
 {
 	this->mRenderPass.reset();
-}
-
-vk::RenderPass RenderPass::getRenderPass() const
-{
-	return mRenderPass.get();
 }
