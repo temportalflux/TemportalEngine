@@ -1,6 +1,7 @@
 #include "graphics/ImGuiFrame.hpp"
 
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/SwapChain.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -9,6 +10,12 @@ ImGuiFrame& ImGuiFrame::setRenderPass(RenderPass *pRenderPass)
 {
 	this->mpRenderPass = pRenderPass;
 	this->mFrameBuffer.setRenderPass(pRenderPass);
+	return *this;
+}
+
+ImGuiFrame& ImGuiFrame::setResolution(math::Vector2UInt const &resolution)
+{
+	this->mFrameBuffer.setResolution(resolution);
 	return *this;
 }
 
@@ -65,6 +72,7 @@ Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32,
 	return this->mCommandBuffer
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.clearColor(clearcolor)
+		.setRenderArea({ 0, 0 }, pSwapChain->getResolution())
 		.beginRenderPass(this->mpRenderPass, &this->mFrameBuffer);
 }
 

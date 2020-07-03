@@ -16,6 +16,7 @@ class ImGuiFrame : public Frame
 public:
 
 	ImGuiFrame& setRenderPass(RenderPass *pRenderPass);
+	ImGuiFrame& setResolution(math::Vector2UInt const &resolution);
 	ImGuiFrame& setView(ImageView *pView);
 	ImGuiFrame& setQueueFamilyGroup(QueueFamilyGroup const *group);
 

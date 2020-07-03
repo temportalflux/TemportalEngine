@@ -22,6 +22,7 @@ public:
 	~FrameBuffer();
 
 	FrameBuffer& setRenderPass(RenderPass *pRenderPass);
+	FrameBuffer& setResolution(math::Vector2UInt const &resolution);
 	FrameBuffer& addAttachment(ImageView *pView);
 
 	FrameBuffer& create(LogicalDevice *pDevice);

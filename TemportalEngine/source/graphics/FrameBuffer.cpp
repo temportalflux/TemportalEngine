@@ -28,7 +28,12 @@ FrameBuffer::~FrameBuffer()
 FrameBuffer& FrameBuffer::setRenderPass(RenderPass *pRenderPass)
 {
 	this->mRenderPass = extract<vk::RenderPass>(pRenderPass);
-	this->mResolution = pRenderPass->getScissorResolution();
+	return *this;
+}
+
+FrameBuffer& FrameBuffer::setResolution(math::Vector2UInt const &resolution)
+{
+	this->mResolution = resolution;
 	return *this;
 }
 

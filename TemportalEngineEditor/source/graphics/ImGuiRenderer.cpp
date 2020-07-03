@@ -111,6 +111,7 @@ void ImGuiRenderer::createFrames(uSize viewCount)
 	{
 		this->mGuiFrames[i]
 			.setRenderPass(&this->mRenderPass)
+			.setResolution(this->mSwapChain.getResolution())
 			.setView(&this->mFrameImageViews[i])
 			.setQueueFamilyGroup(&queueFamilyGroup)
 			.create(&this->mLogicalDevice);

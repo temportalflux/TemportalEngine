@@ -2,12 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "types/integer.h"
-#include "types/real.h"
+#include "math/Vector.hpp"
 
-#include <array>
-#include <vector>
-#include <optional>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
@@ -27,6 +23,7 @@ public:
 	// TODO: pass engine vector instead of std array
 	Command& clearColor(std::array<f32, 4U> color);
 	Command& clearDepth(f32 depth, ui32 stencil);
+	Command& setRenderArea(math::Vector2Int const offset, math::Vector2UInt const size);
 
 	// For copying transfer buffers
 	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
@@ -48,6 +45,8 @@ private:
 	CommandBuffer *mpBuffer;
 	void* mpVulkanBuffer;
 	std::vector<vk::ClearValue> mClearValues;
+	math::Vector2Int mRenderAreaOffset;
+	math::Vector2UInt mRenderAreaSize;
 	
 	Command(CommandBuffer *pBuffer);
 

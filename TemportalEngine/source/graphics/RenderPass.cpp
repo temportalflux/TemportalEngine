@@ -5,31 +5,112 @@
 
 using namespace graphics;
 
-RenderPass::RenderPass()
+RenderPassAttachment& RenderPassAttachment::setFormat(ui32 const value)
 {
-}
-
-RenderPass& RenderPass::setFormat(ui32 const formatValue)
-{
-	this->mFormatValue = formatValue;
+	this->mFormatValue = value;
 	return *this;
 }
 
-RenderPass& RenderPass::setScissorBounds(math::Vector2Int const offset, math::Vector2UInt const resolution)
+RenderPassAttachment& RenderPassAttachment::setSamples(vk::SampleCountFlagBits const flags)
 {
-	this->mScissorOffset = offset;
-	this->mScissorResolution = resolution;
+	this->mSampleFlags = flags;
 	return *this;
 }
 
-math::Vector2Int const& RenderPass::getScissorOffset() const
+RenderPassAttachment& RenderPassAttachment::setGeneralOperations(vk::AttachmentLoadOp load, vk::AttachmentStoreOp store)
 {
-	return this->mScissorOffset;
+	this->mGeneralLoad = load;
+	this->mGeneralStore = store;
+	return *this;
 }
 
-math::Vector2UInt const& RenderPass::getScissorResolution() const
+RenderPassAttachment& RenderPassAttachment::setStencilOperations(vk::AttachmentLoadOp load, vk::AttachmentStoreOp store)
 {
-	return this->mScissorResolution;
+	this->mStencilLoad = load;
+	this->mStencilStore = store;
+	return *this;
+}
+
+RenderPassAttachment& RenderPassAttachment::setLayouts(vk::ImageLayout initialLayout, vk::ImageLayout finalLayout)
+{
+	this->mLayoutInitial = initialLayout;
+	this->mLayoutFinal = finalLayout;
+	return *this;
+}
+
+vk::AttachmentDescription RenderPassAttachment::description() const
+{
+	return vk::AttachmentDescription()
+		.setFormat((vk::Format)this->mFormatValue)
+		.setSamples(this->mSampleFlags)
+		.setLoadOp(this->mGeneralLoad).setStoreOp(this->mGeneralStore)
+		.setStencilLoadOp(this->mStencilLoad).setStencilStoreOp(this->mStencilStore)
+		.setInitialLayout(this->mLayoutInitial)
+		.setFinalLayout(this->mLayoutFinal);
+}
+
+RenderPassPhase& RenderPassPhase::addColorAttachment(RenderPassAttachment const &attachment)
+{
+	assert(attachment.mIdxInRenderPass);
+	this->mColorAttachmentReferences.push_back(
+		vk::AttachmentReference()
+		// the index of the attachment in the `attachments` list in RenderPass
+		.setAttachment((ui32)*attachment.mIdxInRenderPass)
+		.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
+	);
+	return *this;
+}
+
+RenderPassPhase& RenderPassPhase::setDepthAttachment(RenderPassAttachment const &attachment)
+{
+	assert(attachment.mIdxInRenderPass);
+	this->mDepthStencilAttachmentReference = vk::AttachmentReference()
+		// the index of the attachment in the `attachments` list in RenderPass
+		.setAttachment((ui32)*attachment.mIdxInRenderPass)
+		.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+	return *this;
+}
+
+vk::SubpassDescription RenderPassPhase::description() const
+{
+	auto& desc = vk::SubpassDescription().setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
+	desc
+		.setColorAttachmentCount((ui32)this->mColorAttachmentReferences.size())
+		.setPColorAttachments(this->mColorAttachmentReferences.data());
+	if (this->mDepthStencilAttachmentReference)
+	{
+		desc.setPDepthStencilAttachment(&this->mDepthStencilAttachmentReference.value());
+	}
+	return desc;
+}
+
+RenderPassAttachment& RenderPass::addAttachment(RenderPassAttachment &attachment)
+{
+	attachment.mIdxInRenderPass = this->mAttachments.size();
+	this->mAttachments.push_back(attachment);
+	return this->mAttachments[*attachment.mIdxInRenderPass];
+}
+
+RenderPassPhase& RenderPass::addPhase(RenderPassPhase &phase)
+{
+	phase.mIdxInRenderPass = this->mPhases.size();
+	this->mPhases.push_back(phase);
+	return this->mPhases[*phase.mIdxInRenderPass];
+}
+
+RenderPass& RenderPass::addDependency(DependencyItem const dependee, DependencyItem const depender)
+{
+	assert(!dependee.phase.has_value() || dependee.phase.value().mIdxInRenderPass);
+	assert(!depender.phase.has_value() || depender.phase.value().mIdxInRenderPass);
+	assert(dependee.phase || depender.phase);
+	this->mDependencies.push_back(
+		vk::SubpassDependency()
+		.setSrcSubpass(dependee.phase ? (ui32)*dependee.phase->mIdxInRenderPass : VK_SUBPASS_EXTERNAL)
+		.setSrcStageMask(dependee.stageFlags).setSrcAccessMask(dependee.accessFlags)
+		.setDstSubpass(depender.phase ? (ui32)*depender.phase->mIdxInRenderPass : VK_SUBPASS_EXTERNAL)
+		.setDstStageMask(depender.stageFlags).setDstAccessMask(depender.accessFlags)
+	);
+	return *this;
 }
 
 void* RenderPass::get()
@@ -42,73 +123,31 @@ bool RenderPass::isValid() const
 	return (bool)this->mRenderPass;
 }
 
-RenderPass& RenderPass::create(LogicalDevice *pDevice, std::optional<vk::Format> depthBufferFormat)
+RenderPass& RenderPass::create(LogicalDevice *pDevice)
 {
 	assert(!isValid());
 
-	std::vector<vk::AttachmentDescription> attachments;
+	auto attachments = std::vector<vk::AttachmentDescription>(this->mAttachments.size());
+	std::transform(
+		this->mAttachments.begin(), this->mAttachments.end(),
+		attachments.begin(), [](auto& attachment) { return attachment.description(); }
+	);
 
-	// TODO: All of these can be configured by a static class/structure asset in editor
-
-	auto colorAttachment = vk::AttachmentDescription()
-		.setFormat((vk::Format)this->mFormatValue)
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setLoadOp(vk::AttachmentLoadOp::eClear)
-		.setStoreOp(vk::AttachmentStoreOp::eStore)
-		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-		.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-		.setInitialLayout(vk::ImageLayout::eUndefined)
-		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR);
-
-	// Attaches an image to a property in the shader:
-	// layout(location = 0) out vec4 outColor
-	auto refColorAttachment = vk::AttachmentReference()
-		.setLayout(vk::ImageLayout::eColorAttachmentOptimal)
-		// index of the attachment in the subpass attachments array
-		.setAttachment(0);
-	attachments.push_back(colorAttachment);
-
-	auto refDepthAttachment = vk::AttachmentReference();
-	if (depthBufferFormat)
-	{
-		auto depthAttachment = vk::AttachmentDescription()
-			.setFormat(*depthBufferFormat)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setLoadOp(vk::AttachmentLoadOp::eClear)
-			.setStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-			.setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-			.setInitialLayout(vk::ImageLayout::eUndefined)
-			.setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
-		refDepthAttachment
-			.setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
-			// index of the attachment in the subpass attachments array
-			.setAttachment(1);
-		attachments.push_back(depthAttachment);
-	}
-
-	auto subpassDesc = vk::SubpassDescription()
-		.setPipelineBindPoint(vk::PipelineBindPoint::eGraphics)
-		.setColorAttachmentCount(1)
-		.setPColorAttachments(&refColorAttachment);
-	if (depthBufferFormat)
-		subpassDesc.setPDepthStencilAttachment(&refDepthAttachment);
-
-	auto subpassDependency = vk::SubpassDependency()
-		.setSrcSubpass(VK_SUBPASS_EXTERNAL)
-		.setDstSubpass(0)
-		.setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setSrcAccessMask({})
-		.setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput).setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);
+	auto subpassDescs = std::vector<vk::SubpassDescription>(this->mPhases.size());
+	std::transform(
+		this->mPhases.begin(), this->mPhases.end(),
+		subpassDescs.begin(), [](auto& phase) { return phase.description(); }
+	);
 
 	auto info = vk::RenderPassCreateInfo()
 		.setAttachmentCount((ui32)attachments.size())
 		.setPAttachments(attachments.data())
-		.setSubpassCount(1)
-		.setPSubpasses(&subpassDesc)
-		.setDependencyCount(1)
-		.setPDependencies(&subpassDependency);
+		.setSubpassCount((ui32)subpassDescs.size())
+		.setPSubpasses(subpassDescs.data())
+		.setDependencyCount((ui32)this->mDependencies.size())
+		.setPDependencies(this->mDependencies.data());
 
-	mRenderPass = extract<vk::Device>(pDevice).createRenderPassUnique(info);
+	this->mRenderPass = extract<vk::Device>(pDevice).createRenderPassUnique(info);
 	return *this;
 }
 

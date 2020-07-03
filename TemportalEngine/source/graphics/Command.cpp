@@ -33,6 +33,13 @@ Command& Command::clearDepth(f32 depth, ui32 stencil)
 	return *this;
 }
 
+Command& Command::setRenderArea(math::Vector2Int const offset, math::Vector2UInt const size)
+{
+	this->mRenderAreaOffset = offset;
+	this->mRenderAreaSize = size;
+	return *this;
+}
+
 Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 {
 	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
@@ -140,8 +147,8 @@ Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBu
 		.setPClearValues(this->mClearValues.data())
 		.setRenderArea(
 			vk::Rect2D()
-			.setOffset({ pRenderPass->getScissorOffset().x(), pRenderPass->getScissorOffset().y() })
-			.setExtent({ pRenderPass->getScissorResolution().x(), pRenderPass->getScissorResolution().y() })
+			.setOffset({ this->mRenderAreaOffset.x(), this->mRenderAreaOffset.y() })
+			.setExtent({ this->mRenderAreaSize.x(), this->mRenderAreaSize.y() })
 		),
 		vk::SubpassContents::eInline
 	);

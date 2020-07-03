@@ -399,6 +399,7 @@ void GameRenderer::createCommandObjects()
 		{
 			this->mFrameBuffers[i]
 				.setRenderPass(&this->mRenderPass)
+				.setResolution(this->mSwapChain.getResolution())
 				.addAttachment(&this->mFrameImageViews[i])
 				.addAttachment(&this->mDepthView)
 				.create(&this->mLogicalDevice);
@@ -430,6 +431,7 @@ void GameRenderer::recordCommandBufferInstructions()
 		// Clear commands MUST be passed in the same order as the attachments on framebuffers
 		cmd.clearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
 		cmd.clearDepth(1.0f, 0);
+		cmd.setRenderArea({ 0, 0 }, this->mSwapChain.getResolution());
 		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
 		{
 			// TODO: Should each render system have control over the descriptor set and pipeline?
