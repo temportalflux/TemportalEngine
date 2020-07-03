@@ -88,14 +88,14 @@ RenderPassAttachment& RenderPass::addAttachment(RenderPassAttachment &attachment
 {
 	attachment.mIdxInRenderPass = this->mAttachments.size();
 	this->mAttachments.push_back(attachment);
-	return this->mAttachments[*attachment.mIdxInRenderPass];
+	return attachment;
 }
 
 RenderPassPhase& RenderPass::addPhase(RenderPassPhase &phase)
 {
 	phase.mIdxInRenderPass = this->mPhases.size();
 	this->mPhases.push_back(phase);
-	return this->mPhases[*phase.mIdxInRenderPass];
+	return phase;
 }
 
 RenderPass& RenderPass::addDependency(DependencyItem const dependee, DependencyItem const depender)

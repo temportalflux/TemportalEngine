@@ -113,42 +113,6 @@ void VulkanRenderer::createFrameImageViews()
 		this->mFrameImageViews[i] = std::move(views[i]);
 }
 
-void VulkanRenderer::createRenderPass(std::optional<vk::Format> depthBufferFormat)
-{
-	auto& colorAttachment = this->mRenderPass.addAttachment(
-		RenderPassAttachment()
-		.setFormat(this->mSwapChain.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
-	);
-
-	auto onlyPhase = RenderPassPhase().addColorAttachment(colorAttachment);
-
-	if (depthBufferFormat)
-	{
-		auto& depthAttachment = this->mRenderPass.addAttachment(
-			RenderPassAttachment()
-			.setFormat((ui32)*depthBufferFormat)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare)
-			.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-			.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal)
-		);
-		onlyPhase.setDepthAttachment(depthAttachment);
-	}
-
-	this->mRenderPass.addPhase(onlyPhase);
-	
-	this->mRenderPass.addDependency(
-		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
-	);
-
-	this->mRenderPass.create(&this->mLogicalDevice);
-}
-
 void VulkanRenderer::destroySwapChain()
 {
 	this->mSwapChain.destroy();
@@ -158,11 +122,6 @@ void VulkanRenderer::destroyFrameImageViews()
 {
 	this->mFrameImageViews.clear();
 	this->mFrameImageFences.clear();
-}
-
-void VulkanRenderer::destroyRenderPass()
-{
-	this->mRenderPass.destroy();
 }
 
 void VulkanRenderer::drawFrame()

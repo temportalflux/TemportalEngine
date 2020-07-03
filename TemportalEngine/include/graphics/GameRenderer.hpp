@@ -58,6 +58,9 @@ public:
 	void setFont(std::shared_ptr<asset::Font> font);
 
 	void createRenderChain() override;
+	void createRenderPass() override;
+	RenderPass* getRenderPass() override;
+	void destroyRenderPass() override;
 
 	void invalidate() override;
 
@@ -94,6 +97,8 @@ private:
 
 	CommandPool mCommandPoolTransient;
 	std::vector<IRender*> mpRenders;
+
+	RenderPass mRenderPass;
 
 	// Pool for all descriptors that are used in this renderer
 	DescriptorPool mDescriptorPool;

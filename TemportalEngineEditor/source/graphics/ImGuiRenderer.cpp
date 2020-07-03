@@ -73,6 +73,40 @@ void ImGuiRenderer::destroyRenderChain()
 	this->destroySwapChain();
 }
 
+void ImGuiRenderer::createRenderPass()
+{
+	auto& colorAttachment = this->mRenderPass.addAttachment(
+		RenderPassAttachment()
+		.setFormat(this->mSwapChain.getFormat())
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
+		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
+		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
+	);
+
+	auto& onlyPhase = this->mRenderPass.addPhase(
+		RenderPassPhase()
+		.addColorAttachment(colorAttachment)
+	);
+
+	this->mRenderPass.addDependency(
+		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
+		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
+	);
+
+	this->mRenderPass.create(&this->mLogicalDevice);
+}
+
+RenderPass* ImGuiRenderer::getRenderPass()
+{
+	return &this->mRenderPass;
+}
+
+void ImGuiRenderer::destroyRenderPass()
+{
+	this->mRenderPass.destroy();
+}
+
 vk::UniqueDescriptorPool ImGuiRenderer::createDescriptorPoolImgui()
 {
 	ui32 const poolSize = 1000;

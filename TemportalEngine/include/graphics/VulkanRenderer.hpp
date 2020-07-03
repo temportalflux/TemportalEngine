@@ -100,7 +100,6 @@ protected:
 	std::vector<ImageView> mFrameImageViews;
 	// fence is active while a frame is drawing to this view
 	std::vector<vk::Fence> mFrameImageFences;
-	RenderPass mRenderPass;
 #pragma endregion
 	
 	logging::Logger getLog() const;
@@ -110,11 +109,14 @@ protected:
 
 	virtual void destroyRenderChain() = 0;
 	void createSwapChain();
-	void createFrameImageViews();
-	void createRenderPass(std::optional<vk::Format> depthBufferFormat = std::nullopt);
 	void destroySwapChain();
+
+	void createFrameImageViews();
 	void destroyFrameImageViews();
-	void destroyRenderPass();
+	
+	virtual void createRenderPass() = 0;
+	virtual RenderPass* getRenderPass() = 0;
+	virtual void destroyRenderPass() = 0;
 
 	virtual void createFrames(uSize viewCount) = 0;
 	virtual uSize getNumberOfFrames() const = 0;

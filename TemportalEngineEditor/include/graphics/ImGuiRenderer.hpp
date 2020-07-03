@@ -34,6 +34,9 @@ public:
 	void drawFrame() override;
 
 private:
+
+	RenderPass mRenderPass;
+
 	// TODO: Create wrapper inside graphics namespace
 	vk::UniqueDescriptorPool mDescriptorPool;
 	std::vector<graphics::ImGuiFrame> mGuiFrames;
@@ -51,6 +54,9 @@ private:
 protected:
 	void createRenderChain() override;
 	void destroyRenderChain() override;
+	void createRenderPass() override;
+	RenderPass* getRenderPass() override;
+	void destroyRenderPass() override;
 
 	void createFrames(uSize viewCount) override;
 	uSize getNumberOfFrames() const override;

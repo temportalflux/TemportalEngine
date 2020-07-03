@@ -287,7 +287,7 @@ void GameRenderer::createRenderChain()
 	this->createSwapChain();
 	this->createFrameImageViews();
 	this->createDepthResources(this->mSwapChain.getResolution());
-	this->createRenderPass(this->mDepthImage.getFormat());
+	this->createRenderPass();
 
 	this->createUniformBuffers();
 	this->mDescriptorPool.create(&this->mLogicalDevice, (ui32)this->mFrameImageViews.size());
@@ -313,6 +313,49 @@ void GameRenderer::destroyRenderChain()
 	this->destroySwapChain();
 
 	this->mCommandPoolTransient.destroy();
+}
+
+void GameRenderer::createRenderPass()
+{
+	auto& colorAttachment = this->mRenderPass.addAttachment(
+		RenderPassAttachment()
+		.setFormat(this->mSwapChain.getFormat())
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
+		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
+		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
+	);
+	auto& depthAttachment = this->mRenderPass.addAttachment(
+		RenderPassAttachment()
+		.setFormat((ui32)this->mDepthImage.getFormat())
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare)
+		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
+		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal)
+	);
+
+	auto& onlyPhase = this->mRenderPass.addPhase(
+		RenderPassPhase()
+		.addColorAttachment(colorAttachment)
+		.setDepthAttachment(depthAttachment)
+	);
+
+	this->mRenderPass.addDependency(
+		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
+		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
+	);
+
+	this->mRenderPass.create(&this->mLogicalDevice);
+}
+
+RenderPass* GameRenderer::getRenderPass()
+{
+	return &this->mRenderPass;
+}
+
+void GameRenderer::destroyRenderPass()
+{
+	this->mRenderPass.destroy();
 }
 
 void GameRenderer::createUniformBuffers()
