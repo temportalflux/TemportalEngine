@@ -51,6 +51,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\QueueFamilyGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\RenderPass.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ShaderModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\StringRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainInfo.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChain.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\SwapChainSupport.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\StringRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\types.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Uniform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp" />

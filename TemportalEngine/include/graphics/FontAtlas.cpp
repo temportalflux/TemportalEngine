@@ -185,3 +185,17 @@ void Font::Face::invalidate()
 	this->mImage.invalidate();
 	this->mSampler.invalidate();
 }
+
+void Font::setText(std::string const key, ui8 fontSize, math::Vector2Int pos, std::string const content)
+{
+	auto idxMaybe = this->findSet(fontSize);
+	if (!idxMaybe) return;
+	this->mGlyphFaces[*idxMaybe].setText(key, pos, content);
+}
+
+void Font::Face::setText(std::string const key, math::Vector2Int pos, std::string const content)
+{
+	PositionedString strPos = { pos, content };
+	strPos.verticies;
+	this->mRenderingText.insert(std::make_pair(key, strPos));
+}

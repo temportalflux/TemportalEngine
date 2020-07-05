@@ -56,6 +56,12 @@ Pipeline& Pipeline::setFrontFace(vk::FrontFace const face)
 	return *this;
 }
 
+Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
+{
+	this->mBlendMode = mode;
+	return *this;
+}
+
 bool Pipeline::isValid() const
 {
 	return (bool)this->mPipeline;
@@ -124,14 +130,31 @@ Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std:
 		.setRasterizationSamples(vk::SampleCountFlagBits::e1)
 		.setPSampleMask(nullptr);
 
-	auto infoColorBlendAttachment = vk::PipelineColorBlendAttachmentState()
-		.setColorWriteMask(
-			vk::ColorComponentFlagBits::eR
-			| vk::ColorComponentFlagBits::eG
-			| vk::ColorComponentFlagBits::eB
-			| vk::ColorComponentFlagBits::eA
-		)
-		.setBlendEnable(false);
+	auto infoColorBlendAttachment = vk::PipelineColorBlendAttachmentState();
+
+	if (this->mBlendMode)
+	{
+		infoColorBlendAttachment
+			.setBlendEnable(true)
+			.setColorWriteMask(this->mBlendMode->writeMask)
+			.setColorBlendOp(this->mBlendMode->colorOp.operation)
+			.setSrcColorBlendFactor(this->mBlendMode->colorOp.srcFactor)
+			.setDstColorBlendFactor(this->mBlendMode->colorOp.dstFactor)
+			.setAlphaBlendOp(this->mBlendMode->alphaOp.operation)
+			.setSrcAlphaBlendFactor(this->mBlendMode->alphaOp.srcFactor)
+			.setDstAlphaBlendFactor(this->mBlendMode->alphaOp.dstFactor);
+	}
+	else
+	{
+		infoColorBlendAttachment
+			.setColorWriteMask(
+				vk::ColorComponentFlagBits::eR
+				| vk::ColorComponentFlagBits::eG
+				| vk::ColorComponentFlagBits::eB
+				| vk::ColorComponentFlagBits::eA
+			)
+			.setBlendEnable(false);
+	}
 
 	auto infoColorBlendState = vk::PipelineColorBlendStateCreateInfo()
 		.setLogicOpEnable(false)

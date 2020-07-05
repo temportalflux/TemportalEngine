@@ -14,6 +14,7 @@ class IRender;
 FORWARD_DEF(NS_ASSET, class Font)
 FORWARD_DEF(NS_ASSET, class Texture)
 FORWARD_DEF(NS_ASSET, class TextureSampler)
+FORWARD_DEF(NS_GRAPHICS, class StringRenderer)
 
 NS_GRAPHICS
 class Uniform;
@@ -55,7 +56,7 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
-	void setFont(std::shared_ptr<asset::Font> font);
+	graphics::Font& setFont(std::shared_ptr<asset::Font> font);
 	
 	template <typename TData>
 	void setTextToRender(std::vector<TData> const &verticies, std::vector<ui16> const &indicies)
@@ -135,6 +136,7 @@ private:
 	DescriptorGroup mDescriptorGroup;
 	Pipeline mPipeline;
 
+	std::shared_ptr<StringRenderer> mpStringRenderer;
 	graphics::Font mFont;
 	DescriptorGroup mDescriptorGroupUI;
 	Pipeline mPipelineUI;

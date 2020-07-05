@@ -10,6 +10,7 @@ using namespace graphics;
 
 DescriptorGroup& DescriptorGroup::setBindingCount(uSize count)
 {
+	this->mBindings.clear();
 	this->mBindings.resize(count);
 	return *this;
 }
@@ -17,6 +18,7 @@ DescriptorGroup& DescriptorGroup::setBindingCount(uSize count)
 DescriptorGroup& DescriptorGroup::setAmount(ui32 setCount)
 {
 	this->mSetCount = setCount;
+	this->mWriteInstructions.clear();
 	this->mWriteInstructions.resize(setCount);
 	return *this;
 }

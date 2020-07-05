@@ -249,6 +249,9 @@
       <Filter>graphics</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\StringRenderer.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -565,5 +568,8 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp" />
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\graphics\StringRenderer.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

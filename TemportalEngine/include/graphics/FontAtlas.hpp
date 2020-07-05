@@ -18,6 +18,13 @@ class Font
 		GlyphSprite& operator=(FontGlyph const &other);
 	};
 
+	struct UIVertex
+	{
+		math::Vector2 position;
+		math::Vector4 color;
+		math::Vector2 texCoord;
+	};
+
 public:
 	class Face
 	{
@@ -43,18 +50,29 @@ public:
 		math::Vector2UInt calculateAtlasLayout();
 		void writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha);
 		void invalidate();
+
+		struct PositionedString
+		{
+			math::Vector2Int pos;
+			std::string content;
+			std::vector<UIVertex> verticies;
+		};
+		std::unordered_map<std::string, PositionedString> mRenderingText;
+		void setText(std::string const key, math::Vector2Int pos, std::string const content);
 	};
 
 	Font& loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
 	Face& getFace(ui8 size);
 	std::vector<Face>& faces();
 
+	void setText(std::string const key, ui8 fontSize, math::Vector2Int pos, std::string const content);
+
 	void invalidate();
 
 private:
 	std::vector<ui8> mSupportedSizes;
 	std::vector<Face> mGlyphFaces;
-
+	
 	std::optional<uIndex> findSet(ui8 size) const;
 
 };

@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		}
 
 		auto pWindow = pEngine->createWindow(
-			800, 600,
+			800, 800,
 			pEngine->getProject()->getDisplayName(),
 			WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
 		);
@@ -298,20 +298,21 @@ int main(int argc, char *argv[])
 			}
 
 			{
-				auto font = asset::TypedAssetPath<asset::Font>::Create(
+				auto fontAsset = asset::TypedAssetPath<asset::Font>::Create(
 					"assets/font/Montserrat Regular.te-asset"
 				).load(asset::EAssetSerialization::Binary);
-				assert(font->supportsFontSize(12));
-				renderer.setFont(font);
+				assert(fontAsset->supportsFontSize(12));
+				auto& font = renderer.setFont(fontAsset);
 				renderer.setTextToRender<UIVertex>(
 					{
-						{ { 0, 0 }, { 1, 1, 1, 1 }, { 0, 0 } },
-						{ { 1, 0 }, { 1, 1, 1, 1 }, { 1, 0 } },
-						{ { 1, 1 }, { 1, 1, 1, 1 }, { 1, 1 } },
-						{ { 0, 1 }, { 1, 1, 1, 1 }, { 0, 1 } }
+						{ { -1, -1 }, { 1, 0, 1, 1 }, { 0, 0 } },
+						{ { 1, -1 }, { 1, 0, 1, 1 }, { 1, 0 } },
+						{ { 1, 1 }, { 1, 0, 1, 1 }, { 1, 1 } },
+						{ { -1, 1 }, { 1, 0, 1, 1 }, { 0, 1 } }
 					},
 					{ 0, 1, 2, 2, 3, 0 }
 				);
+				font.setText("test", 12, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
 			}
 
 			renderer.createRenderChain();

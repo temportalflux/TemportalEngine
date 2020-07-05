@@ -4,6 +4,7 @@
 #include "asset/Font.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "graphics/VulkanApi.hpp"
 
@@ -22,6 +23,8 @@ GameRenderer::GameRenderer()
 	this->mIndexBufferUI
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	// TODO: Use a `MemoryChunk` instead of global memory
+	this->mpStringRenderer = std::make_shared<StringRenderer>();
 }
 
 void GameRenderer::invalidate()
@@ -236,7 +239,7 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 	queue.waitIdle();
 }
 
-void GameRenderer::setFont(std::shared_ptr<asset::Font> font)
+graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 {
 	this->mFont.loadGlyphSets(font->getFontSizes(), font->glyphSets());
 	for (auto& face : this->mFont.faces())
@@ -283,6 +286,7 @@ void GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			.setImage(&image, vk::ImageAspectFlagBits::eColor)
 			.create(&this->mLogicalDevice);
 	}
+	return this->mFont;
 }
 
 void GameRenderer::createRenderChain()
@@ -457,6 +461,14 @@ void GameRenderer::createCommandObjects()
 		}
 	}
 
+	// color = (newColor.alpha * newColor.rgb) + ((1 - newColor.alpha) * oldColor.rgb)
+	// alpha = (1 * newColor.alpha) + (0 * oldColor.alpha)
+	BlendMode overlayBlendMode = {
+			vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA,
+			{ vk::BlendOp::eAdd, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha },
+			{ vk::BlendOp::eAdd, vk::BlendFactor::eOne, vk::BlendFactor::eZero }
+	};
+
 	auto& fullViewport = vk::Viewport()
 		.setX(0).setY(0)
 		.setWidth((f32)resolution.x()).setHeight((f32)resolution.y())
@@ -468,6 +480,7 @@ void GameRenderer::createCommandObjects()
 	this->mPipelineUI
 		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
 		.setFrontFace(vk::FrontFace::eClockwise)
+		.setBlendMode(overlayBlendMode)
 		.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
 
 	this->mCommandPool

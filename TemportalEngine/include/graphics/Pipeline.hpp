@@ -12,6 +12,19 @@ class LogicalDevice;
 class RenderPass;
 class ShaderModule;
 
+struct BlendMode
+{
+	struct BlendComponent
+	{
+		vk::BlendOp operation;
+		vk::BlendFactor srcFactor;
+		vk::BlendFactor dstFactor;
+	};
+	vk::ColorComponentFlags writeMask;
+	BlendComponent colorOp;
+	BlendComponent alphaOp;
+};
+
 class Pipeline
 {
 	friend class VulkanApi;
@@ -24,6 +37,7 @@ public:
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
 	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
 	Pipeline& setFrontFace(vk::FrontFace const face);
+	Pipeline& setBlendMode(std::optional<BlendMode> mode);
 
 	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
 	vk::Viewport const& getViewport() const;
@@ -38,6 +52,7 @@ private:
 	vk::Viewport mViewport;
 	vk::Rect2D mScissor;
 	vk::FrontFace mFrontFace;
+	std::optional<BlendMode> mBlendMode;
 
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipelineCache mCache;

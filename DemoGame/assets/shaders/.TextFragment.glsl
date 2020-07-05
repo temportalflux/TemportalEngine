@@ -10,6 +10,6 @@ layout(location = 0) out vec4 outColor;
 void main()
 {
 	vec4 pixel = texture(fontAtlasSampler, fragTexCoord);
-	outColor = vec4(pixel.w, pixel.w, pixel.w, 1.0);
-	//outColor = vec4(fragTexCoord, 0, 1.0);
+	//outColor = vec4(fragTexCoord.x * pixel.r, fragTexCoord.y * pixel.g, 0, pixel.a);
+	outColor = fragColor * pixel;
 }
