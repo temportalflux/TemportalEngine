@@ -1,6 +1,6 @@
 #include "graphics/Frame.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/CommandBuffer.hpp"
@@ -27,18 +27,17 @@ Frame::~Frame()
 	this->destroy();
 }
 
-void Frame::create(LogicalDevice *pDevice)
+void Frame::create(std::shared_ptr<GraphicsDevice> device)
 {
-	this->mpDevice = pDevice;
-	auto& device = extract<vk::Device>(this->mpDevice);
-	this->mFence_FrameInFlight = device.createFenceUnique(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
-	this->mSemaphore_ImageAvailable = device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
-	this->mSemaphore_RenderComplete = device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
+	this->mpDevice = device;
+	this->mFence_FrameInFlight = device->createFence(vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled));
+	this->mSemaphore_ImageAvailable = device->createSemaphore();
+	this->mSemaphore_RenderComplete = device->createSemaphore();
 }
 
 void Frame::destroy()
 {
-	this->mpDevice = nullptr;
+	this->mpDevice.reset();
 	this->mFence_FrameInFlight.reset();
 	this->mSemaphore_ImageAvailable.reset();
 	this->mSemaphore_RenderComplete.reset();
@@ -46,10 +45,7 @@ void Frame::destroy()
 
 void Frame::waitUntilNotInFlight() const
 {
-	extract<vk::Device>(this->mpDevice).waitForFences(
-		this->mFence_FrameInFlight.get(),
-		true, UINT64_MAX
-	);
+	this->mpDevice.lock()->waitForFences({ this->mFence_FrameInFlight.get() });
 }
 
 vk::ResultValue<ui32> Frame::acquireNextImage(SwapChain const *pSwapChain) const
@@ -64,10 +60,10 @@ vk::Fence& Frame::getInFlightFence()
 
 void Frame::markNotInFlight()
 {
-	extract<vk::Device>(this->mpDevice).resetFences(this->mFence_FrameInFlight.get());
+	this->mpDevice.lock()->resetFences({ this->mFence_FrameInFlight.get() });
 }
 
-void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers)
+void Frame::submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers)
 {
 	auto vkBuffers = std::vector<vk::CommandBuffer>(buffers.size());
 	std::transform(buffers.begin(), buffers.end(), vkBuffers.begin(),
@@ -86,7 +82,7 @@ void Frame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers
 	);
 }
 
-vk::Result Frame::present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
+vk::Result Frame::present(vk::Queue const *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
 {
 	auto vkSwapChains = std::vector<vk::SwapchainKHR>(swapChains.size());
 	std::transform(swapChains.begin(), swapChains.end(), vkSwapChains.begin(),

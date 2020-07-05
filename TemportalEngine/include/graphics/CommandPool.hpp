@@ -10,10 +10,11 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 
 class CommandPool
 {
+	friend class GraphicsDevice;
 
 public:
 	CommandPool() = default;
@@ -21,17 +22,17 @@ public:
 	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
-	CommandPool& create(LogicalDevice *pDevice, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
+	CommandPool& create(std::shared_ptr<GraphicsDevice> device, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
 	void destroy();
 
-	std::vector<CommandBuffer> createCommandBuffers(uSize count) const;
+	std::vector<CommandBuffer> createCommandBuffers(ui32 const count) const;
 	void resetPool();
 
 private:
 	QueueFamily::Enum mQueueFamily;
 	ui32 mIdxQueueFamily;
 
-	LogicalDevice *mpDevice;
+	std::weak_ptr<GraphicsDevice> mpDevice;
 
 	vk::UniqueCommandPool mInternal;
 

@@ -1,7 +1,6 @@
 #include "graphics/CommandPool.hpp"
 
-#include "graphics/LogicalDevice.hpp"
-#include "graphics/VulkanApi.hpp"
+#include "graphics/GraphicsDevice.hpp"
 
 using namespace graphics;
 
@@ -22,10 +21,10 @@ bool CommandPool::isValid() const
 	return (bool)this->mInternal;
 }
 
-CommandPool& CommandPool::create(LogicalDevice *pDevice, vk::CommandPoolCreateFlags flags)
+CommandPool& CommandPool::create(std::shared_ptr<GraphicsDevice> device, vk::CommandPoolCreateFlags flags)
 {
-	this->mpDevice = pDevice;
-	this->mInternal = extract<vk::Device>(this->mpDevice).createCommandPoolUnique(
+	this->mpDevice = device;
+	this->mInternal = device->createCommandPool(
 		vk::CommandPoolCreateInfo()
 		.setFlags(flags)
 		.setQueueFamilyIndex(this->mIdxQueueFamily)
@@ -35,25 +34,18 @@ CommandPool& CommandPool::create(LogicalDevice *pDevice, vk::CommandPoolCreateFl
 
 void CommandPool::destroy()
 {
+	this->mpDevice.reset();
 	this->mInternal.reset();
 }
 
-std::vector<CommandBuffer> CommandPool::createCommandBuffers(uSize count) const
+std::vector<CommandBuffer> CommandPool::createCommandBuffers(ui32 const count) const
 {
-	auto bufferHandles = extract<vk::Device>(this->mpDevice).allocateCommandBuffersUnique(vk::CommandBufferAllocateInfo()
-		.setLevel(vk::CommandBufferLevel::ePrimary)
-		.setCommandPool(this->mInternal.get())
-		.setCommandBufferCount((ui32)count)
+	return this->mpDevice.lock()->allocateCommandBuffers(
+		this, vk::CommandBufferLevel::ePrimary, count
 	);
-	auto buffers = std::vector<CommandBuffer>(count);
-	for (uSize i = 0; i < count; ++i)
-	{
-		buffers[i].mInternal.swap(bufferHandles[i]);
-	}
-	return buffers;
 }
 
 void CommandPool::resetPool()
 {
-	extract<vk::Device>(this->mpDevice).resetCommandPool(this->mInternal.get(), vk::CommandPoolResetFlags());
+	this->mpDevice.lock()->resetPool(this, vk::CommandPoolResetFlags());
 }

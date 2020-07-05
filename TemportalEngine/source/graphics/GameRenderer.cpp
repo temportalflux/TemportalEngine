@@ -67,14 +67,14 @@ void GameRenderer::initializeTransientCommandPool()
 	this->mCommandPoolTransient
 		.setQueueFamily(
 			graphics::QueueFamily::Enum::eGraphics,
-			this->mPhysicalDevice.queryQueueFamilyGroup()
+			this->mpGraphicsDevice->queryQueueFamilyGroup()
 		)
-		.create(&this->mLogicalDevice, vk::CommandPoolCreateFlagBits::eTransient);
+		.create(this->mpGraphicsDevice, vk::CommandPoolCreateFlagBits::eTransient);
 }
 
 void GameRenderer::initializeBuffer(graphics::Buffer &buffer)
 {
-	buffer.create(&this->mLogicalDevice);
+	buffer.create(this->mpGraphicsDevice);
 }
 
 void GameRenderer::writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size)
@@ -86,8 +86,8 @@ void GameRenderer::writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize
 		vk::MemoryPropertyFlagBits::eHostVisible
 		| vk::MemoryPropertyFlagBits::eHostCoherent
 	);
-	stagingBuffer.create(&this->mLogicalDevice);
-	stagingBuffer.write(&this->mLogicalDevice, offset, data, size);
+	stagingBuffer.create(this->mpGraphicsDevice);
+	stagingBuffer.write(this->mpGraphicsDevice, offset, data, size);
 	this->copyBetweenBuffers(&stagingBuffer, buffer, size);
 	stagingBuffer.destroy();
 }
@@ -100,7 +100,7 @@ void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size)
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.copyBuffer(src, dest, size)
 		.end();
-	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
@@ -149,7 +149,7 @@ uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler>
 			(vk::SamplerMipmapMode)sampler->getLodMode(),
 			sampler->getLodBias(), sampler->getLodRange()
 		);
-	this->mTextureSamplers[idx].create(&this->mLogicalDevice);
+	this->mTextureSamplers[idx].create(this->mpGraphicsDevice);
 	return idx;
 }
 
@@ -166,7 +166,7 @@ uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> tex
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	this->mTextureImages[idxImage].setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	this->mTextureImages[idxImage].create(&this->mLogicalDevice);
+	this->mTextureImages[idxImage].create(this->mpGraphicsDevice);
 
 	this->transitionImageToLayout(&this->mTextureImages[idxImage], vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 	{
@@ -177,8 +177,8 @@ uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> tex
 			vk::MemoryPropertyFlagBits::eHostVisible
 			| vk::MemoryPropertyFlagBits::eHostCoherent
 		);
-		stagingBuffer.create(&this->mLogicalDevice);
-		stagingBuffer.write(&this->mLogicalDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
+		stagingBuffer.create(this->mpGraphicsDevice);
+		stagingBuffer.write(this->mpGraphicsDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
 		this->copyBufferToImage(&stagingBuffer, &this->mTextureImages[idxImage]);
 		stagingBuffer.destroy();
 	}
@@ -186,7 +186,7 @@ uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> tex
 
 	uIndex idx = this->mTextureViews.size();
 	this->mTextureViews.push_back(graphics::ImageView());
-	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(&this->mLogicalDevice);
+	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(this->mpGraphicsDevice);
 
 	this->mTextureDescriptorPairs.push_back(std::make_pair(idx, idxSampler));
 
@@ -200,7 +200,7 @@ void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.copyBufferToImage(src, dest)
 		.end();
-	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
@@ -223,7 +223,7 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.setPipelineImageBarrier(image, prev, next)
 		.end();
-	auto queue = this->mQueues[QueueFamily::Enum::eGraphics];
+	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)
@@ -252,7 +252,7 @@ graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			.setNormalizeCoordinates(true)
 			.setCompare(std::nullopt)
 			.setMipLOD(vk::SamplerMipmapMode::eNearest, 0, { 0, 0 })
-			.create(&this->mLogicalDevice);
+			.create(this->mpGraphicsDevice);
 		
 		auto& image = face.image();
 		image
@@ -261,7 +261,7 @@ graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			.setTiling(vk::ImageTiling::eOptimal)
 			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 		image.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-		image.create(&this->mLogicalDevice);
+		image.create(this->mpGraphicsDevice);
 
 		auto& data = face.getPixelData();
 		auto dataMemSize = data.size() * sizeof(ui8);
@@ -275,8 +275,8 @@ graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 				vk::MemoryPropertyFlagBits::eHostVisible
 				| vk::MemoryPropertyFlagBits::eHostCoherent
 			);
-			stagingBuffer.create(&this->mLogicalDevice);
-			stagingBuffer.write(&this->mLogicalDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
+			stagingBuffer.create(this->mpGraphicsDevice);
+			stagingBuffer.write(this->mpGraphicsDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
 			this->copyBufferToImage(&stagingBuffer, &image);
 			stagingBuffer.destroy();
 		}
@@ -284,7 +284,7 @@ graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 
 		face.view()
 			.setImage(&image, vk::ImageAspectFlagBits::eColor)
-			.create(&this->mLogicalDevice);
+			.create(this->mpGraphicsDevice);
 	}
 	return this->mFont;
 }
@@ -302,7 +302,7 @@ void GameRenderer::createRenderChain()
 	this->createRenderPass();
 
 	this->createUniformBuffers();
-	this->mDescriptorPool.create(&this->mLogicalDevice, (ui32)this->mFrameImageViews.size());
+	this->mDescriptorPool.create(this->mpGraphicsDevice, (ui32)this->mFrameImageViews.size());
 	this->createDescriptors();
 	this->createCommandObjects();
 
@@ -357,7 +357,7 @@ void GameRenderer::createRenderPass()
 		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
 	);
 
-	this->mRenderPass.create(&this->mLogicalDevice);
+	this->mRenderPass.create(this->mpGraphicsDevice);
 }
 
 RenderPass* GameRenderer::getRenderPass()
@@ -383,7 +383,7 @@ void GameRenderer::createUniformBuffers()
 			// Host Coherent means this entire buffer will be automatically flushed per write.
 			// This can be optimized later by only flushing the portion of the buffer which actually changed.
 			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-		this->mUniformStaticBuffersPerFrame[idxFrame].create(&this->mLogicalDevice);
+		this->mUniformStaticBuffersPerFrame[idxFrame].create(this->mpGraphicsDevice);
 	}
 }
 
@@ -395,7 +395,7 @@ void GameRenderer::destroyUniformBuffers()
 void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
 {
 
-	auto supportedFormat = this->mPhysicalDevice.pickFirstSupportedFormat(
+	auto supportedFormat = this->mpGraphicsDevice->pickFirstSupportedFormat(
 		{ vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint },
 		vk::ImageTiling::eOptimal, vk::FormatFeatureFlagBits::eDepthStencilAttachment
 	);
@@ -407,13 +407,13 @@ void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
 		.setSize({ resolution.x(), resolution.y(), 1 })
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
-		.create(&this->mLogicalDevice);
+		.create(this->mpGraphicsDevice);
 
 	this->transitionImageToLayout(&this->mDepthImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
 
 	this->mDepthView
 		.setImage(&this->mDepthImage, vk::ImageAspectFlagBits::eDepth)
-		.create(&this->mLogicalDevice);
+		.create(this->mpGraphicsDevice);
 }
 
 void GameRenderer::destroyDepthResources()
@@ -432,15 +432,15 @@ void GameRenderer::createDescriptors()
 		.attachToBinding(0, this->mUniformStaticBuffersPerFrame, 0)
 		.addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
 		.attachToBinding(1, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second])
-		.create(&this->mLogicalDevice, &this->mDescriptorPool)
-		.writeAttachments(&this->mLogicalDevice);
+		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
+		.writeAttachments(this->mpGraphicsDevice);
 	this->mDescriptorGroupUI
 		.setBindingCount(1)
 		.setAmount((ui32)this->mFrameImageViews.size())
 		.addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
 		.attachToBinding(0, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mFont.faces()[0].view(), &this->mFont.faces()[0].sampler())
-		.create(&this->mLogicalDevice, &this->mDescriptorPool)
-		.writeAttachments(&this->mLogicalDevice);
+		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
+		.writeAttachments(this->mpGraphicsDevice);
 }
 
 void GameRenderer::createCommandObjects()
@@ -457,7 +457,7 @@ void GameRenderer::createCommandObjects()
 				.setResolution(this->mSwapChain.getResolution())
 				.addAttachment(&this->mFrameImageViews[i])
 				.addAttachment(&this->mDepthView)
-				.create(&this->mLogicalDevice);
+				.create(this->mpGraphicsDevice);
 		}
 	}
 
@@ -476,17 +476,17 @@ void GameRenderer::createCommandObjects()
 	this->mPipeline
 		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
 		.setFrontFace(vk::FrontFace::eCounterClockwise)
-		.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroup });
+		.create(this->mpGraphicsDevice, &this->mRenderPass, { &this->mDescriptorGroup });
 	this->mPipelineUI
 		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
 		.setFrontFace(vk::FrontFace::eClockwise)
 		.setBlendMode(overlayBlendMode)
-		.create(&this->mLogicalDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
+		.create(this->mpGraphicsDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
 
 	this->mCommandPool
-		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, mPhysicalDevice.queryQueueFamilyGroup())
-		.create(&this->mLogicalDevice);
-	this->mCommandBuffers = this->mCommandPool.createCommandBuffers(this->mFrameImageViews.size());
+		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, this->mpGraphicsDevice->queryQueueFamilyGroup())
+		.create(this->mpGraphicsDevice);
+	this->mCommandBuffers = this->mCommandPool.createCommandBuffers((ui32)this->mFrameImageViews.size());
 
 	this->recordCommandBufferInstructions();
 }
@@ -536,7 +536,7 @@ void GameRenderer::createFrames(uSize viewCount)
 	this->mFrames.resize(viewCount);
 	for (auto& frame : this->mFrames)
 	{
-		frame.create(&this->mLogicalDevice);
+		frame.create(this->mpGraphicsDevice);
 	}
 }
 
@@ -575,7 +575,7 @@ void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 	}
 	//*/
 	this->mpUniformStatic->beginReading();
-	this->mUniformStaticBuffersPerFrame[idxImageView].write(&this->mLogicalDevice,
+	this->mUniformStaticBuffersPerFrame[idxImageView].write(this->mpGraphicsDevice,
 		/*offset*/ 0, this->mpUniformStatic->data(), this->mpUniformStatic->size()
 	);
 	this->mpUniformStatic->endReading();
@@ -585,5 +585,5 @@ void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mCommandBuffers[idxCurrentImage];
-	currentFrame->submitBuffers(&this->mQueues[QueueFamily::Enum::eGraphics], { &commandBuffer });
+	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), { &commandBuffer });
 }

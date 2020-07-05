@@ -14,7 +14,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 
 class ShaderModule
 {
@@ -39,7 +39,7 @@ public:
 	ShaderModule& setVertexDescription(VertexDescription desc);
 
 	bool isLoaded() const;
-	void create(LogicalDevice *pDevice);
+	void create(std::shared_ptr<GraphicsDevice> device);
 	void destroy();
 
 private:

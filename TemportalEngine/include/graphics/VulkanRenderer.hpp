@@ -19,6 +19,7 @@
 #include "graphics/CommandPool.hpp"
 #include "graphics/CommandBuffer.hpp"
 #include "graphics/Frame.hpp"
+#include "graphics/GraphicsDevice.hpp"
 
 #include <unordered_map>
 #include <set>
@@ -35,7 +36,7 @@ class VulkanRenderer
 public:
 	VulkanRenderer();
 
-	void setInstance(VulkanInstance *pInstance);
+	void setInstance(std::shared_ptr<VulkanInstance> pInstance);
 	void takeOwnershipOfSurface(Surface &surface);
 
 	void setPhysicalDevicePreference(PhysicalDevicePreference const &preference);
@@ -79,15 +80,13 @@ public:
 	virtual void invalidate();
 
 protected:
-	VulkanInstance *mpInstance;
+	std::shared_ptr<VulkanInstance> mpInstance;
 	Surface mSurface;
 
 #pragma region Devices, API, & Queues
+	std::shared_ptr<GraphicsDevice> mpGraphicsDevice;
 	PhysicalDevicePreference mPhysicalDevicePreference;
-	PhysicalDevice mPhysicalDevice;
-	LogicalDevice mLogicalDevice;
 	LogicalDeviceInfo mLogicalDeviceInfo;
-	std::unordered_map<QueueFamily::Enum, vk::Queue> mQueues;
 #pragma endregion
 
 #pragma region Render Objects
@@ -104,8 +103,7 @@ protected:
 	
 	logging::Logger getLog() const;
 
-	void pickPhysicalDevice();
-	vk::Queue& getQueue(QueueFamily::Enum type);
+	vk::Queue const& getQueue(QueueFamily::Enum type) const;
 
 	virtual void destroyRenderChain() = 0;
 	void createSwapChain();

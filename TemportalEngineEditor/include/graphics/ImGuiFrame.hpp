@@ -9,6 +9,7 @@
 #include <functional>
 
 NS_GRAPHICS
+class GraphicsDevice;
 
 class ImGuiFrame : public Frame
 {
@@ -20,7 +21,7 @@ public:
 	ImGuiFrame& setView(ImageView *pView);
 	ImGuiFrame& setQueueFamilyGroup(QueueFamilyGroup const *group);
 
-	void create(LogicalDevice *pDevice) override;
+	void create(std::shared_ptr<GraphicsDevice> device) override;
 	void destroy() override;
 
 	void submitOneOff(
@@ -30,7 +31,7 @@ public:
 	Command beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearColor);
 	CommandBuffer& cmdBuffer();
 	void endRenderPass(Command &cmd);
-	void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers) override;
+	void submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers) override;
 
 private:
 	RenderPass *mpRenderPass;

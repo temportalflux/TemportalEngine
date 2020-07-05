@@ -8,7 +8,7 @@
 
 NS_GRAPHICS
 class DescriptorGroup;
-class LogicalDevice;
+class GraphicsDevice;
 class RenderPass;
 class ShaderModule;
 
@@ -43,7 +43,7 @@ public:
 	vk::Viewport const& getViewport() const;
 
 	bool isValid() const;
-	Pipeline& create(LogicalDevice *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
+	Pipeline& create(std::shared_ptr<GraphicsDevice> device, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
 	void destroy();
 	void clearShaders();
 

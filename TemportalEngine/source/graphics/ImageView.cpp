@@ -1,5 +1,6 @@
 #include "graphics/ImageView.hpp"
 
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/LogicalDevice.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/VulkanApi.hpp"
@@ -78,9 +79,9 @@ ImageView& ImageView::setRange(vk::ImageSubresourceRange range)
 	return *this;
 }
 
-ImageView& ImageView::create(LogicalDevice *device)
+ImageView& ImageView::create(std::shared_ptr<GraphicsDevice> device)
 {
-	this->mInternal = extract<vk::Device>(device).createImageViewUnique(
+	this->mInternal = device->createImageView(
 		vk::ImageViewCreateInfo()
 		.setImage(this->mImage)
 		.setFormat(this->mFormat)

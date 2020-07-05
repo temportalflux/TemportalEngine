@@ -1,6 +1,6 @@
 #include "graphics/ShaderModule.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/VulkanApi.hpp"
 
 #include <fstream>
@@ -99,15 +99,16 @@ bool ShaderModule::isLoaded() const
 	return (bool)this->mInternal;
 }
 
-void ShaderModule::create(LogicalDevice *pDevice)
+void ShaderModule::create(std::shared_ptr<GraphicsDevice> device)
 {
 	assert(!isLoaded()); // assumes the shader is not loaded
-	assert(pDevice != nullptr && pDevice->isValid());
+	assert(device);
 	
-	auto info = vk::ShaderModuleCreateInfo()
+	this->mInternal = device->createShaderModule(
+		vk::ShaderModuleCreateInfo()
 		.setCodeSize(sizeof(ui32) * this->mBinary.size())
-		.setPCode(this->mBinary.data());
-	this->mInternal = extract<vk::Device>(pDevice).createShaderModuleUnique(info);
+		.setPCode(this->mBinary.data())
+	);
 }
 
 void ShaderModule::destroy()

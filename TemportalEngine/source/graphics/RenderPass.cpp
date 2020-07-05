@@ -1,6 +1,6 @@
 #include "graphics/RenderPass.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -113,7 +113,7 @@ RenderPass& RenderPass::addDependency(DependencyItem const dependee, DependencyI
 	return *this;
 }
 
-RenderPass& RenderPass::create(LogicalDevice *pDevice)
+RenderPass& RenderPass::create(std::shared_ptr<GraphicsDevice> device)
 {
 	assert(!isValid());
 
@@ -137,7 +137,7 @@ RenderPass& RenderPass::create(LogicalDevice *pDevice)
 		.setDependencyCount((ui32)this->mDependencies.size())
 		.setPDependencies(this->mDependencies.data());
 
-	this->mRenderPass = extract<vk::Device>(pDevice).createRenderPassUnique(info);
+	this->mRenderPass = device->createRenderPass(info);
 	return *this;
 }
 

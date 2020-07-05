@@ -91,7 +91,7 @@ public:
 
 #pragma region Graphics
 	bool setupVulkan();
-	graphics::VulkanInstance* initializeVulkan(std::vector<const char*> requiredExtensions);
+	std::shared_ptr<graphics::VulkanInstance> initializeVulkan(std::vector<const char*> requiredExtensions);
 	void initializeRenderer(graphics::VulkanRenderer *renderer, std::shared_ptr<Window> pWindow);
 #pragma endregion
 
@@ -133,7 +133,7 @@ private:
 #pragma endregion
 	
 #pragma region Graphic
-	graphics::VulkanInstance mVulkanInstance;
+	std::shared_ptr<graphics::VulkanInstance> mpVulkanInstance;
 #pragma endregion
 
 #pragma region Input

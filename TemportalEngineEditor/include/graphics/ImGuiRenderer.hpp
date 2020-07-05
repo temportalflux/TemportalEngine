@@ -5,6 +5,7 @@
 #include "graphics/VulkanRenderer.hpp"
 #include "graphics/Surface.hpp"
 #include "graphics/ImGuiFrame.hpp"
+#include "graphics/DescriptorPool.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -38,10 +39,10 @@ private:
 	RenderPass mRenderPass;
 
 	// TODO: Create wrapper inside graphics namespace
-	vk::UniqueDescriptorPool mDescriptorPool;
+	graphics::DescriptorPool mDescriptorPool;
 	std::vector<graphics::ImGuiFrame> mGuiFrames;
 
-	vk::UniqueDescriptorPool createDescriptorPoolImgui();
+	void createDescriptorPoolImgui();
 	void submitFonts();
 
 	std::unordered_map<std::string, std::shared_ptr<gui::IGui>> mGuis;

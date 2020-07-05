@@ -8,7 +8,7 @@
 
 NS_GRAPHICS
 class ImageView;
-class LogicalDevice;
+class GraphicsDevice;
 class RenderPass;
 
 class FrameBuffer
@@ -25,7 +25,7 @@ public:
 	FrameBuffer& setResolution(math::Vector2UInt const &resolution);
 	FrameBuffer& addAttachment(ImageView *pView);
 
-	FrameBuffer& create(LogicalDevice *pDevice);
+	FrameBuffer& create(std::shared_ptr<GraphicsDevice> device);
 	void* get();
 	void destroy();
 

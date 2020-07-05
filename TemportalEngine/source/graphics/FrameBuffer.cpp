@@ -1,7 +1,7 @@
 #include "graphics/FrameBuffer.hpp"
 
 #include "graphics/ImageView.hpp"
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/VulkanApi.hpp"
 
@@ -43,16 +43,17 @@ FrameBuffer& FrameBuffer::addAttachment(ImageView *pView)
 	return *this;
 }
 
-FrameBuffer& FrameBuffer::create(LogicalDevice *pDevice)
+FrameBuffer& FrameBuffer::create(std::shared_ptr<GraphicsDevice> device)
 {
-	auto info = vk::FramebufferCreateInfo()
+	this->mInternal = device->createFrameBuffer(
+		vk::FramebufferCreateInfo()
 		.setRenderPass(this->mRenderPass)
 		.setAttachmentCount((ui32)this->mAttachments.size())
 		.setPAttachments(this->mAttachments.data())
 		.setWidth(this->mResolution.x())
 		.setHeight(this->mResolution.y())
-		.setLayers(1);
-	mInternal = extract<vk::Device>(pDevice).createFramebufferUnique(info);
+		.setLayers(1)
+	);
 	return *this;
 }
 

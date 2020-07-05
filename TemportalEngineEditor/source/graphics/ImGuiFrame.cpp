@@ -1,6 +1,6 @@
 #include "graphics/ImGuiFrame.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/VulkanApi.hpp"
 
@@ -31,15 +31,15 @@ ImGuiFrame& ImGuiFrame::setQueueFamilyGroup(QueueFamilyGroup const *group)
 	return *this;
 }
 
-void ImGuiFrame::create(LogicalDevice *pDevice)
+void ImGuiFrame::create(std::shared_ptr<GraphicsDevice> device)
 {
-	this->mFrameBuffer.create(pDevice);
-	this->mCommandPool.create(pDevice, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+	this->mFrameBuffer.create(device);
+	this->mCommandPool.create(device, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 	auto buffers = this->mCommandPool.createCommandBuffers(1);
 	this->mCommandBuffer = std::move(buffers[0]);
 
 	// create fence and semaphores
-	Frame::create(pDevice);
+	Frame::create(device);
 }
 
 void ImGuiFrame::destroy()
@@ -63,7 +63,7 @@ void ImGuiFrame::submitOneOff(
 		.setPCommandBuffers(reinterpret_cast<vk::CommandBuffer*>(this->mCommandBuffer.get())),
 		vk::Fence()
 	);
-	this->mpDevice->waitUntilIdle();
+	this->mpDevice.lock()->logical().waitUntilIdle();
 }
 
 Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearcolor)
@@ -86,7 +86,7 @@ void ImGuiFrame::endRenderPass(Command &cmd)
 	cmd.endRenderPass().end();
 }
 
-void ImGuiFrame::submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers)
+void ImGuiFrame::submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers)
 {
 	vk::PipelineStageFlags pipelineStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
 	pQueue->submit(

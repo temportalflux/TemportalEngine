@@ -1,6 +1,6 @@
 #include "graphics/ImageSampler.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -85,9 +85,9 @@ ImageSampler& ImageSampler::setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math
 	return *this;
 }
 
-ImageSampler& ImageSampler::create(LogicalDevice *device)
+ImageSampler& ImageSampler::create(std::shared_ptr<GraphicsDevice> device)
 {
-	this->mInternal = extract<vk::Device>(device).createSamplerUnique(
+	this->mInternal = device->createSampler(
 		vk::SamplerCreateInfo()
 		.setMagFilter(this->mFilterMag).setMinFilter(this->mFilterMin)
 		.setAddressModeU(this->mAddressModes[0])

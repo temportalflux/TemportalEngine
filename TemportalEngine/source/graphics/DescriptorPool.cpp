@@ -1,17 +1,24 @@
 #include "graphics/DescriptorPool.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
-void DescriptorPool::setPoolSize(ui32 maxSets, std::unordered_map<vk::DescriptorType, ui32> const &sizes)
+DescriptorPool& DescriptorPool::setFlags(vk::DescriptorPoolCreateFlags flags)
+{
+	this->mFlags = flags;
+	return *this;
+}
+
+DescriptorPool& DescriptorPool::setPoolSize(ui32 maxSets, std::unordered_map<vk::DescriptorType, ui32> const &sizes)
 {
 	this->mMaxSets = maxSets;
 	this->mAvailableAllocationsPerType = sizes;
+	return *this;
 }
 
-void DescriptorPool::create(LogicalDevice *device, ui32 const &frameCount)
+DescriptorPool& DescriptorPool::create(std::shared_ptr<GraphicsDevice> device, ui32 const &frameCount)
 {
 	auto poolSizes = std::vector<vk::DescriptorPoolSize>(this->mAvailableAllocationsPerType.size());
 	std::transform(
@@ -23,11 +30,13 @@ void DescriptorPool::create(LogicalDevice *device, ui32 const &frameCount)
 			.setDescriptorCount(frameCount * pair.second);
 	});
 
-	this->mInternal = extract<vk::Device>(device).createDescriptorPoolUnique(
+	this->mInternal = device->createDescriptorPool(
 		vk::DescriptorPoolCreateInfo()
+		.setFlags(this->mFlags)
 		.setPoolSizeCount((ui32)poolSizes.size()).setPPoolSizes(poolSizes.data())
 		.setMaxSets(this->mMaxSets)
 	);
+	return *this;
 }
 
 void* DescriptorPool::get()

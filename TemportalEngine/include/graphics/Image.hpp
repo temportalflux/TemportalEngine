@@ -7,10 +7,11 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 
 class Image : public MemoryBacked
 {
+	friend class GraphicsDevice;
 
 public:
 	Image() : mType(vk::ImageType::e2D) {}
@@ -24,7 +25,7 @@ public:
 	Image& setSize(math::Vector3UInt const &size);
 	math::Vector3UInt getSize() const;
 
-	void create(LogicalDevice *device);
+	void create(std::shared_ptr<GraphicsDevice> device);
 	void* get();
 	void invalidate();
 
@@ -38,7 +39,7 @@ private:
 	math::Vector3UInt mImageSize;
 	vk::UniqueImage mInternal;
 
-	void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
+	void bind(std::shared_ptr<GraphicsDevice> device, ui64 offset = 0) override;
 
 };
 

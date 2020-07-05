@@ -27,8 +27,8 @@ public:
 	// TODO: Replace return vec with engine-level structure
 	vk::Extent2D getDrawableSize() const;
 
-	Surface& initialize(VulkanInstance *pVulkan);
-	void destroy(VulkanInstance *pVulkan);
+	Surface& initialize(std::shared_ptr<VulkanInstance> pVulkan);
+	void destroy(std::shared_ptr<VulkanInstance> pVulkan);
 
 private:
 	void* mpWindowHandle;

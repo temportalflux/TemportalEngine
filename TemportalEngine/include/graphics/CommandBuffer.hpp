@@ -10,7 +10,7 @@ NS_GRAPHICS
 
 class CommandBuffer
 {
-	friend class CommandPool;
+	friend class GraphicsDevice;
 	friend class Command;
 	friend class Frame;
 

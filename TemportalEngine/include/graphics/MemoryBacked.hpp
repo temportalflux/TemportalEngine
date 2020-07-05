@@ -5,11 +5,11 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
-class PhysicalDevice;
+class GraphicsDevice;
 
 class MemoryBacked
 {
+	friend class GraphicsDevice;
 
 public:
 	MemoryBacked() = default;
@@ -18,18 +18,18 @@ public:
 
 	uSize getMemorySize() const;
 
-	void createMemory(LogicalDevice *pDevice, vk::MemoryRequirements const &req);
+	void createMemory(std::shared_ptr<GraphicsDevice> device, vk::MemoryRequirements const &req);
 	void invalidate();
 
-	void write(LogicalDevice *pDevice, uSize offset, void* src, uSize size);
+	void write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, ui64 size);
 
 protected:
 	vk::MemoryPropertyFlags mMemoryFlags;
 	vk::UniqueDeviceMemory mBufferMemory;
 	uSize mMemorySize;
 
-	std::optional<ui32> findMemoryType(PhysicalDevice const *pDevice, ui32 typeFilter, vk::MemoryPropertyFlags propertyFlags);
-	virtual void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) = 0;
+	std::optional<ui32> findMemoryType(std::shared_ptr<GraphicsDevice> device, ui32 typeFilter, vk::MemoryPropertyFlags propertyFlags);
+	virtual void bind(std::shared_ptr<GraphicsDevice> device, ui64 offset = 0) = 0;
 
 };
 

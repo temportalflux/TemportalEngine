@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 
 class ImageSampler
 {
@@ -26,7 +26,7 @@ public:
 	ImageSampler& setCompare(std::optional<vk::CompareOp> compareOp);
 	ImageSampler& setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math::Vector2 range);
 
-	ImageSampler& create(LogicalDevice *device);
+	ImageSampler& create(std::shared_ptr<GraphicsDevice> device);
 	void* get();
 	void invalidate();
 

@@ -1,6 +1,6 @@
 #include "graphics/SwapChain.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/Surface.hpp"
 #include "graphics/VulkanApi.hpp"
 #include "types/math.h"
@@ -29,9 +29,9 @@ SwapChain& SwapChain::setQueueFamilyGroup(QueueFamilyGroup const &qfg)
 	return *this;
 }
 
-SwapChain& SwapChain::create(LogicalDevice *pDevice, Surface const *pSurface)
+SwapChain& SwapChain::create(std::shared_ptr<GraphicsDevice> device, Surface const *pSurface)
 {
-	mpDevice = pDevice;
+	this->mpDevice = device;
 
 	mDrawableSize = pSurface->getDrawableSize();
 	auto resolution = mInfo.getAdjustedResolution(mDrawableSize, mSupport.capabilities);
@@ -74,7 +74,7 @@ SwapChain& SwapChain::create(LogicalDevice *pDevice, Surface const *pSurface)
 		info.setPQueueFamilyIndices(nullptr);
 	}
 
-	this->mInternal = extract<vk::Device>(pDevice).createSwapchainKHRUnique(info);
+	this->mInternal = device->createSwapchain(info);
 	return *this;
 }
 
@@ -88,15 +88,9 @@ math::Vector2UInt SwapChain::getResolution() const
 	return mResolution;
 }
 
-std::vector<vk::Image> SwapChain::queryImages() const
-{
-	assert(mpDevice != nullptr);
-	return extract<vk::Device>(mpDevice).getSwapchainImagesKHR(this->mInternal.get());
-}
-
 std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
 {
-	auto images = this->queryImages();
+	auto images = this->mpDevice.lock()->getSwapChainImages(this);
 	uSize imageCount = images.size();
 	auto views = std::vector<ImageView>(imageCount);
 	for (uSize i = 0; i < imageCount; ++i)
@@ -115,14 +109,14 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 		// Set the image on the view that has actually changed
 		views[i].setRawImage(images[i]);
 		// Construct the view for the provided data
-		views[i].create(this->mpDevice);
+		views[i].create(this->mpDevice.lock());
 	}
 	return views;
 }
 
 void SwapChain::destroy()
 {
-	mpDevice = nullptr;
+	this->mpDevice.reset();
 	this->mInternal.reset();
 }
 
@@ -131,11 +125,7 @@ vk::ResultValue<ui32> SwapChain::acquireNextImage(
 	std::optional<vk::Fence> waitFence
 ) const
 {
-	return extract<vk::Device>(mpDevice).acquireNextImageKHR(
-		this->mInternal.get(), UINT64_MAX,
-		waitSemaphore.has_value() ? waitSemaphore.value() : vk::Semaphore(),
-		waitFence.has_value() ? waitFence.value() : vk::Fence()
-	);
+	return this->mpDevice.lock()->acquireNextImageIndex(this, UINT64_MAX, waitSemaphore, waitFence);
 }
 
 vk::SwapchainKHR SwapChain::get() const

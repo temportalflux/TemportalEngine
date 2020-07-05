@@ -13,11 +13,13 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 class Surface;
 
 class SwapChain
 {
+	friend class GraphicsDevice;
+
 	friend class VulkanApi;
 	friend class RenderPass;
 	friend class Frame;
@@ -29,7 +31,7 @@ public:
 	SwapChain& setSupport(SwapChainSupport const &support);
 	SwapChain& setQueueFamilyGroup(QueueFamilyGroup const &qfg);
 
-	SwapChain& create(LogicalDevice *pDevice, Surface const *pSurface);
+	SwapChain& create(std::shared_ptr<GraphicsDevice> device, Surface const *pSurface);
 	void destroy();
 
 	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
@@ -47,7 +49,7 @@ private:
 	SwapChainSupport mSupport;
 	QueueFamilyGroup mQueueFamilyGroup;
 
-	LogicalDevice *mpDevice;
+	std::weak_ptr<GraphicsDevice> mpDevice;
 
 	vk::Extent2D mDrawableSize;
 	math::Vector2UInt mResolution;
@@ -55,8 +57,6 @@ private:
 	vk::PresentModeKHR mPresentationMode;
 
 	vk::UniqueSwapchainKHR mInternal;
-
-	std::vector<vk::Image> queryImages() const;
 
 };
 

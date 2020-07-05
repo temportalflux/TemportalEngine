@@ -5,6 +5,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
+class GraphicsDevice;
 class LogicalDevice;
 class Image;
 
@@ -27,7 +28,7 @@ public:
 	ImageView& setComponentMapping(vk::ComponentMapping mapping);
 	ImageView& setRange(vk::ImageSubresourceRange range);
 
-	ImageView& create(LogicalDevice *device);
+	ImageView& create(std::shared_ptr<GraphicsDevice> device);
 	void* get();
 	void invalidate();
 

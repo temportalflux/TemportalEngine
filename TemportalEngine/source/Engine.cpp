@@ -92,9 +92,10 @@ Engine::~Engine()
 	// TODO: deallocate any windows that still exist in here
 	this->mWindowPtrs.clear();
 
-	if (this->mVulkanInstance.isValid())
+	if (this->mpVulkanInstance)
 	{
-		this->mVulkanInstance.destroy();
+		this->mpVulkanInstance->destroy();
+		this->mpVulkanInstance.reset();
 	}
 	this->terminateDependencies();
 
@@ -227,24 +228,25 @@ void Engine::destroyWindow(std::shared_ptr<Window> &pWindow)
 
 bool Engine::setupVulkan()
 {
-	this->mVulkanInstance.setApplicationInfo(this->mProject->getName(), this->mProject->getVersion());
-	this->mVulkanInstance.setEngineInfo(mEngineInfo);
-	this->mVulkanInstance.setValidationLayers(Engine::VulkanValidationLayers);
-	this->mVulkanInstance.createLogger(&LOG_SYSTEM, /*vulkan debug*/ true);
+	this->mpVulkanInstance = std::make_shared<graphics::VulkanInstance>();
+	this->mpVulkanInstance->setApplicationInfo(this->mProject->getName(), this->mProject->getVersion());
+	this->mpVulkanInstance->setEngineInfo(mEngineInfo);
+	this->mpVulkanInstance->setValidationLayers(Engine::VulkanValidationLayers);
+	this->mpVulkanInstance->createLogger(&LOG_SYSTEM, /*vulkan debug*/ true);
 	return true;
 }
 
-graphics::VulkanInstance* Engine::initializeVulkan(std::vector<const char*> requiredExtensions)
+std::shared_ptr<graphics::VulkanInstance> Engine::initializeVulkan(std::vector<const char*> requiredExtensions)
 {
-	this->mVulkanInstance.setRequiredExtensions(requiredExtensions);
-	this->mVulkanInstance.initialize();
-	return &this->mVulkanInstance;
+	this->mpVulkanInstance->setRequiredExtensions(requiredExtensions);
+	this->mpVulkanInstance->initialize();
+	return this->mpVulkanInstance;
 }
 
 void Engine::initializeRenderer(graphics::VulkanRenderer *renderer, std::shared_ptr<Window> pWindow)
 {
-	renderer->setInstance(&this->mVulkanInstance);
-	renderer->takeOwnershipOfSurface(pWindow->createSurface().initialize(&this->mVulkanInstance));
+	renderer->setInstance(this->mpVulkanInstance);
+	renderer->takeOwnershipOfSurface(pWindow->createSurface().initialize(this->mpVulkanInstance));
 	renderer->setPhysicalDevicePreference(this->getProject()->getPhysicalDevicePreference());
 	renderer->setLogicalDeviceInfo(this->getProject()->getGraphicsDeviceInitInfo());
 #ifndef NDEBUG

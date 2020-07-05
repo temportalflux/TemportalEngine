@@ -9,12 +9,13 @@
 NS_GRAPHICS
 class Buffer;
 class DescriptorPool;
+class GraphicsDevice;
 class ImageSampler;
 class ImageView;
-class LogicalDevice;
 
 class DescriptorGroup
 {
+	friend class GraphicsDevice;
 
 public:
 	DescriptorGroup() = default;
@@ -54,8 +55,8 @@ public:
 		vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler
 	);
 
-	DescriptorGroup& create(LogicalDevice *device, DescriptorPool *pool);
-	DescriptorGroup& writeAttachments(LogicalDevice *device);
+	DescriptorGroup& create(std::shared_ptr<GraphicsDevice> device, DescriptorPool *pool);
+	DescriptorGroup& writeAttachments(std::shared_ptr<GraphicsDevice> device);
 	void invalidate();
 
 	vk::DescriptorSetLayout layout() const;

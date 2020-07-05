@@ -10,7 +10,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 
 class RenderPassAttachment
 {
@@ -98,7 +98,7 @@ public:
 	 */
 	RenderPass& addDependency(DependencyItem const dependee, DependencyItem const depender);
 
-	RenderPass& create(LogicalDevice *pDevice);
+	RenderPass& create(std::shared_ptr<GraphicsDevice> device);
 	bool isValid() const;
 	void* get();
 	void destroy();

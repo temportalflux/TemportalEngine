@@ -1,6 +1,6 @@
 #include "graphics/Image.hpp"
 
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -44,10 +44,10 @@ math::Vector3UInt Image::getSize() const
 	return this->mImageSize;
 }
 
-void Image::create(LogicalDevice *pDevice)
+void Image::create(std::shared_ptr<GraphicsDevice> device)
 {
-	auto& device = extract<vk::Device>(pDevice);
-	auto info = vk::ImageCreateInfo()
+	this->mInternal = device->createImage(
+		vk::ImageCreateInfo()
 		.setImageType(this->mType)
 		.setExtent(
 			vk::Extent3D()
@@ -62,10 +62,10 @@ void Image::create(LogicalDevice *pDevice)
 		.setUsage(this->mUsage)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSamples(vk::SampleCountFlagBits::e1);
-	this->mInternal = device.createImageUnique(info);
+		.setSamples(vk::SampleCountFlagBits::e1)
+	);
 
-	this->createMemory(pDevice, device.getImageMemoryRequirements(this->mInternal.get()));
+	this->createMemory(device, device->getMemoryRequirements(this));
 }
 
 void* Image::get()
@@ -79,9 +79,9 @@ void Image::invalidate()
 	MemoryBacked::invalidate();
 }
 
-void Image::bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset)
+void Image::bind(std::shared_ptr<GraphicsDevice> device, ui64 offset)
 {
-	extract<vk::Device>(pDevice).bindImageMemory(this->mInternal.get(), mem, offset);
+	device->bindMemory(this, this, offset);
 }
 
 uSize Image::getExpectedDataSize() const

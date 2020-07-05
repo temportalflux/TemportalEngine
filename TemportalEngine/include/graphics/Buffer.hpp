@@ -5,11 +5,11 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
-class PhysicalDevice;
+class GraphicsDevice;
 
 class Buffer : public MemoryBacked
 {
+	friend class GraphicsDevice;
 
 public:
 	Buffer() = default;
@@ -20,7 +20,7 @@ public:
 	Buffer& setSize(uSize size);
 	uSize getSize() const;
 
-	void create(LogicalDevice *pDevice);
+	void create(std::shared_ptr<GraphicsDevice> device);
 	void destroy();
 
 	void* get();
@@ -30,7 +30,7 @@ private:
 	uSize mSize;
 	vk::UniqueBuffer mInternal;
 
-	void bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset = 0) override;
+	void bind(std::shared_ptr<GraphicsDevice> device, ui64 offset) override;
 
 };
 

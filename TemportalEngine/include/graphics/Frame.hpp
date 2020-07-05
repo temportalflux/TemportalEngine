@@ -7,7 +7,7 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class LogicalDevice;
+class GraphicsDevice;
 class SwapChain;
 class ImageView;
 class CommandBuffer;
@@ -21,18 +21,18 @@ public:
 	Frame& operator=(Frame&& other);
 	~Frame();
 
-	virtual void create(LogicalDevice *pDevice);
+	virtual void create(std::shared_ptr<GraphicsDevice> device);
 	virtual void destroy();
 
 	void waitUntilNotInFlight() const;
 	vk::ResultValue<ui32> acquireNextImage(SwapChain const *pSwapChain) const;
 	vk::Fence& getInFlightFence();
 	void markNotInFlight();
-	virtual void submitBuffers(vk::Queue *pQueue, std::vector<CommandBuffer*> buffers);
-	vk::Result present(vk::Queue *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
+	virtual void submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers);
+	vk::Result present(vk::Queue const *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage);
 
 protected:
-	LogicalDevice *mpDevice;
+	std::weak_ptr<GraphicsDevice> mpDevice;
 
 	vk::UniqueFence mFence_FrameInFlight; // active while the frame is being drawn to by GPU
 	vk::UniqueSemaphore mSemaphore_ImageAvailable; // signaled to indicate the graphics queue has grabbed the image and can begin drawing

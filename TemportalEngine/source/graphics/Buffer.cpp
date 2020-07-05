@@ -1,8 +1,6 @@
 #include "graphics/Buffer.hpp"
 
-#include "graphics/LogicalDevice.hpp"
-#include "graphics/PhysicalDevice.hpp"
-#include "graphics/VulkanApi.hpp"
+#include "graphics/GraphicsDevice.hpp"
 
 using namespace graphics;
 
@@ -47,24 +45,21 @@ void* Buffer::get()
 	return &this->mInternal.get();
 }
 
-void Buffer::create(LogicalDevice *pDevice)
+void Buffer::create(std::shared_ptr<GraphicsDevice> device)
 {
-	vk::Device& device = extract<vk::Device>(pDevice);
-
-	this->mInternal = device.createBufferUnique(
+	this->mInternal = device->createBuffer(
 		vk::BufferCreateInfo()
 		.setUsage(this->mUsageFlags)
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSize((ui64)this->mSize)
 	);
 
-	auto memRequirements = device.getBufferMemoryRequirements(this->mInternal.get());
-	this->createMemory(pDevice, memRequirements);
+	this->createMemory(device, device->getMemoryRequirements(this));
 }
 
-void Buffer::bind(LogicalDevice *pDevice, vk::DeviceMemory &mem, uSize offset)
+void Buffer::bind(std::shared_ptr<GraphicsDevice> device, ui64 offset)
 {
-	extract<vk::Device>(pDevice).bindBufferMemory(this->mInternal.get(), mem, offset);
+	device->bindMemory(this, this, offset);
 }
 
 void Buffer::destroy()

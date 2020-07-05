@@ -11,7 +11,7 @@ VulkanRenderer::VulkanRenderer()
 {
 }
 
-void VulkanRenderer::setInstance(VulkanInstance *pInstance)
+void VulkanRenderer::setInstance(std::shared_ptr<VulkanInstance> pInstance)
 {
 	this->mpInstance = pInstance;
 }
@@ -61,32 +61,20 @@ f32 VulkanRenderer::getAspectRatio() const
 
 void VulkanRenderer::initializeDevices()
 {
-	this->pickPhysicalDevice();
-	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&mLogicalDeviceInfo, &mPhysicalDevicePreference);
-	this->mQueues = this->mLogicalDevice.findQueues(mLogicalDeviceInfo.getQueues());
+	this->mpGraphicsDevice = std::make_shared<GraphicsDevice>(this->mpInstance);
+	this->mpGraphicsDevice->create(this->mPhysicalDevicePreference, this->mLogicalDeviceInfo, &this->mSurface);
 }
 
-vk::Queue& VulkanRenderer::getQueue(QueueFamily::Enum type)
+vk::Queue const& VulkanRenderer::getQueue(QueueFamily::Enum type) const
 {
-	return this->mQueues[type];
-}
-
-void VulkanRenderer::pickPhysicalDevice()
-{
-	auto optPhysicalDevice = mpInstance->pickPhysicalDevice(mPhysicalDevicePreference, &mSurface);
-	if (!optPhysicalDevice.has_value())
-	{
-		getLog().log(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device.");
-		return;
-	}
-	mPhysicalDevice = optPhysicalDevice.value();
+	return this->mpGraphicsDevice->getQueue(type);
 }
 
 void VulkanRenderer::invalidate()
 {
-	this->mQueues.clear();
-	this->mLogicalDevice.invalidate();
-	this->mPhysicalDevice.invalidate();
+	assert(this->mpGraphicsDevice.use_count() == 1);
+	this->mpGraphicsDevice->destroy();
+	this->mpGraphicsDevice.reset();
 
 	mSurface.destroy(mpInstance);
 	mSurface.releaseWindowHandle();
@@ -98,9 +86,9 @@ void VulkanRenderer::createSwapChain()
 {
 	this->mSwapChain
 		.setInfo(mSwapChainInfo)
-		.setSupport(mPhysicalDevice.querySwapChainSupport())
-		.setQueueFamilyGroup(mPhysicalDevice.queryQueueFamilyGroup())
-		.create(&mLogicalDevice, &mSurface);
+		.setSupport(this->mpGraphicsDevice->querySwapChainSupport())
+		.setQueueFamilyGroup(this->mpGraphicsDevice->queryQueueFamilyGroup())
+		.create(this->mpGraphicsDevice, &mSurface);
 }
 
 void VulkanRenderer::createFrameImageViews()
@@ -147,7 +135,7 @@ void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 	auto& frameImageFence = this->mFrameImageFences[this->mIdxCurrentImage];
 	if (frameImageFence)
 	{
-		this->mLogicalDevice.waitFor({ frameImageFence }, true, UINT64_MAX);
+		this->mpGraphicsDevice->logical().waitFor({ frameImageFence }, true, UINT64_MAX);
 	}
 
 	// Ensure that the image view is marked as in-flight as long as the frame is
@@ -184,7 +172,7 @@ bool VulkanRenderer::present()
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
 	{
-		auto result = currentFrame->present(&this->mQueues[QueueFamily::Enum::ePresentation], { &mSwapChain }, mIdxCurrentImage);
+		auto result = currentFrame->present(&this->getQueue(QueueFamily::Enum::ePresentation), { &mSwapChain }, mIdxCurrentImage);
 		if (result == vk::Result::eSuboptimalKHR)
 		{
 			if (!this->mbRenderChainDirty) this->markRenderChainDirty();
@@ -204,7 +192,7 @@ bool VulkanRenderer::present()
 
 void VulkanRenderer::waitUntilIdle()
 {
-	this->mLogicalDevice.waitUntilIdle();
+	this->mpGraphicsDevice->logical().waitUntilIdle();
 }
 
 void VulkanRenderer::markRenderChainDirty()
@@ -220,7 +208,7 @@ void VulkanRenderer::update()
 		this->destroyRenderChain();
 
 		// Stall creating the render chain until the window is not minimized
-		auto actualSize = mPhysicalDevice.querySwapChainSupport().capabilities.currentExtent;
+		auto actualSize = this->mpGraphicsDevice->querySwapChainSupport().capabilities.currentExtent;
 		if (actualSize.width <= 0 || actualSize.height <= 0) return;
 
 		this->createRenderChain();

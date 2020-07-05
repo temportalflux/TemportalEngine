@@ -1,7 +1,7 @@
 #include "graphics/Pipeline.hpp"
 
 #include "graphics/DescriptorGroup.hpp"
-#include "graphics/LogicalDevice.hpp"
+#include "graphics/GraphicsDevice.hpp"
 #include "graphics/ShaderModule.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/VulkanApi.hpp"
@@ -67,13 +67,11 @@ bool Pipeline::isValid() const
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
+Pipeline& Pipeline::create(std::shared_ptr<GraphicsDevice> device, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
 {
-	auto& device = extract<vk::Device>(pDevice);
-
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
-		shader->create(pDevice);
+		shader->create(device);
 	}
 
 	auto bindingCount = (ui32)this->mAttributeBindings.size();
@@ -180,13 +178,13 @@ Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std:
 		descriptors.begin(), descriptors.end(), descriptorLayouts.begin(),
 		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
 	);
-	this->mLayout = device.createPipelineLayoutUnique(
+	this->mLayout = device->createPipelineLayout(
 		vk::PipelineLayoutCreateInfo()
 		.setPushConstantRangeCount(0)
 		.setSetLayoutCount((ui32)descriptorLayouts.size())
 		.setPSetLayouts(descriptorLayouts.data())
 	);
-	this->mCache = device.createPipelineCacheUnique(vk::PipelineCacheCreateInfo());
+	this->mCache = device->createPipelineCache(vk::PipelineCacheCreateInfo());
 
 	auto stages = this->createShaderStages();
 	
@@ -207,7 +205,7 @@ Pipeline& Pipeline::create(LogicalDevice *pDevice, RenderPass *pRenderPass, std:
 		//.setPDynamicState(&infoDynamicStates)
 		.setBasePipelineHandle({});
 
-	this->mPipeline = device.createGraphicsPipelineUnique(this->mCache.get(), infoPipeline);
+	this->mPipeline = device->createPipeline(this->mCache, infoPipeline);
 
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
