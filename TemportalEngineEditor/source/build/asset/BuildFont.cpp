@@ -116,6 +116,12 @@ std::vector<std::string> buildFontSize(FT_Face &face, ui8 size, math::Vector2UIn
 	return { glyphErrors };
 }
 
+template <typename T, typename U>
+T getMetric(U& metric)
+{
+	return static_cast<T>(metric) / 64;
+}
+
 bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &glyph, std::vector<std::string> &glyphErrors)
 {
 	auto error = FT_Load_Glyph(face, idxGlyph, FT_LOAD_DEFAULT);
@@ -138,9 +144,10 @@ bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &g
 		return false;
 	}
 
-	glyph.metricsOffset = { slot->bitmap_left, slot->bitmap_top };
-	glyph.metricsSize = { static_cast<i32>(slot->metrics.width / 64), static_cast<i32>(slot->metrics.height / 64) };
-	glyph.advance = static_cast<i32>(slot->advance.x / 64);
+	// See http://freetype.sourceforge.net/freetype2/docs/tutorial/step2.html for what each metric is
+	glyph.size = { getMetric<ui32>(slot->metrics.width), getMetric<ui32>(slot->metrics.height) };
+	glyph.bearing = { (i32)(slot->bitmap_left), -(i32)(slot->bitmap_top) };
+	glyph.advance = getMetric<ui32>(slot->advance.x);
 	glyph.bufferSize = { slot->bitmap.width, slot->bitmap.rows };
 
 	ui32 bufferSize = glyph.bufferSize.x() * glyph.bufferSize.y(); // a single channel to record only the alpha value (should be used with white color when loaded)

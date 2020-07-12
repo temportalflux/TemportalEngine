@@ -102,6 +102,7 @@ public:
 	bool isValid() const;
 	void* get();
 	void destroy();
+	void reset();
 
 private:
 	std::vector<RenderPassAttachment> mAttachments;

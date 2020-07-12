@@ -25,6 +25,9 @@ GameRenderer::GameRenderer()
 		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
 	// TODO: Use a `MemoryChunk` instead of global memory
 	this->mpStringRenderer = std::make_shared<StringRenderer>();
+	this->mpStringRenderer->initialize();
+
+	this->mMemoryImages.setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 void GameRenderer::invalidate()
@@ -34,7 +37,7 @@ void GameRenderer::invalidate()
 	this->mTextureImages.clear();
 	this->mTextureSamplers.clear();
 
-	this->mFont.invalidate();
+	this->mpStringRenderer.reset();
 
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
@@ -52,6 +55,16 @@ void GameRenderer::initializeDevices()
 	this->initializeTransientCommandPool();
 }
 
+std::shared_ptr<GraphicsDevice> GameRenderer::getDevice()
+{
+	return this->mpGraphicsDevice;
+}
+
+CommandPool& GameRenderer::getTransientPool()
+{
+	return this->mCommandPoolTransient;
+}
+
 void GameRenderer::addRender(IRender *render)
 {
 	this->mpRenders.push_back(render);
@@ -60,6 +73,11 @@ void GameRenderer::addRender(IRender *render)
 void GameRenderer::setStaticUniform(std::shared_ptr<Uniform> uniform)
 {
 	this->mpUniformStatic = uniform;
+}
+
+std::shared_ptr<StringRenderer> GameRenderer::stringRenderer()
+{
+	return this->mpStringRenderer;
 }
 
 void GameRenderer::initializeTransientCommandPool()
@@ -75,39 +93,6 @@ void GameRenderer::initializeTransientCommandPool()
 void GameRenderer::initializeBuffer(graphics::Buffer &buffer)
 {
 	buffer.create(this->mpGraphicsDevice);
-}
-
-void GameRenderer::writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size)
-{
-	Buffer& stagingBuffer = Buffer()
-		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-		.setSize(size);
-	stagingBuffer.setMemoryRequirements(
-		vk::MemoryPropertyFlagBits::eHostVisible
-		| vk::MemoryPropertyFlagBits::eHostCoherent
-	);
-	stagingBuffer.create(this->mpGraphicsDevice);
-	stagingBuffer.write(this->mpGraphicsDevice, offset, data, size);
-	this->copyBetweenBuffers(&stagingBuffer, buffer, size);
-	stagingBuffer.destroy();
-}
-
-void GameRenderer::copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size)
-{
-	// Buffers should be freed when they go out of scope
-	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
-	buffers[0]
-		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.copyBuffer(src, dest, size)
-		.end();
-	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
-	queue.submit(
-		vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
-		vk::Fence()
-	);
-	queue.waitIdle();
 }
 
 void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
@@ -239,10 +224,10 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 	queue.waitIdle();
 }
 
-graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
+std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 {
-	this->mFont.loadGlyphSets(font->getFontSizes(), font->glyphSets());
-	for (auto& face : this->mFont.faces())
+	this->stringRenderer()->setFont(font->getFontSizes(), font->glyphSets());
+	for (auto& face : this->stringRenderer()->getFont().faces())
 	{
 		face.sampler()
 			.setFilter(vk::Filter::eLinear, vk::Filter::eLinear)
@@ -286,7 +271,18 @@ graphics::Font& GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 			.setImage(&image, vk::ImageAspectFlagBits::eColor)
 			.create(this->mpGraphicsDevice);
 	}
-	return this->mFont;
+	return this->stringRenderer();
+}
+
+void GameRenderer::prepareUIBuffers(ui64 const maxCharCount)
+{
+	this->mVertexBufferUI
+		.setSize(maxCharCount * /*verticies per character*/ 4 * sizeof(Font::UIVertex))
+		.create(this->mpGraphicsDevice);
+
+	this->mIndexBufferUI
+		.setSize(maxCharCount * /*indicies per character*/ 6 * sizeof(ui16))
+		.create(this->mpGraphicsDevice);
 }
 
 void GameRenderer::createRenderChain()
@@ -297,6 +293,10 @@ void GameRenderer::createRenderChain()
 	}
 
 	this->createSwapChain();
+
+	this->stringRenderer()->setResolution(this->mSwapChain.getResolution());
+	this->mIndexCountUI = this->stringRenderer()->writeBuffers(this, &this->mVertexBufferUI, &this->mIndexBufferUI);
+
 	this->createFrameImageViews();
 	this->createDepthResources(this->mSwapChain.getResolution());
 	this->createRenderPass();
@@ -367,7 +367,7 @@ RenderPass* GameRenderer::getRenderPass()
 
 void GameRenderer::destroyRenderPass()
 {
-	this->mRenderPass.destroy();
+	this->mRenderPass.reset();
 }
 
 void GameRenderer::createUniformBuffers()
@@ -434,11 +434,12 @@ void GameRenderer::createDescriptors()
 		.attachToBinding(1, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second])
 		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
 		.writeAttachments(this->mpGraphicsDevice);
+	auto& font = this->stringRenderer()->getFont();
 	this->mDescriptorGroupUI
 		.setBindingCount(1)
 		.setAmount((ui32)this->mFrameImageViews.size())
 		.addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
-		.attachToBinding(0, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mFont.faces()[0].view(), &this->mFont.faces()[0].sampler())
+		.attachToBinding(0, vk::ImageLayout::eShaderReadOnlyOptimal, &font.faces()[0].view(), &font.faces()[0].sampler())
 		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
 		.writeAttachments(this->mpGraphicsDevice);
 }
@@ -514,7 +515,7 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd.bindPipeline(&this->mPipelineUI);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
-			cmd.draw(6, 1);
+			cmd.draw(this->mIndexCountUI, 1);
 		}
 		cmd.endRenderPass();
 		cmd.end();

@@ -255,6 +255,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GraphicsDevice.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Memory.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -575,5 +578,11 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\StringRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Memory.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryAllocated.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

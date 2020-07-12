@@ -94,24 +94,26 @@ void Font::Face::loadGlyphSet(FontGlyphSet const &src)
 
 Font::GlyphSprite& Font::GlyphSprite::operator=(FontGlyph const &other)
 {
-	this->metricsOffset = other.metricsOffset;
-	this->metricsSize = other.metricsSize;
+	this->bearing = other.bearing;
+	this->size = other.size;
 	this->advance = other.advance;
 	this->bufferSize = other.bufferSize;
 	return *this;
 }
 
 // See https://snorristurluson.github.io/TextRenderingWithFreetype/ for reference
-math::Vector2UInt Font::Face::measure(std::string str) const
+std::pair<math::Vector2UInt, math::Vector2Int> Font::Face::measure(std::string const& str) const
 {
 	math::Vector2UInt size;
+	math::Vector2Int offset;
 	for (auto& c : str)
 	{
 		auto& glyph = this->glyphs[c];
 		size.x() += glyph.advance;
-		size.y() = math::max(size.y(), glyph.atlasOffset.y() + glyph.bufferSize.y());
+		size.y() = std::max(size.y(), glyph.size.y());
+		offset.y() = std::min(offset.y(), glyph.bearing.y());
 	}
-	return size;
+	return std::make_pair(size, offset);
 }
 
 math::Vector2UInt Font::Face::calculateAtlasLayout()
@@ -198,4 +200,54 @@ void Font::Face::setText(std::string const key, math::Vector2Int pos, std::strin
 	PositionedString strPos = { pos, content };
 	strPos.verticies;
 	this->mRenderingText.insert(std::make_pair(key, strPos));
+}
+
+i32 Font::Face::appendGlyph(
+	ui32 const charCode,
+	math::Vector2 const &rootPos, math::Vector2 const &resolution, i32 const &advance,
+	std::vector<UIVertex> &verticies, std::vector<ui16> &indicies
+) const
+{
+	auto const& vertexPreCount = (ui16)verticies.size();
+	auto const& iterGlyph = this->codeToGlyphIdx.find(charCode);
+	if (iterGlyph == this->codeToGlyphIdx.end()) { return 0; }
+	auto const& glyph = this->glyphs[iterGlyph->second];
+	math::Vector4 const posScreen = { rootPos.x(), rootPos.y(), (f32)advance / resolution.x(), 0 };
+	math::Vector2 const atlasSize = this->atlasSize.toFloat();
+	math::Vector2 const posAtlas = glyph.atlasOffset.toFloat() / atlasSize;
+
+	math::Vector4 const bearingScreen = (glyph.bearing.toFloat() / resolution).createSubvector<4>(2);
+	math::Vector2 const sizeScreen = glyph.size.toFloat() / resolution;
+	math::Vector2 const sizeAtlas = glyph.size.toFloat() / atlasSize;
+
+	const auto pushVertex = [&](ui16 i, math::Vector2 const p) -> ui16 {
+		// Vertex Position
+		// pos: move pen to origin of glyph (combines pos of string with the advance of previous characters)
+		// bearing: offset to the top-left corner
+		// size * p: offset to the corner of the glyph this vertex is representing
+		math::Vector4 const pos = posScreen + bearingScreen + (sizeScreen * p).createSubvector<4>(2);
+		// TexCoord
+		// pos: tex coord starts at the glyphs position in the atlas
+		// size * p: tex coord relative to the glyph is based on the vertex it is representing
+		math::Vector2 const texCoord = posAtlas + (sizeAtlas * p);
+		verticies.push_back({ pos, texCoord });
+		return i + vertexPreCount;
+	};
+
+	// only push vertex data if the glyph is not whitespace
+	if (glyph.bufferSize.x() > 0 && glyph.bufferSize.y() > 0)
+	{
+		ui16 const idxTL = pushVertex(0, { 0, 0 });
+		ui16 const idxTR = pushVertex(1, { 1, 0 });
+		ui16 const idxBR = pushVertex(2, { 1, 1 });
+		ui16 const idxBL = pushVertex(3, { 0, 1 });
+		indicies.push_back(idxTL);
+		indicies.push_back(idxTR);
+		indicies.push_back(idxBR);
+		indicies.push_back(idxBR);
+		indicies.push_back(idxBL);
+		indicies.push_back(idxTL);
+	}
+
+	return glyph.advance;
 }

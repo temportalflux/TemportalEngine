@@ -16,6 +16,7 @@ class CommandPool;
 class DescriptorGroup;
 class DescriptorPool;
 class Image;
+class Memory;
 class Surface;
 class SwapChain;
 class VulkanInstance;
@@ -34,6 +35,7 @@ class GraphicsDevice
 	friend class Image;
 	friend class ImageSampler;
 	friend class ImageView;
+	friend class Memory;
 	friend class MemoryBacked;
 	friend class Pipeline;
 	friend class RenderPass;
@@ -74,7 +76,6 @@ private:
 	vk::UniqueBuffer createBuffer(vk::BufferCreateInfo const &info) const;
 	vk::MemoryRequirements getMemoryRequirements(Buffer const *buffer) const;
 	void bindMemory(MemoryBacked const *memory, Buffer const *buffer, ui64 offset) const;
-	void bindMemory(MemoryBacked const *memory, Image const *image, ui64 offset) const;
 #pragma endregion
 #pragma region CommandPool
 	vk::UniqueCommandPool createCommandPool(vk::CommandPoolCreateInfo const &info) const;
@@ -100,6 +101,7 @@ private:
 #pragma region Image
 	vk::UniqueImage createImage(vk::ImageCreateInfo const &info) const;
 	vk::MemoryRequirements getMemoryRequirements(Image const *image) const;
+	void bindMemory(MemoryBacked const *memory, Image const *image, ui64 offset) const;
 #pragma endregion
 #pragma region ImageView
 	vk::UniqueImageView createImageView(vk::ImageViewCreateInfo const &info) const;
@@ -108,6 +110,10 @@ private:
 	vk::UniqueDeviceMemory allocateMemory(vk::MemoryAllocateInfo const &info) const;
 	void* mapMemory(MemoryBacked const *memory, ui64 offset, ui64 size, vk::MemoryMapFlags flags = vk::MemoryMapFlags()) const;
 	void unmapMemory(MemoryBacked const *memory) const;
+	void bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const;
+	void bindMemory(Memory const *memory, Image const *image, ui64 offset) const;
+	void* mapMemory(Memory const *memory, ui64 offset, ui64 size) const;
+	void unmapMemory(Memory const *memory) const;
 #pragma endregion
 #pragma region Pipeline
 	vk::UniquePipelineLayout createPipelineLayout(vk::PipelineLayoutCreateInfo const &info) const;

@@ -10,6 +10,7 @@
 #include "controller/Controller.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "graphics/StringRenderer.hpp"
 
 #include "asset/Font.hpp"
 #include "graphics/FontAtlas.hpp"
@@ -47,13 +48,6 @@ struct ModelViewProjection
 		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
 	}
-};
-
-struct UIVertex
-{
-	math::Vector2 position;
-	math::Vector4 color;
-	math::Vector2 texCoord;
 };
 
 void initializeNetwork(engine::Engine *pEngine)
@@ -273,10 +267,9 @@ int main(int argc, char *argv[])
 					asset::TypedAssetPath<asset::Shader>::Create("assets/shaders/TextFragment.te-asset").load(asset::EAssetSerialization::Binary)->makeModule(),
 					{
 						graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-						.setStructType<UIVertex>()
-						.addAttribute({ 0, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(UIVertex, position) })
-						.addAttribute({ 1, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(UIVertex, color) })
-						.addAttribute({ 2, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(UIVertex, texCoord) })
+						.setStructType<graphics::Font::UIVertex>()
+						.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(graphics::Font::UIVertex, position) })
+						.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(graphics::Font::UIVertex, texCoord) })
 					}
 				);
 			}
@@ -301,18 +294,10 @@ int main(int argc, char *argv[])
 				auto fontAsset = asset::TypedAssetPath<asset::Font>::Create(
 					"assets/font/Montserrat Regular.te-asset"
 				).load(asset::EAssetSerialization::Binary);
-				assert(fontAsset->supportsFontSize(12));
-				auto& font = renderer.setFont(fontAsset);
-				renderer.setTextToRender<UIVertex>(
-					{
-						{ { -1, -1 }, { 1, 0, 1, 1 }, { 0, 0 } },
-						{ { 1, -1 }, { 1, 0, 1, 1 }, { 1, 0 } },
-						{ { 1, 1 }, { 1, 0, 1, 1 }, { 1, 1 } },
-						{ { -1, 1 }, { 1, 0, 1, 1 }, { 0, 1 } }
-					},
-					{ 0, 1, 2, 2, 3, 0 }
-				);
-				font.setText("test", 12, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
+				assert(fontAsset->supportsFontSize(48));
+				auto stringRenderer = renderer.setFont(fontAsset);
+				auto renderedString = stringRenderer->makeGlobalString(48, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
+				renderer.prepareUIBuffers(1000);
 			}
 
 			renderer.createRenderChain();

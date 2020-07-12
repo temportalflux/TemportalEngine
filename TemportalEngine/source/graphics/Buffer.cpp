@@ -1,6 +1,8 @@
 #include "graphics/Buffer.hpp"
 
+#include "graphics/GameRenderer.hpp"
 #include "graphics/GraphicsDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -66,4 +68,33 @@ void Buffer::destroy()
 {
 	this->mInternal.reset();
 	MemoryBacked::invalidate();
+}
+
+void Buffer::writeBuffer(GameRenderer *renderer, uSize offset, void* data, uSize size)
+{
+	Buffer& stagingBuffer = Buffer()
+		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+		.setSize(size);
+	stagingBuffer.setMemoryRequirements(
+		vk::MemoryPropertyFlagBits::eHostVisible
+		| vk::MemoryPropertyFlagBits::eHostCoherent
+	);
+	stagingBuffer.create(renderer->getDevice());
+	stagingBuffer.write(renderer->getDevice(), offset, data, size);
+	{
+		auto buffers = renderer->getTransientPool().createCommandBuffers(1);
+		buffers[0]
+			.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+			.copyBuffer(&stagingBuffer, this, size)
+			.end();
+		auto queue = renderer->getDevice()->getQueue(QueueFamily::Enum::eGraphics);
+		queue.submit(
+			vk::SubmitInfo()
+			.setCommandBufferCount(1)
+			.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
+			vk::Fence()
+		);
+		queue.waitIdle();
+	}
+	stagingBuffer.destroy();
 }

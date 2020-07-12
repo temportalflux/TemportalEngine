@@ -18,24 +18,32 @@ class Font
 		GlyphSprite& operator=(FontGlyph const &other);
 	};
 
+public:
 	struct UIVertex
 	{
-		math::Vector2 position;
-		math::Vector4 color;
+		// <x,y> is the position of the string
+		// <z,w> is the offset from the string position of this vertex, composed from `FontGlyphMeta#metricsOffset` and `FontGlyphMeta#advance`
+		// These two vec2s will be summed in the shader when rendering the vertex
+		math::Vector4 position;
 		math::Vector2 texCoord;
 	};
 
-public:
 	class Face
 	{
 		friend class Font;
 	public:
-		math::Vector2UInt measure(std::string str) const;
+		std::pair<math::Vector2UInt, math::Vector2Int> measure(std::string const& str) const;
 		graphics::ImageSampler& sampler();
 		graphics::Image& image();
 		graphics::ImageView& view();
 		math::Vector2UInt getAtlasSize() const;
 		std::vector<ui8>& getPixelData();
+		i32 appendGlyph(
+			ui32 const charCode,
+			math::Vector2 const &rootPos, math::Vector2 const &resolution,
+			i32 const &advance,
+			std::vector<UIVertex> &verticies, std::vector<ui16> &indicies
+		) const;
 	private:
 		ui8 fontSize;
 		std::unordered_map<ui32, ui32> codeToGlyphIdx;

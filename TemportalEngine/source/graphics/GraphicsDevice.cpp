@@ -5,6 +5,7 @@
 #include "graphics/DescriptorGroup.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/Image.hpp"
+#include "graphics/Memory.hpp"
 #include "graphics/MemoryBacked.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/VulkanInstance.hpp"
@@ -243,6 +244,27 @@ void GraphicsDevice::unmapMemory(MemoryBacked const *memory) const
 {
 	this->internalLogic()->unmapMemory(memory->mBufferMemory.get());
 }
+
+void GraphicsDevice::bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const
+{
+	this->internalLogic()->bindBufferMemory(buffer->mInternal.get(), memory->mInternal.get(), offset);
+}
+
+void GraphicsDevice::bindMemory(Memory const *memory, Image const *image, ui64 offset) const
+{
+	this->internalLogic()->bindImageMemory(image->mInternal.get(), memory->mInternal.get(), offset);
+}
+
+void* GraphicsDevice::mapMemory(Memory const *memory, ui64 offset, ui64 size) const
+{
+	return this->internalLogic()->mapMemory(memory->mInternal.get(), offset, size, vk::MemoryMapFlags());
+}
+
+void GraphicsDevice::unmapMemory(Memory const *memory) const
+{
+	this->internalLogic()->unmapMemory(memory->mInternal.get());
+}
+
 
 #pragma endregion
 

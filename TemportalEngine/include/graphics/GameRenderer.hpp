@@ -9,6 +9,7 @@
 #include "graphics/Image.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/ImageView.hpp"
+#include "graphics/Memory.hpp"
 
 class IRender;
 FORWARD_DEF(NS_ASSET, class Font)
@@ -31,6 +32,8 @@ public:
 	GameRenderer();
 
 	void initializeDevices() override;
+	std::shared_ptr<GraphicsDevice> getDevice();
+	CommandPool& getTransientPool();
 
 	void addRender(IRender *render);
 
@@ -41,7 +44,7 @@ public:
 	template <typename TData>
 	void writeBufferData(graphics::Buffer &buffer, uSize offset, std::vector<TData> const &dataSet)
 	{
-		this->writeToBuffer(&buffer, offset, (void*)dataSet.data(), sizeof(TData) * (uSize)dataSet.size());
+		buffer.writeBuffer(this, offset, (void*)dataSet.data(), sizeof(TData) * (uSize)dataSet.size());
 	}
 	
 	void setBindings(std::vector<AttributeBinding> bindings);
@@ -56,29 +59,16 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
-	graphics::Font& setFont(std::shared_ptr<asset::Font> font);
+	std::shared_ptr<StringRenderer> setFont(std::shared_ptr<asset::Font> font);
+	void prepareUIBuffers(ui64 const maxCharCount);
 	
-	template <typename TData>
-	void setTextToRender(std::vector<TData> const &verticies, std::vector<ui16> const &indicies)
-	{
-		this->mVertexBufferUI.setSize((uSize)verticies.size() * sizeof(TData));
-		this->initializeBuffer(this->mVertexBufferUI);
-
-		this->mIndexBufferUI.setSize((uSize)indicies.size() * sizeof(ui16));
-		//this->mIndexBufferUnitType = vk::IndexType::eUint16;
-		//this->mIndexCount = (ui32)model.indicies().size();
-		this->initializeBuffer(this->mIndexBufferUI);
-
-		this->writeBufferData(this->mVertexBufferUI, 0, verticies);
-		this->writeBufferData(this->mIndexBufferUI, 0, indicies);
-	}
-
 	void createRenderChain() override;
 	void createRenderPass() override;
 	RenderPass* getRenderPass() override;
 	void destroyRenderPass() override;
 
 	void invalidate() override;
+	std::shared_ptr<StringRenderer> stringRenderer();
 
 protected:
 
@@ -89,8 +79,6 @@ protected:
 
 private:
 
-	void writeToBuffer(Buffer* buffer, uSize offset, void* data, uSize size);
-	void copyBetweenBuffers(Buffer *src, Buffer *dest, uSize size);
 	void copyBufferToImage(Buffer *src, Image *dest);
 	void transitionImageToLayout(Image *image, vk::ImageLayout prev, vk::ImageLayout next);
 
@@ -122,6 +110,8 @@ private:
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;
 	
+	Memory mMemoryImages;
+
 	std::vector<ImageSampler> mTextureSamplers;
 	std::vector<Image> mTextureImages;
 	std::vector<ImageView> mTextureViews;
@@ -137,10 +127,10 @@ private:
 	Pipeline mPipeline;
 
 	std::shared_ptr<StringRenderer> mpStringRenderer;
-	graphics::Font mFont;
 	DescriptorGroup mDescriptorGroupUI;
 	Pipeline mPipelineUI;
 	Buffer mVertexBufferUI, mIndexBufferUI;
+	ui32 mIndexCountUI;
 
 	CommandPool mCommandPool;
 	std::vector<CommandBuffer> mCommandBuffers;

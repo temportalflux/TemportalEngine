@@ -24,6 +24,7 @@ public:
 	void destroy();
 
 	void* get();
+	void writeBuffer(class GameRenderer *renderer, uSize offset, void* data, uSize size);
 
 private:
 	vk::BufferUsageFlags mUsageFlags;

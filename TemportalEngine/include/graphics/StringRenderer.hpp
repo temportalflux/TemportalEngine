@@ -30,13 +30,16 @@ public:
 private:
 	std::weak_ptr<RenderedStringCollection> mpCollection;
 	ui8 mFontSize;
-	math::Vector2UInt mPos;
+	math::Vector2 mPos;
 	std::string mContent;
+	std::vector<Font::UIVertex> mVerticies;
+	std::vector<ui16> mIndicies;
 #pragma endregion
 
 #pragma region Renderer Comms
 private:
-	void initialize(ui8 fontSize, math::Vector2UInt pos, std::string const &str);
+	void initialize(ui8 fontSize, math::Vector2 pos, std::string const &str);
+	void rebuildGlyphs();
 #pragma endregion
 
 };
@@ -45,7 +48,16 @@ class RenderedStringCollection : public std::enable_shared_from_this<RenderedStr
 {
 
 public:
-	std::shared_ptr<RenderedString> makeString(ui8 fontSize, math::Vector2UInt pos, std::string const &content);
+	RenderedStringCollection(std::weak_ptr<class StringRenderer> owner);
+	std::weak_ptr<RenderedString> makeString(ui8 fontSize, math::Vector2 pos, std::string const &content);
+
+	std::shared_ptr<class StringRenderer> renderer();
+	void rebuildGlyphs();
+	ui32 writeToBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
+
+private:
+	std::weak_ptr<class StringRenderer> mpOwner;
+	std::vector<std::shared_ptr<RenderedString>> mStrings;
 
 };
 
@@ -54,14 +66,22 @@ class StringRenderer : public std::enable_shared_from_this<StringRenderer>
 
 public:
 	StringRenderer();
+	void initialize();
+
+	void setResolution(math::Vector2UInt const &resolution);
 
 	void setFont(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
+	graphics::Font& getFont();
+	math::Vector2UInt const& getResolution() const;
 
 	std::shared_ptr<RenderedStringCollection> makeExclusiveCollection();
-	std::shared_ptr<RenderedString> makeGlobalString(ui8 fontSize, math::Vector2UInt pos, std::string const &content);
+	std::weak_ptr<RenderedString> makeGlobalString(ui8 fontSize, math::Vector2 pos, std::string const &content);
+
+	ui32 writeBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
 
 private:
 	graphics::Font mFont;
+	math::Vector2UInt mResolution;
 
 	/**
 	 * A collection of RenderedStrings which is always visible.

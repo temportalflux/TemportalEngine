@@ -13,9 +13,11 @@ NS_GRAPHICS
 
 struct FontGlyphMeta
 {
-	math::Vector2Int metricsOffset;
-	math::Vector2Int metricsSize;
-	i32 advance;
+	math::Vector2Int bearing;
+	math::Vector2UInt size;
+	ui32 advance;
+	
+	// The width and rows in the bitmap
 	math::Vector2UInt bufferSize;
 
 	operator bool() const { return this->advance > 0; }

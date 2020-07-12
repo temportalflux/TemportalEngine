@@ -155,3 +155,11 @@ void RenderPass::destroy()
 {
 	this->mRenderPass.reset();
 }
+
+void RenderPass::reset()
+{
+	this->destroy();
+	this->mAttachments.clear();
+	this->mPhases.clear();
+	this->mDependencies.clear();
+}

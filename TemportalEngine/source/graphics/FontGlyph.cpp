@@ -14,8 +14,8 @@ FontGlyph::FontGlyph(FontGlyph &&other)
 
 FontGlyph& FontGlyph::operator=(FontGlyph &&other)
 {
-	this->metricsOffset = other.metricsOffset;
-	this->metricsSize = other.metricsSize;
+	this->bearing = other.bearing;
+	this->size = other.size;
 	this->advance = other.advance;
 	this->bufferSize = other.bufferSize;
 	this->buffer = std::move(other.buffer);
@@ -52,8 +52,8 @@ void cereal::save(cereal::PortableBinaryOutputArchive &archive, graphics::FontGl
 
 void cereal::save(cereal::PortableBinaryOutputArchive &archive, graphics::FontGlyph const &value)
 {
-	archive(value.metricsOffset);
-	archive(value.metricsSize);
+	archive(value.bearing);
+	archive(value.size);
 	archive(value.advance);
 	archive(value.bufferSize);
 	archive(value.buffer);
@@ -67,8 +67,8 @@ void cereal::load(cereal::PortableBinaryInputArchive &archive, graphics::FontGly
 
 void cereal::load(cereal::PortableBinaryInputArchive &archive, graphics::FontGlyph &value)
 {
-	archive(value.metricsOffset);
-	archive(value.metricsSize);
+	archive(value.bearing);
+	archive(value.size);
 	archive(value.advance);
 	archive(value.bufferSize);
 	archive(value.buffer);

@@ -99,13 +99,21 @@ public:
 	* @param TDimensionResult The dimension of the vector being copied.
 	*/
 	template <ui32 TDimensionOther>
-	constexpr Vector(Vector<TValue, TDimensionOther> const &other)
+	constexpr Vector(Vector<TValue, TDimensionOther> const &other, ui8 offset = 0)
 	{
 		memset(mValues, 0, TDimension * sizeof(TValue));
-		other.copyTo<TDimension>(mValues);
+		other.copyTo<TDimension>(mValues, offset);
 	}
 
 	// Operations: General ----------------------------------------------------
+
+	Vector<f32, TDimension> toFloat() const
+	{
+		Vector<f32, TDimension> fVector;
+		for (ui8 i = 0; i < TDimension; ++i)
+			fVector[i] = (f32)mValues[i];
+		return fVector;
+	}
 
 	/**
 	* Copies this vector into a new vector with a different dimension count.
@@ -119,21 +127,21 @@ public:
 	* @param TDimensionResult The dimension of the vector being copied.
 	*/
 	template <ui8 TDimensionResult>
-	constexpr Vector<TValue, TDimensionResult> const createSubvector() const
+	constexpr Vector<TValue, TDimensionResult> const createSubvector(ui8 offset = 0) const
 	{
-		return Vector<TValue, TDimensionResult>(*this);
+		return Vector<TValue, TDimensionResult>(*this, offset);
 	}
 
 	/**
 	* Copies data to an array with length equal to dimension count.
 	* Inverse of Vector(TValue[]) constructor.
 	*/
-	template <ui32 TDimensionOther>
-	constexpr void copyTo(TValue other[TDimensionOther], ui32 componentOffset = 0) const
+	template <ui8 TDimensionOther>
+	constexpr void copyTo(TValue other[TDimensionOther], ui8 componentOffset = 0) const
 	{
-		uSize destComponentCount = TDimensionOther + componentOffset;
-		uSize copySize = (TDimension < destComponentCount ? TDimension : destComponentCount) * sizeof(TValue);
-		memcpy_s(other + componentOffset, copySize, mValues + componentOffset, copySize);
+		ui8 destComponentCount = TDimensionOther - componentOffset;
+		uSize copySize = math::min<ui8>(TDimension, destComponentCount) * sizeof(TValue);
+		memcpy_s(other + componentOffset, copySize, mValues, copySize);
 	}
 
 	TValue* data()
@@ -349,6 +357,25 @@ public:
 	{
 		VectorFormat ret = VectorFormat(*this);
 		ret *= other;
+		return ret;
+	}
+
+	/**
+	 * Component wise divides another vector and this vector.
+	 */
+	constexpr void operator/=(VectorFormat const &other)
+	{
+		for (ui8 i = 0; i < TDimension; ++i)
+			mValues[i] /= other.mValues[i];
+	}
+
+	/**
+	 * Component wise divides another vector and this vector and returns the result.
+	 */
+	constexpr VectorFormat const operator/(VectorFormat const &other) const
+	{
+		VectorFormat ret = VectorFormat(*this);
+		ret /= other;
 		return ret;
 	}
 
