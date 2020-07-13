@@ -42,41 +42,52 @@ std::optional<ui32> findMemoryType(std::shared_ptr<GraphicsDevice> device, ui32 
 	return std::nullopt;
 }
 
-Memory& Memory::create(std::shared_ptr<GraphicsDevice> device)
+void Memory::create()
 {
 	assert(this->mTotalSize > 0 && this->mMemoryTypeBits);
 
-	auto memoryType = findMemoryType(device, *this->mMemoryTypeBits, this->mFlags);
+	auto memoryType = findMemoryType(this->device(), *this->mMemoryTypeBits, this->mFlags);
 	assert(memoryType);
 
-	this->mInternal = device->allocateMemory(
+	this->mInternal = this->device()->allocateMemory(
 		vk::MemoryAllocateInfo()
 		.setAllocationSize(this->mTotalSize)
 		.setMemoryTypeIndex(*memoryType)
 	);
-
-	return *this;
 }
 
-void Memory::destroy()
+void* Memory::get()
+{
+	return &this->mInternal.get();
+}
+
+void Memory::invalidate()
 {
 	this->mInternal.reset();
 }
 
-Memory& Memory::bind(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, Buffer const *buffer)
+void Memory::resetConfiguration()
 {
-	device->bindMemory(this, buffer, this->mSlots[idxSlot].offset);
+	this->mFlags = {};
+}
+
+Memory& Memory::bind(uIndex const idxSlot, Buffer const *buffer)
+{
+	assert(this->mInternal);
+	this->device()->bindMemory(this, buffer, this->mSlots[idxSlot].offset);
 	return *this;
 }
 
-Memory& Memory::bind(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, Image const *image)
+Memory& Memory::bind(uIndex const idxSlot, Image const *image)
 {
-	device->bindMemory(this, image, this->mSlots[idxSlot].offset);
+	assert(this->mInternal);
+	this->device()->bindMemory(this, image, this->mSlots[idxSlot].offset);
 	return *this;
 }
 
 void Memory::write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, uSize size)
 {
+	assert(this->mInternal);
 	void* dest = device->mapMemory(this, offset, this->mTotalSize);
 	memcpy(dest, src, size);
 	device->unmapMemory(this);

@@ -4,7 +4,17 @@
 
 using namespace graphics;
 
-void MemoryAllocated::configureSlot(Memory *memory)
+void MemoryAllocated::configureSlot(std::weak_ptr<Memory> memory)
 {
-	memory->configureSlot(this->getRequirements(), this->mIdxSlot);
+	(this->mpMemory = memory).lock()->configureSlot(this->getRequirements(), this->mIdxSlot);
+}
+
+std::shared_ptr<Memory> MemoryAllocated::memory() const
+{
+	return this->mpMemory.lock();
+}
+
+uIndex MemoryAllocated::memorySlot() const
+{
+	return this->mIdxSlot;
 }

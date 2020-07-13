@@ -26,8 +26,6 @@ GameRenderer::GameRenderer()
 	// TODO: Use a `MemoryChunk` instead of global memory
 	this->mpStringRenderer = std::make_shared<StringRenderer>();
 	this->mpStringRenderer->initialize();
-
-	this->mMemoryImages.setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 void GameRenderer::invalidate()
@@ -37,7 +35,10 @@ void GameRenderer::invalidate()
 	this->mTextureImages.clear();
 	this->mTextureSamplers.clear();
 
+	this->mpMemoryImages.reset();
+
 	this->mpStringRenderer.reset();
+	this->mpMemoryFontImages.reset();
 
 	this->destroyRenderChain();
 	this->mPipeline.clearShaders();
@@ -52,7 +53,13 @@ void GameRenderer::invalidate()
 void GameRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
+
 	this->initializeTransientCommandPool();
+
+	// TODO: Use a `MemoryChunk` instead of global memory
+	this->mpMemoryImages = std::make_shared<Memory>();
+	this->mpMemoryImages->setDevice(this->mpGraphicsDevice);
+	this->mpMemoryImages->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 std::shared_ptr<GraphicsDevice> GameRenderer::getDevice()
@@ -140,42 +147,44 @@ uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler>
 
 uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler)
 {
-	std::vector<ui8> data = texture->getSourceBinary();
-	auto dataMemSize = data.size() * sizeof(ui8);
-
 	auto idxImage = this->mTextureImages.size();
 	this->mTextureImages.push_back(graphics::Image());
+	this->mTextureImages[idxImage].setDevice(this->mpGraphicsDevice);
 	this->mTextureImages[idxImage]
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
 		.setSize(math::Vector3UInt(texture->getSourceSize()).z(1))
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-	this->mTextureImages[idxImage].setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-	this->mTextureImages[idxImage].create(this->mpGraphicsDevice);
-
-	this->transitionImageToLayout(&this->mTextureImages[idxImage], vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-	{
-		Buffer& stagingBuffer = Buffer()
-			.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-			.setSize(this->mTextureImages[idxImage].getMemorySize());
-		stagingBuffer.setMemoryRequirements(
-			vk::MemoryPropertyFlagBits::eHostVisible
-			| vk::MemoryPropertyFlagBits::eHostCoherent
-		);
-		stagingBuffer.create(this->mpGraphicsDevice);
-		stagingBuffer.write(this->mpGraphicsDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
-		this->copyBufferToImage(&stagingBuffer, &this->mTextureImages[idxImage]);
-		stagingBuffer.destroy();
-	}
-	this->transitionImageToLayout(&this->mTextureImages[idxImage], vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+	this->mTextureImages[idxImage].create();
+	this->mTextureImages[idxImage].configureSlot(this->mpMemoryImages);
 
 	uIndex idx = this->mTextureViews.size();
+	assert(idx == idxImage);
+
 	this->mTextureViews.push_back(graphics::ImageView());
-	this->mTextureViews[idx].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(this->mpGraphicsDevice);
 
 	this->mTextureDescriptorPairs.push_back(std::make_pair(idx, idxSampler));
 
-	return idx;
+	return idxImage;
+}
+
+void GameRenderer::allocateTextureMemory()
+{
+	this->mpMemoryImages->create();
+}
+
+void GameRenderer::writeTextureData(uIndex idxImage, std::shared_ptr<asset::Texture> texture)
+{
+	std::vector<ui8> data = texture->getSourceBinary();
+	auto dataMemSize = texture->getSourceMemorySize();
+
+	this->mTextureImages[idxImage].bindMemory();
+
+	this->mTextureImages[idxImage].transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, &this->mCommandPoolTransient);
+	this->mTextureImages[idxImage].writeImage((void*)data.data(), dataMemSize, &this->mCommandPoolTransient);
+	this->mTextureImages[idxImage].transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mCommandPoolTransient);
+
+	this->mTextureViews[idxImage].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(this->mpGraphicsDevice);
 }
 
 void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
@@ -226,7 +235,13 @@ void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, v
 
 std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Font> font)
 {
+	this->mpMemoryFontImages = std::make_shared<Memory>();
+	this->mpMemoryFontImages->setDevice(this->mpGraphicsDevice);
+	this->mpMemoryFontImages->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
 	this->stringRenderer()->setFont(font->getFontSizes(), font->glyphSets());
+
+	// Create the device objects for all the font images (samplers, images, and views)
 	for (auto& face : this->stringRenderer()->getFont().faces())
 	{
 		face.sampler()
@@ -240,37 +255,35 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 			.create(this->mpGraphicsDevice);
 		
 		auto& image = face.image();
+		image.setDevice(this->mpGraphicsDevice);
 		image
 			.setFormat(vk::Format::eR8G8B8A8Srgb)
 			.setSize(math::Vector3UInt(face.getAtlasSize()).z(1))
 			.setTiling(vk::ImageTiling::eOptimal)
 			.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
-		image.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
-		image.create(this->mpGraphicsDevice);
+		image.create();
 
+		// Configure the image so the memory object knows how much to allocate on the GPU
+		image.configureSlot(this->mpMemoryFontImages);
+	}
+
+	// Allocate the memory buffer for the face images
+	this->mpMemoryFontImages->create();
+
+	// Write face image data to the memory buffer
+	for (auto& face : this->stringRenderer()->getFont().faces())
+	{
 		auto& data = face.getPixelData();
-		auto dataMemSize = data.size() * sizeof(ui8);
-
-		this->transitionImageToLayout(&image, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-		{
-			Buffer& stagingBuffer = Buffer()
-				.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-				.setSize(image.getMemorySize());
-			stagingBuffer.setMemoryRequirements(
-				vk::MemoryPropertyFlagBits::eHostVisible
-				| vk::MemoryPropertyFlagBits::eHostCoherent
-			);
-			stagingBuffer.create(this->mpGraphicsDevice);
-			stagingBuffer.write(this->mpGraphicsDevice, /*offset*/ 0, (void*)data.data(), dataMemSize);
-			this->copyBufferToImage(&stagingBuffer, &image);
-			stagingBuffer.destroy();
-		}
-		this->transitionImageToLayout(&image, vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
+		face.image().bindMemory();
+		face.image().transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, &this->mCommandPoolTransient);
+		face.image().writeImage((void*)data.data(), data.size() * sizeof(ui8), &this->mCommandPoolTransient);
+		face.image().transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mCommandPoolTransient);
 
 		face.view()
-			.setImage(&image, vk::ImageAspectFlagBits::eColor)
+			.setImage(&face.image(), vk::ImageAspectFlagBits::eColor)
 			.create(this->mpGraphicsDevice);
 	}
+
 	return this->stringRenderer();
 }
 
@@ -401,15 +414,22 @@ void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
 	);
 	if (!supportedFormat) throw std::runtime_error("failed to find supported depth buffer format");
 
-	this->mDepthImage.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mpMemoryDepthImage = std::make_shared<Memory>();
+	this->mpMemoryDepthImage->setDevice(this->mpGraphicsDevice);
+	this->mpMemoryDepthImage->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	this->mDepthImage.setDevice(this->mpGraphicsDevice);
 	this->mDepthImage
 		.setFormat(*supportedFormat)
 		.setSize({ resolution.x(), resolution.y(), 1 })
 		.setTiling(vk::ImageTiling::eOptimal)
-		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
-		.create(this->mpGraphicsDevice);
+		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment);
+	this->mDepthImage.create();
 
-	this->transitionImageToLayout(&this->mDepthImage, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+	this->mDepthImage.configureSlot(this->mpMemoryDepthImage);
+	this->mpMemoryDepthImage->create();
+	this->mDepthImage.bindMemory();
+	this->mDepthImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, &this->mCommandPoolTransient);
 
 	this->mDepthView
 		.setImage(&this->mDepthImage, vk::ImageAspectFlagBits::eDepth)
@@ -420,6 +440,7 @@ void GameRenderer::destroyDepthResources()
 {
 	this->mDepthView.invalidate();
 	this->mDepthImage.invalidate();
+	this->mpMemoryDepthImage.reset();
 }
 
 void GameRenderer::createDescriptors()

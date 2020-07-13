@@ -11,6 +11,7 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "graphics/StringRenderer.hpp"
+#include "graphics/Memory.hpp"
 
 #include "asset/Font.hpp"
 #include "graphics/FontAtlas.hpp"
@@ -277,7 +278,6 @@ int main(int argc, char *argv[])
 			renderCube.init(&renderer, instances);
 			renderer.addRender(&renderCube);
 
-			// TODO: pass an asset to configure from
 			{
 				auto sampler = asset::TypedAssetPath<asset::TextureSampler>::Create(
 					"assets/textures/NearestNeighborSampler.te-asset"
@@ -287,7 +287,9 @@ int main(int argc, char *argv[])
 				auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
 					"assets/textures/block/Dirt.te-asset"
 				).load(asset::EAssetSerialization::Binary);
-				renderer.createTextureAssetImage(dirtTexture, idxSampler);
+				auto idxTex = renderer.createTextureAssetImage(dirtTexture, idxSampler);
+				renderer.allocateTextureMemory(); // allocates the memory for all images created
+				renderer.writeTextureData(idxTex, dirtTexture);
 			}
 
 			{

@@ -23,6 +23,7 @@ public:
 	void setSourceBinary(std::vector<ui8> const &binary, math::Vector2UInt size);
 	std::vector<ui8> getSourceBinary() const;
 	math::Vector2UInt getSourceSize() const;
+	uSize getSourceMemorySize() const;
 
 private:
 	std::string mSourceFilePath;

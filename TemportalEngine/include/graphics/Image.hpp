@@ -1,6 +1,7 @@
 #pragma once
 
-#include "graphics/MemoryBacked.hpp"
+#include "graphics/DeviceObject.hpp"
+#include "graphics/MemoryAllocated.hpp"
 
 #include "math/Vector.hpp"
 
@@ -9,7 +10,7 @@
 NS_GRAPHICS
 class GraphicsDevice;
 
-class Image : public MemoryBacked
+class Image : public DeviceObject, public MemoryAllocated
 {
 	friend class GraphicsDevice;
 
@@ -25,11 +26,16 @@ public:
 	Image& setSize(math::Vector3UInt const &size);
 	math::Vector3UInt getSize() const;
 
-	void create(std::shared_ptr<GraphicsDevice> device);
-	void* get();
-	void invalidate();
+	uSize getExpectedDataCount() const;
 
-	uSize getExpectedDataSize() const;
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
+
+	void bindMemory() override;
+	void transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, class CommandPool* transientPool);
+	void writeImage(void* data, uSize size, class CommandPool* transientPool);
 
 private:
 	vk::ImageType mType;
@@ -37,9 +43,12 @@ private:
 	vk::ImageTiling mTiling;
 	vk::ImageUsageFlags mUsage;
 	math::Vector3UInt mImageSize;
+
 	vk::UniqueImage mInternal;
 
-	void bind(std::shared_ptr<GraphicsDevice> device, ui64 offset = 0) override;
+	vk::MemoryRequirements getRequirements() const override;
+
+	void copyBufferToImage(class Buffer *src, class CommandPool* transientPool);
 
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -9,7 +9,7 @@ class GraphicsDevice;
 class Image;
 class Buffer;
 
-class Memory
+class Memory : public DeviceObject
 {
 	friend class GraphicsDevice;
 
@@ -26,11 +26,13 @@ public:
 	Memory& setFlags(vk::MemoryPropertyFlags flags);
 	Memory& configureSlot(vk::MemoryRequirements const &requirements, uIndex &outSlotIndex);
 
-	Memory& create(std::shared_ptr<GraphicsDevice> device);
-	void destroy();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
-	Memory& bind(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, Buffer const *buffer);
-	Memory& bind(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, Image const *image);
+	Memory& bind(uIndex const idxSlot, Buffer const *buffer);
+	Memory& bind(uIndex const idxSlot, Image const *image);
 
 	template <typename TData>
 	void write(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, std::vector<TData> data)

@@ -59,6 +59,10 @@ public:
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`
 	uIndex createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler);
+	// Must happen only after all image assets are created
+	void allocateTextureMemory();
+	void writeTextureData(uIndex idxTexture, std::shared_ptr<asset::Texture> texture);
+
 	std::shared_ptr<StringRenderer> setFont(std::shared_ptr<asset::Font> font);
 	void prepareUIBuffers(ui64 const maxCharCount);
 	
@@ -110,14 +114,14 @@ private:
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;
 	
-	Memory mMemoryImages;
-
+	std::shared_ptr<Memory> mpMemoryImages;
 	std::vector<ImageSampler> mTextureSamplers;
 	std::vector<Image> mTextureImages;
 	std::vector<ImageView> mTextureViews;
 	// First value of each pair is the image view idx of `mTextureViews`
 	// Second value of each pair is the image sampler idx of `mTextureSamplers`
 	std::vector<std::pair<uIndex, uIndex>> mTextureDescriptorPairs;
+	std::shared_ptr<Memory> mpMemoryDepthImage;
 	Image mDepthImage;
 	ImageView mDepthView;
 
@@ -127,6 +131,7 @@ private:
 	Pipeline mPipeline;
 
 	std::shared_ptr<StringRenderer> mpStringRenderer;
+	std::shared_ptr<Memory> mpMemoryFontImages;
 	DescriptorGroup mDescriptorGroupUI;
 	Pipeline mPipelineUI;
 	Buffer mVertexBufferUI, mIndexBufferUI;

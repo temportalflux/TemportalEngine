@@ -37,6 +37,11 @@ math::Vector2UInt Texture::getSourceSize() const
 	return this->mSourceSize;
 }
 
+uSize Texture::getSourceMemorySize() const
+{
+	return this->mSourceSize.x() * this->mSourceSize.y() * 4 * sizeof(ui8);
+}
+
 #pragma region Serialization
 
 void Texture::write(cereal::JSONOutputArchive &archive) const

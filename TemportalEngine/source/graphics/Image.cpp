@@ -1,6 +1,9 @@
 #include "graphics/Image.hpp"
 
+#include "graphics/Buffer.hpp"
+#include "graphics/CommandPool.hpp"
 #include "graphics/GraphicsDevice.hpp"
+#include "graphics/Memory.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -44,9 +47,9 @@ math::Vector3UInt Image::getSize() const
 	return this->mImageSize;
 }
 
-void Image::create(std::shared_ptr<GraphicsDevice> device)
+void Image::create()
 {
-	this->mInternal = device->createImage(
+	this->mInternal = this->device()->createImage(
 		vk::ImageCreateInfo()
 		.setImageType(this->mType)
 		.setExtent(
@@ -64,8 +67,6 @@ void Image::create(std::shared_ptr<GraphicsDevice> device)
 		.setSharingMode(vk::SharingMode::eExclusive)
 		.setSamples(vk::SampleCountFlagBits::e1)
 	);
-
-	this->createMemory(device, device->getMemoryRequirements(this));
 }
 
 void* Image::get()
@@ -76,15 +77,18 @@ void* Image::get()
 void Image::invalidate()
 {
 	this->mInternal.reset();
-	MemoryBacked::invalidate();
 }
 
-void Image::bind(std::shared_ptr<GraphicsDevice> device, ui64 offset)
+void Image::resetConfiguration()
 {
-	device->bindMemory(this, this, offset);
 }
 
-uSize Image::getExpectedDataSize() const
+vk::MemoryRequirements Image::getRequirements() const
+{
+	return this->device()->getMemoryRequirements(this);
+}
+
+uSize Image::getExpectedDataCount() const
 {
 	auto imgPixelCount = this->mImageSize.x() * this->mImageSize.y() * this->mImageSize.z();
 	switch (this->mFormat)
@@ -94,4 +98,72 @@ uSize Image::getExpectedDataSize() const
 		assert(false);
 		return 0;
 	}
+}
+
+void Image::bindMemory()
+{
+	this->memory()->bind(this->memorySlot(), this);
+}
+
+void Image::transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, CommandPool* transientPool)
+{
+	auto buffers = transientPool->createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.setPipelineImageBarrier(this, prev, next)
+		.end();
+	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
+		vk::Fence()
+	);
+	/*
+		TODO: This causes all commands to be synchronous.
+		For higher throughput, this should not be called, and the command buffers should rely entirely
+		on the pipeline barriers.
+		This means multiple images could be sent to GPU at once.
+	*/
+	queue.waitIdle();
+}
+
+void Image::writeImage(void* data, uSize size, CommandPool* transientPool)
+{
+	auto pDevice = this->device();
+	Buffer& stagingBuffer = Buffer()
+		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+		.setSize(this->getExpectedDataCount() * sizeof(ui8));
+	stagingBuffer.setMemoryRequirements(
+		vk::MemoryPropertyFlagBits::eHostVisible
+		| vk::MemoryPropertyFlagBits::eHostCoherent
+	);
+	stagingBuffer.create(pDevice);
+	stagingBuffer.write(pDevice, /*offset*/ 0, data, size);
+	this->copyBufferToImage(&stagingBuffer, transientPool);
+	stagingBuffer.destroy();
+}
+
+
+void Image::copyBufferToImage(Buffer *src, CommandPool* transientPool)
+{
+	auto buffers = transientPool->createCommandBuffers(1);
+	buffers[0]
+		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+		.copyBufferToImage(src, this)
+		.end();
+	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
+		vk::Fence()
+	);
+	/*
+		TODO: This causes all commands to be synchronous.
+		For higher throughput, this should not be called, and the command buffers should rely entirely
+		on the pipeline barriers.
+		This means multiple images could be sent to GPU at once.
+	*/
+	queue.waitIdle();
 }
