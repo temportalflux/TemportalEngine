@@ -35,9 +35,14 @@ public:
 	Memory& bind(uIndex const idxSlot, Image const *image);
 
 	template <typename TData>
-	void write(std::shared_ptr<GraphicsDevice> device, uIndex const idxSlot, std::vector<TData> data)
+	void write(uIndex const idxSlot, std::vector<TData> data, bool bClear=false)
 	{
-		this->write(device, this->mSlots[idxSlot].offset, data.data(), data.size() * sizeof(TData));
+		this->write(idxSlot, 0, data.data(), data.size() * sizeof(TData), bClear);
+	}
+	void write(ui64 const idxSlot, uSize const offset, void* src, uSize size, bool bClear=false)
+	{
+		auto const& slot = this->mSlots[idxSlot];
+		this->writeInternal(slot.offset, slot.size, offset, src, size, bClear);
 	}
 
 private:
@@ -49,7 +54,7 @@ private:
 
 	vk::UniqueDeviceMemory mInternal;
 
-	void write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, uSize size);
+	void writeInternal(ui64 const mapOffset, ui64 const mapSize, uSize const dataOffset, void* src, uSize size, bool bClear);
 
 };
 

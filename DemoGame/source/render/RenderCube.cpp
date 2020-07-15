@@ -7,14 +7,11 @@
 RenderCube::RenderCube()
 {
 	this->mVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 	this->mInstanceBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 	this->mIndexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer);
 }
 
 void RenderCube::appendBindings(std::vector<graphics::AttributeBinding> &bindings, ui8 &slot) const
@@ -31,24 +28,42 @@ void RenderCube::init(graphics::GameRenderer *renderer, std::vector<WorldObject>
 {
 	auto model = ModelCube();
 
+	auto device = renderer->getDevice();
+
+	this->mpBufferMemory = std::make_shared<graphics::Memory>();
+	this->mpBufferMemory->setDevice(device);
+	this->mpBufferMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
 	// Initialize Buffers
 	{
+		this->mVertexBuffer.setDevice(device);
 		this->mVertexBuffer.setSize(model.getVertexBufferSize());
-		renderer->initializeBuffer(this->mVertexBuffer);
+		this->mVertexBuffer.create();
+		this->mVertexBuffer.configureSlot(this->mpBufferMemory);
 
 		this->mInstanceCount = (ui32)instances.size();
+		this->mInstanceBuffer.setDevice(device);
 		this->mInstanceBuffer.setSize(this->mInstanceCount * sizeof(WorldObject::InstanceData));
-		renderer->initializeBuffer(this->mInstanceBuffer);
+		this->mInstanceBuffer.create();
+		this->mInstanceBuffer.configureSlot(this->mpBufferMemory);
 
-		this->mIndexBuffer.setSize(model.getIndexBufferSize());
 		this->mIndexBufferUnitType = vk::IndexType::eUint16;
 		this->mIndexCount = (ui32)model.indicies().size();
-		renderer->initializeBuffer(this->mIndexBuffer);
+		this->mIndexBuffer.setDevice(device);
+		this->mIndexBuffer.setSize(model.getIndexBufferSize());
+		this->mIndexBuffer.create();
+		this->mIndexBuffer.configureSlot(this->mpBufferMemory);
+
+		this->mpBufferMemory->create();
+
+		this->mVertexBuffer.bindMemory();
+		this->mInstanceBuffer.bindMemory();
+		this->mIndexBuffer.bindMemory();
 	}
 	
 	// Write model data
-	renderer->writeBufferData(this->mVertexBuffer, 0, model.verticies());
-	renderer->writeBufferData(this->mIndexBuffer, 0, model.indicies());
+	this->mVertexBuffer.writeBuffer(&renderer->getTransientPool(), 0, model.verticies());
+	this->mIndexBuffer.writeBuffer(&renderer->getTransientPool(), 0, model.indicies());
 
 	// Write static instance data
 	auto instanceData = std::vector<WorldObject::InstanceData>(instances.size());
@@ -57,7 +72,7 @@ void RenderCube::init(graphics::GameRenderer *renderer, std::vector<WorldObject>
 		std::begin(instanceData),
 		[](WorldObject inst) -> WorldObject::InstanceData { return { inst.getModelMatrix() }; }
 	);
-	renderer->writeBufferData(this->mInstanceBuffer, 0, instanceData);
+	this->mInstanceBuffer.writeBuffer(&renderer->getTransientPool(), 0, instanceData);
 
 	this->instances = instances;
 }
@@ -75,4 +90,6 @@ void RenderCube::invalidate()
 	this->mVertexBuffer.destroy();
 	this->mInstanceBuffer.destroy();
 	this->mIndexBuffer.destroy();
+	this->mpBufferMemory->destroy();
+	this->mpBufferMemory.reset();
 }

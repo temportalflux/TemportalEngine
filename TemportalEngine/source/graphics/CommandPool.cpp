@@ -1,6 +1,7 @@
 #include "graphics/CommandPool.hpp"
 
 #include "graphics/GraphicsDevice.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -48,4 +49,23 @@ std::vector<CommandBuffer> CommandPool::createCommandBuffers(ui32 const count) c
 void CommandPool::resetPool()
 {
 	this->mpDevice.lock()->resetPool(this, vk::CommandPoolResetFlags());
+}
+
+void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
+{
+	auto buffers = this->createCommandBuffers(1);
+	
+	auto cmd = buffers[0].beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+	writeCommands(&cmd);
+	cmd.end();
+
+	auto queue = this->mpDevice.lock()->getQueue(QueueFamily::Enum::eGraphics);
+	queue.submit(
+		vk::SubmitInfo()
+		.setCommandBufferCount(1)
+		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
+		vk::Fence()
+	);
+
+	queue.waitIdle();
 }

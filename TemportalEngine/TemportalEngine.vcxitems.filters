@@ -226,9 +226,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Image.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\MemoryBacked.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageSampler.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
@@ -552,9 +549,6 @@
       <Filter>math</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryBacked.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp">

@@ -36,7 +36,6 @@ class GraphicsDevice
 	friend class ImageSampler;
 	friend class ImageView;
 	friend class Memory;
-	friend class MemoryBacked;
 	friend class Pipeline;
 	friend class RenderPass;
 	friend class SwapChain;
@@ -75,7 +74,6 @@ private:
 #pragma region Buffer
 	vk::UniqueBuffer createBuffer(vk::BufferCreateInfo const &info) const;
 	vk::MemoryRequirements getMemoryRequirements(Buffer const *buffer) const;
-	void bindMemory(MemoryBacked const *memory, Buffer const *buffer, ui64 offset) const;
 #pragma endregion
 #pragma region CommandPool
 	vk::UniqueCommandPool createCommandPool(vk::CommandPoolCreateInfo const &info) const;
@@ -101,15 +99,12 @@ private:
 #pragma region Image
 	vk::UniqueImage createImage(vk::ImageCreateInfo const &info) const;
 	vk::MemoryRequirements getMemoryRequirements(Image const *image) const;
-	void bindMemory(MemoryBacked const *memory, Image const *image, ui64 offset) const;
 #pragma endregion
 #pragma region ImageView
 	vk::UniqueImageView createImageView(vk::ImageViewCreateInfo const &info) const;
 #pragma endregion
 #pragma region Memory
 	vk::UniqueDeviceMemory allocateMemory(vk::MemoryAllocateInfo const &info) const;
-	void* mapMemory(MemoryBacked const *memory, ui64 offset, ui64 size, vk::MemoryMapFlags flags = vk::MemoryMapFlags()) const;
-	void unmapMemory(MemoryBacked const *memory) const;
 	void bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const;
 	void bindMemory(Memory const *memory, Image const *image, ui64 offset) const;
 	void* mapMemory(Memory const *memory, ui64 offset, ui64 size) const;

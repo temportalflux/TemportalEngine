@@ -28,6 +28,8 @@ public:
 	std::vector<CommandBuffer> createCommandBuffers(ui32 const count) const;
 	void resetPool();
 
+	void submitOneOff(std::function<void(class Command* cmd)> writeCommands);
+
 private:
 	QueueFamily::Enum mQueueFamily;
 	ui32 mIdxQueueFamily;

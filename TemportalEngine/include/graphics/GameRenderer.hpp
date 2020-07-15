@@ -38,14 +38,6 @@ public:
 	void addRender(IRender *render);
 
 	void setStaticUniform(std::shared_ptr<Uniform> uniform);
-	void initializeBuffer(graphics::Buffer &buffer);
-
-	// TODO: Move this to the buffer object
-	template <typename TData>
-	void writeBufferData(graphics::Buffer &buffer, uSize offset, std::vector<TData> const &dataSet)
-	{
-		buffer.writeBuffer(this, offset, (void*)dataSet.data(), sizeof(TData) * (uSize)dataSet.size());
-	}
 	
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
@@ -113,6 +105,7 @@ private:
 	DescriptorPool mDescriptorPool;
 
 	std::shared_ptr<Uniform> mpUniformStatic; // used for global UBO like projection matrix
+	std::shared_ptr<Memory> mpMemoryUniformBuffers;
 	std::vector<Buffer> mUniformStaticBuffersPerFrame;
 	
 	std::shared_ptr<Memory> mpMemoryImages;
@@ -135,6 +128,7 @@ private:
 	std::shared_ptr<Memory> mpMemoryFontImages;
 	DescriptorGroup mDescriptorGroupUI;
 	Pipeline mPipelineUI;
+	std::shared_ptr<Memory> mpMemoryUIBuffers;
 	Buffer mVertexBufferUI, mIndexBufferUI;
 	ui32 mIndexCountUI;
 

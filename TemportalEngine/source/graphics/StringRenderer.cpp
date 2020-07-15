@@ -1,6 +1,7 @@
 #include "graphics/StringRenderer.hpp"
 
 #include "graphics/Buffer.hpp"
+#include "graphics/CommandPool.hpp"
 
 using namespace graphics;
 
@@ -114,15 +115,15 @@ void RenderedStringCollection::collectGeometry()
 	this->mLock.unlock();
 }
 
-ui32 RenderedStringCollection::writeToBuffers(GameRenderer* renderer, Buffer* vertexBuffer, Buffer* indexBuffer)
+ui32 RenderedStringCollection::writeToBuffers(CommandPool* transientPool, Buffer* vertexBuffer, Buffer* indexBuffer)
 {
 	this->mLock.lock();
 	
 	ui32 indexCount = (ui32)this->mIndicies.size();
 	uSize vertexDataSize = this->mVerticies.size() * sizeof(Font::UIVertex);
-	vertexBuffer->writeBuffer(renderer, 0, this->mVerticies.data(), vertexDataSize);
+	vertexBuffer->writeBuffer(transientPool, 0, this->mVerticies.data(), vertexDataSize);
 	uSize indexDataSize = indexCount * sizeof(ui16);
-	indexBuffer->writeBuffer(renderer, 0, this->mIndicies.data(), indexDataSize, true);
+	indexBuffer->writeBuffer(transientPool, 0, this->mIndicies.data(), indexDataSize, true);
 
 	this->mbIsDirty = false;
 
@@ -183,10 +184,10 @@ std::weak_ptr<RenderedString> StringRenderer::makeGlobalString(ui8 fontSize, mat
 	return this->mpGlobalCollection->makeString(fontSize, pos, content);
 }
 
-ui32 StringRenderer::writeBuffers(GameRenderer* renderer, Buffer* vertexBuffer, Buffer* indexBuffer)
+ui32 StringRenderer::writeBuffers(CommandPool* transientPool, Buffer* vertexBuffer, Buffer* indexBuffer)
 {
 	auto const& maxCharCount = indexBuffer->getSize() / (sizeof(ui16) * /*indicies per char*/ 6);
-	return this->mpGlobalCollection->writeToBuffers(renderer, vertexBuffer, indexBuffer);
+	return this->mpGlobalCollection->writeToBuffers(transientPool, vertexBuffer, indexBuffer);
 }
 
 bool StringRenderer::isDirty() const

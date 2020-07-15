@@ -6,7 +6,6 @@
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/Memory.hpp"
-#include "graphics/MemoryBacked.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/VulkanInstance.hpp"
 
@@ -99,16 +98,6 @@ vk::UniqueBuffer GraphicsDevice::createBuffer(vk::BufferCreateInfo const &info) 
 vk::MemoryRequirements GraphicsDevice::getMemoryRequirements(Buffer const *buffer) const
 {
 	return this->internalLogic()->getBufferMemoryRequirements(buffer->mInternal.get());
-}
-
-void GraphicsDevice::bindMemory(MemoryBacked const *memory, Buffer const *buffer, ui64 offset) const
-{
-	this->internalLogic()->bindBufferMemory(buffer->mInternal.get(), memory->mBufferMemory.get(), offset);
-}
-
-void GraphicsDevice::bindMemory(MemoryBacked const *memory, Image const *image, ui64 offset) const
-{
-	this->internalLogic()->bindImageMemory(image->mInternal.get(), memory->mBufferMemory.get(), offset);
 }
 
 #pragma endregion
@@ -233,16 +222,6 @@ vk::UniqueImageView GraphicsDevice::createImageView(vk::ImageViewCreateInfo cons
 vk::UniqueDeviceMemory GraphicsDevice::allocateMemory(vk::MemoryAllocateInfo const &info) const
 {
 	return this->internalLogic()->allocateMemoryUnique(info);
-}
-
-void* GraphicsDevice::mapMemory(MemoryBacked const *memory, ui64 offset, ui64 size, vk::MemoryMapFlags flags /*= vk::MemoryMapFlags()*/) const
-{
-	return this->internalLogic()->mapMemory(memory->mBufferMemory.get(), offset, size, flags);
-}
-
-void GraphicsDevice::unmapMemory(MemoryBacked const *memory) const
-{
-	this->internalLogic()->unmapMemory(memory->mBufferMemory.get());
 }
 
 void GraphicsDevice::bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const

@@ -85,10 +85,12 @@ Memory& Memory::bind(uIndex const idxSlot, Image const *image)
 	return *this;
 }
 
-void Memory::write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, uSize size)
+void Memory::writeInternal(ui64 const mapOffset, ui64 const mapSize, uSize const dataOffset, void* src, uSize size, bool bClear)
 {
 	assert(this->mInternal);
-	void* dest = device->mapMemory(this, offset, this->mTotalSize);
-	memcpy(dest, src, size);
-	device->unmapMemory(this);
+	void* dest = this->device()->mapMemory(this, mapOffset, mapSize);
+	void* destOffsetted = (void*)(((uSize)dest) + dataOffset);
+	if (bClear) memset(destOffsetted, 0, mapSize);
+	memcpy(destOffsetted, src, size);
+	this->device()->unmapMemory(this);
 }

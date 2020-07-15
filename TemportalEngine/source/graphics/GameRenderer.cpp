@@ -17,12 +17,12 @@ GameRenderer::GameRenderer()
 		{ vk::DescriptorType::eUniformBuffer, 64 },
 		{ vk::DescriptorType::eCombinedImageSampler, 64 },
 	});
+
 	this->mVertexBufferUI
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 	this->mIndexBufferUI
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setMemoryRequirements(vk::MemoryPropertyFlagBits::eDeviceLocal);
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer);
+	
 	// TODO: Use a `MemoryChunk` instead of global memory
 	this->mpStringRenderer = std::make_shared<StringRenderer>();
 	this->mpStringRenderer->initialize();
@@ -46,6 +46,9 @@ void GameRenderer::invalidate()
 
 	this->mVertexBufferUI.destroy();
 	this->mIndexBufferUI.destroy();
+	this->mpMemoryUIBuffers.reset();
+
+	this->mpMemoryUniformBuffers.reset();
 
 	VulkanRenderer::invalidate();
 }
@@ -57,9 +60,19 @@ void GameRenderer::initializeDevices()
 	this->initializeTransientCommandPool();
 
 	// TODO: Use a `MemoryChunk` instead of global memory
+	this->mpMemoryUniformBuffers = std::make_shared<graphics::Memory>();
+	this->mpMemoryUniformBuffers->setDevice(this->mpGraphicsDevice);
+	// Host Coherent means this entire buffer will be automatically flushed per write.
+	// This can be optimized later by only flushing the portion of the buffer which actually changed.
+	this->mpMemoryUniformBuffers->setFlags(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
 	this->mpMemoryImages = std::make_shared<Memory>();
 	this->mpMemoryImages->setDevice(this->mpGraphicsDevice);
 	this->mpMemoryImages->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	this->mpMemoryUIBuffers = std::make_shared<graphics::Memory>();
+	this->mpMemoryUIBuffers->setDevice(this->mpGraphicsDevice);
+	this->mpMemoryUIBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 std::shared_ptr<GraphicsDevice> GameRenderer::getDevice()
@@ -95,11 +108,6 @@ void GameRenderer::initializeTransientCommandPool()
 			this->mpGraphicsDevice->queryQueueFamilyGroup()
 		)
 		.create(this->mpGraphicsDevice, vk::CommandPoolCreateFlagBits::eTransient);
-}
-
-void GameRenderer::initializeBuffer(graphics::Buffer &buffer)
-{
-	buffer.create(this->mpGraphicsDevice);
 }
 
 void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
@@ -289,13 +297,23 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 
 void GameRenderer::prepareUIBuffers(ui64 const maxCharCount)
 {
+	this->mVertexBufferUI.setDevice(this->mpGraphicsDevice);
 	this->mVertexBufferUI
 		.setSize(maxCharCount * /*verticies per character*/ 4 * sizeof(Font::UIVertex))
-		.create(this->mpGraphicsDevice);
+		.create();
 
+	this->mIndexBufferUI.setDevice(this->mpGraphicsDevice);
 	this->mIndexBufferUI
 		.setSize(maxCharCount * /*indicies per character*/ 6 * sizeof(ui16))
-		.create(this->mpGraphicsDevice);
+		.create();
+
+	this->mVertexBufferUI.configureSlot(this->mpMemoryUIBuffers);
+	this->mIndexBufferUI.configureSlot(this->mpMemoryUIBuffers);
+	
+	this->mpMemoryUIBuffers->create();
+
+	this->mVertexBufferUI.bindMemory();
+	this->mIndexBufferUI.bindMemory();
 }
 
 void GameRenderer::createRenderChain()
@@ -308,7 +326,7 @@ void GameRenderer::createRenderChain()
 	this->createSwapChain();
 
 	this->stringRenderer()->setResolution(this->mSwapChain.getResolution());
-	this->mIndexCountUI = this->stringRenderer()->writeBuffers(this, &this->mVertexBufferUI, &this->mIndexBufferUI);
+	this->mIndexCountUI = this->stringRenderer()->writeBuffers(&this->mCommandPoolTransient, &this->mVertexBufferUI, &this->mIndexBufferUI);
 
 	this->createFrameImageViews();
 	this->createDepthResources(this->mSwapChain.getResolution());
@@ -389,20 +407,26 @@ void GameRenderer::createUniformBuffers()
 	this->mUniformStaticBuffersPerFrame.resize(frameCount);
 	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
 	{
-		this->mUniformStaticBuffersPerFrame[idxFrame]
+		auto& buffer = this->mUniformStaticBuffersPerFrame[idxFrame];
+		buffer.setDevice(this->mpGraphicsDevice);
+		buffer
 			.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
 			.setSize(this->mpUniformStatic->size());
-		this->mUniformStaticBuffersPerFrame[idxFrame]
-			// Host Coherent means this entire buffer will be automatically flushed per write.
-			// This can be optimized later by only flushing the portion of the buffer which actually changed.
-			.setMemoryRequirements(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-		this->mUniformStaticBuffersPerFrame[idxFrame].create(this->mpGraphicsDevice);
+		buffer.create();
+		buffer.configureSlot(this->mpMemoryUniformBuffers);
+	}
+	this->mpMemoryUniformBuffers->create();
+	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
+	{
+		auto& buffer = this->mUniformStaticBuffersPerFrame[idxFrame];
+		buffer.bindMemory();
 	}
 }
 
 void GameRenderer::destroyUniformBuffers()
 {
 	this->mUniformStaticBuffersPerFrame.clear();
+	this->mpMemoryUniformBuffers->destroy();
 }
 
 void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
@@ -585,19 +609,8 @@ void GameRenderer::prepareRender(ui32 idxCurrentFrame)
 
 void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 {
-	/*
-	ui64 offset = 0;
-	for (auto& uniformPtr : this->mUniformPts)
-	{
-		auto uniformSize = uniformPtr->size();
-		uniformPtr->beginReading();
-		this->mUniformBuffers[idxImageView].write(&this->mLogicalDevice, offset, uniformPtr->data(), uniformSize);
-		uniformPtr->endReading();
-		offset += uniformSize;
-	}
-	//*/
 	this->mpUniformStatic->beginReading();
-	this->mUniformStaticBuffersPerFrame[idxImageView].write(this->mpGraphicsDevice,
+	this->mUniformStaticBuffersPerFrame[idxImageView].write(
 		/*offset*/ 0, this->mpUniformStatic->data(), this->mpUniformStatic->size()
 	);
 	this->mpUniformStatic->endReading();
@@ -616,6 +629,6 @@ void GameRenderer::onFramePresented(uIndex idxFrame)
 	auto strDrawer = this->stringRenderer();
 	if (strDrawer->isDirty())
 	{
-		this->mIndexCountUI = strDrawer->writeBuffers(this, &this->mVertexBufferUI, &this->mIndexBufferUI);
+		this->mIndexCountUI = strDrawer->writeBuffers(&this->mCommandPoolTransient, &this->mVertexBufferUI, &this->mIndexBufferUI);
 	}
 }

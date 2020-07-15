@@ -130,40 +130,14 @@ void Image::transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, Command
 
 void Image::writeImage(void* data, uSize size, CommandPool* transientPool)
 {
-	auto pDevice = this->device();
-	Buffer& stagingBuffer = Buffer()
-		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
-		.setSize(this->getExpectedDataCount() * sizeof(ui8));
-	stagingBuffer.setMemoryRequirements(
-		vk::MemoryPropertyFlagBits::eHostVisible
-		| vk::MemoryPropertyFlagBits::eHostCoherent
+	auto const imgSize = this->getExpectedDataCount() * sizeof(ui8);
+	assert(size <= imgSize);
+	Buffer::writeDataToGPU(
+		this->device(), transientPool,
+		imgSize, /*bClear*/ false,
+		/*offset*/ 0, data, size,
+		[this, size](Command* cmd, Buffer *stagingBuffer) {
+			cmd->copyBufferToImage(stagingBuffer, this);
+		}
 	);
-	stagingBuffer.create(pDevice);
-	stagingBuffer.write(pDevice, /*offset*/ 0, data, size);
-	this->copyBufferToImage(&stagingBuffer, transientPool);
-	stagingBuffer.destroy();
-}
-
-
-void Image::copyBufferToImage(Buffer *src, CommandPool* transientPool)
-{
-	auto buffers = transientPool->createCommandBuffers(1);
-	buffers[0]
-		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.copyBufferToImage(src, this)
-		.end();
-	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
-	queue.submit(
-		vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
-		vk::Fence()
-	);
-	/*
-		TODO: This causes all commands to be synchronous.
-		For higher throughput, this should not be called, and the command buffers should rely entirely
-		on the pipeline barriers.
-		This means multiple images could be sent to GPU at once.
-	*/
-	queue.waitIdle();
 }

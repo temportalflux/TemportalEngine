@@ -52,8 +52,6 @@ private:
 
 	vk::MemoryRequirements getRequirements() const override;
 
-	void copyBufferToImage(class Buffer *src, class CommandPool* transientPool);
-
 };
 
 NS_END

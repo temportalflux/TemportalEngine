@@ -57,7 +57,7 @@ public:
 	std::shared_ptr<class StringRenderer> renderer();
 	void rebuildGlyphs();
 	void collectGeometry();
-	ui32 writeToBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
+	ui32 writeToBuffers(class CommandPool* transientPool, class Buffer* vertexBuffer, class Buffer* indexBuffer);
 	bool isDirty() const;
 
 private:
@@ -90,7 +90,7 @@ public:
 	std::shared_ptr<RenderedStringCollection> makeExclusiveCollection();
 	std::weak_ptr<RenderedString> makeGlobalString(ui8 fontSize, math::Vector2 pos, std::string const &content);
 
-	ui32 writeBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
+	ui32 writeBuffers(class CommandPool* transientPool, class Buffer* vertexBuffer, class Buffer* indexBuffer);
 	bool isDirty() const;
 
 private:

@@ -25,6 +25,8 @@ private:
 	// TODO: system should not hold references to objects
 	std::vector<WorldObject> instances;
 
+	std::shared_ptr<graphics::Memory> mpBufferMemory;
+
 	graphics::Buffer mVertexBuffer;
 
 	graphics::Buffer mInstanceBuffer;
