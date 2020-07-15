@@ -19,7 +19,18 @@ public:
 	DECLARE_FACTORY_ASSET_METADATA()
 
 	TextureSampler() = default;
-	CREATE_NEWASSET_CONSTRUCTOR(TextureSampler) {}
+	CREATE_NEWASSET_CONSTRUCTOR(TextureSampler)
+		, mFilterModeMagnified(graphics::FilterMode::Enum::Nearest)
+		, mFilterModeMinified(graphics::FilterMode::Enum::Nearest)
+		, mAddressModesUVW({})
+		, mBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
+		, mAnisotropy(std::nullopt)
+		, mbNormalizeCoordinates(false)
+		, mCompareOp(std::nullopt)
+		, mMipLODMode(graphics::SamplerLODMode::Enum::Nearest)
+		, mMipLODBias(0)
+		, mMipLODRange({ 0, 0 })
+	{}
 
 	void setFilterModeMagnified(graphics::FilterMode::Enum v);
 	graphics::FilterMode::Enum getFilterModeMagnified() const;

@@ -124,6 +124,7 @@ void VulkanRenderer::drawFrame()
 	this->render(currentFrame, this->mIdxCurrentImage);
 	if (!this->present()) return;
 	
+	this->onFramePresented(this->mIdxCurrentFrame);
 	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->getNumberOfFrames();
 }
 

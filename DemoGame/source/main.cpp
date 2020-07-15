@@ -25,6 +25,7 @@
 #include "asset/AssetManager.hpp"
 #include "asset/Shader.hpp"
 #include "asset/TypedAssetPath.hpp"
+#include "utility/StringUtils.hpp"
 
 #include <iostream>
 #include <stdarg.h>
@@ -204,6 +205,8 @@ int main(int argc, char *argv[])
 			// Will release memory allocated when it goes out of scope
 			// TODO: Use dedicated graphics memory
 			auto mvpUniform = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
+
+			std::weak_ptr<graphics::RenderedString> cameraForwardStr;
 			
 #pragma region Vulkan
 			auto renderer = graphics::GameRenderer();
@@ -299,6 +302,7 @@ int main(int argc, char *argv[])
 				assert(fontAsset->supportsFontSize(48));
 				auto stringRenderer = renderer.setFont(fontAsset);
 				auto renderedString = stringRenderer->makeGlobalString(48, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
+				cameraForwardStr = stringRenderer->makeGlobalString(48, { -1, -1 + 0.1f }, "<0, 0, 0>");
 				renderer.prepareUIBuffers(1000);
 			}
 
@@ -336,10 +340,15 @@ int main(int argc, char *argv[])
 					{
 						auto rot = cameraTransform.orientation.euler() * math::rad2deg();
 						auto fwd = cameraTransform.forward();
+						cameraForwardStr.lock()->content(
+							utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())
+						);
+						/*
 						mainLog.log(LOG_DEBUG, "<%.0f, %.0f, %.0f> fwd:<%.2f, %.2f, %.2f>",
 							rot.x(), rot.y(), rot.z(),
 							fwd.x(), fwd.y(), fwd.z()
 						);
+						//*/
 					}
 
 					{

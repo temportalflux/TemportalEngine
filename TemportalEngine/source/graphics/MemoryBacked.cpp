@@ -48,9 +48,10 @@ std::optional<ui32> MemoryBacked::findMemoryType(std::shared_ptr<GraphicsDevice>
 	return std::nullopt;
 }
 
-void MemoryBacked::write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, ui64 size)
+void MemoryBacked::write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, ui64 size, bool bClear)
 {
 	void* dest = device->mapMemory(this, offset, this->mMemorySize);
+	if (bClear) memset(dest, 0, this->mMemorySize);
 	memcpy(dest, src, size);
 	device->unmapMemory(this);
 }

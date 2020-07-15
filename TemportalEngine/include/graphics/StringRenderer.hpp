@@ -4,6 +4,7 @@
 
 #include "math/Vector.hpp"
 #include "graphics/FontAtlas.hpp"
+#include "thread/MutexLock.hpp"
 
 NS_GRAPHICS
 class StringRenderer;
@@ -21,8 +22,10 @@ public:
 	 * Cannot be used to modify the string, use the setter `content(std::string)`.
 	 */
 	std::string const& content() const;
+
 	/**
 	 * Sets the content of the rendered string, and updating the vertex data accordingly.
+	 * Locks the object while changing the content and rebuilding geometry.
 	 */
 	void content(std::string const &str);
 
@@ -53,11 +56,21 @@ public:
 
 	std::shared_ptr<class StringRenderer> renderer();
 	void rebuildGlyphs();
+	void collectGeometry();
 	ui32 writeToBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
+	bool isDirty() const;
 
 private:
 	std::weak_ptr<class StringRenderer> mpOwner;
 	std::vector<std::shared_ptr<RenderedString>> mStrings;
+
+	std::vector<Font::UIVertex> mVerticies;
+	std::vector<ui16> mIndicies;
+	// Mutex lock to prevent geometry from changing while being copied via the render thread
+	thread::MutexLock mLock;
+	bool mbIsDirty;
+
+	void appendGeometry(std::shared_ptr<RenderedString> str);
 
 };
 
@@ -78,6 +91,7 @@ public:
 	std::weak_ptr<RenderedString> makeGlobalString(ui8 fontSize, math::Vector2 pos, std::string const &content);
 
 	ui32 writeBuffers(class GameRenderer* renderer, class Buffer* vertexBuffer, class Buffer* indexBuffer);
+	bool isDirty() const;
 
 private:
 	graphics::Font mFont;

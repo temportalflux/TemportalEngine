@@ -39,7 +39,7 @@ public:
 	};
 
 	AttributeBinding() = default;
-	AttributeBinding(Rate inputRate) : mInputRate(inputRate) {}
+	AttributeBinding(Rate inputRate) : mInputRate(inputRate), mSize(0) {}
 
 	template <typename T>
 	AttributeBinding& setStructType()

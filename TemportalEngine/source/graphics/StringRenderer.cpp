@@ -23,8 +23,10 @@ std::string const& RenderedString::content() const
 }
 
 void RenderedString::content(std::string const &str)
-{
+{	
 	this->mContent = str;
+	this->rebuildGlyphs();
+	this->mpCollection.lock()->collectGeometry();
 }
 
 void RenderedString::rebuildGlyphs()
@@ -67,6 +69,11 @@ std::weak_ptr<RenderedString> RenderedStringCollection::makeString(ui8 fontSize,
 	std::shared_ptr<RenderedString> str = std::make_shared<RenderedString>(this->weak_from_this());
 	this->mStrings.push_back(str);
 	str->initialize(fontSize, pos, content);
+	
+	this->mLock.lock();
+	this->appendGeometry(str);
+	this->mLock.unlock();
+
 	return str;
 }
 
@@ -76,24 +83,56 @@ void RenderedStringCollection::rebuildGlyphs()
 	{
 		str->rebuildGlyphs();
 	}
+	this->collectGeometry();
+}
+
+void RenderedStringCollection::appendGeometry(std::shared_ptr<RenderedString> str)
+{
+	ui16 preVertexCount = (ui16)this->mVerticies.size();
+	this->mVerticies.insert(this->mVerticies.end(), str->mVerticies.begin(), str->mVerticies.end());
+	std::transform(
+		str->mIndicies.cbegin(), str->mIndicies.cend(),
+		std::back_inserter(this->mIndicies), [preVertexCount](auto const& idx) -> ui16 {
+			return preVertexCount + idx;
+		}
+	);
+}
+
+void RenderedStringCollection::collectGeometry()
+{
+	this->mLock.lock();
+
+	this->mVerticies.clear();
+	this->mIndicies.clear();
+	for (auto& str : this->mStrings)
+	{
+		this->appendGeometry(str);
+	}
+
+	this->mbIsDirty = true;
+
+	this->mLock.unlock();
 }
 
 ui32 RenderedStringCollection::writeToBuffers(GameRenderer* renderer, Buffer* vertexBuffer, Buffer* indexBuffer)
 {
-	uSize offsetVertex = 0, offsetIndex = 0;
-	ui32 indexCount = 0;
-	for (auto& str : this->mStrings)
-	{
-		uSize vertexDataSize = str->mVerticies.size() * sizeof(Font::UIVertex);
-		vertexBuffer->writeBuffer(renderer, offsetVertex, str->mVerticies.data(), vertexDataSize);
-		offsetVertex += vertexDataSize;
+	this->mLock.lock();
+	
+	ui32 indexCount = (ui32)this->mIndicies.size();
+	uSize vertexDataSize = this->mVerticies.size() * sizeof(Font::UIVertex);
+	vertexBuffer->writeBuffer(renderer, 0, this->mVerticies.data(), vertexDataSize);
+	uSize indexDataSize = indexCount * sizeof(ui16);
+	indexBuffer->writeBuffer(renderer, 0, this->mIndicies.data(), indexDataSize, true);
 
-		indexCount += (ui32)str->mIndicies.size();
-		uSize indexDataSize = str->mIndicies.size() * sizeof(ui16);
-		indexBuffer->writeBuffer(renderer, offsetIndex, str->mIndicies.data(), indexDataSize);
-		offsetIndex += indexDataSize;
-	}
+	this->mbIsDirty = false;
+
+	this->mLock.unlock();
 	return indexCount;
+}
+
+bool RenderedStringCollection::isDirty() const
+{
+	return this->mbIsDirty;
 }
 
 StringRenderer::StringRenderer()
@@ -148,4 +187,9 @@ ui32 StringRenderer::writeBuffers(GameRenderer* renderer, Buffer* vertexBuffer, 
 {
 	auto const& maxCharCount = indexBuffer->getSize() / (sizeof(ui16) * /*indicies per char*/ 6);
 	return this->mpGlobalCollection->writeToBuffers(renderer, vertexBuffer, indexBuffer);
+}
+
+bool StringRenderer::isDirty() const
+{
+	return this->mpGlobalCollection->isDirty();
 }

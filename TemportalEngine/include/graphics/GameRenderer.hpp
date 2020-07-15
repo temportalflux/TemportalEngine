@@ -100,6 +100,7 @@ private:
 	void prepareRender(ui32 idxCurrentFrame) override;
 	void updateUniformBuffer(ui32 idxImageView);
 	void render(graphics::Frame* frame, ui32 idxCurrentImage) override;
+	void onFramePresented(uIndex idxFrame) override;
 
 private:
 

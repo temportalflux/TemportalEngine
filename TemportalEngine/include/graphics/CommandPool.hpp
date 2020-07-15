@@ -17,7 +17,7 @@ class CommandPool
 	friend class GraphicsDevice;
 
 public:
-	CommandPool() = default;
+	CommandPool() : mQueueFamily(QueueFamily::Enum::eGraphics), mIdxQueueFamily(0) {}
 
 	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
 

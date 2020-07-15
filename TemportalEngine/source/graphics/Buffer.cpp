@@ -70,7 +70,7 @@ void Buffer::destroy()
 	MemoryBacked::invalidate();
 }
 
-void Buffer::writeBuffer(GameRenderer *renderer, uSize offset, void* data, uSize size)
+void Buffer::writeBuffer(GameRenderer *renderer, uSize offset, void* data, uSize size, bool bClear)
 {
 	Buffer& stagingBuffer = Buffer()
 		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
@@ -80,7 +80,7 @@ void Buffer::writeBuffer(GameRenderer *renderer, uSize offset, void* data, uSize
 		| vk::MemoryPropertyFlagBits::eHostCoherent
 	);
 	stagingBuffer.create(renderer->getDevice());
-	stagingBuffer.write(renderer->getDevice(), offset, data, size);
+	stagingBuffer.write(renderer->getDevice(), offset, data, size, bClear);
 	{
 		auto buffers = renderer->getTransientPool().createCommandBuffers(1);
 		buffers[0]

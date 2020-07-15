@@ -12,7 +12,7 @@ class Buffer : public MemoryBacked
 	friend class GraphicsDevice;
 
 public:
-	Buffer() = default;
+	Buffer() : mSize(0) {}
 	Buffer(Buffer &&other);
 	Buffer& operator=(Buffer &&other);
 
@@ -24,7 +24,7 @@ public:
 	void destroy();
 
 	void* get();
-	void writeBuffer(class GameRenderer *renderer, uSize offset, void* data, uSize size);
+	void writeBuffer(class GameRenderer *renderer, uSize offset, void* data, uSize size, bool bClear=false);
 
 private:
 	vk::BufferUsageFlags mUsageFlags;

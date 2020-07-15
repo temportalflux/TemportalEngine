@@ -62,6 +62,8 @@ namespace utility
 
 	std::vector<char const*> createTemporaryStringSet(std::vector<std::string> const &strs);
 
+	std::string formatStr(std::string const format, ...);
+
 }
 
 #endif STRING_UTILS_H

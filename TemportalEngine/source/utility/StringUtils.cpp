@@ -1,5 +1,7 @@
 #include "utility/StringUtils.hpp"
 
+#include <cstdarg>
+
 bool utility::startsWith(std::string a, std::string prefix)
 {
 	return a.substr(0, prefix.length()) == prefix;
@@ -61,4 +63,21 @@ std::vector<char const*> utility::createTemporaryStringSet(std::vector<std::stri
 		ret[i] = strs[i].c_str();
 	}
 	return ret;
+}
+
+std::string utility::formatStr(std::string const format, ...)
+{
+	va_list args;
+
+	va_start(args, format);
+	size_t len = std::vsnprintf(NULL, 0, format.c_str(), args);
+	va_end(args);
+
+	std::vector<char> formatted(len + 1);
+
+	va_start(args, format);
+	std::vsnprintf(&formatted[0], len + 1, format.c_str(), args);
+	va_end(args);
+
+	return std::string(&formatted[0]);
 }

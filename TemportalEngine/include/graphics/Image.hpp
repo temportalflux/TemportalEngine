@@ -15,7 +15,11 @@ class Image : public DeviceObject, public MemoryAllocated
 	friend class GraphicsDevice;
 
 public:
-	Image() : mType(vk::ImageType::e2D) {}
+	Image()
+		: mType(vk::ImageType::e2D)
+		, mFormat((vk::Format)0)
+		, mTiling((vk::ImageTiling)0)
+	{}
 
 	vk::ImageType getType() const { return this->mType; }
 	Image& setFormat(vk::Format format);

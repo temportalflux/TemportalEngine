@@ -20,7 +20,7 @@ class Memory : public DeviceObject
 	};
 
 public:
-	Memory() = default;
+	Memory() : mTotalSize(0) {}
 	~Memory();
 
 	Memory& setFlags(vk::MemoryPropertyFlags flags);

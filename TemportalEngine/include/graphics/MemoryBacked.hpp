@@ -21,7 +21,7 @@ public:
 	void createMemory(std::shared_ptr<GraphicsDevice> device, vk::MemoryRequirements const &req);
 	void invalidate();
 
-	void write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, ui64 size);
+	void write(std::shared_ptr<GraphicsDevice> device, ui64 offset, void* src, ui64 size, bool bClear=false);
 
 protected:
 	vk::MemoryPropertyFlags mMemoryFlags;

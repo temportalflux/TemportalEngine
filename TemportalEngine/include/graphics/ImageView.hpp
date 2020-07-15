@@ -15,7 +15,10 @@ class ImageView
 	friend class FrameBuffer;
 
 public:
-	ImageView() = default;
+	ImageView()
+		: mFormat((vk::Format)0)
+		, mViewType(vk::ImageViewType::e2D)
+	{}
 	ImageView(ImageView &&other);
 	~ImageView();
 	ImageView& operator=(ImageView &&other);

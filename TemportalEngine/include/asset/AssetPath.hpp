@@ -18,7 +18,7 @@ private:
 	bool mbIsAbsolute;
 
 public:
-	AssetPath() = default;
+	AssetPath() : mbIsAbsolute(false) {}
 	AssetPath(AssetType type, std::filesystem::path path, bool bIsAbsolute = false);
 
 	operator bool() const { return this->isValid(); }

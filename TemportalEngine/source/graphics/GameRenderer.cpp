@@ -536,7 +536,7 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd.bindPipeline(&this->mPipelineUI);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
-			cmd.draw(this->mIndexCountUI, 1);
+			cmd.draw((ui32)this->mIndexBufferUI.getSize() / sizeof(ui16), 1);
 		}
 		cmd.endRenderPass();
 		cmd.end();
@@ -608,4 +608,14 @@ void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mCommandBuffers[idxCurrentImage];
 	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), { &commandBuffer });
+}
+
+void GameRenderer::onFramePresented(uIndex idxFrame)
+{
+	// TODO: Copy all dirty strings into UI buffer
+	auto strDrawer = this->stringRenderer();
+	if (strDrawer->isDirty())
+	{
+		this->mIndexCountUI = strDrawer->writeBuffers(this, &this->mVertexBufferUI, &this->mIndexBufferUI);
+	}
 }

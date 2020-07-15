@@ -125,6 +125,7 @@ protected:
 	virtual void prepareRender(ui32 idxCurrentFrame);
 	virtual void render(graphics::Frame* frame, ui32 idxCurrentImage) = 0;
 	bool present();
+	virtual void onFramePresented(uIndex idxFrame) {}
 
 private:
 

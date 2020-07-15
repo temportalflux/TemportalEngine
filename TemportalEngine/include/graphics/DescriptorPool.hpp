@@ -12,7 +12,7 @@ class DescriptorPool
 	friend class GraphicsDevice;
 
 public:
-	DescriptorPool() = default;
+	DescriptorPool() : mMaxSets(0) {}
 
 	DescriptorPool& setFlags(vk::DescriptorPoolCreateFlags flags);
 	// Map of `vk::DescriptorType` to the number of available allocations

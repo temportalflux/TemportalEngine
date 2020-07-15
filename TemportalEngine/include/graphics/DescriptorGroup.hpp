@@ -18,7 +18,7 @@ class DescriptorGroup
 	friend class GraphicsDevice;
 
 public:
-	DescriptorGroup() = default;
+	DescriptorGroup() : mSetCount(0) {}
 
 	// Sets the total number of bindings
 	DescriptorGroup& setBindingCount(uSize count);

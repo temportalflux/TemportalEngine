@@ -4,6 +4,7 @@
 
 #include "asset/AssetPath.hpp"
 #include "asset/utils.hpp"
+#include <cereal/cereal.hpp>
 
 NS_ASSET
 
