@@ -59,6 +59,7 @@
     <Import Project="..\libs\cereal.vcxitems" Label="Shared" />
     <Import Project="..\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\libs\glm.vcxitems" Label="Shared" />
+    <Import Project="..\Minecraft\Minecraft.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -111,7 +112,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;$(SolutionDir)Minecraft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -147,7 +148,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;$(SolutionDir)Minecraft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -185,7 +186,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;$(SolutionDir)Minecraft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -225,7 +226,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngine\libs\freetype\include;$(SolutionDir)Minecraft\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -258,17 +259,10 @@
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\model\ModelCube.cpp" />
-    <ClCompile Include="source\render\RenderCube.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Block.hpp" />
-    <ClInclude Include="include\model\ModelCube.hpp" />
-    <ClInclude Include="include\render\RenderCube.hpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

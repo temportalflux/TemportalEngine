@@ -12,6 +12,7 @@
 #include "asset/TextureSampler.hpp"
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Memory.hpp"
+#include "asset/BlockType.hpp"
 
 #include "asset/Font.hpp"
 #include "graphics/FontAtlas.hpp"
@@ -107,7 +108,9 @@ int main(int argc, char *argv[])
 	{
 		auto pEngine = engine::Engine::Create(memoryChunkSizes);
 		LogEngine(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+		
 		pEngine->getAssetManager()->queryAssetTypes();
+		pEngine->getAssetManager()->registerType<asset::BlockType>();
 
 		if (!pEngine->initializeDependencies())
 		{
@@ -120,8 +123,8 @@ int main(int argc, char *argv[])
 
 		{
 			auto project = asset::TypedAssetPath<asset::Project>(
-				asset::AssetPath("project", std::filesystem::absolute("DemoGame.te-project"), true)
-				).load(asset::EAssetSerialization::Binary, false);
+				asset::AssetPath("project", std::filesystem::absolute("Minecraft.te-project"), true)
+			).load(asset::EAssetSerialization::Binary, false);
 			pEngine->setProject(project);
 			pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 		}

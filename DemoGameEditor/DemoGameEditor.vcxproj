@@ -61,6 +61,7 @@
     <Import Project="..\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
     <Import Project="..\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\TemportalEngineEditor\libs\imgui.vcxitems" Label="Shared" />
+    <Import Project="..\Minecraft\Minecraft.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -81,11 +82,13 @@
     <RuntimeLibrary>
     </RuntimeLibrary>
     <IncludePath>include;$(IncludePath)</IncludePath>
+    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
     <IncludePath>include;$(IncludePath)</IncludePath>
+    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
@@ -93,11 +96,13 @@
     <RuntimeLibrary>
     </RuntimeLibrary>
     <IncludePath>include;$(IncludePath)</IncludePath>
+    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
     <IncludePath>include;$(IncludePath)</IncludePath>
+    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -105,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\include;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -125,7 +130,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\include;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -147,7 +152,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\include;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -171,7 +176,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\include;$(SolutionDir)TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngine\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -192,11 +197,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DemoGame\DemoGame.vcxproj">
-      <Project>{abde6299-5814-4811-91d4-5908ce699b57}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\GameEditor.hpp" />

@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
 			// Attempt to auto-load with where we think the project file is
 			{
 				auto projPath = asset::TypedAssetPath<asset::Project>::Create(
-					std::filesystem::relative("../../DemoGame/DemoGame.te-project", std::filesystem::current_path())
+					std::filesystem::relative("../../Minecraft/Minecraft.te-project", std::filesystem::current_path())
 				);
 				if (projPath.path().isValid())
 				{
