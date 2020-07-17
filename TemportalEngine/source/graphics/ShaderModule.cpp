@@ -93,35 +93,41 @@ ShaderModule& ShaderModule::setVertexDescription(VertexDescription desc)
 	return *this;
 }
 
-bool ShaderModule::isLoaded() const
+bool ShaderModule::isValid() const
 {
 	// Checks underlying structure for VK_NULL_HANDLE
 	return (bool)this->mInternal;
 }
 
-void ShaderModule::create(std::shared_ptr<GraphicsDevice> device)
+void ShaderModule::create()
 {
-	assert(!isLoaded()); // assumes the shader is not loaded
-	assert(device);
+	assert(!isValid()); // assumes the shader is not loaded
 	
-	this->mInternal = device->createShaderModule(
+	this->mInternal = this->device()->createShaderModule(
 		vk::ShaderModuleCreateInfo()
 		.setCodeSize(sizeof(ui32) * this->mBinary.size())
 		.setPCode(this->mBinary.data())
 	);
 }
 
-void ShaderModule::destroy()
+void* ShaderModule::get()
 {
-	if (this->isLoaded())
-	{
-		this->mInternal.reset();
-	}
+	return &this->mInternal.get();
+}
+
+void ShaderModule::invalidate()
+{
+	this->mInternal.reset();
+}
+
+void ShaderModule::resetConfiguration()
+{
+
 }
 
 vk::PipelineShaderStageCreateInfo ShaderModule::getPipelineInfo() const
 {
-	assert(isLoaded());
+	assert(isValid());
 	return vk::PipelineShaderStageCreateInfo()
 		.setStage(mStage).setPName(mMainOpName.c_str())
 		.setModule(this->mInternal.get()).setPSpecializationInfo(nullptr);

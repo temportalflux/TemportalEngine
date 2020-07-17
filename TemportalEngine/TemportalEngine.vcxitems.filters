@@ -245,7 +245,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorPool.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\StringRenderer.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
@@ -259,6 +258,9 @@
       <Filter>graphics</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\MemoryAllocated.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
   </ItemGroup>
@@ -573,7 +575,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GraphicsDevice.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -587,6 +588,9 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\StringRenderer.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

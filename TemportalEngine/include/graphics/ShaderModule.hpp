@@ -1,22 +1,15 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
-#include "types/integer.h"
 #include "graphics/ShaderMetadata.hpp"
 #include "graphics/VertexDescription.hpp"
-
-#include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class GraphicsDevice;
 
-class ShaderModule
+class ShaderModule : public DeviceObject
 {
 	friend class Pipeline;
 	friend class VulkanApi;
@@ -38,9 +31,11 @@ public:
 	 */
 	ShaderModule& setVertexDescription(VertexDescription desc);
 
-	bool isLoaded() const;
-	void create(std::shared_ptr<GraphicsDevice> device);
-	void destroy();
+	bool isValid() const;
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 private:
 	vk::ShaderStageFlagBits mStage;
@@ -50,10 +45,10 @@ private:
 #ifndef NDEBUG
 	std::unordered_map<std::string, uSize> mAttributeByteCount;
 #endif
-
-	vk::UniqueShaderModule mInternal;
 	vk::VertexInputBindingDescription mBinding;
 	std::unordered_map<std::string, vk::VertexInputAttributeDescription> mAttributes;
+
+	vk::UniqueShaderModule mInternal;
 
 	vk::PipelineShaderStageCreateInfo getPipelineInfo() const;
 

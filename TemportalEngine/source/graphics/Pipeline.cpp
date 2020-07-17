@@ -81,7 +81,8 @@ void Pipeline::create()
 {
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
-		shader->create(this->device());
+		shader->setDevice(this->device());
+		shader->create();
 	}
 
 	auto bindingCount = (ui32)this->mAttributeBindings.size();

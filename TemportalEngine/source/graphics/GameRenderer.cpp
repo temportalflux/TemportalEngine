@@ -7,6 +7,7 @@
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "graphics/VulkanApi.hpp"
+#include "graphics/ShaderModule.hpp"
 
 using namespace graphics;
 

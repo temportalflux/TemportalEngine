@@ -8,7 +8,6 @@
 
 NS_GRAPHICS
 class DescriptorGroup;
-class GraphicsDevice;
 class RenderPass;
 class ShaderModule;
 
