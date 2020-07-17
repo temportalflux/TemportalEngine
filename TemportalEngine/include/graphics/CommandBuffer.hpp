@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "graphics/Command.hpp"
 
@@ -8,7 +8,7 @@
 
 NS_GRAPHICS
 
-class CommandBuffer
+class CommandBuffer : public DeviceObject
 {
 	friend class GraphicsDevice;
 	friend class Command;
@@ -19,7 +19,8 @@ public:
 	CommandBuffer(CommandBuffer &&other);
 	CommandBuffer& operator=(CommandBuffer &&other);
 
-	void* get();
+	void* get() override;
+	void invalidate() override;
 
 	Command beginCommand(vk::CommandBufferUsageFlags flags = vk::CommandBufferUsageFlags());
 

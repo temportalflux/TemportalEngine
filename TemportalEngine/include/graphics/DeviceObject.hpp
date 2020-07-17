@@ -21,7 +21,7 @@ public:
 	/**
 	 * Implemented by subclasses to initialize the Vulkan object this class represents.
 	 */
-	virtual void create() = 0;
+	virtual void create() {}
 	/**
 	 * Returns the raw pointer to the Vulkan object.
 	 * Can use `reinterpret_cast<VulkanObject*>(deviceObject.get())` to access low-level vulkan interface data.
@@ -38,7 +38,7 @@ public:
 	/**
 	 * Resets any configurable data that is used to create the vulkan object.
 	 */
-	virtual void resetConfiguration() = 0;
+	virtual void resetConfiguration() {}
 
 private:
 	std::weak_ptr<GraphicsDevice> mpDevice;

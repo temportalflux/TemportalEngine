@@ -102,12 +102,14 @@ std::shared_ptr<StringRenderer> GameRenderer::stringRenderer()
 
 void GameRenderer::initializeTransientCommandPool()
 {
+	this->mCommandPoolTransient.setDevice(this->mpGraphicsDevice);
 	this->mCommandPoolTransient
+		.setFlags(vk::CommandPoolCreateFlagBits::eTransient)
 		.setQueueFamily(
 			graphics::QueueFamily::Enum::eGraphics,
 			this->mpGraphicsDevice->queryQueueFamilyGroup()
 		)
-		.create(this->mpGraphicsDevice, vk::CommandPoolCreateFlagBits::eTransient);
+		.create();
 }
 
 void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
@@ -490,9 +492,10 @@ void GameRenderer::createCommandObjects()
 		.setBlendMode(overlayBlendMode)
 		.create(this->mpGraphicsDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
 
+	this->mCommandPool.setDevice(this->mpGraphicsDevice);
 	this->mCommandPool
 		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, this->mpGraphicsDevice->queryQueueFamilyGroup())
-		.create(this->mpGraphicsDevice);
+		.create();
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers((ui32)this->mFrameImageViews.size());
 
 	this->recordCommandBufferInstructions();

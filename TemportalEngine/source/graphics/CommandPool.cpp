@@ -5,14 +5,21 @@
 
 using namespace graphics;
 
+CommandPool::CommandPool()
+{
+	this->resetConfiguration();
+}
+
+CommandPool& CommandPool::setFlags(vk::CommandPoolCreateFlags flags)
+{
+	this->mCreateFlags = flags;
+	return *this;
+}
+
 CommandPool& CommandPool::setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group)
 {
-	auto optQueueIdx = group.getQueueIndex(queueType);
-	assert(optQueueIdx.has_value());
-
 	this->mQueueFamily = queueType;
-	this->mIdxQueueFamily = optQueueIdx.value();
-
+	this->mIdxQueueFamily = group.getQueueIndex(queueType);
 	return *this;
 }
 
@@ -22,33 +29,44 @@ bool CommandPool::isValid() const
 	return (bool)this->mInternal;
 }
 
-CommandPool& CommandPool::create(std::shared_ptr<GraphicsDevice> device, vk::CommandPoolCreateFlags flags)
+void CommandPool::create()
 {
-	this->mpDevice = device;
-	this->mInternal = device->createCommandPool(
+	assert(this->mQueueFamily);
+	assert(this->mIdxQueueFamily);
+	this->mInternal = this->device()->createCommandPool(
 		vk::CommandPoolCreateInfo()
-		.setFlags(flags)
-		.setQueueFamilyIndex(this->mIdxQueueFamily)
+		.setFlags(this->mCreateFlags)
+		.setQueueFamilyIndex(*this->mIdxQueueFamily)
 	);
-	return *this;
 }
 
-void CommandPool::destroy()
+void* CommandPool::get()
 {
-	this->mpDevice.reset();
+	return &this->mInternal.get();
+}
+
+void CommandPool::invalidate()
+{
 	this->mInternal.reset();
+}
+
+void CommandPool::resetConfiguration()
+{
+	this->mCreateFlags = vk::CommandPoolCreateFlags();
+	this->mQueueFamily = std::nullopt;
+	this->mIdxQueueFamily = std::nullopt;
 }
 
 std::vector<CommandBuffer> CommandPool::createCommandBuffers(ui32 const count) const
 {
-	return this->mpDevice.lock()->allocateCommandBuffers(
+	return this->device()->allocateCommandBuffers(
 		this, vk::CommandBufferLevel::ePrimary, count
 	);
 }
 
 void CommandPool::resetPool()
 {
-	this->mpDevice.lock()->resetPool(this, vk::CommandPoolResetFlags());
+	this->device()->resetPool(this, vk::CommandPoolResetFlags());
 }
 
 void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
@@ -59,7 +77,7 @@ void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
 	writeCommands(&cmd);
 	cmd.end();
 
-	auto queue = this->mpDevice.lock()->getQueue(QueueFamily::Enum::eGraphics);
+	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)

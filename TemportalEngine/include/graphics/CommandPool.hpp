@@ -1,29 +1,31 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "graphics/types.hpp"
 #include "graphics/QueueFamilyGroup.hpp"
 #include "graphics/CommandBuffer.hpp"
-#include "types/integer.h"
 
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class GraphicsDevice;
 
-class CommandPool
+class CommandPool : public DeviceObject
 {
 	friend class GraphicsDevice;
 
 public:
-	CommandPool() : mQueueFamily(QueueFamily::Enum::eGraphics), mIdxQueueFamily(0) {}
+	CommandPool();
 
+	CommandPool& setFlags(vk::CommandPoolCreateFlags flags);
 	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
-	CommandPool& create(std::shared_ptr<GraphicsDevice> device, vk::CommandPoolCreateFlags flags = vk::CommandPoolCreateFlags());
-	void destroy();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 	std::vector<CommandBuffer> createCommandBuffers(ui32 const count) const;
 	void resetPool();
@@ -31,10 +33,9 @@ public:
 	void submitOneOff(std::function<void(class Command* cmd)> writeCommands);
 
 private:
-	QueueFamily::Enum mQueueFamily;
-	ui32 mIdxQueueFamily;
-
-	std::weak_ptr<GraphicsDevice> mpDevice;
+	vk::CommandPoolCreateFlags mCreateFlags;
+	std::optional<QueueFamily::Enum> mQueueFamily;
+	std::optional<ui32> mIdxQueueFamily;
 
 	vk::UniqueCommandPool mInternal;
 

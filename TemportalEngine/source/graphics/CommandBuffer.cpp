@@ -2,7 +2,6 @@
 
 using namespace graphics;
 
-
 CommandBuffer::CommandBuffer(CommandBuffer &&other)
 {
 	*this = std::move(other);
@@ -17,6 +16,11 @@ CommandBuffer& CommandBuffer::operator=(CommandBuffer &&other)
 void* CommandBuffer::get()
 {
 	return &this->mInternal.get();
+}
+
+void CommandBuffer::invalidate()
+{
+	this->mInternal.reset();
 }
 
 Command CommandBuffer::beginCommand(vk::CommandBufferUsageFlags flags)

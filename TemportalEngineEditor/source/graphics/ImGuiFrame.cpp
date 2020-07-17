@@ -34,7 +34,9 @@ ImGuiFrame& ImGuiFrame::setQueueFamilyGroup(QueueFamilyGroup const *group)
 void ImGuiFrame::create(std::shared_ptr<GraphicsDevice> device)
 {
 	this->mFrameBuffer.create(device);
-	this->mCommandPool.create(device, vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+	this->mCommandPool.setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
+	this->mCommandPool.setDevice(device);
+	this->mCommandPool.create();
 	auto buffers = this->mCommandPool.createCommandBuffers(1);
 	this->mCommandBuffer = std::move(buffers[0]);
 
