@@ -79,9 +79,9 @@ ImageView& ImageView::setRange(vk::ImageSubresourceRange range)
 	return *this;
 }
 
-ImageView& ImageView::create(std::shared_ptr<GraphicsDevice> device)
+void ImageView::create()
 {
-	this->mInternal = device->createImageView(
+	this->mInternal = this->device()->createImageView(
 		vk::ImageViewCreateInfo()
 		.setImage(this->mImage)
 		.setFormat(this->mFormat)
@@ -89,7 +89,6 @@ ImageView& ImageView::create(std::shared_ptr<GraphicsDevice> device)
 		.setComponents(this->mCompMapping)
 		.setSubresourceRange(this->mSubresourceRange)
 	);
-	return *this;
 }
 
 void* ImageView::get()
@@ -100,4 +99,13 @@ void* ImageView::get()
 void ImageView::invalidate()
 {
 	this->mInternal.reset();
+}
+
+void ImageView::resetConfiguration()
+{
+	this->mImage = vk::Image();
+	this->mFormat = (vk::Format)0;
+	this->mViewType = (vk::ImageViewType)0;
+	this->mCompMapping = vk::ComponentMapping();
+	this->mSubresourceRange = vk::ImageSubresourceRange();
 }

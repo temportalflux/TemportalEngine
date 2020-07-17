@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "math/Vector.hpp"
 
@@ -9,7 +9,7 @@
 NS_GRAPHICS
 class GraphicsDevice;
 
-class ImageSampler
+class ImageSampler : public DeviceObject
 {
 
 public:
@@ -26,9 +26,10 @@ public:
 	ImageSampler& setCompare(std::optional<vk::CompareOp> compareOp);
 	ImageSampler& setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math::Vector2 range);
 
-	ImageSampler& create(std::shared_ptr<GraphicsDevice> device);
-	void* get();
-	void invalidate();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 private:
 	vk::Filter mFilterMag, mFilterMin;

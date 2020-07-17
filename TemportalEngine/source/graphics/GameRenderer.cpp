@@ -131,6 +131,7 @@ uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler>
 	auto compareOp = sampler->getCompareOperation();
 	uIndex idx = this->mTextureSamplers.size();
 	this->mTextureSamplers.push_back(graphics::ImageSampler());
+	this->mTextureSamplers[idx].setDevice(this->mpGraphicsDevice);
 	this->mTextureSamplers[idx]
 		.setFilter(
 			(vk::Filter)sampler->getFilterModeMagnified(),
@@ -149,7 +150,7 @@ uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler>
 			(vk::SamplerMipmapMode)sampler->getLodMode(),
 			sampler->getLodBias(), sampler->getLodRange()
 		);
-	this->mTextureSamplers[idx].create(this->mpGraphicsDevice);
+	this->mTextureSamplers[idx].create();
 	return idx;
 }
 
@@ -170,6 +171,7 @@ uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> tex
 	assert(idx == idxImage);
 
 	this->mTextureViews.push_back(graphics::ImageView());
+	this->mTextureViews[idx].setDevice(this->mpGraphicsDevice);
 
 	this->mTextureDescriptorPairs.push_back(std::make_pair(idx, idxSampler));
 
@@ -192,53 +194,9 @@ void GameRenderer::writeTextureData(uIndex idxImage, std::shared_ptr<asset::Text
 	this->mTextureImages[idxImage].writeImage((void*)data.data(), dataMemSize, &this->mCommandPoolTransient);
 	this->mTextureImages[idxImage].transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mCommandPoolTransient);
 
-	this->mTextureViews[idxImage].setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor).create(this->mpGraphicsDevice);
-}
-
-void GameRenderer::copyBufferToImage(Buffer *src, Image *dest)
-{
-	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
-	buffers[0]
-		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.copyBufferToImage(src, dest)
-		.end();
-	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
-	queue.submit(
-		vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
-		vk::Fence()
-	);
-	/*
-		TODO: This causes all commands to be synchronous.
-		For higher throughput, this should not be called, and the command buffers should rely entirely
-		on the pipeline barriers.
-		This means multiple images could be sent to GPU at once.
-	*/
-	queue.waitIdle();
-}
-
-void GameRenderer::transitionImageToLayout(Image *image, vk::ImageLayout prev, vk::ImageLayout next)
-{
-	auto buffers = this->mCommandPoolTransient.createCommandBuffers(1);
-	buffers[0]
-		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.setPipelineImageBarrier(image, prev, next)
-		.end();
-	auto queue = this->getQueue(QueueFamily::Enum::eGraphics);
-	queue.submit(
-		vk::SubmitInfo()
-		.setCommandBufferCount(1)
-		.setPCommandBuffers(&extract<vk::CommandBuffer>(&buffers[0])),
-		vk::Fence()
-	);
-	/*
-		TODO: This causes all commands to be synchronous.
-		For higher throughput, this should not be called, and the command buffers should rely entirely
-		on the pipeline barriers.
-		This means multiple images could be sent to GPU at once.
-	*/
-	queue.waitIdle();
+	this->mTextureViews[idxImage]
+		.setImage(&this->mTextureImages[idxImage], vk::ImageAspectFlagBits::eColor)
+		.create();
 }
 
 std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Font> font)
@@ -252,6 +210,7 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 	// Create the device objects for all the font images (samplers, images, and views)
 	for (auto& face : this->stringRenderer()->getFont().faces())
 	{
+		face.sampler().setDevice(this->mpGraphicsDevice);
 		face.sampler()
 			.setFilter(vk::Filter::eLinear, vk::Filter::eLinear)
 			.setAddressMode({ vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge })
@@ -260,7 +219,7 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 			.setNormalizeCoordinates(true)
 			.setCompare(std::nullopt)
 			.setMipLOD(vk::SamplerMipmapMode::eNearest, 0, { 0, 0 })
-			.create(this->mpGraphicsDevice);
+			.create();
 		
 		auto& image = face.image();
 		image.setDevice(this->mpGraphicsDevice);
@@ -287,9 +246,10 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 		face.image().writeImage((void*)data.data(), data.size() * sizeof(ui8), &this->mCommandPoolTransient);
 		face.image().transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mCommandPoolTransient);
 
+		face.view().setDevice(this->mpGraphicsDevice);
 		face.view()
 			.setImage(&face.image(), vk::ImageAspectFlagBits::eColor)
-			.create(this->mpGraphicsDevice);
+			.create();
 	}
 
 	return this->stringRenderer();
@@ -455,9 +415,10 @@ void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
 	this->mDepthImage.bindMemory();
 	this->mDepthImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, &this->mCommandPoolTransient);
 
+	this->mDepthView.setDevice(this->mpGraphicsDevice);
 	this->mDepthView
 		.setImage(&this->mDepthImage, vk::ImageAspectFlagBits::eDepth)
-		.create(this->mpGraphicsDevice);
+		.create();
 }
 
 void GameRenderer::destroyDepthResources()

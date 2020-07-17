@@ -95,6 +95,7 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 	auto views = std::vector<ImageView>(imageCount);
 	for (uSize i = 0; i < imageCount; ++i)
 	{
+		views[i].setDevice(this->mpDevice);
 		// Setup constant properties on each view
 		views[i]
 			.setFormat(this->mSurfaceFormat.format)
@@ -109,7 +110,7 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 		// Set the image on the view that has actually changed
 		views[i].setRawImage(images[i]);
 		// Construct the view for the provided data
-		views[i].create(this->mpDevice.lock());
+		views[i].create();
 	}
 	return views;
 }

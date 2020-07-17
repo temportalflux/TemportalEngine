@@ -75,9 +75,6 @@ protected:
 
 private:
 
-	void copyBufferToImage(Buffer *src, Image *dest);
-	void transitionImageToLayout(Image *image, vk::ImageLayout prev, vk::ImageLayout next);
-
 	void destroyRenderChain() override;
 
 	void createUniformBuffers();

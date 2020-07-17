@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -9,14 +9,15 @@ class GraphicsDevice;
 class LogicalDevice;
 class Image;
 
-class ImageView
+class ImageView : public DeviceObject
 {
 	friend class SwapChain;
 	friend class FrameBuffer;
 
 public:
 	ImageView()
-		: mFormat((vk::Format)0)
+		: DeviceObject()
+		, mFormat((vk::Format)0)
 		, mViewType(vk::ImageViewType::e2D)
 	{}
 	ImageView(ImageView &&other);
@@ -31,9 +32,10 @@ public:
 	ImageView& setComponentMapping(vk::ComponentMapping mapping);
 	ImageView& setRange(vk::ImageSubresourceRange range);
 
-	ImageView& create(std::shared_ptr<GraphicsDevice> device);
-	void* get();
-	void invalidate();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 private:
 	vk::Image mImage;

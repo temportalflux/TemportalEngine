@@ -6,7 +6,8 @@
 using namespace graphics;
 
 ImageSampler::ImageSampler()
-	: mbNormalizeCoordinates(true)
+	: DeviceObject()
+	, mbNormalizeCoordinates(true)
 {
 	this->setMipLOD(
 		vk::SamplerMipmapMode::eLinear,
@@ -26,6 +27,8 @@ ImageSampler::ImageSampler(ImageSampler &&other)
 
 ImageSampler& ImageSampler::operator=(ImageSampler &&other)
 {
+	this->setDevice(other.device());
+
 	this->mFilterMag = other.mFilterMag;
 	this->mFilterMin = other.mFilterMin;
 	this->mAddressModes = other.mAddressModes;
@@ -85,9 +88,9 @@ ImageSampler& ImageSampler::setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math
 	return *this;
 }
 
-ImageSampler& ImageSampler::create(std::shared_ptr<GraphicsDevice> device)
+void ImageSampler::create()
 {
-	this->mInternal = device->createSampler(
+	this->mInternal = this->device()->createSampler(
 		vk::SamplerCreateInfo()
 		.setMagFilter(this->mFilterMag).setMinFilter(this->mFilterMin)
 		.setAddressModeU(this->mAddressModes[0])
@@ -104,7 +107,6 @@ ImageSampler& ImageSampler::create(std::shared_ptr<GraphicsDevice> device)
 		.setMinLod(this->mMipLODRange.x())
 		.setMaxLod(this->mMipLODRange.y())
 	);
-	return *this;
 }
 
 void* ImageSampler::get()
@@ -115,4 +117,18 @@ void* ImageSampler::get()
 void ImageSampler::invalidate()
 {
 	this->mInternal.reset();
+}
+
+void ImageSampler::resetConfiguration()
+{
+	this->mFilterMag = vk::Filter::eNearest;
+	this->mFilterMin = vk::Filter::eNearest;
+	this->mAddressModes = { vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat };
+	this->mAnisotropy = std::nullopt;
+	this->mBorderColor = vk::BorderColor::eIntOpaqueBlack;
+	this->mbNormalizeCoordinates = false;
+	this->mCompareOp = std::nullopt;
+	this->mMipLODMode = vk::SamplerMipmapMode::eNearest;
+	this->mMipLODBias = 0;
+	this->mMipLODRange = { 0, 0 };
 }
