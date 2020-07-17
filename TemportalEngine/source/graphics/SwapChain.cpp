@@ -29,11 +29,15 @@ SwapChain& SwapChain::setQueueFamilyGroup(QueueFamilyGroup const &qfg)
 	return *this;
 }
 
-SwapChain& SwapChain::create(std::shared_ptr<GraphicsDevice> device, Surface const *pSurface)
+SwapChain& SwapChain::setSurface(Surface *pSurface)
 {
-	this->mpDevice = device;
+	this->mDrawableSize = pSurface->getDrawableSize();
+	this->mSurface = extract<vk::SurfaceKHR>(pSurface);
+	return *this;
+}
 
-	mDrawableSize = pSurface->getDrawableSize();
+void SwapChain::create()
+{
 	auto resolution = mInfo.getAdjustedResolution(mDrawableSize, mSupport.capabilities);
 	this->mResolution = { resolution.width, resolution.height };
 	mSurfaceFormat = mInfo.selectSurfaceFormat(mSupport.surfaceFormats);
@@ -44,7 +48,7 @@ SwapChain& SwapChain::create(std::shared_ptr<GraphicsDevice> device, Surface con
 
 	auto info = vk::SwapchainCreateInfoKHR()
 		// Hard set internally
-		.setSurface(pSurface->mSurface.get())
+		.setSurface(this->mSurface)
 		.setPreTransform(mSupport.capabilities.currentTransform) // IMGUI by default was using VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR
 		.setOldSwapchain(nullptr) // swap chain must be recreated if the window is resized. this is not yet handled
 		// Determined above
@@ -74,8 +78,22 @@ SwapChain& SwapChain::create(std::shared_ptr<GraphicsDevice> device, Surface con
 		info.setPQueueFamilyIndices(nullptr);
 	}
 
-	this->mInternal = device->createSwapchain(info);
-	return *this;
+	this->mInternal = this->device()->createSwapchain(info);
+}
+
+void* SwapChain::get()
+{
+	return &this->mInternal.get();
+}
+
+void SwapChain::invalidate()
+{
+	this->mInternal.reset();
+}
+
+void SwapChain::resetConfiguration()
+{
+
 }
 
 ui32 SwapChain::getFormat() const
@@ -90,12 +108,12 @@ math::Vector2UInt SwapChain::getResolution() const
 
 std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) const
 {
-	auto images = this->mpDevice.lock()->getSwapChainImages(this);
+	auto images = this->device()->getSwapChainImages(this);
 	uSize imageCount = images.size();
 	auto views = std::vector<ImageView>(imageCount);
 	for (uSize i = 0; i < imageCount; ++i)
 	{
-		views[i].setDevice(this->mpDevice);
+		views[i].setDevice(this->device());
 		// Setup constant properties on each view
 		views[i]
 			.setFormat(this->mSurfaceFormat.format)
@@ -115,18 +133,12 @@ std::vector<ImageView> SwapChain::createImageViews(ImageViewInfo const &info) co
 	return views;
 }
 
-void SwapChain::destroy()
-{
-	this->mpDevice.reset();
-	this->mInternal.reset();
-}
-
 vk::ResultValue<ui32> SwapChain::acquireNextImage(
 	std::optional<vk::Semaphore> waitSemaphore,
 	std::optional<vk::Fence> waitFence
 ) const
 {
-	return this->mpDevice.lock()->acquireNextImageIndex(this, UINT64_MAX, waitSemaphore, waitFence);
+	return this->device()->acquireNextImageIndex(this, UINT64_MAX, waitSemaphore, waitFence);
 }
 
 vk::SwapchainKHR SwapChain::get() const

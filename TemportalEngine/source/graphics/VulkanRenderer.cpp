@@ -85,10 +85,13 @@ void VulkanRenderer::invalidate()
 void VulkanRenderer::createSwapChain()
 {
 	this->mSwapChain
+		.setDevice(this->mpGraphicsDevice);
+	this->mSwapChain
+		.setSurface(&this->mSurface)
 		.setInfo(mSwapChainInfo)
 		.setSupport(this->mpGraphicsDevice->querySwapChainSupport())
 		.setQueueFamilyGroup(this->mpGraphicsDevice->queryQueueFamilyGroup())
-		.create(this->mpGraphicsDevice, &mSurface);
+		.create();
 }
 
 void VulkanRenderer::createFrameImageViews()

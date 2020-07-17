@@ -1,22 +1,19 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "graphics/QueueFamilyGroup.hpp"
-#include "graphics/RenderPass.hpp"
 #include "graphics/SwapChainInfo.hpp"
 #include "graphics/SwapChainSupport.hpp"
 #include "graphics/ImageViewInfo.hpp"
 #include "graphics/ImageView.hpp"
-#include "types/integer.h"
+#include "math/Vector.hpp"
 
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class GraphicsDevice;
-class Surface;
 
-class SwapChain
+class SwapChain : public DeviceObject
 {
 	friend class GraphicsDevice;
 
@@ -31,8 +28,12 @@ public:
 	SwapChain& setSupport(SwapChainSupport const &support);
 	SwapChain& setQueueFamilyGroup(QueueFamilyGroup const &qfg);
 
-	SwapChain& create(std::shared_ptr<GraphicsDevice> device, Surface const *pSurface);
-	void destroy();
+	SwapChain& setSurface(class Surface *pSurface);
+
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 	std::vector<ImageView> createImageViews(ImageViewInfo const &info) const;
 	ui32 getFormat() const;
@@ -49,9 +50,8 @@ private:
 	SwapChainSupport mSupport;
 	QueueFamilyGroup mQueueFamilyGroup;
 
-	std::weak_ptr<GraphicsDevice> mpDevice;
-
 	vk::Extent2D mDrawableSize;
+	vk::SurfaceKHR mSurface;
 	math::Vector2UInt mResolution;
 	vk::SurfaceFormatKHR mSurfaceFormat;
 	vk::PresentModeKHR mPresentationMode;

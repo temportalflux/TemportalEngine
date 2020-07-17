@@ -28,11 +28,12 @@ public:
 	vk::Extent2D getDrawableSize() const;
 
 	Surface& initialize(std::shared_ptr<VulkanInstance> pVulkan);
+	void* get();
 	void destroy(std::shared_ptr<VulkanInstance> pVulkan);
 
 private:
 	void* mpWindowHandle;
-	vk::UniqueSurfaceKHR mSurface;
+	vk::UniqueSurfaceKHR mInternal;
 
 };
 

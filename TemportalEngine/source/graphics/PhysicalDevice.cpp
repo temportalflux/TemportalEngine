@@ -4,6 +4,7 @@
 #include "graphics/LogicalDeviceInfo.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
 #include "utility/StringUtils.hpp"
+#include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
 
@@ -33,12 +34,6 @@ void PhysicalDevice::invalidate()
 {
 	mDevice = vk::PhysicalDevice(); // no longer valid
 	mpSurface = nullptr;
-}
-
-vk::SurfaceKHR PhysicalDevice::getVulkanSurface() const
-{
-	assert(mpSurface != nullptr);
-	return mpSurface->mSurface.get();
 }
 
 vk::PhysicalDeviceProperties const PhysicalDevice::getProperties() const
@@ -73,7 +68,7 @@ QueueFamilyGroup PhysicalDevice::queryQueueFamilyGroup() const
 			groups.idxGraphicsQueue = idxQueue;
 		}
 
-		if (mDevice.getSurfaceSupportKHR(idxQueue, getVulkanSurface()))
+		if (mDevice.getSurfaceSupportKHR(idxQueue, this->mpSurface->mInternal.get()))
 		{
 			groups.idxPresentationQueue = idxQueue;
 		}
@@ -87,7 +82,7 @@ QueueFamilyGroup PhysicalDevice::queryQueueFamilyGroup() const
 
 SwapChainSupport PhysicalDevice::querySwapChainSupport() const
 {
-	auto surface = getVulkanSurface();
+	auto& surface = this->mpSurface->mInternal.get();
 	return {
 		mDevice.getSurfaceCapabilitiesKHR(surface),
 		mDevice.getSurfaceFormatsKHR(surface),

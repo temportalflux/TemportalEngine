@@ -22,7 +22,7 @@ void Surface::swap(Surface &other)
 {
 	mpWindowHandle = other.mpWindowHandle;
 	other.releaseWindowHandle();
-	mSurface.swap(other.mSurface);
+	mInternal.swap(other.mInternal);
 }
 
 void* Surface::getWindowHandle() const
@@ -49,12 +49,17 @@ Surface& Surface::initialize(std::shared_ptr<VulkanInstance> pVulkan)
 		//pVulkan->mLogger.log(logging::ECategory::LOGERROR, "Failed to create SDL Vulkan surface: %s", SDL_GetError());
 		return *this;
 	}
-	mSurface = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface));
+	mInternal = vk::UniqueSurfaceKHR(vk::SurfaceKHR(surface));
 	return *this;
+}
+
+void* Surface::get()
+{
+	return &this->mInternal.get();
 }
 
 void Surface::destroy(std::shared_ptr<VulkanInstance> pVulkan)
 {
-	auto surface = mSurface.release();
+	auto surface = mInternal.release();
 	graphics::extract<vk::Instance>(pVulkan.get()).destroySurfaceKHR(surface);
 }

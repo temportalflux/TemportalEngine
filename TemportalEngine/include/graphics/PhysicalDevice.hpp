@@ -47,7 +47,6 @@ private:
 	vk::PhysicalDevice mDevice;
 
 	PhysicalDevice(vk::PhysicalDevice &device, graphics::Surface const *pSurface);
-	vk::SurfaceKHR getVulkanSurface() const;
 
 };
 
