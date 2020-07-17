@@ -2,6 +2,11 @@
 
 using namespace graphics;
 
+DeviceObject::DeviceObject()
+{
+	this->resetConfiguration();
+}
+
 void DeviceObject::setDevice(std::weak_ptr<GraphicsDevice> device)
 {
 	this->mpDevice = device;

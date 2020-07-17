@@ -295,7 +295,8 @@ void GameRenderer::createRenderChain()
 	this->createRenderPass();
 
 	this->createUniformBuffers();
-	this->mDescriptorPool.create(this->mpGraphicsDevice, (ui32)this->mFrameImageViews.size());
+	this->mDescriptorPool.setDevice(this->mpGraphicsDevice);
+	this->mDescriptorPool.setAllocationMultiplier((ui32)this->mFrameImageViews.size()).create();
 	this->createDescriptors();
 	this->createCommandObjects();
 

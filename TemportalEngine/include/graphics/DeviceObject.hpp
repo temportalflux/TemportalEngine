@@ -9,6 +9,8 @@ class DeviceObject
 {
 
 public:
+	DeviceObject();
+	
 	/**
 	 * Sets the pointer to the device this object is created by.
 	 */

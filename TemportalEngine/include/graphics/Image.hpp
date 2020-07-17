@@ -8,7 +8,6 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class GraphicsDevice;
 
 class Image : public DeviceObject, public MemoryAllocated
 {

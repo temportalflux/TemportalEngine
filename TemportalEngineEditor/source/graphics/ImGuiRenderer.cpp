@@ -131,10 +131,12 @@ void ImGuiRenderer::createDescriptorPoolImgui()
 	}
 
 	ui32 frameCount = 3;
+	this->mDescriptorPool.setDevice(this->mpGraphicsDevice);
 	this->mDescriptorPool
 		.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
 		.setPoolSize(frameCount, poolSizes)
-		.create(this->mpGraphicsDevice, frameCount);
+		.setAllocationMultiplier(frameCount)
+		.create();
 }
 
 void ImGuiRenderer::createFrames(uSize viewCount)

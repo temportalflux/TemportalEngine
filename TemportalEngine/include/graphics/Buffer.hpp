@@ -6,7 +6,6 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class GraphicsDevice;
 class CommandPool;
 
 class Buffer : public DeviceObject, public MemoryAllocated
