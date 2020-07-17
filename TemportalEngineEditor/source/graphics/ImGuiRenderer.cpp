@@ -76,6 +76,8 @@ void ImGuiRenderer::destroyRenderChain()
 
 void ImGuiRenderer::createRenderPass()
 {
+	this->mRenderPass.setDevice(this->mpGraphicsDevice);
+
 	auto& colorAttachment = this->mRenderPass.addAttachment(
 		RenderPassAttachment()
 		.setFormat(this->mSwapChain.getFormat())
@@ -95,7 +97,7 @@ void ImGuiRenderer::createRenderPass()
 		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
 	);
 
-	this->mRenderPass.create(this->mpGraphicsDevice);
+	this->mRenderPass.create();
 }
 
 RenderPass* ImGuiRenderer::getRenderPass()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/ImageView.hpp"
@@ -10,7 +10,6 @@
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
-class GraphicsDevice;
 
 class RenderPassAttachment
 {
@@ -74,7 +73,7 @@ private:
 
 };
 
-class RenderPass
+class RenderPass : public DeviceObject
 {
 
 public:
@@ -98,18 +97,18 @@ public:
 	 */
 	RenderPass& addDependency(DependencyItem const dependee, DependencyItem const depender);
 
-	RenderPass& create(std::shared_ptr<GraphicsDevice> device);
 	bool isValid() const;
-	void* get();
-	void destroy();
-	void reset();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
 
 private:
 	std::vector<RenderPassAttachment> mAttachments;
 	std::vector<RenderPassPhase> mPhases;
 	std::vector<vk::SubpassDependency> mDependencies;
 
-	vk::UniqueRenderPass mRenderPass;
+	vk::UniqueRenderPass mInternal;
 
 };
 

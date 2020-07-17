@@ -113,7 +113,12 @@ RenderPass& RenderPass::addDependency(DependencyItem const dependee, DependencyI
 	return *this;
 }
 
-RenderPass& RenderPass::create(std::shared_ptr<GraphicsDevice> device)
+bool RenderPass::isValid() const
+{
+	return (bool)this->mInternal;
+}
+
+void RenderPass::create()
 {
 	assert(!isValid());
 
@@ -137,28 +142,21 @@ RenderPass& RenderPass::create(std::shared_ptr<GraphicsDevice> device)
 		.setDependencyCount((ui32)this->mDependencies.size())
 		.setPDependencies(this->mDependencies.data());
 
-	this->mRenderPass = device->createRenderPass(info);
-	return *this;
-}
-
-bool RenderPass::isValid() const
-{
-	return (bool)this->mRenderPass;
+	this->mInternal = this->device()->createRenderPass(info);
 }
 
 void* RenderPass::get()
 {
-	return &this->mRenderPass.get();
+	return &this->mInternal.get();
 }
 
-void RenderPass::destroy()
+void RenderPass::invalidate()
 {
-	this->mRenderPass.reset();
+	this->mInternal.reset();
 }
 
-void RenderPass::reset()
+void RenderPass::resetConfiguration()
 {
-	this->destroy();
 	this->mAttachments.clear();
 	this->mPhases.clear();
 	this->mDependencies.clear();

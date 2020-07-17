@@ -26,6 +26,7 @@ public:
 	Memory& setFlags(vk::MemoryPropertyFlags flags);
 	Memory& configureSlot(vk::MemoryRequirements const &requirements, uIndex &outSlotIndex);
 
+	bool isValid() const { return (bool)this->mInternal; }
 	void create() override;
 	void* get() override;
 	void invalidate() override;

@@ -78,7 +78,6 @@ private:
 	void destroyRenderChain() override;
 
 	void createUniformBuffers();
-	void destroyUniformBuffers();
 	void createDepthResources(math::Vector2UInt const &resolution);
 	void destroyDepthResources();
 	void createDescriptors();

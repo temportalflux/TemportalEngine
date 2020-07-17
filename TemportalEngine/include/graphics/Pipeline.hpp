@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "graphics/DeviceObject.hpp"
 
 #include "graphics/AttributeBinding.hpp"
 
@@ -25,7 +25,7 @@ struct BlendMode
 	BlendComponent alphaOp;
 };
 
-class Pipeline
+class Pipeline : public DeviceObject
 {
 	friend class VulkanApi;
 	friend class Command;
@@ -39,26 +39,34 @@ public:
 	Pipeline& setFrontFace(vk::FrontFace const face);
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
 
-	std::shared_ptr<ShaderModule> getShader(vk::ShaderStageFlagBits stage);
+	Pipeline& setRenderPass(RenderPass *pRenderPass);
+	Pipeline& setDescriptors(std::vector<DescriptorGroup*> descriptors);
+
 	vk::Viewport const& getViewport() const;
 
 	bool isValid() const;
-	Pipeline& create(std::shared_ptr<GraphicsDevice> device, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors);
-	void destroy();
-	void clearShaders();
+	void create() override;
+	void* get() override;
+	void invalidate() override;
+	void resetConfiguration() override;
+
+	void destroyShaders();
 
 private:
 	std::unordered_map<vk::ShaderStageFlagBits, std::shared_ptr<ShaderModule>> mShaderPtrs;
+	std::vector<AttributeBinding> mAttributeBindings;
+
 	vk::Viewport mViewport;
 	vk::Rect2D mScissor;
 	vk::FrontFace mFrontFace;
 	std::optional<BlendMode> mBlendMode;
 
+	vk::RenderPass mRenderPass;
+	std::vector<vk::DescriptorSetLayout> mDescriptorLayouts;
+
 	vk::UniquePipelineLayout mLayout;
 	vk::UniquePipelineCache mCache;
 	vk::UniquePipeline mPipeline;
-
-	std::vector<AttributeBinding> mAttributeBindings;
 
 	// Creates shader stage info items from `mpShaders`. Not safe to use if mpShaders change or any element is deleted before it is used.
 	std::vector<vk::PipelineShaderStageCreateInfo> createShaderStages() const;

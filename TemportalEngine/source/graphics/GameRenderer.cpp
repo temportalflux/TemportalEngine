@@ -41,8 +41,10 @@ void GameRenderer::invalidate()
 	this->mpMemoryFontImages.reset();
 
 	this->destroyRenderChain();
-	this->mPipeline.clearShaders();
-	this->mPipelineUI.clearShaders();
+	this->mUniformStaticBuffersPerFrame.clear();
+	this->mpMemoryUniformBuffers->destroy();
+	this->mPipeline.destroyShaders();
+	this->mPipelineUI.destroyShaders();
 
 	this->mVertexBufferUI.destroy();
 	this->mIndexBufferUI.destroy();
@@ -311,7 +313,6 @@ void GameRenderer::destroyRenderChain()
 	this->mDescriptorGroupUI.invalidate();
 	this->mDescriptorGroup.invalidate();
 	this->mDescriptorPool.invalidate();
-	this->destroyUniformBuffers();
 
 	this->destroyRenderPass();
 	this->destroyDepthResources();
@@ -323,6 +324,8 @@ void GameRenderer::destroyRenderChain()
 
 void GameRenderer::createRenderPass()
 {
+	this->mRenderPass.setDevice(this->mpGraphicsDevice);
+
 	auto& colorAttachment = this->mRenderPass.addAttachment(
 		RenderPassAttachment()
 		.setFormat(this->mSwapChain.getFormat())
@@ -351,7 +354,7 @@ void GameRenderer::createRenderPass()
 		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
 	);
 
-	this->mRenderPass.create(this->mpGraphicsDevice);
+	this->mRenderPass.create();
 }
 
 RenderPass* GameRenderer::getRenderPass()
@@ -361,11 +364,12 @@ RenderPass* GameRenderer::getRenderPass()
 
 void GameRenderer::destroyRenderPass()
 {
-	this->mRenderPass.reset();
+	this->mRenderPass.destroy();
 }
 
 void GameRenderer::createUniformBuffers()
 {
+	if (this->mpMemoryUniformBuffers->isValid()) { return; }
 	auto frameCount = this->mFrameImageViews.size();
 	this->mUniformStaticBuffersPerFrame.resize(frameCount);
 	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
@@ -378,18 +382,13 @@ void GameRenderer::createUniformBuffers()
 		buffer.create();
 		buffer.configureSlot(this->mpMemoryUniformBuffers);
 	}
+	this->mpMemoryUniformBuffers->setDevice(this->mpGraphicsDevice);
 	this->mpMemoryUniformBuffers->create();
 	for (ui32 idxFrame = 0; idxFrame < frameCount; ++idxFrame)
 	{
 		auto& buffer = this->mUniformStaticBuffersPerFrame[idxFrame];
 		buffer.bindMemory();
 	}
-}
-
-void GameRenderer::destroyUniformBuffers()
-{
-	this->mUniformStaticBuffersPerFrame.clear();
-	this->mpMemoryUniformBuffers->destroy();
 }
 
 void GameRenderer::createDepthResources(math::Vector2UInt const &resolution)
@@ -483,15 +482,19 @@ void GameRenderer::createCommandObjects()
 		.setX(0).setY(0)
 		.setWidth((f32)resolution.x()).setHeight((f32)resolution.y())
 		.setMinDepth(0.0f).setMaxDepth(1.0f);
+	this->mPipeline.setDevice(this->mpGraphicsDevice);
 	this->mPipeline
 		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
 		.setFrontFace(vk::FrontFace::eCounterClockwise)
-		.create(this->mpGraphicsDevice, &this->mRenderPass, { &this->mDescriptorGroup });
+		.setRenderPass(&this->mRenderPass).setDescriptors({ &this->mDescriptorGroup })
+		.create();
+	this->mPipelineUI.setDevice(this->mpGraphicsDevice);
 	this->mPipelineUI
 		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
 		.setFrontFace(vk::FrontFace::eClockwise)
 		.setBlendMode(overlayBlendMode)
-		.create(this->mpGraphicsDevice, &this->mRenderPass, { &this->mDescriptorGroupUI });
+		.setRenderPass(&this->mRenderPass).setDescriptors({ &this->mDescriptorGroupUI })
+		.create();
 
 	this->mCommandPool.setDevice(this->mpGraphicsDevice);
 	this->mCommandPool

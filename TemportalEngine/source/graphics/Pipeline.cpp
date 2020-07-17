@@ -20,12 +20,6 @@ Pipeline& Pipeline::addShader(std::shared_ptr<ShaderModule> shader)
 	return *this;
 }
 
-std::shared_ptr<ShaderModule> Pipeline::getShader(vk::ShaderStageFlagBits stage)
-{
-	auto iter = this->mShaderPtrs.find(stage);
-	return iter != this->mShaderPtrs.end() ? iter->second : nullptr;
-}
-
 std::vector<vk::PipelineShaderStageCreateInfo> Pipeline::createShaderStages() const
 {
 	auto shaderCount = this->mShaderPtrs.size();
@@ -62,16 +56,32 @@ Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
 	return *this;
 }
 
+Pipeline& Pipeline::setRenderPass(RenderPass *pRenderPass)
+{
+	this->mRenderPass = graphics::extract<vk::RenderPass>(pRenderPass);
+	return *this;
+}
+
+Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup*> descriptors)
+{
+	this->mDescriptorLayouts.resize(descriptors.size());
+	std::transform(
+		descriptors.begin(), descriptors.end(), this->mDescriptorLayouts.begin(),
+		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
+	);
+	return *this;
+}
+
 bool Pipeline::isValid() const
 {
 	return (bool)this->mPipeline;
 }
 
-Pipeline& Pipeline::create(std::shared_ptr<GraphicsDevice> device, RenderPass *pRenderPass, std::vector<DescriptorGroup*> descriptors)
+void Pipeline::create()
 {
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
-		shader->create(device);
+		shader->create(this->device());
 	}
 
 	auto bindingCount = (ui32)this->mAttributeBindings.size();
@@ -173,24 +183,19 @@ Pipeline& Pipeline::create(std::shared_ptr<GraphicsDevice> device, RenderPass *p
 		.setStencilTestEnable(false).setFront(vk::StencilOpState()).setBack(vk::StencilOpState());
 	// TODO (END)
 
-	auto descriptorLayouts = std::vector<vk::DescriptorSetLayout>(descriptors.size());
-	std::transform(
-		descriptors.begin(), descriptors.end(), descriptorLayouts.begin(),
-		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
-	);
-	this->mLayout = device->createPipelineLayout(
+	this->mLayout = this->device()->createPipelineLayout(
 		vk::PipelineLayoutCreateInfo()
 		.setPushConstantRangeCount(0)
-		.setSetLayoutCount((ui32)descriptorLayouts.size())
-		.setPSetLayouts(descriptorLayouts.data())
+		.setSetLayoutCount((ui32)this->mDescriptorLayouts.size())
+		.setPSetLayouts(this->mDescriptorLayouts.data())
 	);
-	this->mCache = device->createPipelineCache(vk::PipelineCacheCreateInfo());
+	this->mCache = this->device()->createPipelineCache(vk::PipelineCacheCreateInfo());
 
 	auto stages = this->createShaderStages();
 	
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount((ui32)stages.size()).setPStages(stages.data())
-		.setRenderPass(graphics::extract<vk::RenderPass>(pRenderPass))
+		.setRenderPass(this->mRenderPass)
 		.setSubpass(0)
 		.setLayout(mLayout.get())
 		// Configurables
@@ -205,24 +210,37 @@ Pipeline& Pipeline::create(std::shared_ptr<GraphicsDevice> device, RenderPass *p
 		//.setPDynamicState(&infoDynamicStates)
 		.setBasePipelineHandle({});
 
-	this->mPipeline = device->createPipeline(this->mCache, infoPipeline);
+	this->mPipeline = this->device()->createPipeline(this->mCache, infoPipeline);
 
 	for (auto[stage, shader] : this->mShaderPtrs)
 	{
 		shader->destroy();
 	}
-
-	return *this;
 }
 
-void Pipeline::destroy()
+void* Pipeline::get()
+{
+	return &this->mPipeline.get();
+}
+
+void Pipeline::invalidate()
 {
 	this->mPipeline.reset();
 	this->mCache.reset();
 	this->mLayout.reset();
 }
 
-void Pipeline::clearShaders()
+void Pipeline::resetConfiguration()
+{
+	this->mViewport = vk::Viewport();
+	this->mScissor = vk::Rect2D();
+	this->mFrontFace = vk::FrontFace();
+	this->mBlendMode = std::nullopt;
+	this->mRenderPass = vk::RenderPass();
+	this->mDescriptorLayouts.clear();
+}
+
+void Pipeline::destroyShaders()
 {
 	// These will likely be the only references to the shader objects left, so they will automatically be deallocated
 	this->mShaderPtrs.clear();
