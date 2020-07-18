@@ -28,6 +28,9 @@
     <Filter Include="assets\textures\block">
       <UniqueIdentifier>{6b32f480-109f-4508-a98b-de309e01346b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{c487606b-79a1-42b9-926a-c88ea3cff416}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -40,6 +43,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderCube.hpp">
       <Filter>render</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\Game.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -50,6 +57,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderCube.cpp">
       <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\Game.cpp">
+      <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
