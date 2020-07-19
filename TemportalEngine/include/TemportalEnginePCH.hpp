@@ -5,6 +5,7 @@
 #include "types/integer.h"
 #include "types/real.h"
 #include "math/values.hpp"
+#include "math/Vector.hpp"
 
 #include <algorithm>
 #include <array>

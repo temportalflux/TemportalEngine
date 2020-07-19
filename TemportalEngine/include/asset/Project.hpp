@@ -15,7 +15,7 @@ class Project : public Asset
 	friend class cereal::access;
 	
 public:
-	DEFINE_ASSET_STATICS("project", "Project", ".te-project");
+	DEFINE_ASSET_STATICS("project", "Project", ".te-project", ASSET_CATEGORY_GENERAL);
 	DECLARE_FACTORY_ASSET_METADATA()
 
 	static std::filesystem::path getAssetDirectoryFor(std::filesystem::path projectDir);
@@ -67,11 +67,9 @@ protected:
 			cereal::make_nvp("version", this->mVersion)
 		);
 		// Graphics
-		archive(
-			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
-		);
-		this->mVertexShader.write("vertShader", archive);
-		this->mFragmentShader.write("fragShader", archive);
+		archive(cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference));
+		archive(cereal::make_nvp("vertShader", this->mVertexShader));
+		archive(cereal::make_nvp("fragShader", this->mFragmentShader));
 	}
 
 	template <typename Archive>
@@ -84,11 +82,9 @@ protected:
 			cereal::make_nvp("version", this->mVersion)
 		);
 		// Graphics
-		archive(
-			cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference)
-		);
-		this->mVertexShader.read("vertShader", archive);
-		this->mFragmentShader.read("fragShader", archive);
+		archive(cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference));
+		archive(cereal::make_nvp("vertShader", this->mVertexShader));
+		archive(cereal::make_nvp("fragShader", this->mFragmentShader));
 	}
 #pragma endregion
 

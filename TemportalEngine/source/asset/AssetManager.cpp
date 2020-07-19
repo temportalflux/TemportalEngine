@@ -5,7 +5,9 @@
 
 #include "asset/Asset.hpp"
 #include "asset/Font.hpp"
+#include "asset/PipelineAsset.hpp"
 #include "asset/Project.hpp"
+#include "asset/RenderPassAsset.hpp"
 #include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
@@ -36,7 +38,9 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 void AssetManager::queryAssetTypes()
 {
 	this->registerType<Font>();
+	this->registerType<Pipeline>();
 	this->registerType<Project>();
+	this->registerType<RenderPass>();
 	this->registerType<Shader>();
 	this->registerType<Texture>();
 	this->registerType<TextureSampler>();

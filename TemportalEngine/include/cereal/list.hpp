@@ -78,4 +78,30 @@ namespace cereal
 		for (ui32 i = 0; i < C; ++i) archive(value[i]);
 	}
 
+	template <typename K, typename V>
+	void save(cereal::JSONOutputArchive &archive, std::pair<K, V> const &value)
+	{
+		archive(cereal::make_nvp("first", value.first));
+		archive(cereal::make_nvp("second", value.second));
+	}
+
+	template <typename K, typename V>
+	void load(cereal::JSONInputArchive &archive, std::pair<K, V> &value)
+	{
+		archive(cereal::make_nvp("first", value.first));
+		archive(cereal::make_nvp("second", value.second));
+	}
+
+	template <typename K, typename V>
+	void save(cereal::PortableBinaryOutputArchive &archive, std::pair<K, V> const &value)
+	{
+		archive(value.first, value.second);
+	}
+
+	template <typename K, typename V>
+	void load(cereal::PortableBinaryInputArchive &archive, std::pair<K, V> &value)
+	{
+		archive(value.first, value.second);
+	}
+
 }

@@ -5,6 +5,7 @@
 #include "graphics/ShaderModule.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "cereal/list.hpp"
+#include "cereal/GraphicsFlags.hpp"
 
 #include <bitset>
 #include <vulkan/vulkan.hpp>
@@ -83,25 +84,19 @@ std::string Shader::readSource() const
 void Shader::write(cereal::JSONOutputArchive &archive) const
 {
 	Asset::write(archive);
-	archive(
-		cereal::make_nvp("stage", std::bitset<32>(this->mStage).to_string())
-	);
+	archive(cereal::make_nvp("stage", (vk::ShaderStageFlagBits const&)this->mStage));
 }
 
 void Shader::read(cereal::JSONInputArchive &archive)
 {
 	Asset::read(archive);
-	std::string stageStr;
-	archive(
-		cereal::make_nvp("stage", stageStr)
-	);
-	this->mStage = (ui32)std::bitset<32>(stageStr).to_ulong();
+	archive(cereal::make_nvp("stage", (vk::ShaderStageFlagBits&)this->mStage));
 }
 
 void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
 {
 	Asset::compile(archive);
-	archive(this->mStage);
+	archive((vk::ShaderStageFlagBits const&)this->mStage);
 	archive(this->mSourceBinary);
 	archive(this->mBinaryMetadata.inputAttributes);
 }
@@ -109,7 +104,7 @@ void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
 void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
 {
 	Asset::decompile(archive);
-	archive(this->mStage);
+	archive((vk::ShaderStageFlagBits&)this->mStage);
 	archive(this->mSourceBinary);
 	archive(this->mBinaryMetadata.inputAttributes);
 }

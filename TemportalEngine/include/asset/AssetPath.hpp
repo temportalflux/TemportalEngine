@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/AssetType.hpp"
+#include <cereal/cereal.hpp>
 
 NS_ASSET
 
@@ -30,13 +31,32 @@ public:
 	std::string filename() const;
 	std::string extension() const;
 	std::filesystem::path toAbsolutePath() const;
+	AssetPath& loadFromString(std::string fullStr)
+	{
+		auto delimiter = fullStr.find(':');
+		if (delimiter != std::string::npos)
+		{
+			this->mType = fullStr.substr(0, delimiter);
+			this->mPath = fullStr.substr(delimiter + 1);
+		}
+		return *this;
+	}
 
 	static AssetPath fromString(std::string fullStr)
 	{
-		auto delimiter = fullStr.find(':');
-		return delimiter != std::string::npos
-			? AssetPath(fullStr.substr(0, delimiter), fullStr.substr(delimiter + 1))
-			: AssetPath();
+		return AssetPath().loadFromString(fullStr);
+	}
+
+	template <typename Archive>
+	std::string save_minimal(Archive const& archive) const
+	{
+		return this->toString();
+	}
+
+	template <typename Archive>
+	void load_minimal(Archive const& archive, std::string const& value)
+	{
+		this->loadFromString(value);
 	}
 
 };

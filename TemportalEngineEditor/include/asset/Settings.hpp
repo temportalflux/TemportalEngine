@@ -9,7 +9,7 @@ class Settings : public Asset
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_STATICS("editorSettings", "Editor Settings", ".settings");
+	DEFINE_ASSET_STATICS("editorSettings", "Editor Settings", ".settings", ASSET_CATEGORY_GENERAL);
 	DECLARE_FACTORY_ASSET_METADATA()
 	
 	Settings() = default;

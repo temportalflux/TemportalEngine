@@ -10,7 +10,7 @@ class BlockType : public Asset
 	typedef TypedAssetPath<class Texture> TextureAssetPath;
 
 public:
-	DEFINE_ASSET_STATICS("block", "BlockType", DEFAULT_ASSET_EXTENSION);
+	DEFINE_ASSET_STATICS("block", "BlockType", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GENERAL);
 	DECLARE_FACTORY_ASSET_METADATA()
 
 public:
@@ -65,23 +65,23 @@ private:
 		template <typename Archive>
 		void save(Archive &archive) const
 		{
-			this->right.write("right", archive);
-			this->left.write("left", archive);
-			this->front.write("front", archive);
-			this->back.write("back", archive);
-			this->up.write("up", archive);
-			this->down.write("down", archive);
+			archive(cereal::make_nvp("right", this->right));
+			archive(cereal::make_nvp("left", this->left));
+			archive(cereal::make_nvp("front", this->front));
+			archive(cereal::make_nvp("back", this->back));
+			archive(cereal::make_nvp("up", this->up));
+			archive(cereal::make_nvp("down", this->down));
 		}
 
 		template <typename Archive>
 		void load(Archive &archive)
 		{
-			this->right.read("right", archive);
-			this->left.read("left", archive);
-			this->front.read("front", archive);
-			this->back.read("back", archive);
-			this->up.read("up", archive);
-			this->down.read("down", archive);
+			archive(cereal::make_nvp("right", this->right));
+			archive(cereal::make_nvp("left", this->left));
+			archive(cereal::make_nvp("front", this->front));
+			archive(cereal::make_nvp("back", this->back));
+			archive(cereal::make_nvp("up", this->up));
+			archive(cereal::make_nvp("down", this->down));
 		}
 	};
 

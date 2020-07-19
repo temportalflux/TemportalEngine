@@ -1,0 +1,20 @@
+{
+	"type": "renderpass",
+	"clearColor": {
+		"hasValue": false
+	},
+	"clearDepthStencil": {
+		"hasValue": false
+	},
+	"renderArea": {
+		"offset": [
+			0.0,
+			0.0
+		],
+		"size": [
+			0.0,
+			0.0
+		]
+	},
+	"pipelines": []
+}

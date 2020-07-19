@@ -15,7 +15,7 @@ class TextureSampler : public Asset
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_STATICS("sampler", "Texture Sampler", DEFAULT_ASSET_EXTENSION);
+	DEFINE_ASSET_STATICS("sampler", "Texture Sampler", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
 	DECLARE_FACTORY_ASSET_METADATA()
 
 	TextureSampler() = default;

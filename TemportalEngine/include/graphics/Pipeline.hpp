@@ -3,6 +3,7 @@
 #include "graphics/DeviceObject.hpp"
 
 #include "graphics/AttributeBinding.hpp"
+#include "graphics/BlendMode.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -10,19 +11,6 @@ NS_GRAPHICS
 class DescriptorGroup;
 class RenderPass;
 class ShaderModule;
-
-struct BlendMode
-{
-	struct BlendComponent
-	{
-		vk::BlendOp operation;
-		vk::BlendFactor srcFactor;
-		vk::BlendFactor dstFactor;
-	};
-	vk::ColorComponentFlags writeMask;
-	BlendComponent colorOp;
-	BlendComponent alphaOp;
-};
 
 class Pipeline : public DeviceObject
 {

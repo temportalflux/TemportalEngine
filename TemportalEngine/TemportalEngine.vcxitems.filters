@@ -263,6 +263,18 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\RenderPassAsset.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\PipelineAsset.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\BlendMode.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp">
+      <Filter>cereal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -591,6 +603,18 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\RenderPassAsset.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\PipelineAsset.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\GraphicsFlags.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Area.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>

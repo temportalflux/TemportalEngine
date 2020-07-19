@@ -411,3 +411,17 @@ std::string SamplerLODMode::to_string(Enum value)
 
 #pragma endregion
 
+#pragma region Front Face
+
+std::vector<FrontFace::Enum> FrontFace::ALL = {
+	Enum::eCounterClockwise,
+	Enum::eClockwise,
+};
+
+std::string FrontFace::to_string(Enum value)
+{
+	return vk::to_string((vk::FrontFace)value);
+}
+
+#pragma endregion
+

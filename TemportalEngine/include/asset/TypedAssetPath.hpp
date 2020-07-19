@@ -36,17 +36,15 @@ public:
 	}
 
 	template <typename Archive>
-	void write(std::string name, Archive &archive) const
+	std::string save_minimal(Archive const& archive) const
 	{
-		archive(cereal::make_nvp(name, this->toString()));
+		return this->toString();
 	}
 
 	template <typename Archive>
-	void read(std::string name, Archive &archive)
+	void load_minimal(Archive const& archive, std::string const& value)
 	{
-		std::string fullStr;
-		archive(cereal::make_nvp(name, fullStr));
-		this->mPath = AssetPath::fromString(fullStr);
+		this->mPath.loadFromString(value);
 	}
 
 private:

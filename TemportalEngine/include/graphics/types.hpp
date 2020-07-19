@@ -199,4 +199,16 @@ struct SamplerLODMode
 	static std::string to_string(Enum value);
 };
 
+struct FrontFace
+{
+	// Mirrors vk::FrontFace
+	enum class Enum
+	{
+		eCounterClockwise = 0,
+		eClockwise = 1,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
 NS_END

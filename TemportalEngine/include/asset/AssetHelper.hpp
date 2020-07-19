@@ -2,14 +2,21 @@
 
 // The extension that all assets use by default unless otherwise specified (special cases include Project and Editor Settings)
 #define DEFAULT_ASSET_EXTENSION ".te-asset"
+#define ASSET_CATEGORY_GENERAL "General"
+#define ASSET_CATEGORY_GRAPHICS "Graphics"
 // Relevant methods for determining the asset type key for a given Asset subclass or instance
 #define DEFINE_ASSET_TYPE(TYPE_STR) static constexpr char const* StaticType() { return TYPE_STR; } virtual AssetType getAssetType() const override { return StaticType(); }
 // Static Constexpr for the display name of a given asset type
 #define DEFINE_ASSET_DISPLAYNAME(DisplayName) static constexpr char const* TypeDisplayName() { return DisplayName; }
 // Static Constexpr for the extension of a given asset type
 #define DEFINE_ASSET_EXTENSION(EXTENSION) static constexpr char const* TypeExtension() { return EXTENSION; }
+#define DEFINE_ASSET_CATEGORY(CATEGORY) static constexpr char const* TypeCategory() { return CATEGORY; }
 // Defines & Declares all the relevant static functions needed during asset registration (see ASSET_TYPE_METADATA)
-#define DEFINE_ASSET_STATICS(TYPE_STR, DISPLAY_NAME, EXTENSION) DEFINE_ASSET_TYPE(TYPE_STR) DEFINE_ASSET_DISPLAYNAME(DISPLAY_NAME) DEFINE_ASSET_EXTENSION(EXTENSION)
+#define DEFINE_ASSET_STATICS(TYPE_STR, DISPLAY_NAME, EXTENSION, CATEGORY) \
+	DEFINE_ASSET_TYPE(TYPE_STR) \
+	DEFINE_ASSET_DISPLAYNAME(DISPLAY_NAME) \
+	DEFINE_ASSET_EXTENSION(EXTENSION) \
+	DEFINE_ASSET_CATEGORY(CATEGORY)
 
 // Macros for defining the function to create an asset for a type
 #define DECLARE_FACTORY_ASSET_NEW() static asset::AssetPtrStrong createNewAsset(std::filesystem::path filePath);
