@@ -114,6 +114,7 @@ private:
 	 */
 	// TODO: This is so redundant. Its a map of path to path.
 	std::unordered_map<std::string, AssetPath> mScannedAssetMetadataByPath;
+	std::unordered_multimap<AssetType, AssetPath> mScannedAssetPathsByType;
 
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 

@@ -44,6 +44,7 @@ void AssetManager::queryAssetTypes()
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
 {
+	this->mScannedAssetPathsByType.clear();
 	this->mScannedAssetPathsByExtension.clear();
 	this->mScannedAssetMetadataByPath.clear();
 
@@ -75,6 +76,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 
 void AssetManager::addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath)
 {
+	this->mScannedAssetPathsByType.insert(std::make_pair(metadata.type(), metadata));
 	this->mScannedAssetPathsByExtension.insert(std::make_pair(metadata.extension(), metadata));
 	this->mScannedAssetMetadataByPath.insert(std::make_pair(absolutePath.string(), metadata));
 }
@@ -125,8 +127,8 @@ std::vector<AssetPath> AssetManager::getAssetList() const
 {
 	auto paths = std::vector<AssetPath>();
 	std::transform(
-		this->mScannedAssetPathsByExtension.begin(),
-		this->mScannedAssetPathsByExtension.end(),
+		this->mScannedAssetPathsByType.begin(),
+		this->mScannedAssetPathsByType.end(),
 		std::back_inserter(paths), [](auto pair) { return pair.second; }
 	);
 	return paths;
@@ -134,8 +136,7 @@ std::vector<AssetPath> AssetManager::getAssetList() const
 
 std::vector<AssetPath> AssetManager::getAssetList(AssetType type) const
 {
-	auto metadata = this->getAssetTypeMetadata(type);
-	auto iters = this->mScannedAssetPathsByExtension.equal_range(metadata.fileExtension);
+	auto iters = this->mScannedAssetPathsByType.equal_range(type);
 	auto paths = std::vector<AssetPath>(std::distance(iters.first, iters.second));
 	std::transform(iters.first, iters.second, paths.begin(), [](auto pair) { return pair.second; });
 	return paths;
