@@ -15,6 +15,11 @@
 
 using namespace graphics;
 
+void ImGuiRenderer::renderImGui(const ImDrawList* parent_list, const ImDrawCmd* cmd)
+{
+	reinterpret_cast<ImGuiRenderer*>(cmd->UserCallbackData)->renderDrawData(parent_list, cmd);
+}
+
 ImGuiRenderer::ImGuiRenderer() : VulkanRenderer()
 {
 	IMGUI_CHECKVERSION();
@@ -236,6 +241,8 @@ void ImGuiRenderer::drawFrame()
 	this->makeGui();
 	this->endGuiFrame();
 
+	//ImGui::GetWindowDrawList()->AddCallback(&ImGuiRenderer::renderImGui, this);
+
 	VulkanRenderer::drawFrame();
 
 	auto& io = ImGui::GetIO();
@@ -278,11 +285,67 @@ void ImGuiRenderer::endGuiFrame()
 
 void ImGuiRenderer::render(graphics::Frame* frame, ui32 idxCurrentImage)
 {
-	auto* currentFrame = reinterpret_cast<ImGuiFrame*>(frame);
+	this->mpCurrentFrame = reinterpret_cast<ImGuiFrame*>(frame);
+	this->mpCurrentBufferOffsets = { 0, 0 };
 	
+	auto cmdBuffer = graphics::extract<VkCommandBuffer>(&this->mpCurrentFrame->cmdBuffer());
+
 	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
-	auto cmd = currentFrame->beginRenderPass(&mSwapChain, clearColor);
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), graphics::extract<VkCommandBuffer>(&currentFrame->cmdBuffer()));
-	currentFrame->endRenderPass(cmd);
-	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), {});
+	auto cmd = this->mpCurrentFrame->beginRenderPass(&mSwapChain, clearColor);
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuffer);
+	this->mpCurrentFrame->endRenderPass(cmd);
+	this->mpCurrentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), {});
+
+	this->mpCurrentFrame = nullptr;
+}
+
+void ImGuiRenderer::renderDrawData(const ImDrawList* cmd_list, const ImDrawCmd* pcmd)
+{
+	auto command_buffer = graphics::extract<VkCommandBuffer>(&this->mpCurrentFrame->cmdBuffer());
+
+	ImDrawData const* draw_data = ImGui::GetDrawData();
+	const int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+	const int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+
+	// Will project scissor/clipping rectangles into framebuffer space
+	ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
+	ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+
+	// Project scissor/clipping rectangles into framebuffer space
+	ImVec4 clip_rect;
+	clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
+	clip_rect.y = (pcmd->ClipRect.y - clip_off.y) * clip_scale.y;
+	clip_rect.z = (pcmd->ClipRect.z - clip_off.x) * clip_scale.x;
+	clip_rect.w = (pcmd->ClipRect.w - clip_off.y) * clip_scale.y;
+
+	if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
+	{
+		// Negative offsets are illegal for vkCmdSetScissor
+		if (clip_rect.x < 0.0f)
+			clip_rect.x = 0.0f;
+		if (clip_rect.y < 0.0f)
+			clip_rect.y = 0.0f;
+
+		// Apply scissor/clipping rectangle
+		VkRect2D scissor;
+		scissor.offset.x = (int32_t)(clip_rect.x);
+		scissor.offset.y = (int32_t)(clip_rect.y);
+		scissor.extent.width = (uint32_t)(clip_rect.z - clip_rect.x);
+		scissor.extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
+		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+		// Draw
+		vkCmdDrawIndexed(
+			command_buffer, pcmd->ElemCount, 1,
+			pcmd->IdxOffset + this->mpCurrentBufferOffsets.y(),
+			pcmd->VtxOffset + this->mpCurrentBufferOffsets.x(),
+			0
+		);
+	}
+
+	auto* lastCmdInList = &cmd_list->CmdBuffer[cmd_list->CmdBuffer.Size - 1];
+	if (pcmd == lastCmdInList)
+	{
+		this->mpCurrentBufferOffsets += { cmd_list->VtxBuffer.Size, cmd_list->IdxBuffer.Size };
+	}
 }

@@ -9,6 +9,9 @@
 
 #include <vulkan/vulkan.hpp>
 
+struct ImDrawList;
+struct ImDrawCmd;
+
 NS_GUI
 class IGui;
 NS_END
@@ -19,6 +22,7 @@ class Surface;
 
 class ImGuiRenderer : public VulkanRenderer
 {
+	static void renderImGui(ImDrawList const* parent_list, ImDrawCmd const* cmd);
 
 public:
 	ImGuiRenderer();
@@ -38,9 +42,10 @@ private:
 
 	RenderPass mRenderPass;
 
-	// TODO: Create wrapper inside graphics namespace
 	graphics::DescriptorPool mDescriptorPool;
 	std::vector<graphics::ImGuiFrame> mGuiFrames;
+	ImGuiFrame* mpCurrentFrame;
+	math::Vector2Int mpCurrentBufferOffsets;
 
 	void createDescriptorPoolImgui();
 	void submitFonts();
@@ -51,6 +56,8 @@ private:
 	void startGuiFrame();
 	void makeGui();
 	void endGuiFrame();
+
+	void renderDrawData(ImDrawList const* parent_list, ImDrawCmd const* cmd);
 
 protected:
 	void createRenderChain() override;
