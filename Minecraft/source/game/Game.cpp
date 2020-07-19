@@ -84,6 +84,7 @@ bool Game::initializeSystems()
 	auto pEngine = engine::Engine::Get();
 	if (!pEngine->initializeDependencies()) return false;
 	pEngine->initializeECS();
+	return true;
 }
 
 void Game::openProject()

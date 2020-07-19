@@ -5,17 +5,15 @@
 #include "graphics/AttributeBinding.hpp"
 #include "math/Vector.hpp"
 
-#include "glm/glm.hpp"
-
 class Model
 {
 
 public:
 	struct Vertex
 	{
-		glm::vec3 position;
-		glm::vec3 color;
-		glm::vec2 texCoord;
+		math::Vector3Padded position;
+		math::Vector4 color;
+		math::Vector2Padded texCoord;
 	};
 
 	static std::vector<graphics::AttributeBinding> bindings(ui8 &slot);

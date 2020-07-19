@@ -26,7 +26,7 @@ NS_MATH
 * @param TValue The data type (floats and signed/unsigned ints supported).
 * @param TDimension The number of components.
 */
-template <typename TValue, const ui8 TDimension>
+template <typename TValue, const ui8 TAccessibleDimensions, const ui8 TActualDimensions=TAccessibleDimensions>
 class TEMPORTALENGINE_API Vector
 {
 	static_assert(
@@ -38,25 +38,26 @@ class TEMPORTALENGINE_API Vector
 		|| std::is_same<TValue, ui32>::value,
 		"Invalid Vector value type"
 	);
+	static_assert(TAccessibleDimensions <= TActualDimensions, "Dimension must be <= padded dimension");
 
 protected:
 
 	/** The format of this vector class, composed of the value and dimension. */
-	typedef Vector<TValue, TDimension> VectorFormat;
+	typedef Vector<TValue, TAccessibleDimensions, TActualDimensions> VectorFormat;
 
 private:
 
 	/** The actual components/data of the vector. */
-	TValue mValues[TDimension];
+	TValue mValues[TActualDimensions];
 
 public:
 
 	/** The zero vector for this format. */
-	static Vector<TValue, TDimension> const ZERO;
+	static Vector<TValue, TAccessibleDimensions, TActualDimensions> const ZERO;
 
 	constexpr Vector()
 	{
-		memset(mValues, 0, TDimension * sizeof(TValue));
+		memset(mValues, 0, TActualDimensions * sizeof(TValue));
 	}
 
 	/**
@@ -64,9 +65,9 @@ public:
 	*	Length must match dimension of the vector.
 	* Inverse of toArray(TValue[]).
 	*/
-	constexpr Vector(TValue values[TDimension])
+	constexpr Vector(TValue values[TAccessibleDimensions])
 	{
-		memcpy_s(mValues, TDimension * sizeof(TValue), values, TDimension * sizeof(TValue));
+		memcpy_s(mValues, TAccessibleDimensions * sizeof(TValue), values, TAccessibleDimensions * sizeof(TValue));
 	}
 
 	/**
@@ -82,7 +83,7 @@ public:
 	*/
 	constexpr Vector(VectorFormat const &other)
 	{
-		memcpy_s(mValues, TDimension * sizeof(TValue), other.mValues, TDimension * sizeof(TValue));
+		memcpy_s(mValues, TAccessibleDimensions * sizeof(TValue), other.mValues, TAccessibleDimensions * sizeof(TValue));
 	}
 
 	/**
@@ -98,19 +99,19 @@ public:
 	* Inverse of createSubvector().
 	* @param TDimensionResult The dimension of the vector being copied.
 	*/
-	template <ui32 TDimensionOther>
-	constexpr Vector(Vector<TValue, TDimensionOther> const &other, ui8 offset = 0)
+	template <ui32 TDimensionOther, ui8 TOtherPadding>
+	constexpr Vector(Vector<TValue, TDimensionOther, TOtherPadding> const &other, ui8 offset = 0)
 	{
-		memset(mValues, 0, TDimension * sizeof(TValue));
-		other.copyTo<TDimension>(mValues, offset);
+		memset(mValues, 0, TAccessibleDimensions * sizeof(TValue));
+		other.copyTo<TAccessibleDimensions>(mValues, offset);
 	}
 
 	// Operations: General ----------------------------------------------------
 
-	Vector<f32, TDimension> toFloat() const
+	Vector<f32, TAccessibleDimensions, TActualDimensions> toFloat() const
 	{
-		Vector<f32, TDimension> fVector;
-		for (ui8 i = 0; i < TDimension; ++i)
+		Vector<f32, TAccessibleDimensions, TActualDimensions> fVector;
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			fVector[i] = (f32)mValues[i];
 		return fVector;
 	}
@@ -126,21 +127,21 @@ public:
 	* This is literally calling the copy constructor.
 	* @param TDimensionResult The dimension of the vector being copied.
 	*/
-	template <ui8 TDimensionResult>
-	constexpr Vector<TValue, TDimensionResult> const createSubvector(ui8 offset = 0) const
+	template <ui8 TDimensionCountResult, ui8 TActualDimensionCountOther=TDimensionCountResult>
+	constexpr Vector<TValue, TDimensionCountResult, TActualDimensionCountOther> const createSubvector(ui8 offset = 0) const
 	{
-		return Vector<TValue, TDimensionResult>(*this, offset);
+		return Vector<TValue, TDimensionCountResult, TActualDimensionCountOther>(*this, offset);
 	}
 
 	/**
 	* Copies data to an array with length equal to dimension count.
 	* Inverse of Vector(TValue[]) constructor.
 	*/
-	template <ui8 TDimensionOther>
-	constexpr void copyTo(TValue other[TDimensionOther], ui8 componentOffset = 0) const
+	template <ui8 TDimensionCountOther>
+	constexpr void copyTo(TValue other[TDimensionCountOther], ui8 componentOffset = 0) const
 	{
-		ui8 destComponentCount = TDimensionOther - componentOffset;
-		uSize copySize = math::min<ui8>(TDimension, destComponentCount) * sizeof(TValue);
+		ui8 destComponentCount = TDimensionCountOther - componentOffset;
+		uSize copySize = math::min<ui8>(TAccessibleDimensions, destComponentCount) * sizeof(TValue);
 		memcpy_s(other + componentOffset, copySize, mValues, copySize);
 	}
 
@@ -155,7 +156,7 @@ public:
 	*/
 	constexpr TValue& operator[](ui8 const i)
 	{
-		assert(i < TDimension);
+		assert(i < TAccessibleDimensions);
 		return mValues[i];
 	}
 
@@ -164,7 +165,7 @@ public:
 	*/
 	constexpr TValue const & operator[](ui8 const i) const
 	{
-		assert(i < TDimension);
+		assert(i < TAccessibleDimensions);
 		return mValues[i];
 	}
 
@@ -177,13 +178,13 @@ public:
 	*/
 	constexpr TValue const & x() const
 	{
-		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
+		static_assert(TAccessibleDimensions >= 1, "Cannot get X component of vector size < 1");
 		return mValues[0];
 	}
 
 	TValue& x()
 	{
-		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
+		static_assert(TAccessibleDimensions >= 1, "Cannot get X component of vector size < 1");
 		return mValues[0];
 	}
 
@@ -194,13 +195,13 @@ public:
 	*/
 	constexpr TValue const & y() const
 	{
-		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
+		static_assert(TAccessibleDimensions >= 2, "Cannot get Y component of vector size < 2");
 		return mValues[1];
 	}
 
 	TValue& y()
 	{
-		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
+		static_assert(TAccessibleDimensions >= 2, "Cannot get Y component of vector size < 2");
 		return mValues[1];
 	}
 
@@ -211,13 +212,13 @@ public:
 	*/
 	constexpr TValue const & z() const
 	{
-		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
+		static_assert(TAccessibleDimensions >= 3, "Cannot get Z component of vector size < 3");
 		return mValues[2];
 	}
 
 	TValue& z()
 	{
-		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
+		static_assert(TAccessibleDimensions >= 3, "Cannot get Z component of vector size < 3");
 		return mValues[2];
 	}
 
@@ -228,13 +229,13 @@ public:
 	*/
 	constexpr TValue const & w() const
 	{
-		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
+		static_assert(TAccessibleDimensions >= 4, "Cannot get W component of vector size < 4");
 		return mValues[3];
 	}
 
 	TValue& w()
 	{
-		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
+		static_assert(TAccessibleDimensions >= 4, "Cannot get W component of vector size < 4");
 		return mValues[3];
 	}
 
@@ -245,7 +246,7 @@ public:
 	*/
 	constexpr VectorFormat& x(TValue const &value)
 	{
-		static_assert(TDimension >= 1, "Cannot get X component of vector size < 1");
+		static_assert(TAccessibleDimensions >= 1, "Cannot get X component of vector size < 1");
 		mValues[0] = value;
 		return *this;
 	}
@@ -257,7 +258,7 @@ public:
 	*/
 	constexpr VectorFormat& y(TValue const &value)
 	{
-		static_assert(TDimension >= 2, "Cannot get Y component of vector size < 2");
+		static_assert(TAccessibleDimensions >= 2, "Cannot get Y component of vector size < 2");
 		mValues[1] = value;
 		return *this;
 	}
@@ -269,7 +270,7 @@ public:
 	*/
 	constexpr VectorFormat& z(TValue const &value)
 	{
-		static_assert(TDimension >= 3, "Cannot get Z component of vector size < 3");
+		static_assert(TAccessibleDimensions >= 3, "Cannot get Z component of vector size < 3");
 		mValues[2] = value;
 		return *this;
 	}
@@ -281,7 +282,7 @@ public:
 	*/
 	constexpr VectorFormat& w(TValue const &value)
 	{
-		static_assert(TDimension >= 4, "Cannot get W component of vector size < 4");
+		static_assert(TAccessibleDimensions >= 4, "Cannot get W component of vector size < 4");
 		mValues[3] = value;
 		return *this;
 	}
@@ -296,7 +297,7 @@ public:
 	*/
 	constexpr void operator=(VectorFormat const &other)
 	{
-		other.copyTo<TDimension>(mValues);
+		other.copyTo<TAccessibleDimensions>(mValues);
 	}
 
 	/**
@@ -305,7 +306,7 @@ public:
 	constexpr void operator+=(VectorFormat const &other)
 	{
 		// TODO: There is definitely a way to apply scalar addition to a set of scalars in assembly in constant time
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] += other.mValues[i];
 	}
 
@@ -325,7 +326,7 @@ public:
 	*/
 	constexpr void operator-=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] -= other.mValues[i];
 	}
 
@@ -345,7 +346,7 @@ public:
 	*/
 	constexpr void operator*=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] *= other.mValues[i];
 	}
 
@@ -365,7 +366,7 @@ public:
 	 */
 	constexpr void operator/=(VectorFormat const &other)
 	{
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] /= other.mValues[i];
 	}
 
@@ -384,7 +385,7 @@ public:
 	*/
 	constexpr void operator*=(TValue const other)
 	{
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] *= other;
 	}
 
@@ -393,7 +394,7 @@ public:
 	*/
 	constexpr void operator/=(TValue const other)
 	{
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] /= other;
 	}
 
@@ -440,7 +441,7 @@ public:
 	constexpr TValue const dot(VectorFormat const &other) const
 	{
 		TValue scalarProduct = 0;
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			scalarProduct += mValues[i] * other.mValues[i];
 		return scalarProduct;
 	}
@@ -449,6 +450,7 @@ public:
 	* Calculates the cross product of two vectors of the same format.
 	* @return l x r
 	*/
+	template <typename T = std::enable_if_t<TAccessibleDimensions == 3>>
 	static constexpr VectorFormat const cross(VectorFormat const &l, VectorFormat const &r)
 	{
 		return l.crossRight(r);
@@ -460,10 +462,10 @@ public:
 	* @param other The other vector
 	* @return this x other
 	*/
+	template <typename T = std::enable_if_t<TAccessibleDimensions == 3>>
 	constexpr VectorFormat const crossRight(VectorFormat const &other) const
 	{
 		VectorFormat ret = VectorFormat::ZERO;
-		if (TDimension != 3) return ret;
 		ret.mValues[0] = mValues[1] * other.mValues[2] - mValues[2] * other.mValues[1];
 		ret.mValues[1] = mValues[2] * other.mValues[0] - mValues[0] * other.mValues[2];
 		ret.mValues[2] = mValues[0] * other.mValues[1] - mValues[1] * other.mValues[0];
@@ -475,6 +477,7 @@ public:
 	* @param other The other vector
 	* @return other x this
 	*/
+	template <typename T = std::enable_if_t<TAccessibleDimensions == 3>>
 	constexpr VectorFormat const crossLeft(VectorFormat const &other) const
 	{
 		return other.crossRight(*this);
@@ -523,7 +526,7 @@ public:
 	void invert()
 	{
 		// NOTE: Potentially expensive operation
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] = -mValues[i];
 	}
 
@@ -544,7 +547,7 @@ public:
 	{
 		// NOTE: Potentially expensive operation
 		TValue const magnitude = this->magnitude();
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			mValues[i] = mValues[i] / magnitude;
 	}
 
@@ -552,7 +555,7 @@ public:
 	TValue sum() const
 	{
 		TValue scalar = 0;
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			scalar += mValues[i];
 		return scalar;
 	}
@@ -577,9 +580,9 @@ public:
 	ui8 toBitMask() const
 	{
 		// ui8 is 8 bits, and with each dimension occupying 2 bits, this function can only handle 4 dimensions
-		static_assert(TDimension <= 4, "BitMask only value for vectors of max size 4");
+		static_assert(TAccessibleDimensions <= 4, "BitMask only value for vectors of max size 4");
 		ui8 mask = 0;
-		for (ui8 i = 0; i < TDimension; ++i)
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 		{
 			if (mValues[i] == 0) continue;
 			mask |= (1 << ((i * 2) + (ui8)(mValues[i] < 0)));
@@ -589,7 +592,7 @@ public:
 
 };
 
-class Quaternion : public Vector<f32, 4>
+class Quaternion : public Vector<f32, 4, 4>
 {
 public:
 	static Quaternion const Identity;
@@ -617,15 +620,17 @@ public:
 
 };
 
-typedef Vector<f32, 2> Vector2;
-typedef Vector<f32, 3> Vector3;
-typedef Vector<f32, 4> Vector4;
+typedef Vector<f32, 2, 2> Vector2;
+typedef Vector<f32, 3, 3> Vector3;
+typedef Vector<f32, 4, 4> Vector4;
+typedef Vector<f32, 2, 4> Vector2Padded;
+typedef Vector<f32, 3, 4> Vector3Padded;
 
-typedef Vector<i32, 2> Vector2Int;
-typedef Vector<i32, 3> Vector3Int;
+typedef Vector<i32, 2, 2> Vector2Int;
+typedef Vector<i32, 3, 3> Vector3Int;
 
-typedef Vector<ui32, 2> Vector2UInt;
-typedef Vector<ui32, 3> Vector3UInt;
+typedef Vector<ui32, 2, 2> Vector2UInt;
+typedef Vector<ui32, 3, 3> Vector3UInt;
 
 extern Vector2 const Vector2unitX, Vector2unitY;
 extern Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
