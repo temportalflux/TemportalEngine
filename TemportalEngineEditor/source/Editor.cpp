@@ -67,13 +67,14 @@ std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
 
 Editor::~Editor()
 {
-	EDITOR = nullptr;
+	this->OnProjectLoaded.unbindAll();
 	this->mAssetEditors.clear();
 	this->mpEditorSettings.reset();
 	this->mpDockspace.reset();
 	this->mpMemoryGui.reset();
 	this->mpProject.reset();
 	this->mCommandlets.clear();
+	EDITOR = nullptr;
 	engine::Engine::Destroy();
 }
 
@@ -305,6 +306,8 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	this->loadEditorSettings(project->getAbsoluteDirectoryPath());
 	
 	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
+
+	this->OnProjectLoaded.broadcast(project);
 }
 
 asset::ProjectPtrStrong Editor::getProject() const

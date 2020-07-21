@@ -54,10 +54,27 @@ public:
 		this->mBindings.push_back({ key, binding });
 	}
 
+	template <typename T>
+	void bind(std::enable_shared_from_this<T> *obj, TBinding binding)
+	{
+		this->bind(obj->weak_from_this(), binding);
+	}
+
 	void unbind(TKey key)
 	{
 		assert(this->hasBindingFor(key));
 		this->mBindings.erase(this->find(key));
+	}
+
+	template <typename T>
+	void unbind(std::enable_shared_from_this<T> *obj)
+	{
+		this->unbind(obj->weak_from_this());
+	}
+
+	void unbindAll()
+	{
+		this->mBindings.clear();
 	}
 
 	// 2O(n) to remove all bindings which are expired and then execute all non-expired bindings

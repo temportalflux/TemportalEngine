@@ -8,6 +8,7 @@
 #include "gui/MainDockspace.hpp"
 #include "utility/StringUtils.hpp"
 #include "build/BuildThread.hpp"
+#include "Delegate.hpp"
 
 class Window;
 FORWARD_DEF(NS_ASSET, class AssetManager);
@@ -37,6 +38,8 @@ public:
 	void run();
 
 #pragma region Project Being Editted
+	BroadcastDelegate<void(asset::ProjectPtrStrong project)> OnProjectLoaded;
+
 	bool hasProject() const;
 	void setProject(asset::AssetPtrStrong asset);
 	asset::ProjectPtrStrong getProject() const;

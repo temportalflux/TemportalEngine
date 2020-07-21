@@ -36,6 +36,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\IGui.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\Log.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\MainDockspace.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\ModalFilePicker.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\Modal.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\NewAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\OpenAsset.hpp" />
@@ -45,6 +46,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldNumber.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldText.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FileDirectoryTree.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)source\build\IBuilder.hpp" />
@@ -71,11 +73,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\IGui.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\Log.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\MainDockspace.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\ModalFilePicker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\Modal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\NewAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\OpenAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\PathModal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FileDirectoryTree.cpp" />
   </ItemGroup>
 </Project>

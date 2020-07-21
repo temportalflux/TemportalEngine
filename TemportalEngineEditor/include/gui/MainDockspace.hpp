@@ -9,7 +9,7 @@
 
 NS_GUI
 
-class MainDockspace : public IGui
+class MainDockspace : public IGui, public std::enable_shared_from_this<MainDockspace>
 {
 
 public:
