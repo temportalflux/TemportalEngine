@@ -104,7 +104,7 @@
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\gui\modal\ModalFilePicker.hpp">
       <Filter>gui\modal</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\gui\widget\FileDirectoryTree.hpp">
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\gui\widget\filesystem.hpp">
       <Filter>gui\widget</Filter>
     </ClInclude>
   </ItemGroup>
@@ -223,7 +223,7 @@
     <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\gui\modal\ModalFilePicker.cpp">
       <Filter>gui\modal</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FileDirectoryTree.cpp">
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\gui\widget\filesystem.cpp">
       <Filter>gui\widget</Filter>
     </ClCompile>
   </ItemGroup>

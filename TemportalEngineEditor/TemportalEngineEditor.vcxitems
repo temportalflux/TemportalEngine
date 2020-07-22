@@ -46,7 +46,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldNumber.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FieldText.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\FileDirectoryTree.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\filesystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)source\build\IBuilder.hpp" />
@@ -80,6 +80,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\PathModal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FileDirectoryTree.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
   </ItemGroup>
 </Project>
