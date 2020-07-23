@@ -40,7 +40,7 @@ protected:
 	virtual bool canCompileAsset();
 	virtual void compileAsset();
 	virtual void onBuildFailure(std::vector<std::string> const &errors);
-	void releaseAsset();
+	bool shouldReleaseGui() const override;
 
 	template <typename TAsset>
 	std::shared_ptr<TAsset> get() const

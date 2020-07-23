@@ -7,7 +7,7 @@
 
 using namespace gui::modal;
 
-OpenAsset::OpenAsset(char const *title) : Modal(title)
+OpenAsset::OpenAsset(std::string title) : Modal(title)
 {
 	this->mInputPath.fill('\0');
 }
@@ -42,10 +42,4 @@ void OpenAsset::submit()
 	auto asset = asset::readAssetFromDisk(filePath, asset::EAssetSerialization::Json);
 	this->close();
 	this->mOnAssetOpened(asset);
-}
-
-void OpenAsset::reset()
-{
-	Modal::reset();
-	this->mInputPath.fill('\0');
 }

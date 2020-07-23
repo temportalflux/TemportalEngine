@@ -31,8 +31,8 @@ public:
 	void finalizeInitialization() override;
 	void invalidate() override;
 
-	void addGui(std::string id, std::shared_ptr<gui::IGui> gui);
-	std::shared_ptr<gui::IGui> removeGui(std::string id);
+	void addGui(std::shared_ptr<gui::IGui> gui);
+	void removeGui(std::weak_ptr<gui::IGui> const &gui);
 
 	void onInputEvent(void* evt) override;
 
@@ -50,8 +50,9 @@ private:
 	void createDescriptorPoolImgui();
 	void submitFonts();
 
-	std::unordered_map<std::string, std::shared_ptr<gui::IGui>> mGuis;
-	std::vector<std::string> mGuisToRemove;
+	std::vector<std::shared_ptr<gui::IGui>> mGuis;
+	std::vector<std::shared_ptr<gui::IGui>> mGuisToOpen;
+	std::vector<std::weak_ptr<gui::IGui>> mGuisToClose;
 
 	void startGuiFrame();
 	void makeGui();

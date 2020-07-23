@@ -9,15 +9,12 @@
 
 NS_GUI
 
-class MainDockspace : public IGui, public std::enable_shared_from_this<MainDockspace>
+class MainDockspace : public IGui
 {
 
 public:
 	MainDockspace() = default;
 	MainDockspace(std::string id, std::string title);
-
-	void onAddedToRenderer(graphics::ImGuiRenderer *pRenderer);
-	void onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer);
 
 	void makeGui() override;
 
@@ -31,13 +28,11 @@ protected:
 private:
 	bool mbIsBuildingAssets;
 
-	std::shared_ptr<gui::AssetBrowser> mAssetBrowser;
-	std::shared_ptr<gui::Log> mLogEditor;
+	std::weak_ptr<gui::AssetBrowser> mpAssetBrowser;
+	std::weak_ptr<gui::Log> mpEditorLog;
 
-	std::shared_ptr<gui::modal::NewAsset> mModalNewProject;
-	std::shared_ptr<gui::modal::OpenAsset> mModalOpenProject;
-
-	std::shared_ptr<gui::modal::NewAsset> mModalNewAsset;
+	std::function<void(std::shared_ptr<asset::Asset> asset)> mOnAssetCreated;
+	std::function<void(std::shared_ptr<asset::Asset> asset)> mOnProjectOpenedOrCreated;
 
 };
 

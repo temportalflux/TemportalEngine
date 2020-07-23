@@ -16,7 +16,6 @@ public:
 	AssetBrowser(std::string title);
 
 	void open() override;
-	void makeGui() override;
 	void renderView() override;
 
 protected:
@@ -27,8 +26,6 @@ private:
 	std::filesystem::path mDefaultPath;
 	std::filesystem::path mCurrentPath;
 	std::vector<std::filesystem::path> mBreadcrumbs;
-
-	gui::modal::NewAsset mModalNewAsset;
 
 	void setPath(std::filesystem::path path);
 	std::filesystem::path getCurrentRelativePath() const;

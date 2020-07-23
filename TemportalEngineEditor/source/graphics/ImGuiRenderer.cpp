@@ -47,10 +47,6 @@ void ImGuiRenderer::initializeDevices()
 
 void ImGuiRenderer::invalidate()
 {
-	for (auto&[id, gui] : this->mGuis)
-	{
-		gui->onRemovedFromRenderer(this);
-	}
 	this->mGuis.clear();
 
 	ImGui_ImplVulkan_Shutdown();
@@ -213,19 +209,14 @@ void ImGuiRenderer::submitFonts()
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
-void ImGuiRenderer::addGui(std::string id, std::shared_ptr<gui::IGui> gui)
+void ImGuiRenderer::addGui(std::shared_ptr<gui::IGui> gui)
 {
-	this->mGuis.insert(std::make_pair(id, gui));
-	gui->onAddedToRenderer(this);
+	this->mGuisToOpen.push_back(gui);
 }
 
-std::shared_ptr<gui::IGui> ImGuiRenderer::removeGui(std::string id)
+void ImGuiRenderer::removeGui(std::weak_ptr<gui::IGui> const &gui)
 {
-	auto guiIter = this->mGuis.find(id);
-	assert(guiIter != this->mGuis.end());
-	// add gui ids to remove when the current frame is done being iterated over
-	this->mGuisToRemove.push_back(id);
-	return guiIter->second;
+	this->mGuisToClose.push_back(gui);
 }
 
 void ImGuiRenderer::onInputEvent(void* evt)
@@ -252,14 +243,20 @@ void ImGuiRenderer::drawFrame()
 		ImGui::RenderPlatformWindowsDefault();
 	}
 
-	for (auto& id : this->mGuisToRemove)
-	{
-		auto guiIter = this->mGuis.find(id);
-		auto gui = guiIter->second;
-		this->mGuis.erase(guiIter);
-		gui->onRemovedFromRenderer(this);
-	}
-	this->mGuisToRemove.clear();
+	this->mGuis.erase(std::remove_if(
+		this->mGuis.begin(), this->mGuis.end(),
+		[&](std::shared_ptr<gui::IGui> const &gui) -> bool
+		{
+			for (auto& guiToInvalidate : this->mGuisToClose)
+			{
+				if (guiToInvalidate.lock() == gui) return true;
+			}
+			return false;
+		}
+	), this->mGuis.end());
+	this->mGuisToClose.clear();
+	this->mGuis.insert(this->mGuis.end(), this->mGuisToOpen.begin(), this->mGuisToOpen.end());
+	this->mGuisToOpen.clear();
 }
 
 void ImGuiRenderer::startGuiFrame()
@@ -271,10 +268,12 @@ void ImGuiRenderer::startGuiFrame()
 
 void ImGuiRenderer::makeGui()
 {
-	for (auto& [id, pGui]: this->mGuis)
+	for (auto& pGui: this->mGuis)
 	{
-		assert(pGui);
-		pGui->makeGui();
+		if (pGui)
+		{
+			pGui->makeGui();
+		}
 	}
 }
 

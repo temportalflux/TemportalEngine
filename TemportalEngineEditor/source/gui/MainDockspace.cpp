@@ -13,47 +13,19 @@ static const char* MODAL_ID_NEW_PROJECT = "new_project";
 MainDockspace::MainDockspace(std::string id, std::string title)
 	: IGui(title), mId(id), mbIsBuildingAssets(false)
 {
-	auto memory = Editor::EDITOR->getMemoryGui();
-
-	this->mAssetBrowser = memory->make_shared<gui::AssetBrowser>("Asset Browser");
-	this->mLogEditor = memory->make_shared<gui::Log>("Log (Editor)");
-
-	this->mModalNewProject = memory->make_shared<gui::modal::NewAsset>("New Project");
-	this->mModalNewProject->setAssetType(asset::Project::StaticType());
-	this->mModalOpenProject = memory->make_shared<gui::modal::OpenAsset>("Open Project");
-	this->mModalNewAsset = memory->make_shared<gui::modal::NewAsset>("New Asset");
-
-	auto onProjectAsset = [&](asset::AssetPtrStrong asset)
+	this->mOnProjectOpenedOrCreated = [](asset::AssetPtrStrong asset)
 	{
 		Editor::EDITOR->setProject(asset);
 	};
-	this->mModalNewProject->setCallback(onProjectAsset);
-	this->mModalOpenProject->setCallback(onProjectAsset);
-	this->mModalNewAsset->setCallback([](asset::AssetPtrStrong asset) {
+	this->mOnAssetCreated = [](asset::AssetPtrStrong asset)
+	{
 		Editor::EDITOR->openAssetEditor(asset);
-	});
-}
-
-void MainDockspace::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
-{
-	IGui::onAddedToRenderer(pRenderer);
-	pRenderer->addGui("AssetBrowser", this->mAssetBrowser);
-	pRenderer->addGui("EditorLog", this->mLogEditor);
-}
-
-void MainDockspace::onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer)
-{
-	IGui::onRemovedFromRenderer(pRenderer);
-	pRenderer->removeGui("AssetBrowser");
-	pRenderer->removeGui("EditorLog");
+	};
 }
 
 void MainDockspace::makeGui()
 {
 	IGui::makeGui();
-	this->mModalNewProject->draw();
-	this->mModalOpenProject->draw();
-	this->mModalNewAsset->draw();
 
 	if (this->mbIsBuildingAssets && !Editor::EDITOR->isBuildingAssets())
 	{
@@ -119,7 +91,8 @@ void MainDockspace::renderView()
 		ImGui::Text("You have not opened a project.");
 		if (ImGui::Button("Open Project"))
 		{
-			this->mModalOpenProject->open();
+			auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
+			gui->setCallback(this->mOnProjectOpenedOrCreated);
 		}
 	}
 
@@ -127,11 +100,24 @@ void MainDockspace::renderView()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("New Project", "", false, true)) this->mModalNewProject->open();
-			if (ImGui::MenuItem("Open Project", "", false, true)) this->mModalOpenProject->open();
+			if (ImGui::MenuItem("New Project", "", false, true))
+			{
+				auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Project");
+				gui->setAssetType(asset::Project::StaticType());
+				gui->setCallback(this->mOnProjectOpenedOrCreated);
+			}
+			if (ImGui::MenuItem("Open Project", "", false, true))
+			{
+				auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
+				gui->setCallback(this->mOnProjectOpenedOrCreated);
+			}
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();
 			ImGui::Separator();
-			if (ImGui::MenuItem("New Asset", "", false, bHasProject)) this->mModalNewAsset->open();
+			if (ImGui::MenuItem("New Asset", "", false, bHasProject))
+			{
+				std::shared_ptr<gui::modal::NewAsset> gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
+				gui->setCallback(this->mOnAssetCreated);
+			}
 			if (ImGui::MenuItem("Build", "", false, bHasProject && !Editor::EDITOR->isBuildingAssets()))
 			{
 				this->mbIsBuildingAssets = true;
@@ -143,8 +129,14 @@ void MainDockspace::renderView()
 		}
 		if (ImGui::BeginMenu("Windows"))
 		{
-			if (ImGui::MenuItem("Asset Browser", "", this->mAssetBrowser->isOpen(), bHasProject)) this->mAssetBrowser->openOrFocus();
-			if (ImGui::MenuItem("Log (Editor)", "", this->mLogEditor->isOpen(), bHasProject)) this->mLogEditor->openOrFocus();
+			if (ImGui::MenuItem("Asset Browser", "", false, bHasProject && this->mpAssetBrowser.expired()))
+			{
+				this->mpAssetBrowser = Editor::EDITOR->openNewGui<gui::AssetBrowser>("Asset Browser");
+			}
+			if (ImGui::MenuItem("Log (Editor)", "", false, bHasProject && this->mpEditorLog.expired()))
+			{
+				this->mpEditorLog = Editor::EDITOR->openNewGui<gui::Log>("Log (Editor)");
+			}
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();

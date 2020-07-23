@@ -6,7 +6,7 @@
 
 using namespace gui::modal;
 
-PathModal::PathModal(char const *title) : Modal(title)
+PathModal::PathModal(std::string title) : Modal(title)
 {
 	this->mInputPath.fill('\0');
 }
@@ -39,10 +39,4 @@ void PathModal::submit()
 {
 	this->mOnPathSelected(utility::createStringFromFixedArray(this->mInputPath));
 	this->close();
-}
-
-void PathModal::reset()
-{
-	Modal::reset();
-	this->mInputPath.fill('\0');
 }

@@ -16,20 +16,20 @@ NS_END
 
 NS_GUI
 
-class IGui
+class IGui : public std::enable_shared_from_this<IGui>
 {
 
 public:
 	IGui();
 	IGui(std::string title);
 
-	virtual void onAddedToRenderer(graphics::ImGuiRenderer *pRenderer) {}
-	virtual void onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer) {}
+	void setOwner(std::weak_ptr<graphics::ImGuiRenderer> pRenderer) { this->mpOwner = pRenderer; }
 
 	virtual void makeGui();
 	bool isOpen() const;
 	virtual void open();
 	void openOrFocus();
+	void close() { this->mbIsOpen = false; }
 
 protected:
 	logging::Logger* getLog() const;
@@ -38,12 +38,17 @@ protected:
 	virtual std::string getId() const;
 	virtual std::string getTitle() const;
 
-	virtual i32 getFlags() const = 0;
+	virtual i32 getFlags() const { return 0; }
 	virtual bool beginView();
-	virtual void renderView() = 0;
+	virtual void renderView() {}
 	void endView();
+	virtual bool shouldReleaseGui() const;
+
+	bool& openRef() { return this->mbIsOpen; }
+	virtual void removeGui();
 
 private:
+	std::weak_ptr<graphics::ImGuiRenderer> mpOwner;
 	std::string mTitle;
 	bool mbIsOpen;
 

@@ -23,7 +23,7 @@ public:
 	typedef std::function<void(std::shared_ptr<asset::Asset> asset)> AssetCreatedCallback;
 
 	NewAsset() = default;
-	NewAsset(const char* title);
+	NewAsset(std::string title);
 
 	void setAssetType(asset::AssetType type);
 	void setCallback(AssetCreatedCallback callback);
@@ -32,7 +32,6 @@ public:
 
 protected:
 	void drawContents() override;
-	void reset() override;
 
 private:
 	typedef std::array<char, 128> DirectoryPathString;

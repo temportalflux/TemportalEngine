@@ -12,7 +12,6 @@ public:
 	
 protected:
 	void drawContents() override;
-	void reset() override;
 
 private:
 	void submit();

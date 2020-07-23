@@ -44,11 +44,11 @@ void AssetEditor::makeGui()
 			this->onBuildFailure(buildStates[0].errors);
 		}
 	}
-	if (!this->mbIsBuildingAsset && !this->isOpen())
-	{
-		Editor::EDITOR->closeGui(this->mpAsset->getPath().string());
-		this->releaseAsset();
-	}
+}
+
+bool AssetEditor::shouldReleaseGui() const
+{
+	return !this->mbIsBuildingAsset && !this->isOpen();
 }
 
 #pragma region Asset Status
@@ -108,11 +108,6 @@ void AssetEditor::compileAsset()
 
 void AssetEditor::onBuildFailure(std::vector<std::string> const &errors)
 {
-}
-
-void AssetEditor::releaseAsset()
-{
-	this->mpAsset.reset();
 }
 
 #pragma endregion

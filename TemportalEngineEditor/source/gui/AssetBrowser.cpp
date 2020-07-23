@@ -16,10 +16,7 @@ using namespace gui;
 
 AssetBrowser::AssetBrowser(std::string title)
 	: IGui(title)
-	// TODO: Make modal registry so modals can be opened by key instead of having multiple created by different views
-	, mModalNewAsset("New Asset (Asset Browser)")
 {
-	this->mModalNewAsset.setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
 	this->bShowingNonAssets = false;
 }
 
@@ -31,12 +28,6 @@ void AssetBrowser::open()
 		this->setPath(this->mDefaultPath);
 	}
 	IGui::open();
-}
-
-void AssetBrowser::makeGui()
-{
-	IGui::makeGui();
-	this->mModalNewAsset.draw();
 }
 
 i32 AssetBrowser::getFlags() const
@@ -93,7 +84,11 @@ void AssetBrowser::renderMenuBar()
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::MenuItem("New Asset", "", false, true))
-			this->mModalNewAsset.setDirectory(this->getCurrentRelativePath()).open();
+		{
+			auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
+			gui->setDirectory(this->getCurrentRelativePath()).open();
+			gui->setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
+		}
 		if (ImGui::MenuItem("New Folder", "", false, true))
 			std::filesystem::create_directory(this->mCurrentPath / "New Folder");
 		if (ImGui::MenuItem(((this->bShowingNonAssets ? "Hide" : "Show") + std::string(" Misc Files###AssetToggle")).c_str(), "", false, true))

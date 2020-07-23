@@ -18,7 +18,7 @@ protected:
 	void renderMenuBarItems() override;
 	
 private:
-	std::shared_ptr<gui::modal::PathModal> mModalImport;
+	std::weak_ptr<gui::modal::PathModal> mModalImport;
 
 	void onImportConfirmed(std::filesystem::path path);
 

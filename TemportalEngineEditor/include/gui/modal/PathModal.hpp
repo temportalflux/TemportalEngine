@@ -10,14 +10,13 @@ public:
 	typedef std::function<void(std::filesystem::path path)> PathSelectedCallback;
 
 	PathModal() = default;
-	PathModal(char const *title);
+	PathModal(std::string title);
 
 	void setDefaultPath(std::filesystem::path path);
 	void setCallback(PathSelectedCallback callback);
 
 protected:
 	void drawContents() override;
-	void reset() override;
 
 private:
 	std::array<char, 128> mInputPath;

@@ -2,6 +2,7 @@
 
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
+#include "graphics/ImGuiRenderer.hpp"
 
 #include <imgui.h>
 
@@ -60,6 +61,10 @@ void IGui::makeGui()
 		this->renderView();
 	}
 	this->endView();
+	if (this->shouldReleaseGui())
+	{
+		this->removeGui();
+	}
 }
 
 bool IGui::beginView()
@@ -71,4 +76,14 @@ bool IGui::beginView()
 void IGui::endView()
 {
 	ImGui::End();
+}
+
+bool IGui::shouldReleaseGui() const
+{
+	return !this->isOpen();
+}
+
+void IGui::removeGui()
+{
+	this->mpOwner.lock()->removeGui(this->weak_from_this());
 }

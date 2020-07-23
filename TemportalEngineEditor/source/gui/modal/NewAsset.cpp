@@ -9,7 +9,7 @@
 
 using namespace gui::modal;
 
-NewAsset::NewAsset(const char* title) : Modal(title)
+NewAsset::NewAsset(std::string title) : Modal(title)
 {
 	this->mForcedAssetType = std::nullopt;
 	this->mInputDirectory.fill('\0');
@@ -117,11 +117,4 @@ void NewAsset::submit()
 	auto asset = assetManager->createAsset(assetType, filePath);
 	this->close();
 	this->mOnAssetCreated(asset);
-}
-
-void NewAsset::reset()
-{
-	Modal::reset();
-	this->mInputDirectory.fill('\0');
-	this->mInputName.fill('\0');
 }

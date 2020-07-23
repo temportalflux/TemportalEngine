@@ -17,14 +17,13 @@ public:
 	typedef std::function<void(std::shared_ptr<asset::Asset> asset)> AssetOpenedCallback;
 
 	OpenAsset() = default;
-	OpenAsset(char const *title);
+	OpenAsset(std::string title);
 
 	void setDefaultPath(std::filesystem::path path);
 	void setCallback(AssetOpenedCallback callback);
 
 protected:
 	void drawContents() override;
-	void reset() override;
 
 private:
 	AssetOpenedCallback mOnAssetOpened;

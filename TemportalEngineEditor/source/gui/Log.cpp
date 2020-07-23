@@ -15,23 +15,17 @@ Log::Log(std::string title) : IGui(title)
 	this->mLines.reserve(256);
 	this->mLinesFiltered.reserve(256);
 	this->mRawFilter.fill('\0');
+	this->mLogHandle = engine::Engine::LOG_SYSTEM.addListener(this->createLogListener());
+}
+
+Log::~Log()
+{
+	engine::Engine::LOG_SYSTEM.removeListener(this->mLogHandle);
 }
 
 logging::LogSystem::Listener Log::createLogListener()
 {
 	return std::bind(&Log::add, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-}
-
-void Log::onAddedToRenderer(graphics::ImGuiRenderer *pRenderer)
-{
-	IGui::onAddedToRenderer(pRenderer);
-	this->mLogHandle = engine::Engine::LOG_SYSTEM.addListener(this->createLogListener());
-}
-
-void Log::onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer)
-{
-	IGui::onRemovedFromRenderer(pRenderer);
-	engine::Engine::LOG_SYSTEM.removeListener(this->mLogHandle);
 }
 
 i32 Log::getFlags() const

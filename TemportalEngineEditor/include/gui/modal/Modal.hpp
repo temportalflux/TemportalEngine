@@ -1,29 +1,22 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "gui/IGui.hpp"
 
 #define NS_MODAL namespace modal {
 
 NS_GUI NS_MODAL
 
-class Modal
+class Modal : public IGui
 {
 
 public:
 	Modal() = default;
-	Modal(char const *title);
-
-	void draw();
-	virtual void open();
-	void close();
+	Modal(std::string title);
 
 protected:
+	i32 getFlags() const override { return 0; }
+	void makeGui() override;
 	virtual void drawContents() = 0;
-	virtual void reset();
-
-private:
-	char const *mTitle;
-	bool mbShouldBeOpen;
 
 };
 

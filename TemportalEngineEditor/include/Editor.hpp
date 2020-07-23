@@ -15,6 +15,7 @@ FORWARD_DEF(NS_ASSET, class AssetManager);
 FORWARD_DEF(NS_ASSET, class Settings);
 FORWARD_DEF(NS_BUILD, class BuildAsset);
 FORWARD_DEF(NS_ENGINE, class Engine);
+FORWARD_DEF(NS_GUI, class IGui);
 FORWARD_DEF(NS_GUI, class AssetEditor);
 FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
@@ -56,7 +57,14 @@ public:
 #pragma region View Management Shortcuts
 	std::shared_ptr<memory::MemoryChunk> getMemoryGui() const;
 	void openAssetEditor(asset::AssetPtrStrong asset);
-	void closeGui(std::string id);
+	template <typename T>
+	std::shared_ptr<T> openNewGui(std::string titleId)
+	{
+		std::shared_ptr<T> ptr = this->getMemoryGui()->make_shared<T>(titleId);
+		this->openGui(std::dynamic_pointer_cast<gui::IGui>(ptr));
+		return ptr;
+	}
+	void openGui(std::shared_ptr<gui::IGui> gui);
 	void openProjectSettings();
 	void openSettings();
 #pragma endregion

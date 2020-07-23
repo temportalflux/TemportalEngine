@@ -20,8 +20,3 @@ void FilePicker::submit()
 {
 	this->close();
 }
-
-void FilePicker::reset()
-{
-	Modal::reset();
-}

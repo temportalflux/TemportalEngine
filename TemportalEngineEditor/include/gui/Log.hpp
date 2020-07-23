@@ -16,9 +16,8 @@ class Log : public IGui
 public:
 	Log() = default;
 	Log(std::string title);
+	~Log();
 
-	void onAddedToRenderer(graphics::ImGuiRenderer *pRenderer);
-	void onRemovedFromRenderer(graphics::ImGuiRenderer *pRenderer);
 	logging::LogSystem::Listener createLogListener();
 
 	void renderView() override;

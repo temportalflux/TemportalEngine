@@ -4,6 +4,7 @@
 #include "asset/Texture.hpp"
 #include "gui/modal/PathModal.hpp"
 #include "memory/MemoryChunk.hpp"
+#include "Editor.hpp"
 
 #include "math/Vector.hpp"
 
@@ -13,10 +14,7 @@ using namespace gui;
 
 std::shared_ptr<AssetEditor> EditorTexture::create(std::shared_ptr<memory::MemoryChunk> mem)
 {
-	auto editor = mem->make_shared<EditorTexture>();
-	editor->mModalImport = mem->make_shared<gui::modal::PathModal>("Import Image");
-	editor->mModalImport->setCallback(std::bind(&EditorTexture::onImportConfirmed, editor.get(), std::placeholders::_1));
-	return editor;
+	return mem->make_shared<EditorTexture>();
 }
 
 void EditorTexture::setAsset(asset::AssetPtrStrong assetGeneric)
@@ -27,13 +25,16 @@ void EditorTexture::setAsset(asset::AssetPtrStrong assetGeneric)
 void EditorTexture::renderMenuBarItems()
 {
 	AssetEditor::renderMenuBarItems();
-	if (ImGui::MenuItem("Import", "", false, true)) this->mModalImport->open();
+	if (ImGui::MenuItem("Import", "", false, this->mModalImport.expired()))
+	{
+		this->mModalImport = Editor::EDITOR->openNewGui<gui::modal::PathModal>("Import Image");
+		this->mModalImport.lock()->setCallback(std::bind(&EditorTexture::onImportConfirmed, this, std::placeholders::_1));
+	}
 }
 
 void EditorTexture::makeGui()
 {
 	AssetEditor::makeGui();
-	this->mModalImport->draw();
 }
 
 void EditorTexture::onImportConfirmed(std::filesystem::path path)

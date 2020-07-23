@@ -21,6 +21,7 @@
 #include "gui/asset/EditorTextureSampler.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
+#include "gui/IGui.hpp"
 
 #include <examples/imgui_impl_sdl.h>
 #include <examples/imgui_impl_vulkan.h>
@@ -224,7 +225,7 @@ void Editor::run()
 	// TODO: window should take a shared pointer to the renderer
 	this->mpWindow->setRenderer(this->mpRenderer.get());
 
-	this->mpRenderer->addGui("MainDockspace", this->mpDockspace);
+	this->openGui(this->mpDockspace);
 
 	this->mpEngine->start();
 	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mpDockspace->isOpen())
@@ -233,7 +234,7 @@ void Editor::run()
 	}
 	this->mpEngine->joinThreads();
 
-	this->mpRenderer->removeGui("MainDockspace");
+	this->mpDockspace.reset();
 
 	this->mpRenderer->invalidate();
 	this->mpRenderer.reset();
@@ -375,15 +376,16 @@ void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 		return;
 	}
 	auto factory = this->mAssetEditors.find(asset->getAssetType())->second;
-	auto editor = factory.create(engine::Engine::Get()->getAssetManager()->getAssetMemory());
+	std::shared_ptr<gui::AssetEditor> editor = factory.create(engine::Engine::Get()->getAssetManager()->getAssetMemory());
 	editor->setAsset(asset);
-	this->mpRenderer->addGui(asset->getPath().string(), editor);
-	editor->open();
+	this->openGui(editor);
 }
 
-void Editor::closeGui(std::string id)
+void Editor::openGui(std::shared_ptr<gui::IGui> gui)
 {
-	this->mpRenderer->removeGui(id);
+	gui->setOwner(this->mpRenderer);
+	this->mpRenderer->addGui(gui);
+	gui->open();
 }
 
 void Editor::openProjectSettings()

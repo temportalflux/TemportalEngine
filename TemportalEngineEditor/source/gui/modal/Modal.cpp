@@ -4,32 +4,20 @@
 
 using namespace gui::modal;
 
-Modal::Modal(char const *title) : mTitle(title), mbShouldBeOpen(false)
+Modal::Modal(std::string title) : IGui(title)
 {
 }
 
-void Modal::open()
+void Modal::makeGui()
 {
-	this->mbShouldBeOpen = true;
-}
-
-void Modal::draw()
-{
-	if (this->mbShouldBeOpen) ImGui::OpenPopup(this->mTitle);
-	if (ImGui::BeginPopupModal(this->mTitle, NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	if (this->isOpen()) ImGui::OpenPopup(this->getId().c_str());
+	if (ImGui::BeginPopupModal(this->getId().c_str(), 0, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		this->drawContents();
 		ImGui::EndPopup();
 	}
-}
-
-void Modal::close()
-{
-	ImGui::CloseCurrentPopup();
-	this->reset();
-}
-
-void Modal::reset()
-{
-	this->mbShouldBeOpen = false;
+	if (this->shouldReleaseGui())
+	{
+		this->removeGui();
+	}
 }
