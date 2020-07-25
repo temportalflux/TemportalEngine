@@ -9,6 +9,7 @@
 #include "utility/StringUtils.hpp"
 #include "build/BuildThread.hpp"
 #include "Delegate.hpp"
+#include "memory/MemoryChunk.hpp"
 
 class Window;
 FORWARD_DEF(NS_ASSET, class AssetManager);

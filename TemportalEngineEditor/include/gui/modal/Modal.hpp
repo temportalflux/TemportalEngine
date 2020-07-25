@@ -13,10 +13,15 @@ public:
 	Modal() = default;
 	Modal(std::string title);
 
+	void open() override;
+
 protected:
 	i32 getFlags() const override { return 0; }
 	void makeGui() override;
 	virtual void drawContents() = 0;
+
+private:
+	bool bOpenOnNextFrame;
 
 };
 

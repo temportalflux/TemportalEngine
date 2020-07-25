@@ -19,7 +19,6 @@
 #include "gui/asset/EditorShader.hpp"
 #include "gui/asset/EditorTexture.hpp"
 #include "gui/asset/EditorTextureSampler.hpp"
-#include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 #include "gui/IGui.hpp"
 

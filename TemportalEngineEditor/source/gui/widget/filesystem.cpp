@@ -1,5 +1,9 @@
 #include "gui/widget/filesystem.hpp"
 
+#include "Editor.hpp"
+#include "gui/modal/ModalFilePicker.hpp"
+#include "utility/StringUtils.hpp"
+
 #include <imgui.h>
 
 NS_GUI
@@ -25,6 +29,11 @@ bool renderBreadcrumb(
 {
 	bool bChangedPath = false;
 	auto breadcrumbs = createBreadcrumbs(path, root);
+	ImGui::Text("/");
+	if (breadcrumbs.begin() != breadcrumbs.end())
+	{
+		ImGui::SameLine();
+	}
 	for (auto iter = breadcrumbs.begin(); iter != breadcrumbs.end(); ++iter)
 	{
 		ImGui::Text(iter->filename().string().c_str());
@@ -57,28 +66,18 @@ bool renderBreadcrumb(
 bool renderTreeSubDirectory(std::filesystem::path const &path, std::filesystem::path &lastSelectedPath);
 bool renderTreeSubDirectoryContents(std::filesystem::path const &path, std::filesystem::path &lastSelectedPath);
 
-bool renderFileDirectoryTree(char const* id, std::filesystem::path const &root, std::filesystem::path &lastSelectedPath)
+bool renderFileDirectoryTree(char const* id, std::filesystem::path const &root, std::filesystem::path &lastSelectedPath, math::Vector2 size)
 {
 	if (root.empty()) return false;
 
-	bool shouldRender = ImGui::BeginChild(id);
+	bool shouldRender = ImGui::BeginChild(id, ImVec2(size.x(), size.y()), true,
+		ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar
+	);
 	bool bChangedLastSelected = false;
 	if (shouldRender)
 	{
-		ImGui::Text(root.string().c_str());
-		if (!std::filesystem::exists(root))
-		{
-			ImGui::Text("Missing directory, cannot render contents");
-		}
-		else if (std::filesystem::is_empty(root))
-		{
-			ImGui::Text("Directory is empty");
-		}
-		else
-		{
-			bool bChangedPath = renderTreeSubDirectoryContents(root, lastSelectedPath);
-			if (bChangedPath) bChangedLastSelected = true;
-		}
+		bool bChangedPath = renderTreeSubDirectory(root, lastSelectedPath);
+		if (bChangedPath) bChangedLastSelected = true;
 	}
 	ImGui::EndChild();
 
@@ -108,7 +107,7 @@ bool renderTreeSubDirectoryContents(std::filesystem::path const &path, std::file
 	for (const auto& entry : std::filesystem::directory_iterator(path))
 	{
 		if (!entry.is_directory()) continue;
-		bool bChangedPath = renderTreeSubDirectoryContents(entry.path(), lastSelectedPath);
+		bool bChangedPath = renderTreeSubDirectory(entry.path(), lastSelectedPath);
 		if (bChangedPath) bChangedLastSelected = true;
 	}
 	return bChangedLastSelected;
@@ -120,6 +119,11 @@ bool renderTreeSubDirectoryContents(std::filesystem::path const &path, std::file
 
 bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const &cfg)
 {
+	ImGui::BeginChild(
+		"directoryView", ImVec2(0, 0), false,
+		ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar
+	);
+
 	if (!std::filesystem::exists(path))
 	{
 		ImGui::Text("Missing directory, cannot render contents");
@@ -213,9 +217,39 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 
 	}
 
+	ImGui::EndChild();
+
 	return bChangedPath;
 }
 
 #pragma endregion
+
+std::string PathText::get() const
+{
+	return utility::createStringFromFixedArray(this->rawContent);
+}
+
+std::filesystem::path PathText::path() const
+{
+	return this->root / this->get();
+}
+
+void PathText::setPath(std::filesystem::path const &path)
+{
+	memcpy_s(this->rawContent.data(), this->rawContent.size() * sizeof(char), path.string().data(), path.string().length() * sizeof(char));
+}
+
+bool renderFileSelectorField(std::string const titleId, FileSelectorField &cfg)
+{
+	bool bChanged = ImGui::InputText(titleId.c_str(), cfg.rawContent.data(), cfg.rawContent.size(), cfg.flags);
+	ImGui::SameLine();
+	if (ImGui::Button("..."))
+	{
+		std::shared_ptr<gui::modal::FilePicker> modal = Editor::EDITOR->openNewGui<gui::modal::FilePicker>("File Picker");
+		modal->setRoot(cfg.root);
+		modal->setConfig(cfg.directoryViewCfg);
+	}
+	return bChanged;
+}
 
 NS_END

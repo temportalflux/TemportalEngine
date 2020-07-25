@@ -13,7 +13,7 @@ bool renderBreadcrumb(std::filesystem::path const &root, std::filesystem::path &
  * Renders a tree of directories descending from `root`.
  * Returns true and sets `lastSelectedPath` if the user double clicks on any entry.
  */
-bool renderFileDirectoryTree(char const* id, std::filesystem::path const &root, std::filesystem::path &lastSelectedPath);
+bool renderFileDirectoryTree(char const* id, std::filesystem::path const &root, std::filesystem::path &lastSelectedPath, math::Vector2 size);
 
 struct DirectoryViewConfig
 {
@@ -37,5 +37,23 @@ struct DirectoryViewConfig
  * Renders a viewer of a directory.
  */
 bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const &cfg);
+
+struct PathText
+{
+	std::filesystem::path root;
+	std::array<char, 256> rawContent;
+
+	std::string get() const;
+	std::filesystem::path path() const;
+	void setPath(std::filesystem::path const &path);
+};
+
+struct FileSelectorField : public PathText
+{
+	ui32 flags;
+	DirectoryViewConfig directoryViewCfg;
+};
+
+bool renderFileSelectorField(std::string const titleId, FileSelectorField &cfg);
 
 NS_END

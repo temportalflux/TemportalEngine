@@ -1,5 +1,6 @@
 #include "gui/modal/OpenAsset.hpp"
 
+#include "Editor.hpp"
 #include "asset/AssetManager.hpp"
 #include "utility/StringUtils.hpp"
 
@@ -9,12 +10,14 @@ using namespace gui::modal;
 
 OpenAsset::OpenAsset(std::string title) : Modal(title)
 {
-	this->mInputPath.fill('\0');
+	this->mConfig.root = Editor::EDITOR->getProject()->getAssetDirectory();
+	this->mConfig.flags = ImGuiInputTextFlags_None;
+	this->mConfig.directoryViewCfg.OnFileOpen = std::bind(&OpenAsset::onFilePicked, this, std::placeholders::_1);
 }
 
 void OpenAsset::setDefaultPath(std::filesystem::path path)
 {
-	memcpy(this->mInputPath.data(), path.string().data(), path.string().length());
+	this->mConfig.setPath(path);
 }
 
 void OpenAsset::setCallback(AssetOpenedCallback callback)
@@ -22,9 +25,15 @@ void OpenAsset::setCallback(AssetOpenedCallback callback)
 	this->mOnAssetOpened = callback;
 }
 
+void OpenAsset::onFilePicked(std::filesystem::path const &path)
+{
+	this->setDefaultPath(path);
+	this->open();
+}
+
 void OpenAsset::drawContents()
 {
-	ImGui::InputText("Path", this->mInputPath.data(), this->mInputPath.size());
+	gui::renderFileSelectorField("###assetField", this->mConfig);
 	if (ImGui::Button("Open"))
 	{
 		this->submit();
@@ -38,8 +47,7 @@ void OpenAsset::drawContents()
 
 void OpenAsset::submit()
 {
-	auto filePath = utility::createStringFromFixedArray(this->mInputPath);
-	auto asset = asset::readAssetFromDisk(filePath, asset::EAssetSerialization::Json);
+	auto asset = asset::readAssetFromDisk(this->mConfig.path(), asset::EAssetSerialization::Json);
 	this->close();
 	this->mOnAssetOpened(asset);
 }

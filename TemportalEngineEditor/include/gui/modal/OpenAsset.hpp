@@ -2,8 +2,7 @@
 
 #include "gui/modal/Modal.hpp"
 
-#include <array>
-#include <functional>
+#include "gui/widget/filesystem.hpp"
 
 NS_ASSET
 class Asset;
@@ -26,11 +25,11 @@ protected:
 	void drawContents() override;
 
 private:
+	gui::FileSelectorField mConfig;
 	AssetOpenedCallback mOnAssetOpened;
 
-	std::array<char, 128> mInputPath;
-
 	void submit();
+	void onFilePicked(std::filesystem::path const &path);
 
 };
 
