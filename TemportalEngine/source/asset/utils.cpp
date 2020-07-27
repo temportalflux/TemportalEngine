@@ -5,7 +5,9 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
 
-std::shared_ptr<asset::Asset> asset::readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
+NS_ASSET
+
+std::shared_ptr<asset::Asset> readAssetFromDisk(std::filesystem::path filePath, asset::EAssetSerialization type, bool bShouldHaveBeenScanned)
 {
 	filePath = filePath.make_preferred();
 	assert(std::filesystem::exists(filePath));
@@ -33,3 +35,5 @@ std::shared_ptr<asset::Asset> asset::readAssetFromDisk(std::filesystem::path fil
 	asset->readFromDisk(filePath, type);
 	return asset;
 }
+
+NS_END

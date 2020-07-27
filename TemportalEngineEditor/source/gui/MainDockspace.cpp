@@ -92,6 +92,7 @@ void MainDockspace::renderView()
 		if (ImGui::Button("Open Project"))
 		{
 			auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
+			gui->addAssetType(asset::Project::StaticType());
 			gui->setCallback(this->mOnProjectOpenedOrCreated);
 		}
 	}
@@ -109,6 +110,7 @@ void MainDockspace::renderView()
 			if (ImGui::MenuItem("Open Project", "", false, true))
 			{
 				auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
+				gui->addAssetType(asset::Project::StaticType());
 				gui->setCallback(this->mOnProjectOpenedOrCreated);
 			}
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();

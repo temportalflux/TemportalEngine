@@ -24,11 +24,6 @@ void FilePicker::setConfig(gui::DirectoryViewConfig const &cfg)
 
 void FilePicker::drawContents()
 {
-	if (ImGui::Button("Filters"))
-	{
-
-	}
-	ImGui::SameLine();
 	ImGui::InputText("###filePath", this->mFilePath.rawContent.data(), this->mFilePath.rawContent.size());
 	ImGui::SameLine();
 	if (ImGui::Button("Open"))

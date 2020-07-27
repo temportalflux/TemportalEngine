@@ -127,11 +127,13 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 	if (!std::filesystem::exists(path))
 	{
 		ImGui::Text("Missing directory, cannot render contents");
+		ImGui::EndChild();
 		return false;
 	}
 	else if (std::filesystem::is_empty(path))
 	{
 		ImGui::Text("Directory is empty");
+		ImGui::EndChild();
 		return false;
 	}
 
@@ -143,18 +145,20 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 	{
 		auto itemName = entry.path().stem().string();
 		auto extension = entry.path().extension().string();
-		if (cfg.CanShowFile)
-		{
-			if (!cfg.CanShowFile(entry.path())) continue;
-		}
-		else
-		{
-			if (!cfg.bShowHiddenFiles && itemName[0] == '.') continue;
-			if (!cfg.AllowedExtensions.empty() && cfg.AllowedExtensions.find(extension) == cfg.AllowedExtensions.end()) continue;
-			if (cfg.BlockedExtensions.find(extension) != cfg.BlockedExtensions.end()) continue;
-		}
-
 		auto bIsDirectory = entry.is_directory();
+		if (!bIsDirectory)
+		{
+			if (cfg.CanShowFile)
+			{
+				if (!cfg.CanShowFile(entry.path())) continue;
+			}
+			else
+			{
+				if (!cfg.bShowHiddenFiles && itemName[0] == '.') continue;
+				if (!cfg.AllowedExtensions.empty() && cfg.AllowedExtensions.find(extension) == cfg.AllowedExtensions.end()) continue;
+				if (cfg.BlockedExtensions.find(extension) != cfg.BlockedExtensions.end()) continue;
+			}
+		}
 
 		ImGui::Text(itemName.c_str());
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
