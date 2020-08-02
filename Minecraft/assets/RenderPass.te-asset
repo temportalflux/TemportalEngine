@@ -1,10 +1,20 @@
 {
 	"type": "renderpass",
 	"clearColor": {
-		"hasValue": false
+		"hasValue": true,
+		"value": [
+			0.0,
+			0.0,
+			0.0,
+			0.0
+		]
 	},
 	"clearDepthStencil": {
-		"hasValue": false
+		"hasValue": true,
+		"value": {
+			"first": 0.0,
+			"second": 0
+		}
 	},
 	"renderArea": {
 		"offset": [
@@ -12,9 +22,11 @@
 			0.0
 		],
 		"size": [
-			0.0,
-			0.0
+			1.0,
+			1.0
 		]
 	},
-	"pipelines": []
+	"pipelines": [
+		"pipeline:assets/WorldPipeline.te-asset"
+	]
 }

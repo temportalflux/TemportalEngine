@@ -3,7 +3,9 @@
 #include "gui/asset/AssetEditor.hpp"
 
 #include "asset/TypedAssetPath.hpp"
+#include "graphics/Area.hpp"
 
+FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_ASSET, class RenderPass);
 
 NS_GUI
@@ -22,6 +24,12 @@ protected:
 	void saveAsset() override;
 
 private:
+	std::optional<math::Vector4> mClearColor;
+	std::optional<std::pair<f32, ui32>> mClearDepthStencil;
+	graphics::Area mRenderArea;
+	std::vector<asset::TypedAssetPath<asset::Pipeline>> mPipelines;
+
+	std::vector<asset::AssetPath> mAllPipelinePaths;
 
 };
 

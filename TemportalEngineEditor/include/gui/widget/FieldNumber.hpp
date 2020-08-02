@@ -47,11 +47,25 @@ public:
 		return bChanged;
 	}
 
+	static bool InlineVector(std::string title, math::Vector<T, Count> &value)
+	{
+		auto field = gui::FieldNumber<T, Count>().valueVector(value);
+		auto bChanged = field.render(title);
+		if (bChanged) memcpy(value.data(), field.mRaw.data(), sizeof(T) * Count);
+		return bChanged;
+	}
+
 	FieldNumber() {}
 
 	FieldNumber<T, Count>& value(std::array<T, Count> all)
 	{
 		this->mRaw = all;
+		return *this;
+	}
+
+	FieldNumber<T, Count>& valueVector(math::Vector<T, Count> all)
+	{
+		memcpy(this->mRaw.data(), all.data(), sizeof(T) * Count);
 		return *this;
 	}
 

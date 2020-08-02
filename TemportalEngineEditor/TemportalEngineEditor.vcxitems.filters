@@ -224,10 +224,10 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\ModalFilePicker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\gui\asset\EditorRenderPass.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorPipeline.cpp">
       <Filter>gui\asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorPipeline.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorRenderPass.cpp">
       <Filter>gui\asset</Filter>
     </ClCompile>
   </ItemGroup>

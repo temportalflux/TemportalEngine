@@ -50,9 +50,24 @@ void IGui::openOrFocus()
 	else ImGui::SetWindowFocus(this->mTitle.c_str());
 }
 
+void IGui::focus()
+{
+	this->bFocusOnNextRender = true;
+}
+
+std::string IGui::titleId() const
+{
+	return this->getTitle() + "###" + this->getId();
+}
+
 void IGui::makeGui()
 {
 	if (!this->isOpen()) return;
+	if (this->bFocusOnNextRender)
+	{
+		ImGui::SetWindowFocus(this->titleId().c_str());
+		this->bFocusOnNextRender = false;
+	}
 	if (this->beginView())
 	{
 		// TODO: Allow these parameters to be passed in
@@ -69,8 +84,7 @@ void IGui::makeGui()
 
 bool IGui::beginView()
 {
-	auto labelAndId = this->getTitle() + "###" + this->getId();
-	return ImGui::Begin(labelAndId.c_str(), &this->mbIsOpen, this->getFlags());
+	return ImGui::Begin(this->titleId().c_str(), &this->mbIsOpen, this->getFlags());
 }
 
 void IGui::endView()

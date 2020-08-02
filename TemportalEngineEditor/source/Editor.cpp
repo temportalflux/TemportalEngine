@@ -71,6 +71,7 @@ std::shared_ptr<memory::MemoryChunk> Editor::getMemoryGui() const
 
 Editor::~Editor()
 {
+	this->mActiveAssetEditors.clear();
 	this->OnProjectLoaded.unbindAll();
 	this->mAssetEditors.clear();
 	this->mpEditorSettings.reset();
@@ -238,6 +239,7 @@ void Editor::run()
 	while (this->mpEngine->isActive() && !this->mpWindow->isPendingClose() && this->mpDockspace->isOpen())
 	{
 		this->mpEngine->update(0);
+		this->eraseExpiredAssetEditors();
 	}
 	this->mpEngine->joinThreads();
 
@@ -382,10 +384,22 @@ void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 		DeclareLog("Editor").log(LOG_DEBUG, "Cannot open editor, no editor registered for asset type %s", asset->getAssetType().c_str());
 		return;
 	}
-	auto factory = this->mAssetEditors.find(asset->getAssetType())->second;
-	std::shared_ptr<gui::AssetEditor> editor = factory.create(engine::Engine::Get()->getAssetManager()->getAssetMemory());
-	editor->setAsset(asset);
-	this->openGui(editor);
+	auto const assetPathStr = asset->getPath().string();
+	// If the path currently has an open gui/asset-editor, lets tell that window to focus
+	auto iterFoundEditor = this->mActiveAssetEditors.find(assetPathStr);
+	if (iterFoundEditor != this->mActiveAssetEditors.end())
+	{
+		iterFoundEditor->second.lock()->focus();
+	}
+	// otherwise its safe to create an editor for that path
+	else
+	{
+		auto factory = this->mAssetEditors.find(asset->getAssetType())->second;
+		std::shared_ptr<gui::AssetEditor> editor = factory.create(engine::Engine::Get()->getAssetManager()->getAssetMemory());
+		editor->setAsset(asset);
+		this->openGui(editor);
+		this->mActiveAssetEditors.insert(std::make_pair(assetPathStr, editor));
+	}
 }
 
 void Editor::openGui(std::shared_ptr<gui::IGui> gui)
@@ -403,6 +417,17 @@ void Editor::openProjectSettings()
 void Editor::openSettings()
 {
 	this->openAssetEditor(this->getEditorSettings());
+}
+
+void Editor::eraseExpiredAssetEditors()
+{
+	// Remove-If pattern for maps: https://stackoverflow.com/questions/800955/remove-if-equivalent-for-stdmap
+	for (auto iter = this->mActiveAssetEditors.begin(); iter != this->mActiveAssetEditors.end(); /* incrementer in loop */)
+	{
+		// remove if the weak-ptr is expired (the gui has been closed)
+		if (iter->second.expired()) iter = this->mActiveAssetEditors.erase(iter);
+		else ++iter;
+	}
 }
 
 #pragma endregion

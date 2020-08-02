@@ -30,6 +30,7 @@ public:
 	virtual void open();
 	void openOrFocus();
 	void close() { this->mbIsOpen = false; }
+	void focus();
 
 protected:
 	logging::Logger* getLog() const;
@@ -37,6 +38,7 @@ protected:
 	void setTitle(std::string title) { this->mTitle = title; }
 	virtual std::string getId() const;
 	virtual std::string getTitle() const;
+	std::string titleId() const;
 
 	virtual i32 getFlags() const { return 0; }
 	virtual bool beginView();
@@ -51,6 +53,7 @@ private:
 	std::weak_ptr<graphics::ImGuiRenderer> mpOwner;
 	std::string mTitle;
 	bool mbIsOpen;
+	bool bFocusOnNextRender;
 
 };
 

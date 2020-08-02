@@ -115,11 +115,13 @@ private:
 	std::shared_ptr<memory::MemoryChunk> mpMemoryGui;
 	std::shared_ptr<graphics::ImGuiRenderer> mpRenderer;
 	std::shared_ptr<gui::MainDockspace> mpDockspace;
+	std::unordered_map</*std::filesystem::path*/ std::string, std::weak_ptr<gui::AssetEditor>> mActiveAssetEditors;
 
 	// The project that the editor is currently operating on
 	asset::ProjectPtrStrong mpProject;
 	std::shared_ptr<asset::Settings> mpEditorSettings;
 
 	void initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRenderer);
+	void eraseExpiredAssetEditors();
 
 };
