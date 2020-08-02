@@ -4,7 +4,9 @@
 #include "Window.hpp"
 #include "asset/AssetManager.hpp"
 #include "asset/Font.hpp"
+#include "asset/PipelineAsset.hpp"
 #include "asset/Project.hpp"
+#include "asset/RenderPassAsset.hpp"
 #include "asset/Settings.hpp"
 #include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
@@ -14,7 +16,9 @@
 #include "build/asset/BuildShader.hpp"
 #include "build/asset/BuildTexture.hpp"
 #include "commandlet/CommandletBuildAssets.hpp"
+#include "gui/asset/EditorPipeline.hpp"
 #include "gui/asset/EditorProject.hpp"
+#include "gui/asset/EditorRenderPass.hpp"
 #include "gui/asset/EditorSettings.hpp"
 #include "gui/asset/EditorShader.hpp"
 #include "gui/asset/EditorTexture.hpp"
@@ -87,7 +91,9 @@ void Editor::registerAssetTypes(std::shared_ptr<asset::AssetManager> assetManage
 void Editor::registerAssetBuilders()
 {
 	this->registerAssetBuilder(asset::Font::StaticType(), &build::BuildFont::create);
+	this->registerAssetBuilder(asset::Pipeline::StaticType(), &build::BuildAsset::create);
 	this->registerAssetBuilder(asset::Project::StaticType(), &build::BuildAsset::create);
+	this->registerAssetBuilder(asset::RenderPass::StaticType(), &build::BuildAsset::create);
 	this->registerAssetBuilder(asset::Shader::StaticType(), &build::BuildShader::create);
 	this->registerAssetBuilder(asset::Texture::StaticType(), &build::BuildTexture::create);
 	this->registerAssetBuilder(asset::TextureSampler::StaticType(), &build::BuildAsset::create);
@@ -172,7 +178,9 @@ bool Editor::setup()
 void Editor::registerAssetEditors()
 {
 	this->registerAssetEditor({ asset::Settings::StaticType(), &gui::EditorSettings::create });
+	this->registerAssetEditor({ asset::Pipeline::StaticType(), &gui::EditorPipeline::create });
 	this->registerAssetEditor({ asset::Project::StaticType(), &gui::EditorProject::create });
+	this->registerAssetEditor({ asset::RenderPass::StaticType(), &gui::EditorRenderPass::create });
 	this->registerAssetEditor({ asset::Shader::StaticType(), &gui::EditorShader::create });
 	this->registerAssetEditor({ asset::Texture::StaticType(), &gui::EditorTexture::create });
 	this->registerAssetEditor({ asset::TextureSampler::StaticType(), &gui::EditorTextureSampler::create });

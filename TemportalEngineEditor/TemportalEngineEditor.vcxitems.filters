@@ -103,6 +103,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\ModalFilePicker.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\filesystem.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorRenderPass.hpp">
+      <Filter>gui\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorPipeline.hpp">
+      <Filter>gui\asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -218,5 +224,11 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\ModalFilePicker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\gui\asset\EditorRenderPass.cpp">
+      <Filter>gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorPipeline.cpp">
+      <Filter>gui\asset</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
