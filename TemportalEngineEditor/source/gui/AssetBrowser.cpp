@@ -86,7 +86,8 @@ void AssetBrowser::renderMenuBar()
 		if (ImGui::MenuItem("New Asset", "", false, true))
 		{
 			auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
-			gui->setDirectory(this->getCurrentRelativePath()).open();
+			gui->setRoot(Editor::EDITOR->getProject()->getAssetDirectory());
+			gui->setDefaultPath(this->getCurrentRelativePath());
 			gui->setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
 		}
 		if (ImGui::MenuItem("New Folder", "", false, true))

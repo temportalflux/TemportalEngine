@@ -93,6 +93,7 @@ void MainDockspace::renderView()
 		{
 			auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
 			gui->addAssetType(asset::Project::StaticType());
+			gui->setDefaultPath(std::filesystem::current_path());
 			gui->setCallback(this->mOnProjectOpenedOrCreated);
 		}
 	}
@@ -105,12 +106,14 @@ void MainDockspace::renderView()
 			{
 				auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Project");
 				gui->setAssetType(asset::Project::StaticType());
+				gui->setDefaultPath(std::filesystem::current_path());
 				gui->setCallback(this->mOnProjectOpenedOrCreated);
 			}
 			if (ImGui::MenuItem("Open Project", "", false, true))
 			{
 				auto gui = Editor::EDITOR->openNewGui<gui::modal::OpenAsset>("Open Project");
 				gui->addAssetType(asset::Project::StaticType());
+				gui->setDefaultPath(std::filesystem::current_path());
 				gui->setCallback(this->mOnProjectOpenedOrCreated);
 			}
 			if (ImGui::MenuItem("Project Settings", "", false, bHasProject)) Editor::EDITOR->openProjectSettings();
@@ -118,6 +121,8 @@ void MainDockspace::renderView()
 			if (ImGui::MenuItem("New Asset", "", false, bHasProject))
 			{
 				std::shared_ptr<gui::modal::NewAsset> gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
+				gui->setRoot(Editor::EDITOR->getProject()->getAssetDirectory());
+				gui->setDefaultPath(Editor::EDITOR->getProject()->getAssetDirectory());
 				gui->setCallback(this->mOnAssetCreated);
 			}
 			if (ImGui::MenuItem("Build", "", false, bHasProject && !Editor::EDITOR->isBuildingAssets()))

@@ -22,6 +22,7 @@ struct DirectoryViewConfig
 	std::unordered_set<std::string> BlockedExtensions;
 	std::function<bool(std::filesystem::path const &path)> CanShowFile;
 
+	bool bDirectoryOnlySelection = false;
 	std::function<void(std::filesystem::path const &path)> OnFileOpen;
 
 	struct ContextMenuItem

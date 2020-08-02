@@ -13,10 +13,12 @@ NS_GUI
 std::vector<std::filesystem::path> createBreadcrumbs(std::filesystem::path path, std::filesystem::path root)
 {
 	auto tmp = path;
+	std::filesystem::path prev = "";
 	auto pathItems = std::vector<std::filesystem::path>();
-	while (tmp != root)
+	while (tmp != root && tmp != prev)
 	{
 		pathItems.push_back(tmp);
+		prev = tmp;
 		tmp = tmp.parent_path();
 	}
 	return std::vector<std::filesystem::path>(pathItems.rbegin(), pathItems.rend());
@@ -148,7 +150,8 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 		auto bIsDirectory = entry.is_directory();
 		if (!bIsDirectory)
 		{
-			if (cfg.CanShowFile)
+			if (cfg.bDirectoryOnlySelection) continue;
+			else if (cfg.CanShowFile)
 			{
 				if (!cfg.CanShowFile(entry.path())) continue;
 			}
@@ -167,6 +170,10 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 			{
 				path = entry.path();
 				bChangedPath = true;
+				if (cfg.bDirectoryOnlySelection)
+				{
+					cfg.OnFileOpen(entry.path());
+				}
 			}
 			else if (cfg.OnFileOpen && entry.is_regular_file())
 			{
@@ -240,6 +247,7 @@ std::filesystem::path PathText::path() const
 
 void PathText::setPath(std::filesystem::path const &path)
 {
+	memset(this->rawContent.data(), 0, this->rawContent.size() * sizeof(char));
 	memcpy_s(this->rawContent.data(), this->rawContent.size() * sizeof(char), path.string().data(), path.string().length() * sizeof(char));
 }
 
@@ -251,6 +259,7 @@ bool renderFileSelectorField(std::string const titleId, FileSelectorField &cfg)
 	{
 		std::shared_ptr<gui::modal::FilePicker> modal = Editor::EDITOR->openNewGui<gui::modal::FilePicker>("File Picker");
 		modal->setRoot(cfg.root);
+		modal->setPath(cfg.path());
 		modal->setConfig(cfg.directoryViewCfg);
 	}
 	return bChanged;

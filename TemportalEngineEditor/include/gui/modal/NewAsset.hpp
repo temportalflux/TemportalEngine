@@ -3,13 +3,7 @@
 #include "gui/modal/Modal.hpp"
 
 #include "asset/AssetType.hpp"
-
-#include <array>
-#include <filesystem>
-#include <functional>
-#include <optional>
-#include <set>
-#include <vector>
+#include "gui/widget/filesystem.hpp"
 
 NS_ASSET
 class Asset;
@@ -25,9 +19,11 @@ public:
 	NewAsset() = default;
 	NewAsset(std::string title);
 
+	void setRoot(std::filesystem::path const path);
+	void setDefaultPath(std::filesystem::path path);
 	void setAssetType(asset::AssetType type);
 	void setCallback(AssetCreatedCallback callback);
-	NewAsset& setDirectory(std::filesystem::path const &path);
+
 	void open() override;
 
 protected:
@@ -46,9 +42,11 @@ private:
 	void forEachAssetType(std::function<void(std::string type, std::string displayName, uSize idx)> body) const;
 
 	std::pair<std::string, uSize> mSelectedAssetType;
-	DirectoryPathString mInputDirectory;
+	gui::FileSelectorField mDirectoryConfig;
+	//DirectoryPathString mInputDirectory;
 	std::array<char, 32> mInputName;
 
+	void onFilePicked(std::filesystem::path const &path);
 	void submit();
 
 };

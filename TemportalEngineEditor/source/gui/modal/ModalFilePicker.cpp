@@ -11,8 +11,13 @@ FilePicker::FilePicker(std::string titleId) : Modal(titleId)
 void FilePicker::setRoot(std::filesystem::path const &path)
 {
 	this->mRoot = path;
+}
+
+void FilePicker::setPath(std::filesystem::path const &path)
+{
 	this->mCurrent = path;
 	this->mFilePath.root = path;
+	std::copy_n(path.string().begin(), path.string().length(), this->mFilePath.rawContent.begin());
 }
 
 void FilePicker::setConfig(gui::DirectoryViewConfig const &cfg)
@@ -44,7 +49,7 @@ void FilePicker::drawContents()
 
 void FilePicker::onFileSelected(std::filesystem::path const &path)
 {
-	this->mFilePath.setPath(std::filesystem::relative(path, this->mRoot));
+	this->mFilePath.setPath(path);
 }
 
 void FilePicker::submit()
@@ -52,6 +57,6 @@ void FilePicker::submit()
 	this->close();
 	if (this->mOnSubmit)
 	{
-		this->mOnSubmit(std::filesystem::relative(this->mFilePath.path(), this->mRoot));
+		this->mOnSubmit(this->mFilePath.path());
 	}
 }

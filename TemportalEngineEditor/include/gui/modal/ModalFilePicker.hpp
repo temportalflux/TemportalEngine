@@ -13,6 +13,7 @@ public:
 	FilePicker(std::string titleId);
 
 	void setRoot(std::filesystem::path const &path);
+	void setPath(std::filesystem::path const &path);
 	void setConfig(gui::DirectoryViewConfig const &cfg);
 
 protected:

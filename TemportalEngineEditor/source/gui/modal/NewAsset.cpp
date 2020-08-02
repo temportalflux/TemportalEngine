@@ -12,8 +12,22 @@ using namespace gui::modal;
 NewAsset::NewAsset(std::string title) : Modal(title)
 {
 	this->mForcedAssetType = std::nullopt;
-	this->mInputDirectory.fill('\0');
 	this->mInputName.fill('\0');
+
+	this->mDirectoryConfig.root = std::filesystem::current_path().root_directory();
+	this->mDirectoryConfig.flags = ImGuiInputTextFlags_None;
+	this->mDirectoryConfig.directoryViewCfg.bDirectoryOnlySelection = true;
+	this->mDirectoryConfig.directoryViewCfg.OnFileOpen = std::bind(&NewAsset::onFilePicked, this, std::placeholders::_1);
+}
+
+void NewAsset::setRoot(std::filesystem::path const path)
+{
+	this->mDirectoryConfig.root = path;
+}
+
+void NewAsset::setDefaultPath(std::filesystem::path path)
+{
+	this->mDirectoryConfig.setPath(path);
 }
 
 void NewAsset::setAssetType(asset::AssetType type)
@@ -24,13 +38,6 @@ void NewAsset::setAssetType(asset::AssetType type)
 void NewAsset::setCallback(AssetCreatedCallback callback)
 {
 	this->mOnAssetCreated = callback;
-}
-
-NewAsset& NewAsset::setDirectory(std::filesystem::path const &path)
-{
-	this->mInputDirectory.fill('\0');
-	std::copy_n(path.string().begin(), path.string().length(), this->mInputDirectory.begin());
-	return *this;
 }
 
 void NewAsset::open()
@@ -79,8 +86,8 @@ void NewAsset::drawContents()
 		});
 		ImGui::EndCombo();
 	}
-	
-	ImGui::InputText("Directory", this->mInputDirectory.data(), this->mInputDirectory.size());
+
+	gui::renderFileSelectorField("Directory", this->mDirectoryConfig);
 	ImGui::InputText("Name", this->mInputName.data(), this->mInputName.size());
 	
 	if (ImGui::Button("Create"))
@@ -94,9 +101,14 @@ void NewAsset::drawContents()
 	}
 }
 
+void NewAsset::onFilePicked(std::filesystem::path const &path)
+{
+	this->setDefaultPath(path);
+	this->open();
+}
+
 void NewAsset::submit()
 {
-	auto directory = utility::createStringFromFixedArray(this->mInputDirectory);
 	auto name = utility::createStringFromFixedArray(this->mInputName);
 
 	auto assetManager = asset::AssetManager::get();
@@ -104,7 +116,7 @@ void NewAsset::submit()
 	//LOG.log(logging::ECategory::LOGDEBUG, "Creating %s asset with name %s in %s", type.c_str(), name.c_str(), directory.c_str());
 
 	// Determine the directory path and ensure that it exists
-	std::filesystem::path dirPath(directory);
+	std::filesystem::path dirPath = this->mDirectoryConfig.path();
 	if (dirPath.is_relative()) dirPath = Editor::EDITOR->getProject()->getAbsoluteDirectoryPath() / dirPath;
 	assert(std::filesystem::exists(dirPath));
 	assert(std::filesystem::is_directory(dirPath));
