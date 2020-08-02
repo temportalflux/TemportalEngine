@@ -473,10 +473,14 @@ void GameRenderer::createCommandObjects()
 
 	// color = (newColor.alpha * newColor.rgb) + ((1 - newColor.alpha) * oldColor.rgb)
 	// alpha = (1 * newColor.alpha) + (0 * oldColor.alpha)
-	BlendMode overlayBlendMode = {
-			vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA,
-			{ vk::BlendOp::eAdd, vk::BlendFactor::eSrcAlpha, vk::BlendFactor::eOneMinusSrcAlpha },
-			{ vk::BlendOp::eAdd, vk::BlendFactor::eOne, vk::BlendFactor::eZero }
+	BlendMode overlayBlendMode;
+	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eR;
+	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eG;
+	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eB;
+	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eA;
+	overlayBlendMode.blend = {
+		{ graphics::BlendOperation::Enum::eAdd, graphics::BlendFactor::Enum::eSrcAlpha, graphics::BlendFactor::Enum::eOneMinusSrcAlpha },
+		{ graphics::BlendOperation::Enum::eAdd, graphics::BlendFactor::Enum::eOne, graphics::BlendFactor::Enum::eZero }
 	};
 
 	auto& fullViewport = vk::Viewport()

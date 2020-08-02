@@ -8,12 +8,12 @@
 			0.0
 		],
 		"size": [
-			0.0,
-			0.0
+			1.0,
+			1.0
 		],
 		"depthRange": [
 			0.0,
-			0.0
+			1.0
 		]
 	},
 	"scissor": {
@@ -22,22 +22,15 @@
 			0.0
 		],
 		"size": [
-			0.0,
-			0.0
+			1.0,
+			1.0
 		]
 	},
 	"frontFace": 0,
 	"blendMode": {
-		"mask": "0000",
-		"color": {
-			"operation": 0,
-			"src": 0,
-			"dst": 0
-		},
-		"alpha": {
-			"operation": 0,
-			"src": 0,
-			"dst": 0
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": false
 		}
 	},
 	"descriptors": []

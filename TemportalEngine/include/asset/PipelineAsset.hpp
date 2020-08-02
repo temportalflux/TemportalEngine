@@ -17,13 +17,6 @@ class Pipeline : public Asset
 	friend class cereal::access;
 
 public:
-	DEFINE_ASSET_STATICS("pipeline", "Pipeline", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
-	DECLARE_FACTORY_ASSET_METADATA()
-	
-	Pipeline() = default;
-	CREATE_NEWASSET_CONSTRUCTOR(Pipeline) {}
-
-public:
 	struct Descriptor
 	{
 		friend class cereal::access;
@@ -48,6 +41,24 @@ public:
 			archive(cereal::make_nvp("stage", this->stage));
 		}
 	};
+
+public:
+	DEFINE_ASSET_STATICS("pipeline", "Pipeline", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
+	DECLARE_FACTORY_ASSET_METADATA()
+	
+	Pipeline() = default;
+	CREATE_NEWASSET_CONSTRUCTOR(Pipeline) {}
+
+	graphics::Viewport const& getViewport() const { return this->mViewport; }
+	Pipeline& setViewport(graphics::Viewport const& value) { this->mViewport = value; return *this; }
+	graphics::Area const& getScissor() const { return this->mScissor; }
+	Pipeline& setScissor(graphics::Area const& value) { this->mScissor = value; return *this; }
+	graphics::FrontFace::Enum const& getFrontFace() const { return this->mFrontFace; }
+	Pipeline& setFrontFace(graphics::FrontFace::Enum const& value) { this->mFrontFace = value; return *this; }
+	graphics::BlendMode const& getBlendMode() const { return this->mBlendMode; }
+	Pipeline& setBlendMode(graphics::BlendMode const& value) { this->mBlendMode = value; return *this; }
+	std::vector<Descriptor> const& getDescriptors() const { return this->mDescriptors; }
+	Pipeline& setDescriptors(std::vector<Descriptor> const& value) { this->mDescriptors = value; return *this; }
 
 private:
 

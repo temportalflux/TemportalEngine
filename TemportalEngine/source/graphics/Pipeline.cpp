@@ -144,14 +144,18 @@ void Pipeline::create()
 	if (this->mBlendMode)
 	{
 		infoColorBlendAttachment
-			.setBlendEnable(true)
-			.setColorWriteMask(this->mBlendMode->writeMask)
-			.setColorBlendOp(this->mBlendMode->colorOp.operation)
-			.setSrcColorBlendFactor(this->mBlendMode->colorOp.srcFactor)
-			.setDstColorBlendFactor(this->mBlendMode->colorOp.dstFactor)
-			.setAlphaBlendOp(this->mBlendMode->alphaOp.operation)
-			.setSrcAlphaBlendFactor(this->mBlendMode->alphaOp.srcFactor)
-			.setDstAlphaBlendFactor(this->mBlendMode->alphaOp.dstFactor);
+			.setBlendEnable((bool)this->mBlendMode->blend)
+			.setColorWriteMask((vk::ColorComponentFlagBits)this->mBlendMode->writeMask.data());
+		if (this->mBlendMode->blend)
+		{
+			infoColorBlendAttachment
+				.setColorBlendOp((vk::BlendOp)this->mBlendMode->blend->color.operation)
+				.setSrcColorBlendFactor((vk::BlendFactor)this->mBlendMode->blend->color.srcFactor)
+				.setDstColorBlendFactor((vk::BlendFactor)this->mBlendMode->blend->color.dstFactor)
+				.setAlphaBlendOp((vk::BlendOp)this->mBlendMode->blend->alpha.operation)
+				.setSrcAlphaBlendFactor((vk::BlendFactor)this->mBlendMode->blend->alpha.srcFactor)
+				.setDstAlphaBlendFactor((vk::BlendFactor)this->mBlendMode->blend->alpha.dstFactor);
+		}
 	}
 	else
 	{

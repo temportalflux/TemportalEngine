@@ -2,9 +2,10 @@
 
 #include "gui/asset/AssetEditor.hpp"
 
-#include "asset/TypedAssetPath.hpp"
-
-FORWARD_DEF(NS_ASSET, class Pipeline);
+#include "asset/PipelineAsset.hpp"
+#include "graphics/BlendMode.hpp"
+#include "graphics/types.hpp"
+#include "graphics/Area.hpp"
 
 NS_GUI
 
@@ -22,6 +23,13 @@ protected:
 	void saveAsset() override;
 
 private:
+	graphics::Viewport mViewport;
+	graphics::Area mScissor;
+	graphics::FrontFace::Enum mFrontFace;
+	std::unordered_set<graphics::ColorComponent::Enum> mBlendWriteMask;
+	std::string mBlendWriteMaskPreviewStr;
+	std::optional<graphics::BlendMode::Operation> mBlendOperation;
+	std::vector<asset::Pipeline::Descriptor> mDescriptors;
 
 };
 

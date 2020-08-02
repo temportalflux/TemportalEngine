@@ -425,3 +425,131 @@ std::string FrontFace::to_string(Enum value)
 
 #pragma endregion
 
+#pragma region Blend Operation
+
+std::vector<BlendOperation::Enum > BlendOperation::ALL = {
+	Enum::eAdd,
+	Enum::eSubtract,
+	Enum::eReverseSubtract,
+	Enum::eMin,
+	Enum::eMax,
+};
+
+std::string BlendOperation::to_string(Enum value)
+{
+	return vk::to_string((vk::BlendOp)value);
+}
+
+std::string BlendOperation::to_display_string(Enum value)
+{
+	switch (value)
+	{
+	case Enum::eAdd: return "+";
+	case Enum::eSubtract: return "-";
+	case Enum::eReverseSubtract: return "*(-1) +";
+	case Enum::eMin: return "<min>";
+	case Enum::eMax: return "<max>";
+	default: return "invalid";
+	}
+}
+
+#pragma endregion
+
+#pragma region Blend Factor
+
+std::vector<BlendFactor::Enum > BlendFactor::ALL = {
+		Enum::eZero,
+		Enum::eOne,
+		Enum::eSrcColor,
+		Enum::eOneMinusSrcColor,
+		Enum::eDstColor,
+		Enum::eOneMinusDstColor,
+		Enum::eSrcAlpha,
+		Enum::eOneMinusSrcAlpha,
+		Enum::eDstAlpha,
+		Enum::eOneMinusDstAlpha,
+		Enum::eConstantColor,
+		Enum::eOneMinusConstantColor,
+		Enum::eConstantAlpha,
+		Enum::eOneMinusConstantAlpha,
+		Enum::eSrcAlphaSaturate,
+		Enum::eSrc1Color,
+		Enum::eOneMinusSrc1Color,
+		Enum::eSrc1Alpha,
+		Enum::eOneMinusSrc1Alpha,
+};
+
+std::string BlendFactor::to_string(Enum value)
+{
+	return vk::to_string((vk::BlendFactor)value);
+}
+
+std::string BlendFactor::to_display_string(Enum value)
+{
+	switch (value)
+	{
+	case Enum::eZero: return "0";
+	case Enum::eOne: return "1";
+	case Enum::eSrcColor: return "srcColor";
+	case Enum::eOneMinusSrcColor: return "(1 - srcColor)";
+	case Enum::eDstColor: return "dstColor";
+	case Enum::eOneMinusDstColor: return "(1 - dstColor)";
+	case Enum::eSrcAlpha: return "srcAlpha";
+	case Enum::eOneMinusSrcAlpha: return "(1 - srcAlpha)";
+	case Enum::eDstAlpha: return "dstAlpha";
+	case Enum::eOneMinusDstAlpha: return "(1 - dstAlpha)";
+	case Enum::eConstantColor: return "constColor";
+	case Enum::eOneMinusConstantColor: return "(1 - constColor)";
+	case Enum::eConstantAlpha: return "constAlpha";
+	case Enum::eOneMinusConstantAlpha: return "(1 - constAlpha)";
+	case Enum::eSrcAlphaSaturate: return "srcAlphaSaturate";
+	case Enum::eSrc1Color: return "srcColor1";
+	case Enum::eOneMinusSrc1Color: return "(1 - srcColor1)";
+	case Enum::eSrc1Alpha: return "srcAlpha1";
+	case Enum::eOneMinusSrc1Alpha: return "(1 - srcAlpha1)";
+	default: return "invalid";
+	}
+}
+
+#pragma endregion
+
+#pragma region ColorComponent
+
+std::vector<ColorComponent::Enum > ColorComponent::ALL = {
+		Enum::eR,
+		Enum::eG,
+		Enum::eB,
+		Enum::eA,
+};
+
+char ColorComponent::to_char(Enum value)
+{
+	switch (value)
+	{
+	case Enum::eR: return 'R';
+	case Enum::eG: return 'G';
+	case Enum::eB: return 'B';
+	case Enum::eA: return 'A';
+	default: return '\0';
+	}
+}
+
+std::string ColorComponent::toFlagString(std::unordered_set<Enum> const& flags)
+{
+	std::string str = "";
+	for (auto option : ColorComponent::ALL)
+	{
+		if (flags.find(option) != flags.end())
+		{
+			str += graphics::ColorComponent::to_char(option);
+		}
+	}
+	return str;
+}
+
+std::string ColorComponent::to_string(Enum value)
+{
+	return vk::to_string((vk::ColorComponentFlagBits)value);
+}
+
+#pragma endregion

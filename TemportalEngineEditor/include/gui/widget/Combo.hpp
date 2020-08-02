@@ -69,6 +69,30 @@ public:
 		return bHasChanged;
 	}
 
+	static bool InlineMulti(const char* titleId, OptionsList const &options, std::unordered_set<T> &selected, std::string const& preview, ToStringFunctor toString, PushIdFunctor pushId, ImGuiComboFlags flags = ImGuiComboFlags_None)
+	{
+		bool bHasChanged = false;
+		if (ImGui::BeginCombo(titleId, preview.c_str(), flags))
+		{
+			for (const auto& option : options)
+			{
+				bool bIsSelected = selected.find(option) != selected.end();
+				auto optionString = toString(option);
+				pushId(option);
+				if (ImGui::Selectable(optionString.c_str(), bIsSelected))
+				{
+					if (!bIsSelected) selected.insert(option);
+					else selected.erase(option);
+					bHasChanged = true;
+				}
+				if (bIsSelected) ImGui::SetItemDefaultFocus();
+				ImGui::PopID();
+			}
+			ImGui::EndCombo();
+		}
+		return bHasChanged;
+	}
+
 private:
 	OptionsList mOptions;
 	T mSelected;

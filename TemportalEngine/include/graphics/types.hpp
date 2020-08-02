@@ -211,4 +211,66 @@ struct FrontFace
 	static std::string to_string(Enum value);
 };
 
+struct BlendOperation
+{
+	// Mirrors vk::BlendOp
+	enum class Enum
+	{
+		eAdd = 0,
+		eSubtract = 1,
+		eReverseSubtract = 2,
+		eMin = 3,
+		eMax = 4,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+	static std::string to_display_string(Enum value);
+};
+
+struct BlendFactor
+{
+	// Mirrors vk::BlendFactor
+	enum class Enum
+	{
+		eZero = 0,
+		eOne = 1,
+		eSrcColor = 2,
+		eOneMinusSrcColor = 3,
+		eDstColor = 4,
+		eOneMinusDstColor = 5,
+		eSrcAlpha = 6,
+		eOneMinusSrcAlpha = 7,
+		eDstAlpha = 8,
+		eOneMinusDstAlpha = 9,
+		eConstantColor = 10,
+		eOneMinusConstantColor = 11,
+		eConstantAlpha = 12,
+		eOneMinusConstantAlpha = 13,
+		eSrcAlphaSaturate = 14,
+		eSrc1Color = 15,
+		eOneMinusSrc1Color = 16,
+		eSrc1Alpha = 17,
+		eOneMinusSrc1Alpha = 18,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+	static std::string to_display_string(Enum value);
+};
+
+struct ColorComponent
+{
+	// Mirrors vk::ColorComponentFlagBits
+	enum class Enum
+	{
+		eR = 0x00000001,
+		eG = 0x00000002,
+		eB = 0x00000004,
+		eA = 0x00000008,
+	};
+	static std::vector<Enum> ALL;
+	static char to_char(Enum value);
+	static std::string toFlagString(std::unordered_set<Enum> const& flags);
+	static std::string to_string(Enum value);
+};
+
 NS_END

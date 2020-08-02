@@ -617,5 +617,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Area.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
