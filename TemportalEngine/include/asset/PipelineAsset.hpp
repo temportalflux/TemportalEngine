@@ -49,6 +49,11 @@ public:
 	Pipeline() = default;
 	CREATE_NEWASSET_CONSTRUCTOR(Pipeline) {}
 
+	TypedAssetPath<Shader> getVertexShader() const { return this->mVertexShader; }
+	Pipeline& setVertexShader(TypedAssetPath<Shader> const& value) { this->mVertexShader = value; return *this; }
+	TypedAssetPath<Shader> getFragmentShader() const { return this->mFragmentShader; }
+	Pipeline& setFragmentShader(TypedAssetPath<Shader> const& value) { this->mFragmentShader = value; return *this; }
+
 	graphics::Viewport const& getViewport() const { return this->mViewport; }
 	Pipeline& setViewport(graphics::Viewport const& value) { this->mViewport = value; return *this; }
 	graphics::Area const& getScissor() const { return this->mScissor; }

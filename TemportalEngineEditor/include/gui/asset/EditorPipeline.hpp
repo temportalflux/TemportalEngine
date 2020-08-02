@@ -7,6 +7,8 @@
 #include "graphics/types.hpp"
 #include "graphics/Area.hpp"
 
+FORWARD_DEF(NS_ASSET, class Shader);
+
 NS_GUI
 
 // Editor for `asset::Pipeline`
@@ -23,6 +25,8 @@ protected:
 	void saveAsset() override;
 
 private:
+	std::vector<asset::AssetPath> mAllShaderPaths;
+	asset::TypedAssetPath<asset::Shader> mShaderVertex, mShaderFragment;
 	graphics::Viewport mViewport;
 	graphics::Area mScissor;
 	graphics::FrontFace::Enum mFrontFace;

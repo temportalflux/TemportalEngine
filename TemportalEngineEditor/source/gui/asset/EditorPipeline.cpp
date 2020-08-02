@@ -1,6 +1,9 @@
 #include "gui/asset/EditorPipeline.hpp"
 
+#include "asset/AssetManager.hpp"
+#include "asset/Shader.hpp"
 #include "gui/widget/Combo.hpp"
+#include "gui/widget/FieldAsset.hpp"
 #include "gui/widget/FieldNumber.hpp"
 #include "gui/widget/Optional.hpp"
 #include "memory/MemoryChunk.hpp"
@@ -21,6 +24,8 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	AssetEditor::setAsset(assetGeneric);
 
 	auto asset = this->get<asset::Pipeline>();
+	this->mShaderVertex = asset->getVertexShader();
+	this->mShaderFragment = asset->getFragmentShader();
 	this->mViewport = asset->getViewport();
 	this->mScissor = asset->getScissor();
 	this->mFrontFace = asset->getFrontFace();
@@ -29,6 +34,7 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
 	this->mDescriptors = asset->getDescriptors();
 
+	this->mAllShaderPaths = asset::AssetManager::get()->getAssetList(asset::Shader::StaticType());
 }
 
 bool renderBlendOperation(graphics::BlendMode::Operation &blend);
@@ -68,15 +74,6 @@ void EditorPipeline::renderContent()
 		ImGui::TreePop();
 	}
 
-	if (gui::Combo<graphics::FrontFace::Enum>::Inline(
-		"Front Face", graphics::FrontFace::ALL, this->mFrontFace,
-		graphics::FrontFace::to_string,
-		[](graphics::FrontFace::Enum type) { ImGui::PushID((ui32)type); }
-	))
-	{
-		this->markAssetDirty(1);
-	}
-
 	if (ImGui::TreeNode("Blend Mode"))
 	{
 
@@ -100,6 +97,24 @@ void EditorPipeline::renderContent()
 		}
 
 		ImGui::TreePop();
+	}
+
+	if (gui::Combo<graphics::FrontFace::Enum>::Inline(
+		"Front Face", graphics::FrontFace::ALL, this->mFrontFace,
+		graphics::FrontFace::to_string,
+		[](graphics::FrontFace::Enum type) { ImGui::PushID((ui32)type); }
+	))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (gui::FieldAsset::Inline("Vertex Shader", this->mShaderVertex.path(), this->mAllShaderPaths))
+	{
+		this->markAssetDirty(1);
+	}
+	if (gui::FieldAsset::Inline("Fragment Shader", this->mShaderFragment.path(), this->mAllShaderPaths))
+	{
+		this->markAssetDirty(1);
 	}
 
 }
@@ -171,7 +186,9 @@ void EditorPipeline::saveAsset()
 	blendMode.writeMask = utility::Flags<graphics::ColorComponent::Enum>(this->mBlendWriteMask);
 
 	this->get<asset::Pipeline>()
-		->setViewport(this->mViewport)
+		->setVertexShader(this->mShaderVertex)
+		.setFragmentShader(this->mShaderFragment)
+		.setViewport(this->mViewport)
 		.setScissor(this->mScissor)
 		.setFrontFace(this->mFrontFace)
 		.setBlendMode(blendMode)

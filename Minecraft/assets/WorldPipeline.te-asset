@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": ":",
-	"shader-frag": ":",
+	"shader-vert": "shader:assets/shaders/TriangleVertex.te-asset",
+	"shader-frag": "shader:assets/shaders/TriangleFragment.te-asset",
 	"viewport": {
 		"offset": [
 			0.0,
