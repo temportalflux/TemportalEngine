@@ -5,6 +5,8 @@
 #include "gui/widget/Combo.hpp"
 #include "gui/widget/FieldAsset.hpp"
 #include "gui/widget/FieldNumber.hpp"
+#include "gui/widget/FieldText.hpp"
+#include "gui/widget/List.hpp"
 #include "gui/widget/Optional.hpp"
 #include "memory/MemoryChunk.hpp"
 
@@ -39,6 +41,7 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 
 bool renderBlendOperation(graphics::BlendMode::Operation &blend);
 bool renderBlendComponent(graphics::BlendMode::Component &comp);
+bool renderDescriptor(asset::Pipeline::Descriptor &descriptor);
 
 void EditorPipeline::renderContent()
 {
@@ -117,6 +120,11 @@ void EditorPipeline::renderContent()
 		this->markAssetDirty(1);
 	}
 
+	if (gui::List<asset::Pipeline::Descriptor>::Inline("descriptors", "Descriptors", false, this->mDescriptors, &renderDescriptor))
+	{
+		this->markAssetDirty(1);
+	}
+
 }
 
 bool renderBlendOperation(graphics::BlendMode::Operation &blend)
@@ -174,6 +182,31 @@ bool renderBlendComponent(graphics::BlendMode::Component &comp)
 		"###dst", graphics::BlendFactor::ALL, comp.dstFactor,
 		graphics::BlendFactor::to_display_string,
 		[](graphics::BlendFactor::Enum type) { ImGui::PushID((ui32)type); }
+	)) bChanged = true;
+	ImGui::PopItemWidth();
+	return bChanged;
+}
+
+bool renderDescriptor(asset::Pipeline::Descriptor &descriptor)
+{
+	bool bChanged = false;
+	ImGui::PushItemWidth(100);
+	if (gui::FieldText<64>::Inline("Identifier", descriptor.id)) bChanged = true;
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(200);
+	if (gui::Combo<graphics::DescriptorType::Enum>::Inline(
+		"Type", graphics::DescriptorType::ALL, descriptor.type,
+		graphics::DescriptorType::to_string,
+		[](graphics::DescriptorType::Enum type) { ImGui::PushID((ui32)type); }
+	)) bChanged = true;
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	ImGui::PushItemWidth(200);
+	if (gui::Combo<graphics::ShaderStage::Enum>::Inline(
+		"Stage", graphics::ShaderStage::ALL, descriptor.stage,
+		graphics::ShaderStage::to_string,
+		[](graphics::ShaderStage::Enum type) { ImGui::PushID((ui32)type); }
 	)) bChanged = true;
 	ImGui::PopItemWidth();
 	return bChanged;

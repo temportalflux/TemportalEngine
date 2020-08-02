@@ -90,7 +90,7 @@ public:
 					}
 					if (bShowItemContent)
 					{
-						renderValue(*it);
+						if (renderValue(*it)) bHasChanged = true;
 						ImGui::TreePop();
 					}
 				}
@@ -105,7 +105,7 @@ public:
 							iterToRemove = it;
 						}
 					}
-					renderValue(*it);
+					if (renderValue(*it)) bHasChanged = true;
 					if (!renderKey)
 					{
 						ImGui::SameLine();

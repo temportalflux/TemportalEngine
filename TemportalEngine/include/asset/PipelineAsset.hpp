@@ -22,8 +22,8 @@ public:
 		friend class cereal::access;
 
 		std::string id;
-		vk::DescriptorType type;
-		vk::ShaderStageFlagBits stage;
+		graphics::DescriptorType::Enum type;
+		graphics::ShaderStage::Enum stage;
 
 		template <typename Archive>
 		void save(Archive &archive) const

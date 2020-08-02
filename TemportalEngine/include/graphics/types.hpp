@@ -273,4 +273,50 @@ struct ColorComponent
 	static std::string to_string(Enum value);
 };
 
+struct DescriptorType
+{
+	// Mirrors vk::DescriptorType
+	enum class Enum
+	{
+		eSampler = 0,
+		eCombinedImageSampler = 1,
+		eSampledImage = 2,
+		eStorageImage = 3,
+		eUniformTexelBuffer = 4,
+		eStorageTexelBuffer = 5,
+		eUniformBuffer = 6,
+		eStorageBuffer = 7,
+		eUniformBufferDynamic = 8,
+		eStorageBufferDynamic = 9,
+		eInputAttachment = 10,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct ShaderStage
+{
+	// Mirrors vk::ShaderStageFlagBits
+	enum class Enum
+	{
+		eVertex = 0x00000001,
+		eTessellationControl = 0x00000002,
+		eTessellationEvaluation = 0x00000004,
+		eGeometry = 0x00000008,
+		eFragment = 0x00000010,
+		eCompute = 0x00000020,
+		eAllGraphics = 0x0000001F,
+		eRaygenKHR = 0x00000100,
+		eAnyHitKHR = 0x00000200,
+		eClosestHitKHR = 0x00000400,
+		eMissKHR = 0x00000800,
+		eIntersectionKHR = 0x00001000,
+		eCallableKHR = 0x00002000,
+		eTaskNV = 0x00000040,
+		eMeshNV = 0x00000080,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
 NS_END

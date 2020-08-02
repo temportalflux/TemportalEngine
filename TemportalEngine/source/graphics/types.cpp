@@ -553,3 +553,53 @@ std::string ColorComponent::to_string(Enum value)
 }
 
 #pragma endregion
+
+#pragma region Descriptor Type
+
+std::vector<DescriptorType::Enum> DescriptorType::ALL = {
+		Enum::eSampler,
+		Enum::eCombinedImageSampler,
+		Enum::eSampledImage,
+		Enum::eStorageImage,
+		Enum::eUniformTexelBuffer,
+		Enum::eStorageTexelBuffer,
+		Enum::eUniformBuffer,
+		Enum::eStorageBuffer,
+		Enum::eUniformBufferDynamic,
+		Enum::eStorageBufferDynamic,
+		Enum::eInputAttachment,
+};
+
+std::string DescriptorType::to_string(Enum value)
+{
+	return vk::to_string((vk::DescriptorType)value);
+}
+
+#pragma endregion
+
+#pragma region Shader Stage
+
+std::vector<ShaderStage::Enum> ShaderStage::ALL = {
+		Enum::eVertex,
+		Enum::eTessellationControl,
+		Enum::eTessellationEvaluation,
+		Enum::eGeometry,
+		Enum::eFragment,
+		Enum::eCompute,
+		Enum::eAllGraphics,
+		Enum::eRaygenKHR,
+		Enum::eAnyHitKHR,
+		Enum::eClosestHitKHR,
+		Enum::eMissKHR,
+		Enum::eIntersectionKHR,
+		Enum::eCallableKHR,
+		Enum::eTaskNV,
+		Enum::eMeshNV,
+};
+
+std::string ShaderStage::to_string(Enum value)
+{
+	return vk::to_string((vk::ShaderStageFlagBits)value);
+}
+
+#pragma endregion
