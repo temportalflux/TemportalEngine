@@ -31,7 +31,6 @@ private:
 	std::filesystem::path getCurrentRelativePath() const;
 
 	void renderMenuBar();
-	void renderBreadcrumbs();
 	void renderDirectoryContents();
 
 };

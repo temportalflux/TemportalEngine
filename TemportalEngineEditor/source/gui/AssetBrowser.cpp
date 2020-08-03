@@ -4,6 +4,7 @@
 
 #include "Editor.hpp"
 #include "asset/AssetManager.hpp"
+#include "gui/widget/filesystem.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -49,7 +50,17 @@ void AssetBrowser::renderView()
 		}
 		ImGui::SameLine();
 	}
-	this->renderBreadcrumbs();	
+
+	gui::renderBreadcrumb(
+		Editor::EDITOR->getProject()->getAbsoluteDirectoryPath(), this->mCurrentPath,
+		[](uIndex idx)
+		{
+			if (idx == 0)
+			{
+				ImGui::SetTooltip(("Absolute Root: " + Editor::EDITOR->getProject()->getAbsoluteDirectoryPath().string()).c_str());
+			}
+		}
+	);
 	
 	ImGui::Separator();
 	
@@ -95,37 +106,6 @@ void AssetBrowser::renderMenuBar()
 		if (ImGui::MenuItem(((this->bShowingNonAssets ? "Hide" : "Show") + std::string(" Misc Files###AssetToggle")).c_str(), "", false, true))
 			this->bShowingNonAssets = !this->bShowingNonAssets;
 		ImGui::EndMenuBar();
-	}
-}
-
-void AssetBrowser::renderBreadcrumbs()
-{
-	std::optional<std::filesystem::path> newPath = std::nullopt;
-	for (auto iter = this->mBreadcrumbs.begin(); iter != this->mBreadcrumbs.end(); ++iter)
-	{
-		ImGui::Text(iter->filename().string().c_str());
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/*mouse button*/ 0))
-		{
-			newPath = *iter;
-		}
-		if (iter == this->mBreadcrumbs.begin())
-		{
-			if (ImGui::IsItemHovered())
-			{
-				auto project = Editor::EDITOR->getProject();
-				ImGui::SetTooltip(("Absolute Root: " + project->getAbsoluteDirectoryPath().string()).c_str());
-			}
-		}
-		if (iter + 1 != this->mBreadcrumbs.end())
-		{
-			ImGui::SameLine();
-			ImGui::Text("/");
-			ImGui::SameLine();
-		}
-	}
-	if (newPath.has_value())
-	{
-		this->setPath(newPath.value());
 	}
 }
 
