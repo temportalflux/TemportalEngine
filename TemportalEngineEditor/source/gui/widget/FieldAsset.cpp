@@ -2,6 +2,7 @@
 
 #include "Editor.hpp"
 #include "asset/AssetManager.hpp"
+#include "asset/AssetPath.hpp"
 
 #include <imgui.h>
 
@@ -24,10 +25,10 @@ void FieldAsset::updateAssetList(std::optional<asset::AssetType> filter)
 bool FieldAsset::render(char const* id, std::string title, asset::AssetPath &selected)
 {
 	std::string titleId = this->mTypeFilter ? (title + "(" + *this->mTypeFilter + ")###" + id) : (title + "###" + id);
-	return FieldAsset::Inline(titleId, selected, this->mAssetPaths);
+	return FieldAsset::Inline(titleId, selected, this->mAssetPaths, this->mTypeFilter);
 }
 
-bool FieldAsset::Inline(std::string titleId, asset::AssetPath &selected, std::vector<asset::AssetPath> const& options)
+bool FieldAsset::Inline(std::string titleId, asset::AssetPath &selected, std::vector<asset::AssetPath> const& options, std::optional<std::string> assetType)
 {
 	bool bHasChanged = false;
 	if (ImGui::BeginCombo(titleId.c_str(), selected.filename().c_str(), ImGuiComboFlags_None))
@@ -45,6 +46,20 @@ bool FieldAsset::Inline(std::string titleId, asset::AssetPath &selected, std::ve
 			ImGui::PopID();
 		}
 		ImGui::EndCombo();
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		ImGuiPayload const* activePayload = ImGui::GetDragDropPayload();
+		bool bCanAcceptPayload = activePayload->IsDataType("_ASSETPATH") && (!assetType || (((asset::AssetPath*)(activePayload->Data))->type() == *assetType));
+		if (bCanAcceptPayload)
+		{
+			if (ImGuiPayload const *payload = ImGui::AcceptDragDropPayload("_ASSETPATH", ImGuiDragDropFlags_None))
+			{
+				selected = *((asset::AssetPath*)(payload->Data));
+				bHasChanged = true;
+			}
+		}
+		ImGui::EndDragDropTarget();
 	}
 	if (ImGui::BeginPopupContextItem(selected.pathStr().c_str()))
 	{

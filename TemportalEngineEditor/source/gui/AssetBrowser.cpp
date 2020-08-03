@@ -20,12 +20,16 @@ AssetBrowser::AssetBrowser(std::string title)
 {
 	this->bShowingNonAssets = false;
 	this->mViewConfig.bShowHiddenFiles = false;
+	
 	this->mViewConfig.OnFileOpen = std::bind(&AssetBrowser::onFileOpen, this, std::placeholders::_1);
 	this->mViewConfig.CanShowFile = std::bind(&AssetBrowser::canShowFileInView, this, std::placeholders::_1);
+	
 	DirectoryViewConfig::ContextMenuItem onPathDelete = { "Delete", std::bind(&AssetBrowser::onPathDelete, this, std::placeholders::_1) };
 	this->mViewConfig.FileContextMenuItems.push_back({ "Edit", this->mViewConfig.OnFileOpen });
 	this->mViewConfig.FileContextMenuItems.push_back(onPathDelete);
 	this->mViewConfig.DirectoryContextMenuItems.push_back(onPathDelete);
+
+	this->mViewConfig.startDragDrop = std::bind(&AssetBrowser::onStartDragDrop, this, std::placeholders::_1);
 }
 
 void AssetBrowser::open()
@@ -83,7 +87,8 @@ void AssetBrowser::setPath(std::filesystem::path path)
 
 std::filesystem::path AssetBrowser::getCurrentRelativePath() const
 {
-	return std::filesystem::relative(this->mCurrentPath, Editor::EDITOR->getProject()->getAbsoluteDirectoryPath());
+	auto assetDirPath = Editor::EDITOR->getProject()->getAssetDirectory();
+	return this->mCurrentPath == assetDirPath ? "" : std::filesystem::relative(this->mCurrentPath, assetDirPath);
 }
 
 void AssetBrowser::renderMenuBar()
@@ -143,4 +148,18 @@ void AssetBrowser::onPathDelete(std::filesystem::path const &path)
 
 	std::filesystem::remove(path);
 	getLog()->log(LOG_INFO, "Deleted %s", path.string().c_str());
+}
+
+void AssetBrowser::onStartDragDrop(std::filesystem::path const &path)
+{
+	if (!isAnAsset(path)) { return; }
+
+	auto assetManager = engine::Engine::Get()->getAssetManager();
+	asset::AssetPath* assetPathPtr = assetManager->getAssetMetadataPtr(path);
+	if (assetPathPtr != nullptr && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	{
+		ImGui::SetDragDropPayload("_ASSETPATH", assetPathPtr, sizeof(*assetPathPtr));
+		ImGui::Text(assetPathPtr->toShortName().c_str());
+		ImGui::EndDragDropSource();
+	}
 }

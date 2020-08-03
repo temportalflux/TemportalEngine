@@ -127,6 +127,12 @@ std::optional<AssetPath> AssetManager::getAssetMetadata(std::filesystem::path fi
 	return iter == this->mScannedAssetMetadataByPath.end() ? std::nullopt : std::make_optional(iter->second);
 }
 
+AssetPath* AssetManager::getAssetMetadataPtr(std::filesystem::path filePath)
+{
+	auto iter = this->mScannedAssetMetadataByPath.find(filePath.string());
+	return iter == this->mScannedAssetMetadataByPath.end() ? nullptr : &iter->second;
+}
+
 std::vector<AssetPath> AssetManager::getAssetList() const
 {
 	auto paths = std::vector<AssetPath>();

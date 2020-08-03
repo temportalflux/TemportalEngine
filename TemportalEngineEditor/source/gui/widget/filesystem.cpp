@@ -164,6 +164,12 @@ bool renderDirectoryView(std::filesystem::path &path, DirectoryViewConfig const 
 		}
 
 		ImGui::Text(itemName.c_str());
+
+		if (cfg.startDragDrop)
+		{
+			cfg.startDragDrop(entry.path());
+		}
+
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
 		{
 			if (bIsDirectory)

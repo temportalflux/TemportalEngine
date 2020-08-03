@@ -83,7 +83,7 @@ void EditorRenderPass::renderContent()
 			"Pipelines", "Pipelines", /*values collapse*/ false,
 			this->mPipelines,
 			[&](asset::TypedAssetPath<asset::Pipeline> &item) -> bool {
-				return gui::FieldAsset::Inline("item", item.path(), this->mAllPipelinePaths);
+				return gui::FieldAsset::Inline("item", item.path(), this->mAllPipelinePaths, asset::Pipeline::StaticType());
 			}
 		)
 	)

@@ -15,7 +15,11 @@ public:
 	void updateAssetList(std::optional<asset::AssetType> filter = std::nullopt);
 	bool render(char const* id, std::string title, asset::AssetPath &selected);
 
-	static bool Inline(std::string titleId, asset::AssetPath &selected, std::vector<asset::AssetPath> const& options);
+	static bool Inline(
+		std::string titleId,
+		asset::AssetPath &selected, std::vector<asset::AssetPath> const& options,
+		std::optional<std::string> assetType = std::nullopt
+	);
 
 private:
 	std::optional<asset::AssetType> mTypeFilter;

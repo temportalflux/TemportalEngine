@@ -71,6 +71,7 @@ public:
 	AssetTypeMetadata getAssetTypeMetadata(AssetType type) const;
 	std::string getAssetTypeDisplayName(AssetType type) const;
 	std::optional<AssetPath> getAssetMetadata(std::filesystem::path filePath) const;
+	AssetPath* getAssetMetadataPtr(std::filesystem::path filePath);
 
 	std::vector<AssetPath> getAssetList() const;
 	std::vector<AssetPath> getAssetList(AssetType type) const;

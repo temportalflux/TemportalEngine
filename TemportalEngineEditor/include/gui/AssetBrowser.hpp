@@ -33,6 +33,7 @@ private:
 	bool canShowFileInView(std::filesystem::path const &path);
 	void onFileOpen(std::filesystem::path const &path);
 	void onPathDelete(std::filesystem::path const &path);
+	void onStartDragDrop(std::filesystem::path const &path);
 
 };
 

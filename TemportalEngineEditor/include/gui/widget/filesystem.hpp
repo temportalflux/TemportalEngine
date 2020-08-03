@@ -32,6 +32,8 @@ struct DirectoryViewConfig
 	};
 	std::vector<ContextMenuItem> FileContextMenuItems;
 	std::vector<ContextMenuItem> DirectoryContextMenuItems;
+
+	std::function<void(std::filesystem::path const &path)> startDragDrop;
 };
 
 /**

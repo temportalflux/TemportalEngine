@@ -111,11 +111,11 @@ void EditorPipeline::renderContent()
 		this->markAssetDirty(1);
 	}
 
-	if (gui::FieldAsset::Inline("Vertex Shader", this->mShaderVertex.path(), this->mAllShaderPaths))
+	if (gui::FieldAsset::Inline("Vertex Shader", this->mShaderVertex.path(), this->mAllShaderPaths, asset::Shader::StaticType()))
 	{
 		this->markAssetDirty(1);
 	}
-	if (gui::FieldAsset::Inline("Fragment Shader", this->mShaderFragment.path(), this->mAllShaderPaths))
+	if (gui::FieldAsset::Inline("Fragment Shader", this->mShaderFragment.path(), this->mAllShaderPaths, asset::Shader::StaticType()))
 	{
 		this->markAssetDirty(1);
 	}
