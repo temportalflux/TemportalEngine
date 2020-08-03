@@ -3,8 +3,8 @@
 #include "logging/Logger.hpp"
 
 #include "Editor.hpp"
+#include "Engine.hpp"
 #include "asset/AssetManager.hpp"
-#include "gui/widget/filesystem.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -19,6 +19,13 @@ AssetBrowser::AssetBrowser(std::string title)
 	: IGui(title)
 {
 	this->bShowingNonAssets = false;
+	this->mViewConfig.bShowHiddenFiles = false;
+	this->mViewConfig.OnFileOpen = std::bind(&AssetBrowser::onFileOpen, this, std::placeholders::_1);
+	this->mViewConfig.CanShowFile = std::bind(&AssetBrowser::canShowFileInView, this, std::placeholders::_1);
+	DirectoryViewConfig::ContextMenuItem onPathDelete = { "Delete", std::bind(&AssetBrowser::onPathDelete, this, std::placeholders::_1) };
+	this->mViewConfig.FileContextMenuItems.push_back({ "Edit", this->mViewConfig.OnFileOpen });
+	this->mViewConfig.FileContextMenuItems.push_back(onPathDelete);
+	this->mViewConfig.DirectoryContextMenuItems.push_back(onPathDelete);
 }
 
 void AssetBrowser::open()
@@ -64,25 +71,14 @@ void AssetBrowser::renderView()
 	
 	ImGui::Separator();
 	
-	this->renderDirectoryContents();
-}
-
-std::vector<std::filesystem::path> createBreadcrumbs(std::filesystem::path path, std::filesystem::path root)
-{
-	auto tmp = path;
-	auto pathItems = std::vector<std::filesystem::path>();
-	while (tmp != root)
-	{
-		pathItems.push_back(tmp);
-		tmp = tmp.parent_path();
-	}
-	return std::vector<std::filesystem::path>(pathItems.rbegin(), pathItems.rend());
+	// TODO: Provide renaming of folders and assets
+	// TODO: Add context menu option for compiling an asset w/o opening the editor
+	gui::renderDirectoryView(this->mCurrentPath, this->mViewConfig);
 }
 
 void AssetBrowser::setPath(std::filesystem::path path)
 {
 	this->mCurrentPath = path;
-	this->mBreadcrumbs = createBreadcrumbs(this->mCurrentPath, Editor::EDITOR->getProject()->getAbsoluteDirectoryPath());
 }
 
 std::filesystem::path AssetBrowser::getCurrentRelativePath() const
@@ -109,70 +105,42 @@ void AssetBrowser::renderMenuBar()
 	}
 }
 
-void AssetBrowser::renderDirectoryContents()
+bool isAnAsset(std::filesystem::path const &path)
 {
-	if (!std::filesystem::exists(this->mCurrentPath))
+	auto extension = path.extension().string();
+	auto assetManager = engine::Engine::Get()->getAssetManager();
+	return assetManager->isValidAssetExtension(extension);
+}
+
+bool AssetBrowser::canShowFileInView(std::filesystem::path const &path)
+{
+	return isAnAsset(path) || this->bShowingNonAssets;
+}
+
+void AssetBrowser::onFileOpen(std::filesystem::path const &path)
+{
+	if (isAnAsset(path))
 	{
-		ImGui::Text("Missing directory, cannot render contents");
+		Editor::EDITOR->openAssetEditor(asset::readAssetFromDisk(path, asset::EAssetSerialization::Json));
+	}
+}
+
+void AssetBrowser::onPathDelete(std::filesystem::path const &path)
+{
+	if (std::filesystem::is_directory(path))
+	{
+		auto amountDeleted = std::filesystem::remove_all(path);
+		getLog()->log(LOG_INFO, "Deleted %i items at %s", amountDeleted, path.string().c_str());
 		return;
 	}
-	else if (std::filesystem::is_empty(this->mCurrentPath))
+
+	if (isAnAsset(path))
 	{
-		ImGui::Text("Directory is empty");
+		asset::AssetManager::get()->deleteFile(path);
+		getLog()->log(LOG_INFO, "Deleted %s", path.string().c_str());
 		return;
 	}
 
-	// TODO: Provide renaming of folders and assets
-	// TODO: Add context menu option for compiling an asset w/o opening the editor
-
-	auto assetManager = asset::AssetManager::get();
-	std::optional<std::filesystem::path> newPath = std::nullopt;
-	ImGui::Columns(2); // name | ext/dir
-	for (const auto& entry : std::filesystem::directory_iterator(this->mCurrentPath))
-	{
-		auto itemName = entry.path().stem().string();
-		if (itemName[0] == '.') continue;
-		auto bIsDirectory = entry.is_directory();
-		if (!bIsDirectory && !this->bShowingNonAssets && !assetManager->isValidAssetExtension(entry.path().extension().string())) continue;
-		bool bIsAssetAndOpenForEdit = false;
-		auto entryIsEmpty = std::filesystem::is_empty(entry.path());
-
-		ImGui::Text(itemName.c_str());
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(/* mouse button */ 0))
-		{
-			if (bIsDirectory) newPath = entry.path();
-			else if (entry.is_regular_file()) bIsAssetAndOpenForEdit = true;
-		}
-		if ((entry.is_regular_file() || entryIsEmpty)
-				&& ImGui::BeginPopupContextItem(entry.path().string().c_str()))
-		{
-			if (!bIsDirectory && ImGui::Selectable("Edit")) bIsAssetAndOpenForEdit = true;
-			if (ImGui::Selectable("Delete")) asset::AssetManager::get()->deleteFile(entry.path());
-			ImGui::EndPopup();
-		}
-
-		ImGui::NextColumn();
-		if (bIsDirectory)
-		{
-			ImGui::Text("directory");
-		}
-		else if (entry.is_regular_file())
-		{
-			ImGui::Text(entry.path().extension().string().c_str());
-		}
-		else
-		{
-			ImGui::Text("unsupported type");
-		}
-		ImGui::NextColumn();
-
-		if (bIsAssetAndOpenForEdit)
-		{
-			Editor::EDITOR->openAssetEditor(asset::readAssetFromDisk(entry.path(), asset::EAssetSerialization::Json));
-		}
-	}
-	if (newPath.has_value())
-	{
-		this->setPath(newPath.value());
-	}
+	std::filesystem::remove(path);
+	getLog()->log(LOG_INFO, "Deleted %s", path.string().c_str());
 }

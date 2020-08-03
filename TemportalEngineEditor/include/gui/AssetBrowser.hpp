@@ -3,8 +3,7 @@
 #include "gui/IGui.hpp"
 
 #include "gui/modal/NewAsset.hpp"
-
-#include <filesystem>
+#include "gui/widget/filesystem.hpp"
 
 NS_GUI
 
@@ -25,13 +24,15 @@ private:
 	bool bShowingNonAssets;
 	std::filesystem::path mDefaultPath;
 	std::filesystem::path mCurrentPath;
-	std::vector<std::filesystem::path> mBreadcrumbs;
+	DirectoryViewConfig mViewConfig;
 
 	void setPath(std::filesystem::path path);
 	std::filesystem::path getCurrentRelativePath() const;
 
 	void renderMenuBar();
-	void renderDirectoryContents();
+	bool canShowFileInView(std::filesystem::path const &path);
+	void onFileOpen(std::filesystem::path const &path);
+	void onPathDelete(std::filesystem::path const &path);
 
 };
 
