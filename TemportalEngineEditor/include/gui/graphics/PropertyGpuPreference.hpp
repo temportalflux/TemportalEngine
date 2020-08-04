@@ -28,11 +28,11 @@ public:
 private:
 	Internal mInternal;
 
-	static bool renderPrefDeviceType(Preference<EDeviceType::Enum> &value);
-	static bool renderPrefExtension(Preference<EExtension::Type> &value);
-	static bool renderPrefFeature(Preference<EFeature::Enum> &value);
-	static bool renderPrefQueueFam(Preference<EQueueFamily::Enum> &value);
-	static bool renderPrefSwapChain(Preference<ESwapChain::Enum> &value);
+	static bool renderPrefDeviceType(uIndex const& idx, Preference<EDeviceType::Enum> &value);
+	static bool renderPrefExtension(uIndex const& idx, Preference<EExtension::Type> &value);
+	static bool renderPrefFeature(uIndex const& idx, Preference<EFeature::Enum> &value);
+	static bool renderPrefQueueFam(uIndex const& idx, Preference<EQueueFamily::Enum> &value);
+	static bool renderPrefSwapChain(uIndex const& idx, Preference<ESwapChain::Enum> &value);
 
 };
 

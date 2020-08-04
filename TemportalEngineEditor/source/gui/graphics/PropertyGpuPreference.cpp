@@ -58,7 +58,7 @@ bool renderOptionalScore(std::optional<ui8> &value)
 	});
 }
 
-bool PropertyGpuPreference::renderPrefDeviceType(Preference<EDeviceType::Enum>& value)
+bool PropertyGpuPreference::renderPrefDeviceType(uIndex const& idx, Preference<EDeviceType::Enum>& value)
 {
 	bool bHasChanged = renderOptionalScore(value.score);
 	ImGui::SameLine();
@@ -75,7 +75,7 @@ bool PropertyGpuPreference::renderPrefDeviceType(Preference<EDeviceType::Enum>& 
 	return bHasChanged;
 }
 
-bool PropertyGpuPreference::renderPrefExtension(Preference<EExtension::Type>& value)
+bool PropertyGpuPreference::renderPrefExtension(uIndex const& idx, Preference<EExtension::Type>& value)
 {
 	bool bHasChanged = renderOptionalScore(value.score);
 	ImGui::SameLine();
@@ -92,7 +92,7 @@ bool PropertyGpuPreference::renderPrefExtension(Preference<EExtension::Type>& va
 	return bHasChanged;
 }
 
-bool PropertyGpuPreference::renderPrefFeature(Preference<EFeature::Enum>& value)
+bool PropertyGpuPreference::renderPrefFeature(uIndex const& idx, Preference<EFeature::Enum>& value)
 {
 	bool bHasChanged = renderOptionalScore(value.score);
 	ImGui::SameLine();
@@ -109,7 +109,7 @@ bool PropertyGpuPreference::renderPrefFeature(Preference<EFeature::Enum>& value)
 	return bHasChanged;
 }
 
-bool PropertyGpuPreference::renderPrefQueueFam(Preference<EQueueFamily::Enum> &value)
+bool PropertyGpuPreference::renderPrefQueueFam(uIndex const& idx, Preference<EQueueFamily::Enum> &value)
 {
 	bool bHasChanged = renderOptionalScore(value.score);
 	ImGui::SameLine();
@@ -126,7 +126,7 @@ bool PropertyGpuPreference::renderPrefQueueFam(Preference<EQueueFamily::Enum> &v
 	return bHasChanged;
 }
 
-bool PropertyGpuPreference::renderPrefSwapChain(Preference<ESwapChain::Enum> &value)
+bool PropertyGpuPreference::renderPrefSwapChain(uIndex const& idx, Preference<ESwapChain::Enum> &value)
 {
 	bool bHasChanged = renderOptionalScore(value.score);
 	ImGui::SameLine();

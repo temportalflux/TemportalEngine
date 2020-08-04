@@ -17,7 +17,7 @@ class List
 	using EnableIfMap = typename std::enable_if<std::is_same<TItem, std::pair<TKey, TValue>>::value>::type;
 
 public:
-	typedef std::function<bool(TItem& item)> ItemRenderer;
+	typedef std::function<bool(uIndex const& idx, TItem& item)> ItemRenderer;
 
 	List<TItem>& value(std::vector<TItem> const &items)
 	{
@@ -69,7 +69,7 @@ public:
 			auto iterToRemove = items.end();
 			for (auto it = items.begin(); it != items.end(); ++it)
 			{
-				ui64 idx = it - items.begin();
+				uIndex idx = it - items.begin();
 				ImGui::PushID((ui32)idx);
 				if (bItemsCollapse)
 				{
@@ -81,7 +81,7 @@ public:
 					if (renderKey)
 					{
 						ImGui::SameLine();
-						(*renderKey)(*it);
+						(*renderKey)(idx, *it);
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Remove"))
@@ -90,7 +90,7 @@ public:
 					}
 					if (bShowItemContent)
 					{
-						if (renderValue(*it)) bHasChanged = true;
+						if (renderValue(idx, *it)) bHasChanged = true;
 						ImGui::TreePop();
 					}
 				}
@@ -98,14 +98,14 @@ public:
 				{
 					if (renderKey)
 					{
-						(*renderKey)(*it);
+						(*renderKey)(idx, *it);
 						ImGui::SameLine();
 						if (ImGui::Button("Remove"))
 						{
 							iterToRemove = it;
 						}
 					}
-					if (renderValue(*it)) bHasChanged = true;
+					if (renderValue(idx, *it)) bHasChanged = true;
 					if (!renderKey)
 					{
 						ImGui::SameLine();

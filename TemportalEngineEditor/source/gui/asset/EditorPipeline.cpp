@@ -41,7 +41,7 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 
 bool renderBlendOperation(graphics::BlendMode::Operation &blend);
 bool renderBlendComponent(graphics::BlendMode::Component &comp);
-bool renderDescriptor(asset::Pipeline::Descriptor &descriptor);
+bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor);
 
 void EditorPipeline::renderContent()
 {
@@ -187,13 +187,20 @@ bool renderBlendComponent(graphics::BlendMode::Component &comp)
 	return bChanged;
 }
 
-bool renderDescriptor(asset::Pipeline::Descriptor &descriptor)
+bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor)
 {
 	bool bChanged = false;
+
+	ImGui::Text("%i)", idx);
+
+	ImGui::SameLine();
+
 	ImGui::PushItemWidth(100);
 	if (gui::FieldText<64>::Inline("Identifier", descriptor.id)) bChanged = true;
 	ImGui::PopItemWidth();
+	
 	ImGui::SameLine();
+	
 	ImGui::PushItemWidth(200);
 	if (gui::Combo<graphics::DescriptorType::Enum>::Inline(
 		"Type", graphics::DescriptorType::ALL, descriptor.type,
@@ -201,7 +208,9 @@ bool renderDescriptor(asset::Pipeline::Descriptor &descriptor)
 		[](graphics::DescriptorType::Enum type) { ImGui::PushID((ui32)type); }
 	)) bChanged = true;
 	ImGui::PopItemWidth();
+	
 	ImGui::SameLine();
+	
 	ImGui::PushItemWidth(200);
 	if (gui::Combo<graphics::ShaderStage::Enum>::Inline(
 		"Stage", graphics::ShaderStage::ALL, descriptor.stage,
@@ -209,6 +218,7 @@ bool renderDescriptor(asset::Pipeline::Descriptor &descriptor)
 		[](graphics::ShaderStage::Enum type) { ImGui::PushID((ui32)type); }
 	)) bChanged = true;
 	ImGui::PopItemWidth();
+	
 	return bChanged;
 }
 
