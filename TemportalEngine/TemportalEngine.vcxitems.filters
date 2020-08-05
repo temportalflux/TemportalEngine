@@ -620,5 +620,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\RenderPassMeta.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

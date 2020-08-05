@@ -81,7 +81,7 @@ public:
 					if (renderKey)
 					{
 						ImGui::SameLine();
-						(*renderKey)(idx, *it);
+						if ((*renderKey)(idx, *it)) bHasChanged = true;
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Remove"))
@@ -98,7 +98,7 @@ public:
 				{
 					if (renderKey)
 					{
-						(*renderKey)(idx, *it);
+						if ((*renderKey)(idx, *it)) bHasChanged = true;
 						ImGui::SameLine();
 						if (ImGui::Button("Remove"))
 						{

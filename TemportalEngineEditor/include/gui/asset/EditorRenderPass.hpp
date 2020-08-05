@@ -4,6 +4,7 @@
 
 #include "asset/TypedAssetPath.hpp"
 #include "graphics/Area.hpp"
+#include "graphics/RenderPassMeta.hpp"
 
 FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_ASSET, class RenderPass);
@@ -28,8 +29,23 @@ private:
 	std::optional<std::pair<f32, ui32>> mClearDepthStencil;
 	graphics::Area mRenderArea;
 	std::vector<asset::TypedAssetPath<asset::Pipeline>> mPipelines;
+	std::vector<graphics::RPPhase> mPhases;
+	std::vector<graphics::RPDependency> mPhaseDependencies;
 
 	std::vector<asset::AssetPath> mAllPipelinePaths;
+	std::vector<std::string> mPhaseNames;
+
+	std::function<bool(uIndex const& idx, graphics::RPPhase &phase)> mfRenderPhaseName;
+	std::function<bool(uIndex const& idx, graphics::RPDependency &dep)> mfRenderDependencyKey;
+	std::function<bool(uIndex const& idx, graphics::RPDependency &dep)> mfRenderDependency;
+	std::function<bool(uIndex &idx)> mfRenderDependencyItemName;
+
+	std::vector<std::string> makePhaseNames();
+	bool renderPhaseName(uIndex const &idx, graphics::RPPhase &phase);
+	bool renderPhaseDependencyKey(uIndex const &idx, graphics::RPDependency &dependency);
+	bool renderPhaseDependency(uIndex const &idx, graphics::RPDependency &dependency);
+	bool renderPhaseDependencyItem(graphics::RPDependency::Item &item);
+	bool renderPhaseDependencyItemPhaseName(uIndex &phaseIdx);
 
 };
 

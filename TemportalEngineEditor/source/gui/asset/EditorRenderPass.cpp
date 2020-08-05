@@ -3,8 +3,10 @@
 #include "asset/AssetManager.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "asset/RenderPassAsset.hpp"
+#include "gui/widget/Combo.hpp"
 #include "gui/widget/FieldAsset.hpp"
 #include "gui/widget/FieldNumber.hpp"
+#include "gui/widget/FieldText.hpp"
 #include "gui/widget/List.hpp"
 #include "gui/widget/Optional.hpp"
 #include "memory/MemoryChunk.hpp"
@@ -30,10 +32,21 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mClearDepthStencil = asset->getDepthStencilClearValues();
 	this->mRenderArea = asset->getRenderArea();
 	this->mPipelines = asset->getPipelineRefs();
+	this->mPhases = asset->getPhases();
+	this->mPhaseDependencies = asset->getPhaseDependencies();
 
 	this->mAllPipelinePaths = asset::AssetManager::get()->getAssetList(asset::Pipeline::StaticType());
+	this->mPhaseNames = this->makePhaseNames();
 
+	this->mfRenderPhaseName = std::bind(&EditorRenderPass::renderPhaseName, this, std::placeholders::_1, std::placeholders::_2);
+	this->mfRenderDependencyKey = std::bind(&EditorRenderPass::renderPhaseDependencyKey, this, std::placeholders::_1, std::placeholders::_2);
+	this->mfRenderDependency = std::bind(&EditorRenderPass::renderPhaseDependency, this, std::placeholders::_1, std::placeholders::_2);
+	this->mfRenderDependencyItemName = std::bind(&EditorRenderPass::renderPhaseDependencyItemPhaseName, this, std::placeholders::_1);
 }
+
+bool renderPhase(uIndex const &idx, graphics::RPPhase &phase);
+bool renderPhaseAttachmentElement(uIndex const &idx, graphics::RPPhase::Attachment &attachment);
+bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment);
 
 void EditorRenderPass::renderContent()
 {
@@ -90,6 +103,200 @@ void EditorRenderPass::renderContent()
 	{
 		this->markAssetDirty(1);
 	}
+
+	if (gui::List<graphics::RPPhase>::Inline("Phases", "Phases", true, this->mPhases, &renderPhase, this->mfRenderPhaseName))
+	{
+		this->markAssetDirty(1);
+		if (this->mPhaseNames.size() != this->mPhases.size()) this->mPhaseNames = this->makePhaseNames();
+	}
+
+	if (gui::List<graphics::RPDependency>::Inline("deps", "Phase Dependencies", true, this->mPhaseDependencies, this->mfRenderDependency, this->mfRenderDependencyKey))
+	{
+		this->markAssetDirty(1);
+	}
+
+}
+
+bool EditorRenderPass::renderPhaseName(uIndex const &idx, graphics::RPPhase &phase)
+{
+	if (gui::FieldText<16>::Inline("###name", phase.name))
+	{
+		this->mPhaseNames[idx] = phase.name;
+		return true;
+	}
+	return false;
+}
+
+bool renderPhase(uIndex const &idx, graphics::RPPhase &phase)
+{
+	bool bChanged = false;
+	if (gui::List<graphics::RPPhase::Attachment>::Inline("color", "Color Attachments", true, phase.colorAttachments, &renderPhaseAttachmentElement)) bChanged = true;
+	if (ImGui::TreeNode("Depth Attachment"))
+	{
+		if (gui::Optional<graphics::RPPhase::Attachment>::Inline(phase.depthAttachment, "Has Attachment", true, &renderPhaseAttachment)) bChanged = true;
+		ImGui::TreePop();
+	}
+	return bChanged;
+}
+
+bool renderPhaseAttachmentElement(uIndex const &idx, graphics::RPPhase::Attachment &attachment)
+{
+	return renderPhaseAttachment(attachment);
+}
+
+bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment)
+{
+	bool bChanged = false;
+
+	if (gui::Combo<graphics::ImageFormatReferenceType::Enum>::Inline(
+		"Format Type", graphics::ImageFormatReferenceType::ALL,
+		attachment.formatType,
+		graphics::ImageFormatReferenceType::to_string,
+		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+	)) bChanged = true;
+
+	if (gui::Combo<graphics::SampleCount::Enum>::Inline(
+		"Samples", graphics::SampleCount::ALL,
+		attachment.samples,
+		graphics::SampleCount::to_string,
+		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+	)) bChanged = true;
+
+	if (ImGui::TreeNode("General Operations"))
+	{
+		if (gui::Combo<graphics::AttachmentLoadOp::Enum>::Inline(
+			"Load", graphics::AttachmentLoadOp::ALL,
+			attachment.generalLoadOp,
+			graphics::AttachmentLoadOp::to_string,
+			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+		)) bChanged = true;
+
+		if (gui::Combo<graphics::AttachmentStoreOp::Enum>::Inline(
+			"Store", graphics::AttachmentStoreOp::ALL,
+			attachment.generalStoreOp,
+			graphics::AttachmentStoreOp::to_string,
+			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+		)) bChanged = true;
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Stencil Operations"))
+	{
+		if (gui::Combo<graphics::AttachmentLoadOp::Enum>::Inline(
+			"Load", graphics::AttachmentLoadOp::ALL,
+			attachment.stencilLoadOp,
+			graphics::AttachmentLoadOp::to_string,
+			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+		)) bChanged = true;
+
+		if (gui::Combo<graphics::AttachmentStoreOp::Enum>::Inline(
+			"Store", graphics::AttachmentStoreOp::ALL,
+			attachment.stencilStoreOp,
+			graphics::AttachmentStoreOp::to_string,
+			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+		)) bChanged = true;
+
+		ImGui::TreePop();
+	}
+
+	return bChanged;
+}
+
+bool EditorRenderPass::renderPhaseDependencyKey(uIndex const &idx, graphics::RPDependency &dependency)
+{
+	ImGui::Text(
+		"%s -> %s",
+		dependency.dependee.phaseIndex ? (
+			this->mPhaseNames.size() > *dependency.dependee.phaseIndex
+			? this->mPhaseNames[*dependency.dependee.phaseIndex].c_str()
+			: "(no name available)"
+		) : "none",
+		dependency.depender.phaseIndex ? (
+			this->mPhaseNames.size() > *dependency.depender.phaseIndex
+			? this->mPhaseNames[*dependency.depender.phaseIndex].c_str()
+			: "(no name available)"
+		) : "none"
+	);
+	return false;
+}
+
+bool EditorRenderPass::renderPhaseDependency(uIndex const &idx, graphics::RPDependency &dependency)
+{
+	bool bChanged = false;
+	if (ImGui::TreeNode("Dependee"))
+	{
+		if (this->renderPhaseDependencyItem(dependency.dependee)) bChanged = true;
+		ImGui::TreePop();
+	}
+	if (ImGui::TreeNode("Depender"))
+	{
+		if (this->renderPhaseDependencyItem(dependency.depender)) bChanged = true;
+		ImGui::TreePop();
+	}
+	return bChanged;
+}
+
+bool EditorRenderPass::renderPhaseDependencyItem(graphics::RPDependency::Item &item)
+{
+	bool bChanged = false;
+	if (gui::Optional<uIndex>::Inline(item.phaseIndex, "Phase", true, this->mfRenderDependencyItemName)) bChanged = true;
+
+	auto stageMaskSet = item.stageMask.toSet(graphics::PipelineStage::ALL);
+	std::string stageMaskPreviewStr = std::to_string(stageMaskSet.size()) + " Stages";
+	if (gui::Combo<graphics::PipelineStage::Enum>::InlineMulti(
+		"Stage Mask", graphics::PipelineStage::ALL,
+		stageMaskSet, stageMaskPreviewStr,
+		graphics::PipelineStage::to_string,
+		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+	))
+	{
+		bChanged = true;
+		item.stageMask = utility::Flags<graphics::PipelineStage::Enum>(stageMaskSet);
+	}
+
+	auto accessMaskSet = item.accessMask.toSet(graphics::Access::ALL);
+	std::string accessMaskPreviewStr = std::to_string(accessMaskSet.size()) + " Flags";
+	if (gui::Combo<graphics::Access::Enum>::InlineMulti(
+		"Access Mask", graphics::Access::ALL,
+		accessMaskSet, accessMaskPreviewStr,
+		graphics::Access::to_string,
+		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
+	))
+	{
+		bChanged = true;
+		item.accessMask = utility::Flags<graphics::Access::Enum>(accessMaskSet);
+	}
+
+	return bChanged;
+}
+
+bool EditorRenderPass::renderPhaseDependencyItemPhaseName(uIndex &phaseIdx)
+{
+	ImGui::SameLine();
+	if (this->mPhaseNames.size() <= phaseIdx)
+	{
+		ImGui::Text("No phase available");
+		return false;
+	}
+	std::string selected = this->mPhaseNames[phaseIdx];
+	if (gui::Combo<std::string>::Inline(
+		"###phaseIndex", this->mPhaseNames, selected,
+		[](auto str) { return str; },
+		[](auto str) { ImGui::PushID(str.c_str()); }
+	))
+	{
+		phaseIdx = std::distance(this->mPhaseNames.begin(), std::find(this->mPhaseNames.begin(), this->mPhaseNames.end(), selected));
+		return true;
+	}
+	return false;
+}
+
+std::vector<std::string> EditorRenderPass::makePhaseNames()
+{
+	auto names = std::vector<std::string>();
+	std::transform(this->mPhases.begin(), this->mPhases.end(), std::back_inserter(names), [](auto phase) { return phase.name; });
+	return names;
 }
 
 void EditorRenderPass::saveAsset()
@@ -98,6 +305,8 @@ void EditorRenderPass::saveAsset()
 		->setClearColor(this->mClearColor)
 		.setDepthStencilClearValues(this->mClearDepthStencil)
 		.setRenderArea(this->mRenderArea)
-		.setPipelineRefs(this->mPipelines);
+		.setPipelineRefs(this->mPipelines)
+		.setPhases(this->mPhases)
+		.setPhaseDependencies(this->mPhaseDependencies);
 	AssetEditor::saveAsset();
 }

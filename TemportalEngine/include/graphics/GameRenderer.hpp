@@ -13,6 +13,8 @@
 
 class IRender;
 FORWARD_DEF(NS_ASSET, class Font)
+FORWARD_DEF(NS_ASSET, class RenderPass)
+FORWARD_DEF(NS_ASSET, class Pipeline)
 FORWARD_DEF(NS_ASSET, class Texture)
 FORWARD_DEF(NS_ASSET, class TextureSampler)
 FORWARD_DEF(NS_GRAPHICS, class StringRenderer)
@@ -42,6 +44,7 @@ public:
 	void setBindings(std::vector<AttributeBinding> bindings);
 	void addShader(std::shared_ptr<ShaderModule> shader);
 	void setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings);
+	void createRenderPass(std::shared_ptr<asset::RenderPass> renderPass);
 
 	// Creates an image sampler from some asset
 	// TODO: Take in an asset object

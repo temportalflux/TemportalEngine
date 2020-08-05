@@ -139,3 +139,29 @@ void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, gra
 {
 	value = (graphics::BlendOperation::Enum)i;
 }
+
+std::string cereal::save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value)
+{
+	return std::bitset<32>((ui32 const&)value.data()).to_string();
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum>  &value, std::string const& i)
+{
+	value.data() = (ui64)std::bitset<32>(i).to_ulong();
+}
+
+ui64 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value) { return value.data(); }
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> &value, ui64 const& i) { value.data() = i; }
+
+std::string cereal::save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value)
+{
+	return std::bitset<32>((ui32 const&)value.data()).to_string();
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::Access::Enum>  &value, std::string const& i)
+{
+	value.data() = (ui64)std::bitset<32>(i).to_ulong();
+}
+
+ui64 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value) { return value.data(); }
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::Access::Enum> &value, ui64 const& i) { value.data() = i; }

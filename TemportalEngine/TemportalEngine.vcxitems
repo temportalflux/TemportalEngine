@@ -138,6 +138,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Memory.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryAllocated.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\RenderPassMeta.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Command.hpp" />

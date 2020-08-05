@@ -319,4 +319,117 @@ struct ShaderStage
 	static std::string to_string(Enum value);
 };
 
+/**
+ * Custom enum which indicates a substitution for the vk::ImageFormat.
+ */
+struct ImageFormatReferenceType
+{
+	enum class Enum
+	{
+		/**
+		 * Treated as the vk::ImageFormat of the SwapChain Image.
+		 */
+		Viewport,
+		/**
+		 * Treated as the vk::ImageFormat of the depth buffer image.
+		 */
+		Depth,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct SampleCount
+{
+	// Mirrors vk::SampleCountFlagBits
+	enum class Enum
+	{
+		e1 = 0x00000001,
+		e2 = 0x00000002,
+		e4 = 0x00000004,
+		e8 = 0x00000008,
+		e16 = 0x00000010,
+		e32 = 0x00000020,
+		e64 = 0x00000040,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct AttachmentLoadOp
+{
+	// Mirrors vk::AttachmentLoadOp
+	enum class Enum
+	{
+		eLoad = 0,
+		eClear = 1,
+		eDontCare = 2,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct AttachmentStoreOp
+{
+	// Mirrors vk::AttachmentStoreOp
+	enum class Enum
+	{
+		eStore = 0,
+		eDontCare = 1,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct PipelineStage
+{
+	// Mirrors vk::PipelineStageFlagBits
+	enum class Enum
+	{
+		eTopOfPipe = 0x00000001,
+		eDrawIndirect = 0x00000002,
+		eVertexInput = 0x00000004,
+		eVertexShader = 0x00000008,
+		eTessellationControlShader = 0x00000010,
+		eTessellationEvaluationShader = 0x00000020,
+		eGeometryShader = 0x00000040,
+		eFragmentShader = 0x00000080,
+		eEarlyFragmentTests = 0x00000100,
+		eLateFragmentTests = 0x00000200,
+		eColorAttachmentOutput = 0x00000400,
+		eComputeShader = 0x00000800,
+		eTransfer = 0x00001000,
+		eBottomOfPipe = 0x00002000,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
+struct Access
+{
+	// Mirrors vk::AccessFlagBits
+	enum class Enum
+	{
+		eIndirectCommandRead = 0x00000001,
+		eIndexRead = 0x00000002,
+		eVertexAttributeRead = 0x00000004,
+		eUniformRead = 0x00000008,
+		eInputAttachmentRead = 0x00000010,
+		eShaderRead = 0x00000020,
+		eShaderWrite = 0x00000040,
+		eColorAttachmentRead = 0x00000080,
+		eColorAttachmentWrite = 0x00000100,
+		eDepthStencilAttachmentRead = 0x00000200,
+		eDepthStencilAttachmentWrite = 0x00000400,
+		eTransferRead = 0x00000800,
+		eTransferWrite = 0x00001000,
+		eHostRead = 0x00002000,
+		eHostWrite = 0x00004000,
+		eMemoryRead = 0x00008000,
+		eMemoryWrite = 0x00010000,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
 NS_END

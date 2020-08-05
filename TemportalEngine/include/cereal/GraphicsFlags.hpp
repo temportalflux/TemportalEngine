@@ -41,4 +41,14 @@ namespace cereal
 	ui32 save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::BlendOperation::Enum const &value);
 	void load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::BlendOperation::Enum &value, ui32 const& i);
 
+	std::string save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value);
+	void load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum>  &value, std::string const& i);
+	ui64 save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value);
+	void load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> &value, ui64 const& i);
+
+	std::string save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value);
+	void load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::Access::Enum>  &value, std::string const& i);
+	ui64 save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value);
+	void load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::Access::Enum> &value, ui64 const& i);
+
 }

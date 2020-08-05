@@ -28,5 +28,50 @@
 	},
 	"pipelines": [
 		"pipeline:assets/WorldPipeline.te-asset"
+	],
+	"phases": [
+		{
+			"name": "default",
+			"colorAttachments": [
+				{
+					"format": 0,
+					"samples": 1,
+					"general-load": 1,
+					"general-store": 0,
+					"stencil-load": 2,
+					"stencil-store": 1
+				}
+			],
+			"depthAttachment": {
+				"hasValue": true,
+				"value": {
+					"format": 1,
+					"samples": 1,
+					"general-load": 1,
+					"general-store": 1,
+					"stencil-load": 2,
+					"stencil-store": 1
+				}
+			}
+		}
+	],
+	"phaseDependencies": [
+		{
+			"dependee": {
+				"phase": {
+					"hasValue": false
+				},
+				"stageMask": "00000000000000000000010000000000",
+				"accessMask": "00000000000000000000000000000000"
+			},
+			"depender": {
+				"phase": {
+					"hasValue": true,
+					"value": 0
+				},
+				"stageMask": "00000000000000000000010000000000",
+				"accessMask": "00000000000000000000000100000000"
+			}
+		}
 	]
 }

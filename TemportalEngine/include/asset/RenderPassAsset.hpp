@@ -3,6 +3,7 @@
 #include "asset/Asset.hpp"
 
 #include "graphics/Area.hpp"
+#include "graphics/RenderPassMeta.hpp"
 #include "cereal/list.hpp"
 #include "cereal/optional.hpp"
 #include "cereal/mathVector.hpp"
@@ -29,6 +30,10 @@ public:
 	RenderPass& setRenderArea(graphics::Area const& area) { this->mRenderArea = area; return *this; }
 	std::vector<TypedAssetPath<Pipeline>> const& getPipelineRefs() const { return this->mPipelines; }
 	RenderPass& setPipelineRefs(std::vector<TypedAssetPath<Pipeline>> const& refs) { this->mPipelines = refs; return *this; }
+	std::vector<graphics::RPPhase> const& getPhases() const { return this->mPhases; }
+	RenderPass& setPhases(std::vector<graphics::RPPhase> const& phases) { this->mPhases = phases; return *this; }
+	std::vector<graphics::RPDependency> const& getPhaseDependencies() const { return this->mPhaseDependencies; }
+	RenderPass& setPhaseDependencies(std::vector<graphics::RPDependency> const& deps) { this->mPhaseDependencies = deps; return *this; }
 
 private:
 
@@ -36,6 +41,9 @@ private:
 	std::optional<std::pair<f32, ui32>> mClearDepthStencil;
 	graphics::Area mRenderArea;
 	std::vector<TypedAssetPath<Pipeline>> mPipelines;
+
+	std::vector<graphics::RPPhase> mPhases;
+	std::vector<graphics::RPDependency> mPhaseDependencies;
 
 #pragma region Serialization
 protected:
@@ -52,6 +60,8 @@ protected:
 		archive(cereal::make_nvp("clearDepthStencil", this->mClearDepthStencil));
 		archive(cereal::make_nvp("renderArea", this->mRenderArea));
 		archive(cereal::make_nvp("pipelines", this->mPipelines));
+		archive(cereal::make_nvp("phases", this->mPhases));
+		archive(cereal::make_nvp("phaseDependencies", this->mPhaseDependencies));
 	}
 
 	template <typename Archive>
@@ -62,6 +72,8 @@ protected:
 		archive(cereal::make_nvp("clearDepthStencil", this->mClearDepthStencil));
 		archive(cereal::make_nvp("renderArea", this->mRenderArea));
 		archive(cereal::make_nvp("pipelines", this->mPipelines));
+		archive(cereal::make_nvp("phases", this->mPhases));
+		archive(cereal::make_nvp("phaseDependencies", this->mPhaseDependencies));
 	}
 #pragma endregion
 

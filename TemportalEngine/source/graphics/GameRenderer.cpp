@@ -2,6 +2,8 @@
 
 #include "IRender.hpp"
 #include "asset/Font.hpp"
+#include "asset/PipelineAsset.hpp"
+#include "asset/RenderPassAsset.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "graphics/StringRenderer.hpp"
@@ -128,6 +130,47 @@ void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
 void GameRenderer::setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings)
 {
 	this->mPipelineUI.addShader(shaderVert).addShader(shaderFrag).setBindings(bindings);
+}
+
+void GameRenderer::createRenderPass(std::shared_ptr<asset::RenderPass> asset)
+{
+	// TODO: Don't use default make_shared
+	// TODO: Store by assetPath as key in a registry so the object doesnt go out of scope
+	auto renderPass = std::make_shared<graphics::RenderPass>();
+	renderPass->setDevice(this->mpGraphicsDevice);
+
+	auto& colorAttachment = renderPass->addAttachment(
+		RenderPassAttachment()
+		//.setFormat(this->mSwapChain.getFormat())
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
+		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
+		// Constant: Cannot put in asset
+		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
+	);
+	auto& depthAttachment = renderPass->addAttachment(
+		RenderPassAttachment()
+		//.setFormat((ui32)this->mDepthImage.getFormat())
+		.setSamples(vk::SampleCountFlagBits::e1)
+		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare)
+		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
+		// Constant: Cannot put in asset
+		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal)
+	);
+
+	auto& onlyPhase = renderPass->addPhase(
+		RenderPassPhase()
+		.addColorAttachment(colorAttachment)
+		.setDepthAttachment(depthAttachment)
+	);
+
+	renderPass->addDependency(
+		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
+		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
+	);
+	
+	// TODO: Call during createRenderChain
+	//renderPass->create();
 }
 
 uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)

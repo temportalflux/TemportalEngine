@@ -603,3 +603,125 @@ std::string ShaderStage::to_string(Enum value)
 }
 
 #pragma endregion
+
+#pragma region Image Format Reference Type
+
+std::vector<ImageFormatReferenceType::Enum> ImageFormatReferenceType::ALL = {
+	Enum::Viewport,
+	Enum::Depth,
+};
+
+std::string ImageFormatReferenceType::to_string(Enum value)
+{
+	switch (value)
+	{
+	case Enum::Viewport: return "Viewport";
+	case Enum::Depth: return "Depth";
+	default: return "invalid";
+	}
+}
+
+#pragma endregion
+
+#pragma region Sample Count
+
+std::vector<SampleCount::Enum> SampleCount::ALL = {
+		Enum::e1,
+		Enum::e2,
+		Enum::e4,
+		Enum::e8,
+		Enum::e16,
+		Enum::e32,
+		Enum::e64,
+};
+
+std::string SampleCount::to_string(Enum value)
+{
+	return vk::to_string((vk::SampleCountFlagBits)value);
+}
+
+#pragma endregion
+
+#pragma region Attachment Load
+
+std::vector<AttachmentLoadOp::Enum> AttachmentLoadOp::ALL = {
+		Enum::eLoad,
+		Enum::eClear,
+		Enum::eDontCare,
+};
+
+std::string AttachmentLoadOp::to_string(Enum value)
+{
+	return vk::to_string((vk::AttachmentLoadOp)value);
+}
+
+#pragma endregion
+
+#pragma region Attachment Store
+
+std::vector<AttachmentStoreOp::Enum> AttachmentStoreOp::ALL = {
+		Enum::eStore,
+		Enum::eDontCare,
+};
+
+std::string AttachmentStoreOp::to_string(Enum value)
+{
+	return vk::to_string((vk::AttachmentStoreOp)value);
+}
+
+#pragma endregion
+
+#pragma region Pipeline Stage
+
+std::vector<PipelineStage::Enum> PipelineStage::ALL = {
+		Enum::eTopOfPipe,
+		Enum::eDrawIndirect,
+		Enum::eVertexInput,
+		Enum::eVertexShader,
+		Enum::eTessellationControlShader,
+		Enum::eTessellationEvaluationShader,
+		Enum::eGeometryShader,
+		Enum::eFragmentShader,
+		Enum::eEarlyFragmentTests,
+		Enum::eLateFragmentTests,
+		Enum::eColorAttachmentOutput,
+		Enum::eComputeShader,
+		Enum::eTransfer,
+		Enum::eBottomOfPipe,
+};
+
+std::string PipelineStage::to_string(Enum value)
+{
+	return vk::to_string((vk::PipelineStageFlagBits)value);
+}
+
+#pragma endregion
+
+#pragma region Access
+
+std::vector<Access::Enum> Access::ALL = {
+		Enum::eIndirectCommandRead,
+		Enum::eIndexRead,
+		Enum::eVertexAttributeRead,
+		Enum::eUniformRead,
+		Enum::eInputAttachmentRead,
+		Enum::eShaderRead,
+		Enum::eShaderWrite,
+		Enum::eColorAttachmentRead,
+		Enum::eColorAttachmentWrite,
+		Enum::eDepthStencilAttachmentRead,
+		Enum::eDepthStencilAttachmentWrite,
+		Enum::eTransferRead,
+		Enum::eTransferWrite,
+		Enum::eHostRead,
+		Enum::eHostWrite,
+		Enum::eMemoryRead,
+		Enum::eMemoryWrite,
+};
+
+std::string Access::to_string(Enum value)
+{
+	return vk::to_string((vk::AccessFlagBits)value);
+}
+
+#pragma endregion
