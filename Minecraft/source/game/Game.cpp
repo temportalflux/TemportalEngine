@@ -5,7 +5,7 @@
 #include "asset/BlockType.hpp"
 #include "asset/Font.hpp"
 #include "asset/Project.hpp"
-#include "asset/Shader.hpp"
+#include "asset/RenderPassAsset.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "ecs/Core.hpp"
@@ -182,21 +182,13 @@ void Game::createRenderers()
 	// TODO: Use dedicated graphics memory
 	this->mpRendererMVP = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
 	this->mpRenderer->setStaticUniform(this->mpRendererMVP);
-
-	// Create shaders
-	{
-		auto assetManager = asset::AssetManager::get();
-		// Vertex Shader from asset
-		this->mpRenderer->addShader(pEngine->getProject()->mVertexShader.load(asset::EAssetSerialization::Binary)->makeModule());
-		// Fragment Shader from asset
-		this->mpRenderer->addShader(pEngine->getProject()->mFragmentShader.load(asset::EAssetSerialization::Binary)->makeModule());
-	}
+	
+	// TODO: Load the render pass asset via a path stored on the project
+	this->mpRenderer->setRenderPass(engine::Engine::Get()->getProject()->mRenderPass.load(asset::EAssetSerialization::Binary));
 
 	// Setup UI Shader Pipeline
 	{
-		this->mpRenderer->setUIShaderBindings(
-			asset::TypedAssetPath<asset::Shader>::Create("assets/shaders/TextVertex.te-asset").load(asset::EAssetSerialization::Binary)->makeModule(),
-			asset::TypedAssetPath<asset::Shader>::Create("assets/shaders/TextFragment.te-asset").load(asset::EAssetSerialization::Binary)->makeModule(),
+		this->mpRenderer->setBindings(1,
 			{
 				graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
 				.setStructType<graphics::Font::UIVertex>()
@@ -243,7 +235,7 @@ void Game::createRenderers()
 					std::end(additionalBindings)
 				);
 			}
-			this->mpRenderer->setBindings(bindings);
+			this->mpRenderer->setBindings(0, bindings);
 		}
 		this->mpCubeRender->init(this->mpRenderer.get(), instances);
 		this->mpRenderer->addRender(this->mpCubeRender.get());

@@ -13,6 +13,11 @@ struct Flags
 {
 
 	Flags() = default;
+
+	Flags(TFlagType option)
+	{
+		this->mData = ((ui64)option);
+	}
 	
 	Flags(std::unordered_set<TFlagType> const& set)
 	{

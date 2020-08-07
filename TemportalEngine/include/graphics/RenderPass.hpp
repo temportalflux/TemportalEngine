@@ -5,97 +5,32 @@
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/ImageView.hpp"
 #include "math/Vector.hpp"
+#include "graphics/RenderPassMeta.hpp"
+#include "graphics/Area.hpp"
 
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 
-class RenderPassAttachment
-{
-	friend class RenderPass;
-	friend class RenderPassPhase;
-
-public:
-	RenderPassAttachment& setFormat(ui32 const value);
-	RenderPassAttachment& setSamples(vk::SampleCountFlagBits const flags);
-	RenderPassAttachment& setGeneralOperations(vk::AttachmentLoadOp load, vk::AttachmentStoreOp store);
-	RenderPassAttachment& setStencilOperations(vk::AttachmentLoadOp load, vk::AttachmentStoreOp store);
-	RenderPassAttachment& setLayouts(vk::ImageLayout initialLayout, vk::ImageLayout finalLayout);
-
-private:
-	std::optional<uIndex> mIdxInRenderPass;
-
-	ui32 mFormatValue;
-	vk::SampleCountFlagBits mSampleFlags;
-	vk::AttachmentLoadOp mGeneralLoad, mStencilLoad;
-	vk::AttachmentStoreOp mGeneralStore, mStencilStore;
-	vk::ImageLayout mLayoutInitial, mLayoutFinal;
-
-	vk::AttachmentDescription description() const;
-
-};
-
-class RenderPassPhase
-{
-	friend class RenderPass;
-
-public:
-	RenderPassPhase() = default;
-	RenderPassPhase(RenderPassPhase const &other)
-	{
-		this->mIdxInRenderPass = other.mIdxInRenderPass;
-		this->mColorAttachmentReferences = other.mColorAttachmentReferences;
-		this->mDepthStencilAttachmentReference = other.mDepthStencilAttachmentReference;
-	}
-	RenderPassPhase(RenderPassPhase &&other)
-	{
-		this->mIdxInRenderPass = std::move(other.mIdxInRenderPass);
-		this->mColorAttachmentReferences = std::move(other.mColorAttachmentReferences);
-		this->mDepthStencilAttachmentReference = std::move(other.mDepthStencilAttachmentReference);
-	}
-
-	/**
-	 * Links an attachment to this phase of a `RenderPass`.
-	 */
-	RenderPassPhase& addColorAttachment(RenderPassAttachment const &attachment);
-	RenderPassPhase& setDepthAttachment(RenderPassAttachment const &attachment);
-
-private:
-	std::optional<uIndex> mIdxInRenderPass;
-
-	// The attachment references for the first subpass.
-	// The index of each element in this array directly relates to its location in the shader `layout(location = <index>) out <type> <name>`
-	std::vector<vk::AttachmentReference> mColorAttachmentReferences;
-	std::optional<vk::AttachmentReference> mDepthStencilAttachmentReference;
-
-	vk::SubpassDescription description() const;
-
-};
-
 class RenderPass : public DeviceObject
 {
 
 public:
-	struct DependencyItem
-	{
-		std::optional<RenderPassPhase> phase;
-		vk::PipelineStageFlags stageFlags;
-		vk::AccessFlags accessFlags;
-	};
-
 	RenderPass() = default;
 
-	RenderPassAttachment& addAttachment(RenderPassAttachment &attachment);
-	RenderPassPhase& addPhase(RenderPassPhase &phase);
-	/**
-	 * Can only be called once both the dependee phase and depender phase have been added via `addPhase`.
-	 * Creates a dependency between two render pass phases such that dependee must happen before depender.
-	 * If either `dependee` or `depender` is equivalent to `std::nullopt`, then it is assumed that the other dependency item
-	 * is dependent on or is the dependee for the implicit external subpass/render phase.
-	 * Both `dependee` and `depender` cannot be `std::nullopt`.
-	 */
-	RenderPass& addDependency(DependencyItem const dependee, DependencyItem const depender);
+	RenderPass& setClearColor(std::optional<math::Vector4> const color);
+	std::optional<math::Vector4> const& clearColor() const { return this->mClearColor; }
+	RenderPass& setClearDepthStencil(std::optional<std::pair<f32, ui32>> const depthStencil);
+	std::optional<std::pair<f32, ui32>> const& clearDepthStencil() const { return this->mClearDepthStencil; }
+	RenderPass& setRenderArea(graphics::Area const area);
+	graphics::Area const& renderArea() const { return this->mRenderArea; }
+
+	RenderPass& setImageFormatType(graphics::ImageFormatReferenceType::Enum type, ui32 vkImageFormat);
+	ui32 getImageFormatFor(graphics::ImageFormatReferenceType::Enum type) const;
+
+	RenderPass& addPhase(graphics::RPPhase const &phase);
+	RenderPass& addDependency(graphics::RPDependency const &dependency);
 
 	bool isValid() const;
 	void create() override;
@@ -104,11 +39,29 @@ public:
 	void resetConfiguration() override;
 
 private:
-	std::vector<RenderPassAttachment> mAttachments;
-	std::vector<RenderPassPhase> mPhases;
+	struct SubpassAttachments
+	{
+		std::vector<vk::AttachmentReference> color;
+		std::optional<vk::AttachmentReference> depth;
+	};
+
+	// TODO: These need to be used when performing a bind operation
+	std::optional<math::Vector4> mClearColor;
+	std::optional<std::pair<f32, ui32>> mClearDepthStencil;
+	graphics::Area mRenderArea;
+
+	std::vector<graphics::RPPhase> mPhases;
+
+	std::unordered_map<graphics::ImageFormatReferenceType::Enum, ui32> mImageFormatsByType;
+
+	std::vector<vk::AttachmentDescription> mAttachments;
+	std::vector<vk::SubpassDescription> mSubpasses;
+	std::vector<SubpassAttachments> mSubpassAttachmentRefs;
 	std::vector<vk::SubpassDependency> mDependencies;
 
 	vk::UniqueRenderPass mInternal;
+
+	void addPhaseAsSubpass(graphics::RPPhase const &phase);
 
 };
 

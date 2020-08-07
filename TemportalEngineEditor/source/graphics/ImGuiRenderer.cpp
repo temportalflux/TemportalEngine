@@ -78,24 +78,45 @@ void ImGuiRenderer::destroyRenderChain()
 void ImGuiRenderer::createRenderPass()
 {
 	this->mRenderPass.setDevice(this->mpGraphicsDevice);
-
-	auto& colorAttachment = this->mRenderPass.addAttachment(
-		RenderPassAttachment()
-		.setFormat(this->mSwapChain.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
+	this->mRenderPass
+		.setClearColor(math::Vector4({ 0.0f, 0.0f, 0.0f, 1.0f }))
+		.setRenderArea({ { 0, 0 }, { 1, 1 } })
+		.setImageFormatType(ImageFormatReferenceType::Enum::Viewport, this->mSwapChain.getFormat());
+	
+	this->mRenderPass.addPhase(
+		// phase
+		{
+			// name
+			"ui",
+			// color attachments
+			{
+				{
+					graphics::ImageFormatReferenceType::Enum::Viewport,
+					graphics::SampleCount::Enum::e1,
+					graphics::AttachmentLoadOp::Enum::eClear,
+					graphics::AttachmentStoreOp::Enum::eStore,
+					graphics::AttachmentLoadOp::Enum::eDontCare,
+					graphics::AttachmentStoreOp::Enum::eDontCare
+				}
+			},
+			// depth attachment
+			std::nullopt
+		}
 	);
-
-	auto& onlyPhase = this->mRenderPass.addPhase(
-		RenderPassPhase()
-		.addColorAttachment(colorAttachment)
-	);
-
 	this->mRenderPass.addDependency(
-		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
+		{
+			// dependee
+			{
+				std::nullopt,
+				graphics::PipelineStage::Enum::eColorAttachmentOutput
+			},
+			// depender
+			{
+				0,
+				graphics::PipelineStage::Enum::eColorAttachmentOutput,
+				graphics::Access::Enum::eColorAttachmentWrite
+			}
+		}
 	);
 
 	this->mRenderPass.create();
@@ -289,8 +310,7 @@ void ImGuiRenderer::render(graphics::Frame* frame, ui32 idxCurrentImage)
 	
 	auto cmdBuffer = graphics::extract<VkCommandBuffer>(&this->mpCurrentFrame->cmdBuffer());
 
-	std::array<f32, 4U> clearColor = { 0.0f, 0.0f, 0.0f, 1.00f };
-	auto cmd = this->mpCurrentFrame->beginRenderPass(&mSwapChain, clearColor);
+	auto cmd = this->mpCurrentFrame->beginRenderPass(&mSwapChain);
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuffer);
 	this->mpCurrentFrame->endRenderPass(cmd);
 	this->mpCurrentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), {});

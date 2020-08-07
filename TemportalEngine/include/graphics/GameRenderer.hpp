@@ -41,10 +41,9 @@ public:
 
 	void setStaticUniform(std::shared_ptr<Uniform> uniform);
 	
-	void setBindings(std::vector<AttributeBinding> bindings);
-	void addShader(std::shared_ptr<ShaderModule> shader);
-	void setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings);
-	void createRenderPass(std::shared_ptr<asset::RenderPass> renderPass);
+	// TODO: replace idx with string identifier
+	void setBindings(uIndex const &idxPipeline, std::vector<AttributeBinding> bindings);
+	void setRenderPass(std::shared_ptr<asset::RenderPass> renderPass);
 
 	// Creates an image sampler from some asset
 	// TODO: Take in an asset object
@@ -94,11 +93,17 @@ private:
 	void onFramePresented(uIndex idxFrame) override;
 
 private:
+	struct RenderPassPipeline
+	{
+		std::shared_ptr<Pipeline> pipeline;
+		std::vector<DescriptorGroup> descriptorGroups;
+	};
 
 	CommandPool mCommandPoolTransient;
 	std::vector<IRender*> mpRenders;
 
-	RenderPass mRenderPass;
+	std::shared_ptr<RenderPass> mpRenderPass;
+	std::vector<RenderPassPipeline> mPipelineSets;
 
 	// Pool for all descriptors that are used in this renderer
 	DescriptorPool mDescriptorPool;
@@ -120,13 +125,8 @@ private:
 
 	std::vector<FrameBuffer> mFrameBuffers;
 
-	DescriptorGroup mDescriptorGroup;
-	Pipeline mPipeline;
-
 	std::shared_ptr<StringRenderer> mpStringRenderer;
 	std::shared_ptr<Memory> mpMemoryFontImages;
-	DescriptorGroup mDescriptorGroupUI;
-	Pipeline mPipelineUI;
 	std::shared_ptr<Memory> mpMemoryUIBuffers;
 	Buffer mVertexBufferUI, mIndexBufferUI;
 	ui32 mIndexCountUI;

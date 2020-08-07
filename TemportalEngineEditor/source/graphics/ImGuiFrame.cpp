@@ -68,14 +68,12 @@ void ImGuiFrame::submitOneOff(
 	this->mpDevice.lock()->logical().waitUntilIdle();
 }
 
-Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearcolor)
+Command ImGuiFrame::beginRenderPass(SwapChain const *pSwapChain)
 {
 	this->mCommandPool.resetPool();
 	return this->mCommandBuffer
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-		.clearColor(clearcolor)
-		.setRenderArea({ 0, 0 }, pSwapChain->getResolution())
-		.beginRenderPass(this->mpRenderPass, &this->mFrameBuffer);
+		.beginRenderPass(this->mpRenderPass, &this->mFrameBuffer, pSwapChain->getResolution());
 }
 
 CommandBuffer& ImGuiFrame::cmdBuffer()

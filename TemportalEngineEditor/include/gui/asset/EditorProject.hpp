@@ -10,7 +10,7 @@
 
 #include <version.h>
 
-FORWARD_DEF(NS_ASSET, class Shader);
+FORWARD_DEF(NS_ASSET, class RenderPass);
 
 NS_GUI
 
@@ -36,10 +36,8 @@ private:
 	// Graphics
 	gui::PropertyGpuPreference mGpuPreference;
 
-	asset::TypedAssetPath<asset::Shader> mSavedShaderVert;
-	gui::FieldAsset mFieldShaderVert;
-	asset::TypedAssetPath<asset::Shader> mSavedShaderFrag;
-	gui::FieldAsset mFieldShaderFrag;
+	asset::TypedAssetPath<asset::RenderPass> mSavedRenderPass;
+	gui::FieldAsset mFieldRenderPass;
 
 };
 

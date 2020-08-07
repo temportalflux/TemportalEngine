@@ -4,7 +4,7 @@
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 #include "gui/widget/Optional.hpp"
-#include "asset/Shader.hpp"
+#include "asset/RenderPassAsset.hpp"
 
 #include <imgui.h>
 
@@ -41,10 +41,8 @@ void EditorProject::setAsset(asset::AssetPtrStrong assetGeneric)
 		this->mGpuPreference = gui::PropertyGpuPreference(asset->getPhysicalDevicePreference());
 	}
 
-	this->mSavedShaderVert = asset->mVertexShader;
-	this->mFieldShaderVert.updateAssetList(asset->mVertexShader.getTypeFilter());
-	this->mSavedShaderFrag = asset->mFragmentShader;
-	this->mFieldShaderFrag.updateAssetList(asset->mFragmentShader.getTypeFilter());
+	this->mSavedRenderPass = asset->mRenderPass;
+	this->mFieldRenderPass.updateAssetList(asset->mRenderPass.getTypeFilter());
 
 }
 
@@ -84,11 +82,7 @@ void EditorProject::renderContent()
 	//auto str = this->mSavedShaderVert.toString();
 	//ImGui::InputText("Vertex Shader", str.data(), str.size(), ImGuiInputTextFlags_ReadOnly);
 	//ImGui::SameLine();
-	if (this->mFieldShaderVert.render("vertShader", "Vertex Shader", this->mSavedShaderVert.path()))
-	{
-		this->markAssetDirty(Bit_Graphics_Shader);
-	}
-	if (this->mFieldShaderFrag.render("fragShader", "Fragment Shader", this->mSavedShaderFrag.path()))
+	if (this->mFieldRenderPass.render("renderPass", "Render Pass", this->mSavedRenderPass.path()))
 	{
 		this->markAssetDirty(Bit_Graphics_Shader);
 	}
@@ -101,7 +95,6 @@ void EditorProject::saveAsset()
 	asset->setName(this->mFieldName.string());
 	asset->setVersion(this->mSavedVersion);
 	asset->setPhysicalDevicePreference(this->mGpuPreference.value());
-	asset->mVertexShader = this->mSavedShaderVert;
-	asset->mFragmentShader = this->mSavedShaderFrag;
+	asset->mRenderPass = this->mSavedRenderPass;
 	AssetEditor::saveAsset();
 }

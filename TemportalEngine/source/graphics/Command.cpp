@@ -21,25 +21,6 @@ vk::CommandBuffer* castBuf(void* ptr)
 	return reinterpret_cast<vk::CommandBuffer*>(ptr);
 }
 
-Command& Command::clearColor(std::array<f32, 4U> color)
-{
-	this->mClearValues.push_back(vk::ClearValue().setColor(vk::ClearColorValue(color)));
-	return *this;
-}
-
-Command& Command::clearDepth(f32 depth, ui32 stencil)
-{
-	this->mClearValues.push_back(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(depth, stencil)));
-	return *this;
-}
-
-Command& Command::setRenderArea(math::Vector2Int const offset, math::Vector2UInt const size)
-{
-	this->mRenderAreaOffset = offset;
-	this->mRenderAreaSize = size;
-	return *this;
-}
-
 Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 {
 	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
@@ -137,18 +118,39 @@ Command& Command::copyBufferToImage(Buffer *src, Image *dest)
 	return *this;
 }
 
-Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer)
+Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer, math::Vector2UInt const resolution)
 {
+	// TODO: RenderPass objects can be configured with multiple clear values so long as the clear values correspond to a specific FrameBuffer attachment
+	auto clearValues = std::vector<vk::ClearValue>();
+	if (pRenderPass->clearColor())
+	{
+		math::Vector4 clearColor = *pRenderPass->clearColor();
+		clearValues.push_back(vk::ClearValue().setColor(vk::ClearColorValue(
+			std::array<f32, 4>({ clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w() })
+		)));
+	}
+	if (pRenderPass->clearDepthStencil())
+	{
+		auto depthStencil = *pRenderPass->clearDepthStencil();
+		clearValues.push_back(vk::ClearValue().setDepthStencil(vk::ClearDepthStencilValue(
+			depthStencil.first, depthStencil.second
+		)));
+	}
+
+	auto renderArea = pRenderPass->renderArea();
+	renderArea.offset *= resolution.toFloat();
+	renderArea.size *= resolution.toFloat();
+
 	castBuf(this->mpVulkanBuffer)->beginRenderPass(
 		vk::RenderPassBeginInfo()
 		.setRenderPass(extract<vk::RenderPass>(pRenderPass))
 		.setFramebuffer(extract<vk::Framebuffer>(pFrameBuffer))
-		.setClearValueCount((ui32)this->mClearValues.size())
-		.setPClearValues(this->mClearValues.data())
+		.setClearValueCount((ui32)clearValues.size())
+		.setPClearValues(clearValues.data())
 		.setRenderArea(
 			vk::Rect2D()
-			.setOffset({ this->mRenderAreaOffset.x(), this->mRenderAreaOffset.y() })
-			.setExtent({ this->mRenderAreaSize.x(), this->mRenderAreaSize.y() })
+			.setOffset({ (i32)renderArea.offset.x(), (i32)renderArea.offset.y() })
+			.setExtent({ (ui32)renderArea.size.x(), (ui32)renderArea.size.y() })
 		),
 		vk::SubpassContents::eInline
 	);
@@ -161,13 +163,13 @@ Command& Command::setViewport(vk::Viewport const &viewport)
 	return *this;
 }
 
-Command& Command::bindPipeline(Pipeline const *pPipeline)
+Command& Command::bindPipeline(std::shared_ptr<Pipeline> pPipeline)
 {
 	castBuf(this->mpVulkanBuffer)->bindPipeline(vk::PipelineBindPoint::eGraphics, pPipeline->mPipeline.get());
 	return *this;
 }
 
-Command& Command::bindDescriptorSet(Pipeline const *pPipeline, vk::DescriptorSet const *set)
+Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, vk::DescriptorSet const *set)
 {
 	castBuf(this->mpVulkanBuffer)->bindDescriptorSets(
 		vk::PipelineBindPoint::eGraphics, pPipeline->mLayout.get(),

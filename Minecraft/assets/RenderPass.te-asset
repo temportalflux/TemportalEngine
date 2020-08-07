@@ -6,13 +6,13 @@
 			0.0,
 			0.0,
 			0.0,
-			0.0
+			1.0
 		]
 	},
 	"clearDepthStencil": {
 		"hasValue": true,
 		"value": {
-			"first": 0.0,
+			"first": 1.0,
 			"second": 0
 		}
 	},
@@ -27,7 +27,8 @@
 		]
 	},
 	"pipelines": [
-		"pipeline:assets/WorldPipeline.te-asset"
+		"pipeline:assets/WorldPipeline.te-asset",
+		"pipeline:assets/UIPipeline.te-asset"
 	],
 	"phases": [
 		{

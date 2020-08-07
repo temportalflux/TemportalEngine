@@ -28,7 +28,7 @@ public:
 		vk::Queue const *pQueue,
 		std::function<void(CommandBuffer &buffer)> write
 	);
-	Command beginRenderPass(SwapChain const *pSwapChain, std::array<f32, 4U> clearColor);
+	Command beginRenderPass(SwapChain const *pSwapChain);
 	CommandBuffer& cmdBuffer();
 	void endRenderPass(Command &cmd);
 	void submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers) override;

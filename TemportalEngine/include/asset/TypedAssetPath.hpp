@@ -32,7 +32,7 @@ public:
 	std::string toString() const { return this->mPath.toString(); }
 	AssetPath& path() { return this->mPath; }
 
-	std::shared_ptr<TAsset> load(asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true)
+	std::shared_ptr<TAsset> load(asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true) const
 	{
 		return asset::readFromDisk<TAsset>(this->mPath.toAbsolutePath(), type, bShouldHaveBeenScanned);
 	}

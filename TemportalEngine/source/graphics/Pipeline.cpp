@@ -32,19 +32,14 @@ std::vector<vk::PipelineShaderStageCreateInfo> Pipeline::createShaderStages() co
 	return shaderStages;
 }
 
-Pipeline& Pipeline::setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor)
+Pipeline& Pipeline::addViewArea(graphics::Viewport const &viewport, graphics::Area const &scissor)
 {
-	this->mViewport = viewport;
-	this->mScissor = scissor;
+	this->mViewports.push_back(viewport);
+	this->mScissors.push_back(scissor);
 	return *this;
 }
 
-vk::Viewport const& Pipeline::getViewport() const
-{
-	return this->mViewport;
-}
-
-Pipeline& Pipeline::setFrontFace(vk::FrontFace const face)
+Pipeline& Pipeline::setFrontFace(graphics::FrontFace::Enum const face)
 {
 	this->mFrontFace = face;
 	return *this;
@@ -56,18 +51,24 @@ Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
 	return *this;
 }
 
-Pipeline& Pipeline::setRenderPass(RenderPass *pRenderPass)
+Pipeline& Pipeline::setRenderPass(std::weak_ptr<RenderPass> pRenderPass)
 {
-	this->mRenderPass = graphics::extract<vk::RenderPass>(pRenderPass);
+	this->mpRenderPass = pRenderPass;
 	return *this;
 }
 
-Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup*> descriptors)
+Pipeline& Pipeline::setResolution(math::Vector2UInt resoltion)
 {
-	this->mDescriptorLayouts.resize(descriptors.size());
+	this->mResolutionFloat = resoltion.toFloat();
+	return *this;
+}
+
+Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup> *descriptors)
+{
+	this->mDescriptorLayouts.resize(descriptors->size());
 	std::transform(
-		descriptors.begin(), descriptors.end(), this->mDescriptorLayouts.begin(),
-		[](DescriptorGroup* descriptor) { return descriptor->layout(); }
+		descriptors->begin(), descriptors->end(), this->mDescriptorLayouts.begin(),
+		[](DescriptorGroup const &descriptor) { return descriptor.layout(); }
 	);
 	return *this;
 }
@@ -116,11 +117,38 @@ void Pipeline::create()
 		.setTopology(vk::PrimitiveTopology::eTriangleList)
 		.setPrimitiveRestartEnable(false);
 
+	auto viewports = std::vector<vk::Viewport>(this->mViewports.size());
+	std::transform(
+		this->mViewports.begin(), this->mViewports.end(), viewports.begin(),
+		[&](graphics::Viewport const& viewport) -> vk::Viewport
+		{
+			auto offset = viewport.offset * this->mResolutionFloat;
+			auto size = viewport.size * this->mResolutionFloat;
+			return vk::Viewport()
+				.setX(offset.x()).setY(offset.y())
+				.setWidth(size.x()).setHeight(size.y())
+				.setMinDepth(viewport.depthRange.x()).setMaxDepth(viewport.depthRange.y());
+		}
+	);
+
+	auto scissors = std::vector<vk::Rect2D>(this->mScissors.size());
+	std::transform(
+		this->mScissors.begin(), this->mScissors.end(), scissors.begin(),
+		[&](graphics::Area const& scissor) -> vk::Rect2D
+		{
+			auto offset = scissor.offset * this->mResolutionFloat;
+			auto size = scissor.size * this->mResolutionFloat;
+			return vk::Rect2D()
+				.setOffset({ (i32)offset.x(), (i32)offset.y() })
+				.setExtent({ (ui32)size.x(), (ui32)size.y() });
+		}
+	);
+
 	auto infoViewportState = vk::PipelineViewportStateCreateInfo()
-		.setViewportCount(1)
-		.setPViewports(&mViewport)
-		.setScissorCount(1)
-		.setPScissors(&mScissor);
+		.setViewportCount((ui32)viewports.size())
+		.setPViewports(viewports.data())
+		.setScissorCount((ui32)scissors.size())
+		.setPScissors(scissors.data());
 
 	auto infoRasterization = vk::PipelineRasterizationStateCreateInfo()
 		.setDepthClampEnable(false)
@@ -128,7 +156,7 @@ void Pipeline::create()
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(this->mFrontFace)
+		.setFrontFace((vk::FrontFace)this->mFrontFace)
 		.setDepthBiasEnable(false)
 		.setDepthBiasConstantFactor(0.0f)
 		.setDepthBiasClamp(0.0f)
@@ -200,7 +228,7 @@ void Pipeline::create()
 	
 	auto infoPipeline = vk::GraphicsPipelineCreateInfo()
 		.setStageCount((ui32)stages.size()).setPStages(stages.data())
-		.setRenderPass(this->mRenderPass)
+		.setRenderPass(graphics::extract<vk::RenderPass>(this->mpRenderPass.lock().get()))
 		.setSubpass(0)
 		.setLayout(mLayout.get())
 		// Configurables
@@ -237,11 +265,11 @@ void Pipeline::invalidate()
 
 void Pipeline::resetConfiguration()
 {
-	this->mViewport = vk::Viewport();
-	this->mScissor = vk::Rect2D();
-	this->mFrontFace = vk::FrontFace();
+	this->mViewports.clear();
+	this->mScissors.clear();
+	this->mFrontFace = graphics::FrontFace::Enum::eClockwise;
 	this->mBlendMode = std::nullopt;
-	this->mRenderPass = vk::RenderPass();
+	this->mpRenderPass.reset();
 	this->mDescriptorLayouts.clear();
 }
 

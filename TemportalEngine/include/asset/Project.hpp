@@ -6,7 +6,7 @@
 #include "graphics/PhysicalDevicePreference.hpp"
 #include "graphics/LogicalDeviceInfo.hpp"
 
-FORWARD_DEF(NS_ASSET, class Shader)
+FORWARD_DEF(NS_ASSET, class RenderPass)
 
 NS_ASSET
 
@@ -41,8 +41,7 @@ public:
 	graphics::LogicalDeviceInfo getGraphicsDeviceInitInfo() const;
 
 	// TODO: Temporary asset referencing to test UI and make initialization easier. Move these to a camera actor/pipeline asset when one is available.
-	TypedAssetPath<asset::Shader> mVertexShader;
-	TypedAssetPath<asset::Shader> mFragmentShader;
+	TypedAssetPath<asset::RenderPass> mRenderPass;
 
 private:
 	std::string mName;
@@ -68,8 +67,7 @@ protected:
 		);
 		// Graphics
 		archive(cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference));
-		archive(cereal::make_nvp("vertShader", this->mVertexShader));
-		archive(cereal::make_nvp("fragShader", this->mFragmentShader));
+		archive(cereal::make_nvp("renderPass", this->mRenderPass));
 	}
 
 	template <typename Archive>
@@ -83,8 +81,7 @@ protected:
 		);
 		// Graphics
 		archive(cereal::make_nvp("gpuPreference", this->mGraphicsDevicePreference));
-		archive(cereal::make_nvp("vertShader", this->mVertexShader));
-		archive(cereal::make_nvp("fragShader", this->mFragmentShader));
+		archive(cereal::make_nvp("renderPass", this->mRenderPass));
 	}
 #pragma endregion
 

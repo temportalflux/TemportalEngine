@@ -4,6 +4,8 @@
 
 #include "graphics/AttributeBinding.hpp"
 #include "graphics/BlendMode.hpp"
+#include "graphics/Area.hpp"
+#include "graphics/types.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -22,14 +24,14 @@ public:
 
 	Pipeline& setBindings(std::vector<AttributeBinding> bindings);
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
-	Pipeline& setViewArea(vk::Viewport const &viewport, vk::Rect2D const &scissor);
-	Pipeline& setFrontFace(vk::FrontFace const face);
+	Pipeline& addViewArea(graphics::Viewport const &viewport, graphics::Area const &scissor);
+	Pipeline& setFrontFace(graphics::FrontFace::Enum const face);
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
 
-	Pipeline& setRenderPass(RenderPass *pRenderPass);
-	Pipeline& setDescriptors(std::vector<DescriptorGroup*> descriptors);
+	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
+	Pipeline& setDescriptors(std::vector<DescriptorGroup> *descriptors);
 
-	vk::Viewport const& getViewport() const;
+	Pipeline& setResolution(math::Vector2UInt resoltion);
 
 	bool isValid() const;
 	void create() override;
@@ -43,12 +45,13 @@ private:
 	std::unordered_map<vk::ShaderStageFlagBits, std::shared_ptr<ShaderModule>> mShaderPtrs;
 	std::vector<AttributeBinding> mAttributeBindings;
 
-	vk::Viewport mViewport;
-	vk::Rect2D mScissor;
-	vk::FrontFace mFrontFace;
+	std::vector<graphics::Viewport> mViewports;
+	std::vector<graphics::Area> mScissors;
+	graphics::FrontFace::Enum mFrontFace;
 	std::optional<BlendMode> mBlendMode;
 
-	vk::RenderPass mRenderPass;
+	std::weak_ptr<graphics::RenderPass> mpRenderPass;
+	math::Vector2 mResolutionFloat;
 	std::vector<vk::DescriptorSetLayout> mDescriptorLayouts;
 
 	vk::UniquePipelineLayout mLayout;

@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "graphics/Buffer.hpp"
+#include "graphics/types.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -12,6 +13,7 @@ class DescriptorPool;
 class GraphicsDevice;
 class ImageSampler;
 class ImageView;
+
 
 class DescriptorGroup
 {
@@ -33,25 +35,25 @@ public:
 	 *		AND the value of the binding in the shader it will be mapped to `layout(binding = #) uniform...`
 	 */
 	DescriptorGroup& addBinding(
-		ui32 const idx,
-		vk::DescriptorType const type,
-		vk::ShaderStageFlags const shaderStage,
+		std::string const &id, uIndex const idx,
+		graphics::DescriptorType::Enum const type,
+		graphics::ShaderStage::Enum const shaderStage,
 		ui32 count = 1 // note: useful for arrays of uniforms as a descriptor
 	);
 
 	DescriptorGroup& attachToBinding(
-		ui32 const idx,
+		std::string const &id,
 		graphics::Buffer &buffer, ui32 const offset
 	);
 
 	// Attaches a buffer to each set created based on the `count` passed to `create`
 	DescriptorGroup& attachToBinding(
-		ui32 const idx,
+		std::string const &id,
 		std::vector<graphics::Buffer> &buffers, ui32 const offset
 	);
 
 	DescriptorGroup& attachToBinding(
-		ui32 const idx,
+		std::string const &id,
 		vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler
 	);
 
@@ -65,6 +67,7 @@ public:
 private:
 	// The actual descriptor bindings for how the descriptors attach to parts of the pipeline
 	std::vector<vk::DescriptorSetLayoutBinding> mBindings;
+	std::unordered_map<std::string, uIndex> mBindingIdxById;
 
 	ui32 mSetCount;
 

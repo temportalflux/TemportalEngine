@@ -4,8 +4,10 @@
 #include "asset/Font.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "asset/RenderPassAsset.hpp"
+#include "asset/Shader.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "asset/TypedAssetPath.hpp"
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "graphics/VulkanApi.hpp"
@@ -44,10 +46,12 @@ void GameRenderer::invalidate()
 	this->mpMemoryFontImages.reset();
 
 	this->destroyRenderChain();
+
+	for (auto& pipelineSet : this->mPipelineSets) pipelineSet.pipeline->destroyShaders();
+	this->mPipelineSets.clear();
+
 	this->mUniformStaticBuffersPerFrame.clear();
 	this->mpMemoryUniformBuffers->destroy();
-	this->mPipeline.destroyShaders();
-	this->mPipelineUI.destroyShaders();
 
 	this->mVertexBufferUI.destroy();
 	this->mIndexBufferUI.destroy();
@@ -117,60 +121,68 @@ void GameRenderer::initializeTransientCommandPool()
 		.create();
 }
 
-void GameRenderer::setBindings(std::vector<AttributeBinding> bindings)
+void GameRenderer::setBindings(uIndex const &idxPipeline, std::vector<AttributeBinding> bindings)
 {
-	this->mPipeline.setBindings(bindings);
+	this->mPipelineSets[idxPipeline].pipeline->setBindings(bindings);
 }
 
-void GameRenderer::addShader(std::shared_ptr<ShaderModule> shader)
-{
-	this->mPipeline.addShader(shader);
-}
-
-void GameRenderer::setUIShaderBindings(std::shared_ptr<ShaderModule> shaderVert, std::shared_ptr<ShaderModule> shaderFrag, std::vector<AttributeBinding> bindings)
-{
-	this->mPipelineUI.addShader(shaderVert).addShader(shaderFrag).setBindings(bindings);
-}
-
-void GameRenderer::createRenderPass(std::shared_ptr<asset::RenderPass> asset)
+void GameRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 {
 	// TODO: Don't use default make_shared
-	// TODO: Store by assetPath as key in a registry so the object doesnt go out of scope
-	auto renderPass = std::make_shared<graphics::RenderPass>();
-	renderPass->setDevice(this->mpGraphicsDevice);
+	this->mpRenderPass = std::make_shared<graphics::RenderPass>();
+	this->mpRenderPass->setDevice(this->mpGraphicsDevice);
 
-	auto& colorAttachment = renderPass->addAttachment(
-		RenderPassAttachment()
-		//.setFormat(this->mSwapChain.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		// Constant: Cannot put in asset
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
-	);
-	auto& depthAttachment = renderPass->addAttachment(
-		RenderPassAttachment()
-		//.setFormat((ui32)this->mDepthImage.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		// Constant: Cannot put in asset
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal)
-	);
+	this->mpRenderPass->setClearColor(asset->getClearColorValue());
+	this->mpRenderPass->setClearDepthStencil(asset->getDepthStencilClearValues());
+	this->mpRenderPass->setRenderArea(asset->getRenderArea());
 
-	auto& onlyPhase = renderPass->addPhase(
-		RenderPassPhase()
-		.addColorAttachment(colorAttachment)
-		.setDepthAttachment(depthAttachment)
-	);
+	for (auto phase : asset->getPhases())
+	{
+		this->mpRenderPass->addPhase(phase);
+	}
+	for (auto dependency : asset->getPhaseDependencies())
+	{
+		this->mpRenderPass->addDependency(dependency);
+	}
 
-	renderPass->addDependency(
-		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
-	);
-	
-	// TODO: Call during createRenderChain
-	//renderPass->create();
+	// TODO: All pipelines need a string key to be identified by
+	for (auto &typedAssetPath : asset->getPipelineRefs())
+	{
+		RenderPassPipeline pipelineSet;
+
+		// Perform a synchronous load to fetch the asset
+		auto pipelineAsset = typedAssetPath.load(asset::EAssetSerialization::Binary);
+
+		// TODO: Don't use default make_shared
+		pipelineSet.pipeline = std::make_shared<graphics::Pipeline>();
+		pipelineSet.pipeline->setDevice(this->mpGraphicsDevice);
+		pipelineSet.pipeline->setRenderPass(this->mpRenderPass);
+		
+		// TODO: offset and size will need to be scaled by current frame resolution
+		pipelineSet.pipeline->addViewArea(pipelineAsset->getViewport(), pipelineAsset->getScissor());
+		pipelineSet.pipeline->setBlendMode(pipelineAsset->getBlendMode());
+		pipelineSet.pipeline->setFrontFace(pipelineAsset->getFrontFace());
+
+		// Perform a synchronous load on each shader to create the shader modules
+		pipelineSet.pipeline->addShader(pipelineAsset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
+		pipelineSet.pipeline->addShader(pipelineAsset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());
+
+		// Create descriptor groups for the pipeline
+		{
+			auto const& descriptors = pipelineAsset->getDescriptors();
+			auto descriptorGroup = DescriptorGroup();
+			descriptorGroup.setBindingCount(descriptors.size());
+			for (uIndex i = 0; i < descriptors.size(); ++i)
+			{
+				descriptorGroup.addBinding(descriptors[i].id, i, descriptors[i].type, descriptors[i].stage);
+			}
+			pipelineSet.descriptorGroups.push_back(std::move(descriptorGroup));
+		}
+
+		pipelineSet.pipeline->setDescriptors(&pipelineSet.descriptorGroups);
+
+		this->mPipelineSets.push_back(std::move(pipelineSet));
+	}
 }
 
 uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)
@@ -353,9 +365,16 @@ void GameRenderer::destroyRenderChain()
 {
 	this->destroyFrames();
 
+	for (auto& pipelineSet : this->mPipelineSets)
+	{
+		pipelineSet.pipeline->invalidate();
+		for (auto& descriptorGroup : pipelineSet.descriptorGroups)
+		{
+			descriptorGroup.invalidate();
+		}
+	}
+
 	this->destroyCommandObjects();
-	this->mDescriptorGroupUI.invalidate();
-	this->mDescriptorGroup.invalidate();
 	this->mDescriptorPool.invalidate();
 
 	this->destroyRenderPass();
@@ -368,47 +387,19 @@ void GameRenderer::destroyRenderChain()
 
 void GameRenderer::createRenderPass()
 {
-	this->mRenderPass.setDevice(this->mpGraphicsDevice);
-
-	auto& colorAttachment = this->mRenderPass.addAttachment(
-		RenderPassAttachment()
-		.setFormat(this->mSwapChain.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eStore)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::ePresentSrcKHR)
-	);
-	auto& depthAttachment = this->mRenderPass.addAttachment(
-		RenderPassAttachment()
-		.setFormat((ui32)this->mDepthImage.getFormat())
-		.setSamples(vk::SampleCountFlagBits::e1)
-		.setGeneralOperations(vk::AttachmentLoadOp::eClear, vk::AttachmentStoreOp::eDontCare)
-		.setStencilOperations(vk::AttachmentLoadOp::eDontCare, vk::AttachmentStoreOp::eDontCare)
-		.setLayouts(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal)
-	);
-
-	auto& onlyPhase = this->mRenderPass.addPhase(
-		RenderPassPhase()
-		.addColorAttachment(colorAttachment)
-		.setDepthAttachment(depthAttachment)
-	);
-
-	this->mRenderPass.addDependency(
-		{ std::nullopt, vk::PipelineStageFlagBits::eColorAttachmentOutput },
-		{ onlyPhase, vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::AccessFlagBits::eColorAttachmentWrite }
-	);
-
-	this->mRenderPass.create();
+	this->mpRenderPass->setImageFormatType(graphics::ImageFormatReferenceType::Enum::Viewport, (ui32)this->mSwapChain.getFormat());
+	this->mpRenderPass->setImageFormatType(graphics::ImageFormatReferenceType::Enum::Depth, (ui32)this->mDepthImage.getFormat());
+	this->mpRenderPass->create();
 }
 
 RenderPass* GameRenderer::getRenderPass()
 {
-	return &this->mRenderPass;
+	return this->mpRenderPass.get();
 }
 
 void GameRenderer::destroyRenderPass()
 {
-	this->mRenderPass.destroy();
+	this->mpRenderPass->destroy();
 }
 
 void GameRenderer::createUniformBuffers()
@@ -477,23 +468,34 @@ void GameRenderer::destroyDepthResources()
 void GameRenderer::createDescriptors()
 {	
 	auto& samplerPair = this->mTextureDescriptorPairs[0];
-	this->mDescriptorGroup
-		.setBindingCount(2)
-		.setAmount((ui32)this->mFrameImageViews.size())
-		.addBinding(0, vk::DescriptorType::eUniformBuffer, vk::ShaderStageFlagBits::eVertex)
-		.attachToBinding(0, this->mUniformStaticBuffersPerFrame, 0)
-		.addBinding(1, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
-		.attachToBinding(1, vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second])
-		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
-		.writeAttachments(this->mpGraphicsDevice);
+
+	for (auto& pipelineSet : this->mPipelineSets)
+	{
+		for (auto& descriptorGroup : pipelineSet.descriptorGroups)
+		{
+			descriptorGroup.setAmount((ui32)this->mFrameImageViews.size());
+		}
+	}
+
+	// 0 = WorldPipeline: 0 = Only DescriptorGroup
+	this->mPipelineSets[0].descriptorGroups[0]
+		.attachToBinding("mvpUniform", this->mUniformStaticBuffersPerFrame, 0)
+		.attachToBinding("imageAtlas", vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second]);
+	
 	auto& font = this->stringRenderer()->getFont();
-	this->mDescriptorGroupUI
-		.setBindingCount(1)
-		.setAmount((ui32)this->mFrameImageViews.size())
-		.addBinding(0, vk::DescriptorType::eCombinedImageSampler, vk::ShaderStageFlagBits::eFragment)
-		.attachToBinding(0, vk::ImageLayout::eShaderReadOnlyOptimal, &font.faces()[0].view(), &font.faces()[0].sampler())
-		.create(this->mpGraphicsDevice, &this->mDescriptorPool)
-		.writeAttachments(this->mpGraphicsDevice);
+	// 1 = UIPipeline: 0 = Only DescriptorGroup
+	this->mPipelineSets[1].descriptorGroups[0]
+		.attachToBinding("fontAtlas", vk::ImageLayout::eShaderReadOnlyOptimal, &font.faces()[0].view(), &font.faces()[0].sampler());
+	
+	for (auto& pipelineSet : this->mPipelineSets)
+	{
+		for (auto& descriptorGroup : pipelineSet.descriptorGroups)
+		{
+			descriptorGroup
+				.create(this->mpGraphicsDevice, &this->mDescriptorPool)
+				.writeAttachments(this->mpGraphicsDevice);
+		}
+	}
 }
 
 void GameRenderer::createCommandObjects()
@@ -506,7 +508,7 @@ void GameRenderer::createCommandObjects()
 		for (uSize i = 0; i < viewCount; ++i)
 		{
 			this->mFrameBuffers[i]
-				.setRenderPass(&this->mRenderPass)
+				.setRenderPass(this->getRenderPass())
 				.setResolution(this->mSwapChain.getResolution())
 				.addAttachment(&this->mFrameImageViews[i])
 				.addAttachment(&this->mDepthView)
@@ -514,35 +516,12 @@ void GameRenderer::createCommandObjects()
 		}
 	}
 
-	// color = (newColor.alpha * newColor.rgb) + ((1 - newColor.alpha) * oldColor.rgb)
-	// alpha = (1 * newColor.alpha) + (0 * oldColor.alpha)
-	BlendMode overlayBlendMode;
-	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eR;
-	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eG;
-	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eB;
-	overlayBlendMode.writeMask |= graphics::ColorComponent::Enum::eA;
-	overlayBlendMode.blend = {
-		{ graphics::BlendOperation::Enum::eAdd, graphics::BlendFactor::Enum::eSrcAlpha, graphics::BlendFactor::Enum::eOneMinusSrcAlpha },
-		{ graphics::BlendOperation::Enum::eAdd, graphics::BlendFactor::Enum::eOne, graphics::BlendFactor::Enum::eZero }
-	};
-
-	auto& fullViewport = vk::Viewport()
-		.setX(0).setY(0)
-		.setWidth((f32)resolution.x()).setHeight((f32)resolution.y())
-		.setMinDepth(0.0f).setMaxDepth(1.0f);
-	this->mPipeline.setDevice(this->mpGraphicsDevice);
-	this->mPipeline
-		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
-		.setFrontFace(vk::FrontFace::eCounterClockwise)
-		.setRenderPass(&this->mRenderPass).setDescriptors({ &this->mDescriptorGroup })
-		.create();
-	this->mPipelineUI.setDevice(this->mpGraphicsDevice);
-	this->mPipelineUI
-		.setViewArea(fullViewport, vk::Rect2D().setOffset({ 0, 0 }).setExtent({ resolution.x(), resolution.y() }))
-		.setFrontFace(vk::FrontFace::eClockwise)
-		.setBlendMode(overlayBlendMode)
-		.setRenderPass(&this->mRenderPass).setDescriptors({ &this->mDescriptorGroupUI })
-		.create();
+	for (auto& pipelineSet : this->mPipelineSets)
+	{
+		pipelineSet.pipeline->setResolution(resolution);
+		pipelineSet.pipeline->setDescriptors(&pipelineSet.descriptorGroups);
+		pipelineSet.pipeline->create();
+	}
 
 	this->mCommandPool.setDevice(this->mpGraphicsDevice);
 	this->mCommandPool
@@ -558,22 +537,17 @@ void GameRenderer::recordCommandBufferInstructions()
 	for (uIndex idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
 	{
 		auto cmd = this->mCommandBuffers[idxFrame].beginCommand();
-		// Clear commands MUST be passed in the same order as the attachments on framebuffers
-		cmd.clearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
-		cmd.clearDepth(1.0f, 0);
-		cmd.setRenderArea({ 0, 0 }, this->mSwapChain.getResolution());
-		cmd.beginRenderPass(&this->mRenderPass, &this->mFrameBuffers[idxFrame]);
+		cmd.beginRenderPass(this->getRenderPass(), &this->mFrameBuffers[idxFrame], this->mSwapChain.getResolution());
 		{
-			// TODO: Should each render system have control over the descriptor set and pipeline?
-			cmd.bindDescriptorSet(&this->mPipeline, &this->mDescriptorGroup[idxFrame]);
-			cmd.bindPipeline(&this->mPipeline);
+			cmd.bindDescriptorSets(this->mPipelineSets[0].pipeline, &this->mPipelineSets[0].descriptorGroups[0][idxFrame]);
+			cmd.bindPipeline(this->mPipelineSets[0].pipeline);
 			for (auto* pRender : this->mpRenders)
 			{
 				pRender->draw(&cmd);
 			}
 
-			cmd.bindDescriptorSet(&this->mPipelineUI, &this->mDescriptorGroupUI[idxFrame]);
-			cmd.bindPipeline(&this->mPipelineUI);
+			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, &this->mPipelineSets[1].descriptorGroups[0][idxFrame]);
+			cmd.bindPipeline(this->mPipelineSets[1].pipeline);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
 			cmd.draw((ui32)this->mIndexBufferUI.getSize() / sizeof(ui16), 1);
@@ -588,8 +562,6 @@ void GameRenderer::destroyCommandObjects()
 	this->mCommandPoolTransient.destroy();
 	this->mCommandBuffers.clear();
 	this->mCommandPool.destroy();
-	this->mPipeline.destroy();
-	this->mPipelineUI.destroy();
 	this->mFrameBuffers.clear();
 }
 
