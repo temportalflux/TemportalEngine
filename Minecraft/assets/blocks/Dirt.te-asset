@@ -4,12 +4,13 @@
 		"module": "minecraft",
 		"name": "dirt"
 	},
-	"textures": {
-		"right": "texture:assets/textures/Dirt.te-asset",
-		"left": "texture:assets/textures/Dirt.te-asset",
-		"front": "texture:assets/textures/Dirt.te-asset",
-		"back": "texture:assets/textures/Dirt.te-asset",
-		"up": "texture:assets/textures/Dirt.te-asset",
-		"down": "texture:assets/textures/Dirt.te-asset"
-	}
+  "textures": {
+    "sampler": ":",
+    "right": "texture:assets/textures/Dirt.te-asset",
+    "left": "texture:assets/textures/Dirt.te-asset",
+    "front": "texture:assets/textures/Dirt.te-asset",
+    "back": "texture:assets/textures/Dirt.te-asset",
+    "up": "texture:assets/textures/Dirt.te-asset",
+    "down": "texture:assets/textures/Dirt.te-asset"
+  }
 }

@@ -28,9 +28,6 @@
     <Filter Include="assets\textures\block">
       <UniqueIdentifier>{6b32f480-109f-4508-a98b-de309e01346b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="game">
-      <UniqueIdentifier>{c487606b-79a1-42b9-926a-c88ea3cff416}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -43,10 +40,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderCube.hpp">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\Game.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockRegistry.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -58,9 +55,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderCube.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\Game.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\BlockRegistry.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset">
@@ -97,6 +93,27 @@
       <Filter>assets\textures</Filter>
     </None>
     <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Dirt.te-asset">
+      <Filter>assets\textures\block</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Grass.te-asset">
+      <Filter>assets\blocks</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Stone.te-asset">
+      <Filter>assets\blocks</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Bedrock.te-asset">
+      <Filter>assets\blocks</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Bedrock.te-asset">
+      <Filter>assets\textures\block</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\GrassSide.te-asset">
+      <Filter>assets\textures\block</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\GrassTop.te-asset">
+      <Filter>assets\textures\block</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Stone.te-asset">
       <Filter>assets\textures\block</Filter>
     </None>
   </ItemGroup>

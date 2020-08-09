@@ -1,5 +1,5 @@
 #include "Engine.hpp"
-#include "game/Game.hpp"
+#include "Game.hpp"
 #include "logging/Logger.hpp"
 #include "utility/StringUtils.hpp"
 

@@ -75,6 +75,14 @@ public:
 
 	std::vector<AssetPath> getAssetList() const;
 	std::vector<AssetPath> getAssetList(AssetType type) const;
+	template <typename TAsset>
+	std::vector<TypedAssetPath<TAsset>> getAssetList() const
+	{
+		auto pathList = getAssetList(TAsset::StaticType());
+		auto typedList = std::vector<TypedAssetPath<TAsset>>(pathList.size());
+		std::transform(pathList.begin(), pathList.end(), typedList.begin(), [](auto path) { return TypedAssetPath<TAsset>(path); });
+		return typedList;
+	}
 
 	std::shared_ptr<Asset> createAsset(AssetType type, std::filesystem::path filePath);
 	void deleteFile(std::filesystem::path filePath);

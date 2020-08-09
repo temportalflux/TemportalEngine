@@ -45,7 +45,7 @@
 			<extArgs>
 				<arg line="noui" />
 				<arg line="cmdlet-buildAssets" />
-				<arg line="cmdlet-buildAssets-project=${user.dir}/DemoGame/DemoGame.te-project" />
+				<arg line="cmdlet-buildAssets-project=${user.dir}/Minecraft/Minecraft.te-project" />
 				<arg line="cmdlet-buildAssets-outputDir=${user.dir}/output/DemoGame/" />
 			</extArgs>
 		</run_editor>

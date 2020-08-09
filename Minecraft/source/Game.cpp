@@ -1,7 +1,8 @@
-#include "game/Game.hpp"
+#include "Game.hpp"
 
 #include "Engine.hpp"
 #include "Window.hpp"
+#include "BlockRegistry.hpp"
 #include "asset/BlockType.hpp"
 #include "asset/Font.hpp"
 #include "asset/Project.hpp"
@@ -65,6 +66,7 @@ Game::Game(int argc, char *argv[])
 Game::~Game()
 {
 	this->destroyWindow();
+	this->mpBlockRegistry.reset();
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()
@@ -273,6 +275,17 @@ void Game::destroyRenderers()
 	this->mpRenderer.reset();
 }
 
+void Game::createBlockRegistry()
+{
+	static auto Log = DeclareLog("BlockRegistry");
+	this->mpBlockRegistry = std::make_shared<game::BlockRegistry>();
+
+	Log.log(LOG_INFO, "Gathering block types...");
+	auto blockList = assetManager()->getAssetList<asset::BlockType>();
+	Log.log(LOG_INFO, "Found %i block types", blockList.size());
+	this->mpBlockRegistry->append(blockList);
+}
+
 void Game::createScene()
 {
 	auto pEngine = engine::Engine::Get();
@@ -303,6 +316,8 @@ void Game::destroyScene()
 
 void Game::run()
 {
+	this->createBlockRegistry();
+
 	auto pEngine = engine::Engine::Get();
 
 	pEngine->start();

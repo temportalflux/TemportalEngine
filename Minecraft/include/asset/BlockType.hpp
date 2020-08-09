@@ -1,8 +1,10 @@
 #pragma once
 
 #include "asset/Asset.hpp"
+#include "BlockId.hpp"
 
 NS_ASSET
+class TextureSampler;
 
 class BlockType : public Asset
 {
@@ -17,44 +19,17 @@ public:
 	BlockType() = default;
 	BlockType(std::filesystem::path filePath);
 
-	std::string const uniqueId() const;
+	game::BlockId const& uniqueId() const;
 
 private:
-
-	struct BlockIdentifier
-	{
-		friend class cereal::access;
-
-		// TODO: Replace with an asset referenced
-		std::string moduleName;
-
-		/**
-		 * The unique name of the block type.
-		 */
-		std::string name;
-
-		template <typename Archive>
-		void save(Archive &archive) const
-		{
-			archive(cereal::make_nvp("module", this->moduleName));
-			archive(cereal::make_nvp("name", this->name));
-		}
-
-		template <typename Archive>
-		void load(Archive &archive)
-		{
-			archive(cereal::make_nvp("module", this->moduleName));
-			archive(cereal::make_nvp("name", this->name));
-		}
-
-	};
 	
-	BlockIdentifier mId;
+	game::BlockId mId;
 
 	struct BlockTextureSet
 	{
 		friend class cereal::access;
 
+		TypedAssetPath<asset::TextureSampler> sampler;
 		TextureAssetPath right;
 		TextureAssetPath left;
 		TextureAssetPath front;
@@ -65,6 +40,7 @@ private:
 		template <typename Archive>
 		void save(Archive &archive) const
 		{
+			archive(cereal::make_nvp("sampler", this->sampler));
 			archive(cereal::make_nvp("right", this->right));
 			archive(cereal::make_nvp("left", this->left));
 			archive(cereal::make_nvp("front", this->front));
@@ -76,6 +52,7 @@ private:
 		template <typename Archive>
 		void load(Archive &archive)
 		{
+			archive(cereal::make_nvp("sampler", this->sampler));
 			archive(cereal::make_nvp("right", this->right));
 			archive(cereal::make_nvp("left", this->left));
 			archive(cereal::make_nvp("front", this->front));

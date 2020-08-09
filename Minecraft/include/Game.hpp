@@ -12,6 +12,7 @@ FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
 
 NS_GAME
+class BlockRegistry;
 
 class Game : public std::enable_shared_from_this<Game>
 {
@@ -56,9 +57,13 @@ private:
 
 	std::shared_ptr<Controller> mpController;
 	std::shared_ptr<ecs::ComponentTransform> mpCameraTransform;
+
+	std::shared_ptr<game::BlockRegistry> mpBlockRegistry;
 		
 	void initializeAssetTypes();
 	void destroyWindow();
+	
+	void createBlockRegistry();
 
 };
 

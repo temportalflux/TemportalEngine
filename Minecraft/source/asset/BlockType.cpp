@@ -10,9 +10,9 @@ BlockType::BlockType(std::filesystem::path filePath) : Asset(filePath)
 {
 }
 
-std::string const BlockType::uniqueId() const
+game::BlockId const& BlockType::uniqueId() const
 {
-	return this->mId.moduleName + ":" + this->mId.name;
+	return this->mId;
 }
 
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, BlockType::write, cereal::JSONOutputArchive, BlockType::serialize);

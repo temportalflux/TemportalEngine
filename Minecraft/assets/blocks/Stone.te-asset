@@ -1,0 +1,16 @@
+{
+	"type": "block",
+	"id": {
+		"module": "minecraft",
+		"name": "stone"
+	},
+  "textures": {
+    "sampler": ":",
+    "right": "texture:assets/textures/Stone.te-asset",
+    "left": "texture:assets/textures/Stone.te-asset",
+    "front": "texture:assets/textures/Stone.te-asset",
+    "back": "texture:assets/textures/Stone.te-asset",
+    "up": "texture:assets/textures/Stone.te-asset",
+    "down": "texture:assets/textures/Stone.te-asset"
+  }
+}
