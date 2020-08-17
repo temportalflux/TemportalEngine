@@ -49,6 +49,7 @@ public:
 	// TODO: Take in an asset object
 	// Returns the idx of the sampler in `mTextureSamplers`
 	uIndex createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler);
+	void createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler, graphics::ImageSampler *out);
 
 	// Creates a `graphics::Image` from a `asset::Texture`.
 	// Returns the idx of the image view in `mTextureViews`

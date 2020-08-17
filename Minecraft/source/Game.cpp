@@ -20,6 +20,7 @@
 #include "math/Matrix.hpp" 
 #include "render/RenderCube.hpp"
 #include "utility/StringUtils.hpp"
+#include "world/World.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE // perspective needs to use [0,1] range for Vulkan
@@ -284,10 +285,21 @@ void Game::createBlockRegistry()
 	auto blockList = assetManager()->getAssetList<asset::BlockType>();
 	Log.log(LOG_INFO, "Found %i block types", blockList.size());
 	this->mpBlockRegistry->append(blockList);
+
+	this->mpBlockRegistry->create(this->mpRenderer);
+}
+
+void Game::destroyBlockRegistry()
+{
+	this->mpBlockRegistry->destroy();
+	this->mpBlockRegistry.reset();
 }
 
 void Game::createScene()
 {
+	this->mpWorld = std::make_shared<world::World>();
+	this->mpWorld->loadChunk({ 0, 0, 0 });
+
 	auto pEngine = engine::Engine::Get();
 	/*
 	auto camera = pEngine->getECS().createEntity();
@@ -312,6 +324,7 @@ void Game::destroyScene()
 {
 	this->mpController.reset();
 	this->mpCameraTransform.reset();
+	this->mpWorld.reset();
 }
 
 void Game::run()
@@ -351,4 +364,5 @@ void Game::run()
 		i = (i + 1) % 6000;
 	}
 	pEngine->joinThreads();
+	this->destroyBlockRegistry();
 }

@@ -14,8 +14,8 @@ Here are some resources for you (and myself) to get started with Vulkan!
 - LunarG Vulkan SDK Docs: https://vulkan.lunarg.com/doc/sdk/1.2.135.0/windows/getting_started.html
 - Vulkan-HPP: https://github.com/KhronosGroup/Vulkan-Hpp
 - Vulkan SDK tutorial: https://vulkan-tutorial.com/en/Overview
-
-Next Vulkan Task: https://vulkan-tutorial.com/Uniform_buffers/Descriptor_layout_and_buffer
+- Vulkan Dos & Don'ts: https://developer.nvidia.com/blog/vulkan-dos-donts/
+- Efficient rendering: https://zeux.io/2020/02/27/writing-an-efficient-vulkan-renderer/
 
 ### Shader Compilation
 

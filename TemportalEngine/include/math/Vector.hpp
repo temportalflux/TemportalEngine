@@ -289,6 +289,20 @@ public:
 
 	// Operators --------------------------------------------------------------
 
+	bool operator==(VectorFormat const& other) const
+	{
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+		{
+			if (mValues[i] != other.mValues[i]) return false;
+		}
+		return true;
+	}
+
+	bool operator!=(VectorFormat const& other) const
+	{
+		return !(*this == other);
+	}
+
 	/**
 	* Copy values from another vector of the same format.
 	* If you want to copy values from a vector with a different dimension size,
@@ -418,6 +432,19 @@ public:
 		return ret;
 	}
 
+	void operator%=(f32 const scalar)
+	{
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+			mValues[i] %= scalar;
+	}
+
+	VectorFormat operator%(f32 const scalar) const
+	{
+		VectorFormat result = *this;
+		result %= scalar;
+		return result;
+	}
+
 	/**
 	* Multiplies a vector by a scalar and returns the result.
 	*/
@@ -425,6 +452,26 @@ public:
 		TValue const scalar, VectorFormat const vector)
 	{
 		return vector * scalar;
+	}
+
+	math::Vector<i32, TAccessibleDimensions, TActualDimensions>
+		removeExcess(i32 const scalar)
+	{
+		math::Vector<i32, TAccessibleDimensions, TActualDimensions> ret;
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+		{
+			while (mValues[i] >= scalar)
+			{
+				ret[i] += scalar;
+				mValues[i] -= scalar;
+			}
+			while (mValues[i] <= -scalar)
+			{
+				ret[i] -= scalar;
+				mValues[i] += scalar;
+			}
+		}
+		return ret;
 	}
 
 	/**

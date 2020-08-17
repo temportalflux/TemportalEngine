@@ -42,6 +42,11 @@ public:
 		return *this;
 	}
 
+	bool operator==(AssetPath const &other) const
+	{
+		return this->toAbsolutePath() == other.toAbsolutePath();
+	}
+
 	static AssetPath fromString(std::string fullStr)
 	{
 		return AssetPath().loadFromString(fullStr);
@@ -62,3 +67,15 @@ public:
 };
 
 NS_END
+
+namespace std
+{
+	template<>
+	struct hash<asset::AssetPath>
+	{
+		inline size_t operator()(asset::AssetPath const &id) const
+		{
+			return std::hash<std::string>()(id.toString());
+		}
+	};
+}

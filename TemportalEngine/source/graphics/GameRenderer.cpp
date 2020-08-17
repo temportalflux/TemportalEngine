@@ -187,31 +187,30 @@ void GameRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 
 uIndex GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler)
 {
-	auto addressModes = sampler->getAddressModes();
-	auto compareOp = sampler->getCompareOperation();
 	uIndex idx = this->mTextureSamplers.size();
 	this->mTextureSamplers.push_back(graphics::ImageSampler());
-	this->mTextureSamplers[idx].setDevice(this->mpGraphicsDevice);
-	this->mTextureSamplers[idx]
-		.setFilter(
-			(vk::Filter)sampler->getFilterModeMagnified(),
-			(vk::Filter)sampler->getFilterModeMinified()
+	this->createTextureSampler(sampler, &this->mTextureSamplers[idx]);
+	return idx;
+}
+
+void GameRenderer::createTextureSampler(std::shared_ptr<asset::TextureSampler> sampler, graphics::ImageSampler *out)
+{
+	out->setDevice(this->mpGraphicsDevice);
+	out
+		->setFilter(
+			sampler->getFilterModeMagnified(),
+			sampler->getFilterModeMinified()
 		)
-		.setAddressMode({
-			(vk::SamplerAddressMode)addressModes[0],
-			(vk::SamplerAddressMode)addressModes[1],
-			(vk::SamplerAddressMode)addressModes[2]
-		})
+		.setAddressMode(sampler->getAddressModes())
 		.setAnistropy(sampler->getAnisotropy())
-		.setBorderColor((vk::BorderColor)sampler->getBorderColor())
+		.setBorderColor(sampler->getBorderColor())
 		.setNormalizeCoordinates(sampler->areCoordinatesNormalized())
-		.setCompare(compareOp ? std::make_optional((vk::CompareOp)(*compareOp)) : std::nullopt)
+		.setCompare(sampler->getCompareOperation())
 		.setMipLOD(
-			(vk::SamplerMipmapMode)sampler->getLodMode(),
+			sampler->getLodMode(),
 			sampler->getLodBias(), sampler->getLodRange()
 		);
-	this->mTextureSamplers[idx].create();
-	return idx;
+	out->create();
 }
 
 uIndex GameRenderer::createTextureAssetImage(std::shared_ptr<asset::Texture> texture, uIndex idxSampler)
@@ -272,13 +271,17 @@ std::shared_ptr<StringRenderer> GameRenderer::setFont(std::shared_ptr<asset::Fon
 	{
 		face.sampler().setDevice(this->mpGraphicsDevice);
 		face.sampler()
-			.setFilter(vk::Filter::eLinear, vk::Filter::eLinear)
-			.setAddressMode({ vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge, vk::SamplerAddressMode::eClampToEdge })
+			.setFilter(graphics::FilterMode::Enum::Linear, graphics::FilterMode::Enum::Linear)
+			.setAddressMode({
+				graphics::SamplerAddressMode::Enum::ClampToEdge,
+				graphics::SamplerAddressMode::Enum::ClampToEdge,
+				graphics::SamplerAddressMode::Enum::ClampToEdge
+			})
 			.setAnistropy(std::nullopt)
-			.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+			.setBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
 			.setNormalizeCoordinates(true)
 			.setCompare(std::nullopt)
-			.setMipLOD(vk::SamplerMipmapMode::eNearest, 0, { 0, 0 })
+			.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 })
 			.create();
 		
 		auto& image = face.image();

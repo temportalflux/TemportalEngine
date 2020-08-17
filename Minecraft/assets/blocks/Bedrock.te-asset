@@ -5,12 +5,12 @@
 		"name": "bedrock"
 	},
   "textures": {
-    "sampler": ":",
-    "right": "texture:assets/textures/Bedrock.te-asset",
-    "left": "texture:assets/textures/Bedrock.te-asset",
-    "front": "texture:assets/textures/Bedrock.te-asset",
-    "back": "texture:assets/textures/Bedrock.te-asset",
-    "up": "texture:assets/textures/Bedrock.te-asset",
-    "down": "texture:assets/textures/Bedrock.te-asset"
+    "sampler": "sampler:assets/textures/NearestNeighborSampler.te-asset",
+    "right": "texture:assets/textures/block/Bedrock.te-asset",
+    "left": "texture:assets/textures/block/Bedrock.te-asset",
+    "front": "texture:assets/textures/block/Bedrock.te-asset",
+    "back": "texture:assets/textures/block/Bedrock.te-asset",
+    "up": "texture:assets/textures/block/Bedrock.te-asset",
+    "down": "texture:assets/textures/block/Bedrock.te-asset"
   }
 }

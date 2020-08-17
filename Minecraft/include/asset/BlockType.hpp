@@ -15,17 +15,7 @@ public:
 	DEFINE_ASSET_STATICS("block", "BlockType", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GENERAL);
 	DECLARE_FACTORY_ASSET_METADATA()
 
-public:
-	BlockType() = default;
-	BlockType(std::filesystem::path filePath);
-
-	game::BlockId const& uniqueId() const;
-
-private:
-	
-	game::BlockId mId;
-
-	struct BlockTextureSet
+	struct TextureSet
 	{
 		friend class cereal::access;
 
@@ -62,7 +52,18 @@ private:
 		}
 	};
 
-	BlockTextureSet mTextures;
+public:
+	BlockType() = default;
+	BlockType(std::filesystem::path filePath);
+
+	game::BlockId const& uniqueId() const;
+	TextureSet const& textureSet() const { return this->mTextures; }
+
+private:
+	
+	game::BlockId mId;
+
+	TextureSet mTextures;
 
 #pragma region Serialization
 protected:

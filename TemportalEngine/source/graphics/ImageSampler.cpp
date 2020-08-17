@@ -10,7 +10,7 @@ ImageSampler::ImageSampler()
 	, mbNormalizeCoordinates(true)
 {
 	this->setMipLOD(
-		vk::SamplerMipmapMode::eLinear,
+		graphics::SamplerLODMode::Enum::Linear,
 		0.0f, math::Vector2::ZERO
 	);
 }
@@ -43,14 +43,14 @@ ImageSampler& ImageSampler::operator=(ImageSampler &&other)
 	return *this;
 }
 
-ImageSampler& ImageSampler::setFilter(vk::Filter magnified, vk::Filter minified)
+ImageSampler& ImageSampler::setFilter(graphics::FilterMode::Enum magnified, graphics::FilterMode::Enum minified)
 {
 	this->mFilterMag = magnified;
 	this->mFilterMin = minified;
 	return *this;
 }
 
-ImageSampler& ImageSampler::setAddressMode(std::array<vk::SamplerAddressMode, 3> uvwMode)
+ImageSampler& ImageSampler::setAddressMode(std::array<graphics::SamplerAddressMode::Enum, 3> uvwMode)
 {
 	this->mAddressModes = uvwMode;
 	return *this;
@@ -62,7 +62,7 @@ ImageSampler& ImageSampler::setAnistropy(std::optional<f32> anistropy)
 	return *this;
 }
 
-ImageSampler& ImageSampler::setBorderColor(vk::BorderColor colorSetting)
+ImageSampler& ImageSampler::setBorderColor(graphics::BorderColor::Enum colorSetting)
 {
 	this->mBorderColor = colorSetting;
 	return *this;
@@ -74,13 +74,13 @@ ImageSampler& ImageSampler::setNormalizeCoordinates(bool enabled)
 	return *this;
 }
 
-ImageSampler& ImageSampler::setCompare(std::optional<vk::CompareOp> compareOp)
+ImageSampler& ImageSampler::setCompare(std::optional<graphics::CompareOp::Enum> compareOp)
 {
 	this->mCompareOp = compareOp;
 	return *this;
 }
 
-ImageSampler& ImageSampler::setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math::Vector2 range)
+ImageSampler& ImageSampler::setMipLOD(graphics::SamplerLODMode::Enum mode, f32 bias, math::Vector2 range)
 {
 	this->mMipLODMode = mode;
 	this->mMipLODBias = bias;
@@ -92,17 +92,17 @@ void ImageSampler::create()
 {
 	this->mInternal = this->device()->createSampler(
 		vk::SamplerCreateInfo()
-		.setMagFilter(this->mFilterMag).setMinFilter(this->mFilterMin)
-		.setAddressModeU(this->mAddressModes[0])
-		.setAddressModeV(this->mAddressModes[1])
-		.setAddressModeW(this->mAddressModes[2])
+		.setMagFilter((vk::Filter)this->mFilterMag).setMinFilter((vk::Filter)this->mFilterMin)
+		.setAddressModeU((vk::SamplerAddressMode)this->mAddressModes[0])
+		.setAddressModeV((vk::SamplerAddressMode)this->mAddressModes[1])
+		.setAddressModeW((vk::SamplerAddressMode)this->mAddressModes[2])
 		.setAnisotropyEnable((bool)this->mAnisotropy)
 		.setMaxAnisotropy(this->mAnisotropy ? *this->mAnisotropy : 1.0f)
-		.setBorderColor(this->mBorderColor)
+		.setBorderColor((vk::BorderColor)this->mBorderColor)
 		.setUnnormalizedCoordinates(!this->mbNormalizeCoordinates)
 		.setCompareEnable((bool)this->mCompareOp)
-		.setCompareOp(this->mCompareOp ? *this->mCompareOp : vk::CompareOp::eAlways)
-		.setMipmapMode(this->mMipLODMode)
+		.setCompareOp(this->mCompareOp ? (vk::CompareOp)*this->mCompareOp : vk::CompareOp::eAlways)
+		.setMipmapMode((vk::SamplerMipmapMode)this->mMipLODMode)
 		.setMipLodBias(this->mMipLODBias)
 		.setMinLod(this->mMipLODRange.x())
 		.setMaxLod(this->mMipLODRange.y())
@@ -121,14 +121,18 @@ void ImageSampler::invalidate()
 
 void ImageSampler::resetConfiguration()
 {
-	this->mFilterMag = vk::Filter::eNearest;
-	this->mFilterMin = vk::Filter::eNearest;
-	this->mAddressModes = { vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat };
+	this->mFilterMag = graphics::FilterMode::Enum::Nearest;
+	this->mFilterMin = graphics::FilterMode::Enum::Nearest;
+	this->mAddressModes = {
+		graphics::SamplerAddressMode::Enum::Repeat,
+		graphics::SamplerAddressMode::Enum::Repeat,
+		graphics::SamplerAddressMode::Enum::Repeat
+	};
 	this->mAnisotropy = std::nullopt;
-	this->mBorderColor = vk::BorderColor::eIntOpaqueBlack;
+	this->mBorderColor = graphics::BorderColor::Enum::BlackOpaqueInt;
 	this->mbNormalizeCoordinates = false;
 	this->mCompareOp = std::nullopt;
-	this->mMipLODMode = vk::SamplerMipmapMode::eNearest;
+	this->mMipLODMode = graphics::SamplerLODMode::Enum::Nearest;
 	this->mMipLODBias = 0;
 	this->mMipLODRange = { 0, 0 };
 }

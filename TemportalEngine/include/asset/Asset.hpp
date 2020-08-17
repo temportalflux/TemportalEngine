@@ -33,6 +33,7 @@ public:
 	 * Used when the asset is written to disk to define the type loaded into `mAssetType` when the asset is loaded.
 	 */
 	virtual AssetType getAssetType() const { return this->mAssetType; }
+	AssetPath assetPath() const;
 
 	std::filesystem::path getPath() const;
 	std::string getFileName() const;

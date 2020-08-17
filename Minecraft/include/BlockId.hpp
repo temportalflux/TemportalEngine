@@ -7,6 +7,9 @@ NS_GAME
 struct BlockId
 {
 
+	BlockId() = default;
+	BlockId(std::string moduleName, std::string name) : moduleName(moduleName), name(name) {}
+
 	// TODO: Replace with an asset referenced
 	std::string moduleName;
 

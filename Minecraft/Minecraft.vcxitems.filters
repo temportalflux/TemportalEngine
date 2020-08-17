@@ -28,6 +28,12 @@
     <Filter Include="assets\textures\block">
       <UniqueIdentifier>{6b32f480-109f-4508-a98b-de309e01346b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{90578839-905b-413e-a0fb-4920bf3626f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="world">
+      <UniqueIdentifier>{361f49e2-4e28-46bc-b13e-87b13b295ff7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -44,6 +50,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Chunk.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -57,6 +77,14 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\BlockRegistry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset">

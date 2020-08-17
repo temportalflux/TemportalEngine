@@ -49,6 +49,19 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 
 	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&info, &prefs);
 	this->mQueues = this->mLogicalDevice.findQueues(info.getQueues());
+
+	auto const physicalProps = this->mPhysicalDevice.getProperties();
+	auto const apiVersion = TE_GET_VERSION(physicalProps.apiVersion).toString();
+	auto const driverVersion = TE_GET_VERSION(physicalProps.driverVersion).toString();
+	instance->getLog().log(
+		LOG_INFO, "Created graphics devices:\n\t%s named %s (id=%i api=%s driver=%s)\n\tMax Allocation Count: %i\n\tMax Size Per Allocation: ???",
+		vk::to_string(physicalProps.deviceType).c_str(),
+		physicalProps.deviceName,
+		physicalProps.deviceID,
+		apiVersion.c_str(), driverVersion.c_str(),
+		physicalProps.limits.maxMemoryAllocationCount
+	);
+
 }
 
 void GraphicsDevice::destroy()

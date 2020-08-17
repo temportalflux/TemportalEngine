@@ -20,6 +20,11 @@ Asset::Asset(std::filesystem::path filePath) : mFilePath(filePath)
 
 #pragma region Properties
 
+AssetPath Asset::assetPath() const
+{
+	return AssetPath(this->mAssetType, this->mFilePath, true);
+}
+
 std::filesystem::path Asset::getPath() const
 {
 	return this->mFilePath;

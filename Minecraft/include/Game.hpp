@@ -10,6 +10,7 @@ FORWARD_DEF(NS_ECS, struct ComponentTransform);
 FORWARD_DEF(NS_GRAPHICS, class GameRenderer);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
+FORWARD_DEF(NS_WORLD, class World);
 
 NS_GAME
 class BlockRegistry;
@@ -59,11 +60,13 @@ private:
 	std::shared_ptr<ecs::ComponentTransform> mpCameraTransform;
 
 	std::shared_ptr<game::BlockRegistry> mpBlockRegistry;
+	std::shared_ptr<world::World> mpWorld;
 		
 	void initializeAssetTypes();
 	void destroyWindow();
-	
+
 	void createBlockRegistry();
+	void destroyBlockRegistry();
 
 };
 

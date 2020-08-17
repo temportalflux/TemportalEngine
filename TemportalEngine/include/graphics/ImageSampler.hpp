@@ -3,6 +3,7 @@
 #include "graphics/DeviceObject.hpp"
 
 #include "math/Vector.hpp"
+#include "graphics/types.hpp"
 
 #include <vulkan/vulkan.hpp>
 
@@ -18,13 +19,13 @@ public:
 	ImageSampler(ImageSampler &&other);
 	ImageSampler& operator=(ImageSampler &&other);
 
-	ImageSampler& setFilter(vk::Filter magnified, vk::Filter minified);
-	ImageSampler& setAddressMode(std::array<vk::SamplerAddressMode, 3> uvwMode);
+	ImageSampler& setFilter(graphics::FilterMode::Enum magnified, graphics::FilterMode::Enum minified);
+	ImageSampler& setAddressMode(std::array<graphics::SamplerAddressMode::Enum, 3> uvwMode);
 	ImageSampler& setAnistropy(std::optional<f32> anistropy);
-	ImageSampler& setBorderColor(vk::BorderColor colorSetting);
+	ImageSampler& setBorderColor(graphics::BorderColor::Enum colorSetting);
 	ImageSampler& setNormalizeCoordinates(bool enabled);
-	ImageSampler& setCompare(std::optional<vk::CompareOp> compareOp);
-	ImageSampler& setMipLOD(vk::SamplerMipmapMode mode, f32 bias, math::Vector2 range);
+	ImageSampler& setCompare(std::optional<graphics::CompareOp::Enum> compareOp);
+	ImageSampler& setMipLOD(graphics::SamplerLODMode::Enum mode, f32 bias, math::Vector2 range);
 
 	void create() override;
 	void* get() override;
@@ -32,13 +33,13 @@ public:
 	void resetConfiguration() override;
 
 private:
-	vk::Filter mFilterMag, mFilterMin;
-	std::array<vk::SamplerAddressMode, 3> mAddressModes;
+	graphics::FilterMode::Enum mFilterMag, mFilterMin;
+	std::array<graphics::SamplerAddressMode::Enum, 3> mAddressModes;
 	std::optional<f32> mAnisotropy;
-	vk::BorderColor mBorderColor;
+	graphics::BorderColor::Enum mBorderColor;
 	bool mbNormalizeCoordinates;
-	std::optional<vk::CompareOp> mCompareOp;
-	vk::SamplerMipmapMode mMipLODMode;
+	std::optional<graphics::CompareOp::Enum> mCompareOp;
+	graphics::SamplerLODMode::Enum mMipLODMode;
 	f32 mMipLODBias;
 	math::Vector2 mMipLODRange;
 
