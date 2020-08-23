@@ -64,6 +64,9 @@
       <Filter>world</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\model\CubeModelLoader.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -85,6 +88,9 @@
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset">

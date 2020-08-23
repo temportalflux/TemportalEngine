@@ -6,6 +6,7 @@
 #include "asset/TextureSampler.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/GameRenderer.hpp"
+#include "model/CubeModelLoader.hpp"
 
 using namespace game;
 
@@ -159,6 +160,17 @@ void fetchTextureData(BlockRegistry::RegisteredType::TextureSet &textureSet)
 	fetchTextureData(atlas, textureSet.down);
 }
 
+void createModel(BlockRegistry::RegisteredType &entry)
+{
+	CubeModelLoader(&entry.model)
+		.pushRight(entry.textureSet.right.offset, entry.textureSet.right.size)
+		.pushLeft(entry.textureSet.left.offset, entry.textureSet.left.size)
+		.pushFront(entry.textureSet.front.offset, entry.textureSet.front.size)
+		.pushBack(entry.textureSet.back.offset, entry.textureSet.back.size)
+		.pushUp(entry.textureSet.up.offset, entry.textureSet.up.size)
+		.pushDown(entry.textureSet.down.offset, entry.textureSet.down.size);
+}
+
 void BlockRegistry::create(std::shared_ptr<graphics::GameRenderer> renderer)
 {
 	for (auto& sampler : this->mSamplers)
@@ -173,6 +185,7 @@ void BlockRegistry::create(std::shared_ptr<graphics::GameRenderer> renderer)
 	for (auto& entry : this->mEntries)
 	{
 		fetchTextureData(entry.textureSet);
+		createModel(entry);
 	}
 }
 

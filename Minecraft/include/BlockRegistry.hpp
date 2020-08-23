@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "asset/TypedAssetPath.hpp"
+#include "Model.hpp"
 
 #include "BlockId.hpp"
 
@@ -45,6 +46,7 @@ public:
 		BlockId id;
 		BlockTypePath assetPath;
 		TextureSet textureSet;
+		Model model;
 	};
 
 	BlockRegistry();

@@ -44,6 +44,8 @@ protected:
 
 	/** The format of this vector class, composed of the value and dimension. */
 	typedef Vector<TValue, TAccessibleDimensions, TActualDimensions> VectorFormat;
+	constexpr uSize accessibleSize() { return TAccessibleDimensions * sizeof(TValue); }
+	constexpr uSize actualSize() { return TActualDimensions * sizeof(TValue); }
 
 private:
 
@@ -57,7 +59,7 @@ public:
 
 	constexpr Vector()
 	{
-		memset(mValues, 0, TActualDimensions * sizeof(TValue));
+		memset(mValues, 0, actualSize());
 	}
 
 	/**
@@ -67,7 +69,8 @@ public:
 	*/
 	constexpr Vector(TValue values[TAccessibleDimensions])
 	{
-		memcpy_s(mValues, TAccessibleDimensions * sizeof(TValue), values, TAccessibleDimensions * sizeof(TValue));
+		memset(mValues, 0, actualSize());
+		memcpy_s(mValues, accessibleSize(), values, accessibleSize());
 	}
 
 	/**
@@ -75,6 +78,7 @@ public:
 	*/
 	constexpr Vector(std::initializer_list<TValue> values)
 	{
+		memset(mValues, 0, actualSize());
 		std::copy(values.begin(), values.end(), mValues);
 	}
 
@@ -83,7 +87,8 @@ public:
 	*/
 	constexpr Vector(VectorFormat const &other)
 	{
-		memcpy_s(mValues, TAccessibleDimensions * sizeof(TValue), other.mValues, TAccessibleDimensions * sizeof(TValue));
+		memset(mValues, 0, actualSize());
+		memcpy_s(mValues, accessibleSize(), other.mValues, accessibleSize());
 	}
 
 	/**
@@ -102,7 +107,7 @@ public:
 	template <ui32 TDimensionOther, ui8 TOtherPadding>
 	constexpr Vector(Vector<TValue, TDimensionOther, TOtherPadding> const &other, ui8 offset = 0)
 	{
-		memset(mValues, 0, TAccessibleDimensions * sizeof(TValue));
+		memset(mValues, 0, actualSize());
 		other.copyTo<TAccessibleDimensions>(mValues, offset);
 	}
 
