@@ -198,11 +198,12 @@ Command& Command::bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType in
 	return *this;
 }
 
-Command& Command::draw(ui32 indexCount, ui32 instanceCount)
+Command& Command::draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui32 idxStartInstance, ui32 instanceCount)
 {
 	castBuf(this->mpVulkanBuffer)->drawIndexed(
 		indexCount, instanceCount,
-		/*firstIndex*/ 0, /*vertexOffset*/ 0, /*firstInstace*/ 0
+		idxStartIndex, indexShift,
+		idxStartInstance
 	);
 	return *this;
 }

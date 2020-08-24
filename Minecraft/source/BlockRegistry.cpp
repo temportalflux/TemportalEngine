@@ -6,9 +6,24 @@
 #include "asset/TextureSampler.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/GameRenderer.hpp"
+#include "graphics/GraphicsDevice.hpp"
+#include "graphics/Memory.hpp"
 #include "model/CubeModelLoader.hpp"
 
 using namespace game;
+
+struct TextureSet
+{
+	struct Entry
+	{
+		math::Vector2 offset;
+		math::Vector2 size;
+	};
+
+	Entry right, left;
+	Entry front, back;
+	Entry up, down;
+};
 
 BlockRegistry::BlockRegistry()
 {
@@ -54,7 +69,7 @@ void BlockRegistry::addSampler(RegisteredType *entry, SamplerPath samplerPath)
 	auto iterSampler = this->mSamplerByPath.find(samplerPath.path());
 	if (iterSampler != this->mSamplerByPath.end())
 	{
-		entry->textureSet.sampler = iterSampler->second;
+		entry->textureSetHandle.sampler = iterSampler->second;
 		return;
 	}
 
@@ -77,8 +92,8 @@ void BlockRegistry::addSampler(RegisteredType *entry, SamplerPath samplerPath)
 			samplerAsset->getLodMode(),
 			samplerAsset->getLodBias(), samplerAsset->getLodRange()
 		);
-	entry->textureSet.sampler = sampler;
-	this->mSamplerByPath.insert(std::make_pair(samplerPath.path(), entry->textureSet.sampler));
+	entry->textureSetHandle.sampler = sampler;
+	this->mSamplerByPath.insert(std::make_pair(samplerPath.path(), entry->textureSetHandle.sampler));
 }
 
 std::vector<asset::TypedAssetPath<asset::Texture>> eliminateDuplicatePaths(std::vector<asset::TypedAssetPath<asset::Texture>> paths)
@@ -123,13 +138,13 @@ void BlockRegistry::addTexturesToStitch(
 		assert(false);
 	}
 
-	entry->textureSet.atlas = atlas;
-	entry->textureSet.right.key = rightPath.path();
-	entry->textureSet.left.key = leftPath.path();
-	entry->textureSet.front.key = frontPath.path();
-	entry->textureSet.back.key = backPath.path();
-	entry->textureSet.up.key = upPath.path();
-	entry->textureSet.down.key = downPath.path();
+	entry->textureSetHandle.atlas = atlas;
+	entry->textureSetHandle.right = rightPath.path();
+	entry->textureSetHandle.left = leftPath.path();
+	entry->textureSetHandle.front = frontPath.path();
+	entry->textureSetHandle.back = backPath.path();
+	entry->textureSetHandle.up = upPath.path();
+	entry->textureSetHandle.down = downPath.path();
 }
 
 std::shared_ptr<StitchedTexture> BlockRegistry::findBestSuitedAtlas(math::Vector2UInt const &entrySize, uSize const count)
@@ -141,34 +156,43 @@ std::shared_ptr<StitchedTexture> BlockRegistry::findBestSuitedAtlas(math::Vector
 	return nullptr;
 }
 
-void fetchTextureData(std::shared_ptr<StitchedTexture> atlas, BlockRegistry::RegisteredType::TextureSet::Entry &datum)
+Model createModel(BlockRegistry::RegisteredType::TextureSetHandle &textureSet)
 {
-	auto atlasDatum = atlas->getStitchedTexture(datum.key);
-	if (!atlasDatum) return;
-	datum.offset = atlasDatum->offset;
-	datum.size = atlasDatum->size;
-}
-
-void fetchTextureData(BlockRegistry::RegisteredType::TextureSet &textureSet)
-{
+	auto loader = CubeModelLoader();
 	auto atlas = textureSet.atlas.lock();
-	fetchTextureData(atlas, textureSet.right);
-	fetchTextureData(atlas, textureSet.left);
-	fetchTextureData(atlas, textureSet.front);
-	fetchTextureData(atlas, textureSet.back);
-	fetchTextureData(atlas, textureSet.up);
-	fetchTextureData(atlas, textureSet.down);
-}
 
-void createModel(BlockRegistry::RegisteredType &entry)
-{
-	CubeModelLoader(&entry.model)
-		.pushRight(entry.textureSet.right.offset, entry.textureSet.right.size)
-		.pushLeft(entry.textureSet.left.offset, entry.textureSet.left.size)
-		.pushFront(entry.textureSet.front.offset, entry.textureSet.front.size)
-		.pushBack(entry.textureSet.back.offset, entry.textureSet.back.size)
-		.pushUp(entry.textureSet.up.offset, entry.textureSet.up.size)
-		.pushDown(entry.textureSet.down.offset, entry.textureSet.down.size);
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.right);
+		assert(atlasDatum);
+		loader.pushRight(atlasDatum->offset, atlasDatum->size);
+	}
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.left);
+		assert(atlasDatum);
+		loader.pushLeft(atlasDatum->offset, atlasDatum->size);
+	}
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.front);
+		assert(atlasDatum);
+		loader.pushFront(atlasDatum->offset, atlasDatum->size);
+	}
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.back);
+		assert(atlasDatum);
+		loader.pushBack(atlasDatum->offset, atlasDatum->size);
+	}
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.up);
+		assert(atlasDatum);
+		loader.pushUp(atlasDatum->offset, atlasDatum->size);
+	}
+	{
+		auto atlasDatum = atlas->getStitchedTexture(textureSet.down);
+		assert(atlasDatum);
+		loader.pushDown(atlasDatum->offset, atlasDatum->size);
+	}
+
+	return loader.get();
 }
 
 void BlockRegistry::create(std::shared_ptr<graphics::GameRenderer> renderer)
@@ -182,11 +206,67 @@ void BlockRegistry::create(std::shared_ptr<graphics::GameRenderer> renderer)
 	{
 		atlas->finalize(renderer);
 	}
+
+	uSize modelVertexBufferSize = 0;
+	uSize modelIndexBufferSize = 0;
 	for (auto& entry : this->mEntries)
 	{
-		fetchTextureData(entry.textureSet);
-		createModel(entry);
+		entry.model = createModel(entry.textureSetHandle);
+		modelVertexBufferSize += entry.model.getVertexBufferSize();
+		modelIndexBufferSize += entry.model.getIndexBufferSize();
 	}
+
+	this->createModelBuffers(renderer->getDevice(), modelVertexBufferSize, modelIndexBufferSize);
+
+	auto vertices = std::vector<Model::Vertex>();
+	auto indices = std::vector<ui16>();
+	for (auto& entry : this->mEntries)
+	{
+		auto const& modelVertices = entry.model.verticies();
+		auto const& modelIndices = entry.model.indicies();
+		entry.indexPreCount = indices.size();
+		std::copy(modelVertices.begin(), modelVertices.end(), std::back_inserter(vertices));
+		std::copy(modelIndices.begin(), modelIndices.end(), std::back_inserter(indices));
+	}
+	// TODO: These can be done in one operation, and we dont need to wait for the graphics device to be done (nothing relies on this process except starting rendering)
+	this->mVertexBuffer.writeBuffer(&renderer->getTransientPool(), 0, vertices);
+	this->mIndexBuffer.writeBuffer(&renderer->getTransientPool(), 0, indices);
+}
+
+void BlockRegistry::createModelBuffers(std::shared_ptr<graphics::GraphicsDevice> device, uSize modelVertexBufferSize, uSize modelIndexBufferSize)
+{
+	this->mpMemoryModelBuffers = std::make_shared<graphics::Memory>();
+	this->mpMemoryModelBuffers->setDevice(device);
+	this->mpMemoryModelBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	this->mVertexBuffer.setDevice(device);
+	this->mVertexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setSize(modelVertexBufferSize)
+		.create();
+	this->mVertexBuffer.configureSlot(this->mpMemoryModelBuffers);
+
+	this->mIndexBuffer.setDevice(device);
+	this->mIndexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
+		.setSize(modelIndexBufferSize)
+		.create();
+	this->mIndexBuffer.configureSlot(this->mpMemoryModelBuffers);
+
+	this->mpMemoryModelBuffers->create();
+
+	this->mVertexBuffer.bindMemory();
+	this->mIndexBuffer.bindMemory();
+}
+
+BlockRegistry::BufferProfile BlockRegistry::getBufferProfile(BlockId const &blockId)
+{
+	auto const iterIdxEntry = this->mEntriesById.find(blockId);
+	assert(iterIdxEntry != this->mEntriesById.end());
+	auto const& entry = this->mEntries[iterIdxEntry->second];
+	return {
+		&this->mVertexBuffer, &this->mIndexBuffer, entry.indexPreCount
+	};
 }
 
 void BlockRegistry::destroy()
@@ -199,4 +279,7 @@ void BlockRegistry::destroy()
 	this->mSamplers.clear();
 
 	this->mStitchedTextures.clear();
+	this->mVertexBuffer.destroy();
+	this->mIndexBuffer.destroy();
+	this->mpMemoryModelBuffers.reset();
 }

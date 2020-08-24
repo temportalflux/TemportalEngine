@@ -24,8 +24,8 @@ public:
 
 	uSize getVertexBufferSize() const;
 	uSize getIndexBufferSize() const;
-	std::vector<Vertex> verticies() const;
-	std::vector<ui16> indicies() const;
+	std::vector<Vertex> const& verticies() const;
+	std::vector<ui16> const& indicies() const;
 
 private:
 

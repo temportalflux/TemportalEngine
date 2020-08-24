@@ -32,7 +32,7 @@ public:
 	Command& bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, vk::DescriptorSet const *set);
 	Command& bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers);
 	Command& bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType);
-	Command& draw(ui32 vertexCount, ui32 instanceCount = 1);
+	Command& draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui32 idxStartInstance, ui32 instanceCount);
 	Command& endRenderPass();
 
 	void end();

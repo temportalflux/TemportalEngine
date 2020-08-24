@@ -2,13 +2,14 @@
 
 #include "CoreInclude.hpp"
 
-class Model;
+#include "Model.hpp"
 
 class CubeModelLoader
 {
 
 public:
-	CubeModelLoader(Model *pModel);
+
+	Model const& get() const;
 
 	CubeModelLoader& pushRight(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize);
 	CubeModelLoader& pushLeft(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize);
@@ -18,7 +19,7 @@ public:
 	CubeModelLoader& pushDown(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize);
 
 private:
-	Model *mpModel;
+	Model mModel;
 
 	void pushFace(
 		math::Vector3 uNeg, math::Vector3 uPos,

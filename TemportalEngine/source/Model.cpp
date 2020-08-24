@@ -41,12 +41,12 @@ uSize Model::getIndexBufferSize() const
 	return (uSize)this->mIndicies.size() * sizeof(ui16);
 }
 
-std::vector<Model::Vertex> Model::verticies() const
+std::vector<Model::Vertex> const& Model::verticies() const
 {
 	return this->mVertices;
 }
 
-std::vector<ui16> Model::indicies() const
+std::vector<ui16> const& Model::indicies() const
 {
 	return this->mIndicies;
 }

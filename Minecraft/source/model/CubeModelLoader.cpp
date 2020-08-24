@@ -1,8 +1,9 @@
 #include "model/CubeModelLoader.hpp"
 
-#include "Model.hpp"
-
-CubeModelLoader::CubeModelLoader(Model *pModel) : mpModel(pModel) {}
+Model const& CubeModelLoader::get() const
+{
+	return this->mModel;
+}
 
 CubeModelLoader& CubeModelLoader::pushRight(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
@@ -82,14 +83,14 @@ void CubeModelLoader::pushFace(
 	math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize
 )
 {
-	auto idxTL = this->mpModel->pushVertex(uNeg + vNeg + axis, texCoordOffset + texCoordSize * math::Vector2({ 0.0f, 0.0f }));
-	auto idxTR = this->mpModel->pushVertex(uPos + vNeg + axis, texCoordOffset + texCoordSize * math::Vector2({ 1.0f, 0.0f }));
-	auto idxBL = this->mpModel->pushVertex(uNeg + vPos + axis, texCoordOffset + texCoordSize * math::Vector2({ 0.0f, 1.0f }));
-	auto idxBR = this->mpModel->pushVertex(uPos + vPos + axis, texCoordOffset + texCoordSize * math::Vector2({ 1.0f, 1.0f }));
-	this->mpModel->pushIndex(idxTL);
-	this->mpModel->pushIndex(idxTR);
-	this->mpModel->pushIndex(idxBR);
-	this->mpModel->pushIndex(idxBR);
-	this->mpModel->pushIndex(idxBL);
-	this->mpModel->pushIndex(idxTL);
+	auto idxTL = this->mModel.pushVertex(uNeg + vNeg + axis, texCoordOffset + texCoordSize * math::Vector2({ 0.0f, 0.0f }));
+	auto idxTR = this->mModel.pushVertex(uPos + vNeg + axis, texCoordOffset + texCoordSize * math::Vector2({ 1.0f, 0.0f }));
+	auto idxBL = this->mModel.pushVertex(uNeg + vPos + axis, texCoordOffset + texCoordSize * math::Vector2({ 0.0f, 1.0f }));
+	auto idxBR = this->mModel.pushVertex(uPos + vPos + axis, texCoordOffset + texCoordSize * math::Vector2({ 1.0f, 1.0f }));
+	this->mModel.pushIndex(idxTL);
+	this->mModel.pushIndex(idxTR);
+	this->mModel.pushIndex(idxBR);
+	this->mModel.pushIndex(idxBR);
+	this->mModel.pushIndex(idxBL);
+	this->mModel.pushIndex(idxTL);
 }

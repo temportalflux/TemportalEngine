@@ -553,7 +553,7 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd.bindPipeline(this->mPipelineSets[1].pipeline);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
-			cmd.draw((ui32)this->mIndexBufferUI.getSize() / sizeof(ui16), 1);
+			cmd.draw(0, (ui32)this->mIndexBufferUI.getSize() / sizeof(ui16), 0, 0, 1);
 		}
 		cmd.endRenderPass();
 		cmd.end();

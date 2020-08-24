@@ -82,7 +82,7 @@ void RenderCube::draw(graphics::Command *command)
 	command->bindVertexBuffers(0, { &this->mVertexBuffer });
 	command->bindVertexBuffers(1, { &this->mInstanceBuffer });
 	command->bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType);
-	command->draw(this->mIndexCount, this->mInstanceCount);
+	command->draw(0, this->mIndexCount, 0, 0, this->mInstanceCount);
 }
 
 void RenderCube::invalidate()
