@@ -63,9 +63,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\CubeModelLoader.hpp">
       <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstance.hpp">
+      <Filter>world</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -87,9 +95,14 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp">
       <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstance.cpp">
+      <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

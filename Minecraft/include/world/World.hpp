@@ -4,6 +4,7 @@
 
 #include "world/Chunk.hpp"
 #include "world/WorldCoordinate.hpp"
+#include "world/BlockInstanceMap.hpp"
 
 NS_WORLD
 
@@ -16,8 +17,14 @@ public:
 	void unloadChunk(math::Vector3Int const &coordinate);
 	void unloadChunks(std::vector<math::Vector3Int> coordinates);
 
-	void markCoordinateDirty(world::Coordinate const &global);
+	void markCoordinateDirty(
+		world::Coordinate const &global,
+		std::optional<BlockMetadata> const& prev,
+		std::optional<BlockMetadata> const& next
+	);
+	void handleDirtyCoordinates();
 
+#pragma region Dirty Blocks
 private:
 	typedef std::pair<
 		world::Coordinate,
@@ -36,6 +43,13 @@ private:
 		world::Coordinate const &dirtyNeighbor
 	);
 	DirtyNeighborPairList::iterator findDirtyNeighborPair(world::Coordinate const &global);
+#pragma endregion
+
+#pragma region Block Render Instances
+private:
+	world::BlockInstanceMap mBlockRenderInstances;
+#pragma endregion
+
 
 };
 

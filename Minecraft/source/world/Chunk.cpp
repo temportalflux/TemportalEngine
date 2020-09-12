@@ -31,6 +31,7 @@ void WorldChunk::load()
 void WorldChunk::setBlockId(math::Vector3UInt const local, std::optional<game::BlockId> id)
 {
 	std::optional<BlockMetadata>& metadata = this->mBlockMetadata[local];
+	auto oldMetadata = metadata;
 	metadata.reset();
 	if (id)
 	{
@@ -38,5 +39,5 @@ void WorldChunk::setBlockId(math::Vector3UInt const local, std::optional<game::B
 	}
 	this->mpWorld.lock()->markCoordinateDirty(world::Coordinate(
 		this->coordinate(), { (i32)local.x(), (i32)local.y(), (i32)local.z() }
-	));
+	), oldMetadata, metadata);
 }

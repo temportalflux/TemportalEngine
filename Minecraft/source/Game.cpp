@@ -356,6 +356,7 @@ void Game::run()
 			this->mpRendererMVP->write(&uniData);
 		}
 
+		this->mpWorld->handleDirtyCoordinates();
 		pEngine->update(deltaTime);
 
 		auto nextTime = std::chrono::high_resolution_clock::now();

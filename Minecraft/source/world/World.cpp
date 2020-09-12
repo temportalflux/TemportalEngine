@@ -30,7 +30,11 @@ void World::unloadChunks(std::vector<math::Vector3Int> coordinates)
 	// TODO: Move the active chunk to a "pending write to disk" operation list
 }
 
-void World::markCoordinateDirty(world::Coordinate const &global)
+void World::markCoordinateDirty(
+	world::Coordinate const &global,
+	std::optional<BlockMetadata> const& prev,
+	std::optional<BlockMetadata> const& next
+)
 {
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ -1, 0, 0 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ +1, 0, 0 }), global);
@@ -38,6 +42,7 @@ void World::markCoordinateDirty(world::Coordinate const &global)
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, +1, 0 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, -1 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, +1 }), global);
+	this->mBlockRenderInstances.updateCoordinate(global, prev, next);
 }
 
 void World::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, world::Coordinate const &dirtyNeighbor)
@@ -64,4 +69,10 @@ World::DirtyNeighborPairList::iterator World::findDirtyNeighborPair(world::Coord
 		this->mDirtyNeighborCoordinates.end(),
 		[global](auto const& dirtyPair) { return dirtyPair.first == global; }
 	);
+}
+
+void World::handleDirtyCoordinates()
+{
+	// TODO: actually do something here
+	this->mDirtyNeighborCoordinates.clear();
 }

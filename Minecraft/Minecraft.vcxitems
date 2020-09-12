@@ -25,6 +25,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderCube.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstance.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Chunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
@@ -38,6 +40,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelCube.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderCube.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
