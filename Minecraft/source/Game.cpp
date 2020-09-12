@@ -141,15 +141,19 @@ void Game::destroyWindow()
 }
 
 // UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
-struct ModelViewProjection
+struct ChunkViewProj
 {
 	math::Matrix4x4 view;
 	glm::mat4 proj;
+	math::Vector3 chunkPos;
+	math::Vector3 chunkSize;
 
-	ModelViewProjection()
+	ChunkViewProj()
 	{
 		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
+		chunkPos = math::Vector3({ 0, 0, 0 });
+		chunkSize = math::Vector3({ 16, 16, 16 });
 	}
 };
 
@@ -183,7 +187,7 @@ void Game::createRenderers()
 	);
 
 	// TODO: Use dedicated graphics memory
-	this->mpRendererMVP = graphics::Uniform::create<ModelViewProjection>(pEngine->getMiscMemory());
+	this->mpRendererMVP = graphics::Uniform::create<ChunkViewProj>(pEngine->getMiscMemory());
 	this->mpRenderer->setStaticUniform(this->mpRendererMVP);
 	
 	// TODO: Load the render pass asset via a path stored on the project
@@ -215,30 +219,19 @@ void Game::createRenderers()
 	// Setup the object render instances
 	{
 		this->mpCubeRender = std::make_shared<RenderCube>();
-		auto instances = std::vector<WorldObject>();
+		auto instances = std::vector<world::Coordinate>();
 		{
 			for (i32 x = -3; x <= 3; ++x)
 				for (i32 y = -3; y <= 3; ++y)
 					instances.push_back(
-						WorldObject()
-						.setPosition(glm::vec3(x, y, 0))
+						world::Coordinate({ 0, 0, 0 }, { x, y, 0 })
 					);
 		}
 		// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly
 		// TODO: Vertex bindings should validate against the shader
 		{
-			auto bindings = std::vector<graphics::AttributeBinding>();
 			ui8 slot = 0;
-			this->mpCubeRender->appendBindings(bindings, slot);
-			{
-				auto additionalBindings = WorldObject::bindings(slot);
-				bindings.insert(
-					std::end(bindings),
-					std::begin(additionalBindings),
-					std::end(additionalBindings)
-				);
-			}
-			this->mpRenderer->setBindings(0, bindings);
+			this->mpRenderer->setBindings(0, this->mpCubeRender->getBindings(slot));
 		}
 		this->mpCubeRender->init(this->mpRenderer.get(), instances);
 		this->mpRenderer->addRender(this->mpCubeRender.get());
@@ -349,10 +342,11 @@ void Game::run()
 		}
 
 		{
-			auto uniData = this->mpRendererMVP->read<ModelViewProjection>();
+			auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
 			uniData.view = this->mpCameraTransform->calculateView();
 			uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
 			uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+			//uniData.chunkPos = { 0, 0, 0 };
 			this->mpRendererMVP->write(&uniData);
 		}
 

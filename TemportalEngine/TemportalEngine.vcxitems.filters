@@ -275,6 +275,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp">
       <Filter>cereal</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Matrix.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />

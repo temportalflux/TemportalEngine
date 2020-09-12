@@ -13,6 +13,9 @@ public:
 	Coordinate() = default;
 	Coordinate(math::Vector3Int chunk, math::Vector3Int local);
 
+	math::Vector3Int chunk() const { return this->mChunkPosition; }
+	math::Vector3Int local() const { return this->mBlockPosition; }
+
 	bool operator==(Coordinate const& other) const;
 	bool operator!=(Coordinate const& other) const;
 	void operator=(Coordinate const &other);

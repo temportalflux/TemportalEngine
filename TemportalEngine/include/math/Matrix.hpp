@@ -18,6 +18,7 @@ public:
 	{
 		memset(mColumns, 0, sizeof(TValue) * Width * Height);
 	}
+
 	Matrix(TValue identityMultiplier) : Matrix()
 	{
 		assert(Width == Height);
@@ -47,5 +48,7 @@ private:
 };
 
 typedef Matrix<f32, 4, 4> Matrix4x4;
+
+Matrix4x4 createModelMatrix(Vector3 const pos);
 
 NS_END

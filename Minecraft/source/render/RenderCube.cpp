@@ -2,7 +2,15 @@
 
 #include "graphics/GameRenderer.hpp"
 #include "graphics/Command.hpp"
+#include "math/Vector.hpp"
+#include "math/Matrix.hpp" 
 #include "model/ModelCube.hpp"
+
+struct CubeInstance
+{
+	math::Vector3 posInChunk;
+	math::Matrix4x4 model;
+};
 
 RenderCube::RenderCube()
 {
@@ -14,17 +22,24 @@ RenderCube::RenderCube()
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer);
 }
 
-void RenderCube::appendBindings(std::vector<graphics::AttributeBinding> &bindings, ui8 &slot) const
+std::vector<graphics::AttributeBinding> RenderCube::getBindings(ui8 &slot) const
 {
-	auto additionalBindings = ModelCube::bindings(slot);
-	bindings.insert(
-		std::end(bindings),
-		std::begin(additionalBindings),
-		std::end(additionalBindings)
+	auto bindings = ModelCube::bindings(slot);
+	bindings.push_back(
+		// Data per object instance - this is only for objects which dont more, rotate, or scale
+		graphics::AttributeBinding(graphics::AttributeBinding::Rate::eInstance)
+		.setStructType<CubeInstance>()
+		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(CubeInstance, posInChunk) })
+		// mat4 using 4 slots
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(CubeInstance, model) + (0 * sizeof(glm::vec4)) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(CubeInstance, model) + (1 * sizeof(glm::vec4)) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(CubeInstance, model) + (2 * sizeof(glm::vec4)) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(CubeInstance, model) + (3 * sizeof(glm::vec4)) })
 	);
+	return bindings;
 }
 
-void RenderCube::init(graphics::GameRenderer *renderer, std::vector<WorldObject> const &instances)
+void RenderCube::init(graphics::GameRenderer *renderer, std::vector<world::Coordinate> const &instances)
 {
 	auto model = ModelCube();
 
@@ -43,7 +58,7 @@ void RenderCube::init(graphics::GameRenderer *renderer, std::vector<WorldObject>
 
 		this->mInstanceCount = (ui32)instances.size();
 		this->mInstanceBuffer.setDevice(device);
-		this->mInstanceBuffer.setSize(this->mInstanceCount * sizeof(WorldObject::InstanceData));
+		this->mInstanceBuffer.setSize(this->mInstanceCount * sizeof(CubeInstance));
 		this->mInstanceBuffer.create();
 		this->mInstanceBuffer.configureSlot(this->mpBufferMemory);
 
@@ -66,15 +81,16 @@ void RenderCube::init(graphics::GameRenderer *renderer, std::vector<WorldObject>
 	this->mIndexBuffer.writeBuffer(&renderer->getTransientPool(), 0, model.indicies());
 
 	// Write static instance data
-	auto instanceData = std::vector<WorldObject::InstanceData>(instances.size());
+	auto instanceData = std::vector<CubeInstance>(instances.size());
 	std::transform(
 		std::begin(instances), std::end(instances),
 		std::begin(instanceData),
-		[](WorldObject inst) -> WorldObject::InstanceData { return { inst.getModelMatrix() }; }
+		[](world::Coordinate coordinate) -> CubeInstance { return {
+			coordinate.chunk().toFloat(),
+			math::createModelMatrix(coordinate.local().toFloat())
+		}; }
 	);
 	this->mInstanceBuffer.writeBuffer(&renderer->getTransientPool(), 0, instanceData);
-
-	this->instances = instances;
 }
 
 void RenderCube::draw(graphics::Command *command)

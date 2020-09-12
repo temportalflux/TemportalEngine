@@ -68,6 +68,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputWatcher.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\Queue.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\logging\Logger.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Matrix.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Vector.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />

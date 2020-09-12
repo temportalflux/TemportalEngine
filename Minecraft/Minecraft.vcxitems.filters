@@ -72,9 +72,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstance.hpp">
-      <Filter>world</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -92,16 +89,16 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp">
-      <Filter>world</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp">
       <Filter>model</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstance.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
       <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>

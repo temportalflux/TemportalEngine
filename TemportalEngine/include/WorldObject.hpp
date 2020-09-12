@@ -29,8 +29,6 @@ public:
 	// TODO: Create TemportalEngine math matrix type
 	glm::mat4 getModelMatrix() const;
 
-	static std::vector<graphics::AttributeBinding> bindings(ui8 &slot);
-
 private:
 
 	// TODO: Move model matrix stuff (position, rotation, scale) to TransformComponent or ModelComponent

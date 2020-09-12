@@ -50,17 +50,3 @@ glm::mat4 WorldObject::getModelMatrix() const
 {
 	return this->mModelMatrix;
 }
-
-std::vector<graphics::AttributeBinding> WorldObject::bindings(ui8 &slot)
-{
-	return {
-		// Data per object instance - this is only for objects which dont more, rotate, or scale
-		graphics::AttributeBinding(graphics::AttributeBinding::Rate::eInstance)
-		.setStructType<InstanceData>()
-		// mat4 using 4 slots
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (0 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (1 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (2 * sizeof(glm::vec4))})
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(InstanceData, model) + (3 * sizeof(glm::vec4))})
-	};
-}
