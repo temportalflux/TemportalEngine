@@ -57,10 +57,14 @@ public:
 	/** The zero vector for this format. */
 	static Vector<TValue, TAccessibleDimensions, TActualDimensions> const ZERO;
 
-	constexpr Vector()
+	constexpr Vector(TValue uniformValue)
 	{
 		memset(mValues, 0, actualSize());
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+			mValues[i] = uniformValue;
 	}
+
+	constexpr Vector() : Vector(TValue()) {}
 
 	/**
 	* @param values The array of the literal values of the vector.
@@ -609,6 +613,17 @@ public:
 		TValue scalar = 0;
 		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 			scalar += mValues[i];
+		return scalar;
+	}
+
+	/**
+	 * Multiplies all accessible dimensions together and returns the result.
+	 */
+	TValue powDim() const
+	{
+		TValue scalar = 1;
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+			scalar *= mValues[i];
 		return scalar;
 	}
 

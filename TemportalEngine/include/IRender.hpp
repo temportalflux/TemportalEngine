@@ -9,6 +9,7 @@ FORWARD_DEF(NS_GRAPHICS, class Command)
 class IRender
 {
 public:
+	virtual bool reRecordRequired() { return false; }
 	// TODO: pass in the objects being rendered
-	virtual void draw(graphics::Command *command) = 0;
+	virtual void record(graphics::Command *command) = 0;
 };

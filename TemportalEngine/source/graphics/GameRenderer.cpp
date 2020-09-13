@@ -535,6 +535,20 @@ void GameRenderer::createCommandObjects()
 	this->recordCommandBufferInstructions();
 }
 
+bool GameRenderer::renderCommandReRecordRequired() const
+{
+	for (auto* pRender : this->mpRenders)
+	{
+		if (pRender->reRecordRequired()) return true;
+	}
+	return false;
+}
+
+void GameRenderer::resetCommandBuffer()
+{
+	this->mCommandPool.resetPool();
+}
+
 void GameRenderer::recordCommandBufferInstructions()
 {
 	for (uIndex idxFrame = 0; idxFrame < this->mCommandBuffers.size(); ++idxFrame)
@@ -546,7 +560,7 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd.bindPipeline(this->mPipelineSets[0].pipeline);
 			for (auto* pRender : this->mpRenders)
 			{
-				pRender->draw(&cmd);
+				pRender->record(&cmd);
 			}
 
 			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, &this->mPipelineSets[1].descriptorGroups[0][idxFrame]);
@@ -621,5 +635,11 @@ void GameRenderer::onFramePresented(uIndex idxFrame)
 	if (strDrawer->isDirty())
 	{
 		this->mIndexCountUI = strDrawer->writeBuffers(&this->mCommandPoolTransient, &this->mVertexBufferUI, &this->mIndexBufferUI);
+	}
+
+	if (this->renderCommandReRecordRequired())
+	{
+		this->resetCommandBuffer();
+		this->recordCommandBufferInstructions();
 	}
 }

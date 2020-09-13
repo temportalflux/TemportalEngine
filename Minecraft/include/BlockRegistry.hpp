@@ -46,6 +46,9 @@ public:
 		uSize indexPreCount; // amount of indicies in the index buffer (`BlockRegistry#mIndexBuffer`) before the indicies for this model
 	};
 
+	typedef std::vector<RegisteredType> RegisteredTypeList;
+	typedef RegisteredTypeList::const_iterator IterEntryItem;
+
 	struct BufferProfile
 	{
 		graphics::Buffer *vertexBuffer, *indexBuffer;
@@ -58,8 +61,11 @@ public:
 	void create(std::shared_ptr<graphics::GameRenderer> renderer);
 	void destroy();
 
+	IterEntryItem begin() const;
+	IterEntryItem end() const;
+
 private:
-	std::vector<RegisteredType> mEntries;
+	RegisteredTypeList mEntries;
 	std::unordered_map<asset::AssetPath, uIndex> mEntriesByPath;
 	std::unordered_map<BlockId, uIndex> mEntriesById;
 	std::unordered_multimap<BlockId, BlockTypePath> mConflicts;

@@ -18,7 +18,7 @@
 #include "graphics/Uniform.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp" 
-#include "render/RenderCube.hpp"
+#include "render/RenderBlocks.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -62,6 +62,7 @@ Game::Game(int argc, char *argv[])
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
+	this->mpBlockRegistry = std::make_shared<game::BlockRegistry>();
 }
 
 Game::~Game()
@@ -120,7 +121,7 @@ bool Game::createWindow()
 {
 	auto pEngine = engine::Engine::Get();
 	this->mpWindow = pEngine->createWindow(
-		800, 800,
+		1280, 720,
 		pEngine->getProject()->getDisplayName(),
 		WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
 	);
@@ -145,15 +146,15 @@ struct ChunkViewProj
 {
 	math::Matrix4x4 view;
 	glm::mat4 proj;
-	math::Vector3 chunkPos;
-	math::Vector3 chunkSize;
+	math::Vector3 posOfCurrentChunk;
+	math::Vector3 sizeOfChunkInBlocks;
 
 	ChunkViewProj()
 	{
 		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
-		chunkPos = math::Vector3({ 0, 0, 0 });
-		chunkSize = math::Vector3({ 16, 16, 16 });
+		posOfCurrentChunk = math::Vector3({ 0, 0, 0 });
+		sizeOfChunkInBlocks = math::Vector3({ 16, 16, 16 });
 	}
 };
 
@@ -218,22 +219,14 @@ void Game::createRenderers()
 
 	// Setup the object render instances
 	{
-		this->mpCubeRender = std::make_shared<RenderCube>();
-		auto instances = std::vector<world::Coordinate>();
-		{
-			for (i32 x = -3; x <= 3; ++x)
-				for (i32 y = -3; y <= 3; ++y)
-					instances.push_back(
-						world::Coordinate({ 0, 0, 0 }, { x, y, 0 })
-					);
-		}
+		this->mpCubeRender = std::make_shared<RenderBlocks>(this->mpBlockRegistry);
 		// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly
 		// TODO: Vertex bindings should validate against the shader
 		{
 			ui8 slot = 0;
 			this->mpRenderer->setBindings(0, this->mpCubeRender->getBindings(slot));
 		}
-		this->mpCubeRender->init(this->mpRenderer.get(), instances);
+		this->mpCubeRender->init(this->mpRenderer.get());
 		this->mpRenderer->addRender(this->mpCubeRender.get());
 	}
 
@@ -272,7 +265,6 @@ void Game::destroyRenderers()
 void Game::createBlockRegistry()
 {
 	static auto Log = DeclareLog("BlockRegistry");
-	this->mpBlockRegistry = std::make_shared<game::BlockRegistry>();
 
 	Log.log(LOG_INFO, "Gathering block types...");
 	auto blockList = assetManager()->getAssetList<asset::BlockType>();
@@ -291,6 +283,7 @@ void Game::destroyBlockRegistry()
 void Game::createScene()
 {
 	this->mpWorld = std::make_shared<world::World>();
+	this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
@@ -323,6 +316,10 @@ void Game::destroyScene()
 void Game::run()
 {
 	this->createBlockRegistry();
+	this->mpCubeRender->writeInstanceBuffer(&this->mpRenderer->getTransientPool());
+
+	this->mpRenderer->resetCommandBuffer();
+	this->mpRenderer->recordCommandBufferInstructions();
 
 	auto pEngine = engine::Engine::Get();
 

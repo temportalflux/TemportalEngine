@@ -15,6 +15,9 @@ public:
 	 * Sets the pointer to the device this object is created by.
 	 */
 	void setDevice(std::weak_ptr<GraphicsDevice> device);
+
+	std::weak_ptr<GraphicsDevice> getDevice() const;
+
 	/**
 	 * Returns a shared pointer to the device set by `setDevice`.
 	 */

@@ -66,6 +66,9 @@ public:
 	RenderPass* getRenderPass() override;
 	void destroyRenderPass() override;
 
+	void resetCommandBuffer();
+	void recordCommandBufferInstructions();
+
 	void invalidate() override;
 	std::shared_ptr<StringRenderer> stringRenderer();
 
@@ -86,7 +89,7 @@ private:
 	void createDescriptors();
 	void createCommandObjects();
 	void destroyCommandObjects();
-	void recordCommandBufferInstructions();
+	bool renderCommandReRecordRequired() const;
 
 	void prepareRender(ui32 idxCurrentFrame) override;
 	void updateUniformBuffer(ui32 idxImageView);

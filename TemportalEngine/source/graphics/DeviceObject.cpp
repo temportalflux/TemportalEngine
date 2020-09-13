@@ -12,6 +12,11 @@ void DeviceObject::setDevice(std::weak_ptr<GraphicsDevice> device)
 	this->mpDevice = device;
 }
 
+std::weak_ptr<GraphicsDevice> DeviceObject::getDevice() const
+{
+	return this->mpDevice;
+}
+
 std::shared_ptr<GraphicsDevice> DeviceObject::device() const
 {
 	return this->mpDevice.lock();

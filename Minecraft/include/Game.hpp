@@ -3,7 +3,7 @@
 #include "CoreInclude.hpp"
 
 class Window;
-class RenderCube;
+class RenderBlocks;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
 FORWARD_DEF(NS_ECS, struct ComponentTransform);
@@ -53,7 +53,7 @@ private:
 	std::shared_ptr<Window> mpWindow;
 	std::shared_ptr<graphics::GameRenderer> mpRenderer;
 	std::shared_ptr<graphics::Uniform> mpRendererMVP;
-	std::shared_ptr<RenderCube> mpCubeRender;
+	std::shared_ptr<RenderBlocks> mpCubeRender;
 	std::weak_ptr<graphics::RenderedString> mpCameraForwardStr;
 
 	std::shared_ptr<Controller> mpController;

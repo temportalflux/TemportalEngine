@@ -32,6 +32,16 @@ BlockRegistry::BlockRegistry()
 	));
 }
 
+BlockRegistry::IterEntryItem BlockRegistry::begin() const
+{
+	return this->mEntries.cbegin();
+}
+
+BlockRegistry::IterEntryItem BlockRegistry::end() const
+{
+	return this->mEntries.cend();
+}
+
 void BlockRegistry::append(std::vector<BlockTypePath> const& collection)
 {
 	auto assets = std::vector<std::pair<BlockTypeAsset, BlockTypePath>>();

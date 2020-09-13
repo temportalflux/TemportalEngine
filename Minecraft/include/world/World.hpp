@@ -2,9 +2,10 @@
 
 #include "CoreInclude.hpp"
 
+#include "Delegate.hpp"
+
 #include "world/Chunk.hpp"
 #include "world/WorldCoordinate.hpp"
-#include "world/BlockInstanceMap.hpp"
 
 NS_WORLD
 
@@ -12,6 +13,12 @@ class World : public std::enable_shared_from_this<World>
 {
 
 public:
+
+	BroadcastDelegate<void(
+		world::Coordinate const &global,
+		std::optional<BlockMetadata> const& prev,
+		std::optional<BlockMetadata> const& next
+	)> OnBlockChanged;
 
 	void loadChunk(math::Vector3Int const &coordinate);
 	void unloadChunk(math::Vector3Int const &coordinate);
@@ -44,12 +51,6 @@ private:
 	);
 	DirtyNeighborPairList::iterator findDirtyNeighborPair(world::Coordinate const &global);
 #pragma endregion
-
-#pragma region Block Render Instances
-private:
-	world::BlockInstanceMap mBlockRenderInstances;
-#pragma endregion
-
 
 };
 

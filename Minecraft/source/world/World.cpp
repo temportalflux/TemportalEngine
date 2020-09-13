@@ -42,7 +42,7 @@ void World::markCoordinateDirty(
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, +1, 0 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, -1 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, +1 }), global);
-	this->mBlockRenderInstances.updateCoordinate(global, prev, next);
+	this->OnBlockChanged.broadcast(global, prev, next);
 }
 
 void World::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, world::Coordinate const &dirtyNeighbor)
