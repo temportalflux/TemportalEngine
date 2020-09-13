@@ -29,7 +29,7 @@ public:
 	Command& beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer, math::Vector2UInt const resolution);
 	Command& setViewport(vk::Viewport const &viewport);
 	Command& bindPipeline(std::shared_ptr<Pipeline> pPipeline);
-	Command& bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, vk::DescriptorSet const *set);
+	Command& bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<vk::DescriptorSet> sets);
 	Command& bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers);
 	Command& bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType);
 	Command& draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui32 idxStartInstance, ui32 instanceCount);

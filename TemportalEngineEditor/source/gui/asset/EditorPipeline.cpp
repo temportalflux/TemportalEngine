@@ -34,13 +34,14 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mBlendOperation = asset->getBlendMode().blend;
 	this->mBlendWriteMask = asset->getBlendMode().writeMask.toSet(graphics::ColorComponent::ALL);
 	this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
-	this->mDescriptors = asset->getDescriptors();
+	this->mDescriptorGroups = asset->getDescriptorGroups();
 
 	this->mAllShaderPaths = asset::AssetManager::get()->getAssetList(asset::Shader::StaticType());
 }
 
 bool renderBlendOperation(graphics::BlendMode::Operation &blend);
 bool renderBlendComponent(graphics::BlendMode::Component &comp);
+bool renderDescriptorGroup(uIndex const& idx, asset::Pipeline::DescriptorGroup &group);
 bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor);
 
 void EditorPipeline::renderContent()
@@ -120,7 +121,7 @@ void EditorPipeline::renderContent()
 		this->markAssetDirty(1);
 	}
 
-	if (gui::List<asset::Pipeline::Descriptor>::Inline("descriptors", "Descriptors", false, this->mDescriptors, &renderDescriptor))
+	if (gui::List<asset::Pipeline::DescriptorGroup>::Inline("descriptorGroups", "Descriptor Groups", false, this->mDescriptorGroups, &renderDescriptorGroup))
 	{
 		this->markAssetDirty(1);
 	}
@@ -187,6 +188,11 @@ bool renderBlendComponent(graphics::BlendMode::Component &comp)
 	return bChanged;
 }
 
+bool renderDescriptorGroup(uIndex const& idx, asset::Pipeline::DescriptorGroup &group)
+{
+	return gui::List<asset::Pipeline::Descriptor>::Inline("descriptors", "Descriptors", false, group.descriptors, &renderDescriptor);
+}
+
 bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor)
 {
 	bool bChanged = false;
@@ -235,6 +241,6 @@ void EditorPipeline::saveAsset()
 		.setScissor(this->mScissor)
 		.setFrontFace(this->mFrontFace)
 		.setBlendMode(blendMode)
-		.setDescriptors(this->mDescriptors);
+		.setDescriptorGroups(this->mDescriptorGroups);
 	AssetEditor::saveAsset();
 }

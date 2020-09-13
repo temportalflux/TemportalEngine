@@ -41,6 +41,22 @@ public:
 			archive(cereal::make_nvp("stage", this->stage));
 		}
 	};
+	struct DescriptorGroup
+	{
+		std::vector<Descriptor> descriptors;
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+			archive(cereal::make_nvp("descriptors", this->descriptors));
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+			archive(cereal::make_nvp("descriptors", this->descriptors));
+		}
+	};
 
 public:
 	DEFINE_ASSET_STATICS("pipeline", "Pipeline", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
@@ -62,8 +78,8 @@ public:
 	Pipeline& setFrontFace(graphics::FrontFace::Enum const& value) { this->mFrontFace = value; return *this; }
 	graphics::BlendMode const& getBlendMode() const { return this->mBlendMode; }
 	Pipeline& setBlendMode(graphics::BlendMode const& value) { this->mBlendMode = value; return *this; }
-	std::vector<Descriptor> const& getDescriptors() const { return this->mDescriptors; }
-	Pipeline& setDescriptors(std::vector<Descriptor> const& value) { this->mDescriptors = value; return *this; }
+	std::vector<DescriptorGroup> const& getDescriptorGroups() const { return this->mDescriptorGroups; }
+	Pipeline& setDescriptorGroups(std::vector<DescriptorGroup> const& value) { this->mDescriptorGroups = value; return *this; }
 
 private:
 
@@ -74,7 +90,7 @@ private:
 	graphics::Area mScissor;
 	graphics::FrontFace::Enum mFrontFace;
 	graphics::BlendMode mBlendMode;
-	std::vector<Descriptor> mDescriptors;
+	std::vector<DescriptorGroup> mDescriptorGroups;
 
 #pragma region Serialization
 protected:
@@ -93,7 +109,7 @@ protected:
 		archive(cereal::make_nvp("scissor", this->mScissor));
 		archive(cereal::make_nvp("frontFace", this->mFrontFace));
 		archive(cereal::make_nvp("blendMode", this->mBlendMode));
-		archive(cereal::make_nvp("descriptors", this->mDescriptors));
+		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
 	}
 
 	template <typename Archive>
@@ -106,7 +122,7 @@ protected:
 		archive(cereal::make_nvp("scissor", this->mScissor));
 		archive(cereal::make_nvp("frontFace", this->mFrontFace));
 		archive(cereal::make_nvp("blendMode", this->mBlendMode));
-		archive(cereal::make_nvp("descriptors", this->mDescriptors));
+		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
 	}
 #pragma endregion
 

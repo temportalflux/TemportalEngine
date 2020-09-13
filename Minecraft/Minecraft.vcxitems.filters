@@ -156,6 +156,15 @@
     <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Stone.te-asset">
       <Filter>assets\textures\block</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\RenderPass.te-asset">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\UIPipeline.te-asset">
+      <Filter>assets</Filter>
+    </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\WorldPipeline.te-asset">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Font Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.otf">

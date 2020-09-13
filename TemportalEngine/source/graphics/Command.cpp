@@ -169,11 +169,11 @@ Command& Command::bindPipeline(std::shared_ptr<Pipeline> pPipeline)
 	return *this;
 }
 
-Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, vk::DescriptorSet const *set)
+Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<vk::DescriptorSet> sets)
 {
 	castBuf(this->mpVulkanBuffer)->bindDescriptorSets(
 		vk::PipelineBindPoint::eGraphics, pPipeline->mLayout.get(),
-		0, 1, set, 0, nullptr
+		0, (ui32)sets.size(), sets.data(), 0, nullptr
 	);
 	return *this;
 }

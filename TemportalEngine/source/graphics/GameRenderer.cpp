@@ -168,8 +168,9 @@ void GameRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 		pipelineSet.pipeline->addShader(pipelineAsset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());
 
 		// Create descriptor groups for the pipeline
+		for (auto const& assetDescGroup : pipelineAsset->getDescriptorGroups())
 		{
-			auto const& descriptors = pipelineAsset->getDescriptors();
+			auto const& descriptors = assetDescGroup.descriptors;
 			auto descriptorGroup = DescriptorGroup();
 			descriptorGroup.setBindingCount(descriptors.size());
 			for (uIndex i = 0; i < descriptors.size(); ++i)
@@ -471,18 +472,16 @@ void GameRenderer::destroyDepthResources()
 void GameRenderer::createDescriptors()
 {	
 	auto& samplerPair = this->mTextureDescriptorPairs[0];
+	auto const frameImages = (ui32)this->mFrameImageViews.size();
 
-	for (auto& pipelineSet : this->mPipelineSets)
-	{
-		for (auto& descriptorGroup : pipelineSet.descriptorGroups)
-		{
-			descriptorGroup.setAmount((ui32)this->mFrameImageViews.size());
-		}
-	}
+	this->mPipelineSets[0].descriptorGroups[0].setAmount(frameImages);
+	this->mPipelineSets[0].descriptorGroups[1].setAmount(1);
+	this->mPipelineSets[1].descriptorGroups[0].setAmount(frameImages);
 
 	// 0 = WorldPipeline: 0 = Only DescriptorGroup
 	this->mPipelineSets[0].descriptorGroups[0]
-		.attachToBinding("mvpUniform", this->mUniformStaticBuffersPerFrame, 0)
+		.attachToBinding("mvpUniform", this->mUniformStaticBuffersPerFrame, 0);
+	this->mPipelineSets[0].descriptorGroups[1]
 		.attachToBinding("imageAtlas", vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second]);
 	
 	auto& font = this->stringRenderer()->getFont();
@@ -556,14 +555,20 @@ void GameRenderer::recordCommandBufferInstructions()
 		auto cmd = this->mCommandBuffers[idxFrame].beginCommand();
 		cmd.beginRenderPass(this->getRenderPass(), &this->mFrameBuffers[idxFrame], this->mSwapChain.getResolution());
 		{
-			cmd.bindDescriptorSets(this->mPipelineSets[0].pipeline, &this->mPipelineSets[0].descriptorGroups[0][idxFrame]);
+			cmd.bindDescriptorSets(
+				this->mPipelineSets[0].pipeline,
+				{
+					this->mPipelineSets[0].descriptorGroups[0][idxFrame],
+					this->mPipelineSets[0].descriptorGroups[1][0]
+				}
+			);
 			cmd.bindPipeline(this->mPipelineSets[0].pipeline);
 			for (auto* pRender : this->mpRenders)
 			{
 				pRender->record(&cmd);
 			}
 
-			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, &this->mPipelineSets[1].descriptorGroups[0][idxFrame]);
+			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, { this->mPipelineSets[1].descriptorGroups[0][idxFrame] });
 			cmd.bindPipeline(this->mPipelineSets[1].pipeline);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);

@@ -45,11 +45,15 @@
 			}
 		}
 	},
-	"descriptors": [
-		{
-			"id": "fontAtlas",
-			"type": 1,
-			"stage": 16
-		}
-	]
+  "descriptorGroups": [
+    {
+      "descriptors": [
+        {
+          "id": "fontAtlas",
+          "type": 1,
+          "stage": 16
+        }
+      ]
+    }
+  ]
 }

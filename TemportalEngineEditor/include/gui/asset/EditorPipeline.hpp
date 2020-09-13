@@ -33,7 +33,7 @@ private:
 	std::unordered_set<graphics::ColorComponent::Enum> mBlendWriteMask;
 	std::string mBlendWriteMaskPreviewStr;
 	std::optional<graphics::BlendMode::Operation> mBlendOperation;
-	std::vector<asset::Pipeline::Descriptor> mDescriptors;
+	std::vector<asset::Pipeline::DescriptorGroup> mDescriptorGroups;
 
 };
 

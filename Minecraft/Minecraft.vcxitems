@@ -50,6 +50,7 @@
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Grass.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Stone.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\RenderPass.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextFragment.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextVertex.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TriangleFragment.glsl" />
@@ -64,6 +65,8 @@
     <None Include="$(MSBuildThisFileDirectory)assets\textures\block\GrassTop.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Stone.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\textures\NearestNeighborSampler.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\UIPipeline.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\WorldPipeline.te-asset" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.otf" />
