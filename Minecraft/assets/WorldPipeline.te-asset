@@ -27,30 +27,30 @@
 		]
 	},
 	"frontFace": 0,
-  "blendMode": {
-    "mask": "RGBA",
-    "blend": {
-      "hasValue": false
-    }
-  },
-  "descriptorGroups": [
-    {
-      "descriptors": [
-        {
-          "id": "mvpUniform",
-          "type": 6,
-          "stage": 1
-        }
-      ]
-    },
-    {
-      "descriptors": [
-        {
-          "id": "imageAtlas",
-          "type": 1,
-          "stage": 16
-        }
-      ]
-    }
-  ]
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": false
+		}
+	},
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "mvpUniform",
+					"type": 6,
+					"stage": 1
+				}
+			]
+		},
+		{
+			"descriptors": [
+				{
+					"id": "imageAtlas",
+					"type": 1,
+					"stage": 16
+				}
+			]
+		}
+	]
 }

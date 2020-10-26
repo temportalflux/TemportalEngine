@@ -1,8 +1,8 @@
 #include "StitchedTexture.hpp"
 
 #include "asset/Texture.hpp"
-#include "graphics/GameRenderer.hpp"
 #include "graphics/GraphicsDevice.hpp"
+#include "graphics/CommandPool.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/ImageSampler.hpp"
@@ -149,11 +149,8 @@ void StitchedTexture::increaseSize()
 	}
 }
 
-void StitchedTexture::finalize(std::shared_ptr<graphics::GameRenderer> renderer)
+void StitchedTexture::finalize(std::shared_ptr<graphics::GraphicsDevice> graphicsDevice, graphics::CommandPool* cmdPool)
 {
-	auto graphicsDevice = renderer->getDevice();
-	auto& cmdPool = renderer->getTransientPool();
-
 	this->mpImageMemory = std::make_shared<graphics::Memory>();
 	this->mpImageMemory->setDevice(graphicsDevice);
 	this->mpImageMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
@@ -171,9 +168,9 @@ void StitchedTexture::finalize(std::shared_ptr<graphics::GameRenderer> renderer)
 	this->mpImageMemory->create();
 
 	this->mpImage->bindMemory();
-	this->mpImage->transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, &cmdPool);
-	this->mpImage->writeImage((void*)this->mPixelData.data(), this->mPixelData.size() * sizeof(ui8), &cmdPool);
-	this->mpImage->transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, &cmdPool);
+	this->mpImage->transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, cmdPool);
+	this->mpImage->writeImage((void*)this->mPixelData.data(), this->mPixelData.size() * sizeof(ui8), cmdPool);
+	this->mpImage->transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, cmdPool);
 
 	this->mpView = std::make_shared<graphics::ImageView>();
 	this->mpView->setDevice(graphicsDevice);
@@ -195,4 +192,14 @@ std::optional<StitchedTexture::Entry> StitchedTexture::getStitchedTexture(asset:
 		this->mSizePerEntry.toFloat() / currentSize
 	};
 	return entry;
+}
+
+graphics::Image* StitchedTexture::image() const
+{
+	return this->mpImage.get();
+}
+
+graphics::ImageView* StitchedTexture::view() const
+{
+	return this->mpView.get();
 }

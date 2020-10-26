@@ -278,6 +278,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Matrix.cpp">
       <Filter>math</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainSupport.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />

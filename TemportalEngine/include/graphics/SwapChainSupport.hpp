@@ -14,6 +14,9 @@ struct SwapChainSupport
 	vk::SurfaceCapabilitiesKHR capabilities;
 	std::vector<vk::SurfaceFormatKHR> surfaceFormats;
 	std::vector<vk::PresentModeKHR> presentationModes;
+
+	ui32 getImageViewCount() const;
+
 };
 
 NS_END

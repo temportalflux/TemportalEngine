@@ -21,22 +21,9 @@ int main(int argc, char *argv[])
 		{
 			pGame->openProject();
 			pGame->initializeNetwork();
-			if (!pGame->requiresGraphics() || (pGame->initializeGraphics() && pGame->createWindow()))
-			{
-				if (pGame->requiresGraphics())
-				{
-					pGame->createRenderers();
-				}
-
-				pGame->createScene();
-				pGame->run();
-				pGame->destroyScene();
-
-				if (pGame->requiresGraphics())
-				{
-					pGame->destroyRenderers();
-				}
-			}
+			pGame->init();
+			pGame->run();
+			pGame->uninit();
 		}
 	}
 	game::Game::Destroy();

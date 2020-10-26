@@ -34,6 +34,9 @@
     <Filter Include="world">
       <UniqueIdentifier>{361f49e2-4e28-46bc-b13e-87b13b295ff7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="registry">
+      <UniqueIdentifier>{020894d5-d284-4248-b246-bbe611e0f350}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -45,7 +48,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp">
@@ -69,7 +71,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderBlocks.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderBlocks.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -79,7 +94,6 @@
       <Filter>model</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\BlockRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
       <Filter>world</Filter>
@@ -93,10 +107,20 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderBlocks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
       <Filter>world</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderBlocks.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset">

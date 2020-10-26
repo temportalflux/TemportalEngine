@@ -9,7 +9,6 @@ std::vector<graphics::AttributeBinding> Model::bindings(ui8 &slot)
 		graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
 		.setStructType<Vertex>()
 		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(Vertex, position) })
-		.addAttribute({ /*slot*/ slot++, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(Vertex, color) })
 		.addAttribute({ /*slot*/ slot++, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord) })
 	};
 }
@@ -23,7 +22,7 @@ ui16 Model::pushVertex(Vertex v)
 
 ui16 Model::pushVertex(math::Vector3 pos, math::Vector2 texCoord)
 {
-	return this->pushVertex({ {pos.x(), pos.y(), pos.z()}, {1, 1, 1, 1}, {texCoord.x(), texCoord.y()} });
+	return this->pushVertex({ {pos.x(), pos.y(), pos.z()}, {texCoord.x(), texCoord.y()} });
 }
 
 void Model::pushIndex(ui16 i)

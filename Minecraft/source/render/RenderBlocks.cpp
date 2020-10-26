@@ -5,11 +5,10 @@
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp" 
 #include "model/ModelCube.hpp"
-#include "BlockRegistry.hpp"
 
 #include "world/BlockInstanceMap.hpp"
 
-RenderBlocks::RenderBlocks(std::weak_ptr<game::BlockRegistry> registry)
+RenderBlocks::RenderBlocks(std::weak_ptr<game::VoxelModelManager> registry)
 {
 	this->mpBlockRegistry = registry;
 	this->mVertexBuffer
@@ -70,7 +69,7 @@ void RenderBlocks::record(graphics::Command *command)
 	command->bindIndexBuffer(0, &this->mIndexBuffer, this->mIndexBufferUnitType);
 
 	auto const registry = this->mpBlockRegistry.lock();
-	//game::BlockRegistry::IterEntryItem iter;
+	//game::VoxelModelManager::IterEntryItem iter;
 	//for (iter = registry->begin(); iter != registry->end(); ++iter)
 	{
 		auto instanceData = this->mpBlockRenderInstances->getBlockInstanceData({});// iter->id);

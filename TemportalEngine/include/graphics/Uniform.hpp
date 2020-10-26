@@ -22,7 +22,7 @@ public:
 		return ptr;
 	}
 
-	Uniform() : mpData(nullptr) {}
+	Uniform() : mpData(nullptr), bHasChangedSinceLastRead(false) {}
 	~Uniform()
 	{
 		if (this->mpData != nullptr)
@@ -38,8 +38,9 @@ public:
 		this->mLock.lock();
 	}
 
-	void endReading()
+	void endReading(bool markAsSeen)
 	{
+		if (markAsSeen) this->bHasChangedSinceLastRead = false;
 		this->mLock.unlock();
 	}
 
@@ -49,7 +50,7 @@ public:
 		assert(this->mDataSize == (uSize)sizeof(T));
 		this->beginReading();
 		T copiedData = *((T*)this->mpData);
-		this->endReading();
+		this->endReading(false);
 		return copiedData;
 	}
 
@@ -63,7 +64,13 @@ public:
 		assert(this->mDataSize == (uSize)sizeof(T));
 		this->mLock.lock();
 		memcpy(this->mpData, data, this->mDataSize);
+		this->bHasChangedSinceLastRead = true;
 		this->mLock.unlock();
+	}
+
+	bool hasChanged() const
+	{
+		return this->bHasChangedSinceLastRead;
 	}
 
 private:
@@ -80,6 +87,7 @@ private:
 	uSize mDataSize;
 
 	thread::MutexLock mLock;
+	bool bHasChangedSinceLastRead;
 
 };
 

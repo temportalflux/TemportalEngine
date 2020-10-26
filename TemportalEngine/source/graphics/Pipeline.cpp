@@ -68,7 +68,9 @@ Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup> *descriptors)
 	this->mDescriptorLayouts.resize(descriptors->size());
 	std::transform(
 		descriptors->begin(), descriptors->end(), this->mDescriptorLayouts.begin(),
-		[](DescriptorGroup const &descriptor) { return descriptor.layout(); }
+		[](DescriptorGroup const &descriptor) {
+			return descriptor.layout();
+		}
 	);
 	return *this;
 }

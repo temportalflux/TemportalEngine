@@ -26,6 +26,12 @@ BlockInstanceMap::BlockInstanceMap()
 	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 }
 
+BlockInstanceMap::~BlockInstanceMap()
+{
+	this->mInstanceBuffer.destroy();
+	this->mpInstanceMemory.reset();
+}
+
 void BlockInstanceMap::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpInstanceMemory->setDevice(device);

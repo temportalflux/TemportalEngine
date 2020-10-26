@@ -62,6 +62,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Surface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainInfo.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainSupport.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\types.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\VulkanRenderer.cpp" />

@@ -8,19 +8,34 @@
 
 using namespace graphics;
 
-DescriptorGroup& DescriptorGroup::setBindingCount(uSize count)
+DescriptorGroup::DescriptorGroup()
+	: mSetCount(0)
 {
-	this->mBindings.clear();
-	this->mBindings.resize(count);
-	this->mBindingIdxById.clear();
+	this->setArchetypeAmount(1);
+}
+
+DescriptorGroup& DescriptorGroup::setArchetypeAmount(uSize amt)
+{
+	this->mArchetypes.resize(amt);
 	return *this;
 }
 
 DescriptorGroup& DescriptorGroup::setAmount(ui32 setCount)
 {
 	this->mSetCount = setCount;
-	this->mWriteInstructions.clear();
-	this->mWriteInstructions.resize(setCount);
+	for (auto& archetype : this->mArchetypes)
+	{
+		archetype.mWriteInstructions.clear();
+		archetype.mWriteInstructions.resize(setCount);
+	}
+	return *this;
+}
+
+DescriptorGroup& DescriptorGroup::setBindingCount(uSize count)
+{
+	this->mBindings.clear();
+	this->mBindings.resize(count);
+	this->mBindingIdxById.clear();
 	return *this;
 }
 
@@ -43,15 +58,16 @@ DescriptorGroup& DescriptorGroup::addBinding(
 
 DescriptorGroup& DescriptorGroup::attachToBinding(
 	std::string const &id,
-	graphics::Buffer &buffer, ui32 const offset
+	graphics::Buffer &buffer,
+	uIndex idxArchetype
 )
 {
 	auto const idx = this->mBindingIdxById[id];
-	for (auto& writeInstructionSet : this->mWriteInstructions)
+	for (auto& writeInstructionSet : this->mArchetypes[idxArchetype].mWriteInstructions)
 	{
 		auto& writeInfo = writeInstructionSet.pushBufferInfo()
 			.setBuffer(*reinterpret_cast<vk::Buffer*>(buffer.get()))
-			.setOffset(offset)
+			.setOffset(0) // offset from the previous item. must be a multiple of a property in the graphics device
 			.setRange(buffer.getSize());
 
 		writeInstructionSet.writes.push_back(
@@ -70,18 +86,19 @@ DescriptorGroup& DescriptorGroup::attachToBinding(
 
 DescriptorGroup& DescriptorGroup::attachToBinding(
 	std::string const &id,
-	std::vector<graphics::Buffer> &buffers, ui32 const offset
+	std::vector<graphics::Buffer*> &buffers,
+	uIndex idxArchetype
 )
 {
 	auto const idx = this->mBindingIdxById[id];
 	for (uIndex i = 0; i < this->mSetCount; ++i)
 	{
-		auto& writeInfo = this->mWriteInstructions[i].pushBufferInfo()
-			.setBuffer(*reinterpret_cast<vk::Buffer*>(buffers[i].get()))
-			.setOffset(offset)
-			.setRange(buffers[i].getSize());
+		auto& writeInfo = this->mArchetypes[idxArchetype].mWriteInstructions[i].pushBufferInfo()
+			.setBuffer(*reinterpret_cast<vk::Buffer*>(buffers[i]->get()))
+			.setOffset(0) // offset from the previous item. must be a multiple of a property in the graphics device
+			.setRange(buffers[i]->getSize());
 
-		this->mWriteInstructions[i].writes.push_back(
+		this->mArchetypes[idxArchetype].mWriteInstructions[i].writes.push_back(
 			vk::WriteDescriptorSet()
 			// The destination set is handled when the write is actually written
 			//.setDstSet(INTERNAL_SET)
@@ -97,12 +114,13 @@ DescriptorGroup& DescriptorGroup::attachToBinding(
 
 DescriptorGroup& DescriptorGroup::attachToBinding(
 	std::string const &id,
-	vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler
+	vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler,
+	uIndex idxArchetype
 )
 {
 	if (view == nullptr || sampler == nullptr) return *this;
 	auto const idx = this->mBindingIdxById[id];
-	for (auto& writeInstructionSet : this->mWriteInstructions)
+	for (auto& writeInstructionSet : this->mArchetypes[idxArchetype].mWriteInstructions)
 	{
 		auto& writeInfo = writeInstructionSet.pushImageInfo()
 			.setImageLayout(layout)
@@ -132,28 +150,34 @@ DescriptorGroup& DescriptorGroup::create(std::shared_ptr<GraphicsDevice> device,
 	);
 
 	// will be deallocated when the pool is destroyed
-	this->mInternalSets = device->allocateDescriptorSets(pool, this, this->mSetCount);
+	for (auto& archetype : this->mArchetypes)
+	{
+		archetype.mInternalSets = device->allocateDescriptorSets(pool, this, this->mSetCount);
+	}
 
 	return *this;
 }
 
 DescriptorGroup& DescriptorGroup::writeAttachments(std::shared_ptr<GraphicsDevice> device)
 {
-	for (uIndex i = 0; i < this->mSetCount; ++i)
+	for (auto& archetype : this->mArchetypes)
 	{
-		auto writes = std::vector<vk::WriteDescriptorSet>(this->mWriteInstructions[i].writes);
-		for (auto& write : writes)
+		for (uIndex i = 0; i < this->mSetCount; ++i)
 		{
-			write.setDstSet(this->mInternalSets[i]);
+			auto writes = std::vector<vk::WriteDescriptorSet>(archetype.mWriteInstructions[i].writes);
+			for (auto& write : writes)
+			{
+				write.setDstSet(archetype.mInternalSets[i]);
+			}
+			device->updateDescriptorSets(writes);
 		}
-		device->updateDescriptorSets(writes);
 	}
 	return *this;
 }
 
 void DescriptorGroup::invalidate()
 {
-	this->mInternalSets.clear();
+	this->mArchetypes.clear();
 	this->mInternalLayout.reset();
 }
 
@@ -162,8 +186,9 @@ vk::DescriptorSetLayout DescriptorGroup::layout() const
 	return this->mInternalLayout.get();
 }
 
-const vk::DescriptorSet& DescriptorGroup::operator[](uIndex idxSet) const
+vk::DescriptorSet const& DescriptorGroup::getDescriptorSet(uIndex idxSet, uIndex idxArchetype) const
 {
-	assert(idxSet < this->mInternalSets.size());
-	return this->mInternalSets[idxSet];
+	assert(idxArchetype < this->mArchetypes.size());
+	assert(idxSet < this->mArchetypes[idxArchetype].mInternalSets.size());
+	return this->mArchetypes[idxArchetype].mInternalSets[idxSet];
 }

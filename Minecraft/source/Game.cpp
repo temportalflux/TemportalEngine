@@ -2,23 +2,26 @@
 
 #include "Engine.hpp"
 #include "Window.hpp"
-#include "BlockRegistry.hpp"
 #include "asset/BlockType.hpp"
 #include "asset/Font.hpp"
 #include "asset/Project.hpp"
 #include "asset/RenderPassAsset.hpp"
+#include "asset/PipelineAsset.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "ecs/Core.hpp"
 #include "ecs/Entity.hpp"
 #include "ecs/component/Transform.hpp"
 #include "controller/Controller.hpp"
-#include "graphics/GameRenderer.hpp"
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "math/Vector.hpp"
-#include "math/Matrix.hpp" 
+#include "math/Matrix.hpp"
+#include "registry/VoxelType.hpp"
+#include "render/MinecraftRenderer.hpp"
 #include "render/RenderBlocks.hpp"
+#include "render/VoxelGridRenderer.hpp"
+#include "render/VoxelModelManager.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -62,13 +65,10 @@ Game::Game(int argc, char *argv[])
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
-	this->mpBlockRegistry = std::make_shared<game::BlockRegistry>();
 }
 
 Game::~Game()
 {
-	this->destroyWindow();
-	this->mpBlockRegistry.reset();
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()
@@ -104,6 +104,46 @@ void Game::openProject()
 void Game::initializeNetwork()
 {
 	// TODO: STUB
+}
+
+void Game::init()
+{
+	this->createVoxelTypeRegistry();
+	if (this->requiresGraphics())
+	{
+		if (!this->initializeGraphics()) return;
+		if (!this->createWindow()) return;
+		this->createRenderers();
+	}
+	this->createScene();
+}
+
+void Game::uninit()
+{
+	this->destroyScene();
+	if (this->requiresGraphics())
+	{
+		this->destroyRenderers();
+		this->destroyWindow();
+	}
+	this->destroyVoxelTypeRegistry();
+}
+
+void Game::createVoxelTypeRegistry()
+{
+	static auto Log = DeclareLog("VoxelTypeRegistry");
+
+	this->mpVoxelTypeRegistry = std::make_shared<game::VoxelTypeRegistry>();
+
+	Log.log(LOG_INFO, "Gathering block types...");
+	auto blockList = this->assetManager()->getAssetList<asset::BlockType>();
+	Log.log(LOG_INFO, "Found %i block types", blockList.size());
+	this->mpVoxelTypeRegistry->registerEntries(blockList);
+}
+
+void Game::destroyVoxelTypeRegistry()
+{
+	this->mpVoxelTypeRegistry.reset();
 }
 
 bool Game::requiresGraphics() const
@@ -160,9 +200,18 @@ struct ChunkViewProj
 
 void Game::createRenderers()
 {
-	auto pEngine = engine::Engine::Get();
-	this->mpRenderer = std::make_shared<graphics::GameRenderer>();
-	pEngine->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
+	this->createGameRenderer();
+	this->loadVoxelTypeTextures();
+	this->createPipelineRenderers();
+	this->mpRenderer->createRenderChain();
+	this->mpRenderer->finalizeInitialization();
+}
+
+void Game::createGameRenderer()
+{
+	this->mpRenderer = std::make_shared<graphics::MinecraftRenderer>();
+	engine::Engine::Get()->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
+	this->mpWindow->setRenderer(this->mpRenderer.get());
 
 	// TODO: Configure this per project
 	this->mpRenderer->setSwapChainInfo(
@@ -187,50 +236,53 @@ void Game::createRenderers()
 		}
 	);
 
+	auto renderPassAssetPath = engine::Engine::Get()->getProject()->mRenderPass;
+	this->mpRenderer->setRenderPass(renderPassAssetPath.load(asset::EAssetSerialization::Binary));
+
+}
+
+void Game::loadVoxelTypeTextures()
+{
+	this->mpVoxelModelManager = std::make_shared<game::VoxelModelManager>();
+	this->mpVoxelModelManager->setSampler(asset::TypedAssetPath<asset::TextureSampler>::Create("assets/textures/NearestNeighborSampler.te-asset"));
+	this->mpVoxelModelManager->loadRegistry(this->mpVoxelTypeRegistry);
+	this->mpVoxelModelManager->createTextures(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
+	this->mpVoxelModelManager->createModels(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
+}
+
+void Game::createPipelineRenderers()
+{
 	// TODO: Use dedicated graphics memory
-	this->mpRendererMVP = graphics::Uniform::create<ChunkViewProj>(pEngine->getMiscMemory());
-	this->mpRenderer->setStaticUniform(this->mpRendererMVP);
+	this->mpRendererMVP = graphics::Uniform::create<ChunkViewProj>(engine::Engine::Get()->getMiscMemory());
+	this->mpRenderer->addMutableUniform("mvpUniform", this->mpRendererMVP);
+
+	this->createVoxelGridRenderer();
 	
-	// TODO: Load the render pass asset via a path stored on the project
-	this->mpRenderer->setRenderPass(engine::Engine::Get()->getProject()->mRenderPass.load(asset::EAssetSerialization::Binary));
-
 	// Setup UI Shader Pipeline
-	{
-		this->mpRenderer->setBindings(1,
-			{
-				graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-				.setStructType<graphics::Font::UIVertex>()
-				.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(graphics::Font::UIVertex, position) })
-				.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(graphics::Font::UIVertex, texCoord) })
-			}
-		);
-	}
-	// Update font texture
-	{
-		auto fontAsset = asset::TypedAssetPath<asset::Font>::Create(
-			"assets/font/Montserrat Regular.te-asset"
-		).load(asset::EAssetSerialization::Binary);
-		assert(fontAsset->supportsFontSize(48));
-		auto stringRenderer = this->mpRenderer->setFont(fontAsset);
-		auto renderedString = stringRenderer->makeGlobalString(48, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
-		this->mpCameraForwardStr = stringRenderer->makeGlobalString(48, { -1, -1 + 0.1f }, "<0, 0, 0>");
-		this->mpRenderer->prepareUIBuffers(1000);
-	}
-
-	// Setup the object render instances
-	{
-		this->mpCubeRender = std::make_shared<RenderBlocks>(this->mpBlockRegistry);
-		// TODO: Expose pipeline object so user can set the shaders, attribute bindings, and uniforms directly
-		// TODO: Vertex bindings should validate against the shader
-		{
-			ui8 slot = 0;
-			this->mpRenderer->setBindings(0, this->mpCubeRender->getBindings(slot));
-		}
-		this->mpCubeRender->init(this->mpRenderer.get());
-		this->mpRenderer->addRender(this->mpCubeRender.get());
-	}
+	//{
+	//	this->mpRenderer->setBindings(1,
+	//		{
+	//			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
+	//			.setStructType<graphics::Font::UIVertex>()
+	//			.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(graphics::Font::UIVertex, position) })
+	//			.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(graphics::Font::UIVertex, texCoord) })
+	//		}
+	//	);
+	//}
+	//// Update font texture
+	//{
+	//	auto fontAsset = asset::TypedAssetPath<asset::Font>::Create(
+	//		"assets/font/Montserrat Regular.te-asset"
+	//	).load(asset::EAssetSerialization::Binary);
+	//	assert(fontAsset->supportsFontSize(48));
+	//	auto stringRenderer = this->mpRenderer->setFont(fontAsset);
+	//	auto renderedString = stringRenderer->makeGlobalString(48, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
+	//	this->mpCameraForwardStr = stringRenderer->makeGlobalString(48, { -1, -1 + 0.1f }, "<0, 0, 0>");
+	//	this->mpRenderer->prepareUIBuffers(1000);
+	//}
 
 	// Add textures
+	/*
 	{
 		auto sampler = asset::TypedAssetPath<asset::TextureSampler>::Create(
 			"assets/textures/NearestNeighborSampler.te-asset"
@@ -244,46 +296,36 @@ void Game::createRenderers()
 		this->mpRenderer->allocateTextureMemory(); // allocates the memory for all images created
 		this->mpRenderer->writeTextureData(idxTex, dirtTexture);
 	}
+	//*/
 
-	this->mpRenderer->createRenderChain();
-	this->mpRenderer->finalizeInitialization();
 
-	this->mpWindow->setRenderer(this->mpRenderer.get());
+}
+
+void Game::createVoxelGridRenderer()
+{
+	this->mpVoxelGridRenderer = std::make_shared<graphics::VoxelGridRenderer>();
+	this->mpVoxelGridRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/WorldPipeline.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+	this->mpRenderer->addRenderer(this->mpVoxelGridRenderer.get());
+	this->mpVoxelGridRenderer->createVoxelDescriptorMapping(this->mpVoxelTypeRegistry, this->mpVoxelModelManager);
+	this->mpVoxelGridRenderer->writeInstanceBuffer(&this->mpRenderer->getTransientPool());
 }
 
 void Game::destroyRenderers()
 {
-	this->mpCameraForwardStr.reset();
-
-	this->mpCubeRender->invalidate();
-	this->mpCubeRender.reset();
-
+	//this->mpCameraForwardStr.reset();
+	this->mpVoxelModelManager.reset();
+	this->mpVoxelGridRenderer->destroyRenderDevices();
 	this->mpRenderer->invalidate();
+	this->mpVoxelGridRenderer.reset();
 	this->mpRenderer.reset();
-}
-
-void Game::createBlockRegistry()
-{
-	static auto Log = DeclareLog("BlockRegistry");
-
-	Log.log(LOG_INFO, "Gathering block types...");
-	auto blockList = assetManager()->getAssetList<asset::BlockType>();
-	Log.log(LOG_INFO, "Found %i block types", blockList.size());
-	this->mpBlockRegistry->append(blockList);
-
-	this->mpBlockRegistry->create(this->mpRenderer);
-}
-
-void Game::destroyBlockRegistry()
-{
-	this->mpBlockRegistry->destroy();
-	this->mpBlockRegistry.reset();
 }
 
 void Game::createScene()
 {
 	this->mpWorld = std::make_shared<world::World>();
-	this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
+	//this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
@@ -315,12 +357,6 @@ void Game::destroyScene()
 
 void Game::run()
 {
-	this->createBlockRegistry();
-	this->mpCubeRender->writeInstanceBuffer(&this->mpRenderer->getTransientPool());
-
-	this->mpRenderer->resetCommandBuffer();
-	this->mpRenderer->recordCommandBufferInstructions();
-
 	auto pEngine = engine::Engine::Get();
 
 	pEngine->start();
@@ -329,6 +365,7 @@ void Game::run()
 	ui32 i = 0;
 	while (pEngine->isActive())
 	{
+		/*
 		if (i == 0)
 		{
 			auto rot = this->mpCameraTransform->orientation.euler() * math::rad2deg();
@@ -337,6 +374,7 @@ void Game::run()
 				utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())
 			);
 		}
+		//*/
 
 		{
 			auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
@@ -356,5 +394,4 @@ void Game::run()
 		i = (i + 1) % 6000;
 	}
 	pEngine->joinThreads();
-	this->destroyBlockRegistry();
 }

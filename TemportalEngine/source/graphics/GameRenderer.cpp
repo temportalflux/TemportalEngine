@@ -479,8 +479,8 @@ void GameRenderer::createDescriptors()
 	this->mPipelineSets[1].descriptorGroups[0].setAmount(frameImages);
 
 	// 0 = WorldPipeline: 0 = Only DescriptorGroup
-	this->mPipelineSets[0].descriptorGroups[0]
-		.attachToBinding("mvpUniform", this->mUniformStaticBuffersPerFrame, 0);
+	//this->mPipelineSets[0].descriptorGroups[0]
+	//	.attachToBinding("mvpUniform", this->mUniformStaticBuffersPerFrame);
 	this->mPipelineSets[0].descriptorGroups[1]
 		.attachToBinding("imageAtlas", vk::ImageLayout::eShaderReadOnlyOptimal, &this->mTextureViews[samplerPair.first], &this->mTextureSamplers[samplerPair.second]);
 	
@@ -558,8 +558,8 @@ void GameRenderer::recordCommandBufferInstructions()
 			cmd.bindDescriptorSets(
 				this->mPipelineSets[0].pipeline,
 				{
-					this->mPipelineSets[0].descriptorGroups[0][idxFrame],
-					this->mPipelineSets[0].descriptorGroups[1][0]
+					this->mPipelineSets[0].descriptorGroups[0].getDescriptorSet(idxFrame),
+					this->mPipelineSets[0].descriptorGroups[1].getDescriptorSet(0)
 				}
 			);
 			cmd.bindPipeline(this->mPipelineSets[0].pipeline);
@@ -568,7 +568,7 @@ void GameRenderer::recordCommandBufferInstructions()
 				pRender->record(&cmd);
 			}
 
-			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, { this->mPipelineSets[1].descriptorGroups[0][idxFrame] });
+			cmd.bindDescriptorSets(this->mPipelineSets[1].pipeline, { this->mPipelineSets[1].descriptorGroups[0].getDescriptorSet(idxFrame) });
 			cmd.bindPipeline(this->mPipelineSets[1].pipeline);
 			cmd.bindVertexBuffers(0, { &this->mVertexBufferUI });
 			cmd.bindIndexBuffer(0, &this->mIndexBufferUI, vk::IndexType::eUint16);
@@ -623,7 +623,7 @@ void GameRenderer::updateUniformBuffer(ui32 idxImageView)
 	this->mUniformStaticBuffersPerFrame[idxImageView].write(
 		/*offset*/ 0, this->mpUniformStatic->data(), this->mpUniformStatic->size()
 	);
-	this->mpUniformStatic->endReading();
+	this->mpUniformStatic->endReading(true);
 }
 
 void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)

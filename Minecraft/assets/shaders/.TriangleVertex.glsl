@@ -11,12 +11,11 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 
 // Model attributes - changes based on the block type being drawn
 layout(location = 0) in vec3 position;
-layout(location = 1) in vec4 color;
-layout(location = 2) in vec2 texCoord;
+layout(location = 1) in vec2 texCoord;
 
 // Instance attributes - changes based on a specific block being drawn
-layout(location = 3) in vec3 posOfCurrentChunk;
-layout(location = 4) in mat4 modelMatrix; // slots [4,7]
+layout(location = 2) in vec3 posOfCurrentChunk;
+layout(location = 3) in mat4 modelMatrix; // slots [3,7)
 
 layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
@@ -27,6 +26,6 @@ void main()
 	vec3 blockPos = blockPosRelativeToCameraChunk + position;
 	//vec3 blockPos = position;
 	gl_Position = camera.proj * camera.view * modelMatrix * vec4(blockPos, 1.0);
-	fragColor = color;
+	fragColor = vec4(1);
 	fragTexCoord = texCoord;
 }

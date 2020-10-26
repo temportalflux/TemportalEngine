@@ -42,9 +42,7 @@ void SwapChain::create()
 	this->mResolution = { resolution.width, resolution.height };
 	mSurfaceFormat = mInfo.selectSurfaceFormat(mSupport.surfaceFormats);
 	mPresentationMode = mInfo.selectPresentationMode(mSupport.presentationModes);
-	// Adding at least 1 more to the chain will help avoid waiting on the GPU to complete internal ops before showing the next buffer.
-	// Ensure that the image count does not exceed the max, unless the max is == 0
-	ui32 minImageCount = minUnless(mSupport.capabilities.minImageCount + 1, mSupport.capabilities.maxImageCount, 0);
+	ui32 minImageCount = this->mSupport.getImageViewCount();
 
 	auto info = vk::SwapchainCreateInfoKHR()
 		// Hard set internally

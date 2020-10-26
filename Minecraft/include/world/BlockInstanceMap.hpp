@@ -38,6 +38,7 @@ public:
 	static graphics::AttributeBinding getBinding(ui8& slot);
 
 	BlockInstanceMap();
+	~BlockInstanceMap();
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 

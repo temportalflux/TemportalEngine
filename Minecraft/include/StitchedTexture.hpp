@@ -6,7 +6,8 @@
 
 FORWARD_DEF(NS_ASSET, class Texture);
 FORWARD_DEF(NS_ASSET, class TextureSampler);
-FORWARD_DEF(NS_GRAPHICS, class GameRenderer);
+FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice);
+FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 FORWARD_DEF(NS_GRAPHICS, class Image);
 FORWARD_DEF(NS_GRAPHICS, class ImageSampler);
 FORWARD_DEF(NS_GRAPHICS, class ImageView);
@@ -29,8 +30,11 @@ public:
 	math::Vector2UInt getSizePerEntry() const { return this->mSizePerEntry; }
 	bool canAdd(uSize const count) const;
 	bool addTextures(std::vector<std::pair<asset::AssetPath, std::shared_ptr<asset::Texture>>> textures);
-	void finalize(std::shared_ptr<graphics::GameRenderer> renderer);
+	void finalize(std::shared_ptr<graphics::GraphicsDevice> graphicsDevice, graphics::CommandPool* cmdPool);
 	std::optional<Entry> getStitchedTexture(asset::AssetPath const &path) const;
+
+	graphics::Image* image() const;
+	graphics::ImageView* view() const;
 
 private:
 	struct InternalEntry

@@ -9,14 +9,14 @@
 
 FORWARD_DEF(NS_GRAPHICS, class GameRenderer)
 FORWARD_DEF(NS_WORLD, class BlockInstanceMap);
-FORWARD_DEF(NS_GAME, class BlockRegistry);
+FORWARD_DEF(NS_GAME, class VoxelModelManager);
 
 // System for rendering a set of cubes
 class RenderBlocks : public IRender
 {
 
 public:
-	RenderBlocks(std::weak_ptr<game::BlockRegistry> registry);
+	RenderBlocks(std::weak_ptr<game::VoxelModelManager> registry);
 
 	std::vector<graphics::AttributeBinding> getBindings(ui8 &slot) const;
 	// TODO: Should take an array of a custom structure which maps to specific components (transform)
@@ -32,7 +32,7 @@ public:
 	void writeInstanceBuffer(graphics::CommandPool* transientPool);
 
 private:
-	std::weak_ptr<game::BlockRegistry> mpBlockRegistry;
+	std::weak_ptr<game::VoxelModelManager> mpBlockRegistry;
 
 	std::shared_ptr<graphics::Memory> mpBufferMemory;
 

@@ -26,10 +26,7 @@
 			1.0
 		]
 	},
-	"pipelines": [
-		"pipeline:assets/WorldPipeline.te-asset",
-		"pipeline:assets/UIPipeline.te-asset"
-	],
+	"pipelines": [],
 	"phases": [
 		{
 			"name": "default",

@@ -19,7 +19,7 @@ public:
 	{
 		friend class cereal::access;
 
-		TypedAssetPath<asset::TextureSampler> sampler;
+		TypedAssetPath<asset::TextureSampler> sampler; // DEPRECATED
 		TextureAssetPath right;
 		TextureAssetPath left;
 		TextureAssetPath front;

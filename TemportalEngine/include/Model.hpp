@@ -12,7 +12,6 @@ public:
 	struct Vertex
 	{
 		math::Vector3Padded position;
-		math::Vector4 color;
 		math::Vector2Padded texCoord;
 	};
 
