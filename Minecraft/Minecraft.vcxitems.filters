@@ -80,11 +80,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp">
       <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -116,11 +118,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp">
       <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset">

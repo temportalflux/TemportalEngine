@@ -2,6 +2,8 @@
 
 #include "CoreInclude.hpp"
 
+#include "logging/Logger.hpp"
+
 class Window;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
@@ -53,6 +55,8 @@ public:
 	void run();
 
 private:
+	logging::Logger mProjectLog;
+
 	std::shared_ptr<Window> mpWindow;
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
 	std::shared_ptr<graphics::Uniform> mpRendererMVP;

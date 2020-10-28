@@ -162,7 +162,7 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 
 	auto registry = this->mpTypeRegistry.lock();
 	auto modelManager = this->mpModelManager.lock();
-	auto id = game::BlockId("minecraft", "dirt");
+	auto id = game::BlockId("minecraft", "grass");
 	//for (auto const& idPath : registry->getEntriesById())
 	{
 		//auto id = idPath.first;
@@ -185,8 +185,9 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		command->bindVertexBuffers(1, { instanceData.buffer });
 		
 		command->draw(
-			(ui32)profile.idxIndiciesStart,
-			(ui32)profile.indexCount, /*index shift*/ 0,
+			profile.indexBufferStartIndex,
+			profile.indexBufferCount,
+			profile.indexBufferValueOffset,
 			instanceData.offset, instanceData.count
 		);
 		//break; // because the instance data doesnt have specifics for each block id yet

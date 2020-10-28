@@ -99,6 +99,7 @@ void Game::openProject()
 	).load(asset::EAssetSerialization::Binary, false);
 	pEngine->setProject(project);
 	pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
+	this->mProjectLog = DeclareLog(project->getDisplayName().c_str());
 }
 
 void Game::initializeNetwork()
@@ -340,6 +341,9 @@ void Game::createScene()
 
 	this->mpCameraTransform = std::make_shared<ecs::ComponentTransform>();
 	this->mpCameraTransform->setPosition(math::Vector3unitZ * 3);
+	this->mpCameraTransform->setOrientation(math::Vector3unitZ, 0); // force the camera to face forward (+Y)
+	//auto fwd = this->mpCameraTransform->forward();
+	//this->mProjectLog.log(LOG_INFO, "<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z());
 
 	// TODO: Allocate from entity pool
 	this->mpController = pEngine->getMainMemory()->make_shared<Controller>();
@@ -379,7 +383,7 @@ void Game::run()
 		{
 			auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
 			uniData.view = this->mpCameraTransform->calculateView();
-			uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.1f, /*far plane*/ 100.0f);
+			uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
 			uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
 			//uniData.chunkPos = { 0, 0, 0 };
 			this->mpRendererMVP->write(&uniData);

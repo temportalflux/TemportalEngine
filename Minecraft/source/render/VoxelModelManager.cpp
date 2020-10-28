@@ -13,21 +13,6 @@
 
 using namespace game;
 
-/*
-struct TextureSet
-{
-	struct Entry
-	{
-		math::Vector2 offset;
-		math::Vector2 size;
-	};
-
-	Entry right, left;
-	Entry front, back;
-	Entry up, down;
-};
-//*/
-
 VoxelModelManager::VoxelModelManager()
 {
 	this->mStitchedTextures.push_back(std::make_shared<StitchedTexture, math::Vector2UInt, math::Vector2UInt, math::Vector2UInt>(
@@ -185,7 +170,8 @@ void VoxelModelManager::createModels(std::shared_ptr<graphics::GraphicsDevice> d
 	{
 		auto const& modelVertices = entry.second.model.verticies();
 		auto const& modelIndices = entry.second.model.indicies();
-		entry.second.indexPreCount = indices.size();
+		entry.second.indexBufferStartIndex = (ui32)indices.size();
+		entry.second.indexBufferValueOffset = (ui32)vertices.size();
 		std::copy(modelVertices.begin(), modelVertices.end(), std::back_inserter(vertices));
 		std::copy(modelIndices.begin(), modelIndices.end(), std::back_inserter(indices));
 	}
@@ -266,9 +252,9 @@ void VoxelModelManager::destroyModels()
 	this->mpMemoryModelBuffers.reset();
 }
 
-uSize VoxelModelManager::VoxelTextureEntry::indexCount() const
+ui32 VoxelModelManager::VoxelTextureEntry::indexCount() const
 {
-	return this->model.indicies().size();
+	return (ui32)this->model.indicies().size();
 }
 
 uSize VoxelModelManager::getAtlasCount() const
@@ -295,6 +281,6 @@ VoxelModelManager::BufferProfile VoxelModelManager::getBufferProfile(BlockId con
 	auto const& entry = iterIdxEntry->second;
 	return {
 		&this->mModelVertexBuffer, &this->mModelIndexBuffer,
-		entry.indexPreCount, entry.indexCount()
+		entry.indexBufferStartIndex, entry.indexCount(), entry.indexBufferValueOffset
 	};
 }

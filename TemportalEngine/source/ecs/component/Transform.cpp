@@ -9,7 +9,6 @@ ComponentTypeId ComponentTransform::TypeId = 0;
 ComponentTransform::ComponentTransform()
 {
 	this->position = math::Vector3::ZERO;
-	this->orientation = math::Vector4unitW;
 	this->orientation = math::Quaternion::Identity;
 	this->size = math::Vector3({ 1, 1, 1 });
 }

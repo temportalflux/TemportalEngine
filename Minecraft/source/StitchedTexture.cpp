@@ -82,7 +82,7 @@ void StitchedTexture::writePixelData(math::Vector2UInt const &offset, std::vecto
 		{
 			auto dstPos = offset + srcPos;
 			uIndex srcIdx = (srcPos.y() * this->mSizePerEntry.y() + srcPos.x()) * CHANNELS_PER_PIXEL;
-			uIndex dstIdx = (dstPos.y() * this->mSizePerEntry.y() + dstPos.x()) * CHANNELS_PER_PIXEL;
+			uIndex dstIdx = (dstPos.y() * this->mSize.y() + dstPos.x()) * CHANNELS_PER_PIXEL;
 			for (uIndex channel = 0; channel < CHANNELS_PER_PIXEL; ++channel)
 			{
 				this->mPixelData[dstIdx + channel] = src[srcIdx + channel];
