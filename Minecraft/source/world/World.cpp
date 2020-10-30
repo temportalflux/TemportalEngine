@@ -73,6 +73,7 @@ World::DirtyNeighborPairList::iterator World::findDirtyNeighborPair(world::Coord
 
 void World::handleDirtyCoordinates()
 {
+	OPTICK_EVENT();
 	// TODO: actually do something here
 	this->mDirtyNeighborCoordinates.clear();
 }

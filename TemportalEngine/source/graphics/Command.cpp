@@ -23,6 +23,7 @@ vk::CommandBuffer* castBuf(void* ptr)
 
 Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 {
+	OPTICK_EVENT();
 	auto region = vk::BufferCopy().setSrcOffset(0).setDstOffset(0).setSize(size);
 	castBuf(this->mpVulkanBuffer)->copyBuffer(
 		extract<vk::Buffer>(src),
@@ -34,6 +35,7 @@ Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 
 Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayout, vk::ImageLayout nextLayout)
 {
+	OPTICK_EVENT();
 	auto& barrier = vk::ImageMemoryBarrier()
 		.setOldLayout(prevLayout).setNewLayout(nextLayout)
 		.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
@@ -91,6 +93,7 @@ Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayo
 
 Command& Command::copyBufferToImage(Buffer *src, Image *dest)
 {
+	OPTICK_EVENT();
 	auto imgSize = dest->getSize();
 	auto region = vk::BufferImageCopy()
 		.setBufferOffset(0)
@@ -166,12 +169,14 @@ Command& Command::setViewport(vk::Viewport const &viewport)
 
 Command& Command::bindPipeline(std::shared_ptr<Pipeline> pPipeline)
 {
+	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->bindPipeline(vk::PipelineBindPoint::eGraphics, pPipeline->mPipeline.get());
 	return *this;
 }
 
 Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<vk::DescriptorSet> sets)
 {
+	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->bindDescriptorSets(
 		vk::PipelineBindPoint::eGraphics, pPipeline->mLayout.get(),
 		0, (ui32)sets.size(), sets.data(), 0, nullptr
@@ -181,6 +186,7 @@ Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::v
 
 Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers)
 {
+	OPTICK_EVENT();
 	ui32 bufferCount = (ui32)pBuffers.size();
 	auto buffers = std::vector<vk::Buffer>(bufferCount);
 	auto offsets = std::vector<ui64>(bufferCount);
@@ -195,12 +201,14 @@ Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> cons
 
 Command& Command::bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType)
 {
+	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->bindIndexBuffer(extract<vk::Buffer>(pBuffer), offset, indexType);
 	return *this;
 }
 
 Command& Command::draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui32 idxStartInstance, ui32 instanceCount)
 {
+	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->drawIndexed(
 		indexCount, instanceCount,
 		idxStartIndex, indexShift,

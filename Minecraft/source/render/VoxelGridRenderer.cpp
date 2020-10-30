@@ -170,6 +170,7 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		OPTICK_GPU_EVENT("DrawVoxel");
 		OPTICK_TAG("VoxelId", id.to_string().c_str());
 
+		// TODO: Can optimize by iterating over this map and moving the frame descriptor fetch outside the loop
 		auto atlasIter = this->mVoxelIdToDescriptorArchetype.find(id);
 		assert(atlasIter != this->mVoxelIdToDescriptorArchetype.end());
 		auto descriptorAtlasArchetypeIdx = atlasIter->second;

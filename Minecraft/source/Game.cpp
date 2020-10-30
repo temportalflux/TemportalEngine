@@ -361,7 +361,7 @@ void Game::destroyScene()
 
 void Game::run()
 {
-	OPTICK_EVENT();
+	OPTICK_THREAD("MainThread");
 	auto pEngine = engine::Engine::Get();
 
 	pEngine->start();
@@ -370,33 +370,46 @@ void Game::run()
 	ui32 i = 0;
 	while (pEngine->isActive())
 	{
-		/*
-		if (i == 0)
-		{
-			auto rot = this->mpCameraTransform->orientation.euler() * math::rad2deg();
-			auto fwd = this->mpCameraTransform->forward();
-			this->mpCameraForwardStr.lock()->content(
-				utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())
-			);
-		}
-		//*/
-
-		{
-			auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
-			uniData.view = this->mpCameraTransform->calculateView();
-			uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
-			uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
-			//uniData.chunkPos = { 0, 0, 0 };
-			this->mpRendererMVP->write(&uniData);
-		}
-
-		this->mpWorld->handleDirtyCoordinates();
-		pEngine->update(deltaTime);
-
+		this->update(deltaTime);
 		auto nextTime = std::chrono::high_resolution_clock::now();
 		deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
 		prevTime = nextTime;
 		i = (i + 1) % 6000;
 	}
 	pEngine->joinThreads();
+}
+
+void Game::update(f32 deltaTime)
+{
+	OPTICK_EVENT();
+
+	auto pEngine = engine::Engine::Get();
+
+	/*
+	if (i == 0)
+	{
+		auto rot = this->mpCameraTransform->orientation.euler() * math::rad2deg();
+		auto fwd = this->mpCameraTransform->forward();
+		this->mpCameraForwardStr.lock()->content(
+			utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())
+		);
+	}
+	//*/
+
+	this->updateCameraUniform();
+
+	this->mpWorld->handleDirtyCoordinates();
+	pEngine->update(deltaTime);
+
+}
+
+void Game::updateCameraUniform()
+{
+	OPTICK_EVENT();
+	auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
+	uniData.view = this->mpCameraTransform->calculateView();
+	uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
+	uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+	//uniData.chunkPos = { 0, 0, 0 };
+	this->mpRendererMVP->write(&uniData);
 }

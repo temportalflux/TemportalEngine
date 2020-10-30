@@ -47,6 +47,7 @@ public:
 	template <typename T>
 	T read()
 	{
+		OPTICK_EVENT();
 		assert(this->mDataSize == (uSize)sizeof(T));
 		this->beginReading();
 		T copiedData = *((T*)this->mpData);
@@ -60,6 +61,7 @@ public:
 	template <typename T>
 	void write(T *data)
 	{
+		OPTICK_EVENT();
 		assert(this->mpData != nullptr);
 		assert(this->mDataSize == (uSize)sizeof(T));
 		this->mLock.lock();

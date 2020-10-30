@@ -82,6 +82,9 @@ private:
 	void createPipelineRenderers();
 	void createVoxelGridRenderer();
 
+	void update(f32 deltaTime);
+	void updateCameraUniform();
+
 };
 
 NS_END

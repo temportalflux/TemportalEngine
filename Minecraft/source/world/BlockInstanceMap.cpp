@@ -125,6 +125,7 @@ void BlockInstanceMap::writeInstanceBuffer(graphics::CommandPool* transientPool)
 
 BlockInstanceMap::InstanceData BlockInstanceMap::getBlockInstanceData(game::BlockId const &id)
 {
+	OPTICK_EVENT();
 	return {
 		&this->mInstanceBuffer,
 		/*idxStart*/ 0, /*count*/ this->mInstanceCount

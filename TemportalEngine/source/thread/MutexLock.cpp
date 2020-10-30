@@ -19,10 +19,12 @@ inline bool MutexLock::isLocked() const
 
 void MutexLock::lock()
 {
+	OPTICK_EVENT();
 	mutexLock(&mMutex);
 }
 
 bool MutexLock::unlock()
 {
+	OPTICK_EVENT();
 	return (bool)mutexUnlock(&mMutex);
 }

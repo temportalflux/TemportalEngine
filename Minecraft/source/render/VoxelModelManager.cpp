@@ -276,6 +276,7 @@ std::shared_ptr<StitchedTexture> VoxelModelManager::getAtlas(uIndex const idx) c
 
 VoxelModelManager::BufferProfile VoxelModelManager::getBufferProfile(BlockId const &blockId)
 {
+	OPTICK_EVENT();
 	auto const iterIdxEntry = this->mEntriesById.find(blockId);
 	assert(iterIdxEntry != this->mEntriesById.end());
 	auto const& entry = iterIdxEntry->second;
