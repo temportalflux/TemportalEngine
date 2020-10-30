@@ -66,6 +66,7 @@ void Frame::markNotInFlight()
 
 void Frame::submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> buffers)
 {
+	OPTICK_EVENT();
 	auto vkBuffers = std::vector<vk::CommandBuffer>(buffers.size());
 	std::transform(buffers.begin(), buffers.end(), vkBuffers.begin(),
 		[](CommandBuffer *b) { return b->mInternal.get(); }

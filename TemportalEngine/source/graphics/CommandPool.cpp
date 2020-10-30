@@ -59,6 +59,7 @@ void CommandPool::resetConfiguration()
 
 std::vector<CommandBuffer> CommandPool::createCommandBuffers(ui32 const count) const
 {
+	OPTICK_EVENT();
 	return this->device()->allocateCommandBuffers(
 		this, vk::CommandBufferLevel::ePrimary, count
 	);
@@ -71,6 +72,7 @@ void CommandPool::resetPool()
 
 void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
 {
+	OPTICK_EVENT();
 	auto buffers = this->createCommandBuffers(1);
 	
 	auto cmd = buffers[0].beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);

@@ -42,6 +42,7 @@ public:
 	}
 	void write(ui64 const idxSlot, uSize const offset, void* src, uSize size, bool bClear=false)
 	{
+		OPTICK_EVENT();
 		auto const& slot = this->mSlots[idxSlot];
 		this->writeInternal(slot.offset, slot.size, offset, src, size, bClear);
 	}

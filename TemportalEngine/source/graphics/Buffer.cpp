@@ -27,6 +27,7 @@ uSize Buffer::getSize() const
 
 void Buffer::create()
 {
+	OPTICK_EVENT();
 	this->mInternal = this->device()->createBuffer(
 		vk::BufferCreateInfo()
 		.setUsage(this->mUsageFlags)
@@ -63,6 +64,7 @@ void Buffer::bindMemory()
 
 void Buffer::writeBuffer(CommandPool* transientPool, uSize offset, void* data, uSize size, bool bClear)
 {
+	OPTICK_EVENT();
 	Buffer::writeDataToGPU(
 		this->device(), transientPool,
 		this->getSize(), bClear,
@@ -75,6 +77,7 @@ void Buffer::writeBuffer(CommandPool* transientPool, uSize offset, void* data, u
 
 void Buffer::write(uSize const offset, void* src, uSize size, bool bClear)
 {
+	OPTICK_EVENT();
 	this->memory()->write(this->memorySlot(), offset, src, size, bClear);
 }
 
@@ -86,6 +89,7 @@ void Buffer::writeDataToGPU(
 	std::function<void(Command* cmd, Buffer* stagingBuffer)> writeCommands
 )
 {
+	OPTICK_EVENT();
 	// Setup a buffer to be written to before its sent to GPU
 	Buffer stagingBuffer;
 	stagingBuffer.setDevice(device);

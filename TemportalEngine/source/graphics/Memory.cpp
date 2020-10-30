@@ -44,6 +44,7 @@ std::optional<ui32> findMemoryType(std::shared_ptr<GraphicsDevice> device, ui32 
 
 void Memory::create()
 {
+	OPTICK_EVENT();
 	assert(this->mTotalSize > 0 && this->mMemoryTypeBits);
 
 	auto memoryType = findMemoryType(this->device(), *this->mMemoryTypeBits, this->mFlags);
@@ -73,6 +74,7 @@ void Memory::resetConfiguration()
 
 Memory& Memory::bind(uIndex const idxSlot, Buffer const *buffer)
 {
+	OPTICK_EVENT();
 	assert(this->mInternal);
 	this->device()->bindMemory(this, buffer, this->mSlots[idxSlot].offset);
 	return *this;
@@ -87,6 +89,7 @@ Memory& Memory::bind(uIndex const idxSlot, Image const *image)
 
 void Memory::writeInternal(ui64 const mapOffset, ui64 const mapSize, uSize const dataOffset, void* src, uSize size, bool bClear)
 {
+	OPTICK_EVENT();
 	assert(this->mInternal);
 	void* dest = this->device()->mapMemory(this, mapOffset, mapSize);
 	void* destOffsetted = (void*)(((uSize)dest) + dataOffset);
