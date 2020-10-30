@@ -49,7 +49,7 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 
 	this->mLogicalDevice = this->mPhysicalDevice.createLogicalDevice(&info, &prefs);
 	this->mQueues = this->mLogicalDevice.findQueues(info.getQueues());
-
+	
 	auto const physicalProps = this->mPhysicalDevice.getProperties();
 	auto const apiVersion = TE_GET_VERSION(physicalProps.apiVersion).toString();
 	auto const driverVersion = TE_GET_VERSION(physicalProps.driverVersion).toString();
@@ -61,6 +61,21 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 		apiVersion.c_str(), driverVersion.c_str(),
 		physicalProps.limits.maxMemoryAllocationCount
 	);
+
+	if (this->mQueues.find(QueueFamily::Enum::eGraphics) != this->mQueues.end())
+	{
+		auto queueGroups = this->mPhysicalDevice.queryQueueFamilyGroup();
+		auto const& graphicsQueue = this->getQueue(QueueFamily::Enum::eGraphics);
+		OPTICK_GPU_INIT_VULKAN(
+			(VkDevice*)this->mLogicalDevice.get(),
+			(VkPhysicalDevice*)this->mPhysicalDevice.get(),
+			(VkQueue*)(&graphicsQueue), &(queueGroups.idxGraphicsQueue.value()), 1
+		);
+	}
+	else
+	{
+		instance->getLog().log(LOG_INFO, "Failed to instantiate Optick GPU, no valid graphics queue.");
+	}
 
 }
 

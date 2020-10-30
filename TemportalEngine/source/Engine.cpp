@@ -281,6 +281,7 @@ bool const Engine::isActive() const
 
 void Engine::update(f32 deltaTime)
 {
+	OPTICK_EVENT();
 	this->pollInput();
 	mpInputQueue->dispatchAll();
 	for (auto tickable : this->mTickers)

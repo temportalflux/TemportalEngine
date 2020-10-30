@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Optick/src/optick.h"
+
 #include "Api.h"
 #include "Namespace.hpp"
 #include "types/integer.h"

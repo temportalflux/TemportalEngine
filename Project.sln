@@ -20,6 +20,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glm", "libs\glm.vcxitems", "{DF1B4953-8F99-46D2-B1B4-D65B8EA778A8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoGameEditor", "DemoGameEditor\DemoGameEditor.vcxproj", "{3AD6343C-1563-4DE2-B16D-20031AE18E2B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ABDE6299-5814-4811-91D4-5908CE699B57} = {ABDE6299-5814-4811-91D4-5908CE699B57}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemportalEngineEditor", "TemportalEngineEditor\TemportalEngineEditor.vcxitems", "{A48E2E14-7909-4A4E-9A1B-D6231FE8CFC2}"
 EndProject
@@ -27,11 +30,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "TemportalEngineEdi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Minecraft", "Minecraft\Minecraft.vcxitems", "{D899098E-BBAD-4B50-BC5C-CE68AF938FE3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Optick", "libs\Optick.vcxitems", "{ECEB4E74-7AC7-4536-8EE3-10DAEE16B038}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		libs\cereal.vcxitems*{2ab47aa3-ab49-45c6-9969-d08fe23f6ab8}*SharedItemsImports = 9
 		libs\cereal.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
 		libs\glm.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
+		libs\Optick.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
 		libs\vulkan.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
 		Minecraft\Minecraft.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
 		TemportalEngineEditor\libs\imgui.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
@@ -42,12 +48,14 @@ Global
 		TemportalEngineEditor\TemportalEngineEditor.vcxitems*{a48e2e14-7909-4a4e-9a1b-d6231fe8cfc2}*SharedItemsImports = 9
 		libs\cereal.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		libs\glm.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
+		libs\Optick.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		libs\vulkan.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Minecraft\Minecraft.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		TemportalEngine\TemportalEngine.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Minecraft\Minecraft.vcxitems*{d899098e-bbad-4b50-bc5c-ce68af938fe3}*SharedItemsImports = 9
 		libs\glm.vcxitems*{df1b4953-8f99-46d2-b1b4-d65b8ea778a8}*SharedItemsImports = 9
 		libs\vulkan.vcxitems*{e30d2c09-c680-4cbc-ab6d-126acf07ecb3}*SharedItemsImports = 9
+		libs\Optick.vcxitems*{eceb4e74-7ac7-4536-8ee3-10daee16b038}*SharedItemsImports = 9
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -86,6 +94,7 @@ Global
 		{A48E2E14-7909-4A4E-9A1B-D6231FE8CFC2} = {3D9AF383-0C2A-4F25-989C-33D158C1FD99}
 		{73B768D0-A7F2-46D0-8097-539BB96C7305} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 		{D899098E-BBAD-4B50-BC5C-CE68AF938FE3} = {E4CD3244-0C3C-4397-9E6D-570CFE1D5641}
+		{ECEB4E74-7AC7-4536-8EE3-10DAEE16B038} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8539DF67-6A94-4B0F-9423-D8016914363B}

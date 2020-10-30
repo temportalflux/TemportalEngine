@@ -5,6 +5,7 @@
 
 int main(int argc, char *argv[])
 {
+	OPTICK_EVENT();
 	auto args = utility::parseArguments(argc, argv);
 
 	uSize totalMem = 0;

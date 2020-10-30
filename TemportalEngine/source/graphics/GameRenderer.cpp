@@ -342,6 +342,7 @@ void GameRenderer::prepareUIBuffers(ui64 const maxCharCount)
 
 void GameRenderer::createRenderChain()
 {
+	OPTICK_EVENT();
 	if (!this->mCommandPoolTransient.isValid())
 	{
 		this->initializeTransientCommandPool();
@@ -367,6 +368,7 @@ void GameRenderer::createRenderChain()
 
 void GameRenderer::destroyRenderChain()
 {
+	OPTICK_EVENT();
 	this->destroyFrames();
 
 	for (auto& pipelineSet : this->mPipelineSets)

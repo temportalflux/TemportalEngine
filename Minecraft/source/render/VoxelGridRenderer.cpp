@@ -158,6 +158,7 @@ void VoxelGridRenderer::writeInstanceBuffer(graphics::CommandPool* transientPool
 
 void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 {
+	OPTICK_EVENT();
 	// TODO: Optimize draw calls by only re-recording if the instance buffer has changed since the last time this frame's command buffer was recorded
 
 	auto registry = this->mpTypeRegistry.lock();
@@ -166,6 +167,8 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 	//for (auto const& idPath : registry->getEntriesById())
 	{
 		//auto id = idPath.first;
+		OPTICK_GPU_EVENT("DrawVoxel");
+		OPTICK_TAG("VoxelId", id.to_string().c_str());
 
 		auto atlasIter = this->mVoxelIdToDescriptorArchetype.find(id);
 		assert(atlasIter != this->mVoxelIdToDescriptorArchetype.end());

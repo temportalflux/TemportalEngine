@@ -361,6 +361,7 @@ void Game::destroyScene()
 
 void Game::run()
 {
+	OPTICK_EVENT();
 	auto pEngine = engine::Engine::Get();
 
 	pEngine->start();

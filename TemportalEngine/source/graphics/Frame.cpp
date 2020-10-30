@@ -60,6 +60,7 @@ vk::Fence& Frame::getInFlightFence()
 
 void Frame::markNotInFlight()
 {
+	OPTICK_EVENT();
 	this->mpDevice.lock()->resetFences({ this->mFence_FrameInFlight.get() });
 }
 
@@ -84,6 +85,7 @@ void Frame::submitBuffers(vk::Queue const *pQueue, std::vector<CommandBuffer*> b
 
 vk::Result Frame::present(vk::Queue const *pQueue, std::vector<SwapChain*> swapChains, ui32 &idxImage)
 {
+	OPTICK_EVENT();
 	auto vkSwapChains = std::vector<vk::SwapchainKHR>(swapChains.size());
 	std::transform(swapChains.begin(), swapChains.end(), vkSwapChains.begin(),
 		[](SwapChain *sc) { return sc->mInternal.get(); }

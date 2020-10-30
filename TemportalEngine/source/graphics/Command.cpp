@@ -120,6 +120,7 @@ Command& Command::copyBufferToImage(Buffer *src, Image *dest)
 
 Command& Command::beginRenderPass(RenderPass *pRenderPass, FrameBuffer *pFrameBuffer, math::Vector2UInt const resolution)
 {
+	OPTICK_EVENT();
 	// TODO: RenderPass objects can be configured with multiple clear values so long as the clear values correspond to a specific FrameBuffer attachment
 	auto clearValues = std::vector<vk::ClearValue>();
 	if (pRenderPass->clearColor())
@@ -210,11 +211,13 @@ Command& Command::draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui3
 
 Command& Command::endRenderPass()
 {
+	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->endRenderPass();
 	return *this;
 }
 
 void Command::end()
 {
+	OPTICK_EVENT();
 	this->mpBuffer->endCommand(this);
 }

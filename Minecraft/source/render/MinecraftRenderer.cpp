@@ -139,6 +139,7 @@ void MinecraftRenderer::finalizeInitialization()
 
 void MinecraftRenderer::createRenderChain()
 {
+	OPTICK_EVENT();
 	this->createSwapChain();
 	auto resolution = this->mSwapChain.getResolution();
 	
@@ -160,6 +161,7 @@ void MinecraftRenderer::createRenderChain()
 
 void MinecraftRenderer::destroyRenderChain()
 {
+	OPTICK_EVENT();
 	this->destroyFrames();
 	for (auto& renderer : this->mpRenderers)
 	{
@@ -173,6 +175,7 @@ void MinecraftRenderer::destroyRenderChain()
 
 void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution)
 {
+	OPTICK_EVENT();
 	auto device = this->getDevice();
 	auto& transientCmdPool = this->getTransientPool();
 
@@ -215,6 +218,7 @@ void MinecraftRenderer::destroyDepthResources()
 
 void MinecraftRenderer::createRenderPass()
 {
+	OPTICK_EVENT();
 	getRenderPass()
 		->setImageFormatType(graphics::ImageFormatReferenceType::Enum::Viewport, (ui32)this->mSwapChain.getFormat())
 		.setImageFormatType(graphics::ImageFormatReferenceType::Enum::Depth, (ui32)this->mDepthImage.getFormat())
@@ -233,6 +237,7 @@ void MinecraftRenderer::destroyRenderPass()
 
 void MinecraftRenderer::createFrames(uSize viewCount)
 {
+	OPTICK_EVENT();
 	auto device = this->getDevice();
 	auto resolution = this->mSwapChain.getResolution();
 
@@ -283,6 +288,7 @@ void MinecraftRenderer::destroyFrames()
 
 void MinecraftRenderer::record(uIndex idxFrame)
 {
+	OPTICK_EVENT();
 	auto& frame = this->mFrames[idxFrame];
 	frame.commandPool.resetPool();
 	auto cmd = frame.commandBuffer.beginCommand();
@@ -297,12 +303,14 @@ void MinecraftRenderer::record(uIndex idxFrame)
 
 void MinecraftRenderer::prepareRender(ui32 idxCurrentFrame)
 {
+	OPTICK_EVENT();
 	this->record(idxCurrentFrame);
 	VulkanRenderer::prepareRender(idxCurrentFrame);
 }
 
 void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
+	OPTICK_EVENT();
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mFrames[idxCurrentImage].commandBuffer;
 	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), { &commandBuffer });
@@ -310,6 +318,7 @@ void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentIma
 
 void MinecraftRenderer::onFramePresented(uIndex idxFrame)
 {
+	OPTICK_EVENT();
 	auto& buffers = this->mFrames[idxFrame].uniformBuffers;
 	for (auto& element : this->mpMutableUniforms)
 	{

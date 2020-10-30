@@ -25,6 +25,7 @@ void CommandBuffer::invalidate()
 
 Command CommandBuffer::beginCommand(vk::CommandBufferUsageFlags flags)
 {
+	OPTICK_EVENT();
 	this->mInternal->begin(vk::CommandBufferBeginInfo().setFlags(flags));
 	return Command(this);
 }

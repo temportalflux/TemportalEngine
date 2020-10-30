@@ -51,10 +51,12 @@ std::unordered_map<QueueFamily::Enum, vk::Queue> LogicalDevice::findQueues(std::
 
 void LogicalDevice::waitUntilIdle() const
 {
+	OPTICK_EVENT();
 	this->mInternal->waitIdle();
 }
 
 void LogicalDevice::waitFor(std::vector<vk::Fence> fences, bool bAll, ui64 timeout)
 {
+	OPTICK_EVENT();
 	this->mInternal->waitForFences(fences, bAll, timeout);
 }

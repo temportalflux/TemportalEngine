@@ -117,7 +117,12 @@ void VulkanRenderer::destroyFrameImageViews()
 
 void VulkanRenderer::drawFrame()
 {
-	if (this->mbRenderChainDirty) return;
+	OPTICK_FRAME("RenderThread");
+	if (this->mbRenderChainDirty)
+	{
+		OPTICK_TAG("RenderChainDirty", true);
+		return;
+	}
 	
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	currentFrame->waitUntilNotInFlight();
@@ -133,6 +138,7 @@ void VulkanRenderer::drawFrame()
 
 void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 {
+	OPTICK_EVENT();
 	auto* currentFrame = this->getFrameAt(idxCurrentFrame);
 
 	// If the next image view is currently in flight, wait until it isn't (it is being used by another frame)
@@ -151,6 +157,7 @@ void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)
 
 bool VulkanRenderer::acquireNextImage()
 {
+	OPTICK_EVENT();
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 
 	try
@@ -171,7 +178,12 @@ bool VulkanRenderer::acquireNextImage()
 
 bool VulkanRenderer::present()
 {
-	if (this->mbRenderChainDirty) return false;
+	OPTICK_EVENT();
+	if (this->mbRenderChainDirty)
+	{
+		OPTICK_TAG("RenderChainDirty", true);
+		return false;
+	}
 
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
@@ -196,16 +208,19 @@ bool VulkanRenderer::present()
 
 void VulkanRenderer::waitUntilIdle()
 {
+	OPTICK_EVENT();
 	this->mpGraphicsDevice->logical().waitUntilIdle();
 }
 
 void VulkanRenderer::markRenderChainDirty()
 {
+	OPTICK_EVENT();
 	this->mbRenderChainDirty = true;
 }
 
 void VulkanRenderer::update()
 {
+	OPTICK_EVENT();
 	if (this->mbRenderChainDirty)
 	{
 		this->waitUntilIdle();
