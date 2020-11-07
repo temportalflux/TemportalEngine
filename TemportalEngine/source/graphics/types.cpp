@@ -697,6 +697,29 @@ std::string PipelineStage::to_string(Enum value)
 
 #pragma endregion
 
+#pragma region Pipeline Stage
+
+std::vector<PrimitiveTopology::Enum> PrimitiveTopology::ALL = {
+		Enum::ePointList,
+		Enum::eLineList,
+		Enum::eLineStrip,
+		Enum::eTriangleList,
+		Enum::eTriangleStrip,
+		Enum::eTriangleFan,
+		Enum::eLineListWithAdjacency,
+		Enum::eLineStripWithAdjacency,
+		Enum::eTriangleListWithAdjacency,
+		Enum::eTriangleStripWithAdjacency,
+		Enum::ePatchList,
+};
+
+std::string PrimitiveTopology::to_string(Enum value)
+{
+	return vk::to_string((vk::PrimitiveTopology)value);
+}
+
+#pragma endregion
+
 #pragma region Access
 
 std::vector<Access::Enum> Access::ALL = {

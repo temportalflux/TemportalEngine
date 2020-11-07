@@ -13,6 +13,11 @@ CommandBuffer& CommandBuffer::operator=(CommandBuffer &&other)
 	return *this;
 }
 
+CommandBuffer::~CommandBuffer()
+{
+	destroy();
+}
+
 void* CommandBuffer::get()
 {
 	return &this->mInternal.get();

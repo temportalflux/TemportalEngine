@@ -125,15 +125,18 @@ void VulkanRenderer::drawFrame()
 	}
 	
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
-	currentFrame->waitUntilNotInFlight();
+	if (currentFrame)
+	{
+		currentFrame->waitUntilNotInFlight();
 	
-	if (!this->acquireNextImage()) return;
-	this->prepareRender((ui32)this->mIdxCurrentFrame);
-	this->render(currentFrame, this->mIdxCurrentImage);
-	if (!this->present()) return;
+		if (!this->acquireNextImage()) return;
+		this->prepareRender((ui32)this->mIdxCurrentFrame);
+		this->render(currentFrame, this->mIdxCurrentImage);
+		if (!this->present()) return;
 	
-	this->onFramePresented(this->mIdxCurrentFrame);
-	this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->getNumberOfFrames();
+		this->onFramePresented(this->mIdxCurrentFrame);
+		this->mIdxCurrentFrame = (this->mIdxCurrentFrame + 1) % this->getNumberOfFrames();
+	}
 }
 
 void VulkanRenderer::prepareRender(ui32 idxCurrentFrame)

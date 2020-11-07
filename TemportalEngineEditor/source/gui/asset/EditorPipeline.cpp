@@ -34,6 +34,7 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mBlendOperation = asset->getBlendMode().blend;
 	this->mBlendWriteMask = asset->getBlendMode().writeMask.toSet(graphics::ColorComponent::ALL);
 	this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
+	this->mTopology = asset->getTopology();
 	this->mDescriptorGroups = asset->getDescriptorGroups();
 
 	this->mAllShaderPaths = asset::AssetManager::get()->getAssetList(asset::Shader::StaticType());
@@ -107,6 +108,15 @@ void EditorPipeline::renderContent()
 		"Front Face", graphics::FrontFace::ALL, this->mFrontFace,
 		graphics::FrontFace::to_string,
 		[](graphics::FrontFace::Enum type) { ImGui::PushID((ui32)type); }
+	))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (gui::Combo<graphics::PrimitiveTopology::Enum>::Inline(
+		"Topology", graphics::PrimitiveTopology::ALL, this->mTopology,
+		graphics::PrimitiveTopology::to_string,
+		[](graphics::PrimitiveTopology::Enum type) { ImGui::PushID((ui32)type); }
 	))
 	{
 		this->markAssetDirty(1);
@@ -241,6 +251,7 @@ void EditorPipeline::saveAsset()
 		.setScissor(this->mScissor)
 		.setFrontFace(this->mFrontFace)
 		.setBlendMode(blendMode)
+		.setTopology(this->mTopology)
 		.setDescriptorGroups(this->mDescriptorGroups);
 	AssetEditor::saveAsset();
 }

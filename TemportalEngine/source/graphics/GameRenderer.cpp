@@ -162,7 +162,8 @@ void GameRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 		pipelineSet.pipeline->addViewArea(pipelineAsset->getViewport(), pipelineAsset->getScissor());
 		pipelineSet.pipeline->setBlendMode(pipelineAsset->getBlendMode());
 		pipelineSet.pipeline->setFrontFace(pipelineAsset->getFrontFace());
-
+		pipelineSet.pipeline->setTopology(pipelineAsset->getTopology());
+		
 		// Perform a synchronous load on each shader to create the shader modules
 		pipelineSet.pipeline->addShader(pipelineAsset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
 		pipelineSet.pipeline->addShader(pipelineAsset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());

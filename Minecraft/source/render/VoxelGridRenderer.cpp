@@ -6,6 +6,7 @@
 #include "asset/Shader.hpp"
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
+#include "graphics/DescriptorPool.hpp"
 
 #include "registry/VoxelType.hpp"
 #include "render/VoxelModelManager.hpp"
@@ -13,13 +14,13 @@
 
 using namespace graphics;
 
-VoxelGridRenderer::VoxelGridRenderer()
+VoxelGridRenderer::VoxelGridRenderer(
+	std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
+	std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer
+)
 {
-	this->mDescriptorPool.setPoolSize(64, {
-		{ vk::DescriptorType::eUniformBuffer, 64 },
-		{ vk::DescriptorType::eCombinedImageSampler, 64 },
-	});
-	this->mpBlockRenderInstances = std::make_shared<world::BlockInstanceMap>();
+	this->mpDescriptorPool = pDescriptorPool;
+	this->mpInstanceBuffer = instanceBuffer;
 }
 
 VoxelGridRenderer::~VoxelGridRenderer()
@@ -29,21 +30,19 @@ VoxelGridRenderer::~VoxelGridRenderer()
 
 void VoxelGridRenderer::destroyRenderDevices()
 {
-	this->mpBlockRenderInstances.reset();
 }
 
 VoxelGridRenderer& VoxelGridRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 {
-	if (this->mpPipeline)
+	if (!this->mpPipeline)
 	{
-		this->mpPipeline.reset();
+		this->mpPipeline = std::make_shared<graphics::Pipeline>();
 	}
-	this->mpPipeline = std::make_shared<graphics::Pipeline>();
 
-	// TODO: offset and size will need to be scaled by current frame resolution
 	this->mpPipeline->addViewArea(asset->getViewport(), asset->getScissor());
 	this->mpPipeline->setBlendMode(asset->getBlendMode());
 	this->mpPipeline->setFrontFace(asset->getFrontFace());
+	this->mpPipeline->setTopology(asset->getTopology());
 
 	// Perform a synchronous load on each shader to create the shader modules
 	this->mpPipeline->addShader(asset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
@@ -75,10 +74,6 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(std::shared_ptr<asset::Pipelin
 void VoxelGridRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
-	this->mDescriptorPool.setDevice(device);
-
-	this->mpBlockRenderInstances->setDevice(device);
-	this->mpBlockRenderInstances->constructInstanceBuffer(6, 16);
 }
 
 void VoxelGridRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -103,17 +98,15 @@ void VoxelGridRenderer::createVoxelDescriptorMapping(
 
 void VoxelGridRenderer::setFrameCount(uSize frameCount)
 {
-	this->mDescriptorPool.setAllocationMultiplier((ui32)frameCount);
 	this->mDescriptorGroups[0].setAmount((ui32)frameCount);
 	this->mDescriptorGroups[1].setAmount(1);
 }
 
 void VoxelGridRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	this->mDescriptorPool.create();
 	for (auto& descriptorGroup : this->mDescriptorGroups)
 	{
-		descriptorGroup.create(device, &this->mDescriptorPool);
+		descriptorGroup.create(device, this->mpDescriptorPool.lock().get());
 	}
 }
 
@@ -151,11 +144,6 @@ void VoxelGridRenderer::createPipeline(math::Vector2UInt const& resolution)
 		.create();
 }
 
-void VoxelGridRenderer::writeInstanceBuffer(graphics::CommandPool* transientPool)
-{
-	this->mpBlockRenderInstances->writeInstanceBuffer(transientPool);
-}
-
 void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 {
 	OPTICK_EVENT();
@@ -163,6 +151,7 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 
 	auto registry = this->mpTypeRegistry.lock();
 	auto modelManager = this->mpModelManager.lock();
+	auto instanceBuffer = this->mpInstanceBuffer.lock();
 	auto id = game::BlockId("minecraft", "grass");
 	//for (auto const& idPath : registry->getEntriesById())
 	{
@@ -185,14 +174,14 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		command->bindVertexBuffers(0, { profile.vertexBuffer });
 		command->bindIndexBuffer(0, profile.indexBuffer, vk::IndexType::eUint16);
 
-		auto instanceData = this->mpBlockRenderInstances->getBlockInstanceData(id);
+		auto const& instanceData = instanceBuffer->getDataForVoxelId(id);
 		command->bindVertexBuffers(1, { instanceData.buffer });
 		
 		command->draw(
 			profile.indexBufferStartIndex,
 			profile.indexBufferCount,
 			profile.indexBufferValueOffset,
-			instanceData.offset, instanceData.count
+			(ui32)instanceData.index, (ui32)instanceData.count
 		);
 		//break; // because the instance data doesnt have specifics for each block id yet
 	}
@@ -207,6 +196,5 @@ void VoxelGridRenderer::destroyRenderChain()
 		descriptorGroup.invalidate();
 	}
 	this->mDescriptorGroups.clear();
-	this->mDescriptorPool.invalidate();
 	this->mVoxelIdToDescriptorArchetype.clear();
 }

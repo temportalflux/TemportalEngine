@@ -13,15 +13,17 @@
 #include "ecs/Entity.hpp"
 #include "ecs/component/Transform.hpp"
 #include "controller/Controller.hpp"
+#include "graphics/DescriptorPool.hpp"
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "registry/VoxelType.hpp"
 #include "render/MinecraftRenderer.hpp"
-#include "render/RenderBlocks.hpp"
+#include "world/BlockInstanceMap.hpp"
 #include "render/VoxelGridRenderer.hpp"
 #include "render/VoxelModelManager.hpp"
+#include "render/worldAxes/WorldAxesRenderer.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -199,11 +201,23 @@ struct ChunkViewProj
 	}
 };
 
+struct LocalCamera
+{
+	math::Matrix4x4 view;
+	glm::mat4 proj;
+
+	LocalCamera()
+	{
+		view = math::Matrix4x4(1);
+		proj = glm::mat4(1);
+	}
+};
+
 void Game::createRenderers()
 {
 	this->createGameRenderer();
-	this->loadVoxelTypeTextures();
-	this->createPipelineRenderers();
+	//this->loadVoxelTypeTextures();
+	//this->createPipelineRenderers();
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
 }
@@ -256,8 +270,20 @@ void Game::createPipelineRenderers()
 	// TODO: Use dedicated graphics memory
 	this->mpRendererMVP = graphics::Uniform::create<ChunkViewProj>(engine::Engine::Get()->getMiscMemory());
 	this->mpRenderer->addMutableUniform("mvpUniform", this->mpRendererMVP);
+	this->mpUniformLocalCamera = graphics::Uniform::create<LocalCamera>(engine::Engine::Get()->getMiscMemory());
+	this->mpRenderer->addMutableUniform("localCamera", this->mpUniformLocalCamera);
+
+	this->mpGlobalDescriptorPool = std::make_shared<graphics::DescriptorPool>();
+	this->mpGlobalDescriptorPool->setDevice(this->mpRenderer->getDevice());
+	this->mpGlobalDescriptorPool->setPoolSize(64, {
+		{ vk::DescriptorType::eUniformBuffer, 64 },
+		{ vk::DescriptorType::eCombinedImageSampler, 64 },
+	});
+	this->mpGlobalDescriptorPool->setAllocationMultiplier(this->mpRenderer->getSwapChainImageViewCount());
+	this->mpGlobalDescriptorPool->create();
 
 	this->createVoxelGridRenderer();
+	//this->createWorldAxesRenderer();
 	
 	// Setup UI Shader Pipeline
 	//{
@@ -302,29 +328,108 @@ void Game::createPipelineRenderers()
 
 }
 
+
+constexpr ui64 blockCountForRenderDistance(ui8 chunkRenderDistance)
+{
+	// Computes (2c+1)^3 by filling all values of a 3-dimensional vector with `2c+1` and multiplying the dimensions together
+	// If CRD=5, then count=1331
+	// If CRD=6, then count=2197
+	// If CRD=11, then count=12167
+	ui32 const chunkCount = math::Vector<ui32, 3>(2 * chunkRenderDistance + 1).powDim();
+	// the amount of blocks in a cube whose side length is CSL
+	// If CSL=16, then blocksPerChunk=4096
+	ui32 const blocksPerChunk = math::Vector<ui32, 3>(CHUNK_SIDE_LENGTH).powDim();
+	// CRD=5  & CSL=16 ->  1331*4096 ->  5,451,776
+	// CRD=6  & CSL=16 ->  2197*4096 ->  8,998,912
+	// CRD=11 & CSL=16 -> 12167*4096 -> 49,836,032
+	ui64 const totalBlockCount = ui64(chunkCount) * ui64(blocksPerChunk);
+	// RenderData has 5 vec4, which is 80 bytes (float is 4 bytes, 4 floats is 16 bytes per vec4, 5 vec4s is 16*5=80)
+	// CRD=5  & CSL=16 ->  5,451,776 * 80 ->   436,142,080
+	// CRD=6  & CSL=16 ->  8,998,912 * 80 ->   719,912,960 (CRD=7 puts this over 1GB)
+	// CRD=11 & CSL=16 -> 49,836,032 * 80 -> 3,986,882,560 (CRD=12 puts this over 4GB)
+	return totalBlockCount;
+}
+
 void Game::createVoxelGridRenderer()
 {
-	this->mpVoxelGridRenderer = std::make_shared<graphics::VoxelGridRenderer>();
+	auto const totalBlockCount = blockCountForRenderDistance(6);
+	this->mpVoxelInstanceBuffer = std::make_shared<world::BlockInstanceBuffer>(
+		totalBlockCount, this->mpVoxelTypeRegistry->getIds()
+	);
+	this->mpVoxelInstanceBuffer->setDevice(this->mpRenderer->getDevice());
+	this->mpVoxelInstanceBuffer->createBuffer();
+
+	this->mpVoxelGridRenderer = std::make_shared<graphics::VoxelGridRenderer>(
+		std::weak_ptr(this->mpGlobalDescriptorPool),
+		std::weak_ptr(this->mpVoxelInstanceBuffer)
+	);
 	this->mpVoxelGridRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/WorldPipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpVoxelGridRenderer.get());
 	this->mpVoxelGridRenderer->createVoxelDescriptorMapping(this->mpVoxelTypeRegistry, this->mpVoxelModelManager);
-	this->mpVoxelGridRenderer->writeInstanceBuffer(&this->mpRenderer->getTransientPool());
+}
+
+void Game::createWorldAxesRenderer()
+{
+	this->mpWorldAxesRenderer = std::make_shared<graphics::WorldAxesRenderer>(
+		std::weak_ptr(this->mpGlobalDescriptorPool)
+	);
+	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/PerspectiveLinePipeline.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
+	// Y: 0->1 green forward
+	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 0.5, 1, 0.5 }, { 0, 1, 0, 1 });
+	// X: 0->1 red right
+	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 1, 0.5, 0.5 }, { 1, 0, 0, 1 });
+	// Z: 0->1 blue up
+	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 0.5, 0.5, 1 }, { 0, 0, 1, 1 });
+	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
 void Game::destroyRenderers()
 {
 	//this->mpCameraForwardStr.reset();
-	this->mpVoxelModelManager.reset();
-	this->mpVoxelGridRenderer->destroyRenderDevices();
+	
+	//this->mpVoxelModelManager.reset();
+	//this->mpVoxelGridRenderer->destroyRenderDevices();
+	//this->mpWorldAxesRenderer->destroyBuffers();
+	//this->mpGlobalDescriptorPool->invalidate();
+
 	this->mpRenderer->invalidate();
+
+	this->mpGlobalDescriptorPool.reset();
 	this->mpVoxelGridRenderer.reset();
+	this->mpVoxelInstanceBuffer.reset();
+	//this->mpWorldAxesRenderer.reset();
 	this->mpRenderer.reset();
 }
 
 void Game::createScene()
 {
+	srand((ui32)time(0));
+
+	auto allVoxelIdsSet = this->mpVoxelTypeRegistry->getIds();
+	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
+	allVoxelIdOptions.push_back(std::nullopt);
+	std::transform(
+		std::begin(allVoxelIdsSet), std::end(allVoxelIdsSet),
+		std::back_inserter(allVoxelIdOptions),
+		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
+	);
+	
+	for (i32 x = -3; x <= 3; ++x)
+	{
+		for (i32 y = -3; y <= 3; ++y)
+		{
+			this->mpVoxelInstanceBuffer->changeVoxelId(
+				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }),
+				allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())]
+			);
+		}
+	}
+
 	this->mpWorld = std::make_shared<world::World>();
 	//this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
 	this->mpWorld->loadChunk({ 0, 0, 0 });
@@ -396,7 +501,10 @@ void Game::update(f32 deltaTime)
 	}
 	//*/
 
-	this->updateCameraUniform();
+	if (this->mpRenderer)
+	{
+		this->updateCameraUniform();
+	}
 
 	this->mpWorld->handleDirtyCoordinates();
 	pEngine->update(deltaTime);
@@ -406,10 +514,24 @@ void Game::update(f32 deltaTime)
 void Game::updateCameraUniform()
 {
 	OPTICK_EVENT();
-	auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
-	uniData.view = this->mpCameraTransform->calculateView();
-	uniData.proj = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
-	uniData.proj[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
-	//uniData.chunkPos = { 0, 0, 0 };
-	this->mpRendererMVP->write(&uniData);
+
+	auto perspective = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
+	perspective[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+
+	if (this->mpRendererMVP)
+	{
+		auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
+		uniData.view = this->mpCameraTransform->calculateView();
+		uniData.proj = perspective;
+		//uniData.chunkPos = { 0, 0, 0 };
+		this->mpRendererMVP->write(&uniData);
+	}
+
+	if (this->mpUniformLocalCamera)
+	{
+		auto localCamera = this->mpUniformLocalCamera->read<LocalCamera>();
+		localCamera.view = this->mpCameraTransform->calculateViewFrom(this->mpCameraTransform->position);
+		localCamera.proj = perspective;
+		this->mpUniformLocalCamera->write(&localCamera);
+	}
 }

@@ -24,9 +24,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\RenderBlocks.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp" />
@@ -36,13 +36,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelCube.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\RenderBlocks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
@@ -57,11 +57,16 @@
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Grass.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Stone.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\PerspectiveLinePipeline.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\RenderPass.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.PerspectiveLineFragment.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.PerspectiveLineVertex.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextFragment.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextVertex.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TriangleFragment.glsl" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TriangleVertex.glsl" />
+    <None Include="$(MSBuildThisFileDirectory)assets\shaders\PerspectiveLineFragment.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\shaders\PerspectiveLineVertex.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\TextFragment.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\TextVertex.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\TriangleFragment.te-asset" />

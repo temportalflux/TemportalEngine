@@ -18,6 +18,7 @@ public:
 	CommandBuffer() = default;
 	CommandBuffer(CommandBuffer &&other);
 	CommandBuffer& operator=(CommandBuffer &&other);
+	~CommandBuffer();
 
 	void* get() override;
 	void invalidate() override;

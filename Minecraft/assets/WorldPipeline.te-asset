@@ -1,56 +1,57 @@
 {
-	"type": "pipeline",
-	"shader-vert": "shader:assets/shaders/TriangleVertex.te-asset",
-	"shader-frag": "shader:assets/shaders/TriangleFragment.te-asset",
-	"viewport": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		],
-		"depthRange": [
-			0.0,
-			1.0
-		]
-	},
-	"scissor": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		]
-	},
-	"frontFace": 0,
-	"blendMode": {
-		"mask": "RGBA",
-		"blend": {
-			"hasValue": false
-		}
-	},
-	"descriptorGroups": [
-		{
-			"descriptors": [
-				{
-					"id": "mvpUniform",
-					"type": 6,
-					"stage": 1
-				}
-			]
-		},
-		{
-			"descriptors": [
-				{
-					"id": "imageAtlas",
-					"type": 1,
-					"stage": 16
-				}
-			]
-		}
-	]
+  "type": "pipeline",
+  "shader-vert": "shader:assets/shaders/TriangleVertex.te-asset",
+  "shader-frag": "shader:assets/shaders/TriangleFragment.te-asset",
+  "viewport": {
+    "offset": [
+      0.0,
+      0.0
+    ],
+    "size": [
+      1.0,
+      1.0
+    ],
+    "depthRange": [
+      0.0,
+      1.0
+    ]
+  },
+  "scissor": {
+    "offset": [
+      0.0,
+      0.0
+    ],
+    "size": [
+      1.0,
+      1.0
+    ]
+  },
+  "frontFace": 0,
+  "blendMode": {
+    "mask": "RGBA",
+    "blend": {
+      "hasValue": false
+    }
+  },
+  "topology": 3,
+  "descriptorGroups": [
+    {
+      "descriptors": [
+        {
+          "id": "mvpUniform",
+          "type": 6,
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "descriptors": [
+        {
+          "id": "imageAtlas",
+          "type": 1,
+          "stage": 16
+        }
+      ]
+    }
+  ]
 }

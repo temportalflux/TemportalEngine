@@ -126,6 +126,7 @@ void Image::transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, Command
 		This means multiple images could be sent to GPU at once.
 	*/
 	queue.waitIdle();
+	buffers[0].destroy();
 }
 
 void Image::writeImage(void* data, uSize size, CommandPool* transientPool)

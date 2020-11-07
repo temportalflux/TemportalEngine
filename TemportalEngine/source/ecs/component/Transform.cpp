@@ -43,6 +43,11 @@ ComponentTransform& ComponentTransform::setSize(math::Vector3 const &size)
 
 math::Matrix4x4 ComponentTransform::calculateView() const
 {
+	return calculateViewFrom(this->position);
+}
+
+math::Matrix4x4 ComponentTransform::calculateViewFrom(math::Vector3 const &pos) const
+{
 	OPTICK_EVENT();
-	return math::lookAt(this->position, this->position + this->forward(), this->up());
+	return math::lookAt(pos, pos + this->forward(), this->up());
 }

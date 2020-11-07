@@ -4,6 +4,7 @@
 
 FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice)
 FORWARD_DEF(NS_GRAPHICS, class RenderPass)
+FORWARD_DEF(NS_GRAPHICS, class Buffer)
 FORWARD_DEF(NS_GRAPHICS, class Command)
 
 NS_GRAPHICS

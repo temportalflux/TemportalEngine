@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreInclude.hpp"
-#include "graphics/DescriptorPool.hpp"
 #include "graphics/DescriptorGroup.hpp"
 
 #include "BlockId.hpp"
@@ -11,7 +10,8 @@ FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_GAME, class VoxelTypeRegistry);
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class Pipeline);
-FORWARD_DEF(NS_WORLD, class BlockInstanceMap);
+FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
+FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
 NS_GRAPHICS
 
@@ -19,7 +19,10 @@ class VoxelGridRenderer : public graphics::IPipelineRenderer
 {
 
 public:
-	VoxelGridRenderer();
+	VoxelGridRenderer(
+		std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
+		std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer
+	);
 	~VoxelGridRenderer();
 
 	VoxelGridRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
@@ -38,8 +41,6 @@ public:
 	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
 	void createPipeline(math::Vector2UInt const& resolution) override;
 
-	void writeInstanceBuffer(graphics::CommandPool* transientPool);
-
 	void record(graphics::Command *command, uIndex idxFrame) override;
 
 	void destroyRenderChain() override;
@@ -48,13 +49,12 @@ public:
 private:
 	std::weak_ptr<game::VoxelTypeRegistry> mpTypeRegistry;
 	std::weak_ptr<game::VoxelModelManager> mpModelManager;
+	std::weak_ptr<world::BlockInstanceBuffer> mpInstanceBuffer;
 
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	DescriptorPool mDescriptorPool;
+	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
 	std::vector<graphics::DescriptorGroup> mDescriptorGroups;
 	std::unordered_map<game::BlockId, uIndex /*descriptor archetype idx*/> mVoxelIdToDescriptorArchetype;
-
-	std::shared_ptr<world::BlockInstanceMap> mpBlockRenderInstances;
 
 };
 

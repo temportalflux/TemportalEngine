@@ -5,6 +5,84 @@
 
 using namespace world;
 
+BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_set<game::BlockId> const& voxelIds)
+	: mTotalInstanceCount(totalValueCount)
+{
+	OPTICK_EVENT();
+	OPTICK_TAG("InstanceCount", totalValueCount);
+
+	this->mInstanceData = (ValueData*)malloc(this->size());
+
+	this->mpMemory = std::make_shared<graphics::Memory>();
+	this->mpMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
+	this->mInstanceBuffer.setSize(this->size());
+
+	this->mUnallocatedVoxels = { nullptr, 0, this->mTotalInstanceCount };
+	for (auto const& id : voxelIds)
+	{
+		CategoryMeta meta = { &this->mInstanceBuffer, 0, 0 };
+		this->mMutableCategories.insert(std::make_pair(id, meta));
+		this->mCommittedCategories.insert(std::make_pair(id, meta));
+	}
+}
+
+BlockInstanceBuffer::~BlockInstanceBuffer()
+{
+	this->mInstanceBuffer.destroy();
+	this->mpMemory.reset();
+
+	free(this->mInstanceData);
+	this->mInstanceData = nullptr;
+
+	this->mTotalInstanceCount = 0;
+}
+
+uSize BlockInstanceBuffer::size() const
+{
+	return this->mTotalInstanceCount * sizeof(ValueData);
+}
+
+void BlockInstanceBuffer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+{
+	this->mpMemory->setDevice(device);
+	this->mInstanceBuffer.setDevice(device);
+}
+
+void BlockInstanceBuffer::createBuffer()
+{
+	OPTICK_EVENT();
+	this->mInstanceBuffer.create();
+	this->mInstanceBuffer.configureSlot(this->mpMemory);
+
+	this->mpMemory->create();
+
+	this->mInstanceBuffer.bindMemory();
+}
+
+void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std::optional<game::BlockId> const desiredVoxelId)
+{
+	OPTICK_EVENT();
+
+}
+
+bool BlockInstanceBuffer::hasChanges() const
+{
+	return this->mChangedBufferIndicies.size() > 0;
+}
+
+void BlockInstanceBuffer::commitToBuffer()
+{
+	OPTICK_EVENT();
+
+}
+
+BlockInstanceBuffer::CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& id) const
+{
+	return this->mCommittedCategories.at(id);
+}
+
 graphics::AttributeBinding BlockInstanceMap::getBinding(ui8& slot)
 {
 	auto modelMatrix = (ui32)offsetof(RenderData, model);
@@ -38,9 +116,9 @@ void BlockInstanceMap::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 	this->mInstanceBuffer.setDevice(device);
 }
 
-void BlockInstanceMap::constructInstanceBuffer(ui8 chunkRenderDistance, ui8 chunkSideLength)
+void BlockInstanceMap::constructInstanceBuffer(ui8 chunkRenderDistance)
 {
-	auto const instanceBufferSize = this->getInstanceBufferSize(chunkRenderDistance, chunkSideLength);
+	auto const instanceBufferSize = this->getInstanceBufferSize(chunkRenderDistance);
 
 	// Deconstruct the previous buffer
 	this->invalidate();
@@ -56,7 +134,7 @@ void BlockInstanceMap::constructInstanceBuffer(ui8 chunkRenderDistance, ui8 chun
 	this->mInstanceBuffer.bindMemory();
 }
 
-ui64 BlockInstanceMap::getInstanceBufferSize(ui8 chunkRenderDistance, ui8 chunkSideLength) const
+ui64 BlockInstanceMap::getInstanceBufferSize(ui8 chunkRenderDistance) const
 {
 	// Computes (2c+1)^3 by filling all values of a 3-dimensional vector with `2c+1` and multiplying the dimensions together
 	// If CRD=5, then count=1331
@@ -65,7 +143,7 @@ ui64 BlockInstanceMap::getInstanceBufferSize(ui8 chunkRenderDistance, ui8 chunkS
 	ui32 const chunkCount = math::Vector<ui32, 3>(2 * chunkRenderDistance + 1).powDim();
 	// the amount of blocks in a cube whose side length is CSL
 	// If CSL=16, then blocksPerChunk=4096
-	ui32 const blocksPerChunk = math::Vector<ui32, 3>(chunkSideLength).powDim();
+	ui32 const blocksPerChunk = math::Vector<ui32, 3>(CHUNK_SIDE_LENGTH).powDim();
 	// CRD=5  & CSL=16 ->  1331*4096 ->  5,451,776
 	// CRD=6  & CSL=16 ->  2197*4096 ->  8,998,912
 	// CRD=11 & CSL=16 -> 12167*4096 -> 49,836,032

@@ -10,6 +10,22 @@ CommandPool::CommandPool()
 	this->resetConfiguration();
 }
 
+CommandPool::CommandPool(CommandPool &&other)
+{
+	*this = std::move(other);
+}
+
+CommandPool& CommandPool::operator=(CommandPool &&other)
+{
+	this->mInternal.swap(other.mInternal);
+	return *this;
+}
+
+CommandPool::~CommandPool()
+{
+	destroy();
+}
+
 CommandPool& CommandPool::setFlags(vk::CommandPoolCreateFlags flags)
 {
 	this->mCreateFlags = flags;
@@ -88,4 +104,5 @@ void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
 	);
 
 	queue.waitIdle();
+	buffers[0].destroy();
 }

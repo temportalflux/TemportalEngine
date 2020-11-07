@@ -8,6 +8,22 @@
 
 using namespace graphics;
 
+Buffer::Buffer(Buffer &&other)
+{
+	*this = std::move(other);
+}
+
+Buffer& Buffer::operator=(Buffer &&other)
+{
+	this->mInternal.swap(other.mInternal);
+	return *this;
+}
+
+Buffer::~Buffer()
+{
+	destroy();
+}
+
 Buffer& Buffer::setUsage(vk::BufferUsageFlags flags)
 {
 	this->mUsageFlags = flags;

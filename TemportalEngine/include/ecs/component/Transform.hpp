@@ -46,6 +46,7 @@ struct ComponentTransform : public Component
 	ComponentTransform& setSize(math::Vector3 const &size);
 
 	math::Matrix4x4 calculateView() const;
+	math::Matrix4x4 calculateViewFrom(math::Vector3 const &pos) const;
 	
 };
 

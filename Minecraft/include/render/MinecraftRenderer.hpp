@@ -23,6 +23,7 @@ public:
 	void initializeDevices() override;
 	std::shared_ptr<GraphicsDevice> getDevice();
 	CommandPool& getTransientPool();
+	ui32 getSwapChainImageViewCount() const;
 
 	void addMutableUniform(std::string const& key, std::weak_ptr<Uniform> uniform);
 	void addRenderer(IPipelineRenderer *renderer);
@@ -34,8 +35,6 @@ public:
 	void invalidate() override;
 
 protected:
-
-	ui32 getSwapChainImageViewCount() const;
 
 	void createRenderPass() override;
 	RenderPass* getRenderPass() override;

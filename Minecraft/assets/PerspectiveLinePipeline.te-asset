@@ -1,0 +1,60 @@
+{
+	"type": "pipeline",
+	"shader-vert": "shader:assets/shaders/PerspectiveLineVertex.te-asset",
+	"shader-frag": "shader:assets/shaders/PerspectiveLineFragment.te-asset",
+	"viewport": {
+		"offset": [
+			0.0,
+			0.0
+		],
+		"size": [
+			1.0,
+			1.0
+		],
+		"depthRange": [
+			0.0,
+			0.0
+		]
+	},
+	"scissor": {
+		"offset": [
+			0.0,
+			0.0
+		],
+		"size": [
+			1.0,
+			1.0
+		]
+	},
+	"frontFace": 0,
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": true,
+			"value": {
+				"color": {
+					"operation": "Add",
+					"src": "SrcAlpha",
+					"dst": "OneMinusSrcAlpha"
+				},
+				"alpha": {
+					"operation": "Add",
+					"src": "One",
+					"dst": "Zero"
+				}
+			}
+		}
+	},
+	"topology": 1,
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "localCamera",
+					"type": 6,
+					"stage": 1
+				}
+			]
+		}
+	]
+}

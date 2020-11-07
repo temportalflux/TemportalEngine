@@ -51,6 +51,12 @@ Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
 	return *this;
 }
 
+Pipeline& Pipeline::setTopology(graphics::PrimitiveTopology::Enum const topology)
+{
+	this->mTopology = topology;
+	return *this;
+}
+
 Pipeline& Pipeline::setRenderPass(std::weak_ptr<RenderPass> pRenderPass)
 {
 	this->mpRenderPass = pRenderPass;
@@ -114,9 +120,8 @@ void Pipeline::create()
 		.setVertexAttributeDescriptionCount((ui32)attribDescs.size())
 		.setPVertexAttributeDescriptions(attribDescs.data());
 
-	// TODO (START): These need to go in configurable objects
 	auto infoAssembly = vk::PipelineInputAssemblyStateCreateInfo()
-		.setTopology(vk::PrimitiveTopology::eTriangleList)
+		.setTopology((vk::PrimitiveTopology)this->mTopology)
 		.setPrimitiveRestartEnable(false);
 
 	auto viewports = std::vector<vk::Viewport>(this->mViewports.size());
@@ -152,6 +157,7 @@ void Pipeline::create()
 		.setScissorCount((ui32)scissors.size())
 		.setPScissors(scissors.data());
 
+	// TODO (START): These need to go in configurable objects
 	auto infoRasterization = vk::PipelineRasterizationStateCreateInfo()
 		.setDepthClampEnable(false)
 		.setRasterizerDiscardEnable(false)
@@ -168,6 +174,7 @@ void Pipeline::create()
 		.setSampleShadingEnable(false)
 		.setRasterizationSamples(vk::SampleCountFlagBits::e1)
 		.setPSampleMask(nullptr);
+	// TODO (END)
 
 	auto infoColorBlendAttachment = vk::PipelineColorBlendAttachmentState();
 
@@ -199,6 +206,7 @@ void Pipeline::create()
 			.setBlendEnable(false);
 	}
 
+	// TODO (START): These need to go in configurable objects
 	auto infoColorBlendState = vk::PipelineColorBlendStateCreateInfo()
 		.setLogicOpEnable(false)
 		.setLogicOp(vk::LogicOp::eCopy)

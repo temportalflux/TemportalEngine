@@ -14,6 +14,9 @@ class Buffer : public DeviceObject, public MemoryAllocated
 
 public:
 	Buffer() : mSize(0) {}
+	Buffer(Buffer &&other);
+	Buffer& operator=(Buffer &&other);
+	~Buffer();
 
 	Buffer& setUsage(vk::BufferUsageFlags flags);
 	Buffer& setSize(uSize size);

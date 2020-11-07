@@ -16,6 +16,9 @@ class CommandPool : public DeviceObject
 
 public:
 	CommandPool();
+	CommandPool(CommandPool &&other);
+	CommandPool& operator=(CommandPool &&other);
+	~CommandPool();
 
 	CommandPool& setFlags(vk::CommandPoolCreateFlags flags);
 	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);

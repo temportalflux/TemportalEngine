@@ -13,7 +13,7 @@ MinecraftRenderer::MinecraftRenderer() : VulkanRenderer()
 void MinecraftRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
-	this->initializeTransientCommandPool();
+	//this->initializeTransientCommandPool();
 
 	// TODO: Use a `MemoryChunk` instead of global memory
 	this->mpMemoryUniformBuffers = std::make_shared<graphics::Memory>();
@@ -28,7 +28,7 @@ void MinecraftRenderer::invalidate()
 {
 	this->destroyRenderChain();
 	this->mpMemoryUniformBuffers.reset();
-	this->mCommandPoolTransient.destroy();
+	//this->mCommandPoolTransient.destroy();
 	VulkanRenderer::invalidate();
 }
 
@@ -96,44 +96,47 @@ void MinecraftRenderer::finalizeInitialization()
 {
 	VulkanRenderer::finalizeInitialization();
 
-	auto device = this->getDevice();
-
-	auto viewCount = this->getSwapChainImageViewCount();
-
-	auto mutableUniformBuffersByDescriptorId = std::unordered_map<std::string, std::vector<graphics::Buffer*>>();
-	for (auto const& uniformEntry : this->mpMutableUniforms)
+	if (this->mpMutableUniforms.size() > 0)
 	{
-		auto const uniformBindingId = uniformEntry.first;
-		auto buffers = std::vector<graphics::Buffer*>();
+		auto device = this->getDevice();
+
+		auto viewCount = this->getSwapChainImageViewCount();
+
+		auto mutableUniformBuffersByDescriptorId = std::unordered_map<std::string, std::vector<graphics::Buffer*>>();
+		for (auto const& uniformEntry : this->mpMutableUniforms)
+		{
+			auto const uniformBindingId = uniformEntry.first;
+			auto buffers = std::vector<graphics::Buffer*>();
+			for (uIndex i = 0; i < viewCount; ++i)
+			{
+				auto& frame = this->mFrames[i];
+				graphics::Buffer buffer;
+				buffer.setDevice(this->mpGraphicsDevice);
+				buffer
+					.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+					.setSize(uniformEntry.second.lock()->size())
+					.create();
+				buffer.configureSlot(this->mpMemoryUniformBuffers);
+				frame.uniformBuffers.insert(std::pair<std::string, graphics::Buffer>(uniformBindingId, std::move(buffer)));
+				buffers.push_back(&frame.uniformBuffers[uniformBindingId]);
+			}
+			mutableUniformBuffersByDescriptorId.insert(std::pair(uniformBindingId, buffers));
+		}
+		this->mpMemoryUniformBuffers->create();
 		for (uIndex i = 0; i < viewCount; ++i)
 		{
-			auto& frame = this->mFrames[i];
-			graphics::Buffer buffer;
-			buffer.setDevice(this->mpGraphicsDevice);
-			buffer
-				.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
-				.setSize(uniformEntry.second.lock()->size())
-				.create();
-			buffer.configureSlot(this->mpMemoryUniformBuffers);
-			frame.uniformBuffers.insert(std::pair<std::string, graphics::Buffer>(uniformBindingId, std::move(buffer)));
-			buffers.push_back(&frame.uniformBuffers[uniformBindingId]);
+			for (auto& entry : this->mFrames[i].uniformBuffers)
+			{
+				entry.second.bindMemory();
+			}
 		}
-		mutableUniformBuffersByDescriptorId.insert(std::pair(uniformBindingId, buffers));
-	}
-	this->mpMemoryUniformBuffers->create();
-	for (uIndex i = 0; i < viewCount; ++i)
-	{
-		for (auto& entry : this->mFrames[i].uniformBuffers)
-		{
-			entry.second.bindMemory();
-		}
-	}
 	
-	// NOTE: This happens AFTER the initial createRenderChain, but before any frames are presented
-	for (auto& renderer : this->mpRenderers)
-	{
-		renderer->attachDescriptors(mutableUniformBuffersByDescriptorId);
-		renderer->writeDescriptors(this->getDevice());
+		// NOTE: This happens AFTER the initial createRenderChain, but before any frames are presented
+		for (auto& renderer : this->mpRenderers)
+		{
+			renderer->attachDescriptors(mutableUniformBuffersByDescriptorId);
+			renderer->writeDescriptors(this->getDevice());
+		}
 	}
 }
 
@@ -144,7 +147,7 @@ void MinecraftRenderer::createRenderChain()
 	auto resolution = this->mSwapChain.getResolution();
 	
 	this->createFrameImageViews();
-	this->createDepthResources(resolution);
+	//this->createDepthResources(resolution);
 	this->createRenderPass();
 
 	auto viewCount = this->mFrameImageViews.size();
@@ -168,7 +171,7 @@ void MinecraftRenderer::destroyRenderChain()
 		renderer->destroyRenderChain();
 	}
 	this->destroyRenderPass();
-	this->destroyDepthResources();
+	//this->destroyDepthResources();
 	this->destroyFrameImageViews();
 	this->destroySwapChain();
 }
@@ -237,18 +240,21 @@ void MinecraftRenderer::destroyRenderPass()
 
 void MinecraftRenderer::createFrames(uSize viewCount)
 {
+	return;
+	
 	OPTICK_EVENT();
 	auto device = this->getDevice();
 	auto resolution = this->mSwapChain.getResolution();
+	auto queueFamilyGroup = device->queryQueueFamilyGroup();
 
 	this->mFrames.resize(viewCount);
 	for (uIndex i = 0; i < viewCount; ++i)
 	{
 		auto& frame = this->mFrames[i];
 
-		frame.commandPool.setDevice(this->mpGraphicsDevice);
+		frame.commandPool.setDevice(device);
 		frame.commandPool
-			.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, this->mpGraphicsDevice->queryQueueFamilyGroup())
+			.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, queueFamilyGroup)
 			.create();
 		auto commandBuffers = frame.commandPool.createCommandBuffers(1);
 		frame.commandBuffer = std::move(commandBuffers[0]);
@@ -257,7 +263,7 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 			.setRenderPass(this->getRenderPass())
 			.setResolution(this->mSwapChain.getResolution())
 			.addAttachment(&this->mFrameImageViews[i])
-			.addAttachment(&this->mDepthView)
+			//.addAttachment(&this->mDepthView)
 			.create(device);
 
 		frame.frame.create(device);
@@ -271,11 +277,14 @@ uSize MinecraftRenderer::getNumberOfFrames() const
 
 graphics::Frame* MinecraftRenderer::getFrameAt(uSize idx)
 {
+	return nullptr;
 	return &this->mFrames[idx].frame;
 }
 
 void MinecraftRenderer::destroyFrames()
 {
+	return;
+
 	for (auto& frame : this->mFrames)
 	{
 		frame.commandBuffer.destroy();
@@ -288,6 +297,8 @@ void MinecraftRenderer::destroyFrames()
 
 void MinecraftRenderer::record(uIndex idxFrame)
 {
+	return;
+
 	OPTICK_EVENT();
 	auto& frame = this->mFrames[idxFrame];
 	frame.commandPool.resetPool();
@@ -310,6 +321,8 @@ void MinecraftRenderer::prepareRender(ui32 idxCurrentFrame)
 
 void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
+	return;
+
 	OPTICK_EVENT();
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mFrames[idxCurrentImage].commandBuffer;
@@ -318,6 +331,8 @@ void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentIma
 
 void MinecraftRenderer::onFramePresented(uIndex idxFrame)
 {
+	return;
+
 	OPTICK_EVENT();
 	auto& buffers = this->mFrames[idxFrame].uniformBuffers;
 	for (auto& element : this->mpMutableUniforms)

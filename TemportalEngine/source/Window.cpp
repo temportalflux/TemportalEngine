@@ -165,7 +165,10 @@ void Window::onEvent(void* pSdlEvent)
 		default: break;
 		}
 	}
-	this->mpRenderer->onInputEvent(pSdlEvent);
+	if (this->mpRenderer)
+	{
+		this->mpRenderer->onInputEvent(pSdlEvent);
+	}
 }
 
 void Window::startThread()
@@ -193,7 +196,10 @@ bool Window::update()
 {
 	if (!this->isValid() || this->isPendingClose()) return false;
 
-	this->mpRenderer->update();
+	if (this->mpRenderer)
+	{
+		this->mpRenderer->update();
+	}
 
 	if (!this->hasFlag(WindowFlags::RENDER_ON_THREAD))
 	{
@@ -204,11 +210,17 @@ bool Window::update()
 
 bool Window::renderUntilClose()
 {
-	mpRenderer->drawFrame();
+	if (this->mpRenderer)
+	{
+		this->mpRenderer->drawFrame();
+	}
 	return this->isValid() && !this->isPendingClose();
 }
 
 void Window::waitForCleanup()
 {
-	mpRenderer->waitUntilIdle();
+	if (this->mpRenderer)
+	{
+		this->mpRenderer->waitUntilIdle();
+	}
 }

@@ -619,7 +619,7 @@ public:
 	/**
 	 * Multiplies all accessible dimensions together and returns the result.
 	 */
-	TValue powDim() const
+	constexpr TValue powDim() const
 	{
 		TValue scalar = 1;
 		for (ui8 i = 0; i < TAccessibleDimensions; ++i)

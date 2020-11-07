@@ -27,6 +27,7 @@ public:
 	Pipeline& addViewArea(graphics::Viewport const &viewport, graphics::Area const &scissor);
 	Pipeline& setFrontFace(graphics::FrontFace::Enum const face);
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
+	Pipeline& setTopology(graphics::PrimitiveTopology::Enum const topology);
 
 	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
 	Pipeline& setDescriptors(std::vector<DescriptorGroup> *descriptors);
@@ -49,6 +50,7 @@ private:
 	std::vector<graphics::Area> mScissors;
 	graphics::FrontFace::Enum mFrontFace;
 	std::optional<BlendMode> mBlendMode;
+	graphics::PrimitiveTopology::Enum mTopology;
 
 	std::weak_ptr<graphics::RenderPass> mpRenderPass;
 	math::Vector2 mResolutionFloat;

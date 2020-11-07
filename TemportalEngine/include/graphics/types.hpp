@@ -405,6 +405,27 @@ struct PipelineStage
 	static std::string to_string(Enum value);
 };
 
+struct PrimitiveTopology
+{
+	// Mirrors vk::PrimitiveTopology
+	enum class Enum
+	{
+		ePointList = 0,
+		eLineList = 1,
+		eLineStrip = 2,
+		eTriangleList = 3,
+		eTriangleStrip = 4,
+		eTriangleFan = 5,
+		eLineListWithAdjacency = 6,
+		eLineStripWithAdjacency = 7,
+		eTriangleListWithAdjacency = 8,
+		eTriangleStripWithAdjacency = 9,
+		ePatchList = 10,
+	};
+	static std::vector<Enum> ALL;
+	static std::string to_string(Enum value);
+};
+
 struct Access
 {
 	// Mirrors vk::AccessFlagBits
