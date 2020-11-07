@@ -216,8 +216,8 @@ struct LocalCamera
 void Game::createRenderers()
 {
 	this->createGameRenderer();
-	//this->loadVoxelTypeTextures();
-	//this->createPipelineRenderers();
+	this->loadVoxelTypeTextures();
+	this->createPipelineRenderers();
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
 }
@@ -283,7 +283,7 @@ void Game::createPipelineRenderers()
 	this->mpGlobalDescriptorPool->create();
 
 	this->createVoxelGridRenderer();
-	//this->createWorldAxesRenderer();
+	this->createWorldAxesRenderer();
 	
 	// Setup UI Shader Pipeline
 	//{
@@ -392,17 +392,17 @@ void Game::destroyRenderers()
 {
 	//this->mpCameraForwardStr.reset();
 	
-	//this->mpVoxelModelManager.reset();
-	//this->mpVoxelGridRenderer->destroyRenderDevices();
-	//this->mpWorldAxesRenderer->destroyBuffers();
-	//this->mpGlobalDescriptorPool->invalidate();
+	this->mpVoxelModelManager.reset();
+	this->mpVoxelGridRenderer->destroyRenderDevices();
+	this->mpWorldAxesRenderer->destroyBuffers();
+	this->mpVoxelInstanceBuffer.reset();
+	this->mpGlobalDescriptorPool->invalidate();
 
 	this->mpRenderer->invalidate();
 
 	this->mpGlobalDescriptorPool.reset();
 	this->mpVoxelGridRenderer.reset();
-	this->mpVoxelInstanceBuffer.reset();
-	//this->mpWorldAxesRenderer.reset();
+	this->mpWorldAxesRenderer.reset();
 	this->mpRenderer.reset();
 }
 

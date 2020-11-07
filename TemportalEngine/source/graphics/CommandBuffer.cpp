@@ -9,6 +9,7 @@ CommandBuffer::CommandBuffer(CommandBuffer &&other)
 
 CommandBuffer& CommandBuffer::operator=(CommandBuffer &&other)
 {
+	this->setDevice(other.device());
 	this->mInternal.swap(other.mInternal);
 	return *this;
 }

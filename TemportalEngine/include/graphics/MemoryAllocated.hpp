@@ -20,6 +20,8 @@ protected:
 	std::shared_ptr<Memory> memory() const;
 	uIndex memorySlot() const;
 
+	void copyMemoryAllocatedFrom(MemoryAllocated const& other);
+
 private:
 	std::weak_ptr<Memory> mpMemory;
 	// The slot of object in `Memory#mSlots`.

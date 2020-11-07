@@ -15,7 +15,13 @@ Buffer::Buffer(Buffer &&other)
 
 Buffer& Buffer::operator=(Buffer &&other)
 {
+	this->setDevice(other.device());
+	this->copyMemoryAllocatedFrom(other);
+
+	this->mUsageFlags = other.mUsageFlags;
+	this->mSize = other.mSize;
 	this->mInternal.swap(other.mInternal);
+	
 	return *this;
 }
 

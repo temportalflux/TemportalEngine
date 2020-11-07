@@ -18,3 +18,9 @@ uIndex MemoryAllocated::memorySlot() const
 {
 	return this->mIdxSlot;
 }
+
+void MemoryAllocated::copyMemoryAllocatedFrom(MemoryAllocated const& other)
+{
+	this->mpMemory = other.mpMemory;
+	this->mIdxSlot = other.mIdxSlot;
+}
