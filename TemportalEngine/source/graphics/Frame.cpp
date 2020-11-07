@@ -91,6 +91,7 @@ vk::Result Frame::present(vk::Queue const *pQueue, std::vector<SwapChain*> swapC
 	std::transform(swapChains.begin(), swapChains.end(), vkSwapChains.begin(),
 		[](SwapChain *sc) { return sc->mInternal.get(); }
 	);
+	OPTICK_GPU_FLIP(vkSwapChains.data());
 	return pQueue->presentKHR(vk::PresentInfoKHR()
 		.setWaitSemaphoreCount(1).setPWaitSemaphores(&this->mSemaphore_RenderComplete.get())
 		.setSwapchainCount((ui32)vkSwapChains.size()).setPSwapchains(vkSwapChains.data())
