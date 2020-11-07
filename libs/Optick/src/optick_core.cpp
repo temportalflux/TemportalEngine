@@ -1578,6 +1578,15 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
 }
+
+void Core::ShutdownGPUProfiler()
+{
+	if (gpuProfiler)
+	{
+		Memory::Delete<GPUProfiler>(gpuProfiler);
+		gpuProfiler = nullptr;
+	}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::SetSettings(const CaptureSettings& captureSettings)
 {

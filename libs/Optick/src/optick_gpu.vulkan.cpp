@@ -87,6 +87,11 @@ namespace Optick
 		Core::Get().InitGPUProfiler(gpuProfiler);
 	}
 
+	void ShutdownGPU()
+	{
+		Core::Get().ShutdownGPUProfiler();
+	}
+
 	GPUProfilerVulkan::GPUProfilerVulkan()
 	{
 	}

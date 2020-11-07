@@ -613,6 +613,8 @@ public:
 	// Initalizes GPU profiler
 	void InitGPUProfiler(GPUProfiler* profiler);
 
+	void ShutdownGPUProfiler();
+
 	// Initializes root password for the device
 	bool SetSettings(const CaptureSettings& settings);
 

@@ -81,6 +81,7 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 
 void GraphicsDevice::destroy()
 {
+	OPTICK_GPU_SHUTDOWN();
 	this->mQueues.clear();
 	this->mLogicalDevice.invalidate();
 	this->mPhysicalDevice.invalidate();
