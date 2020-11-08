@@ -92,6 +92,7 @@ private:
 
 	void update(f32 deltaTime);
 	void updateCameraUniform();
+	void updateWorldGraphics();
 
 };
 

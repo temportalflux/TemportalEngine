@@ -71,9 +71,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
-      <Filter>world</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -89,6 +86,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.hpp">
       <Filter>render\worldAxes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
+      <Filter>world</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -112,9 +112,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
-      <Filter>world</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -127,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.cpp">
       <Filter>render\worldAxes</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
+      <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

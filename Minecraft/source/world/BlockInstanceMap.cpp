@@ -5,8 +5,246 @@
 
 using namespace world;
 
+struct ValueCoordinateComparator
+{
+	bool operator() (VoxelInstanceCategoryList::CoordinateIndex const& src, world::Coordinate const& coord) const { return src.first < coord; }
+	bool operator() (world::Coordinate const& coord, VoxelInstanceCategoryList::CoordinateIndex const& src) const { return coord < src.first; }
+};
+
+uIndex CategoryMeta::firstIndex() const
+{
+	return this->index;
+}
+
+uIndex CategoryMeta::lastIndex() const
+{
+	return this->firstIndex() + this->count - 1;
+}
+
+bool CategoryMeta::containsIndex(uIndex idx) const
+{
+	return this->firstIndex() <= idx && idx <= this->lastIndex();
+}
+
+void CategoryMeta::expandLeft()
+{
+	if (this->prevCategory != nullptr) this->prevCategory->shrinkLeft();
+	this->count++;
+	decrementStart();
+}
+
+void CategoryMeta::shrinkLeft()
+{
+	if (this->count > 0)
+	{
+		this->count--;
+		if (this->nextCategory != nullptr)
+			this->nextCategory->updateIndex();
+	}
+	else if (this->prevCategory != nullptr)
+	{
+		this->prevCategory->shrinkLeft();
+		updateIndex();
+	}
+}
+
+void CategoryMeta::expandRight()
+{
+	this->count++;
+	if (this->nextCategory != nullptr)
+	{
+		this->nextCategory->updateIndex();
+		this->nextCategory->shrinkRight();
+	}
+}
+
+void CategoryMeta::shrinkRight()
+{
+	if (this->count > 0)
+	{
+		this->count--;
+		this->incrementStart();
+	}
+	else if (this->nextCategory != nullptr)
+	{
+		this->nextCategory->shrinkRight();
+	}
+}
+
+void CategoryMeta::decrementStart()
+{
+	this->index--;
+	if (this->nextCategory != nullptr)
+		this->nextCategory->updateIndex();
+}
+
+void CategoryMeta::incrementStart()
+{
+	this->index++;
+	if (this->nextCategory != nullptr)
+		this->nextCategory->updateIndex();
+}
+
+void CategoryMeta::updateIndex()
+{
+	if (this->count == 0)
+	{
+		this->index = this->prevCategory->lastIndex() + 1;
+		if (this->nextCategory != nullptr)
+			this->nextCategory->updateIndex();
+	}
+}
+
+VoxelInstanceCategoryList::VoxelInstanceCategoryList(
+	uSize totalValueCount, graphics::Buffer* buffer,
+	std::unordered_set<game::BlockId> const& voxelIds
+)
+{
+	uSize const categoryCount = voxelIds.size();
+	auto const categories = std::vector<game::BlockId>(voxelIds.begin(), voxelIds.end());
+	this->mOrderedCategories.resize(categoryCount);
+	CategoryMeta* prevCategory = nullptr, *category;
+	for (uIndex i = 0; i < categoryCount; ++i)
+	{
+		category = &mOrderedCategories[i];
+		*category = { buffer, 0, 0, i32(i), prevCategory, nullptr };
+		if (prevCategory != nullptr)
+		{
+			prevCategory->nextCategory = category;
+		}
+		this->mCategoryById.insert(std::make_pair(categories[i], category));
+		prevCategory = category;
+	}
+	this->mEmpty = { buffer, 0, 0, i32(categoryCount), prevCategory, &this->mUnallocated };
+	prevCategory->nextCategory = &this->mEmpty;
+	this->mUnallocated = { buffer, 0, totalValueCount, -1, &this->mEmpty, nullptr };
+	this->mCoordinateToIndex.reserve(totalValueCount);
+	this->mIndexToCoordinate.resize(totalValueCount);
+}
+
+void VoxelInstanceCategoryList::clear()
+{
+	this->mCoordinateToIndex.clear();
+	this->mIndexToCoordinate.clear();
+	this->mCategoryById.clear();
+	this->mOrderedCategories.clear();
+	this->mEmpty = {};
+	this->mUnallocated = {};
+}
+
+uSize VoxelInstanceCategoryList::unallocatedCount() const
+{
+	return this->mUnallocated.count;
+}
+
+uIndex VoxelInstanceCategoryList::allocate()
+{
+	// ASSERT: The empty voxels list is immediately before the unallocated voxels list
+	assert(this->mEmpty.index + this->mEmpty.count == this->mUnallocated.index);
+	// Push the value allocation into the set of "empty" voxels
+	this->mEmpty.expandRight();
+	return this->mEmpty.lastIndex();
+}
+
+CategoryMeta& VoxelInstanceCategoryList::getCategoryForValueIndex(uIndex idx)
+{
+	OPTICK_EVENT();
+	if (this->mEmpty.containsIndex(idx))
+	{
+		return this->mEmpty;
+	}
+	else if (this->mUnallocated.containsIndex(idx))
+	{
+		return this->mUnallocated;
+	}
+	else
+	{
+		// TODO: Can be optimized by binary searching the ordered list by the idx and count of each category
+		for (auto& category : this->mOrderedCategories)
+		{
+			if (category.containsIndex(idx))
+			{
+				return category;
+			}
+		}
+	}
+	assert(false);
+	return this->mUnallocated;
+}
+
+CategoryMeta& VoxelInstanceCategoryList::getCategoryForId(std::optional<game::BlockId> id)
+{
+	return id ? *this->mCategoryById.at(*id) : this->mEmpty;
+}
+
+CategoryMeta& VoxelInstanceCategoryList::getCategory(uIndex categoryIndex)
+{
+	return this->mOrderedCategories[categoryIndex];
+}
+
+void VoxelInstanceCategoryList::setCoordinateIndex(world::Coordinate const& coordinate, uIndex idx)
+{
+	OPTICK_EVENT();
+	auto lastThatIsGreater = std::upper_bound(this->mCoordinateToIndex.begin(), this->mCoordinateToIndex.end(), coordinate, ValueCoordinateComparator{});
+	this->mCoordinateToIndex.insert(lastThatIsGreater, std::pair(coordinate, idx));
+	this->mIndexToCoordinate[idx] = coordinate;
+}
+
+void VoxelInstanceCategoryList::removeCoordinateIndex(world::Coordinate const& coordinate)
+{
+	OPTICK_EVENT();
+	if (auto iterOpt = this->searchForCoordinateIterator(coordinate))
+	{
+		this->mIndexToCoordinate[(*iterOpt)->second] = std::nullopt;
+		this->mCoordinateToIndex.erase(*iterOpt);
+	}
+}
+
+std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::const_iterator> VoxelInstanceCategoryList::searchForCoordinateIterator(
+	world::Coordinate const& coordinate
+) const
+{
+	OPTICK_EVENT();
+	auto rangeEnd = this->mCoordinateToIndex.end();
+	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
+	if (range.first != rangeEnd && range.second != rangeEnd)
+	{
+		return range.first;
+	}
+	else
+	{
+		return std::nullopt;
+	}
+}
+
+std::optional<uIndex> VoxelInstanceCategoryList::searchForCoordinateIndex(world::Coordinate const& coordinate) const
+{
+	OPTICK_EVENT();
+	if (auto iterOpt = this->searchForCoordinateIterator(coordinate))
+	{
+		return (*iterOpt)->second;
+	}
+	return std::nullopt;
+}
+
+graphics::AttributeBinding BlockInstanceBuffer::getBinding(ui8& slot)
+{
+	auto modelMatrix = (ui32)offsetof(ValueData, model);
+	auto vec4size = (ui32)sizeof(math::Vector4);
+	// Data per object instance - this is only for objects which dont more, rotate, or scale
+	return graphics::AttributeBinding(graphics::AttributeBinding::Rate::eInstance)
+		.setStructType<ValueData>()
+		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(ValueData, posOfChunk) })
+		// mat4 using 4 slots
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (0 * vec4size) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (1 * vec4size) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (2 * vec4size) })
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (3 * vec4size) });
+}
+
 BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_set<game::BlockId> const& voxelIds)
 	: mTotalInstanceCount(totalValueCount)
+	, mMutableCategoryList(totalValueCount, &mInstanceBuffer, voxelIds)
 {
 	OPTICK_EVENT();
 	OPTICK_TAG("InstanceCount", totalValueCount);
@@ -19,17 +257,17 @@ BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_s
 	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 	this->mInstanceBuffer.setSize(this->size());
 
-	this->mUnallocatedVoxels = { nullptr, 0, this->mTotalInstanceCount };
 	for (auto const& id : voxelIds)
 	{
-		CategoryMeta meta = { &this->mInstanceBuffer, 0, 0 };
-		this->mMutableCategories.insert(std::make_pair(id, meta));
-		this->mCommittedCategories.insert(std::make_pair(id, meta));
+		this->mCommittedCategories.insert(std::make_pair(id, CategoryMeta{}));
 	}
 }
 
 BlockInstanceBuffer::~BlockInstanceBuffer()
 {
+	this->mMutableCategoryList.clear();
+	this->mCommittedCategories.clear();
+
 	this->mInstanceBuffer.destroy();
 	this->mpMemory.reset();
 
@@ -61,15 +299,153 @@ void BlockInstanceBuffer::createBuffer()
 	this->mInstanceBuffer.bindMemory();
 }
 
-void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std::optional<game::BlockId> const desiredVoxelId)
+void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> const& coordinates)
 {
 	OPTICK_EVENT();
 
+	// TODO: Assert that the coordinate does not already exist in the list
+
+	// ASSERT: There is enough room to allocate the coordinates
+	assert(coordinates.size() <= this->mMutableCategoryList.unallocatedCount());
+	
+	for (auto const& coordinate : coordinates)
+	{
+		// Push the value allocation into the set of "empty" voxels
+		auto valueIndex = this->mMutableCategoryList.allocate();
+
+		// Put the coordinate in the searchable sorted list of allocated voxels
+		this->mMutableCategoryList.setCoordinateIndex(coordinate, valueIndex);
+
+		auto* instance = this->getInstanceAt(valueIndex);
+		instance->posOfChunk = math::Vector3Padded(coordinate.chunk().toFloat());
+		instance->model = math::createModelMatrix(coordinate.local().toFloat());
+	}
+}
+
+BlockInstanceBuffer::ValueData* BlockInstanceBuffer::getInstanceAt(uIndex idx)
+{
+	assert(idx < this->mTotalInstanceCount);
+	return this->mInstanceData + idx;
+}
+
+void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std::optional<game::BlockId> const desiredVoxelId)
+{
+	OPTICK_EVENT();
+	
+	auto const instanceIndexOpt = this->mMutableCategoryList.searchForCoordinateIndex(coordinate);
+	assert(instanceIndexOpt);
+	auto instanceIndex = *instanceIndexOpt;
+
+	// copy out the instance we want to move so its safe to write to `prevInstanceIndex`
+	ValueData instance = *this->getInstanceAt(instanceIndex);
+	auto& srcCategory = this->mMutableCategoryList.getCategoryForValueIndex(instanceIndex);
+	auto& destCategory = this->mMutableCategoryList.getCategoryForId(desiredVoxelId);
+	if (srcCategory.categoryIndex == destCategory.categoryIndex) return;
+
+	if (destCategory.categoryIndex < srcCategory.categoryIndex)
+	{
+		/* Perform the following order of operations, where `instanceIndex` is `T` (whose data is in `instance`)
+			| destCategory | category1 | category2 | srcCategory |
+			| A  B  C  D   | G H I J K | L M N O P | Q R S T U V |
+			                                               ^
+		*/
+
+		/* Move the instance at the start of the category to the index of the moving-value
+			| destCategory | category1 | category2 | srcCategory |
+			| A  B  C  D   | G H I J K | L M N O P | Q R S Q U V |
+			                                         ^ --> ^
+		*/
+		this->copyInstanceData(srcCategory.firstIndex(), instanceIndex);
+
+		auto* rightCate = &srcCategory;
+		auto* leftCate = rightCate->prevCategory;
+		while (leftCate != &destCategory)
+		{
+			/* LoopInit
+				Phase 1:
+					rightCate = srcCategory
+					leftCate = category2
+				Phase 2:
+					rightCate = category2
+					leftCate = category1
+			*/
+
+			if (leftCate->count > 0)
+			{
+				/* Move the data in the first index of the prev category into the first index of the next category
+					Phase 1:
+					| destCategory | category1 | category2 | srcCategory |
+					| A  B  C  D   | G H I J K | L M N O P | L R S Q U V |
+																			 ^ --------> ^
+					Phase 2:
+					| destCategory | category1 | category2   | srcCategory |
+					| A  B  C  D   | G H I J K | G M N O P L |  R S Q U V  |
+													 ^ --------> ^
+				*/
+				this->copyInstanceData(leftCate->firstIndex(), rightCate->firstIndex());
+			
+				/* Shift category bounds to keep the moved data in the correct category
+					Phase 1:
+					| destCategory | category1 | category2   | srcCategory |
+					| A  B  C  D   | G H I J K | L M N O P L |  R S Q U V  |
+					Phase 2:
+					| destCategory | category1   | category2 | srcCategory |
+					| A  B  C  D   | G H I J K G | M N O P L |  R S Q U V  |
+				*/
+				leftCate->expandRight();
+			}
+
+			/*
+				Phase 1:
+					rightCate = category2
+					leftCate = category1
+				Phase 2:
+					rightCate = category1
+					leftCate = destCategory
+			*/
+			rightCate = leftCate;
+			leftCate = leftCate->prevCategory;
+		}
+
+		/* Finally, shift the barrier of dest category into rightCate...
+			| destCategory | category1 | category2 | srcCategory |
+			|  A B C D   G | H I J K G | M N O P L |  R S Q U V  |
+		*/
+		leftCate->expandRight();
+
+		/* so the last index of destCategory can be filled with `T`/`instance`.
+			| destCategory | category1 | category2 | srcCategory |
+			|  A B C D   T | H I J K G | M N O P L |  R S Q U V  |
+		*/
+		this->setInstanceData(leftCate->lastIndex(), &instance);
+	}
+	else // dest -> src (prev in mem to later)
+	{
+		// TODO
+	}
+
+}
+
+/**
+ * Copies data in `mInstanceData` from the index `src` to `dest`,
+ * marking the `dest` index in `mChangedBufferIndices` in the process
+ */
+void BlockInstanceBuffer::copyInstanceData(uIndex const& src, uIndex const& dest)
+{
+	ValueData* srcData = this->getInstanceAt(src);
+	this->setInstanceData(dest, srcData);
+}
+
+void BlockInstanceBuffer::setInstanceData(uIndex const& idx, ValueData const *const data)
+{
+	auto* ptr = this->getInstanceAt(idx);
+	*ptr = *data;
+	this->mChangedBufferIndices.insert(idx);
 }
 
 bool BlockInstanceBuffer::hasChanges() const
 {
-	return this->mChangedBufferIndicies.size() > 0;
+	return this->mChangedBufferIndices.size() > 0;
 }
 
 void BlockInstanceBuffer::commitToBuffer()
@@ -78,135 +454,7 @@ void BlockInstanceBuffer::commitToBuffer()
 
 }
 
-BlockInstanceBuffer::CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& id) const
+CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& id) const
 {
 	return this->mCommittedCategories.at(id);
 }
-
-graphics::AttributeBinding BlockInstanceMap::getBinding(ui8& slot)
-{
-	auto modelMatrix = (ui32)offsetof(RenderData, model);
-	auto vec4size = (ui32)sizeof(math::Vector4);
-	// Data per object instance - this is only for objects which dont more, rotate, or scale
-	return graphics::AttributeBinding(graphics::AttributeBinding::Rate::eInstance)
-		.setStructType<RenderData>()
-		.addAttribute({ /*slot*/ slot++, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(RenderData, posOfChunk) })
-		// mat4 using 4 slots
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (0 * vec4size) })
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (1 * vec4size) })
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (2 * vec4size) })
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (3 * vec4size) });
-}
-
-BlockInstanceMap::BlockInstanceMap()
-{
-	this->mpInstanceMemory = std::make_shared<graphics::Memory>();
-	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
-}
-
-BlockInstanceMap::~BlockInstanceMap()
-{
-	this->mInstanceBuffer.destroy();
-	this->mpInstanceMemory.reset();
-}
-
-void BlockInstanceMap::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
-{
-	this->mpInstanceMemory->setDevice(device);
-	this->mInstanceBuffer.setDevice(device);
-}
-
-void BlockInstanceMap::constructInstanceBuffer(ui8 chunkRenderDistance)
-{
-	auto const instanceBufferSize = this->getInstanceBufferSize(chunkRenderDistance);
-
-	// Deconstruct the previous buffer
-	this->invalidate();
-
-	this->mpInstanceMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-	this->mInstanceBuffer.setSize(instanceBufferSize);
-	this->mInstanceBuffer.create();
-	this->mInstanceBuffer.configureSlot(this->mpInstanceMemory);
-
-	this->mpInstanceMemory->create();
-
-	this->mInstanceBuffer.bindMemory();
-}
-
-ui64 BlockInstanceMap::getInstanceBufferSize(ui8 chunkRenderDistance) const
-{
-	// Computes (2c+1)^3 by filling all values of a 3-dimensional vector with `2c+1` and multiplying the dimensions together
-	// If CRD=5, then count=1331
-	// If CRD=6, then count=2197
-	// If CRD=11, then count=12167
-	ui32 const chunkCount = math::Vector<ui32, 3>(2 * chunkRenderDistance + 1).powDim();
-	// the amount of blocks in a cube whose side length is CSL
-	// If CSL=16, then blocksPerChunk=4096
-	ui32 const blocksPerChunk = math::Vector<ui32, 3>(CHUNK_SIDE_LENGTH).powDim();
-	// CRD=5  & CSL=16 ->  1331*4096 ->  5,451,776
-	// CRD=6  & CSL=16 ->  2197*4096 ->  8,998,912
-	// CRD=11 & CSL=16 -> 12167*4096 -> 49,836,032
-	ui64 const totalBlockCount = ui64(chunkCount) * ui64(blocksPerChunk);
-	// RenderData has 5 vec4, which is 80 bytes (float is 4 bytes, 4 floats is 16 bytes per vec4, 5 vec4s is 16*5=80)
-	// CRD=5  & CSL=16 ->  5,451,776 * 80 ->   436,142,080
-	// CRD=6  & CSL=16 ->  8,998,912 * 80 ->   719,912,960 (CRD=7 puts this over 1GB)
-	// CRD=11 & CSL=16 -> 49,836,032 * 80 -> 3,986,882,560 (CRD=12 puts this over 4GB)
-	return totalBlockCount * sizeof(RenderData);
-}
-
-void BlockInstanceMap::invalidate()
-{
-	this->mInstanceBuffer.invalidate();
-	this->mpInstanceMemory->invalidate();
-}
-
-BlockInstanceMap::TOnBlockChanged BlockInstanceMap::onBlockChangedListener()
-{
-	return std::bind(
-		&BlockInstanceMap::updateCoordinate, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-	);
-}
-
-void BlockInstanceMap::updateCoordinate(
-	world::Coordinate const& global,
-	std::optional<BlockMetadata> const& prev,
-	std::optional<BlockMetadata> const& next
-)
-{
-}
-
-void BlockInstanceMap::writeInstanceBuffer(graphics::CommandPool* transientPool)
-{
-	this->mInstanceCount = 0;
-	auto coords = std::vector<world::Coordinate>();
-	for (i32 x = -3; x <= 3; ++x)
-		for (i32 y = -3; y <= 3; ++y)
-		{
-			coords.push_back(world::Coordinate({ 0, 0, 0 }, { x, y, 0 }));
-			this->mInstanceCount++;
-		}
-
-	auto instanceData = std::vector<RenderData>();
-	std::transform(
-		std::begin(coords), std::end(coords),
-		std::back_inserter(instanceData),
-		[](world::Coordinate coordinate) -> RenderData { return {
-			coordinate.chunk().toFloat(),
-			math::createModelMatrix(coordinate.local().toFloat())
-		}; }
-	);
-
-	this->mInstanceBuffer.writeBuffer(transientPool, 0, instanceData);
-}
-
-BlockInstanceMap::InstanceData BlockInstanceMap::getBlockInstanceData(game::BlockId const &id)
-{
-	OPTICK_EVENT();
-	return {
-		&this->mInstanceBuffer,
-		/*idxStart*/ 0, /*count*/ this->mInstanceCount
-	};
-}
-

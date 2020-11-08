@@ -20,6 +20,8 @@ class MinecraftRenderer : public VulkanRenderer
 public:
 	MinecraftRenderer();
 
+	SimpleExecuteDelegate UpdateWorldGraphicsOnFramePresented;
+
 	void initializeDevices() override;
 	std::shared_ptr<GraphicsDevice> getDevice();
 	CommandPool& getTransientPool();

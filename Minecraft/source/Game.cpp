@@ -227,6 +227,9 @@ void Game::createGameRenderer()
 	this->mpRenderer = std::make_shared<graphics::MinecraftRenderer>();
 	engine::Engine::Get()->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
 	this->mpWindow->setRenderer(this->mpRenderer.get());
+	this->mpRenderer->UpdateWorldGraphicsOnFramePresented.bind(
+		std::bind(&Game::updateWorldGraphics, this)
+	);
 
 	// TODO: Configure this per project
 	this->mpRenderer->setSwapChainInfo(
@@ -419,9 +422,15 @@ void Game::createScene()
 		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
 	);
 	
-	for (i32 x = -3; x <= 3; ++x)
+	auto coordinates = std::vector<world::Coordinate>();
+	FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, x)
 	{
-		for (i32 y = -3; y <= 3; ++y)
+		coordinates.push_back(world::Coordinate({ 0, 0, 0 }, { x, y, z }));
+	}
+	this->mpVoxelInstanceBuffer->allocateCoordinates(coordinates);
+	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
+	{
+		for (i32 y = CHUNK_HALF_LENGTH - 2; y <= CHUNK_HALF_LENGTH + 2; ++y)
 		{
 			this->mpVoxelInstanceBuffer->changeVoxelId(
 				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }),
@@ -533,5 +542,13 @@ void Game::updateCameraUniform()
 		localCamera.view = this->mpCameraTransform->calculateViewFrom(this->mpCameraTransform->position);
 		localCamera.proj = perspective;
 		this->mpUniformLocalCamera->write(&localCamera);
+	}
+}
+
+void Game::updateWorldGraphics()
+{
+	if (this->mpVoxelInstanceBuffer->hasChanges())
+	{
+		this->mpVoxelInstanceBuffer->commitToBuffer();
 	}
 }

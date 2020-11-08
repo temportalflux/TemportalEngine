@@ -336,5 +336,5 @@ void MinecraftRenderer::onFramePresented(uIndex idxFrame)
 			uniform->endReading(true);
 		}
 	}
-	
+	this->UpdateWorldGraphicsOnFramePresented.execute();
 }

@@ -51,7 +51,7 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(std::shared_ptr<asset::Pipelin
 	{
 		ui8 slot = 0;
 		auto bindings = Model::bindings(slot);
-		bindings.push_back(world::BlockInstanceMap::getBinding(slot));
+		bindings.push_back(world::BlockInstanceBuffer::getBinding(slot));
 		this->mpPipeline->setBindings(bindings);
 	}
 
@@ -152,10 +152,13 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 	auto registry = this->mpTypeRegistry.lock();
 	auto modelManager = this->mpModelManager.lock();
 	auto instanceBuffer = this->mpInstanceBuffer.lock();
-	auto id = game::BlockId("minecraft", "grass");
-	//for (auto const& idPath : registry->getEntriesById())
+	//auto id = game::BlockId("minecraft", "grass");
+	for (auto const& idPath : registry->getEntriesById())
 	{
-		//auto id = idPath.first;
+		auto id = idPath.first;
+		auto instanceData = instanceBuffer->getDataForVoxelId(id);
+		if (instanceData.count == 0) continue;
+
 		OPTICK_GPU_EVENT("DrawVoxel");
 		OPTICK_TAG("VoxelId", id.to_string().c_str());
 
@@ -174,7 +177,6 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		command->bindVertexBuffers(0, { profile.vertexBuffer });
 		command->bindIndexBuffer(0, profile.indexBuffer, vk::IndexType::eUint16);
 
-		auto const& instanceData = instanceBuffer->getDataForVoxelId(id);
 		command->bindVertexBuffers(1, { instanceData.buffer });
 		
 		command->draw(
@@ -183,7 +185,6 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 			profile.indexBufferValueOffset,
 			(ui32)instanceData.index, (ui32)instanceData.count
 		);
-		//break; // because the instance data doesnt have specifics for each block id yet
 	}
 
 }

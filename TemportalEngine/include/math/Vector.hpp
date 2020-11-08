@@ -320,7 +320,7 @@ public:
 	*/
 	constexpr void operator=(VectorFormat const &other)
 	{
-		other.copyTo<TAccessibleDimensions>(mValues);
+		memcpy_s(mValues, sizeof(mValues), other.mValues, sizeof(mValues));
 	}
 
 	/**

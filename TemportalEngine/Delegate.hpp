@@ -33,6 +33,8 @@ private:
 
 };
 
+typedef ExecuteDelegate<void()> SimpleExecuteDelegate;
+
 template <class TSignature>
 class BroadcastDelegate
 {
