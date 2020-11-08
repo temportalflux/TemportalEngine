@@ -464,6 +464,15 @@ void Game::createScene()
 	pEngine->addTicker(this->mpController);
 	this->mpController->subscribeToInput();
 	this->mpController->assignCameraTransform(this->mpCameraTransform.get());
+
+	if (this->mpVoxelInstanceBuffer)
+	{
+		while (this->mpVoxelInstanceBuffer->hasChanges())
+		{
+			// TODO: This will have to be adjusted when this function is asynchronous to wait for each commit to finish on the GPU
+			this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
+		}
+	}
 }
 
 void Game::destroyScene()
@@ -549,6 +558,6 @@ void Game::updateWorldGraphics()
 {
 	if (this->mpVoxelInstanceBuffer->hasChanges())
 	{
-		this->mpVoxelInstanceBuffer->commitToBuffer();
+		this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
 	}
 }

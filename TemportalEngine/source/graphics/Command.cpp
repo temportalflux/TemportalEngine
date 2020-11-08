@@ -33,6 +33,18 @@ Command& Command::copyBuffer(Buffer *src, Buffer *dest, ui64 size)
 	return *this;
 }
 
+Command& Command::copyBuffer(Buffer *src, Buffer *dst, std::vector<BufferRegionCopy> const& copyOperations)
+{
+	OPTICK_EVENT();
+	castBuf(this->mpVulkanBuffer)->copyBuffer(
+		extract<vk::Buffer>(src),
+		extract<vk::Buffer>(dst),
+		(ui32)copyOperations.size(),
+		(vk::BufferCopy*)copyOperations.data()
+	);
+	return *this;
+}
+
 Command& Command::setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayout, vk::ImageLayout nextLayout)
 {
 	OPTICK_EVENT();

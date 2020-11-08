@@ -1,6 +1,7 @@
 #include "world/BlockInstanceMap.hpp"
 
 #include "graphics/Command.hpp"
+#include "graphics/CommandPool.hpp"
 #include "graphics/Memory.hpp"
 
 using namespace world;
@@ -251,8 +252,15 @@ BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_s
 
 	this->mInstanceData = (ValueData*)malloc(this->size());
 
-	this->mpMemory = std::make_shared<graphics::Memory>();
-	this->mpMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+	this->mpMemoryStagingBuffer = std::make_shared<graphics::Memory>();
+	this->mpMemoryStagingBuffer->setFlags(
+		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+	);
+	this->mStagingBuffer.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
+	this->mStagingBuffer.setSize(BlockInstanceBuffer::stagingBufferSize());
+
+	this->mpMemoryInstanceBuffer = std::make_shared<graphics::Memory>();
+	this->mpMemoryInstanceBuffer->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
 	this->mInstanceBuffer.setSize(this->size());
@@ -269,7 +277,9 @@ BlockInstanceBuffer::~BlockInstanceBuffer()
 	this->mCommittedCategories.clear();
 
 	this->mInstanceBuffer.destroy();
-	this->mpMemory.reset();
+	this->mpMemoryInstanceBuffer.reset();
+	this->mStagingBuffer.destroy();
+	this->mpMemoryStagingBuffer.reset();
 
 	free(this->mInstanceData);
 	this->mInstanceData = nullptr;
@@ -284,19 +294,26 @@ uSize BlockInstanceBuffer::size() const
 
 void BlockInstanceBuffer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
-	this->mpMemory->setDevice(device);
+	this->mpMemoryInstanceBuffer->setDevice(device);
 	this->mInstanceBuffer.setDevice(device);
+	this->mpMemoryStagingBuffer->setDevice(device);
+	this->mStagingBuffer.setDevice(device);
 }
 
 void BlockInstanceBuffer::createBuffer()
 {
 	OPTICK_EVENT();
+
 	this->mInstanceBuffer.create();
-	this->mInstanceBuffer.configureSlot(this->mpMemory);
-
-	this->mpMemory->create();
-
+	this->mInstanceBuffer.configureSlot(this->mpMemoryInstanceBuffer);
+	this->mpMemoryInstanceBuffer->create();
 	this->mInstanceBuffer.bindMemory();
+
+	this->mStagingBuffer.create();
+	this->mStagingBuffer.configureSlot(this->mpMemoryStagingBuffer);
+	this->mpMemoryStagingBuffer->create();
+	this->mStagingBuffer.bindMemory();
+
 }
 
 void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> const& coordinates)
@@ -448,10 +465,93 @@ bool BlockInstanceBuffer::hasChanges() const
 	return this->mChangedBufferIndices.size() > 0;
 }
 
-void BlockInstanceBuffer::commitToBuffer()
+void BlockInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 {
 	OPTICK_EVENT();
+	static const uSize valueSize = sizeof(ValueData);
 
+	auto regionsToCopy = std::vector<graphics::BufferRegionCopy>();
+	uSize indicesPrepared = 0;
+	std::optional<uIndex> prevIdx = std::nullopt;
+	graphics::BufferRegionCopy regionBeingPrepared = { 0, 0, 0 };
+	uSize totalStagingBufferSizeWritten = 0;
+	while (
+		this->hasChanges() && (totalStagingBufferSizeWritten + valueSize) <= BlockInstanceBuffer::stagingBufferSize()
+	)
+	{
+		// Because `mChangedBufferIndices` is a sorted-set,
+		// there are no duplicates and the next entry
+		// will always have a larger/later index than the previous
+		auto nextEntry = this->mChangedBufferIndices.begin();
+		auto nextInstanceIdx = *nextEntry;
+		ValueData* nextInstance = this->getInstanceAt(nextInstanceIdx);
+
+		// If the previous entry and next entry are contiguous (next to each other in the buffer)
+		// the the current region can be expanded instead of adding a new region
+		if (prevIdx.has_value() && nextInstanceIdx == *prevIdx + 1)
+		{
+			// If the current idx is contiguous, we can just append the size.
+			// The instance will be written below next to the previous entry
+			// regardless of if they are actually contiguous.
+			regionBeingPrepared.size += valueSize;
+		}
+		// The entries are not contiguous, so we must append the previous region and start a new one
+		else
+		{
+			if (regionBeingPrepared.size > 0)
+			{
+				regionsToCopy.push_back(regionBeingPrepared);
+			}
+			regionBeingPrepared = {
+				/*srcOffset*/ totalStagingBufferSizeWritten,
+				/*dstOffset*/ nextInstanceIdx * valueSize,
+				valueSize
+			};
+		}
+
+		// Actually write the instance to the staging buffer
+		this->mStagingBuffer.write(
+			totalStagingBufferSizeWritten,
+			nextInstance, valueSize, false
+		);
+		totalStagingBufferSizeWritten += valueSize;
+		
+		prevIdx = nextInstanceIdx;
+		indicesPrepared++;
+
+		this->mChangedBufferIndices.erase(nextEntry);
+	}
+	if (regionBeingPrepared.size > 0)
+	{
+		regionsToCopy.push_back(regionBeingPrepared);
+	}
+
+	// Write the regions to the GPU memory of the Instance buffer
+	auto pStaging = &mStagingBuffer;
+	auto pGPUBuffer = &mInstanceBuffer;
+	/*
+		TODO: submitOneOff contains a waitIdle at the end of the call. This causes all commands to be synchronous.
+		For higher throughput, waitIdle should not be called, and the command buffers should rely entirely
+		on the pipeline barriers. That way the next frame submit can just wait (via fences/semaphores)
+		for this to finish on GPU side instead of waiting in this function.
+	*/
+	transientPool->submitOneOff([&pStaging, &pGPUBuffer, &regionsToCopy](graphics::Command* cmd) {
+		cmd->copyBuffer(pStaging, pGPUBuffer, regionsToCopy);
+	});
+
+	// If there are additional changes (assuming `submitOneOff` halts this function until the change is final)
+	// then we should continue committing until there are no other changes.
+	if (this->hasChanges())
+	{
+		this->commitToBuffer(transientPool);
+		return;
+	}
+
+	// Now that there are no longer any changes, we can expose the new category sizes
+	for (auto& entry : this->mCommittedCategories)
+	{
+		entry.second = this->mMutableCategoryList.getCategoryForId(entry.first);
+	}
 }
 
 CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& id) const

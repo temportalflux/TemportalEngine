@@ -14,6 +14,13 @@ class Pipeline;
 class Buffer;
 class Image;
 
+struct BufferRegionCopy
+{
+	uIndex srcOffset;
+	uIndex dstOffset;
+	uSize size;
+};
+
 class Command
 {
 	friend class CommandBuffer;
@@ -22,6 +29,7 @@ public:
 
 	// For copying transfer buffers
 	Command& copyBuffer(Buffer *src, Buffer *dest, ui64 size);
+	Command& copyBuffer(Buffer *src, Buffer *dst, std::vector<BufferRegionCopy> const& copyOperations);
 
 	Command& setPipelineImageBarrier(Image *image, vk::ImageLayout prevLayout, vk::ImageLayout nextLayout);
 	Command& copyBufferToImage(Buffer *src, Image *dest);

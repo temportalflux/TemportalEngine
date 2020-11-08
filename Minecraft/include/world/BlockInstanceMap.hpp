@@ -8,6 +8,7 @@
 #include "world/WorldCoordinate.hpp"
 #include "graphics/AttributeBinding.hpp"
 
+FORWARD_DEF(NS_GRAPHICS, class CommandPool)
 FORWARD_DEF(NS_GRAPHICS, class Command)
 FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice)
 FORWARD_DEF(NS_GRAPHICS, class Memory)
@@ -115,6 +116,9 @@ class BlockInstanceBuffer
 public:
 
 	static graphics::AttributeBinding getBinding(ui8& slot);
+	// The size of the staging buffer to which data can be written to update the instance buffer.
+	// The number of instances that can be written per frame will be equivalent to `trunc(stagingBufferSize() / sizeof(ValueData))`.
+	static constexpr uSize stagingBufferSize() { return 2048; }
 
 	/**
 	 * Initializes the non-committed data with some amount of uncategorized values.
@@ -141,31 +145,29 @@ public:
 	/**
 	 * Writes any changes made by `changeVoxelId` to the GPU buffer object.
 	 */
-	void commitToBuffer();
+	void commitToBuffer(graphics::CommandPool* transientPool);
 
 	CategoryMeta const& getDataForVoxelId(game::BlockId const& id) const;
 
 private:
 
+	// 80 bytes (5 vec4s)
 	struct ValueData
 	{
 		/**
 		 * the coordinate of the chunk this block is in
+		 * 16 bytes (4 floats, 4 bytes per float)
 		 */
 		math::Vector3Padded posOfChunk;
 		/**
 		 * the position of the block in the chunk, as well as any rotation on its local origin
+		 * 64 bytes (4 vec4s, 16 bytes per vec4 [4 floats, 4 bytes per float])
 		 */
 		math::Matrix4x4 model;
 	};
 
 	uSize mTotalInstanceCount;
 	ValueData* mInstanceData;
-
-	/**
-	 * The memory for `mInstanceBuffer`.
-	 */
-	std::shared_ptr<graphics::Memory> mpMemory;
 
 	/**
 	 * The category metadata about `mInstanceData`.
@@ -180,9 +182,27 @@ private:
 
 	/**
 	 * Indices of `mInstanceData` which have changed since the last commit.
+	 * `std::set` is naturally ordered+sorted, so any insertions should be ordered by value.
 	 * Mutated by `commitToBuffer()`. Used to ensure the minimum number of writes to the buffer as possible per call.
 	 */
-	std::unordered_set<uIndex> mChangedBufferIndices;
+	std::set<uIndex> mChangedBufferIndices;
+
+	/**
+	 * The memory for `mStagingBuffer`.
+	 */
+	std::shared_ptr<graphics::Memory> mpMemoryStagingBuffer;
+
+	/**
+	 * The literal GPU buffer which serves as the go between
+	 * for CPU (`mMutableCategoryList`) to GPU (`mInstanceBuffer`) writes.
+	 * Used during `commitToBuffer()` to write buffer updates.
+	 */
+	graphics::Buffer mStagingBuffer;
+
+	/**
+	 * The memory for `mInstanceBuffer`.
+	 */
+	std::shared_ptr<graphics::Memory> mpMemoryInstanceBuffer;
 
 	/**
 	 * The literal GPU buffer which is written to via `commitToBuffer()`.
