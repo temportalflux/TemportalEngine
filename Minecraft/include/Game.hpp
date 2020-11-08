@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "logging/Logger.hpp"
+#include "input/Event.hpp"
 
 class Window;
 class Controller;
@@ -90,9 +91,15 @@ private:
 	void createVoxelGridRenderer();
 	void createWorldAxesRenderer();
 
+	void bindInput();
+	void unbindInput();
+	void onInputKey(input::Event const& evt);
+
 	void update(f32 deltaTime);
 	void updateCameraUniform();
 	void updateWorldGraphics();
+
+	void changeVoxelDemoSmol();
 
 };
 

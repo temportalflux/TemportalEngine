@@ -16,6 +16,7 @@
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
+#include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "registry/VoxelType.hpp"
@@ -119,10 +120,12 @@ void Game::init()
 		this->createRenderers();
 	}
 	this->createScene();
+	this->bindInput();
 }
 
 void Game::uninit()
 {
+	this->unbindInput();
 	this->destroyScene();
 	if (this->requiresGraphics())
 	{
@@ -412,15 +415,6 @@ void Game::destroyRenderers()
 void Game::createScene()
 {
 	srand((ui32)time(0));
-
-	auto allVoxelIdsSet = this->mpVoxelTypeRegistry->getIds();
-	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
-	allVoxelIdOptions.push_back(std::nullopt);
-	std::transform(
-		std::begin(allVoxelIdsSet), std::end(allVoxelIdsSet),
-		std::back_inserter(allVoxelIdOptions),
-		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
-	);
 	
 	auto coordinates = std::vector<world::Coordinate>();
 	FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, x)
@@ -428,16 +422,8 @@ void Game::createScene()
 		coordinates.push_back(world::Coordinate({ 0, 0, 0 }, { x, y, z }));
 	}
 	this->mpVoxelInstanceBuffer->allocateCoordinates(coordinates);
-	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
-	{
-		for (i32 y = CHUNK_HALF_LENGTH - 2; y <= CHUNK_HALF_LENGTH + 2; ++y)
-		{
-			this->mpVoxelInstanceBuffer->changeVoxelId(
-				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }),
-				allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())]
-			);
-		}
-	}
+
+	this->changeVoxelDemoSmol();
 
 	this->mpWorld = std::make_shared<world::World>();
 	//this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
@@ -480,6 +466,21 @@ void Game::destroyScene()
 	this->mpController.reset();
 	this->mpCameraTransform.reset();
 	this->mpWorld.reset();
+}
+
+void Game::bindInput()
+{
+	auto pInput = engine::Engine::Get()->getInputQueue();
+	pInput->OnInputEvent.bind(
+		input::EInputType::KEY, this->weak_from_this(),
+		std::bind(&Game::onInputKey, this, std::placeholders::_1)
+	);
+}
+
+void Game::unbindInput()
+{
+	auto pInput = engine::Engine::Get()->getInputQueue();
+	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
 }
 
 void Game::run()
@@ -554,10 +555,47 @@ void Game::updateCameraUniform()
 	}
 }
 
+// Runs on the render thread
 void Game::updateWorldGraphics()
 {
 	if (this->mpVoxelInstanceBuffer->hasChanges())
 	{
+		this->mpVoxelInstanceBuffer->lock();
 		this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
+		this->mpVoxelInstanceBuffer->unlock();
 	}
+}
+
+void Game::onInputKey(input::Event const& evt)
+{
+	if (evt.inputKey.action != input::EAction::RELEASE) return;
+	if (evt.inputKey.key == input::EKey::NUM_1)
+	{
+		this->mProjectLog.log(LOG_INFO, "Regenerate");
+		//this->changeVoxelDemoSmol();
+	}
+}
+
+void Game::changeVoxelDemoSmol()
+{
+	this->mpVoxelInstanceBuffer->lock();
+	auto allVoxelIdsSet = this->mpVoxelTypeRegistry->getIds();
+	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
+	allVoxelIdOptions.push_back(std::nullopt);
+	std::transform(
+		std::begin(allVoxelIdsSet), std::end(allVoxelIdsSet),
+		std::back_inserter(allVoxelIdOptions),
+		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
+	);
+	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
+	{
+		for (i32 y = CHUNK_HALF_LENGTH - 2; y <= CHUNK_HALF_LENGTH + 2; ++y)
+		{
+			this->mpVoxelInstanceBuffer->changeVoxelId(
+				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }),
+				allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())]
+			);
+		}
+	}
+	this->mpVoxelInstanceBuffer->unlock();
 }

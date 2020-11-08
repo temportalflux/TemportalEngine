@@ -292,6 +292,16 @@ uSize BlockInstanceBuffer::size() const
 	return this->mTotalInstanceCount * sizeof(ValueData);
 }
 
+void BlockInstanceBuffer::lock()
+{
+	this->mMutex.lock();
+}
+
+void BlockInstanceBuffer::unlock()
+{
+	this->mMutex.unlock();
+}
+
 void BlockInstanceBuffer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpMemoryInstanceBuffer->setDevice(device);
@@ -358,9 +368,11 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 	auto& srcCategory = this->mMutableCategoryList.getCategoryForValueIndex(instanceIndex);
 	auto& destCategory = this->mMutableCategoryList.getCategoryForId(desiredVoxelId);
 	if (srcCategory.categoryIndex == destCategory.categoryIndex) return;
-
+	
 	if (destCategory.categoryIndex < srcCategory.categoryIndex)
 	{
+		this->mMutableCategoryList.removeCoordinateIndex(coordinate);
+
 		/* Perform the following order of operations, where `instanceIndex` is `T` (whose data is in `instance`)
 			| destCategory | category1 | category2 | srcCategory |
 			| A  B  C  D   | G H I J K | L M N O P | Q R S T U V |
@@ -435,12 +447,13 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 			|  A B C D   T | H I J K G | M N O P L |  R S Q U V  |
 		*/
 		this->setInstanceData(leftCate->lastIndex(), &instance);
+		this->mMutableCategoryList.setCoordinateIndex(coordinate, leftCate->lastIndex());
 	}
 	else // dest -> src (prev in mem to later)
 	{
 		// TODO
 	}
-
+	
 }
 
 /**
@@ -483,6 +496,7 @@ void BlockInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 		// there are no duplicates and the next entry
 		// will always have a larger/later index than the previous
 		auto nextEntry = this->mChangedBufferIndices.begin();
+		assert(nextEntry != this->mChangedBufferIndices.end());
 		auto nextInstanceIdx = *nextEntry;
 		ValueData* nextInstance = this->getInstanceAt(nextInstanceIdx);
 

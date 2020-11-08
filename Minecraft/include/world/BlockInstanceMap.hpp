@@ -7,6 +7,7 @@
 #include "world/BlockMetadata.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "graphics/AttributeBinding.hpp"
+#include "thread/MutexLock.hpp"
 
 FORWARD_DEF(NS_GRAPHICS, class CommandPool)
 FORWARD_DEF(NS_GRAPHICS, class Command)
@@ -128,6 +129,9 @@ public:
 	~BlockInstanceBuffer();
 
 	uSize size() const;
+	
+	void lock();
+	void unlock();
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	void createBuffer();
@@ -165,6 +169,8 @@ private:
 		 */
 		math::Matrix4x4 model;
 	};
+
+	thread::MutexLock mMutex;
 
 	uSize mTotalInstanceCount;
 	ValueData* mInstanceData;
