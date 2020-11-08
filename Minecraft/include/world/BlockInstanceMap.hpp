@@ -46,10 +46,7 @@ struct CategoryMeta
 	void shrinkLeft();
 	void expandRight();
 	void shrinkRight();
-
-	void decrementStart();
-	void incrementStart();
-	void updateIndex();
+	void setIndexFromPrevCategory();
 
 };
 
@@ -70,6 +67,7 @@ public:
 
 	uIndex allocate();
 	void setCoordinateIndex(world::Coordinate const& coordinate, uIndex idx);
+	void moveIndexedCoordinate(uIndex const& src, uIndex const& dst);
 	void removeCoordinateIndex(world::Coordinate const& coordinate);
 
 	std::optional<uIndex> searchForCoordinateIndex(world::Coordinate const& coordinate) const;
@@ -108,6 +106,7 @@ private:
 	CoordinateList mIndexToCoordinate; // TODO: this doesnt need to be a vector, it can be raw data
 
 	std::optional<CoordinateToIndexList::const_iterator> searchForCoordinateIterator(world::Coordinate const& coordinate) const;
+	std::optional<CoordinateToIndexList::iterator> searchForCoordinateIterator(world::Coordinate const& coordinate);
 
 };
 

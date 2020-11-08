@@ -414,7 +414,8 @@ void Game::destroyRenderers()
 
 void Game::createScene()
 {
-	srand((ui32)time(0));
+	//srand((ui32)time(0));
+	srand(42);
 	
 	auto coordinates = std::vector<world::Coordinate>();
 	FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, x)
@@ -572,7 +573,7 @@ void Game::onInputKey(input::Event const& evt)
 	if (evt.inputKey.key == input::EKey::NUM_1)
 	{
 		this->mProjectLog.log(LOG_INFO, "Regenerate");
-		//this->changeVoxelDemoSmol();
+		this->changeVoxelDemoSmol();
 	}
 }
 
@@ -580,6 +581,7 @@ void Game::changeVoxelDemoSmol()
 {
 	this->mpVoxelInstanceBuffer->lock();
 	auto allVoxelIdsSet = this->mpVoxelTypeRegistry->getIds();
+
 	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
 	allVoxelIdOptions.push_back(std::nullopt);
 	std::transform(
@@ -587,15 +589,29 @@ void Game::changeVoxelDemoSmol()
 		std::back_inserter(allVoxelIdOptions),
 		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
 	);
+
+	auto idCount = std::unordered_map<game::BlockId, uSize>();
+	for (auto const& id : allVoxelIdsSet)
+	{
+		idCount.insert(std::make_pair(id, 0));
+	}
+
 	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
 	{
 		for (i32 y = CHUNK_HALF_LENGTH - 2; y <= CHUNK_HALF_LENGTH + 2; ++y)
 		{
+			auto const& id = allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())];
 			this->mpVoxelInstanceBuffer->changeVoxelId(
-				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }),
-				allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())]
+				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }), id
 			);
+			if (id) idCount.at(*id)++;
 		}
 	}
+
+	for (auto const& entry : idCount)
+	{
+		this->mProjectLog.log(LOG_INFO, "- %s = %i", entry.first.to_string().c_str(), entry.second);
+	}
+
 	this->mpVoxelInstanceBuffer->unlock();
 }

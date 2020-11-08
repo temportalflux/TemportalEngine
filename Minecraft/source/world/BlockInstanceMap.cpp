@@ -24,76 +24,70 @@ uIndex CategoryMeta::lastIndex() const
 
 bool CategoryMeta::containsIndex(uIndex idx) const
 {
-	return this->firstIndex() <= idx && idx <= this->lastIndex();
+	return this->count > 0 && this->firstIndex() <= idx && idx <= this->lastIndex();
 }
 
 void CategoryMeta::expandLeft()
 {
-	if (this->prevCategory != nullptr) this->prevCategory->shrinkLeft();
+	assert(this->index > 0);
+	this->index--;
 	this->count++;
-	decrementStart();
+	if (this->prevCategory != nullptr) this->prevCategory->shrinkLeft();
+	assert(this->prevCategory == nullptr || this->prevCategory->lastIndex() + 1 == this->firstIndex());
+	assert(this->nextCategory == nullptr || this->lastIndex() + 1 == this->nextCategory->firstIndex());
 }
 
 void CategoryMeta::shrinkLeft()
 {
+	assert(this->count > 0 || this->prevCategory != nullptr);
 	if (this->count > 0)
 	{
 		this->count--;
-		if (this->nextCategory != nullptr)
-			this->nextCategory->updateIndex();
 	}
-	else if (this->prevCategory != nullptr)
+	else
 	{
-		this->prevCategory->shrinkLeft();
-		updateIndex();
+		if (this->prevCategory != nullptr)
+		{
+			this->prevCategory->shrinkLeft();
+		}
+		this->setIndexFromPrevCategory();
 	}
 }
 
 void CategoryMeta::expandRight()
 {
+	assert(this->nextCategory != nullptr); // only unallocated category has a null next category
 	this->count++;
 	if (this->nextCategory != nullptr)
 	{
-		this->nextCategory->updateIndex();
 		this->nextCategory->shrinkRight();
 	}
+	assert(this->prevCategory == nullptr || this->prevCategory->lastIndex() + 1 == this->firstIndex());
+	assert(this->nextCategory == nullptr || this->lastIndex() + 1 == this->nextCategory->firstIndex());
 }
 
 void CategoryMeta::shrinkRight()
 {
+	assert(this->count > 0 || this->nextCategory != nullptr);
 	if (this->count > 0)
 	{
+		this->index++;
 		this->count--;
-		this->incrementStart();
 	}
-	else if (this->nextCategory != nullptr)
+	else
 	{
-		this->nextCategory->shrinkRight();
-	}
-}
-
-void CategoryMeta::decrementStart()
-{
-	this->index--;
-	if (this->nextCategory != nullptr)
-		this->nextCategory->updateIndex();
-}
-
-void CategoryMeta::incrementStart()
-{
-	this->index++;
-	if (this->nextCategory != nullptr)
-		this->nextCategory->updateIndex();
-}
-
-void CategoryMeta::updateIndex()
-{
-	if (this->count == 0)
-	{
-		this->index = this->prevCategory->lastIndex() + 1;
+		this->setIndexFromPrevCategory();
 		if (this->nextCategory != nullptr)
-			this->nextCategory->updateIndex();
+		{
+			this->nextCategory->shrinkRight();
+		}
 	}
+}
+
+void CategoryMeta::setIndexFromPrevCategory()
+{
+	assert(this->count == 0);
+	this->index = this->prevCategory != nullptr ? this->prevCategory->index + this->prevCategory->count : 0;
 }
 
 VoxelInstanceCategoryList::VoxelInstanceCategoryList(
@@ -191,6 +185,18 @@ void VoxelInstanceCategoryList::setCoordinateIndex(world::Coordinate const& coor
 	this->mIndexToCoordinate[idx] = coordinate;
 }
 
+void VoxelInstanceCategoryList::moveIndexedCoordinate(uIndex const& src, uIndex const& dst)
+{
+	OPTICK_EVENT();
+	auto coordinateOpt = this->mIndexToCoordinate[src];
+	assert(coordinateOpt);
+	auto iterOpt = this->searchForCoordinateIterator(*coordinateOpt);
+	assert(iterOpt);
+	(*iterOpt)->second = dst;
+	this->mIndexToCoordinate[dst] = coordinateOpt;
+	this->mIndexToCoordinate[src] = std::nullopt;
+}
+
 void VoxelInstanceCategoryList::removeCoordinateIndex(world::Coordinate const& coordinate)
 {
 	OPTICK_EVENT();
@@ -210,6 +216,24 @@ std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::const_iterator> 
 	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
 	if (range.first != rangeEnd && range.second != rangeEnd)
 	{
+		return range.first;
+	}
+	else
+	{
+		return std::nullopt;
+	}
+}
+
+std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::iterator> VoxelInstanceCategoryList::searchForCoordinateIterator(
+	world::Coordinate const& coordinate
+)
+{
+	OPTICK_EVENT();
+	auto rangeEnd = this->mCoordinateToIndex.end();
+	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
+	if (range.first != rangeEnd && range.second != rangeEnd)
+	{
+		assert(range.first != range.second);
 		return range.first;
 	}
 	else
@@ -368,11 +392,11 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 	auto& srcCategory = this->mMutableCategoryList.getCategoryForValueIndex(instanceIndex);
 	auto& destCategory = this->mMutableCategoryList.getCategoryForId(desiredVoxelId);
 	if (srcCategory.categoryIndex == destCategory.categoryIndex) return;
-	
-	if (destCategory.categoryIndex < srcCategory.categoryIndex)
-	{
-		this->mMutableCategoryList.removeCoordinateIndex(coordinate);
 
+	this->mMutableCategoryList.removeCoordinateIndex(coordinate);
+
+	if (destCategory.categoryIndex < srcCategory.categoryIndex) // dest <- src (later in mem to earlier)
+	{
 		/* Perform the following order of operations, where `instanceIndex` is `T` (whose data is in `instance`)
 			| destCategory | category1 | category2 | srcCategory |
 			| A  B  C  D   | G H I J K | L M N O P | Q R S T U V |
@@ -384,7 +408,11 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 			| A  B  C  D   | G H I J K | L M N O P | Q R S Q U V |
 			                                         ^ --> ^
 		*/
-		this->copyInstanceData(srcCategory.firstIndex(), instanceIndex);
+		if (instanceIndex != srcCategory.firstIndex())
+		{
+			this->copyInstanceData(srcCategory.firstIndex(), instanceIndex);
+			this->mMutableCategoryList.moveIndexedCoordinate(srcCategory.firstIndex(), instanceIndex);
+		}
 
 		auto* rightCate = &srcCategory;
 		auto* leftCate = rightCate->prevCategory;
@@ -412,6 +440,7 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 													 ^ --------> ^
 				*/
 				this->copyInstanceData(leftCate->firstIndex(), rightCate->firstIndex());
+				this->mMutableCategoryList.moveIndexedCoordinate(leftCate->firstIndex(), rightCate->firstIndex());
 			
 				/* Shift category bounds to keep the moved data in the correct category
 					Phase 1:
@@ -449,11 +478,91 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 		this->setInstanceData(leftCate->lastIndex(), &instance);
 		this->mMutableCategoryList.setCoordinateIndex(coordinate, leftCate->lastIndex());
 	}
-	else // dest -> src (prev in mem to later)
+	else // dest -> src (earlier in mem to later)
 	{
-		// TODO
+		/* Perform the following order of operations, where `instanceIndex` is `B` (whose data is in `instance`)
+			| srcCategory | category1 | category2 | destCategory |
+			| A B C D E F | G H I J K | L M N O P | Q R S T U V  |
+			    ^
+		*/
+
+		/* Move the instance at the end of the category to the index of the moving-value
+			| srcCategory | category1 | category2 | destCategory |
+			| A F C D E F | G H I J K | L M N O P | Q R S T U V  |
+					^ <---- ^
+		*/
+		if (instanceIndex != srcCategory.lastIndex())
+		{
+			this->copyInstanceData(srcCategory.lastIndex(), instanceIndex);
+			this->mMutableCategoryList.moveIndexedCoordinate(srcCategory.lastIndex(), instanceIndex);
+		}
+
+		auto* leftCate = &srcCategory;
+		auto* rightCate = leftCate->nextCategory;
+		while (rightCate != &destCategory)
+		{
+			/* LoopInit
+				Phase 1:
+					leftCate = srcCategory
+					rightCate = category1
+				Phase 2:
+					leftCate = category1
+					rightCate = category2
+			*/
+
+			if (rightCate->count > 0)
+			{
+				/* Move the data in the first index of the prev category into the first index of the next category
+					Phase 1:
+					| srcCategory | category1 | category2 | destCategory |
+					| A F C D E K | G H I J K | L M N O P | Q R S T U V  |
+					            ^ <-------- ^
+					Phase 2:
+					| srcCategory | category1   | category2 | destCategory |
+					| A F C D E   | K G H I J P | L M N O P | Q R S T U V  |
+													          ^ <-------- ^
+				*/
+				this->copyInstanceData(rightCate->lastIndex(), leftCate->lastIndex());
+				this->mMutableCategoryList.moveIndexedCoordinate(rightCate->lastIndex(), leftCate->lastIndex());
+
+				/* Shift category bounds to keep the moved data in the correct category
+					Phase 1:
+					| srcCategory | category1   | category2 | destCategory |
+					| A F C D E   | K G H I J K | L M N O P | Q R S T U V  |
+					Phase 2:
+					| srcCategory | category1 | category2   | destCategory |
+					| A F C D E   | K G H I J | P L M N O P | Q R S T U V  |
+				*/
+				rightCate->expandLeft();
+			}
+
+			/*
+				Phase 1:
+					leftCate = category1
+					rightCate = category2
+				Phase 2:
+					leftCate = category2
+					rightCate = destCategory
+			*/
+			leftCate = rightCate;
+			rightCate = rightCate->nextCategory;
+		}
+
+		/* Finally, shift the barrier of dest category into rightCate...
+			| srcCategory | category1 | category2 | destCategory  |
+			| A F C D E   | K G H I J | P L M N O | P Q R S T U V |
+		*/
+		rightCate->expandLeft();
+
+		/* so the last index of destCategory can be filled with `B`/`instance`.
+			| srcCategory | category1 | category2 | destCategory  |
+			| A F C D E   | K G H I J | P L M N O | B Q R S T U V |
+		*/
+		this->setInstanceData(rightCate->firstIndex(), &instance);
+		this->mMutableCategoryList.setCoordinateIndex(coordinate, rightCate->firstIndex());
 	}
 	
+	instance.posOfChunk.x() = 0;
 }
 
 /**
