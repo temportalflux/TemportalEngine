@@ -95,49 +95,6 @@ ui32 MinecraftRenderer::getSwapChainImageViewCount() const
 void MinecraftRenderer::finalizeInitialization()
 {
 	VulkanRenderer::finalizeInitialization();
-
-	if (this->mpMutableUniforms.size() > 0)
-	{
-		auto device = this->getDevice();
-
-		auto viewCount = this->getSwapChainImageViewCount();
-
-		auto mutableUniformBuffersByDescriptorId = std::unordered_map<std::string, std::vector<graphics::Buffer*>>();
-		for (auto const& uniformEntry : this->mpMutableUniforms)
-		{
-			auto const uniformBindingId = uniformEntry.first;
-			auto buffers = std::vector<graphics::Buffer*>();
-			for (uIndex i = 0; i < viewCount; ++i)
-			{
-				auto& frame = this->mFrames[i];
-				graphics::Buffer buffer;
-				buffer.setDevice(this->mpGraphicsDevice);
-				buffer
-					.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
-					.setSize(uniformEntry.second.lock()->size())
-					.create();
-				buffer.configureSlot(this->mpMemoryUniformBuffers);
-				frame.uniformBuffers.insert(std::pair<std::string, graphics::Buffer>(uniformBindingId, std::move(buffer)));
-				buffers.push_back(&frame.uniformBuffers[uniformBindingId]);
-			}
-			mutableUniformBuffersByDescriptorId.insert(std::pair(uniformBindingId, buffers));
-		}
-		this->mpMemoryUniformBuffers->create();
-		for (uIndex i = 0; i < viewCount; ++i)
-		{
-			for (auto& entry : this->mFrames[i].uniformBuffers)
-			{
-				entry.second.bindMemory();
-			}
-		}
-	
-		// NOTE: This happens AFTER the initial createRenderChain, but before any frames are presented
-		for (auto& renderer : this->mpRenderers)
-		{
-			renderer->attachDescriptors(mutableUniformBuffersByDescriptorId);
-			renderer->writeDescriptors(this->getDevice());
-		}
-	}
 }
 
 void MinecraftRenderer::createRenderChain()
@@ -160,6 +117,13 @@ void MinecraftRenderer::createRenderChain()
 	}
 
 	this->createFrames(viewCount);
+	this->createMutableUniformBuffers();
+
+	for (auto& renderer : this->mpRenderers)
+	{
+		renderer->attachDescriptors(this->mMutableUniformBuffersByDescriptorId);
+		renderer->writeDescriptors(this->getDevice());
+	}
 }
 
 void MinecraftRenderer::destroyRenderChain()
@@ -171,9 +135,48 @@ void MinecraftRenderer::destroyRenderChain()
 		renderer->destroyRenderChain();
 	}
 	this->destroyRenderPass();
+	this->mMutableUniformBuffersByDescriptorId.clear();
 	this->destroyDepthResources();
 	this->destroyFrameImageViews();
 	this->destroySwapChain();
+}
+
+void MinecraftRenderer::createMutableUniformBuffers()
+{
+	if (this->mpMutableUniforms.size() > 0)
+	{
+		auto device = this->getDevice();
+
+		auto viewCount = this->getSwapChainImageViewCount();
+
+		for (auto const& uniformEntry : this->mpMutableUniforms)
+		{
+			auto const uniformBindingId = uniformEntry.first;
+			auto buffers = std::vector<graphics::Buffer*>();
+			for (uIndex i = 0; i < viewCount; ++i)
+			{
+				auto& frame = this->mFrames[i];
+				graphics::Buffer buffer;
+				buffer.setDevice(this->mpGraphicsDevice);
+				buffer
+					.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+					.setSize(uniformEntry.second.lock()->size())
+					.create();
+				buffer.configureSlot(this->mpMemoryUniformBuffers);
+				frame.uniformBuffers.insert(std::pair<std::string, graphics::Buffer>(uniformBindingId, std::move(buffer)));
+				buffers.push_back(&frame.uniformBuffers[uniformBindingId]);
+			}
+			this->mMutableUniformBuffersByDescriptorId.insert(std::pair(uniformBindingId, buffers));
+		}
+		this->mpMemoryUniformBuffers->create();
+		for (uIndex i = 0; i < viewCount; ++i)
+		{
+			for (auto& entry : this->mFrames[i].uniformBuffers)
+			{
+				entry.second.bindMemory();
+			}
+		}
+	}
 }
 
 void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution)
@@ -235,7 +238,7 @@ RenderPass* MinecraftRenderer::getRenderPass()
 
 void MinecraftRenderer::destroyRenderPass()
 {
-	this->mpRenderPass->destroy();
+	this->mpRenderPass->invalidate();
 }
 
 void MinecraftRenderer::createFrames(uSize viewCount)

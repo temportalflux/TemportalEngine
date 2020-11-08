@@ -196,6 +196,4 @@ void VoxelGridRenderer::destroyRenderChain()
 	{
 		descriptorGroup.invalidate();
 	}
-	this->mDescriptorGroups.clear();
-	this->mVoxelIdToDescriptorArchetype.clear();
 }

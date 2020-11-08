@@ -174,7 +174,6 @@ void WorldAxesRenderer::destroyRenderChain()
 	{
 		descriptorGroup.invalidate();
 	}
-	this->mDescriptorGroups.clear();
 }
 
 // ~~~~~~~~~~~~ END: IPipelineRenderer ~~~~~~~~~~

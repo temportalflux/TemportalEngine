@@ -106,7 +106,7 @@ void VulkanRenderer::createFrameImageViews()
 
 void VulkanRenderer::destroySwapChain()
 {
-	this->mSwapChain.destroy();
+	this->mSwapChain.invalidate();
 }
 
 void VulkanRenderer::destroyFrameImageViews()

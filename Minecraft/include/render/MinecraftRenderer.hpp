@@ -49,6 +49,7 @@ protected:
 
 private:
 
+	void createMutableUniformBuffers();
 	void destroyRenderChain() override;
 	void createDepthResources(math::Vector2UInt const &resolution);
 	void destroyDepthResources();
@@ -63,6 +64,7 @@ private:
 	
 	std::unordered_map<std::string, std::weak_ptr<Uniform>> mpMutableUniforms;
 	std::shared_ptr<Memory> mpMemoryUniformBuffers;
+	std::unordered_map<std::string, std::vector<graphics::Buffer*>> mMutableUniformBuffersByDescriptorId;
 
 	std::vector<IPipelineRenderer*> mpRenderers;
 	std::shared_ptr<graphics::RenderPass> mpRenderPass;

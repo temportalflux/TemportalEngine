@@ -177,7 +177,6 @@ DescriptorGroup& DescriptorGroup::writeAttachments(std::shared_ptr<GraphicsDevic
 
 void DescriptorGroup::invalidate()
 {
-	this->mArchetypes.clear();
 	this->mInternalLayout.reset();
 }
 
