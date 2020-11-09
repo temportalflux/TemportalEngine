@@ -1,4 +1,4 @@
-#include "render/worldAxes/WorldAxesRenderer.hpp"
+#include "render/line/LineRenderer.hpp"
 
 #include "asset/PipelineAsset.hpp"
 #include "asset/Shader.hpp"
@@ -8,19 +8,19 @@
 
 using namespace graphics;
 
-WorldAxesRenderer::WorldAxesRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
+LineRenderer::LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
 {
 	this->mpDescriptorPool = pDescriptorPool;
 	this->mpMemoryGraphicsBuffers = std::make_shared<graphics::Memory>();
 	this->mpMemoryGraphicsBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
-WorldAxesRenderer::~WorldAxesRenderer()
+LineRenderer::~LineRenderer()
 {
 	destroyBuffers();
 }
 
-WorldAxesRenderer& WorldAxesRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
+LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 {
 	if (!this->mpPipeline)
 	{
@@ -63,20 +63,20 @@ WorldAxesRenderer& WorldAxesRenderer::setPipeline(std::shared_ptr<asset::Pipelin
 	return *this;
 }
 
-void WorldAxesRenderer::addLineSegment(math::Vector3Padded pos1, math::Vector3Padded pos2, math::Vector4 color)
+void LineRenderer::addLineSegment(math::Vector3Padded pos1, math::Vector3Padded pos2, math::Vector4 color)
 {
 	this->mIndicies.push_back(this->pushVertex({ pos1, color }));
 	this->mIndicies.push_back(this->pushVertex({ pos2, color }));
 }
 
-ui16 WorldAxesRenderer::pushVertex(LineVertex vertex)
+ui16 LineRenderer::pushVertex(LineVertex vertex)
 {
 	auto i = (ui16)this->mVerticies.size();
 	this->mVerticies.push_back(vertex);
 	return i;
 }
 
-void WorldAxesRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
+void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 {
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
@@ -102,7 +102,7 @@ void WorldAxesRenderer::createGraphicsBuffers(graphics::CommandPool* transientPo
 
 // ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~
 
-void WorldAxesRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+void LineRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
 	this->mpMemoryGraphicsBuffers->setDevice(device);
@@ -110,17 +110,17 @@ void WorldAxesRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device
 	this->mIndexBuffer.setDevice(device);
 }
 
-void WorldAxesRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
+void LineRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 {
 	this->mpPipeline->setRenderPass(renderPass);
 }
 
-void WorldAxesRenderer::setFrameCount(uSize frameCount)
+void LineRenderer::setFrameCount(uSize frameCount)
 {
 	this->mDescriptorGroups[0].setAmount((ui32)frameCount); // camera uniform needs per-frame
 }
 
-void WorldAxesRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
+void LineRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
 	for (auto& descriptorGroup : this->mDescriptorGroups)
 	{
@@ -128,14 +128,14 @@ void WorldAxesRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevi
 	}
 }
 
-void WorldAxesRenderer::attachDescriptors(
+void LineRenderer::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
 	this->mDescriptorGroups[0].attachToBinding("localCamera", mutableUniforms["localCamera"]);
 }
 
-void WorldAxesRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
+void LineRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
 	for (auto& descriptorGroup : this->mDescriptorGroups)
 	{
@@ -143,7 +143,7 @@ void WorldAxesRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevic
 	}
 }
 
-void WorldAxesRenderer::createPipeline(math::Vector2UInt const& resolution)
+void LineRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
 	this->mpPipeline
 		->setDescriptors(&this->mDescriptorGroups)
@@ -151,7 +151,7 @@ void WorldAxesRenderer::createPipeline(math::Vector2UInt const& resolution)
 		.create();
 }
 
-void WorldAxesRenderer::record(graphics::Command *command, uIndex idxFrame)
+void LineRenderer::record(graphics::Command *command, uIndex idxFrame)
 {
 	OPTICK_EVENT();
 
@@ -168,7 +168,7 @@ void WorldAxesRenderer::record(graphics::Command *command, uIndex idxFrame)
 
 }
 
-void WorldAxesRenderer::destroyRenderChain()
+void LineRenderer::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
 	for (auto& descriptorGroup : this->mDescriptorGroups)
@@ -179,7 +179,7 @@ void WorldAxesRenderer::destroyRenderChain()
 
 // ~~~~~~~~~~~~ END: IPipelineRenderer ~~~~~~~~~~
 
-void WorldAxesRenderer::destroyBuffers()
+void LineRenderer::destroyBuffers()
 {
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();

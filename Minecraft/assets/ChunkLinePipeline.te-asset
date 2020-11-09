@@ -1,0 +1,61 @@
+{
+	"type": "pipeline",
+	"shader-vert": "shader:assets/shaders/ChunkLineVertex.te-asset",
+	"shader-frag": "shader:assets/shaders/ChunkLineFragment.te-asset",
+	"viewport": {
+		"offset": [
+			0.0,
+			0.0
+		],
+		"size": [
+			1.0,
+			1.0
+		],
+		"depthRange": [
+			0.0,
+			1.0
+		]
+	},
+	"scissor": {
+		"offset": [
+			0.0,
+			0.0
+		],
+		"size": [
+			1.0,
+			1.0
+		]
+	},
+	"frontFace": 0,
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": true,
+			"value": {
+				"color": {
+					"operation": "Add",
+					"src": "SrcAlpha",
+					"dst": "OneMinusSrcAlpha"
+				},
+				"alpha": {
+					"operation": "Add",
+					"src": "One",
+					"dst": "Zero"
+				}
+			}
+		}
+	},
+	"topology": 1,
+	"lineWidth": 2.0,
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "mvpCamera",
+					"type": 6,
+					"stage": 1
+				}
+			]
+		}
+	]
+}

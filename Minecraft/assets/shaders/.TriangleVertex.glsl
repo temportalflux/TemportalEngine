@@ -23,9 +23,8 @@ layout(location = 1) out vec2 fragTexCoord;
 void main()
 {
 	vec3 blockPosRelativeToCameraChunk = (posOfCurrentChunk - camera.posOfCurrentChunk) * camera.chunkSize; // component-wise multiple to convert chunk pos to world pos
-	vec3 blockPos = blockPosRelativeToCameraChunk + position;
-	//vec3 blockPos = position;
-	gl_Position = camera.proj * camera.view * modelMatrix * vec4(blockPos, 1.0);
+	vec3 vertPos = blockPosRelativeToCameraChunk + position;
+	gl_Position = camera.proj * camera.view * modelMatrix * vec4(vertPos, 1.0);
 	fragColor = vec4(1);
 	fragTexCoord = texCoord;
 }

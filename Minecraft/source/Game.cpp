@@ -24,7 +24,7 @@
 #include "world/BlockInstanceMap.hpp"
 #include "render/VoxelGridRenderer.hpp"
 #include "render/VoxelModelManager.hpp"
-#include "render/worldAxes/WorldAxesRenderer.hpp"
+#include "render/line/LineRenderer.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -200,7 +200,7 @@ struct ChunkViewProj
 		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
 		posOfCurrentChunk = math::Vector3({ 0, 0, 0 });
-		sizeOfChunkInBlocks = math::Vector3({ 16, 16, 16 });
+		sizeOfChunkInBlocks = math::Vector3({ CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH });
 	}
 };
 
@@ -290,6 +290,7 @@ void Game::createPipelineRenderers()
 
 	this->createVoxelGridRenderer();
 	this->createWorldAxesRenderer();
+	this->createChunkBoundaryRenderer();
 	
 	// Setup UI Shader Pipeline
 	//{
@@ -378,7 +379,7 @@ void Game::createVoxelGridRenderer()
 
 void Game::createWorldAxesRenderer()
 {
-	this->mpWorldAxesRenderer = std::make_shared<graphics::WorldAxesRenderer>(
+	this->mpWorldAxesRenderer = std::make_shared<graphics::LineRenderer>(
 		std::weak_ptr(this->mpGlobalDescriptorPool)
 	);
 	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
@@ -394,6 +395,26 @@ void Game::createWorldAxesRenderer()
 	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
+void Game::createChunkBoundaryRenderer()
+{
+	this->mpChunkBoundaryRenderer = std::make_shared<graphics::LineRenderer>(
+		std::weak_ptr(this->mpGlobalDescriptorPool)
+	);
+	this->mpChunkBoundaryRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/ChunkLinePipeline.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+	this->mpRenderer->addRenderer(this->mpChunkBoundaryRenderer.get());
+
+	f32 const l = CHUNK_SIDE_LENGTH;
+	f32 const h = CHUNK_SIDE_LENGTH * 16;
+	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, 0 }, { 0, 0, h }, { 0, 0, 1, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, 0 }, { l, 0, h }, { 0, 0, 1, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ l, l, 0 }, { l, l, h }, { 0, 0, 1, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ 0, l, 0 }, { 0, l, h }, { 0, 0, 1, 1 });
+
+	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
+}
+
 void Game::destroyRenderers()
 {
 	//this->mpCameraForwardStr.reset();
@@ -401,6 +422,7 @@ void Game::destroyRenderers()
 	this->mpVoxelModelManager.reset();
 	this->mpVoxelGridRenderer->destroyRenderDevices();
 	this->mpWorldAxesRenderer->destroyBuffers();
+	this->mpChunkBoundaryRenderer->destroyBuffers();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpGlobalDescriptorPool->invalidate();
 
@@ -409,6 +431,7 @@ void Game::destroyRenderers()
 	this->mpGlobalDescriptorPool.reset();
 	this->mpVoxelGridRenderer.reset();
 	this->mpWorldAxesRenderer.reset();
+	this->mpChunkBoundaryRenderer.reset();
 	this->mpRenderer.reset();
 }
 

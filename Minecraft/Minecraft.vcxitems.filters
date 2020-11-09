@@ -37,7 +37,7 @@
     <Filter Include="registry">
       <UniqueIdentifier>{020894d5-d284-4248-b246-bbe611e0f350}</UniqueIdentifier>
     </Filter>
-    <Filter Include="render\worldAxes">
+    <Filter Include="render\line">
       <UniqueIdentifier>{71811d0d-7c44-4a7c-8804-ae225d9d532f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -84,11 +84,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.hpp">
-      <Filter>render\worldAxes</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
       <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\LineRenderer.hpp">
+      <Filter>render\line</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,11 +122,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)include\render\worldAxes\WorldAxesRenderer.cpp">
-      <Filter>render\worldAxes</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
       <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\LineRenderer.cpp">
+      <Filter>render\line</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

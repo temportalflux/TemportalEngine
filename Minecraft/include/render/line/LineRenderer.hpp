@@ -13,14 +13,14 @@ FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 
 NS_GRAPHICS
 
-class WorldAxesRenderer : public graphics::IPipelineRenderer
+class LineRenderer : public graphics::IPipelineRenderer
 {
 
 public:
-	WorldAxesRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
-	~WorldAxesRenderer();
+	LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
+	~LineRenderer();
 
-	WorldAxesRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
+	LineRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
 	void addLineSegment(math::Vector3Padded pos1, math::Vector3Padded pos2, math::Vector4 color);
 	void createGraphicsBuffers(graphics::CommandPool* transientPool);
 
