@@ -386,11 +386,11 @@ void Game::createWorldAxesRenderer()
 		"assets/PerspectiveLinePipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
-	// Y: 0->1 green forward
+	// Y: 0->1 green up
 	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 });
 	// X: 0->1 red right
 	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { .5f, 0, 0 }, { 1, 0, 0, 1 });
-	// Z: 0->1 blue up
+	// Z: 0->1 blue forward
 	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, 0, .5f }, { 0, 0, 1, 1 });
 	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
@@ -407,10 +407,10 @@ void Game::createChunkBoundaryRenderer()
 
 	f32 const l = CHUNK_SIDE_LENGTH;
 	f32 const h = CHUNK_SIDE_LENGTH * 16;
-	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, 0 }, { 0, 0, h }, { 0, 0, 1, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, 0 }, { l, 0, h }, { 0, 0, 1, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ l, l, 0 }, { l, l, h }, { 0, 0, 1, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ 0, l, 0 }, { 0, l, h }, { 0, 0, 1, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, 0 }, { 0, h, 0 }, { 0, 1, 0, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, 0 }, { l, h, 0 }, { 0, 1, 0, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, l }, { l, h, l }, { 0, 1, 0, 1 });
+	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, l }, { 0, h, l }, { 0, 1, 0, 1 });
 
 	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
@@ -440,7 +440,7 @@ void Game::createScene()
 	srand((ui32)time(0));
 	
 	auto coordinates = std::vector<world::Coordinate>();
-	FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, x)
+	FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, x)
 	{
 		coordinates.push_back(world::Coordinate({ 0, 0, 0 }, { x, y, z }));
 	}
@@ -463,10 +463,10 @@ void Game::createScene()
 	//*/
 
 	this->mpCameraTransform = std::make_shared<ecs::ComponentTransform>();
-	this->mpCameraTransform->setPosition(math::Vector3unitZ * 3);
-	this->mpCameraTransform->setOrientation(math::Vector3unitZ, 0); // force the camera to face forward (+Y)
-	//auto fwd = this->mpCameraTransform->forward();
-	//this->mProjectLog.log(LOG_INFO, "<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z());
+	this->mpCameraTransform->setPosition(math::Vector3unitY * 3);
+	this->mpCameraTransform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+	auto fwd = this->mpCameraTransform->forward();
+	this->mProjectLog.log(LOG_INFO, "<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z());
 
 	// TODO: Allocate from entity pool
 	this->mpController = pEngine->getMainMemory()->make_shared<Controller>();
@@ -558,7 +558,10 @@ void Game::updateCameraUniform()
 	OPTICK_EVENT();
 
 	auto perspective = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
-	perspective[1][1] *= -1; // sign flip b/c glm was made for OpenGL where the Y coord is inverted compared to Vulkan
+	// GLM by default is not Y-up Right-Handed, so we have to flip the x and y coord bits
+	// that said, this tweet says differently... https://twitter.com/FreyaHolmer/status/644881436982575104
+	perspective[1][1] *= -1;
+	perspective[0][0] *= -1;
 
 	if (this->mpRendererMVP)
 	{
@@ -620,11 +623,11 @@ void Game::changeVoxelDemoSmol()
 
 	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
 	{
-		for (i32 y = CHUNK_HALF_LENGTH - 2; y <= CHUNK_HALF_LENGTH + 2; ++y)
+		for (i32 z = CHUNK_HALF_LENGTH - 2; z <= CHUNK_HALF_LENGTH + 2; ++z)
 		{
 			auto const& id = allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())];
 			this->mpVoxelInstanceBuffer->changeVoxelId(
-				world::Coordinate({ 0, 0, 0 }, { x, y, 0 }), id
+				world::Coordinate({ 0, 0, 0 }, { x, 0, z }), id
 			);
 			if (id) idCount.at(*id)++;
 		}

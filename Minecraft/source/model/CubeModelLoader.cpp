@@ -7,10 +7,10 @@ Model const& CubeModelLoader::get() const
 
 CubeModelLoader& CubeModelLoader::pushRight(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Right +X	<U, V> = <-Y, Z>
+	// Right +X	<U, V> = <-Z, Y>
 	this->pushFace(
-		/*U = Y 0->1*/{ 0, 1, 0 }, { 0, 0, 0 },
-		/*V = Z 1->0*/{ 0, 0, 1 }, { 0, 0, 0 },
+		/*U = Z 1->0*/{ 0, 0, 1 }, { 0, 0, 0 },
+		/*V = Y 1->0*/{ 0, 1, 0 }, { 0, 0, 0 },
 		/*Offset X 1*/{ 1, 0, 0 },
 		texCoordOffset, texCoordSize
 	);
@@ -19,10 +19,10 @@ CubeModelLoader& CubeModelLoader::pushRight(math::Vector2 const texCoordOffset, 
 
 CubeModelLoader& CubeModelLoader::pushLeft(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Left -X	<U, V> = <+Y, Z>
+	// Left -X	<U, V> = <+Z, Y>
 	this->pushFace(
-		/*U = Y 0->1*/{ 0, 0, 0 }, { 0, 1, 0 },
-		/*V = Z 1->0*/{ 0, 0, 1 }, { 0, 0, 0 },
+		/*U = Z 0->1*/{ 0, 0, 0 }, { 0, 0, 1 },
+		/*V = Y 1->0*/{ 0, 1, 0 }, { 0, 0, 0 },
 		/*Offset X 0*/{ 0, 0, 0 },
 		texCoordOffset, texCoordSize
 	);
@@ -31,11 +31,11 @@ CubeModelLoader& CubeModelLoader::pushLeft(math::Vector2 const texCoordOffset, m
 
 CubeModelLoader& CubeModelLoader::pushFront(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Forward +Y	<U, V> = <-X, Z>
+	// Forward +Z	<U, V> = <-X, Y>
 	this->pushFace(
 		/*U = X 0->1*/{ 0, 0, 0 }, { 1, 0, 0 },
-		/*V = Z 1->0*/{ 0, 0, 1 }, { 0, 0, 0 },
-		/*Offset Y 0*/{ 0, 1, 0 },
+		/*V = Y 1->0*/{ 0, 1, 0 }, { 0, 0, 0 },
+		/*Offset Z 0*/{ 0, 0, 1 },
 		texCoordOffset, texCoordSize
 	);
 	return *this;
@@ -43,11 +43,11 @@ CubeModelLoader& CubeModelLoader::pushFront(math::Vector2 const texCoordOffset, 
 
 CubeModelLoader& CubeModelLoader::pushBack(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Backward -Y	<U, V> = <+X, Z>
+	// Backward -Z	<U, V> = <+X, Y>
 	this->pushFace(
 		/*U = X 1->0*/{ 1, 0, 0 }, { 0, 0, 0 },
-		/*V = Z 0->1*/{ 0, 0, 1 }, { 0, 0, 0 },
-		/*Offset Y 0*/{ 0, 0, 0 },
+		/*V = Y 1->0*/{ 0, 1, 0 }, { 0, 0, 0 },
+		/*Offset Z 0*/{ 0, 0, 0 },
 		texCoordOffset, texCoordSize
 	);
 	return *this;
@@ -55,11 +55,11 @@ CubeModelLoader& CubeModelLoader::pushBack(math::Vector2 const texCoordOffset, m
 
 CubeModelLoader& CubeModelLoader::pushUp(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Up +Z	<U, V> = <-X, Y>
+	// Up +Y	<U, V> = <-X, Z>
 	this->pushFace(
 		/*U = X 0->1*/{ 0, 0, 0 }, { 1, 0, 0 },
-		/*V = Y 0->1*/{ 0, 0, 0 }, { 0, 1, 0 },
-		/*Offset Z 1*/{ 0, 0, 1 },
+		/*V = Z 0->1*/{ 0, 0, 0 }, { 0, 0, 1 },
+		/*Offset Y 1*/{ 0, 1, 0 },
 		texCoordOffset, texCoordSize
 	);
 	return *this;
@@ -67,11 +67,11 @@ CubeModelLoader& CubeModelLoader::pushUp(math::Vector2 const texCoordOffset, mat
 
 CubeModelLoader& CubeModelLoader::pushDown(math::Vector2 const texCoordOffset, math::Vector2 const texCoordSize)
 {
-	// Down -Z	<U, V> = <+X, Y>
+	// Down -Y	<U, V> = <+X, Z>
 	this->pushFace(
 		/*U = X 1->0*/{ 1, 0, 0 }, { 0, 0, 0 },
-		/*V = Y 0->1*/{ 0, 0, 0 }, { 0, 1, 0 },
-		/*Offset Z 0*/{ 0, 0, 0 },
+		/*V = Z 0->1*/{ 0, 0, 0 }, { 0, 0, 1 },
+		/*Offset Y 0*/{ 0, 0, 0 },
 		texCoordOffset, texCoordSize
 	);
 	return *this;

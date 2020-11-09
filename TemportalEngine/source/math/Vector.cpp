@@ -9,19 +9,6 @@ Quaternion Quaternion::FromAxisAngle(Vector<f32, 3> axis, f32 radians)
 		+ Quaternion::Identity * std::cos(halfAngle);
 }
 
-Quaternion Quaternion::FromEuler(Vector<f32, 3> euler)
-{
-	Quaternion quat;
-	euler * 0.5f;
-	auto sin = Vector3({ std::sin(euler.x()), std::sin(euler.y()), std::sin(euler.z()) });
-	auto cos = Vector3({ std::cos(euler.x()), std::cos(euler.y()), std::cos(euler.z()) });
-	quat.w(cos.x() * cos.y() * cos.z() - sin.x() * sin.y() * sin.z());
-	quat.x(sin.x() * sin.y() * cos.z() + cos.x() * cos.y() * sin.z());
-	quat.y(sin.x() * cos.y() * cos.z() + cos.x() * sin.y() * sin.z());
-	quat.z(cos.x() * sin.y() * cos.z() - sin.x() * cos.y() * sin.z());
-	return quat;
-}
-
 // See https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
 Vector<f32, 3> Quaternion::euler() const
 {
@@ -29,17 +16,17 @@ Vector<f32, 3> Quaternion::euler() const
 
 	euler.x(std::atan2(
 		2 * (this->w() * this->x() + this->y() * this->z()),
-		1 - 2 * (this->x() * this->x() + this->y() * this->y())
+		1 - 2 * (this->x() * this->x() + this->z() * this->z())
 	));
 
-	auto sinp = 2 * (this->w() * this->y() - this->z() * this->x());
-	euler.y(
+	auto sinp = 2 * (this->w() * this->z() - this->y() * this->x());
+	euler.z(
 		// use 90 degrees if out of range
 		std::abs(sinp) >= 1 ? std::copysign((f32)math::pi2(), sinp) : std::asin(sinp)
 	);
 
-	euler.z(std::atan2(
-		2 * (this->w() * this->z() + this->x() * this->y()),
+	euler.y(std::atan2(
+		2 * (this->w() * this->y() + this->x() * this->z()),
 		1 - 2 * (this->y() * this->y() + this->z() * this->z())
 	));
 

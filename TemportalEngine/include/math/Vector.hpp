@@ -673,7 +673,6 @@ public:
 	constexpr Quaternion(Vector<f32, TDimensionOther> const &other) : Vector(other) {}
 
 	static Quaternion FromAxisAngle(Vector<f32, 3> axis, f32 radians);
-	static Quaternion FromEuler(Vector<f32, 3> euler);
 
 	Vector<f32, 3> euler() const;
 	Quaternion conjugate() const;

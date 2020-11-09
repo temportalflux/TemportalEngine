@@ -2,19 +2,20 @@
 
 #include "Engine.hpp"
 #include "input/Queue.hpp"
+#include "logging/Logger.hpp"
 #include "ecs/component/Transform.hpp"
 #include "glm/gtc/quaternion.hpp"
 
 Controller::Controller()
 {
-	f32 moveSpeed = 2.0f;
+	f32 moveSpeed = 4.0f;
 	// TODO: These are using y up directions (it should really be Z up)
-	this->mForward = { math::Vector3unitY, false, moveSpeed };
-	this->mBackward = { -math::Vector3unitY, false, moveSpeed };
+	this->mForward = { math::Vector3unitZ, false, moveSpeed };
+	this->mBackward = { -math::Vector3unitZ, false, moveSpeed };
 	this->mStrafeRight = { math::Vector3unitX, false, moveSpeed };
 	this->mStrafeLeft = { -math::Vector3unitX, false, moveSpeed };
-	this->mUp = { math::Vector3unitZ, true, moveSpeed };
-	this->mDown = { -math::Vector3unitZ, true, moveSpeed };
+	this->mUp = { math::Vector3unitY, true, moveSpeed };
+	this->mDown = { -math::Vector3unitY, true, moveSpeed };
 	this->mInputMappings = {
 		{ input::EKey::W, &this->mForward },
 		{ input::EKey::S, &this->mBackward },
@@ -23,8 +24,8 @@ Controller::Controller()
 		{ input::EKey::E, &this->mUp },
 		{ input::EKey::Q, &this->mDown },
 	};
-	this->mLookHorizontal = { math::Vector3unitZ, glm::radians(-90.0f) };
-	this->mLookVertical = { math::Vector3unitX, glm::radians(-90.0f) };
+	this->mLookHorizontal = { math::Vector3unitY, glm::radians(90.0f) };
+	this->mLookVertical = { math::Vector3unitX, glm::radians(90.0f) };
 }
 
 void Controller::assignCameraTransform(ecs::ComponentTransform *transform)
@@ -61,9 +62,12 @@ void Controller::onMouseMove(input::Event const & evt)
 
 void Controller::tick(f32 deltaTime)
 {
+	OPTICK_EVENT();
+	static logging::Logger ControllerLog = DeclareLog("Controller");
+	
 	auto orientation = this->mpCameraTransform->orientation;
 	auto euler = orientation.euler();
-	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitZ, euler.z());
+	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitY, euler.y());
 	
 	for (auto&[key, mapping] : this->mInputMappings)
 	{

@@ -18,11 +18,11 @@ struct ComponentTransform : public Component
 
 	math::Vector3 forward() const
 	{
-		return this->orientation.rotate(math::Vector3unitY);
+		return this->orientation.rotate(math::Vector3unitZ);
 	}
 	math::Vector3 backward() const
 	{
-		return this->orientation.rotate(-math::Vector3unitY);
+		return this->orientation.rotate(-math::Vector3unitZ);
 	}
 	math::Vector3 right() const
 	{
@@ -34,8 +34,7 @@ struct ComponentTransform : public Component
 	}
 	math::Vector3 up() const
 	{
-		return this->orientation.rotate(math::Vector3unitZ);
-		//return math::Vector3unitZ;
+		return this->orientation.rotate(math::Vector3unitY);
 	}
 	math::Vector3 down() const { return -this->up(); }
 
