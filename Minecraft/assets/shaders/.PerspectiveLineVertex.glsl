@@ -7,6 +7,15 @@ layout(set = 0, binding = 0) uniform CameraUniform {
 	mat4 proj;
 } localCamera;
 
+// each row in glsl is a column in the matrix
+// this is a view matrix for an eye pos at <0, -10, 0> w/ no rotation and up=<0, 0, 1>
+mat4 camera = {	
+	{ 1, 0, 0, 0 },
+	{ 0, 1,-1, 0 },
+	{ 0, 0, 0, 0 },
+	{ 0, 0,-10,1 }
+};
+
 layout(location = 0) in vec3 position;
 layout(location = 1) in vec4 color;
 
@@ -14,6 +23,9 @@ layout(location = 0) out vec4 fragColor;
 
 void main()
 {
-	gl_Position = localCamera.proj * localCamera.view * vec4(position, 1.0);
+	mat4 orientation = localCamera.view;
+	orientation[3] = vec4(0, 0, 0, 1);
+	
+	gl_Position = localCamera.proj * camera * orientation * vec4(position, 1.0);
 	fragColor = color;
 }

@@ -386,11 +386,11 @@ void Game::createWorldAxesRenderer()
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
 	// Y: 0->1 green forward
-	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 0.5, 1, 0.5 }, { 0, 1, 0, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 });
 	// X: 0->1 red right
-	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 1, 0.5, 0.5 }, { 1, 0, 0, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { .5f, 0, 0 }, { 1, 0, 0, 1 });
 	// Z: 0->1 blue up
-	this->mpWorldAxesRenderer->addLineSegment({ 0.5, 0.5, 0.5 }, { 0.5, 0.5, 1 }, { 0, 0, 1, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, 0, .5f }, { 0, 0, 1, 1 });
 	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
@@ -414,8 +414,7 @@ void Game::destroyRenderers()
 
 void Game::createScene()
 {
-	//srand((ui32)time(0));
-	srand(42);
+	srand((ui32)time(0));
 	
 	auto coordinates = std::vector<world::Coordinate>();
 	FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, x)
