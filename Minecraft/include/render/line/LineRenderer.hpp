@@ -13,6 +13,13 @@ FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 
 NS_GRAPHICS
 
+struct LineSegment
+{
+	math::Vector3Padded pos1;
+	math::Vector3Padded pos2;
+	math::Vector4 color;
+};
+
 class LineRenderer : public graphics::IPipelineRenderer
 {
 
@@ -21,7 +28,7 @@ public:
 	~LineRenderer();
 
 	LineRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
-	void addLineSegment(math::Vector3Padded pos1, math::Vector3Padded pos2, math::Vector4 color);
+	ui32 addLineSegment(LineSegment const& segment);
 	void createGraphicsBuffers(graphics::CommandPool* transientPool);
 
 	// ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~
@@ -40,6 +47,10 @@ public:
 
 	void destroyBuffers();
 
+protected:
+
+	ui32 indexCount() const;
+
 private:
 
 	struct LineVertex
@@ -57,6 +68,8 @@ private:
 	std::vector<LineVertex> mVerticies;
 	std::vector<ui16> mIndicies;
 	ui16 pushVertex(LineVertex vertex);
+
+	virtual void draw(graphics::Command *command);
 
 };
 

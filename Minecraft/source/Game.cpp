@@ -25,6 +25,7 @@
 #include "render/VoxelGridRenderer.hpp"
 #include "render/VoxelModelManager.hpp"
 #include "render/line/LineRenderer.hpp"
+#include "render/line/ChunkBoundaryRenderer.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -387,17 +388,17 @@ void Game::createWorldAxesRenderer()
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
 	// Y: 0->1 green up
-	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 } });
 	// X: 0->1 red right
-	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { .5f, 0, 0 }, { 1, 0, 0, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { .5f, 0, 0 }, { 1, 0, 0, 1 } });
 	// Z: 0->1 blue forward
-	this->mpWorldAxesRenderer->addLineSegment({ 0, 0, 0 }, { 0, 0, .5f }, { 0, 0, 1, 1 });
+	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { 0, 0, .5f }, { 0, 0, 1, 1 } });
 	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
 void Game::createChunkBoundaryRenderer()
 {
-	this->mpChunkBoundaryRenderer = std::make_shared<graphics::LineRenderer>(
+	this->mpChunkBoundaryRenderer = std::make_shared<graphics::ChunkBoundaryRenderer>(
 		std::weak_ptr(this->mpGlobalDescriptorPool)
 	);
 	this->mpChunkBoundaryRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
@@ -406,11 +407,76 @@ void Game::createChunkBoundaryRenderer()
 	this->mpRenderer->addRenderer(this->mpChunkBoundaryRenderer.get());
 
 	f32 const l = CHUNK_SIDE_LENGTH;
-	f32 const h = CHUNK_SIDE_LENGTH * 16;
-	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, 0 }, { 0, h, 0 }, { 0, 1, 0, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, 0 }, { l, h, 0 }, { 0, 1, 0, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ l, 0, l }, { l, h, l }, { 0, 1, 0, 1 });
-	this->mpChunkBoundaryRenderer->addLineSegment({ 0, 0, l }, { 0, h, l }, { 0, 1, 0, 1 });
+	auto const axisSides = std::vector<f32>({ 0, l });
+
+	// Columns
+	{
+		f32 const h = CHUNK_SIDE_LENGTH * 16;
+		math::Vector4 color = { 0, 1, 0, 1 };
+		auto segments = std::vector<graphics::LineSegment>();
+		segments.push_back({ { 0, 0, 0 }, { 0, h, 0 }, color });
+		segments.push_back({ { l, 0, 0 }, { l, h, 0 }, color });
+		segments.push_back({ { l, 0, l }, { l, h, l }, color });
+		segments.push_back({ { 0, 0, l }, { 0, h, l }, color });
+		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eColumn, segments, true);
+	}
+	// Cube
+	{
+		math::Vector4 color = { 1, 0, 0, 1 };
+		auto segments = std::vector<graphics::LineSegment>();
+		for (f32 h : axisSides)
+		{
+			segments.push_back({ { 0, h, 0 }, { l, h, 0 }, color });
+			segments.push_back({ { l, h, 0 }, { l, h, l }, color });
+			segments.push_back({ { 0, h, 0 }, { 0, h, l }, color });
+			segments.push_back({ { 0, h, l }, { l, h, l }, color });
+		}
+		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eCube, segments, true);
+	}
+	// Side Grid
+	{
+		math::Vector4 color = { 0, 0, 1, 1 };
+		auto segments = std::vector<graphics::LineSegment>();
+
+		// Y-Faces (Up/Down)
+		for (auto const y : axisSides)
+		{
+			FOR_CHUNK_SIZE_PLUS(f32, x, 1, 0)
+			{
+				segments.push_back({ { x, y, 0 }, { x, y, l }, color });
+			}
+			FOR_CHUNK_SIZE_PLUS(f32, z, 1, 0)
+			{
+				segments.push_back({ { 0, y, z }, { l, y, z }, color });
+			}
+		}
+		// Z-Faces (Back/Front)
+		for (auto const z : axisSides)
+		{
+			FOR_CHUNK_SIZE_PLUS(f32, x, 1, 0)
+			{
+				segments.push_back({ { x, 0, z }, { x, l, z }, color });
+			}
+			FOR_CHUNK_SIZE_PLUS(f32, y, 1, 0)
+			{
+				segments.push_back({ { 0, y, z }, { l, y, z }, color });
+			}
+		}
+		// X-Faces (Left/Right)
+		for (auto const x : axisSides)
+		{
+			FOR_CHUNK_SIZE_PLUS(f32, y, 1, 0)
+			{
+				segments.push_back({ { x, y, 0 }, { x, y, l }, color });
+			}
+			FOR_CHUNK_SIZE_PLUS(f32, z, 1, 0)
+			{
+				segments.push_back({ { x, 0, z }, { x, l, z }, color });
+			}
+		}
+
+		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eSideGrid, segments, true);
+	}
 
 	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }

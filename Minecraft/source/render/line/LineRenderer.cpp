@@ -63,10 +63,11 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 	return *this;
 }
 
-void LineRenderer::addLineSegment(math::Vector3Padded pos1, math::Vector3Padded pos2, math::Vector4 color)
+ui32 LineRenderer::addLineSegment(LineSegment const& segment)
 {
-	this->mIndicies.push_back(this->pushVertex({ pos1, color }));
-	this->mIndicies.push_back(this->pushVertex({ pos2, color }));
+	this->mIndicies.push_back(this->pushVertex({ segment.pos1, segment.color }));
+	this->mIndicies.push_back(this->pushVertex({ segment.pos2, segment.color }));
+	return 2;
 }
 
 ui16 LineRenderer::pushVertex(LineVertex vertex)
@@ -74,6 +75,11 @@ ui16 LineRenderer::pushVertex(LineVertex vertex)
 	auto i = (ui16)this->mVerticies.size();
 	this->mVerticies.push_back(vertex);
 	return i;
+}
+
+ui32 LineRenderer::indexCount() const
+{
+	return (ui32)this->mIndicies.size();
 }
 
 void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
@@ -86,7 +92,7 @@ void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 
 	this->mIndexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setSize(this->mIndicies.size() * sizeof(ui16))
+		.setSize(this->indexCount() * sizeof(ui16))
 		.create();
 	this->mIndexBuffer.configureSlot(this->mpMemoryGraphicsBuffers);
 
@@ -154,18 +160,11 @@ void LineRenderer::createPipeline(math::Vector2UInt const& resolution)
 void LineRenderer::record(graphics::Command *command, uIndex idxFrame)
 {
 	OPTICK_EVENT();
-
-	OPTICK_GPU_EVENT("DrawWorldAxes");
 	command->bindDescriptorSets(this->mpPipeline, { this->mDescriptorGroups[0].getDescriptorSet(idxFrame) });
 	command->bindPipeline(this->mpPipeline);
 	command->bindVertexBuffers(0, { &this->mVertexBuffer });
 	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
-	command->draw(
-		0, (ui32)this->mIndicies.size(),
-		0, // index shift
-		0, 1 // only a single instance, no instance buffer
-	);
-
+	this->draw(command);
 }
 
 void LineRenderer::destroyRenderChain()
@@ -184,4 +183,14 @@ void LineRenderer::destroyBuffers()
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
 	this->mpMemoryGraphicsBuffers.reset();
+}
+
+void LineRenderer::draw(graphics::Command *command)
+{
+	OPTICK_GPU_EVENT("DrawLines");
+	command->draw(
+		0, this->indexCount(),
+		0, // index shift
+		0, 1 // only a single instance, no instance buffer
+	);
 }

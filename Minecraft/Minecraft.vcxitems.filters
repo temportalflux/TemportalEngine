@@ -90,6 +90,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\LineRenderer.hpp">
       <Filter>render\line</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\ChunkBoundaryRenderer.hpp">
+      <Filter>render\line</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -126,6 +129,9 @@
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\LineRenderer.cpp">
+      <Filter>render\line</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\ChunkBoundaryRenderer.cpp">
       <Filter>render\line</Filter>
     </ClCompile>
   </ItemGroup>
