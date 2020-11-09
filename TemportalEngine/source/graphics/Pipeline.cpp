@@ -8,6 +8,11 @@
 
 using namespace graphics;
 
+Pipeline::Pipeline()
+{
+	this->mLineWidth = 1.0f;
+}
+
 Pipeline& Pipeline::setBindings(std::vector<AttributeBinding> bindings)
 {
 	this->mAttributeBindings = bindings;
@@ -54,6 +59,12 @@ Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
 Pipeline& Pipeline::setTopology(graphics::PrimitiveTopology::Enum const topology)
 {
 	this->mTopology = topology;
+	return *this;
+}
+
+Pipeline& Pipeline::setLineWidth(f32 const& width)
+{
+	this->mLineWidth = width;
 	return *this;
 }
 
@@ -162,7 +173,7 @@ void Pipeline::create()
 		.setDepthClampEnable(false)
 		.setRasterizerDiscardEnable(false)
 		.setPolygonMode(vk::PolygonMode::eFill)
-		.setLineWidth(1.0f)
+		.setLineWidth(this->mLineWidth)
 		.setCullMode(vk::CullModeFlagBits::eBack)
 		.setFrontFace((vk::FrontFace)this->mFrontFace)
 		.setDepthBiasEnable(false)

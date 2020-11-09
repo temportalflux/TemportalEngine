@@ -35,6 +35,7 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	this->mBlendWriteMask = asset->getBlendMode().writeMask.toSet(graphics::ColorComponent::ALL);
 	this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
 	this->mTopology = asset->getTopology();
+	this->mLineWidth = asset->getLineWidth();
 	this->mDescriptorGroups = asset->getDescriptorGroups();
 
 	this->mAllShaderPaths = asset::AssetManager::get()->getAssetList(asset::Shader::StaticType());
@@ -118,6 +119,11 @@ void EditorPipeline::renderContent()
 		graphics::PrimitiveTopology::to_string,
 		[](graphics::PrimitiveTopology::Enum type) { ImGui::PushID((ui32)type); }
 	))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (gui::FieldNumber<f32, 1>::InlineSingle("Line Width", this->mLineWidth))
 	{
 		this->markAssetDirty(1);
 	}
@@ -252,6 +258,7 @@ void EditorPipeline::saveAsset()
 		.setFrontFace(this->mFrontFace)
 		.setBlendMode(blendMode)
 		.setTopology(this->mTopology)
+		.setLineWidth(this->mLineWidth)
 		.setDescriptorGroups(this->mDescriptorGroups);
 	AssetEditor::saveAsset();
 }

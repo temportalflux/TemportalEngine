@@ -46,6 +46,7 @@
     }
   },
   "topology": 3,
+  "lineWidth": 1.0,
   "descriptorGroups": [
     {
       "descriptors": [

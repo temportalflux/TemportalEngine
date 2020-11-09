@@ -31,6 +31,7 @@ WorldAxesRenderer& WorldAxesRenderer::setPipeline(std::shared_ptr<asset::Pipelin
 	this->mpPipeline->setBlendMode(asset->getBlendMode());
 	this->mpPipeline->setFrontFace(asset->getFrontFace());
 	this->mpPipeline->setTopology(asset->getTopology());
+	this->mpPipeline->setLineWidth(asset->getLineWidth());
 
 	// Perform a synchronous load on each shader to create the shader modules
 	this->mpPipeline->addShader(asset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());

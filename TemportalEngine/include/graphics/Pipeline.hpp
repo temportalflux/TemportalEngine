@@ -20,7 +20,7 @@ class Pipeline : public DeviceObject
 	friend class Command;
 
 public:
-	Pipeline() = default;
+	Pipeline();
 
 	Pipeline& setBindings(std::vector<AttributeBinding> bindings);
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
@@ -28,6 +28,7 @@ public:
 	Pipeline& setFrontFace(graphics::FrontFace::Enum const face);
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
 	Pipeline& setTopology(graphics::PrimitiveTopology::Enum const topology);
+	Pipeline& setLineWidth(f32 const& width);
 
 	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
 	Pipeline& setDescriptors(std::vector<DescriptorGroup> *descriptors);
@@ -51,6 +52,7 @@ private:
 	graphics::FrontFace::Enum mFrontFace;
 	std::optional<BlendMode> mBlendMode;
 	graphics::PrimitiveTopology::Enum mTopology;
+	f32 mLineWidth;
 
 	std::weak_ptr<graphics::RenderPass> mpRenderPass;
 	math::Vector2 mResolutionFloat;

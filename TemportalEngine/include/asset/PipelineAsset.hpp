@@ -80,6 +80,8 @@ public:
 	Pipeline& setBlendMode(graphics::BlendMode const& value) { this->mBlendMode = value; return *this; }
 	graphics::PrimitiveTopology::Enum const& getTopology() const { return this->mTopology; }
 	Pipeline& setTopology(graphics::PrimitiveTopology::Enum const& value) { this->mTopology = value; return *this; }
+	f32 const& getLineWidth() const { return this->mLineWidth; }
+	Pipeline& setLineWidth(f32 const& value) { this->mLineWidth = value; return *this; }
 	std::vector<DescriptorGroup> const& getDescriptorGroups() const { return this->mDescriptorGroups; }
 	Pipeline& setDescriptorGroups(std::vector<DescriptorGroup> const& value) { this->mDescriptorGroups = value; return *this; }
 
@@ -93,6 +95,7 @@ private:
 	graphics::FrontFace::Enum mFrontFace;
 	graphics::BlendMode mBlendMode;
 	graphics::PrimitiveTopology::Enum mTopology;
+	f32 mLineWidth;
 	std::vector<DescriptorGroup> mDescriptorGroups;
 
 #pragma region Serialization
@@ -113,6 +116,7 @@ protected:
 		archive(cereal::make_nvp("frontFace", this->mFrontFace));
 		archive(cereal::make_nvp("blendMode", this->mBlendMode));
 		archive(cereal::make_nvp("topology", this->mTopology));
+		archive(cereal::make_nvp("lineWidth", this->mLineWidth));
 		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
 	}
 
@@ -127,6 +131,7 @@ protected:
 		archive(cereal::make_nvp("frontFace", this->mFrontFace));
 		archive(cereal::make_nvp("blendMode", this->mBlendMode));
 		archive(cereal::make_nvp("topology", this->mTopology));
+		archive(cereal::make_nvp("lineWidth", this->mLineWidth));
 		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
 	}
 #pragma endregion
