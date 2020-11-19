@@ -20,11 +20,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)imgui\imgui_demo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)imgui\imgui_draw.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)imgui\imgui_widgets.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui\misc\cpp\imgui_stdlib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\examples\imgui_impl_sdl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\examples\imgui_impl_vulkan.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\imgui.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui\imgui_internal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui\misc\cpp\imgui_stdlib.h" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,22 @@
+#include "property/Number.hpp"
+
+using namespace properties;
+
+#define DEFINE_PROPERTY_EDITOR_NUM(TYPE_NUM) bool properties::renderPropertyEditor(const char* id, PropertyNumber<TYPE_NUM> &prop) \
+{ \
+	return renderNumbers(id, &prop.initial, &prop.value, 1, prop); \
+}
+
+DEFINE_PROPERTY_EDITOR_NUM(i8)
+DEFINE_PROPERTY_EDITOR_NUM(ui8)
+DEFINE_PROPERTY_EDITOR_NUM(i16)
+DEFINE_PROPERTY_EDITOR_NUM(ui16)
+DEFINE_PROPERTY_EDITOR_NUM(i32)
+DEFINE_PROPERTY_EDITOR_NUM(ui32)
+DEFINE_PROPERTY_EDITOR_NUM(i64)
+DEFINE_PROPERTY_EDITOR_NUM(ui64)
+DEFINE_PROPERTY_EDITOR_NUM(f32)
+DEFINE_PROPERTY_EDITOR_NUM(f64)
+
+#undef DEFINE_PROPERTY_EDITOR_NUM
+

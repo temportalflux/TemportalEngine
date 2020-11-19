@@ -159,6 +159,11 @@ public:
 		return this->mValues;
 	}
 
+	TValue const* data() const
+	{
+		return this->mValues;
+	}
+
 	/**
 	* Set a value at a given dimension index. Can modify this value
 	*	and the change will be reflected in the vector.

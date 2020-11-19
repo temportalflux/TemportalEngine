@@ -131,7 +131,14 @@ protected:
 		archive(cereal::make_nvp("frontFace", this->mFrontFace));
 		archive(cereal::make_nvp("blendMode", this->mBlendMode));
 		archive(cereal::make_nvp("topology", this->mTopology));
-		archive(cereal::make_nvp("lineWidth", this->mLineWidth));
+		try
+		{
+			archive(cereal::make_nvp("lineWidth", this->mLineWidth));
+		}
+		catch (cereal::Exception e)
+		{
+			this->mLineWidth = 1.0f;
+		}
 		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
 	}
 #pragma endregion
