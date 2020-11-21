@@ -10,6 +10,7 @@
 #include "property/Graphics.hpp"
 #include "property/Utility.hpp"
 #include "property/Asset.hpp"
+#include "property/asset/PropertyDescriptorGroup.hpp"
 
 #include <imgui.h>
 

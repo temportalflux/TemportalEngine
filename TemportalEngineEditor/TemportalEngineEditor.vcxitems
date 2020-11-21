@@ -52,6 +52,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyDescriptorGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Base.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Collection.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Graphics.hpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyDescriptorGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Base.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Collection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Graphics.cpp" />

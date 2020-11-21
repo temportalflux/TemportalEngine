@@ -22,8 +22,8 @@ public:
 		friend class cereal::access;
 
 		std::string id;
-		graphics::DescriptorType::Enum type;
-		graphics::ShaderStage::Enum stage;
+		graphics::DescriptorType type;
+		graphics::ShaderStage stage;
 
 		bool operator==(Descriptor const& other) const { return id == other.id && type == other.type && stage == other.stage; }
 		bool operator!=(Descriptor const& other) const { return !(*this == other); }
@@ -32,16 +32,16 @@ public:
 		void save(Archive &archive) const
 		{
 			archive(cereal::make_nvp("id", this->id));
-			archive(cereal::make_nvp("type", this->type));
-			archive(cereal::make_nvp("stage", this->stage));
+			archive(cereal::make_nvp("type", this->type.value()));
+			archive(cereal::make_nvp("stage", this->stage.value()));
 		}
 
 		template <typename Archive>
 		void load(Archive &archive)
 		{
 			archive(cereal::make_nvp("id", this->id));
-			archive(cereal::make_nvp("type", this->type));
-			archive(cereal::make_nvp("stage", this->stage));
+			archive(cereal::make_nvp("type", this->type.value()));
+			archive(cereal::make_nvp("stage", this->stage.value()));
 		}
 	};
 	struct DescriptorGroup

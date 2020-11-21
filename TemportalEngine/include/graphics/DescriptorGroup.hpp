@@ -40,8 +40,8 @@ public:
 	 */
 	DescriptorGroup& addBinding(
 		std::string const &id, uIndex const idx,
-		graphics::DescriptorType::Enum const type,
-		graphics::ShaderStage::Enum const shaderStage,
+		graphics::DescriptorType const type,
+		graphics::ShaderStage const shaderStage,
 		ui32 count = 1 // note: useful for arrays of uniforms as a descriptor
 	);
 

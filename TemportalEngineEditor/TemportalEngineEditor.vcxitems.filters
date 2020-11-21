@@ -136,6 +136,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp">
       <Filter>property</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyDescriptorGroup.hpp">
+      <Filter>property\asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -170,6 +173,9 @@
     </Filter>
     <Filter Include="property">
       <UniqueIdentifier>{6a2e8d15-b84f-4fb0-a5d3-77241831ab66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="property\asset">
+      <UniqueIdentifier>{8da4a426-3ee1-4194-83f6-431d4ad509ae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +280,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Graphics.cpp">
       <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyDescriptorGroup.cpp">
+      <Filter>property\asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

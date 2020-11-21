@@ -41,8 +41,8 @@ DescriptorGroup& DescriptorGroup::setBindingCount(uSize count)
 
 DescriptorGroup& DescriptorGroup::addBinding(
 	std::string const &id, uIndex const idx,
-	graphics::DescriptorType::Enum const type,
-	graphics::ShaderStage::Enum const shaderStage,
+	graphics::DescriptorType const type,
+	graphics::ShaderStage const shaderStage,
 	ui32 count /* = 1 */
 )
 {
@@ -50,8 +50,8 @@ DescriptorGroup& DescriptorGroup::addBinding(
 	this->mBindingIdxById.insert(std::make_pair(id, idx));
 	this->mBindings[idx] = vk::DescriptorSetLayoutBinding()
 		.setBinding((ui32)idx)
-		.setDescriptorType((vk::DescriptorType)type)
-		.setStageFlags((vk::ShaderStageFlagBits)shaderStage)
+		.setDescriptorType(type.as<vk::DescriptorType>())
+		.setStageFlags(shaderStage.as<vk::ShaderStageFlagBits>())
 		.setDescriptorCount(count);
 	return *this;
 }

@@ -6,6 +6,8 @@
 
 FORWARD_DEF(NS_MEMORY, class MemoryChunk)
 
+#define RENDER_ASSET_EDITOR_PROPERTY(LABEL, PROP_NAME) if (properties::renderProperty(LABEL, asset->REF_PROP(PROP_NAME), asset->DEFAULT_PROP(PROP_NAME))) this->markAssetDirty(1)
+
 NS_GUI
 
 class AssetEditor : public IGui

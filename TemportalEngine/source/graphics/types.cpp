@@ -532,51 +532,47 @@ std::string ColorComponent::to_display_string() const { return to_string(); }
 
 #pragma region Descriptor Type
 
-std::vector<DescriptorType::Enum> DescriptorType::ALL = {
-		Enum::eSampler,
-		Enum::eCombinedImageSampler,
-		Enum::eSampledImage,
-		Enum::eStorageImage,
-		Enum::eUniformTexelBuffer,
-		Enum::eStorageTexelBuffer,
-		Enum::eUniformBuffer,
-		Enum::eStorageBuffer,
-		Enum::eUniformBufferDynamic,
-		Enum::eStorageBufferDynamic,
-		Enum::eInputAttachment,
+std::vector<EDescriptorType> DescriptorType::ALL = {
+		EDescriptorType::eSampler,
+		EDescriptorType::eCombinedImageSampler,
+		EDescriptorType::eSampledImage,
+		EDescriptorType::eStorageImage,
+		EDescriptorType::eUniformTexelBuffer,
+		EDescriptorType::eStorageTexelBuffer,
+		EDescriptorType::eUniformBuffer,
+		EDescriptorType::eStorageBuffer,
+		EDescriptorType::eUniformBufferDynamic,
+		EDescriptorType::eStorageBufferDynamic,
+		EDescriptorType::eInputAttachment,
 };
 
-std::string DescriptorType::to_string(Enum value)
-{
-	return vk::to_string((vk::DescriptorType)value);
-}
+std::string DescriptorType::to_string() const { return vk::to_string(as<vk::DescriptorType>()); }
+std::string DescriptorType::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Shader Stage
 
-std::vector<ShaderStage::Enum> ShaderStage::ALL = {
-		Enum::eVertex,
-		Enum::eTessellationControl,
-		Enum::eTessellationEvaluation,
-		Enum::eGeometry,
-		Enum::eFragment,
-		Enum::eCompute,
-		Enum::eAllGraphics,
-		Enum::eRaygenKHR,
-		Enum::eAnyHitKHR,
-		Enum::eClosestHitKHR,
-		Enum::eMissKHR,
-		Enum::eIntersectionKHR,
-		Enum::eCallableKHR,
-		Enum::eTaskNV,
-		Enum::eMeshNV,
+std::vector<ShaderStageFlags> ShaderStage::ALL = {
+		ShaderStageFlags::eVertex,
+		ShaderStageFlags::eTessellationControl,
+		ShaderStageFlags::eTessellationEvaluation,
+		ShaderStageFlags::eGeometry,
+		ShaderStageFlags::eFragment,
+		ShaderStageFlags::eCompute,
+		ShaderStageFlags::eAllGraphics,
+		ShaderStageFlags::eRaygenKHR,
+		ShaderStageFlags::eAnyHitKHR,
+		ShaderStageFlags::eClosestHitKHR,
+		ShaderStageFlags::eMissKHR,
+		ShaderStageFlags::eIntersectionKHR,
+		ShaderStageFlags::eCallableKHR,
+		ShaderStageFlags::eTaskNV,
+		ShaderStageFlags::eMeshNV,
 };
 
-std::string ShaderStage::to_string(Enum value)
-{
-	return vk::to_string((vk::ShaderStageFlagBits)value);
-}
+std::string ShaderStage::to_string() const { return vk::to_string(as<vk::ShaderStageFlagBits>()); }
+std::string ShaderStage::to_display_string() const { return to_string(); }
 
 #pragma endregion
 

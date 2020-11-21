@@ -20,7 +20,8 @@ public:
 
 	operator ui64() const { return ui64(mValue); }
 	operator TEnum() const { return mValue; }
-	TEnum value() const { return mValue; }
+	TEnum& value() { return mValue; }
+	TEnum const& value() const { return mValue; }
 	explicit operator bool() = delete;
 	constexpr bool operator==(EnumWrapper<TEnum> const& other) const { return mValue == other.mValue; }
 	constexpr bool operator!=(EnumWrapper<TEnum> const& other) const { return mValue != other.mValue; }
