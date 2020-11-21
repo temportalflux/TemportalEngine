@@ -81,7 +81,7 @@ void MinecraftRenderer::initializeTransientCommandPool()
 	this->mCommandPoolTransient
 		.setFlags(vk::CommandPoolCreateFlagBits::eTransient)
 		.setQueueFamily(
-			graphics::QueueFamily::Enum::eGraphics,
+			graphics::EQueueFamily::eGraphics,
 			device->queryQueueFamilyGroup()
 		)
 		.create();
@@ -255,7 +255,7 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 
 		frame.commandPool.setDevice(device);
 		frame.commandPool
-			.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, queueFamilyGroup)
+			.setQueueFamily(graphics::EQueueFamily::eGraphics, queueFamilyGroup)
 			.create();
 		auto commandBuffers = frame.commandPool.createCommandBuffers(1);
 		frame.commandBuffer = std::move(commandBuffers[0]);
@@ -320,7 +320,7 @@ void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentIma
 	OPTICK_EVENT();
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mFrames[idxCurrentImage].commandBuffer;
-	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), { &commandBuffer });
+	currentFrame->submitBuffers(&this->getQueue(EQueueFamily::eGraphics), { &commandBuffer });
 }
 
 void MinecraftRenderer::onFramePresented(uIndex idxFrame)

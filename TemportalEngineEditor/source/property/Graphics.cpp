@@ -88,3 +88,35 @@ DEFINE_PROPERTY_EDITOR(graphics::BlendMode::Component)
 
 	return result;
 }
+
+DEFINE_PROPERTY_EDITOR(graphics::PhysicalDevicePreference)
+{
+	return PropertyResult::group(id, [&](bool &bChangedAny) {
+		if (properties::renderProperty("Type", value.getDeviceTypes(), defaultValue.getDeviceTypes())) bChangedAny = true;
+		if (properties::renderProperty("Extensions", value.getDeviceExtensions(), defaultValue.getDeviceExtensions())) bChangedAny = true;
+		if (properties::renderProperty("Features", value.getFeatures(), defaultValue.getFeatures())) bChangedAny = true;
+		if (properties::renderProperty("Queue Families", value.getQueueFamilies(), defaultValue.getQueueFamilies())) bChangedAny = true;
+		if (properties::renderProperty("Swap Chain Support", value.getSwapChain(), defaultValue.getSwapChain())) bChangedAny = true;
+	});
+}
+
+bool properties::renderPreferenceScore(std::optional<ui8> &value)
+{
+	bool bChangedAny = false;
+	bool bIsRequired = !value.has_value();
+	if (ImGui::Checkbox("Required", &bIsRequired))
+	{
+		bChangedAny = true;
+		if (bIsRequired) value = std::nullopt;
+		else value = 0;
+	}
+	if (value)
+	{
+		ImGui::SameLine();
+		ImGui::PushItemWidth(75);
+		ui8 defaultScore = 0;
+		if (properties::renderNumbers<ui8>("Score", &defaultScore, &value.value(), 1).bChangedValue) bChangedAny = true;
+		ImGui::PopItemWidth();
+	}
+	return bChangedAny;
+}

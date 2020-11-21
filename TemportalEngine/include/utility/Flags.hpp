@@ -23,6 +23,7 @@ public:
 	TEnum& value() { return mValue; }
 	TEnum const& value() const { return mValue; }
 	explicit operator bool() = delete;
+	constexpr bool operator<(EnumWrapper<TEnum> const& other) const { return mValue < other.mValue; }
 	constexpr bool operator==(EnumWrapper<TEnum> const& other) const { return mValue == other.mValue; }
 	constexpr bool operator!=(EnumWrapper<TEnum> const& other) const { return mValue != other.mValue; }
 

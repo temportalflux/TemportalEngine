@@ -62,10 +62,10 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 		physicalProps.limits.maxMemoryAllocationCount
 	);
 
-	if (this->mQueues.find(QueueFamily::Enum::eGraphics) != this->mQueues.end())
+	if (this->mQueues.find(EQueueFamily::eGraphics) != this->mQueues.end())
 	{
 		auto queueGroups = this->mPhysicalDevice.queryQueueFamilyGroup();
-		auto const& graphicsQueue = this->getQueue(QueueFamily::Enum::eGraphics);
+		auto const& graphicsQueue = this->getQueue(EQueueFamily::eGraphics);
 		OPTICK_GPU_INIT_VULKAN(
 			(VkDevice*)this->mLogicalDevice.get(),
 			(VkPhysicalDevice*)this->mPhysicalDevice.get(),
@@ -87,7 +87,7 @@ void GraphicsDevice::destroy()
 	this->mPhysicalDevice.invalidate();
 }
 
-vk::Queue const& GraphicsDevice::getQueue(QueueFamily::Enum type) const
+vk::Queue const& GraphicsDevice::getQueue(EQueueFamily type) const
 {
 	return this->mQueues.find(type)->second;
 }

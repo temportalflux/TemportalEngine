@@ -17,17 +17,17 @@ std::vector<ui32> QueueFamilyGroup::allQueues() const
 	return { idxGraphicsQueue.value(), idxPresentationQueue.value() };
 }
 
-bool QueueFamilyGroup::hasQueueFamily(QueueFamily::Enum type) const
+bool QueueFamilyGroup::hasQueueFamily(EQueueFamily type) const
 {
 	return this->getQueueIndex(type).has_value();
 }
 
-std::optional<ui32> QueueFamilyGroup::getQueueIndex(QueueFamily::Enum type) const
+std::optional<ui32> QueueFamilyGroup::getQueueIndex(EQueueFamily type) const
 {
 	switch (type)
 	{
-	case QueueFamily::Enum::eGraphics: return idxGraphicsQueue;
-	case QueueFamily::Enum::ePresentation: return idxPresentationQueue;
+	case EQueueFamily::eGraphics: return idxGraphicsQueue;
+	case EQueueFamily::ePresentation: return idxPresentationQueue;
 	}
 	return std::nullopt;
 }

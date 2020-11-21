@@ -115,7 +115,7 @@ void GameRenderer::initializeTransientCommandPool()
 	this->mCommandPoolTransient
 		.setFlags(vk::CommandPoolCreateFlagBits::eTransient)
 		.setQueueFamily(
-			graphics::QueueFamily::Enum::eGraphics,
+			graphics::EQueueFamily::eGraphics,
 			this->mpGraphicsDevice->queryQueueFamilyGroup()
 		)
 		.create();
@@ -530,7 +530,7 @@ void GameRenderer::createCommandObjects()
 
 	this->mCommandPool.setDevice(this->mpGraphicsDevice);
 	this->mCommandPool
-		.setQueueFamily(graphics::QueueFamily::Enum::eGraphics, this->mpGraphicsDevice->queryQueueFamilyGroup())
+		.setQueueFamily(graphics::EQueueFamily::eGraphics, this->mpGraphicsDevice->queryQueueFamilyGroup())
 		.create();
 	this->mCommandBuffers = this->mCommandPool.createCommandBuffers((ui32)this->mFrameImageViews.size());
 
@@ -633,7 +633,7 @@ void GameRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
 	// Submit the command buffer to the graphics queue
 	auto& commandBuffer = this->mCommandBuffers[idxCurrentImage];
-	currentFrame->submitBuffers(&this->getQueue(QueueFamily::Enum::eGraphics), { &commandBuffer });
+	currentFrame->submitBuffers(&this->getQueue(EQueueFamily::eGraphics), { &commandBuffer });
 }
 
 void GameRenderer::onFramePresented(uIndex idxFrame)

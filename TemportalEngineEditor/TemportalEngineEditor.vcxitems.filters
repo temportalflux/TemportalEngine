@@ -61,9 +61,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\modal\PathModal.hpp">
       <Filter>gui\modal</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\graphics\PropertyGpuPreference.hpp">
-      <Filter>gui\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\AssetEditor.hpp">
       <Filter>gui\asset</Filter>
     </ClInclude>
@@ -156,9 +153,6 @@
     <Filter Include="gui\asset">
       <UniqueIdentifier>{6162a9b7-676f-45a0-8c3a-6f06800adc71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="gui\graphics">
-      <UniqueIdentifier>{3a99618a-59a3-4787-aa3f-6f2503dd383b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="gui\modal">
       <UniqueIdentifier>{5d68f608-701a-4af1-b390-1f286e3ff1b7}</UniqueIdentifier>
     </Filter>
@@ -221,9 +215,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\modal\PathModal.cpp">
       <Filter>gui\modal</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\graphics\PropertyGpuPreference.cpp">
-      <Filter>gui\graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\AssetEditor.cpp">
       <Filter>gui\asset</Filter>
     </ClCompile>
@@ -279,6 +270,9 @@
       <Filter>property</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Graphics.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Utility.cpp">
       <Filter>property</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyDescriptorGroup.cpp">

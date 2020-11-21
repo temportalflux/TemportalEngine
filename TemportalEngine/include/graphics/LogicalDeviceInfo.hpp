@@ -26,16 +26,16 @@ class LogicalDeviceInfo
 public:
 	LogicalDeviceInfo() = default;
 
-	LogicalDeviceInfo& addQueueFamily(QueueFamily::Enum type);
+	LogicalDeviceInfo& addQueueFamily(QueueFamily type);
 	LogicalDeviceInfo& addDeviceExtension(std::string name);
 	LogicalDeviceInfo& setValidationLayers(std::vector<std::string> layers);
 
 	std::vector<std::string> getValidationLayers() const;
 
-	std::set<QueueFamily::Enum> getQueues() const;
+	std::set<EQueueFamily> getQueues() const;
 
 private:
-	std::vector<QueueFamily::Enum> mQueues;
+	std::vector<QueueFamily> mQueues;
 	std::vector<std::string> mDeviceExtensions;
 	std::vector<std::string> mValidationLayers;
 

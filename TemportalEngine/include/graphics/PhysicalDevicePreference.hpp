@@ -5,6 +5,7 @@
 #include "cereal/optional.hpp"
 #include "cereal/list.hpp"
 #include "graphics/types.hpp"
+#include "cereal/GraphicsFlags.hpp"
 
 NS_GRAPHICS
 class PhysicalDevice;
@@ -41,6 +42,9 @@ public:
 		{
 			return this->isLessRequired(other) || std::less()(this->value, other.value);
 		}
+
+		bool operator==(Preference<T> const& other) const { return score == other.score && value == other.value; }
+		bool operator!=(Preference<T> const& other) const { return !(*this == other); }
 
 		bool doesCriteriaMatch(T const other) const
 		{
@@ -81,31 +85,36 @@ public:
 
 	};
 
-	typedef std::vector<Preference<PhysicalDeviceProperties::Type::Enum>> ListDeviceType;
-	typedef std::vector<Preference<PhysicalDeviceProperties::Extension::Type>> ListDeviceExtensions;
-	typedef std::vector<Preference<graphics::PhysicalDeviceProperties::Feature::Enum>> ListFeatures;
-	typedef std::vector<Preference<QueueFamily::Enum>> ListQueueFamilies;
-	typedef std::vector<Preference<SwapChainSupportType::Enum>> ListSwapChain;
+	typedef std::vector<Preference<PhysicalDeviceType>> ListDeviceType;
+	typedef std::vector<Preference<PhysicalDeviceExtension::Type>> ListDeviceExtensions;
+	typedef std::vector<Preference<DeviceFeature>> ListFeatures;
+	typedef std::vector<Preference<QueueFamily>> ListQueueFamilies;
+	typedef std::vector<Preference<SwapChainSupportType>> ListSwapChain;
 
 public:
 	PhysicalDevicePreference() = default;
 
-	PhysicalDevicePreference& addCriteriaDeviceType(PhysicalDeviceProperties::Type::Enum deviceType, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaDeviceExtension(PhysicalDeviceProperties::Extension::Type extensionName, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score = std::nullopt);
-	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceType(PhysicalDeviceType deviceType, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceExtension(PhysicalDeviceExtension::Type extensionName, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaDeviceFeature(DeviceFeature feature, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score = std::nullopt);
+	PhysicalDevicePreference& addCriteriaSwapChain(SwapChainSupportType optionType, IndividualScore score = std::nullopt);
 	
 	std::optional<ui32> scoreDevice(graphics::PhysicalDevice const *pDevice);
 
 	ListDeviceType& getDeviceTypes() { return this->mDeviceType; }
+	ListDeviceType const& getDeviceTypes() const { return this->mDeviceType; }
 	ListDeviceExtensions& getDeviceExtensions() { return this->mDeviceExtensions; }
-	ListDeviceExtensions getDeviceExtensions() const { return this->mDeviceExtensions; }
+	ListDeviceExtensions const& getDeviceExtensions() const { return this->mDeviceExtensions; }
 	ListFeatures& getFeatures() { return this->mFeatures; }
-	ListFeatures getFeatures() const { return this->mFeatures; }
+	ListFeatures const& getFeatures() const { return this->mFeatures; }
 	ListQueueFamilies& getQueueFamilies() { return this->mQueueFamilies; }
-	ListQueueFamilies getQueueFamilies() const { return this->mQueueFamilies; }
+	ListQueueFamilies const& getQueueFamilies() const { return this->mQueueFamilies; }
 	ListSwapChain& getSwapChain() { return this->mSwapChain; }
+	ListSwapChain const& getSwapChain() const { return this->mSwapChain; }
+
+	bool operator==(PhysicalDevicePreference const& other) const;
+	bool operator!=(PhysicalDevicePreference const& other) const;
 
 	template <typename Archive>
 	void save(Archive &archive) const

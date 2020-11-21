@@ -113,9 +113,9 @@ LogicalDevice PhysicalDevice::createLogicalDevice(
 	vk::PhysicalDeviceFeatures desiredFeatures;
 	for (auto& pref : prefs->getFeatures())
 	{
-		if (pref.isRequired() || PhysicalDeviceProperties::Feature::hasFeature(&supportedFeatures, pref.value))
+		if (pref.isRequired() || graphics::hasFeature(&supportedFeatures, pref.value))
 		{
-			PhysicalDeviceProperties::Feature::enableFeature(&desiredFeatures, pref.value);
+			graphics::enableFeature(&desiredFeatures, pref.value);
 		}
 	}
 	

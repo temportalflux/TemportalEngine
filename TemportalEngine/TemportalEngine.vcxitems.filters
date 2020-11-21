@@ -409,7 +409,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VulkanInstance.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Surface.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -628,6 +627,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\RenderPassMeta.hpp">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

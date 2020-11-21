@@ -217,6 +217,9 @@
     <None Include="$(MSBuildThisFileDirectory)assets\shaders\PerspectiveLineVertex.te-asset">
       <Filter>assets\shaders</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)Minecraft.te-project">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Font Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.otf">

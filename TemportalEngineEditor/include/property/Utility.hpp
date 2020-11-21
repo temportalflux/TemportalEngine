@@ -3,6 +3,7 @@
 #include "property/Base.hpp"
 
 #include "utility/Flags.hpp"
+#include "utility/Version.hpp"
 
 NS_PROPERTIES
 
@@ -88,5 +89,7 @@ DECLARE_PROPERTY_EDITOR(std::optional<T>)
 	}
 	return result;
 }
+
+DECLARE_PROPERTY_EDITOR(Version);
 
 NS_END

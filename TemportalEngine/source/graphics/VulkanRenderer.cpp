@@ -65,7 +65,7 @@ void VulkanRenderer::initializeDevices()
 	this->mpGraphicsDevice->create(this->mPhysicalDevicePreference, this->mLogicalDeviceInfo, &this->mSurface);
 }
 
-vk::Queue const& VulkanRenderer::getQueue(QueueFamily::Enum type) const
+vk::Queue const& VulkanRenderer::getQueue(EQueueFamily type) const
 {
 	return this->mpGraphicsDevice->getQueue(type);
 }
@@ -191,7 +191,7 @@ bool VulkanRenderer::present()
 	auto* currentFrame = this->getFrameAt(this->mIdxCurrentFrame);
 	try
 	{
-		auto result = currentFrame->present(&this->getQueue(QueueFamily::Enum::ePresentation), { &mSwapChain }, mIdxCurrentImage);
+		auto result = currentFrame->present(&this->getQueue(EQueueFamily::ePresentation), { &mSwapChain }, mIdxCurrentImage);
 		if (result == vk::Result::eSuboptimalKHR)
 		{
 			if (!this->mbRenderChainDirty) this->markRenderChainDirty();

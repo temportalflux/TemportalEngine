@@ -24,12 +24,18 @@ namespace cereal
 
 	DECLARE_CEREALIZATION(vk::ShaderStageFlagBits, std::string, ui32)
 	DECLARE_CEREALIZATION(vk::ColorComponentFlags, std::string, ui32)
-	DECLARE_CEREALIZATION(utility::Flags<graphics::ColorComponentFlags>, std::string, ui64)
+
+	DECLARE_CEREALIZATION(graphics::PhysicalDeviceType, std::string, ui32)
+	DECLARE_CEREALIZATION(graphics::DeviceFeature, ui32, ui32)
+	DECLARE_CEREALIZATION(graphics::QueueFamily, std::string, ui32)
+	DECLARE_CEREALIZATION(graphics::SwapChainSupportType, ui32, ui32)
+	
 	DECLARE_CEREALIZATION(graphics::FrontFace, std::string, ui32)
 	DECLARE_CEREALIZATION(graphics::BlendOperation, std::string, ui32)
 	DECLARE_CEREALIZATION(graphics::BlendFactor, std::string, ui32)
-	DECLARE_CEREALIZATION(utility::Flags<graphics::PipelineStageFlags>, std::string, ui64)
 	DECLARE_CEREALIZATION(graphics::PrimitiveTopology, std::string, ui32)
+	DECLARE_CEREALIZATION(utility::Flags<graphics::ColorComponentFlags>, std::string, ui64)
+	DECLARE_CEREALIZATION(utility::Flags<graphics::PipelineStageFlags>, std::string, ui64)
 	DECLARE_CEREALIZATION(utility::Flags<graphics::AccessFlags>, std::string, ui64)
 
 }

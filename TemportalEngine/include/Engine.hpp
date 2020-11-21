@@ -11,7 +11,7 @@
 #include "input/InputWatcher.hpp"
 //#include "network/common/Service.hpp"
 #include "thread/Thread.hpp"
-#include "version.h"
+#include "utility/Version.hpp"
 
 #include "asset/Project.hpp"
 

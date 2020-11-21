@@ -219,7 +219,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />

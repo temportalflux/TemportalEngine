@@ -8,31 +8,31 @@
 
 using namespace graphics;
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(PhysicalDeviceProperties::Type::Enum deviceType, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceType(PhysicalDeviceType deviceType, IndividualScore score)
 {
 	mDeviceType.push_back({ score, deviceType });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(PhysicalDeviceProperties::Extension::Type extensionName, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceExtension(PhysicalDeviceExtension::Type extensionName, IndividualScore score)
 {
 	mDeviceExtensions.push_back({ score, extensionName });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(PhysicalDeviceProperties::Feature::Enum feature, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaDeviceFeature(DeviceFeature feature, IndividualScore score)
 {
 	mFeatures.push_back({ score, feature });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily::Enum queueFamily, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaQueueFamily(QueueFamily queueFamily, IndividualScore score)
 {
 	mQueueFamilies.push_back({ score, queueFamily });
 	return *this;
 }
 
-PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(SwapChainSupportType::Enum optionType, IndividualScore score)
+PhysicalDevicePreference& PhysicalDevicePreference::addCriteriaSwapChain(SwapChainSupportType optionType, IndividualScore score)
 {
 	mSwapChain.push_back({ score, optionType });
 	return *this;
@@ -57,7 +57,7 @@ std::optional<ui32> PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevi
 	for (auto& prefDeviceType : this->mDeviceType)
 	{
 		if (!prefDeviceType.scoreAgainst(
-			prefDeviceType.doesCriteriaMatch((PhysicalDeviceProperties::Type::Enum)deviceProperties.deviceType),
+			prefDeviceType.doesCriteriaMatch(EPhysicalDeviceType(deviceProperties.deviceType)),
 			score
 		))
 		{
@@ -80,7 +80,7 @@ std::optional<ui32> PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevi
 	auto features = pDevice->getFeatures();
 	for (auto& prefFeature : this->mFeatures)
 	{
-		if (!prefFeature.scoreAgainst(PhysicalDeviceProperties::Feature::hasFeature(&features, prefFeature.value), score))
+		if (!prefFeature.scoreAgainst(graphics::hasFeature(&features, prefFeature.value), score))
 		{
 			bFoundAllReqiuredPreferences = false;
 			if (!bExamineAllPreferences) return std::nullopt;
@@ -100,7 +100,7 @@ std::optional<ui32> PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevi
 	auto swapChainSupport = pDevice->querySwapChainSupport();
 	for (auto& prefSwapChain : this->mSwapChain)
 	{
-		if (!prefSwapChain.scoreAgainst(SwapChainSupportType::hasSupport(&swapChainSupport, prefSwapChain.value), score))
+		if (!prefSwapChain.scoreAgainst(graphics::hasSupport(&swapChainSupport, prefSwapChain.value), score))
 		{
 			bFoundAllReqiuredPreferences = false;
 			if (!bExamineAllPreferences) return std::nullopt;
@@ -112,4 +112,20 @@ std::optional<ui32> PhysicalDevicePreference::scoreDevice(graphics::PhysicalDevi
 		return std::nullopt;
 	}
 	return score;
+}
+
+bool PhysicalDevicePreference::operator==(PhysicalDevicePreference const& other) const
+{
+	return
+		mDeviceType == other.mDeviceType
+		&& mDeviceExtensions == other.mDeviceExtensions
+		&& mFeatures == other.mFeatures
+		&& mQueueFamilies == other.mQueueFamilies
+		&& mSwapChain == other.mSwapChain
+		;
+}
+
+bool PhysicalDevicePreference::operator!=(PhysicalDevicePreference const& other) const
+{
+	return !(*this == other);
 }

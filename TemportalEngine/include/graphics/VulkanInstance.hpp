@@ -2,11 +2,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "version.h"
 #include "ExecutableInfo.hpp"
 #include "logging/Logger.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
 #include "graphics/PhysicalDevice.hpp"
+#include "utility/Version.hpp"
 
 #include <optional>
 #include <unordered_set>

@@ -103,7 +103,7 @@ protected:
 	
 	logging::Logger getLog() const;
 
-	vk::Queue const& getQueue(QueueFamily::Enum type) const;
+	vk::Queue const& getQueue(EQueueFamily type) const;
 
 	virtual void destroyRenderChain() = 0;
 	void createSwapChain();

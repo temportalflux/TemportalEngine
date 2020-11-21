@@ -32,7 +32,7 @@ CommandPool& CommandPool::setFlags(vk::CommandPoolCreateFlags flags)
 	return *this;
 }
 
-CommandPool& CommandPool::setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group)
+CommandPool& CommandPool::setQueueFamily(EQueueFamily queueType, QueueFamilyGroup const &group)
 {
 	this->mQueueFamily = queueType;
 	this->mIdxQueueFamily = group.getQueueIndex(queueType);
@@ -95,7 +95,7 @@ void CommandPool::submitOneOff(std::function<void(Command* cmd)> writeCommands)
 	writeCommands(&cmd);
 	cmd.end();
 
-	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
+	auto queue = this->device()->getQueue(EQueueFamily::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)

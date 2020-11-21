@@ -13,7 +13,7 @@
 					"hasValue": true,
 					"value": 128
 				},
-				"value": 2
+				"value": "DiscreteGpu"
 			}
 		],
 		"extensions": [
@@ -37,13 +37,13 @@
 				"score": {
 					"hasValue": false
 				},
-				"value": 0
+				"value": "Graphics"
 			},
 			{
 				"score": {
 					"hasValue": false
 				},
-				"value": 1
+				"value": "Presentation"
 			}
 		],
 		"swapChain": [

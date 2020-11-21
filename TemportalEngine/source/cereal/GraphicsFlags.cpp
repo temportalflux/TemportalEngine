@@ -53,6 +53,108 @@ void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, vk:
 
 #pragma endregion
 
+#pragma region Physical Device Type
+
+std::string cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::PhysicalDeviceType const &value)
+{
+	return value.to_string();
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::PhysicalDeviceType &value, std::string const& str)
+{
+	if (str == "IntegratedGpu") value = graphics::EPhysicalDeviceType::eIntegratedGpu;
+	else if (str == "DiscreteGpu") value = graphics::EPhysicalDeviceType::eDiscreteGpu;
+	else if (str == "VirtualGpu") value = graphics::EPhysicalDeviceType::eVirtualGpu;
+	else if (str == "Cpu") value = graphics::EPhysicalDeviceType::eCpu;
+	else value = graphics::EPhysicalDeviceType::eOther;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::PhysicalDeviceType const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::PhysicalDeviceType &value, ui32 const& i)
+{
+	value = (graphics::EPhysicalDeviceType)i;
+}
+
+#pragma endregion
+
+#pragma region Device Feature
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::DeviceFeature const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::DeviceFeature &value, ui32 const& i)
+{
+	value = (graphics::EDeviceFeature)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::DeviceFeature const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::DeviceFeature &value, ui32 const& i)
+{
+	value = (graphics::EDeviceFeature)i;
+}
+
+#pragma endregion
+
+#pragma region Queue Family
+
+std::string cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::QueueFamily const &value)
+{
+	return value.to_string();
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::QueueFamily &value, std::string const& str)
+{
+	if (str == "Graphics") value = graphics::EQueueFamily::eGraphics;
+	else if (str == "Presentation") value = graphics::EQueueFamily::ePresentation;
+	else value = graphics::EQueueFamily::eGraphics;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::QueueFamily const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::QueueFamily &value, ui32 const& i)
+{
+	value = (graphics::EQueueFamily)i;
+}
+
+#pragma endregion
+
+#pragma region SwapChainSupport
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::SwapChainSupportType const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::SwapChainSupportType &value, ui32 const& i)
+{
+	value = (graphics::ESwapChainSupport)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::SwapChainSupportType const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::SwapChainSupportType &value, ui32 const& i)
+{
+	value = (graphics::ESwapChainSupport)i;
+}
+
+#pragma endregion
+
 #pragma region Color Component Flags
 
 std::string cereal::save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::ColorComponentFlags> const &value)

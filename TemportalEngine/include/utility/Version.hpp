@@ -20,6 +20,9 @@ struct Version
 		} unpacked;
 	};
 
+	bool operator==(Version const& other) const { return packed == other.packed; }
+	bool operator!=(Version const& other) const { return packed != other.packed; }
+
 	template<class Archive>
 	void save(Archive& archive) const
 	{

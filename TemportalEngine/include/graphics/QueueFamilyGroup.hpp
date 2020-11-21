@@ -14,8 +14,8 @@ struct QueueFamilyGroup
 	bool hasFoundAllQueues() const;
 	std::set<ui32> uniqueQueues() const;
 	std::vector<ui32> allQueues() const;
-	bool hasQueueFamily(QueueFamily::Enum type) const;
-	std::optional<ui32> getQueueIndex(QueueFamily::Enum type) const;
+	bool hasQueueFamily(EQueueFamily type) const;
+	std::optional<ui32> getQueueIndex(EQueueFamily type) const;
 
 };
 

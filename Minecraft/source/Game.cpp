@@ -258,7 +258,7 @@ void Game::createGameRenderer()
 		}
 	);
 
-	auto renderPassAssetPath = engine::Engine::Get()->getProject()->mRenderPass;
+	auto renderPassAssetPath = engine::Engine::Get()->getProject()->getRenderPass();
 	this->mpRenderer->setRenderPass(renderPassAssetPath.load(asset::EAssetSerialization::Binary));
 
 }

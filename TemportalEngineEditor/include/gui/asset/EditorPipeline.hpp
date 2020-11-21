@@ -2,8 +2,6 @@
 
 #include "gui/asset/AssetEditor.hpp"
 
-#include "asset/PipelineAsset.hpp"
-
 NS_GUI
 
 // Editor for `asset::Pipeline`

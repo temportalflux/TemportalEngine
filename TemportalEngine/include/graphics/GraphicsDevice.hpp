@@ -52,7 +52,7 @@ public:
 	void create(PhysicalDevicePreference prefs, LogicalDeviceInfo const &info, Surface const *pSurface);
 	void destroy();
 
-	vk::Queue const& getQueue(QueueFamily::Enum type) const;
+	vk::Queue const& getQueue(EQueueFamily type) const;
 
 	QueueFamilyGroup queryQueueFamilyGroup() const;
 	SwapChainSupport querySwapChainSupport() const;
@@ -67,7 +67,7 @@ private:
 
 	PhysicalDevice mPhysicalDevice;
 	LogicalDevice mLogicalDevice;
-	std::unordered_map<QueueFamily::Enum, vk::Queue> mQueues;
+	std::unordered_map<EQueueFamily, vk::Queue> mQueues;
 
 #pragma region Initializer Functions
 	vk::UniqueDevice const& internalLogic() const;

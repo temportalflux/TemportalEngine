@@ -112,7 +112,7 @@ void Image::transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, Command
 		.beginCommand(vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
 		.setPipelineImageBarrier(this, prev, next)
 		.end();
-	auto queue = this->device()->getQueue(QueueFamily::Enum::eGraphics);
+	auto queue = this->device()->getQueue(EQueueFamily::eGraphics);
 	queue.submit(
 		vk::SubmitInfo()
 		.setCommandBufferCount(1)

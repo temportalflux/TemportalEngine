@@ -11,121 +11,100 @@ namespace vk
 NS_GRAPHICS
 struct SwapChainSupport;
 
-struct PhysicalDeviceProperties
+// Mirrors vk::PhysicalDeviceType
+enum class EPhysicalDeviceType : ui8
 {
-	/**
-	 * Wrapper of `vk::PhysicalDeviceType`
-	 */
-	struct Type
-	{
-		enum class Enum : ui8
-		{
-			eOther = 0,
-			eIntegratedGpu = 1,
-			eDiscreteGpu = 2,
-			eVirtualGpu = 3,
-			eCpu = 4,
-		};
-		static std::vector<Enum> ALL;
-		static std::string to_string(Enum value);
-	};
-	struct Extension
-	{
-		typedef std::string Type;
-		static Type SwapChain;
-		static std::vector<Type> ALL;
-	};
-	/**
-	 * Wrapper of `vk::PhysicalDeviceType`
-	 */
-	struct Feature
-	{
-		enum class Enum : ui8
-		{
-			RobustBufferAccess,
-			FullDrawIndex,
-			ImageCubeArray,
-			IndependentBlend,
-			GeometryShader,
-			TessellationShader,
-			SampleRateShading,
-			DualSrcBlend,
-			LogicOp,
-			MultiDrawIndirect,
-			DrawIndirectFirstInstance,
-			DepthClamp,
-			DepthBiasClamp,
-			FillModeNonSolid,
-			DepthBounds,
-			WideLines,
-			LargePoints,
-			AlphaToOne,
-			MultiViewport,
-			SamplerAnisotropy,
-			TextureCompressionETC2,
-			TextureCompressionASTC_LDR,
-			TextureCompressionBC,
-			OcclusionQueryPrecise,
-			PipelineStatisticsQuery,
-			VertexPipelineStoresAndAtomics,
-			FragmentStoresAndAtomics,
-			ShaderTessellationAndGeometryPointSize,
-			ShaderImageGatherExtended,
-			ShaderStorageImageExtendedFormats,
-			ShaderStorageImageMultisample,
-			ShaderStorageImageReadWithoutFormat,
-			ShaderStorageImageWriteWithoutFormat,
-			ShaderUniformBufferArrayDynamicIndexing,
-			ShaderSampledImageArrayDynamicIndexing,
-			ShaderStorageBufferArrayDynamicIndexing,
-			ShaderStorageImageArrayDynamicIndexing,
-			ShaderClipDistance,
-			ShaderCullDistance,
-			ShaderFloat64,
-			ShaderInt64,
-			ShaderInt16,
-			ShaderResourceResidency,
-			ShaderResourceMinLod,
-			SparseBinding,
-			SparseResidencyBuffer,
-			SparseResidencyImage2D,
-			SparseResidencyImage3D,
-			SparseResidency2Samples,
-			SparseResidency4Samples,
-			SparseResidency8Samples,
-			SparseResidency16Samples,
-			SparseResidencyAliased,
-			VariableMultisampleRate,
-		};
-		static std::vector<Enum> ALL;
-		static std::string to_string(Enum value);
-		static bool hasFeature(vk::PhysicalDeviceFeatures const *features, Enum type);
-		static bool enableFeature(vk::PhysicalDeviceFeatures *features, Enum type);
-	};
+	eOther = 0,
+	eIntegratedGpu = 1,
+	eDiscreteGpu = 2,
+	eVirtualGpu = 3,
+	eCpu = 4,
+};
+typedef utility::EnumWrapper<EPhysicalDeviceType> PhysicalDeviceType;
+
+struct PhysicalDeviceExtension
+{
+	typedef std::string Type;
+	// Elements
+	static std::vector<Type> ALL;
+	static Type ExtSwapChain;
 };
 
-struct QueueFamily
+enum class EDeviceFeature
 {
-	enum class Enum : ui8
-	{
-		eGraphics,
-		ePresentation,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	RobustBufferAccess,
+	FullDrawIndex,
+	ImageCubeArray,
+	IndependentBlend,
+	GeometryShader,
+	TessellationShader,
+	SampleRateShading,
+	DualSrcBlend,
+	LogicOp,
+	MultiDrawIndirect,
+	DrawIndirectFirstInstance,
+	DepthClamp,
+	DepthBiasClamp,
+	FillModeNonSolid,
+	DepthBounds,
+	WideLines,
+	LargePoints,
+	AlphaToOne,
+	MultiViewport,
+	SamplerAnisotropy,
+	TextureCompressionETC2,
+	TextureCompressionASTC_LDR,
+	TextureCompressionBC,
+	OcclusionQueryPrecise,
+	PipelineStatisticsQuery,
+	VertexPipelineStoresAndAtomics,
+	FragmentStoresAndAtomics,
+	ShaderTessellationAndGeometryPointSize,
+	ShaderImageGatherExtended,
+	ShaderStorageImageExtendedFormats,
+	ShaderStorageImageMultisample,
+	ShaderStorageImageReadWithoutFormat,
+	ShaderStorageImageWriteWithoutFormat,
+	ShaderUniformBufferArrayDynamicIndexing,
+	ShaderSampledImageArrayDynamicIndexing,
+	ShaderStorageBufferArrayDynamicIndexing,
+	ShaderStorageImageArrayDynamicIndexing,
+	ShaderClipDistance,
+	ShaderCullDistance,
+	ShaderFloat64,
+	ShaderInt64,
+	ShaderInt16,
+	ShaderResourceResidency,
+	ShaderResourceMinLod,
+	SparseBinding,
+	SparseResidencyBuffer,
+	SparseResidencyImage2D,
+	SparseResidencyImage3D,
+	SparseResidency2Samples,
+	SparseResidency4Samples,
+	SparseResidency8Samples,
+	SparseResidency16Samples,
+	SparseResidencyAliased,
+	VariableMultisampleRate,
 };
+typedef utility::EnumWrapper<EDeviceFeature> DeviceFeature;
+bool hasFeature(vk::PhysicalDeviceFeatures const *features, DeviceFeature type);
+bool enableFeature(vk::PhysicalDeviceFeatures *features, DeviceFeature type);
 
-struct SwapChainSupportType
+enum class EQueueFamily : ui8
 {
-	enum class Enum : ui8
-	{
-		eHasAnySurfaceFormat,
-		eHasAnyPresentationMode,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
-	static bool hasSupport(SwapChainSupport *support, Enum type);
+	eGraphics,
+	ePresentation,
 };
+typedef utility::EnumWrapper<EQueueFamily> QueueFamily;
+
+enum class ESwapChainSupport : ui8
+{
+	eHasAnySurfaceFormat,
+	eHasAnyPresentationMode,
+};
+typedef utility::EnumWrapper<ESwapChainSupport> SwapChainSupportType;
+bool hasSupport(SwapChainSupport *support, SwapChainSupportType type);
 
 struct FilterMode
 {

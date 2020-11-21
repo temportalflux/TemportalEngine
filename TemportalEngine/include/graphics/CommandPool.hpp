@@ -21,7 +21,7 @@ public:
 	~CommandPool();
 
 	CommandPool& setFlags(vk::CommandPoolCreateFlags flags);
-	CommandPool& setQueueFamily(QueueFamily::Enum queueType, QueueFamilyGroup const &group);
+	CommandPool& setQueueFamily(EQueueFamily queueType, QueueFamilyGroup const &group);
 
 	bool isValid() const;
 	void create() override;
@@ -36,7 +36,7 @@ public:
 
 private:
 	vk::CommandPoolCreateFlags mCreateFlags;
-	std::optional<QueueFamily::Enum> mQueueFamily;
+	std::optional<EQueueFamily> mQueueFamily;
 	std::optional<ui32> mIdxQueueFamily;
 
 	vk::UniqueCommandPool mInternal;

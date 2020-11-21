@@ -1,10 +1,10 @@
 #include "gui/asset/EditorPipeline.hpp"
 
 #include "asset/AssetManager.hpp"
-#include "asset/Shader.hpp"
+#include "asset/PipelineAsset.hpp"
 #include "memory/MemoryChunk.hpp"
-
 #include "property/Property.hpp"
+#include "asset/Shader.hpp"
 
 using namespace gui;
 

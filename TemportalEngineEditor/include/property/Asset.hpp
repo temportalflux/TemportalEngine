@@ -5,6 +5,7 @@
 #include "Editor.hpp"
 #include "asset/AssetPath.hpp"
 #include "asset/TypedAssetPath.hpp"
+#include "asset/AssetManager.hpp"
 
 #include <imgui.h>
 

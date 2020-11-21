@@ -27,7 +27,7 @@ public:
 	bool isValid() const;
 	void invalidate();
 
-	std::unordered_map<QueueFamily::Enum, vk::Queue> findQueues(std::set<QueueFamily::Enum> types) const;
+	std::unordered_map<EQueueFamily, vk::Queue> findQueues(std::set<EQueueFamily> types) const;
 	void waitUntilIdle() const;
 	void waitFor(std::vector<vk::Fence> fence, bool bAll, ui64 timeout);
 
