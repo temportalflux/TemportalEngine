@@ -132,8 +132,8 @@ void GameRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 	this->mpRenderPass = std::make_shared<graphics::RenderPass>();
 	this->mpRenderPass->setDevice(this->mpGraphicsDevice);
 
-	this->mpRenderPass->setClearColor(asset->getClearColorValue());
-	this->mpRenderPass->setClearDepthStencil(asset->getDepthStencilClearValues());
+	this->mpRenderPass->setClearColor(asset->getClearColor());
+	this->mpRenderPass->setClearDepthStencil(asset->getClearDepthStencil());
 	this->mpRenderPass->setRenderArea(asset->getRenderArea());
 
 	for (auto phase : asset->getPhases())

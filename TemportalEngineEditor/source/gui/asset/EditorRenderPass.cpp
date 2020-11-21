@@ -12,6 +12,8 @@
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 
+#include "property/Property.hpp"
+
 #include <imgui.h>
 
 using namespace gui;
@@ -28,10 +30,6 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 	AssetEditor::setAsset(assetGeneric);
 
 	auto asset = this->get<asset::RenderPass>();
-	this->mClearColor = asset->getClearColorValue();
-	this->mClearDepthStencil = asset->getDepthStencilClearValues();
-	this->mRenderArea = asset->getRenderArea();
-	this->mPipelines = asset->getPipelineRefs();
 	this->mPhases = asset->getPhases();
 	this->mPhaseDependencies = asset->getPhaseDependencies();
 
@@ -51,59 +49,19 @@ bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment);
 void EditorRenderPass::renderContent()
 {
 	AssetEditor::renderContent();
+	auto asset = this->get<asset::RenderPass>();
 
 	if (ImGui::TreeNode("Clear Values"))
 	{
-
-		if (gui::Optional<math::Vector4>::Inline(this->mClearColor, "Clear Color", true, [](math::Vector4 &clearColor) -> bool {
-			ImGui::SameLine();
-			return ImGui::ColorEdit4("###color", clearColor.data(), ImGuiColorEditFlags_None);
-		}))
-		{
-			this->markAssetDirty(1);
-		}
-
-		if (gui::Optional<std::pair<f32, ui32>>::Inline(
-			this->mClearDepthStencil, "Clear Depth/Stencil", true,
-			[](std::pair<f32, ui32>& depthStencil) -> bool {
-			bool bChangedDepth = gui::FieldNumber<f32, 1>::InlineSingle("Clear Depth", depthStencil.first);
-			bool bChangedStencil = gui::FieldNumber<ui32, 1>::InlineSingle("Clear Stencil", depthStencil.second);
-			return bChangedDepth || bChangedStencil;
-		}
-		))
-		{
-			this->markAssetDirty(1);
-		}
-
+		RENDER_ASSET_EDITOR_PROPERTY("Color", ClearColor);
+		RENDER_ASSET_EDITOR_PROPERTY("Depth/Stencil", ClearDepthStencil);
 		ImGui::TreePop();
 	}
 
-	if (ImGui::TreeNode("Render Area"))
-	{
-		if (gui::FieldNumber<f32, 2>::InlineVector("Offset", this->mRenderArea.offset))
-		{
-			this->markAssetDirty(1);
-		}
-		if (gui::FieldNumber<f32, 2>::InlineVector("Size", this->mRenderArea.size))
-		{
-			this->markAssetDirty(1);
-		}
-		ImGui::TreePop();
-	}
+	RENDER_ASSET_EDITOR_PROPERTY("Render Area", RenderArea);
+	RENDER_ASSET_EDITOR_PROPERTY("Pipelines", PipelineRefs);
 
-	if (
-		gui::List<asset::TypedAssetPath<asset::Pipeline>>::Inline(
-			"Pipelines", "Pipelines", /*values collapse*/ false,
-			this->mPipelines,
-			[&](uIndex const& idx, asset::TypedAssetPath<asset::Pipeline> &item) -> bool {
-				return gui::FieldAsset::Inline("item", item.path(), this->mAllPipelinePaths, asset::Pipeline::StaticType());
-			}
-		)
-	)
-	{
-		this->markAssetDirty(1);
-	}
-
+	// TODO: Create a node graph for phases and dependencies https://github.com/thedmd/imgui-node-editor
 	if (gui::List<graphics::RPPhase>::Inline("Phases", "Phases", true, this->mPhases, &renderPhase, this->mfRenderPhaseName))
 	{
 		this->markAssetDirty(1);
@@ -304,11 +262,7 @@ std::vector<std::string> EditorRenderPass::makePhaseNames()
 void EditorRenderPass::saveAsset()
 {
 	this->get<asset::RenderPass>()
-		->setClearColor(this->mClearColor)
-		.setDepthStencilClearValues(this->mClearDepthStencil)
-		.setRenderArea(this->mRenderArea)
-		.setPipelineRefs(this->mPipelines)
-		.setPhases(this->mPhases)
+		->setPhases(this->mPhases)
 		.setPhaseDependencies(this->mPhaseDependencies);
 	AssetEditor::saveAsset();
 }

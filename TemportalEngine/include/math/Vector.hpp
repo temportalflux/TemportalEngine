@@ -694,6 +694,7 @@ public:
 typedef Vector<f32, 2, 2> Vector2;
 typedef Vector<f32, 3, 3> Vector3;
 typedef Vector<f32, 4, 4> Vector4;
+typedef Vector4 Color;
 typedef Vector<f32, 2, 4> Vector2Padded;
 typedef Vector<f32, 3, 4> Vector3Padded;
 

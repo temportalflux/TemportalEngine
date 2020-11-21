@@ -25,10 +25,6 @@ protected:
 	void saveAsset() override;
 
 private:
-	std::optional<math::Vector4> mClearColor;
-	std::optional<std::pair<f32, ui32>> mClearDepthStencil;
-	graphics::Area mRenderArea;
-	std::vector<asset::TypedAssetPath<asset::Pipeline>> mPipelines;
 	std::vector<graphics::RPPhase> mPhases;
 	std::vector<graphics::RPDependency> mPhaseDependencies;
 

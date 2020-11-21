@@ -5,12 +5,12 @@
 #include "property/Base.hpp"
 #include "property/Primitive.hpp"
 #include "property/Number.hpp"
-#include "property/Vector.hpp"
+#include "property/PropertyVector.hpp"
 #include "property/Collection.hpp"
 #include "property/Graphics.hpp"
 #include "property/Utility.hpp"
 #include "property/Asset.hpp"
-#include "property/asset/PropertyDescriptorGroup.hpp"
+#include "property/asset/PropertyGraphicsAsset.hpp"
 
 #include <imgui.h>
 

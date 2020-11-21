@@ -41,3 +41,11 @@ DEFINE_PROPERTY_EDITOR(asset::Pipeline::Descriptor)
 
 	return result;
 }
+
+DEFINE_PROPERTY_EDITOR(asset::RenderPass::DepthStencil)
+{
+	return PropertyResult::group(id, [&](bool &bChangedAny) {
+		if (properties::renderProperty("Depth", value.first, defaultValue.first)) bChangedAny = true;
+		if (properties::renderProperty("Stencil", value.second, defaultValue.second)) bChangedAny = true;
+	});
+}

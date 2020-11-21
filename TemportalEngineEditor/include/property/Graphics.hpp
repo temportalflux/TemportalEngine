@@ -6,6 +6,7 @@
 #include "graphics/BlendMode.hpp"
 #include "graphics/types.hpp"
 #include "graphics/PhysicalDevicePreference.hpp"
+#include "graphics/RenderPassMeta.hpp"
 
 #include <imgui.h>
 

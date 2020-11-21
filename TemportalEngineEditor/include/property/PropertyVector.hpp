@@ -14,4 +14,6 @@ PropertyResult renderPropertyEditor(
 	return properties::renderNumbers<TValue>(id, defaultValue.data(), value.data(), TDimensions);
 }
 
+DECLARE_PROPERTY_EDITOR(math::Color);
+
 NS_END
