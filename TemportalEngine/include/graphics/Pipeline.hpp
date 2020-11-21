@@ -25,9 +25,9 @@ public:
 	Pipeline& setBindings(std::vector<AttributeBinding> bindings);
 	Pipeline& addShader(std::shared_ptr<ShaderModule> shader);
 	Pipeline& addViewArea(graphics::Viewport const &viewport, graphics::Area const &scissor);
-	Pipeline& setFrontFace(graphics::FrontFace::Enum const face);
+	Pipeline& setFrontFace(graphics::FrontFace const face);
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
-	Pipeline& setTopology(graphics::PrimitiveTopology::Enum const topology);
+	Pipeline& setTopology(graphics::PrimitiveTopology const topology);
 	Pipeline& setLineWidth(f32 const& width);
 
 	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
@@ -49,9 +49,9 @@ private:
 
 	std::vector<graphics::Viewport> mViewports;
 	std::vector<graphics::Area> mScissors;
-	graphics::FrontFace::Enum mFrontFace;
+	graphics::FrontFace mFrontFace;
 	std::optional<BlendMode> mBlendMode;
-	graphics::PrimitiveTopology::Enum mTopology;
+	graphics::PrimitiveTopology mTopology;
 	f32 mLineWidth;
 
 	std::weak_ptr<graphics::RenderPass> mpRenderPass;

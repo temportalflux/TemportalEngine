@@ -413,42 +413,37 @@ std::string SamplerLODMode::to_string(Enum value)
 
 #pragma region Front Face
 
-std::vector<FrontFace::Enum> FrontFace::ALL = {
-	Enum::eCounterClockwise,
-	Enum::eClockwise,
+std::vector<EFrontFace> FrontFace::ALL = {
+	EFrontFace::eCounterClockwise,
+	EFrontFace::eClockwise,
 };
 
-std::string FrontFace::to_string(Enum value)
-{
-	return vk::to_string((vk::FrontFace)value);
-}
+std::string FrontFace::to_string() const { return vk::to_string(as<vk::FrontFace>()); }
+std::string FrontFace::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Blend Operation
 
-std::vector<BlendOperation::Enum > BlendOperation::ALL = {
-	Enum::eAdd,
-	Enum::eSubtract,
-	Enum::eReverseSubtract,
-	Enum::eMin,
-	Enum::eMax,
+std::vector<EBlendOperation> BlendOperation::ALL = {
+	EBlendOperation::eAdd,
+	EBlendOperation::eSubtract,
+	EBlendOperation::eReverseSubtract,
+	EBlendOperation::eMin,
+	EBlendOperation::eMax,
 };
 
-std::string BlendOperation::to_string(Enum value)
-{
-	return vk::to_string((vk::BlendOp)value);
-}
+std::string BlendOperation::to_string() const { return vk::to_string(as<vk::BlendOp>()); }
 
-std::string BlendOperation::to_display_string(Enum value)
+std::string BlendOperation::to_display_string() const
 {
-	switch (value)
+	switch (mValue)
 	{
-	case Enum::eAdd: return "+";
-	case Enum::eSubtract: return "-";
-	case Enum::eReverseSubtract: return "*(-1) +";
-	case Enum::eMin: return "<min>";
-	case Enum::eMax: return "<max>";
+	case EBlendOperation::eAdd: return "+";
+	case EBlendOperation::eSubtract: return "-";
+	case EBlendOperation::eReverseSubtract: return "*(-1) +";
+	case EBlendOperation::eMin: return "<min>";
+	case EBlendOperation::eMax: return "<max>";
 	default: return "invalid";
 	}
 }
@@ -457,56 +452,53 @@ std::string BlendOperation::to_display_string(Enum value)
 
 #pragma region Blend Factor
 
-std::vector<BlendFactor::Enum > BlendFactor::ALL = {
-		Enum::eZero,
-		Enum::eOne,
-		Enum::eSrcColor,
-		Enum::eOneMinusSrcColor,
-		Enum::eDstColor,
-		Enum::eOneMinusDstColor,
-		Enum::eSrcAlpha,
-		Enum::eOneMinusSrcAlpha,
-		Enum::eDstAlpha,
-		Enum::eOneMinusDstAlpha,
-		Enum::eConstantColor,
-		Enum::eOneMinusConstantColor,
-		Enum::eConstantAlpha,
-		Enum::eOneMinusConstantAlpha,
-		Enum::eSrcAlphaSaturate,
-		Enum::eSrc1Color,
-		Enum::eOneMinusSrc1Color,
-		Enum::eSrc1Alpha,
-		Enum::eOneMinusSrc1Alpha,
+std::vector<EBlendFactor> BlendFactor::ALL = {
+		EBlendFactor::eZero,
+		EBlendFactor::eOne,
+		EBlendFactor::eSrcColor,
+		EBlendFactor::eOneMinusSrcColor,
+		EBlendFactor::eDstColor,
+		EBlendFactor::eOneMinusDstColor,
+		EBlendFactor::eSrcAlpha,
+		EBlendFactor::eOneMinusSrcAlpha,
+		EBlendFactor::eDstAlpha,
+		EBlendFactor::eOneMinusDstAlpha,
+		EBlendFactor::eConstantColor,
+		EBlendFactor::eOneMinusConstantColor,
+		EBlendFactor::eConstantAlpha,
+		EBlendFactor::eOneMinusConstantAlpha,
+		EBlendFactor::eSrcAlphaSaturate,
+		EBlendFactor::eSrc1Color,
+		EBlendFactor::eOneMinusSrc1Color,
+		EBlendFactor::eSrc1Alpha,
+		EBlendFactor::eOneMinusSrc1Alpha,
 };
 
-std::string BlendFactor::to_string(Enum value)
-{
-	return vk::to_string((vk::BlendFactor)value);
-}
+std::string BlendFactor::to_string() const { return vk::to_string(as<vk::BlendFactor>()); }
 
-std::string BlendFactor::to_display_string(Enum value)
+std::string BlendFactor::to_display_string() const
 {
-	switch (value)
+	switch (mValue)
 	{
-	case Enum::eZero: return "0";
-	case Enum::eOne: return "1";
-	case Enum::eSrcColor: return "srcColor";
-	case Enum::eOneMinusSrcColor: return "(1 - srcColor)";
-	case Enum::eDstColor: return "dstColor";
-	case Enum::eOneMinusDstColor: return "(1 - dstColor)";
-	case Enum::eSrcAlpha: return "srcAlpha";
-	case Enum::eOneMinusSrcAlpha: return "(1 - srcAlpha)";
-	case Enum::eDstAlpha: return "dstAlpha";
-	case Enum::eOneMinusDstAlpha: return "(1 - dstAlpha)";
-	case Enum::eConstantColor: return "constColor";
-	case Enum::eOneMinusConstantColor: return "(1 - constColor)";
-	case Enum::eConstantAlpha: return "constAlpha";
-	case Enum::eOneMinusConstantAlpha: return "(1 - constAlpha)";
-	case Enum::eSrcAlphaSaturate: return "srcAlphaSaturate";
-	case Enum::eSrc1Color: return "srcColor1";
-	case Enum::eOneMinusSrc1Color: return "(1 - srcColor1)";
-	case Enum::eSrc1Alpha: return "srcAlpha1";
-	case Enum::eOneMinusSrc1Alpha: return "(1 - srcAlpha1)";
+	case EBlendFactor::eZero: return "0";
+	case EBlendFactor::eOne: return "1";
+	case EBlendFactor::eSrcColor: return "srcColor";
+	case EBlendFactor::eOneMinusSrcColor: return "(1 - srcColor)";
+	case EBlendFactor::eDstColor: return "dstColor";
+	case EBlendFactor::eOneMinusDstColor: return "(1 - dstColor)";
+	case EBlendFactor::eSrcAlpha: return "srcAlpha";
+	case EBlendFactor::eOneMinusSrcAlpha: return "(1 - srcAlpha)";
+	case EBlendFactor::eDstAlpha: return "dstAlpha";
+	case EBlendFactor::eOneMinusDstAlpha: return "(1 - dstAlpha)";
+	case EBlendFactor::eConstantColor: return "constColor";
+	case EBlendFactor::eOneMinusConstantColor: return "(1 - constColor)";
+	case EBlendFactor::eConstantAlpha: return "constAlpha";
+	case EBlendFactor::eOneMinusConstantAlpha: return "(1 - constAlpha)";
+	case EBlendFactor::eSrcAlphaSaturate: return "srcAlphaSaturate";
+	case EBlendFactor::eSrc1Color: return "srcColor1";
+	case EBlendFactor::eOneMinusSrc1Color: return "(1 - srcColor1)";
+	case EBlendFactor::eSrc1Alpha: return "srcAlpha1";
+	case EBlendFactor::eOneMinusSrc1Alpha: return "(1 - srcAlpha1)";
 	default: return "invalid";
 	}
 }
@@ -515,42 +507,26 @@ std::string BlendFactor::to_display_string(Enum value)
 
 #pragma region ColorComponent
 
-std::vector<ColorComponent::Enum > ColorComponent::ALL = {
-		Enum::eR,
-		Enum::eG,
-		Enum::eB,
-		Enum::eA,
+std::vector<ColorComponentFlags> ColorComponent::ALL = {
+		ColorComponentFlags::eR,
+		ColorComponentFlags::eG,
+		ColorComponentFlags::eB,
+		ColorComponentFlags::eA,
 };
 
-char ColorComponent::to_char(Enum value)
+std::string ColorComponent::to_string() const
 {
-	switch (value)
+	switch (mValue)
 	{
-	case Enum::eR: return 'R';
-	case Enum::eG: return 'G';
-	case Enum::eB: return 'B';
-	case Enum::eA: return 'A';
-	default: return '\0';
+	case ColorComponentFlags::eR: return "R";
+	case ColorComponentFlags::eG: return "G";
+	case ColorComponentFlags::eB: return "B";
+	case ColorComponentFlags::eA: return "A";
+	default: return "\0";
 	}
 }
 
-std::string ColorComponent::toFlagString(std::unordered_set<Enum> const& flags)
-{
-	std::string str = "";
-	for (auto option : ColorComponent::ALL)
-	{
-		if (flags.find(option) != flags.end())
-		{
-			str += graphics::ColorComponent::to_char(option);
-		}
-	}
-	return str;
-}
-
-std::string ColorComponent::to_string(Enum value)
-{
-	return vk::to_string((vk::ColorComponentFlagBits)value);
-}
+std::string ColorComponent::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
@@ -673,78 +649,72 @@ std::string AttachmentStoreOp::to_string(Enum value)
 
 #pragma region Pipeline Stage
 
-std::vector<PipelineStage::Enum> PipelineStage::ALL = {
-		Enum::eTopOfPipe,
-		Enum::eDrawIndirect,
-		Enum::eVertexInput,
-		Enum::eVertexShader,
-		Enum::eTessellationControlShader,
-		Enum::eTessellationEvaluationShader,
-		Enum::eGeometryShader,
-		Enum::eFragmentShader,
-		Enum::eEarlyFragmentTests,
-		Enum::eLateFragmentTests,
-		Enum::eColorAttachmentOutput,
-		Enum::eComputeShader,
-		Enum::eTransfer,
-		Enum::eBottomOfPipe,
+std::vector<PipelineStageFlags> PipelineStage::ALL = {
+		PipelineStageFlags::eTopOfPipe,
+		PipelineStageFlags::eDrawIndirect,
+		PipelineStageFlags::eVertexInput,
+		PipelineStageFlags::eVertexShader,
+		PipelineStageFlags::eTessellationControlShader,
+		PipelineStageFlags::eTessellationEvaluationShader,
+		PipelineStageFlags::eGeometryShader,
+		PipelineStageFlags::eFragmentShader,
+		PipelineStageFlags::eEarlyFragmentTests,
+		PipelineStageFlags::eLateFragmentTests,
+		PipelineStageFlags::eColorAttachmentOutput,
+		PipelineStageFlags::eComputeShader,
+		PipelineStageFlags::eTransfer,
+		PipelineStageFlags::eBottomOfPipe,
 };
 
-std::string PipelineStage::to_string(Enum value)
-{
-	return vk::to_string((vk::PipelineStageFlagBits)value);
-}
+std::string PipelineStage::to_string() const { return vk::to_string(as<vk::PipelineStageFlagBits>()); }
+std::string PipelineStage::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
-#pragma region Pipeline Stage
+#pragma region Primitive Topology
 
-std::vector<PrimitiveTopology::Enum> PrimitiveTopology::ALL = {
-		Enum::ePointList,
-		Enum::eLineList,
-		Enum::eLineStrip,
-		Enum::eTriangleList,
-		Enum::eTriangleStrip,
-		Enum::eTriangleFan,
-		Enum::eLineListWithAdjacency,
-		Enum::eLineStripWithAdjacency,
-		Enum::eTriangleListWithAdjacency,
-		Enum::eTriangleStripWithAdjacency,
-		Enum::ePatchList,
+std::vector<EPrimitiveTopology> PrimitiveTopology::ALL = {
+		EPrimitiveTopology::ePointList,
+		EPrimitiveTopology::eLineList,
+		EPrimitiveTopology::eLineStrip,
+		EPrimitiveTopology::eTriangleList,
+		EPrimitiveTopology::eTriangleStrip,
+		EPrimitiveTopology::eTriangleFan,
+		EPrimitiveTopology::eLineListWithAdjacency,
+		EPrimitiveTopology::eLineStripWithAdjacency,
+		EPrimitiveTopology::eTriangleListWithAdjacency,
+		EPrimitiveTopology::eTriangleStripWithAdjacency,
+		EPrimitiveTopology::ePatchList,
 };
 
-std::string PrimitiveTopology::to_string(Enum value)
-{
-	return vk::to_string((vk::PrimitiveTopology)value);
-}
+std::string PrimitiveTopology::to_string() const { return vk::to_string(as<vk::PrimitiveTopology>()); }
+std::string PrimitiveTopology::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Access
 
-std::vector<Access::Enum> Access::ALL = {
-		Enum::eIndirectCommandRead,
-		Enum::eIndexRead,
-		Enum::eVertexAttributeRead,
-		Enum::eUniformRead,
-		Enum::eInputAttachmentRead,
-		Enum::eShaderRead,
-		Enum::eShaderWrite,
-		Enum::eColorAttachmentRead,
-		Enum::eColorAttachmentWrite,
-		Enum::eDepthStencilAttachmentRead,
-		Enum::eDepthStencilAttachmentWrite,
-		Enum::eTransferRead,
-		Enum::eTransferWrite,
-		Enum::eHostRead,
-		Enum::eHostWrite,
-		Enum::eMemoryRead,
-		Enum::eMemoryWrite,
+std::vector<AccessFlags> Access::ALL = {
+		AccessFlags::eIndirectCommandRead,
+		AccessFlags::eIndexRead,
+		AccessFlags::eVertexAttributeRead,
+		AccessFlags::eUniformRead,
+		AccessFlags::eInputAttachmentRead,
+		AccessFlags::eShaderRead,
+		AccessFlags::eShaderWrite,
+		AccessFlags::eColorAttachmentRead,
+		AccessFlags::eColorAttachmentWrite,
+		AccessFlags::eDepthStencilAttachmentRead,
+		AccessFlags::eDepthStencilAttachmentWrite,
+		AccessFlags::eTransferRead,
+		AccessFlags::eTransferWrite,
+		AccessFlags::eHostRead,
+		AccessFlags::eHostWrite,
+		AccessFlags::eMemoryRead,
+		AccessFlags::eMemoryWrite,
 };
 
-std::string Access::to_string(Enum value)
-{
-	return vk::to_string((vk::AccessFlagBits)value);
-}
+std::string Access::to_string() const { return vk::to_string(as<vk::AccessFlagBits>()); }
+std::string Access::to_display_string() const { return to_string(); }
 
 #pragma endregion

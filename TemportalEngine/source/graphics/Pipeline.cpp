@@ -44,7 +44,7 @@ Pipeline& Pipeline::addViewArea(graphics::Viewport const &viewport, graphics::Ar
 	return *this;
 }
 
-Pipeline& Pipeline::setFrontFace(graphics::FrontFace::Enum const face)
+Pipeline& Pipeline::setFrontFace(graphics::FrontFace const face)
 {
 	this->mFrontFace = face;
 	return *this;
@@ -56,7 +56,7 @@ Pipeline& Pipeline::setBlendMode(std::optional<BlendMode> mode)
 	return *this;
 }
 
-Pipeline& Pipeline::setTopology(graphics::PrimitiveTopology::Enum const topology)
+Pipeline& Pipeline::setTopology(graphics::PrimitiveTopology const topology)
 {
 	this->mTopology = topology;
 	return *this;
@@ -132,7 +132,7 @@ void Pipeline::create()
 		.setPVertexAttributeDescriptions(attribDescs.data());
 
 	auto infoAssembly = vk::PipelineInputAssemblyStateCreateInfo()
-		.setTopology((vk::PrimitiveTopology)this->mTopology)
+		.setTopology(this->mTopology.as<vk::PrimitiveTopology>())
 		.setPrimitiveRestartEnable(false);
 
 	auto viewports = std::vector<vk::Viewport>(this->mViewports.size());
@@ -175,7 +175,7 @@ void Pipeline::create()
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(this->mLineWidth)
 		.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace((vk::FrontFace)this->mFrontFace)
+		.setFrontFace(this->mFrontFace.as<vk::FrontFace>())
 		.setDepthBiasEnable(false)
 		.setDepthBiasConstantFactor(0.0f)
 		.setDepthBiasClamp(0.0f)
@@ -197,12 +197,12 @@ void Pipeline::create()
 		if (this->mBlendMode->blend)
 		{
 			infoColorBlendAttachment
-				.setColorBlendOp((vk::BlendOp)this->mBlendMode->blend->color.operation)
-				.setSrcColorBlendFactor((vk::BlendFactor)this->mBlendMode->blend->color.srcFactor)
-				.setDstColorBlendFactor((vk::BlendFactor)this->mBlendMode->blend->color.dstFactor)
-				.setAlphaBlendOp((vk::BlendOp)this->mBlendMode->blend->alpha.operation)
-				.setSrcAlphaBlendFactor((vk::BlendFactor)this->mBlendMode->blend->alpha.srcFactor)
-				.setDstAlphaBlendFactor((vk::BlendFactor)this->mBlendMode->blend->alpha.dstFactor);
+				.setColorBlendOp(this->mBlendMode->blend->color.operation.as<vk::BlendOp>())
+				.setSrcColorBlendFactor(this->mBlendMode->blend->color.srcFactor.as<vk::BlendFactor>())
+				.setDstColorBlendFactor(this->mBlendMode->blend->color.dstFactor.as<vk::BlendFactor>())
+				.setAlphaBlendOp(this->mBlendMode->blend->alpha.operation.as<vk::BlendOp>())
+				.setSrcAlphaBlendFactor(this->mBlendMode->blend->alpha.srcFactor.as<vk::BlendFactor>())
+				.setDstAlphaBlendFactor(this->mBlendMode->blend->alpha.dstFactor.as<vk::BlendFactor>());
 		}
 	}
 	else
@@ -288,7 +288,7 @@ void Pipeline::resetConfiguration()
 {
 	this->mViewports.clear();
 	this->mScissors.clear();
-	this->mFrontFace = graphics::FrontFace::Enum::eClockwise;
+	this->mFrontFace = graphics::EFrontFace::eClockwise;
 	this->mBlendMode = std::nullopt;
 	this->mpRenderPass.reset();
 	this->mDescriptorLayouts.clear();

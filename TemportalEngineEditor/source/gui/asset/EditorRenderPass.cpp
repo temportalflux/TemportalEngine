@@ -242,6 +242,7 @@ bool EditorRenderPass::renderPhaseDependencyItem(graphics::RPDependency::Item &i
 	bool bChanged = false;
 	if (gui::Optional<uIndex>::Inline(item.phaseIndex, "Phase", true, this->mfRenderDependencyItemName)) bChanged = true;
 
+	/*
 	auto stageMaskSet = item.stageMask.toSet(graphics::PipelineStage::ALL);
 	std::string stageMaskPreviewStr = std::to_string(stageMaskSet.size()) + " Stages";
 	if (gui::Combo<graphics::PipelineStage::Enum>::InlineMulti(
@@ -267,6 +268,7 @@ bool EditorRenderPass::renderPhaseDependencyItem(graphics::RPDependency::Item &i
 		bChanged = true;
 		item.accessMask = utility::Flags<graphics::Access::Enum>(accessMaskSet);
 	}
+	//*/
 
 	return bChanged;
 }

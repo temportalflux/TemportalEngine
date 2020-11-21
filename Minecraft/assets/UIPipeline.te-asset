@@ -2,30 +2,6 @@
   "type": "pipeline",
   "shader-vert": "shader:assets/shaders/TextVertex.te-asset",
   "shader-frag": "shader:assets/shaders/TextFragment.te-asset",
-  "viewport": {
-    "offset": [
-      0.0,
-      0.0
-    ],
-    "size": [
-      1.0,
-      1.0
-    ],
-    "depthRange": [
-      0.0,
-      1.0
-    ]
-  },
-  "scissor": {
-    "offset": [
-      0.0,
-      0.0
-    ],
-    "size": [
-      1.0,
-      1.0
-    ]
-  },
   "frontFace": 1,
   "blendMode": {
     "mask": "RGBA",
@@ -45,7 +21,6 @@
       }
     }
   },
-  "topology": 3,
   "lineWidth": 1.0,
   "descriptorGroups": [
     {

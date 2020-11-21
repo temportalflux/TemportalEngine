@@ -50,6 +50,12 @@ public:
 		this->mPath.loadFromString(value);
 	}
 
+	bool operator==(TypedAssetPath<TAsset> const& other) const
+	{
+		return mPath == other.mPath;
+	}
+	bool operator!=(TypedAssetPath<TAsset> const& other) const { return !(*this == other); }
+
 private:
 	AssetPath mPath;
 

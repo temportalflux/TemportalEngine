@@ -25,16 +25,6 @@ protected:
 	void saveAsset() override;
 
 private:
-	std::vector<asset::AssetPath> mAllShaderPaths;
-	asset::TypedAssetPath<asset::Shader> mShaderVertex, mShaderFragment;
-	graphics::Viewport mViewport;
-	graphics::Area mScissor;
-	graphics::FrontFace::Enum mFrontFace;
-	std::unordered_set<graphics::ColorComponent::Enum> mBlendWriteMask;
-	graphics::PrimitiveTopology::Enum mTopology;
-	f32 mLineWidth;
-	std::string mBlendWriteMaskPreviewStr;
-	std::optional<graphics::BlendMode::Operation> mBlendOperation;
 	std::vector<asset::Pipeline::DescriptorGroup> mDescriptorGroups;
 
 };

@@ -6,23 +6,23 @@ using namespace properties;
 
 bool properties::renderList(
 	const char* id, uSize size,
-	std::function<void(uIndex &idx, uSize &size)> renderElement,
+	std::function<bool(uIndex &idx, uSize &size)> renderElement,
 	std::function<void(uSize newSize)> onChangeSize
 )
 {
-	bool bChangedSizeOrOrder = false;
+	bool bChangedSizeOrderOrContent = false;
 
 	// List actions
 	ImGui::PushID(id);
 	if (ImGui::Button("Add"))
 	{
-		bChangedSizeOrOrder = true;
+		bChangedSizeOrderOrContent = true;
 		onChangeSize(++size);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Clear"))
 	{
-		bChangedSizeOrOrder = true;
+		bChangedSizeOrderOrContent = true;
 		size = 0;
 		onChangeSize(size);
 	}
@@ -33,10 +33,10 @@ bool properties::renderList(
 	{
 		ImGui::PushID((i32)i);
 		// NOTE: We dont actually care if the element itself changed, thats for the caller to worry about
-		renderElement(i, size);
+		if (renderElement(i, size)) bChangedSizeOrderOrContent = true;
 		ImGui::PopID();
 	}
 
-	return bChangedSizeOrOrder;
+	return bChangedSizeOrderOrContent;
 }
 

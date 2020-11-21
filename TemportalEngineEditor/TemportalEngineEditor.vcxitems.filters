@@ -109,6 +109,33 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\EditorPipeline.hpp">
       <Filter>gui\asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Collection.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Primitive.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Base.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Number.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Vector.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Property.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Graphics.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Utility.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -140,6 +167,9 @@
     </Filter>
     <Filter Include="build\asset">
       <UniqueIdentifier>{37dc1dbf-27f2-46ad-aabb-356f8af20a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="property">
+      <UniqueIdentifier>{6a2e8d15-b84f-4fb0-a5d3-77241831ab66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -229,6 +259,21 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\EditorRenderPass.cpp">
       <Filter>gui\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Collection.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Number.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Primitive.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Base.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Graphics.cpp">
+      <Filter>property</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

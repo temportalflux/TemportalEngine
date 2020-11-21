@@ -14,9 +14,9 @@ class Shader;
 
 class Pipeline : public Asset
 {
-	friend class cereal::access;
-
 public:
+	DECLARE_PROPERTY_CONTAINER(Pipeline)
+
 	struct Descriptor
 	{
 		friend class cereal::access;
@@ -24,6 +24,9 @@ public:
 		std::string id;
 		graphics::DescriptorType::Enum type;
 		graphics::ShaderStage::Enum stage;
+
+		bool operator==(Descriptor const& other) const { return id == other.id && type == other.type && stage == other.stage; }
+		bool operator!=(Descriptor const& other) const { return !(*this == other); }
 
 		template <typename Archive>
 		void save(Archive &archive) const
@@ -45,6 +48,9 @@ public:
 	{
 		std::vector<Descriptor> descriptors;
 
+		bool operator==(DescriptorGroup const& other) const { return descriptors == other.descriptors; }
+		bool operator!=(DescriptorGroup const& other) const { return !(*this == other); }
+
 		template <typename Archive>
 		void save(Archive &archive) const
 		{
@@ -62,39 +68,27 @@ public:
 	DEFINE_ASSET_STATICS("pipeline", "Pipeline", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
 	DECLARE_FACTORY_ASSET_METADATA()
 	
-	Pipeline() = default;
-	CREATE_NEWASSET_CONSTRUCTOR(Pipeline) {}
+	DECLARE_ASSET_CONTRUCTORS(Pipeline)
+	DECLARE_PROPERTY_MUTATORS(TypedAssetPath<Shader>, mVertexShader, VertexShader)
+	DECLARE_PROPERTY_MUTATORS(TypedAssetPath<Shader>, mFragmentShader, FragmentShader)
+	DECLARE_PROPERTY_MUTATORS(graphics::Viewport, mViewport, Viewport)
+	DECLARE_PROPERTY_MUTATORS(graphics::Area, mScissor, Scissor)
+	DECLARE_PROPERTY_MUTATORS(graphics::FrontFace, mFrontFace, FrontFace)
+	DECLARE_PROPERTY_MUTATORS(graphics::BlendMode, mBlendMode, BlendMode)
+	DECLARE_PROPERTY_MUTATORS(graphics::PrimitiveTopology, mTopology, Topology)
+	DECLARE_PROPERTY_MUTATORS(f32, mLineWidth, LineWidth)
+	DECLARE_PROPERTY_MUTATORS(std::vector<DescriptorGroup>, mDescriptorGroups, DescriptorGroups)
 
-	TypedAssetPath<Shader> getVertexShader() const { return this->mVertexShader; }
-	Pipeline& setVertexShader(TypedAssetPath<Shader> const& value) { this->mVertexShader = value; return *this; }
-	TypedAssetPath<Shader> getFragmentShader() const { return this->mFragmentShader; }
-	Pipeline& setFragmentShader(TypedAssetPath<Shader> const& value) { this->mFragmentShader = value; return *this; }
-
-	graphics::Viewport const& getViewport() const { return this->mViewport; }
-	Pipeline& setViewport(graphics::Viewport const& value) { this->mViewport = value; return *this; }
-	graphics::Area const& getScissor() const { return this->mScissor; }
-	Pipeline& setScissor(graphics::Area const& value) { this->mScissor = value; return *this; }
-	graphics::FrontFace::Enum const& getFrontFace() const { return this->mFrontFace; }
-	Pipeline& setFrontFace(graphics::FrontFace::Enum const& value) { this->mFrontFace = value; return *this; }
-	graphics::BlendMode const& getBlendMode() const { return this->mBlendMode; }
-	Pipeline& setBlendMode(graphics::BlendMode const& value) { this->mBlendMode = value; return *this; }
-	graphics::PrimitiveTopology::Enum const& getTopology() const { return this->mTopology; }
-	Pipeline& setTopology(graphics::PrimitiveTopology::Enum const& value) { this->mTopology = value; return *this; }
-	f32 const& getLineWidth() const { return this->mLineWidth; }
-	Pipeline& setLineWidth(f32 const& value) { this->mLineWidth = value; return *this; }
-	std::vector<DescriptorGroup> const& getDescriptorGroups() const { return this->mDescriptorGroups; }
-	Pipeline& setDescriptorGroups(std::vector<DescriptorGroup> const& value) { this->mDescriptorGroups = value; return *this; }
-
+	
 private:
 
 	TypedAssetPath<Shader> mVertexShader;
 	TypedAssetPath<Shader> mFragmentShader;
-
 	graphics::Viewport mViewport;
 	graphics::Area mScissor;
-	graphics::FrontFace::Enum mFrontFace;
+	graphics::FrontFace mFrontFace;
 	graphics::BlendMode mBlendMode;
-	graphics::PrimitiveTopology::Enum mTopology;
+	graphics::PrimitiveTopology mTopology;
 	f32 mLineWidth;
 	std::vector<DescriptorGroup> mDescriptorGroups;
 
@@ -109,37 +103,30 @@ protected:
 	void serialize(Archive &archive) const
 	{
 		Asset::serialize(archive);
-		archive(cereal::make_nvp("shader-vert", this->mVertexShader));
-		archive(cereal::make_nvp("shader-frag", this->mFragmentShader));
-		archive(cereal::make_nvp("viewport", this->mViewport));
-		archive(cereal::make_nvp("scissor", this->mScissor));
-		archive(cereal::make_nvp("frontFace", this->mFrontFace));
-		archive(cereal::make_nvp("blendMode", this->mBlendMode));
-		archive(cereal::make_nvp("topology", this->mTopology));
-		archive(cereal::make_nvp("lineWidth", this->mLineWidth));
-		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
+		SAVE_PROPERTY("shader-vert", mVertexShader);
+		SAVE_PROPERTY("shader-frag", mFragmentShader);
+		SAVE_PROPERTY("viewport", mViewport);
+		SAVE_PROPERTY("scissor", mScissor);
+		SAVE_PROPERTY("frontFace", mFrontFace);
+		SAVE_PROPERTY("blendMode", mBlendMode);
+		SAVE_PROPERTY("topology", mTopology);
+		SAVE_PROPERTY("lineWidth", mLineWidth);
+		SAVE_PROPERTY("descriptorGroups", mDescriptorGroups);
 	}
 
 	template <typename Archive>
 	void deserialize(Archive &archive)
 	{
 		Asset::deserialize(archive);
-		archive(cereal::make_nvp("shader-vert", this->mVertexShader));
-		archive(cereal::make_nvp("shader-frag", this->mFragmentShader));
-		archive(cereal::make_nvp("viewport", this->mViewport));
-		archive(cereal::make_nvp("scissor", this->mScissor));
-		archive(cereal::make_nvp("frontFace", this->mFrontFace));
-		archive(cereal::make_nvp("blendMode", this->mBlendMode));
-		archive(cereal::make_nvp("topology", this->mTopology));
-		try
-		{
-			archive(cereal::make_nvp("lineWidth", this->mLineWidth));
-		}
-		catch (cereal::Exception e)
-		{
-			this->mLineWidth = 1.0f;
-		}
-		archive(cereal::make_nvp("descriptorGroups", this->mDescriptorGroups));
+		LOAD_PROPERTY("shader-vert", mVertexShader);
+		LOAD_PROPERTY("shader-frag", mFragmentShader);
+		LOAD_PROPERTY("viewport", mViewport);
+		LOAD_PROPERTY("scissor", mScissor);
+		LOAD_PROPERTY("frontFace", mFrontFace);
+		LOAD_PROPERTY("blendMode", mBlendMode);
+		LOAD_PROPERTY("topology", mTopology);
+		LOAD_PROPERTY("lineWidth", mLineWidth);
+		LOAD_PROPERTY("descriptorGroups", mDescriptorGroups);
 	}
 #pragma endregion
 

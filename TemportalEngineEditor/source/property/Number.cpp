@@ -2,9 +2,9 @@
 
 using namespace properties;
 
-#define DEFINE_PROPERTY_EDITOR_NUM(TYPE_NUM) bool properties::renderPropertyEditor(const char* id, PropertyNumber<TYPE_NUM> &prop) \
+#define DEFINE_PROPERTY_EDITOR_NUM(TYPE_NUM) PropertyResult properties::renderPropertyEditor(const char* id, TYPE_NUM &value, TYPE_NUM const& defaultValue) \
 { \
-	return renderNumbers(id, &prop.initial, &prop.value, 1, prop); \
+	return renderNumbers(id, &defaultValue, &value, 1); \
 }
 
 DEFINE_PROPERTY_EDITOR_NUM(i8)
@@ -20,3 +20,4 @@ DEFINE_PROPERTY_EDITOR_NUM(f64)
 
 #undef DEFINE_PROPERTY_EDITOR_NUM
 
+// PropertyResult renderPropertyEditor2(const char* id, VAL_TYPE &value, VAL_TYPE const& defaultValue)

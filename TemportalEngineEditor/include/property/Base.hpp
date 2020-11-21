@@ -32,9 +32,18 @@ struct PropertyMinimal
 	}
 };
 
-#define DECLARE_PROPERTY_EDITOR(PROPERTY_TYPE) bool renderPropertyEditor(const char* id, PROPERTY_TYPE &prop)
+struct PropertyResult
+{
+	bool bChangedValue;
+	bool bIsHovered;
+	static PropertyResult oneLine(bool bChangedValue);
+	static PropertyResult group(char const* id, std::function<void(bool &bChangedAny)> renderContent);
+};
 
-template <typename TProperty>
-bool renderProperty(std::string id, TProperty &prop);
+#define DECLARE_PROPERTY_EDITOR(VAL_TYPE) PropertyResult renderPropertyEditor(const char* id, VAL_TYPE &value, VAL_TYPE const& defaultValue)
+#define DEFINE_PROPERTY_EDITOR(VAL_TYPE) PropertyResult properties::renderPropertyEditor(const char* id, VAL_TYPE &value, VAL_TYPE const& defaultValue)
+
+template <typename TValue>
+bool renderProperty(std::string id, TValue &value, TValue const& defaultValue);
 
 NS_END

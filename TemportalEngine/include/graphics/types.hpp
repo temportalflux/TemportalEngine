@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TemportalEnginePCH.hpp"
+#include "utility/Flags.hpp"
 
 namespace vk
 {
@@ -199,79 +200,59 @@ struct SamplerLODMode
 	static std::string to_string(Enum value);
 };
 
-struct FrontFace
+// Mirrors vk::FrontFace
+enum class EFrontFace
 {
-	// Mirrors vk::FrontFace
-	enum class Enum
-	{
-		eCounterClockwise = 0,
-		eClockwise = 1,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	eCounterClockwise = 0,
+	eClockwise = 1,
 };
+typedef utility::EnumWrapper<EFrontFace> FrontFace;
 
-struct BlendOperation
+// Mirrors vk::BlendOp
+enum class EBlendOperation
 {
-	// Mirrors vk::BlendOp
-	enum class Enum
-	{
-		eAdd = 0,
-		eSubtract = 1,
-		eReverseSubtract = 2,
-		eMin = 3,
-		eMax = 4,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
-	static std::string to_display_string(Enum value);
+	eAdd = 0,
+	eSubtract = 1,
+	eReverseSubtract = 2,
+	eMin = 3,
+	eMax = 4,
 };
+typedef utility::EnumWrapper<EBlendOperation> BlendOperation;
 
-struct BlendFactor
+// Mirrors vk::BlendFactor
+enum class EBlendFactor
 {
-	// Mirrors vk::BlendFactor
-	enum class Enum
-	{
-		eZero = 0,
-		eOne = 1,
-		eSrcColor = 2,
-		eOneMinusSrcColor = 3,
-		eDstColor = 4,
-		eOneMinusDstColor = 5,
-		eSrcAlpha = 6,
-		eOneMinusSrcAlpha = 7,
-		eDstAlpha = 8,
-		eOneMinusDstAlpha = 9,
-		eConstantColor = 10,
-		eOneMinusConstantColor = 11,
-		eConstantAlpha = 12,
-		eOneMinusConstantAlpha = 13,
-		eSrcAlphaSaturate = 14,
-		eSrc1Color = 15,
-		eOneMinusSrc1Color = 16,
-		eSrc1Alpha = 17,
-		eOneMinusSrc1Alpha = 18,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
-	static std::string to_display_string(Enum value);
+	eZero = 0,
+	eOne = 1,
+	eSrcColor = 2,
+	eOneMinusSrcColor = 3,
+	eDstColor = 4,
+	eOneMinusDstColor = 5,
+	eSrcAlpha = 6,
+	eOneMinusSrcAlpha = 7,
+	eDstAlpha = 8,
+	eOneMinusDstAlpha = 9,
+	eConstantColor = 10,
+	eOneMinusConstantColor = 11,
+	eConstantAlpha = 12,
+	eOneMinusConstantAlpha = 13,
+	eSrcAlphaSaturate = 14,
+	eSrc1Color = 15,
+	eOneMinusSrc1Color = 16,
+	eSrc1Alpha = 17,
+	eOneMinusSrc1Alpha = 18,
 };
+typedef utility::EnumWrapper<EBlendFactor> BlendFactor;
 
-struct ColorComponent
+// Mirrors vk::ColorComponentFlagBits
+enum class ColorComponentFlags : uint8_t
 {
-	// Mirrors vk::ColorComponentFlagBits
-	enum class Enum
-	{
-		eR = 0x00000001,
-		eG = 0x00000002,
-		eB = 0x00000004,
-		eA = 0x00000008,
-	};
-	static std::vector<Enum> ALL;
-	static char to_char(Enum value);
-	static std::string toFlagString(std::unordered_set<Enum> const& flags);
-	static std::string to_string(Enum value);
+	eR = 0x00000001,
+	eG = 0x00000002,
+	eB = 0x00000004,
+	eA = 0x00000008,
 };
+typedef utility::EnumWrapper<ColorComponentFlags> ColorComponent;
 
 struct DescriptorType
 {
@@ -381,76 +362,64 @@ struct AttachmentStoreOp
 	static std::string to_string(Enum value);
 };
 
-struct PipelineStage
+// Mirrors vk::PipelineStageFlagBits
+enum class PipelineStageFlags : uint64_t
 {
-	// Mirrors vk::PipelineStageFlagBits
-	enum class Enum
-	{
-		eTopOfPipe = 0x00000001,
-		eDrawIndirect = 0x00000002,
-		eVertexInput = 0x00000004,
-		eVertexShader = 0x00000008,
-		eTessellationControlShader = 0x00000010,
-		eTessellationEvaluationShader = 0x00000020,
-		eGeometryShader = 0x00000040,
-		eFragmentShader = 0x00000080,
-		eEarlyFragmentTests = 0x00000100,
-		eLateFragmentTests = 0x00000200,
-		eColorAttachmentOutput = 0x00000400,
-		eComputeShader = 0x00000800,
-		eTransfer = 0x00001000,
-		eBottomOfPipe = 0x00002000,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	eTopOfPipe = 0x00000001,
+	eDrawIndirect = 0x00000002,
+	eVertexInput = 0x00000004,
+	eVertexShader = 0x00000008,
+	eTessellationControlShader = 0x00000010,
+	eTessellationEvaluationShader = 0x00000020,
+	eGeometryShader = 0x00000040,
+	eFragmentShader = 0x00000080,
+	eEarlyFragmentTests = 0x00000100,
+	eLateFragmentTests = 0x00000200,
+	eColorAttachmentOutput = 0x00000400,
+	eComputeShader = 0x00000800,
+	eTransfer = 0x00001000,
+	eBottomOfPipe = 0x00002000,
 };
+typedef utility::EnumWrapper<PipelineStageFlags> PipelineStage;
 
-struct PrimitiveTopology
+// Mirrors vk::PrimitiveTopology
+enum class EPrimitiveTopology
 {
-	// Mirrors vk::PrimitiveTopology
-	enum class Enum
-	{
-		ePointList = 0,
-		eLineList = 1,
-		eLineStrip = 2,
-		eTriangleList = 3,
-		eTriangleStrip = 4,
-		eTriangleFan = 5,
-		eLineListWithAdjacency = 6,
-		eLineStripWithAdjacency = 7,
-		eTriangleListWithAdjacency = 8,
-		eTriangleStripWithAdjacency = 9,
-		ePatchList = 10,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	ePointList = 0,
+	eLineList = 1,
+	eLineStrip = 2,
+	eTriangleList = 3,
+	eTriangleStrip = 4,
+	eTriangleFan = 5,
+	eLineListWithAdjacency = 6,
+	eLineStripWithAdjacency = 7,
+	eTriangleListWithAdjacency = 8,
+	eTriangleStripWithAdjacency = 9,
+	ePatchList = 10,
 };
+typedef utility::EnumWrapper<EPrimitiveTopology> PrimitiveTopology;
 
-struct Access
+// Mirrors vk::AccessFlagBits
+enum class AccessFlags : uint64_t
 {
-	// Mirrors vk::AccessFlagBits
-	enum class Enum
-	{
-		eIndirectCommandRead = 0x00000001,
-		eIndexRead = 0x00000002,
-		eVertexAttributeRead = 0x00000004,
-		eUniformRead = 0x00000008,
-		eInputAttachmentRead = 0x00000010,
-		eShaderRead = 0x00000020,
-		eShaderWrite = 0x00000040,
-		eColorAttachmentRead = 0x00000080,
-		eColorAttachmentWrite = 0x00000100,
-		eDepthStencilAttachmentRead = 0x00000200,
-		eDepthStencilAttachmentWrite = 0x00000400,
-		eTransferRead = 0x00000800,
-		eTransferWrite = 0x00001000,
-		eHostRead = 0x00002000,
-		eHostWrite = 0x00004000,
-		eMemoryRead = 0x00008000,
-		eMemoryWrite = 0x00010000,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	eIndirectCommandRead = 0x00000001,
+	eIndexRead = 0x00000002,
+	eVertexAttributeRead = 0x00000004,
+	eUniformRead = 0x00000008,
+	eInputAttachmentRead = 0x00000010,
+	eShaderRead = 0x00000020,
+	eShaderWrite = 0x00000040,
+	eColorAttachmentRead = 0x00000080,
+	eColorAttachmentWrite = 0x00000100,
+	eDepthStencilAttachmentRead = 0x00000200,
+	eDepthStencilAttachmentWrite = 0x00000400,
+	eTransferRead = 0x00000800,
+	eTransferWrite = 0x00001000,
+	eHostRead = 0x00002000,
+	eHostWrite = 0x00004000,
+	eMemoryRead = 0x00008000,
+	eMemoryWrite = 0x00010000,
 };
+typedef utility::EnumWrapper<AccessFlags> Access;
 
 NS_END

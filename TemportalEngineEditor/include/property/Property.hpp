@@ -7,13 +7,16 @@
 #include "property/Number.hpp"
 #include "property/Vector.hpp"
 #include "property/Collection.hpp"
+#include "property/Graphics.hpp"
+#include "property/Utility.hpp"
+#include "property/Asset.hpp"
 
 #include <imgui.h>
 
 NS_PROPERTIES
 
-template <typename TProperty>
-bool renderContextMenu(std::string const& id, TProperty &prop, bool bOpen)
+template <typename TValue>
+bool renderContextMenu(std::string const& id, TValue &value, TValue const& defaultValue, bool bOpen)
 {
 	auto const popupId = id + "_context";
 	if (bOpen)
@@ -33,7 +36,7 @@ bool renderContextMenu(std::string const& id, TProperty &prop, bool bOpen)
 		}
 		if (ImGui::Selectable("Reset to Default"))
 		{
-			prop.value = prop.initial;
+			value = defaultValue;
 			bChangedValue = true;
 		}
 		for (auto const& entry : properties::contextMenuEntries)
@@ -48,35 +51,22 @@ bool renderContextMenu(std::string const& id, TProperty &prop, bool bOpen)
 	return bChangedValue;
 }
 
-template <typename TProperty>
-bool renderProperty(std::string const id, TProperty &prop)
+template <typename TValue>
+bool renderProperty_internal(std::string id, TValue &value, TValue const& defaultValue)
 {
-	bool bShowElement = true;
-	bool bOpenContextMenu = false;
-	bool bChangedValue = false;
-	if (prop.bIsMultiline)
+	PropertyResult result = properties::renderPropertyEditor(id.c_str(), value, defaultValue);
+	bool bOpenContextMenu = result.bIsHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Right);
+	if (properties::renderContextMenu(id, value, defaultValue, bOpenContextMenu))
 	{
-		bShowElement = ImGui::TreeNode((id + "###header_" + id).c_str());
-		if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-		{
-			bOpenContextMenu = true;
-		}
+		result.bChangedValue = true;
 	}
-	if (bShowElement)
-	{
-		bChangedValue = properties::renderPropertyEditor(id.c_str(), prop);
-		if (!prop.bIsMultiline && ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
-		{
-			bOpenContextMenu = true;
-		}
-	}
-	if (prop.bIsMultiline && bShowElement)
-		ImGui::TreePop();
-	if (properties::renderContextMenu(id, prop, bOpenContextMenu))
-	{
-		bChangedValue = true;
-	}
-	return bChangedValue;
+	return result.bChangedValue;
+}
+
+template <typename TValue>
+bool renderProperty(std::string id, TValue &value, TValue const& defaultValue)
+{
+	return properties::renderProperty_internal<TValue>(id, value, defaultValue);
 }
 
 NS_END

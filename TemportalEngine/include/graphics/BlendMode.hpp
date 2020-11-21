@@ -16,17 +16,33 @@ struct BlendMode
 {
 	struct Component
 	{
-		graphics::BlendOperation::Enum operation;
-		graphics::BlendFactor::Enum srcFactor;
-		graphics::BlendFactor::Enum dstFactor;
+		graphics::BlendOperation operation;
+		graphics::BlendFactor srcFactor;
+		graphics::BlendFactor dstFactor;
+
+		bool operator==(Component const& other) const
+		{
+			return operation == other.operation && srcFactor == other.srcFactor && dstFactor == other.dstFactor;
+		}
+		bool operator!=(Component const& other) const { return !(*this == other); }
 	};
 	struct Operation
 	{
 		Component color, alpha;
+
+		bool operator==(Operation const& other) const { return color == other.color && alpha == other.alpha; }
+		bool operator!=(Operation const& other) const { return !(*this == other); }
 	};
 	
-	utility::Flags<graphics::ColorComponent::Enum> writeMask;
+	utility::Flags<graphics::ColorComponentFlags> writeMask;
 	std::optional<Operation> blend;
+
+	bool operator==(BlendMode const& other) const
+	{
+		return writeMask == other.writeMask && blend == other.blend;
+	}
+	bool operator!=(BlendMode const& other) const { return !(*this == other); }
+
 };
 
 NS_END

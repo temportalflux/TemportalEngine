@@ -76,6 +76,19 @@ protected:
 	{
 		archive(cereal::make_nvp("type", this->mAssetType));
 	}
+
+	template <typename Archive, typename TPropType>
+	inline void loadProperty(Archive &archive, const char* name, TPropType &prop)
+	{
+		try
+		{
+			archive(cereal::make_nvp(name, prop));
+		}
+		catch (cereal::Exception e)
+		{
+		}
+	}
+
 #pragma endregion
 
 };

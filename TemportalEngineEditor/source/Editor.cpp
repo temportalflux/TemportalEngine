@@ -376,6 +376,12 @@ std::filesystem::path Editor::getAssetBinaryPath(asset::AssetPtrStrong asset) co
 
 #pragma region View Management Shortcuts
 
+void Editor::openAssetEditorAt(asset::AssetPath path)
+{
+	std::filesystem::path jsonAssetPath = std::filesystem::absolute(Editor::EDITOR->getProject()->getAbsoluteDirectoryPath() / path.pathStr());
+	Editor::EDITOR->openAssetEditor(asset::readAssetFromDisk(jsonAssetPath, asset::EAssetSerialization::Json));
+}
+
 void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 {
 	DeclareLog("Editor").log(LOG_DEBUG, "Opening Asset Editor for %s", asset->getFileName().c_str());

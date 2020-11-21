@@ -10,6 +10,8 @@
 #include "gui/widget/Optional.hpp"
 #include "memory/MemoryChunk.hpp"
 
+#include "property/Property.hpp"
+
 #include <imgui.h>
 
 using namespace gui;
@@ -26,113 +28,53 @@ void EditorPipeline::setAsset(asset::AssetPtrStrong assetGeneric)
 	AssetEditor::setAsset(assetGeneric);
 
 	auto asset = this->get<asset::Pipeline>();
-	this->mShaderVertex = asset->getVertexShader();
-	this->mShaderFragment = asset->getFragmentShader();
-	this->mViewport = asset->getViewport();
-	this->mScissor = asset->getScissor();
-	this->mFrontFace = asset->getFrontFace();
-	this->mBlendOperation = asset->getBlendMode().blend;
-	this->mBlendWriteMask = asset->getBlendMode().writeMask.toSet(graphics::ColorComponent::ALL);
-	this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
-	this->mTopology = asset->getTopology();
-	this->mLineWidth = asset->getLineWidth();
 	this->mDescriptorGroups = asset->getDescriptorGroups();
-
-	this->mAllShaderPaths = asset::AssetManager::get()->getAssetList(asset::Shader::StaticType());
 }
 
-bool renderBlendOperation(graphics::BlendMode::Operation &blend);
-bool renderBlendComponent(graphics::BlendMode::Component &comp);
 bool renderDescriptorGroup(uIndex const& idx, asset::Pipeline::DescriptorGroup &group);
 bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor);
 
 void EditorPipeline::renderContent()
 {
 	AssetEditor::renderContent();
+	auto asset = this->get<asset::Pipeline>();
 
-	if (ImGui::TreeNode("Viewport"))
-	{
-		if (gui::FieldNumber<f32, 2>::InlineVector("Offset", this->mViewport.offset))
-		{
-			this->markAssetDirty(1);
-		}
-		if (gui::FieldNumber<f32, 2>::InlineVector("Size", this->mViewport.size))
-		{
-			this->markAssetDirty(1);
-		}
-		if (gui::FieldNumber<f32, 2>::InlineVector("Depth Range", this->mViewport.depthRange))
-		{
-			this->markAssetDirty(1);
-		}
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNode("Scissor"))
-	{
-		if (gui::FieldNumber<f32, 2>::InlineVector("Offset", this->mScissor.offset))
-		{
-			this->markAssetDirty(1);
-		}
-		if (gui::FieldNumber<f32, 2>::InlineVector("Size", this->mScissor.size))
-		{
-			this->markAssetDirty(1);
-		}
-		ImGui::TreePop();
-	}
-
-	if (ImGui::TreeNode("Blend Mode"))
-	{
-
-		// Write Mask
-		if (gui::Combo<graphics::ColorComponent::Enum>::InlineMulti(
-			"Write Mask", graphics::ColorComponent::ALL, this->mBlendWriteMask,
-			this->mBlendWriteMaskPreviewStr, graphics::ColorComponent::to_string,
-			[](graphics::ColorComponent::Enum type) { ImGui::PushID((ui32)type); }
-		))
-		{
-			this->mBlendWriteMaskPreviewStr = graphics::ColorComponent::toFlagString(this->mBlendWriteMask);
-			this->markAssetDirty(1);
-		}
-
-		if (gui::Optional<graphics::BlendMode::Operation>::Inline(
-			this->mBlendOperation, "Blend", true,
-			&renderBlendOperation
-		))
-		{
-			this->markAssetDirty(1);
-		}
-
-		ImGui::TreePop();
-	}
-
-	if (gui::Combo<graphics::FrontFace::Enum>::Inline(
-		"Front Face", graphics::FrontFace::ALL, this->mFrontFace,
-		graphics::FrontFace::to_string,
-		[](graphics::FrontFace::Enum type) { ImGui::PushID((ui32)type); }
-	))
+	if (properties::renderProperty("Viewport", asset->REF_PROP(Viewport), asset->DEFAULT_PROP(Viewport)))
 	{
 		this->markAssetDirty(1);
 	}
 
-	if (gui::Combo<graphics::PrimitiveTopology::Enum>::Inline(
-		"Topology", graphics::PrimitiveTopology::ALL, this->mTopology,
-		graphics::PrimitiveTopology::to_string,
-		[](graphics::PrimitiveTopology::Enum type) { ImGui::PushID((ui32)type); }
-	))
+	if (properties::renderProperty("Scissor", asset->REF_PROP(Scissor), asset->DEFAULT_PROP(Scissor)))
 	{
 		this->markAssetDirty(1);
 	}
 
-	if (gui::FieldNumber<f32, 1>::InlineSingle("Line Width", this->mLineWidth))
+	if (properties::renderProperty("Blend Mode", asset->REF_PROP(BlendMode), asset->DEFAULT_PROP(BlendMode)))
 	{
 		this->markAssetDirty(1);
 	}
 
-	if (gui::FieldAsset::Inline("Vertex Shader", this->mShaderVertex.path(), this->mAllShaderPaths, asset::Shader::StaticType()))
+	if (properties::renderProperty("Front Face", asset->REF_PROP(FrontFace), asset->DEFAULT_PROP(FrontFace)))
 	{
 		this->markAssetDirty(1);
 	}
-	if (gui::FieldAsset::Inline("Fragment Shader", this->mShaderFragment.path(), this->mAllShaderPaths, asset::Shader::StaticType()))
+
+	if (properties::renderProperty("Topology", asset->REF_PROP(Topology), asset->DEFAULT_PROP(Topology)))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (properties::renderProperty("Line Width", asset->REF_PROP(LineWidth), asset->DEFAULT_PROP(LineWidth)))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (properties::renderProperty("Vertex Shader", asset->REF_PROP(VertexShader), asset->DEFAULT_PROP(VertexShader)))
+	{
+		this->markAssetDirty(1);
+	}
+
+	if (properties::renderProperty("Fragment Shader", asset->REF_PROP(FragmentShader), asset->DEFAULT_PROP(FragmentShader)))
 	{
 		this->markAssetDirty(1);
 	}
@@ -142,66 +84,6 @@ void EditorPipeline::renderContent()
 		this->markAssetDirty(1);
 	}
 
-}
-
-bool renderBlendOperation(graphics::BlendMode::Operation &blend)
-{
-	bool bChanged = false;
-
-	// Color Blend Mode
-	{
-		ImGui::PushID("ColorMode");
-		ImGui::Text("Color =");
-		ImGui::SameLine();
-		if (renderBlendComponent(blend.color))
-		{
-			bChanged = true;
-		}
-		ImGui::PopID();
-	}
-
-	// Alpha Blend Mode
-	{
-		ImGui::PushID("AlphaMode");
-		ImGui::Text("Alpha =");
-		ImGui::SameLine();
-		if (renderBlendComponent(blend.alpha))
-		{
-			bChanged = true;
-		}
-		ImGui::PopID();
-	}
-
-	return bChanged;
-}
-
-bool renderBlendComponent(graphics::BlendMode::Component &comp)
-{
-	bool bChanged = false;
-	ImGui::PushItemWidth(150);
-	if (gui::Combo<graphics::BlendFactor::Enum>::Inline(
-		"###src", graphics::BlendFactor::ALL, comp.srcFactor,
-		graphics::BlendFactor::to_display_string,
-		[](graphics::BlendFactor::Enum type) { ImGui::PushID((ui32)type); }
-	)) bChanged = true;
-	ImGui::PopItemWidth();
-	ImGui::SameLine();
-	ImGui::PushItemWidth(50);
-	if (gui::Combo<graphics::BlendOperation::Enum>::Inline(
-		"###op", graphics::BlendOperation::ALL, comp.operation,
-		graphics::BlendOperation::to_display_string,
-		[](graphics::BlendOperation::Enum type) { ImGui::PushID((ui32)type); }
-	)) bChanged = true;
-	ImGui::PopItemWidth();
-	ImGui::SameLine();
-	ImGui::PushItemWidth(150);
-	if (gui::Combo<graphics::BlendFactor::Enum>::Inline(
-		"###dst", graphics::BlendFactor::ALL, comp.dstFactor,
-		graphics::BlendFactor::to_display_string,
-		[](graphics::BlendFactor::Enum type) { ImGui::PushID((ui32)type); }
-	)) bChanged = true;
-	ImGui::PopItemWidth();
-	return bChanged;
 }
 
 bool renderDescriptorGroup(uIndex const& idx, asset::Pipeline::DescriptorGroup &group)
@@ -246,19 +128,6 @@ bool renderDescriptor(uIndex const& idx, asset::Pipeline::Descriptor &descriptor
 
 void EditorPipeline::saveAsset()
 {
-	graphics::BlendMode blendMode;
-	blendMode.blend = this->mBlendOperation;
-	blendMode.writeMask = utility::Flags<graphics::ColorComponent::Enum>(this->mBlendWriteMask);
-
-	this->get<asset::Pipeline>()
-		->setVertexShader(this->mShaderVertex)
-		.setFragmentShader(this->mShaderFragment)
-		.setViewport(this->mViewport)
-		.setScissor(this->mScissor)
-		.setFrontFace(this->mFrontFace)
-		.setBlendMode(blendMode)
-		.setTopology(this->mTopology)
-		.setLineWidth(this->mLineWidth)
-		.setDescriptorGroups(this->mDescriptorGroups);
+	this->get<asset::Pipeline>()->setDescriptorGroups(this->mDescriptorGroups);
 	AssetEditor::saveAsset();
 }

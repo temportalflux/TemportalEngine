@@ -51,6 +51,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\filesystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Base.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Collection.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Graphics.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Number.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Primitive.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Property.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Utility.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Vector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)source\build\IBuilder.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -85,5 +94,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Base.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Collection.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Graphics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Number.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Primitive.cpp" />
   </ItemGroup>
 </Project>

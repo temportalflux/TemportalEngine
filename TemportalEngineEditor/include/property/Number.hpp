@@ -6,40 +6,16 @@
 
 NS_PROPERTIES
 
-template <typename TNumber>
-struct NumberSettings
-{
-	std::optional<TNumber> step;
-	std::optional<TNumber> stepFast;
-};
-
-template <typename TNumber>
-struct PropertyNumber : public PropertyMinimal<TNumber>, public NumberSettings<TNumber>
-{
-	PropertyNumber() : PropertyMinimal<TNumber>() {}
-	PropertyNumber(
-		TNumber initial, TNumber value,
-		std::optional<TNumber> step = std::nullopt, std::optional<TNumber> stepFast = std::nullopt
-	) : PropertyMinimal<TNumber>(initial, value)
-	{
-		this->step = step;
-		this->stepFast = stepFast;
-	}
-
-};
-
-#define DECLARE_PROPERTY_EDITOR_NUM(TYPE_NUM) DECLARE_PROPERTY_EDITOR(PropertyNumber<TYPE_NUM>)
-DECLARE_PROPERTY_EDITOR_NUM(i8);
-DECLARE_PROPERTY_EDITOR_NUM(i16);
-DECLARE_PROPERTY_EDITOR_NUM(i32);
-DECLARE_PROPERTY_EDITOR_NUM(i64);
-DECLARE_PROPERTY_EDITOR_NUM(ui8);
-DECLARE_PROPERTY_EDITOR_NUM(ui16);
-DECLARE_PROPERTY_EDITOR_NUM(ui32);
-DECLARE_PROPERTY_EDITOR_NUM(ui64);
-DECLARE_PROPERTY_EDITOR_NUM(f32);
-DECLARE_PROPERTY_EDITOR_NUM(f64);
-#undef DECLARE_PROPERTY_EDITOR_NUM
+DECLARE_PROPERTY_EDITOR(i8);
+DECLARE_PROPERTY_EDITOR(i16);
+DECLARE_PROPERTY_EDITOR(i32);
+DECLARE_PROPERTY_EDITOR(i64);
+DECLARE_PROPERTY_EDITOR(ui8);
+DECLARE_PROPERTY_EDITOR(ui16);
+DECLARE_PROPERTY_EDITOR(ui32);
+DECLARE_PROPERTY_EDITOR(ui64);
+DECLARE_PROPERTY_EDITOR(f32);
+DECLARE_PROPERTY_EDITOR(f64);
 
 template <typename T>
 constexpr static ImGuiDataType_ GuiDataType()
@@ -59,15 +35,14 @@ constexpr static ImGuiDataType_ GuiDataType()
 }
 
 template <typename T>
-bool renderNumbers(const char* id, T const* initial, T* data, ui32 count, NumberSettings<T> const& prop)
+PropertyResult renderNumbers(const char* id, T const* initial, T* data, ui32 count)
 {
-	return ImGui::InputScalarN(
+	return PropertyResult::oneLine(ImGui::InputScalarN(
 		id, GuiDataType<T>(),
 		data, count,
-		(void*)(prop.step.has_value() ? &prop.step.value() : nullptr),
-		(void*)(prop.stepFast.has_value() ? &prop.stepFast.value() : nullptr),
+		nullptr, nullptr, // TODO: Figure out how to push properties into the stack
 		nullptr, ImGuiInputTextFlags_None
-	);
+	));
 }
 
 NS_END

@@ -69,8 +69,8 @@ struct RPDependency
 	struct Item
 	{
 		std::optional<uIndex> phaseIndex;
-		utility::Flags<graphics::PipelineStage::Enum> stageMask;
-		utility::Flags<graphics::Access::Enum> accessMask;
+		utility::Flags<graphics::PipelineStageFlags> stageMask;
+		utility::Flags<graphics::AccessFlags> accessMask;
 
 		template <typename Archive>
 		void save(Archive &archive) const

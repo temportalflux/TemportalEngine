@@ -4,64 +4,41 @@
 
 NS_PROPERTIES
 
-template <typename TElement, typename TElementProperty>
-struct PropertyListVector : public PropertyMinimal<std::vector<TElement>>
-{
-	TElementProperty elementProperty;
-	
-	PropertyListVector() : PropertyMinimal<std::vector<TElement>>() { this->bIsMultiline = true; }
-
-	PropertyListVector(TElementProperty elementProp)
-		: PropertyMinimal<std::vector<TElement>>()
-		, elementProperty(elementProp)
-	{
-		this->bIsMultiline = true;
-	}
-
-	PropertyListVector(std::vector<TElement> initial, std::vector<TElement> value, TElementProperty elementProp)
-		: PropertyMinimal<std::vector<TElement>>(initial, value)
-		, elementProperty(elementProp)
-	{
-		this->bIsMultiline = true;
-	}
-
-};
-
 bool renderList(
 	const char* id, uSize size,
-	std::function<void(uIndex &idx, uSize &size)> renderElement,
+	std::function<bool(uIndex &idx, uSize &size)> renderElement,
 	std::function<void(uSize newSize)> onChangeSize
 );
 
-template <typename TElement, typename TElementProperty>
-bool renderPropertyEditor(const char* id, PropertyListVector<TElement, TElementProperty> &prop)
+template <typename TElement>
+PropertyResult renderPropertyEditor(const char* id, std::vector<TElement> &value, std::vector<TElement> const& defaultValue)
 {
-	auto changeSize = [&](uSize newSize) { prop.value.resize(newSize); };
+	auto changeSize = [&](uSize newSize) { value.resize(newSize); };
 	auto renderAt = [&](uIndex &idx, uSize &size)
 	{
 		bool bRemoved = false;
 
 		properties::contextMenuEntries.push_back({
-			"Insert Above", [&prop, &idx, &size]()
+			"Insert Above", [&value, &idx, &size]()
 			{
-				prop.value.insert(prop.value.begin() + idx, TElement());
+				value.insert(value.begin() + idx, TElement());
 				idx++;
 				size++;
 				return true;
 			}
 		});
 		properties::contextMenuEntries.push_back({
-			"Insert Below", [&prop, &idx, &size]()
+			"Insert Below", [&value, &idx, &size]()
 			{
-				prop.value.insert(prop.value.begin() + idx + 1, TElement());
+				value.insert(value.begin() + idx + 1, TElement());
 				size++;
 				return true;
 			}
 		});
 		properties::contextMenuEntries.push_back({
-			"Remove", [&prop, &idx, &size, &bRemoved]()
+			"Remove", [&value, &idx, &size, &bRemoved]()
 			{
-				prop.value.erase(prop.value.begin() + idx);
+				value.erase(value.begin() + idx);
 				size--;
 				idx--;
 				bRemoved = true;
@@ -69,19 +46,23 @@ bool renderPropertyEditor(const char* id, PropertyListVector<TElement, TElementP
 			}
 		});
 
-		prop.elementProperty.initial = idx < prop.initial.size() ? prop.initial[idx] : TElement();
-		prop.elementProperty.value = prop.value[idx];
-		properties::renderProperty(std::to_string(idx), prop.elementProperty);
-		if (!bRemoved)
+		TElement const defaultIdx = idx < defaultValue.size() ? defaultValue[idx] : TElement();
+		TElement valueIdx = value[idx];
+		bool bChangedIdx = properties::renderProperty(std::to_string(idx), valueIdx, defaultIdx);
+		if (bChangedIdx && !bRemoved)
 		{
-			prop.value[idx] = prop.elementProperty.value;
+			value[idx] = valueIdx;
 		}
 
 		properties::contextMenuEntries.pop_back();
 		properties::contextMenuEntries.pop_back();
 		properties::contextMenuEntries.pop_back();
+
+		return bChangedIdx;
 	};
-	return renderList(id, prop.value.size(), renderAt, changeSize);
+	return PropertyResult::group(id, [&](bool &bChangedAny) {
+		bChangedAny = renderList(id, value.size(), renderAt, changeSize);
+	});
 }
 
 NS_END

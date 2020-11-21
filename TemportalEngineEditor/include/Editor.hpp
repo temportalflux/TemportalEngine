@@ -57,6 +57,7 @@ public:
 
 #pragma region View Management Shortcuts
 	std::shared_ptr<memory::MemoryChunk> getMemoryGui() const;
+	static void openAssetEditorAt(asset::AssetPath path);
 	void openAssetEditor(asset::AssetPtrStrong asset);
 	template <typename T>
 	std::shared_ptr<T> openNewGui(std::string titleId)

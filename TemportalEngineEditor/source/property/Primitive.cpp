@@ -5,12 +5,12 @@
 
 using namespace properties;
 
-bool properties::renderPropertyEditor(const char* id, PropertyMinimal<bool> &prop)
+PropertyResult properties::renderPropertyEditor(const char* id, bool &value, bool const& defaultValue)
 {
-	return ImGui::Checkbox(id, &prop.value);
+	return PropertyResult::oneLine(ImGui::Checkbox(id, &value));
 }
 
-bool properties::renderPropertyEditor(const char* id, PropertyMinimal<std::string> &prop)
+PropertyResult properties::renderPropertyEditor(const char* id, std::string &value, std::string const& defaultValue)
 {
-	return ImGui::InputText(id, &prop.value);
+	return PropertyResult::oneLine(ImGui::InputText(id, &value));
 }

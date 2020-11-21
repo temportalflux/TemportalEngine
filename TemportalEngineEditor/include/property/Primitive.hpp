@@ -4,7 +4,7 @@
 
 NS_PROPERTIES
 
-DECLARE_PROPERTY_EDITOR(PropertyMinimal<bool>);
-DECLARE_PROPERTY_EDITOR(PropertyMinimal<std::string>);
+DECLARE_PROPERTY_EDITOR(bool);
+DECLARE_PROPERTY_EDITOR(std::string);
 
 NS_END

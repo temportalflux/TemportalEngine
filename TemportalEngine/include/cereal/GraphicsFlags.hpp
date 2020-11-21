@@ -13,42 +13,25 @@
 //CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(vk::ShaderStageFlagBits, cereal::specialization::non_member_load_save);
 //CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(vk::ColorComponentFlags, cereal::specialization::non_member_load_save);
 
+#define DECLARE_CEREALIZATION(TYPE, JSON_OUT, BINARY_OUT) \
+	JSON_OUT save_minimal(cereal::JSONOutputArchive const& archive, TYPE const &value); \
+	void load_minimal(cereal::JSONInputArchive const& archive, TYPE &value, JSON_OUT const& out); \
+	BINARY_OUT save_minimal(cereal::PortableBinaryOutputArchive const& archive, TYPE const &value); \
+	void load_minimal(cereal::PortableBinaryInputArchive const& archive, TYPE &value, BINARY_OUT const& out);
+
 namespace cereal
 {
 
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, vk::ShaderStageFlagBits const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, vk::ShaderStageFlagBits &value, std::string const& str);
-	ui32 save_minimal(cereal::PortableBinaryOutputArchive const& archive, vk::ShaderStageFlagBits const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, vk::ShaderStageFlagBits &value, ui32 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, vk::ColorComponentFlags const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, vk::ColorComponentFlags &value, std::string const& str);
-	ui32 save_minimal(cereal::PortableBinaryOutputArchive const& archive, vk::ColorComponentFlags const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, vk::ColorComponentFlags &value, ui32 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::ColorComponent::Enum> const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::ColorComponent::Enum>  &value, std::string const& str);
-	ui64 save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::ColorComponent::Enum> const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::ColorComponent::Enum> &value, ui64 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, graphics::BlendFactor::Enum const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, graphics::BlendFactor::Enum &value, std::string const& str);
-	ui32 save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::BlendFactor::Enum const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::BlendFactor::Enum &value, ui32 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, graphics::BlendOperation::Enum const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, graphics::BlendOperation::Enum &value, std::string const& str);
-	ui32 save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::BlendOperation::Enum const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::BlendOperation::Enum &value, ui32 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum>  &value, std::string const& i);
-	ui64 save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::PipelineStage::Enum> &value, ui64 const& i);
-
-	std::string save_minimal(cereal::JSONOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value);
-	void load_minimal(cereal::JSONInputArchive const& archive, utility::Flags<graphics::Access::Enum>  &value, std::string const& i);
-	ui64 save_minimal(cereal::PortableBinaryOutputArchive const& archive, utility::Flags<graphics::Access::Enum> const &value);
-	void load_minimal(cereal::PortableBinaryInputArchive const& archive, utility::Flags<graphics::Access::Enum> &value, ui64 const& i);
+	DECLARE_CEREALIZATION(vk::ShaderStageFlagBits, std::string, ui32)
+	DECLARE_CEREALIZATION(vk::ColorComponentFlags, std::string, ui32)
+	DECLARE_CEREALIZATION(utility::Flags<graphics::ColorComponentFlags>, std::string, ui64)
+	DECLARE_CEREALIZATION(graphics::FrontFace, std::string, ui32)
+	DECLARE_CEREALIZATION(graphics::BlendOperation, std::string, ui32)
+	DECLARE_CEREALIZATION(graphics::BlendFactor, std::string, ui32)
+	DECLARE_CEREALIZATION(utility::Flags<graphics::PipelineStageFlags>, std::string, ui64)
+	DECLARE_CEREALIZATION(graphics::PrimitiveTopology, std::string, ui32)
+	DECLARE_CEREALIZATION(utility::Flags<graphics::AccessFlags>, std::string, ui64)
 
 }
+
+#undef DECLARE_CEREALIZATION

@@ -2,31 +2,6 @@
 	"type": "pipeline",
 	"shader-vert": "shader:assets/shaders/PerspectiveLineVertex.te-asset",
 	"shader-frag": "shader:assets/shaders/PerspectiveLineFragment.te-asset",
-	"viewport": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		],
-		"depthRange": [
-			0.0,
-			0.0
-		]
-	},
-	"scissor": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		]
-	},
-	"frontFace": 0,
 	"blendMode": {
 		"mask": "RGBA",
 		"blend": {

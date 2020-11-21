@@ -108,13 +108,13 @@ void ImGuiRenderer::createRenderPass()
 			// dependee
 			{
 				std::nullopt,
-				graphics::PipelineStage::Enum::eColorAttachmentOutput
+				utility::Flags<graphics::PipelineStageFlags>(graphics::PipelineStageFlags::eColorAttachmentOutput)
 			},
 			// depender
 			{
 				0,
-				graphics::PipelineStage::Enum::eColorAttachmentOutput,
-				graphics::Access::Enum::eColorAttachmentWrite
+				utility::Flags<graphics::PipelineStageFlags>(graphics::PipelineStageFlags::eColorAttachmentOutput),
+				utility::Flags<graphics::AccessFlags>(graphics::AccessFlags::eColorAttachmentWrite)
 			}
 		}
 	);
