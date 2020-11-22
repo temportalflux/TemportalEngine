@@ -220,6 +220,9 @@
     <None Include="$(MSBuildThisFileDirectory)Minecraft.te-project">
       <Filter>assets</Filter>
     </None>
+    <None Include="$(MSBuildThisFileDirectory)assets\ChunkLinePipeline.te-asset">
+      <Filter>assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Font Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.otf">

@@ -2,31 +2,6 @@
 	"type": "pipeline",
 	"shader-vert": "shader:assets/shaders/ChunkLineVertex.te-asset",
 	"shader-frag": "shader:assets/shaders/ChunkLineFragment.te-asset",
-	"viewport": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		],
-		"depthRange": [
-			0.0,
-			1.0
-		]
-	},
-	"scissor": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		]
-	},
-	"frontFace": 0,
 	"blendMode": {
 		"mask": "RGBA",
 		"blend": {
@@ -45,8 +20,7 @@
 			}
 		}
 	},
-	"topology": 1,
-	"lineWidth": 1.0,
+	"topology": "LineList",
 	"descriptorGroups": [
 		{
 			"descriptors": [

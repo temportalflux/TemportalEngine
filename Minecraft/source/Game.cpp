@@ -477,7 +477,6 @@ void Game::createChunkBoundaryRenderer()
 
 		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eSideGrid, segments, true);
 	}
-
 	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 

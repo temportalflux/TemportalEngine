@@ -58,6 +58,7 @@
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Grass.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\blocks\Stone.te-asset" />
+    <None Include="$(MSBuildThisFileDirectory)assets\ChunkLinePipeline.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\PerspectiveLinePipeline.te-asset" />
     <None Include="$(MSBuildThisFileDirectory)assets\RenderPass.te-asset" />
