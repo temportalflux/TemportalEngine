@@ -66,13 +66,13 @@ protected:
 	virtual DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, );
 
 	template <typename Archive>
-	void serialize(Archive &archive) const
+	void serialize(Archive &archive, bool bCheckDefaults) const
 	{
 		archive(cereal::make_nvp("type", this->getAssetType()));
 	}
 
 	template <typename Archive>
-	void deserialize(Archive &archive)
+	void deserialize(Archive &archive, bool bCheckDefaults)
 	{
 		archive(cereal::make_nvp("type", this->mAssetType));
 	}

@@ -51,9 +51,9 @@ protected:
 	DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 
 	template <typename Archive>
-	void serialize(Archive &archive) const
+	void serialize(Archive &archive, bool bCheckDefaults) const
 	{
-		Asset::serialize(archive);
+		Asset::serialize(archive, bCheckDefaults);
 		SAVE_PROPERTY("name", mName);
 		SAVE_PROPERTY("version", mVersion);
 		SAVE_PROPERTY("gpuPreference", mGraphicsDevicePreference);
@@ -61,9 +61,9 @@ protected:
 	}
 
 	template <typename Archive>
-	void deserialize(Archive &archive)
+	void deserialize(Archive &archive, bool bCheckDefaults)
 	{
-		Asset::deserialize(archive);
+		Asset::deserialize(archive, bCheckDefaults);
 		LOAD_PROPERTY("name", mName);
 		LOAD_PROPERTY("version", mVersion);
 		LOAD_PROPERTY("gpuPreference", mGraphicsDevicePreference);

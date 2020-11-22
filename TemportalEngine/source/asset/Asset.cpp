@@ -48,14 +48,14 @@ void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type
 	{
 		std::ofstream os(filePath);
 		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
-		this->write(archive);
+		this->write(archive, true);
 		return;
 	}
 	case EAssetSerialization::Binary:
 	{
 		std::ofstream os(filePath, std::ios::binary);
 		cereal::PortableBinaryOutputArchive archive(os);
-		this->compile(archive);
+		this->compile(archive, false);
 		return;
 	}
 	}
@@ -70,14 +70,14 @@ void Asset::readFromDisk(std::filesystem::path filePath, asset::EAssetSerializat
 	{
 		std::ifstream is(filePath);
 		cereal::JSONInputArchive archive(is);
-		this->read(archive);
+		this->read(archive, true);
 		break;
 	}
 	case EAssetSerialization::Binary:
 	{
 		std::ifstream is(filePath, std::ios::binary);
 		cereal::PortableBinaryInputArchive archive(is);
-		this->decompile(archive);
+		this->decompile(archive, false);
 		break;
 	}
 	}

@@ -45,9 +45,9 @@ protected:
 	DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 
 	template <typename Archive>
-	void serialize(Archive &archive) const
+	void serialize(Archive &archive, bool bCheckDefaults) const
 	{
-		Asset::serialize(archive);
+		Asset::serialize(archive, bCheckDefaults);
 		SAVE_PROPERTY("clearColor", mClearColor);
 		SAVE_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		SAVE_PROPERTY("renderArea", mRenderArea);
@@ -57,9 +57,9 @@ protected:
 	}
 
 	template <typename Archive>
-	void deserialize(Archive &archive)
+	void deserialize(Archive &archive, bool bCheckDefaults)
 	{
-		Asset::deserialize(archive);
+		Asset::deserialize(archive, bCheckDefaults);
 		LOAD_PROPERTY("clearColor", mClearColor);
 		LOAD_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		LOAD_PROPERTY("renderArea", mRenderArea);

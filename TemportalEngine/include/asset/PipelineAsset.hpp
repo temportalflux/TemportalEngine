@@ -100,9 +100,9 @@ protected:
 	DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 
 	template <typename Archive>
-	void serialize(Archive &archive) const
+	void serialize(Archive &archive, bool bCheckDefaults) const
 	{
-		Asset::serialize(archive);
+		Asset::serialize(archive, bCheckDefaults);
 		SAVE_PROPERTY("shader-vert", mVertexShader);
 		SAVE_PROPERTY("shader-frag", mFragmentShader);
 		SAVE_PROPERTY("viewport", mViewport);
@@ -115,9 +115,9 @@ protected:
 	}
 
 	template <typename Archive>
-	void deserialize(Archive &archive)
+	void deserialize(Archive &archive, bool bCheckDefaults)
 	{
-		Asset::deserialize(archive);
+		Asset::deserialize(archive, bCheckDefaults);
 		LOAD_PROPERTY("shader-vert", mVertexShader);
 		LOAD_PROPERTY("shader-frag", mFragmentShader);
 		LOAD_PROPERTY("viewport", mViewport);

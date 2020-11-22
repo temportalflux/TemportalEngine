@@ -81,29 +81,29 @@ std::string Shader::readSource() const
 
 #pragma region Serialization
 
-void Shader::write(cereal::JSONOutputArchive &archive) const
+void Shader::write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::write(archive);
+	Asset::write(archive, bCheckDefaults);
 	archive(cereal::make_nvp("stage", (vk::ShaderStageFlagBits const&)this->mStage));
 }
 
-void Shader::read(cereal::JSONInputArchive &archive)
+void Shader::read(cereal::JSONInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::read(archive);
+	Asset::read(archive, bCheckDefaults);
 	archive(cereal::make_nvp("stage", (vk::ShaderStageFlagBits&)this->mStage));
 }
 
-void Shader::compile(cereal::PortableBinaryOutputArchive &archive) const
+void Shader::compile(cereal::PortableBinaryOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::compile(archive);
+	Asset::compile(archive, bCheckDefaults);
 	archive((vk::ShaderStageFlagBits const&)this->mStage);
 	archive(this->mSourceBinary);
 	archive(this->mBinaryMetadata.inputAttributes);
 }
 
-void Shader::decompile(cereal::PortableBinaryInputArchive &archive)
+void Shader::decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::decompile(archive);
+	Asset::decompile(archive, bCheckDefaults);
 	archive((vk::ShaderStageFlagBits&)this->mStage);
 	archive(this->mSourceBinary);
 	archive(this->mBinaryMetadata.inputAttributes);

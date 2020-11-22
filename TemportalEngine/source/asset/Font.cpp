@@ -30,32 +30,32 @@ std::vector<graphics::FontGlyphSet>& Font::glyphSets()
 
 #pragma region Serialization
 
-void Font::write(cereal::JSONOutputArchive &archive) const
+void Font::write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::write(archive);
+	Asset::write(archive, bCheckDefaults);
 	archive(cereal::make_nvp("path", this->mFontPath.string()));
 	archive(cereal::make_nvp("fontSizes", this->mSupportedFontSizes));
 }
 
-void Font::read(cereal::JSONInputArchive &archive)
+void Font::read(cereal::JSONInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::read(archive);
+	Asset::read(archive, bCheckDefaults);
 	std::string pathStr;
 	archive(cereal::make_nvp("path", pathStr));
 	this->mFontPath = pathStr;
 	archive(cereal::make_nvp("fontSizes", this->mSupportedFontSizes));
 }
 
-void Font::compile(cereal::PortableBinaryOutputArchive &archive) const
+void Font::compile(cereal::PortableBinaryOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::compile(archive);
+	Asset::compile(archive, bCheckDefaults);
 	archive(this->mSupportedFontSizes);
 	archive(this->mGlyphSets);
 }
 
-void Font::decompile(cereal::PortableBinaryInputArchive &archive)
+void Font::decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::decompile(archive);
+	Asset::decompile(archive, bCheckDefaults);
 	archive(this->mSupportedFontSizes);
 	archive(this->mGlyphSets);
 }

@@ -72,9 +72,9 @@ protected:
 	DECLARE_SERIALIZATION_METHOD(decompile, cereal::PortableBinaryInputArchive, override);
 
 	template <typename Archive>
-	void serialize(Archive &archive) const
+	void serialize(Archive &archive, bool bCheckDefaults) const
 	{
-		Asset::serialize(archive);
+		Asset::serialize(archive, bCheckDefaults);
 		archive(cereal::make_nvp("filterMagnified", this->mFilterModeMagnified));
 		archive(cereal::make_nvp("filterMinified", this->mFilterModeMinified));
 		archive(cereal::make_nvp("addressModes", this->mAddressModesUVW));
@@ -88,9 +88,9 @@ protected:
 	}
 
 	template <typename Archive>
-	void deserialize(Archive &archive)
+	void deserialize(Archive &archive, bool bCheckDefaults)
 	{
-		Asset::deserialize(archive);
+		Asset::deserialize(archive, bCheckDefaults);
 		archive(cereal::make_nvp("filterMagnified", this->mFilterModeMagnified));
 		archive(cereal::make_nvp("filterMinified", this->mFilterModeMinified));
 		archive(cereal::make_nvp("addressModes", this->mAddressModesUVW));

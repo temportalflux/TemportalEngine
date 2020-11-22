@@ -44,30 +44,30 @@ uSize Texture::getSourceMemorySize() const
 
 #pragma region Serialization
 
-void Texture::write(cereal::JSONOutputArchive &archive) const
+void Texture::write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::write(archive);
+	Asset::write(archive, bCheckDefaults);
 	archive(cereal::make_nvp("source", this->mSourceFilePath));
 }
 
-void Texture::read(cereal::JSONInputArchive &archive)
+void Texture::read(cereal::JSONInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::read(archive);
+	Asset::read(archive, bCheckDefaults);
 	archive(cereal::make_nvp("source", this->mSourceFilePath));
 }
 
-void Texture::compile(cereal::PortableBinaryOutputArchive &archive) const
+void Texture::compile(cereal::PortableBinaryOutputArchive &archive, bool bCheckDefaults) const
 {
-	Asset::compile(archive);
+	Asset::compile(archive, bCheckDefaults);
 	// TODO: Make cerealizer for vectors
 	archive(this->mSourceSize.x());
 	archive(this->mSourceSize.y());
 	archive(this->mSourceBinary);
 }
 
-void Texture::decompile(cereal::PortableBinaryInputArchive &archive)
+void Texture::decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDefaults)
 {
-	Asset::decompile(archive);
+	Asset::decompile(archive, bCheckDefaults);
 	archive(this->mSourceSize.x());
 	archive(this->mSourceSize.y());
 	archive(this->mSourceBinary);

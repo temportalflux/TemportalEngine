@@ -130,12 +130,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp">
       <Filter>property</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\property\PropertyVector.hpp">
-      <Filter>property</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\include\property\asset\PropertyGraphicsAsset.hpp">
-      <Filter>property\asset</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\PropertyVector.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -275,11 +271,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Utility.cpp">
       <Filter>property</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\property\PropertyVector.cpp">
-      <Filter>property</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngineEditor\source\property\asset\PropertyGraphicsAsset.cpp">
-      <Filter>property\asset</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\PropertyVector.cpp" />
   </ItemGroup>
 </Project>

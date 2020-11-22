@@ -35,10 +35,10 @@ private:
 
 #pragma region Serialization
 protected:
-	void write(cereal::JSONOutputArchive &archive) const override;
-	void read(cereal::JSONInputArchive &archive) override;
-	void compile(cereal::PortableBinaryOutputArchive &archive) const override;
-	void decompile(cereal::PortableBinaryInputArchive &archive) override;
+	void write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const override;
+	void read(cereal::JSONInputArchive &archive, bool bCheckDefaults) override;
+	void compile(cereal::PortableBinaryOutputArchive &archive, bool bCheckDefaults) const override;
+	void decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDefaults) override;
 #pragma endregion
 
 };
