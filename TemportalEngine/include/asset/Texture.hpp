@@ -25,6 +25,8 @@ public:
 	math::Vector2UInt getSourceSize() const;
 	uSize getSourceMemorySize() const;
 
+	void onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute) override;
+
 private:
 	std::string mSourceFilePath;
 	// Binary data of the source (accessible when asset is compiled)

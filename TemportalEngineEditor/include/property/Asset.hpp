@@ -39,10 +39,10 @@ DECLARE_PROPERTY_EDITOR(asset::TypedAssetPath<TAsset>)
 	if (ImGui::BeginDragDropTarget())
 	{
 		ImGuiPayload const* activePayload = ImGui::GetDragDropPayload();
-		bool bCanAcceptPayload = activePayload->IsDataType("_ASSETPATH") && (((asset::AssetPath*)(activePayload->Data))->type() == assetType);
+		bool bCanAcceptPayload = activePayload->IsDataType("ASSETPATH") && (((asset::AssetPath*)(activePayload->Data))->type() == assetType);
 		if (bCanAcceptPayload)
 		{
-			if (ImGuiPayload const *payload = ImGui::AcceptDragDropPayload("_ASSETPATH", ImGuiDragDropFlags_None))
+			if (ImGuiPayload const *payload = ImGui::AcceptDragDropPayload("ASSETPATH", ImGuiDragDropFlags_None))
 			{
 				value.path() = *((asset::AssetPath*)(payload->Data));
 				result.bChangedValue = true;

@@ -38,7 +38,12 @@ public:
 	std::filesystem::path getPath() const;
 	std::string getFileName() const;
 
-	virtual std::unordered_set<AssetPath> getReferencedAssetPaths() const;
+	virtual std::vector<AssetPath const*> getAssetRefs() const;
+	virtual std::vector<AssetPath*> getAssetRefs();
+	std::unordered_set<AssetPath> getReferencedAssetPaths() const;
+	void replaceAssetReference(AssetPath const& prev, AssetPath const& updated);
+
+	virtual void onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute) {}
 
 protected:
 	static cereal::JSONOutputArchive::Options JsonFormat;

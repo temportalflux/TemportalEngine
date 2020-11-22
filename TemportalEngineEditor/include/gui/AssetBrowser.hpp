@@ -31,6 +31,11 @@ private:
 
 	void renderMenuBar();
 	bool canShowFileInView(std::filesystem::path const &path);
+
+	void renderDirectoryTree();
+	void renderDirectoryItem(std::filesystem::path const& path);
+	void renderDirectoryContents(std::filesystem::path const& path);
+
 	void onFileOpen(std::filesystem::path const &path);
 	void onPathDelete(std::filesystem::path const &path);
 	void onStartDragDrop(std::filesystem::path const &path);

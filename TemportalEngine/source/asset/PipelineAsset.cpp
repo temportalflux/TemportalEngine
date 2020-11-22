@@ -21,10 +21,8 @@ DEFINE_ASSET_CONSTRUCTORS(Pipeline)
 
 }
 
-std::unordered_set<AssetPath> Pipeline::getReferencedAssetPaths() const
-{
-	return { mVertexShader, mFragmentShader };
-}
+std::vector<AssetPath const*> Pipeline::getAssetRefs() const { return { &mVertexShader.path(), &mFragmentShader.path() }; }
+std::vector<AssetPath*> Pipeline::getAssetRefs() { return { &mVertexShader.path(), &mFragmentShader.path() }; }
 
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, Pipeline::write, cereal::JSONOutputArchive, Pipeline::serialize);
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(, Pipeline::read, cereal::JSONInputArchive, Pipeline::deserialize);

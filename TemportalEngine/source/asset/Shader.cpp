@@ -29,6 +29,11 @@ Shader::Shader(std::filesystem::path filePath) : Asset(filePath)
 	}
 }
 
+void Shader::onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute)
+{
+	std::filesystem::rename(Shader::getSourcePathFrom(prevAbsolute), Shader::getSourcePathFrom(nextAbsolute));
+}
+
 #pragma region Properties
 
 ui32 Shader::getStage() const

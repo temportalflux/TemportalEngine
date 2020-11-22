@@ -100,6 +100,8 @@ public:
 	ReferenceIterRange getAssetPathsWhichReference(std::filesystem::path const& absolutePath) const;
 	bool isAssetReferenced(std::filesystem::path const& absolutePath) const;
 
+	void moveAsset(AssetPath path, std::filesystem::path const& newParent);
+
 private:
 	std::filesystem::path mActiveDirectory;
 
@@ -136,6 +138,7 @@ private:
 	ReferenceMap mAssetPaths_ReferencerToReferenced;
 	ReferenceMap mAssetPaths_ReferencedToReferencer;
 
+	void removeScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 
 };

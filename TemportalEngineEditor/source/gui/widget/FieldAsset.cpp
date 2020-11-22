@@ -50,10 +50,10 @@ bool FieldAsset::Inline(std::string titleId, asset::AssetPath &selected, std::ve
 	if (ImGui::BeginDragDropTarget())
 	{
 		ImGuiPayload const* activePayload = ImGui::GetDragDropPayload();
-		bool bCanAcceptPayload = activePayload->IsDataType("_ASSETPATH") && (!assetType || (((asset::AssetPath*)(activePayload->Data))->type() == *assetType));
+		bool bCanAcceptPayload = activePayload->IsDataType("ASSETPATH") && (!assetType || (((asset::AssetPath*)(activePayload->Data))->type() == *assetType));
 		if (bCanAcceptPayload)
 		{
-			if (ImGuiPayload const *payload = ImGui::AcceptDragDropPayload("_ASSETPATH", ImGuiDragDropFlags_None))
+			if (ImGuiPayload const *payload = ImGui::AcceptDragDropPayload("ASSETPATH", ImGuiDragDropFlags_None))
 			{
 				selected = *((asset::AssetPath*)(payload->Data));
 				bHasChanged = true;

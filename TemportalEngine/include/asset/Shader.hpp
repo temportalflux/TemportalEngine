@@ -31,6 +31,8 @@ public:
 	void writeSource(std::string content) const;
 	std::string readSource() const;
 
+	void onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute) override;
+
 #pragma region Properties
 private:
 

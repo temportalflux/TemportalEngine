@@ -20,6 +20,16 @@ using namespace asset;
 
 static logging::Logger LOG = DeclareLog("AssetManager");
 
+template <typename TKey, typename TValue>
+void multimap_erase_if(std::unordered_multimap<TKey, TValue> &map, std::function<bool(TKey const& key, TValue const& value)> predicate)
+{
+	for (auto it = map.begin(); it != map.end(); )
+	{
+		if (predicate(it->first, it->second)) it = map.erase(it);
+		else ++it;
+	}
+}
+
 std::shared_ptr<AssetManager> AssetManager::get()
 {
 	return engine::Engine::Get()->getAssetManager();
@@ -48,7 +58,7 @@ void AssetManager::queryAssetTypes()
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
 {
-	this->mActiveDirectory = directory;
+	this->mActiveDirectory = directory.parent_path();
 
 	this->mScannedAssetPathsByType.clear();
 	this->mScannedAssetPathsByExtension.clear();
@@ -86,6 +96,19 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
+}
+
+void AssetManager::removeScannedAsset(AssetPath metadata, std::filesystem::path absolutePath)
+{
+	multimap_erase_if<AssetType, AssetPath>(
+		this->mScannedAssetPathsByType,
+		[metadata](auto const& key, auto const& value) { return key == metadata.type() && value == metadata; }
+	);
+	multimap_erase_if<std::string, AssetPath>(
+		this->mScannedAssetPathsByExtension,
+		[metadata](auto const& key, auto const& value) { return key == metadata.extension() && value == metadata; }
+	);
+	this->mScannedAssetMetadataByPath.erase(this->mScannedAssetMetadataByPath.find(absolutePath.string()));
 }
 
 void AssetManager::addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath)
@@ -199,12 +222,10 @@ void AssetManager::setAssetReferences(std::filesystem::path absolutePath, std::u
 	for (auto iter = iterReferenced.first; iter != iterReferenced.second; ++iter)
 	{
 		AssetPath const& referencedAssetPath = iter->second;
-		for (auto it = this->mAssetPaths_ReferencedToReferencer.begin(); it != this->mAssetPaths_ReferencedToReferencer.end(); )
-		{
-			if (it->first == referencedAssetPath && it->second == *assetPath)
-				it = this->mAssetPaths_ReferencedToReferencer.erase(it);
-			else ++it;
-		}
+		multimap_erase_if<AssetPath, AssetPath>(
+			this->mAssetPaths_ReferencedToReferencer,
+			[referencedAssetPath, assetPath](auto const& key, auto const& value) { return key == referencedAssetPath && value == *assetPath; }
+		);
 	}
 
 	this->mAssetPaths_ReferencerToReferenced.erase(*assetPath);
@@ -233,4 +254,46 @@ bool AssetManager::isAssetReferenced(std::filesystem::path const& absolutePath) 
 {
 	auto iterRange = this->getAssetPathsWhichReference(absolutePath);
 	return iterRange.first != this->mAssetPaths_ReferencedToReferencer.end();
+}
+
+void AssetManager::moveAsset(AssetPath path, std::filesystem::path const& newParent)
+{
+	auto oldAbsolutePath = this->mActiveDirectory / path.path();
+	auto newAbsolutePath = newParent / path.path().filename();
+	auto newAssetPath = AssetPath(path.type(), std::filesystem::relative(newAbsolutePath, this->mActiveDirectory));
+	// Update any assets which reference the asset being moved
+	while (true)
+	{
+		auto iter = this->mAssetPaths_ReferencedToReferencer.find(path);
+		if (iter == this->mAssetPaths_ReferencedToReferencer.end()) break;
+		auto referencerPath = std::filesystem::absolute(this->mActiveDirectory / iter->second.path());
+		auto referencerAsset = asset::readAssetFromDisk(referencerPath, EAssetSerialization::Json);
+		referencerAsset->replaceAssetReference(path, newAssetPath);
+		referencerAsset->writeToDisk(referencerPath, EAssetSerialization::Json);
+	}
+
+	// Remove any references from the asset being moved to other assets
+	this->mAssetPaths_ReferencerToReferenced.erase(path);
+
+	// Load the asset so extra data can be moved and asset references can be updated
+	std::unordered_set<AssetPath> referenceAssets;
+	{
+		auto asset = this->getAssetTypeMetadata(path.type()).createEmptyAsset();
+		asset->readFromDisk(oldAbsolutePath, EAssetSerialization::Json);
+		// move any extra data for things like shaders and textures, which store the actual content in a different file
+		asset->onPreMoveAsset(oldAbsolutePath, newAbsolutePath);
+		// save any data that changed during `onPreMoveAsset` (like import paths)
+		asset->writeToDisk(oldAbsolutePath, EAssetSerialization::Json);
+		referenceAssets = asset->getReferencedAssetPaths();
+	}
+
+	// Remove scanned asset (so the asset path is no longer in the manager)
+	this->removeScannedAsset(path, oldAbsolutePath);
+
+	// Actually move the asset
+	std::filesystem::rename(oldAbsolutePath, newAbsolutePath);
+
+	// Re-add the asset and asset references
+	this->addScannedAsset(newAssetPath, newAbsolutePath);
+	this->setAssetReferences(newAbsolutePath, referenceAssets);
 }

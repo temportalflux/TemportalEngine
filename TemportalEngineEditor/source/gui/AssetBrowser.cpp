@@ -76,10 +76,84 @@ void AssetBrowser::renderView()
 	);
 	
 	ImGui::Separator();
+
+	renderDirectoryTree();
+}
+
+void AssetBrowser::renderDirectoryTree()
+{
+	auto& path = this->mCurrentPath;
 	
-	// TODO: Provide renaming of folders and assets
-	// TODO: Add context menu option for compiling an asset w/o opening the editor
-	gui::renderDirectoryView(this->mCurrentPath, this->mViewConfig);
+	ImGui::BeginChild(
+		"directoryView", ImVec2(0, 0), false,
+		ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar
+	);
+
+	if (!std::filesystem::exists(path))
+	{
+		ImGui::Text("Missing directory, cannot render contents");
+		ImGui::EndChild();
+		return;
+	}
+	else if (std::filesystem::is_empty(path))
+	{
+		ImGui::Text("Directory is empty");
+		ImGui::EndChild();
+		return;
+	}
+	for (ui8 i = 0; i < ImGuiMouseButton_COUNT; ++i)
+	{
+		if (ImGui::IsMouseReleased(i)) getLog()->log(LOG_INFO, "Release %i", i);
+	}
+	renderDirectoryContents(path);
+	ImGui::EndChild();
+}
+
+void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
+{
+	auto const itemName = path.stem().string();
+	if (itemName[0] == '.') return;
+
+	bool bIsDirectory = std::filesystem::is_directory(path);
+	bool bIsHovered = false;
+	if (!bIsDirectory)
+	{
+		if (!this->canShowFileInView(path)) return;
+		ImGui::Text(itemName.c_str());
+		bIsHovered = ImGui::IsItemHovered();
+		this->onStartDragDrop(path);
+	}
+	else
+	{
+		bool bShowContents = ImGui::TreeNode(itemName.c_str());
+		bIsHovered = ImGui::IsItemHovered();
+		this->onStartDragDrop(path);
+		if (bShowContents)
+		{
+			renderDirectoryContents(path);
+			ImGui::TreePop();
+		}
+	}
+	if (bIsHovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) this->onFileOpen(path);
+	if (bIsHovered && ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+	{
+		ImGui::OpenPopup(itemName.c_str());
+	}
+	if (ImGui::BeginPopup(itemName.c_str()))
+	{
+		if (!bIsDirectory && ImGui::Selectable("Edit")) this->onFileOpen(path);
+		if (!bIsDirectory && ImGui::Selectable("View References")) this->onViewReferences(path);
+		if (ImGui::Selectable("Delete")) this->onPathDelete(path);
+		ImGui::EndPopup();
+	}
+}
+
+void AssetBrowser::renderDirectoryContents(std::filesystem::path const& path)
+{
+	for (auto const& entry : std::filesystem::directory_iterator(path))
+	{
+		renderDirectoryItem(entry.path());
+	}
 }
 
 void AssetBrowser::setPath(std::filesystem::path path)
@@ -163,15 +237,40 @@ void AssetBrowser::onPathDelete(std::filesystem::path const &path)
 
 void AssetBrowser::onStartDragDrop(std::filesystem::path const &path)
 {
-	if (!isAnAsset(path)) { return; }
-
 	auto assetManager = engine::Engine::Get()->getAssetManager();
-	asset::AssetPath* assetPathPtr = assetManager->getAssetMetadataPtr(path);
-	if (assetPathPtr != nullptr && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	if (std::filesystem::is_directory(path))
 	{
-		ImGui::SetDragDropPayload("_ASSETPATH", assetPathPtr, sizeof(*assetPathPtr));
-		ImGui::Text(assetPathPtr->toShortName().c_str());
-		ImGui::EndDragDropSource();
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			auto pathStr = path.string();
+			ImGui::SetDragDropPayload("DIRECTORY", &pathStr, sizeof(std::string));
+			ImGui::Text(path.stem().string().c_str());
+			ImGui::EndDragDropSource();
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (ImGuiPayload const *payload = ImGui::GetDragDropPayload())
+			{
+				if (payload->IsDataType("ASSETPATH"))
+				{
+					if (payload = ImGui::AcceptDragDropPayload("ASSETPATH", ImGuiDragDropFlags_None))
+					{
+						assetManager->moveAsset(*((asset::AssetPath*)(payload->Data)), path);
+					}
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	}
+	if (isAnAsset(path))
+	{
+		asset::AssetPath* assetPathPtr = assetManager->getAssetMetadataPtr(path);
+		if (assetPathPtr != nullptr && ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+		{
+			ImGui::SetDragDropPayload("ASSETPATH", assetPathPtr, sizeof(*assetPathPtr));
+			ImGui::Text(assetPathPtr->toShortName().c_str());
+			ImGui::EndDragDropSource();
+		}
 	}
 }
 

@@ -42,6 +42,15 @@ uSize Texture::getSourceMemorySize() const
 	return this->mSourceSize.x() * this->mSourceSize.y() * 4 * sizeof(ui8);
 }
 
+void Texture::onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute)
+{
+	auto srcImportPath = std::filesystem::path(this->mSourceFilePath);
+	if (srcImportPath.parent_path() == prevAbsolute.parent_path())
+	{
+		std::filesystem::rename(srcImportPath, std::filesystem::absolute(nextAbsolute.parent_path() / srcImportPath.filename()));
+	}
+}
+
 #pragma region Serialization
 
 void Texture::write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const

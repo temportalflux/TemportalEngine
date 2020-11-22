@@ -35,9 +35,26 @@ std::string Asset::getFileName() const
 	return this->mFilePath.stem().string();
 }
 
+std::vector<AssetPath const*> Asset::getAssetRefs() const { return std::vector<AssetPath const*>(); }
+
+std::vector<AssetPath*> Asset::getAssetRefs() { return std::vector<AssetPath*>(); }
+
 std::unordered_set<AssetPath> Asset::getReferencedAssetPaths() const
 {
-	return std::unordered_set<AssetPath>();
+	auto refs = std::unordered_set<AssetPath>();
+	for (auto const assetPathPtr : getAssetRefs())
+	{
+		refs.insert(*assetPathPtr);
+	}
+	return refs;
+}
+
+void Asset::replaceAssetReference(AssetPath const& prev, AssetPath const& updated)
+{
+	for (auto *ptr : getAssetRefs())
+	{
+		if (*ptr == prev) *ptr = updated;
+	}
 }
 
 #pragma endregion
