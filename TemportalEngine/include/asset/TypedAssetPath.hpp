@@ -32,6 +32,7 @@ public:
 	std::string toString() const { return this->mPath.toString(); }
 	AssetPath& path() { return this->mPath; }
 	AssetPath const& path() const { return this->mPath; }
+	operator AssetPath() const { return path(); }
 
 	std::shared_ptr<TAsset> load(asset::EAssetSerialization type, bool bShouldHaveBeenScanned = true) const
 	{

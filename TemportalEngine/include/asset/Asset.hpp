@@ -38,6 +38,8 @@ public:
 	std::filesystem::path getPath() const;
 	std::string getFileName() const;
 
+	virtual std::unordered_set<AssetPath> getReferencedAssetPaths() const;
+
 protected:
 	static cereal::JSONOutputArchive::Options JsonFormat;
 

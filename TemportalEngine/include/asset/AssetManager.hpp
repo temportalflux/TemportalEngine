@@ -33,6 +33,8 @@ class AssetManager
 {
 
 public:
+	typedef std::unordered_multimap<AssetPath, AssetPath> ReferenceMap;
+	typedef std::pair<ReferenceMap::const_iterator, ReferenceMap::const_iterator> ReferenceIterRange;
 	static std::shared_ptr<AssetManager> get();
 
 	std::shared_ptr<memory::MemoryChunk> mpAssetMemory;
@@ -93,7 +95,14 @@ public:
 		return std::dynamic_pointer_cast<TAsset>(this->createAsset(type, filePath));
 	}
 
+	void setAssetReferences(std::filesystem::path absolutePath, std::unordered_set<AssetPath> const& paths);
+	ReferenceIterRange getAssetPathsReferencedBy(std::filesystem::path const& absolutePath) const;
+	ReferenceIterRange getAssetPathsWhichReference(std::filesystem::path const& absolutePath) const;
+	bool isAssetReferenced(std::filesystem::path const& absolutePath) const;
+
 private:
+	std::filesystem::path mActiveDirectory;
+
 	/**
 	 * A unique set of all known asset types.
 	 * New types can be registered with `registerType`.
@@ -124,6 +133,8 @@ private:
 	// TODO: This is so redundant. Its a map of path to path.
 	std::unordered_map<std::string, AssetPath> mScannedAssetMetadataByPath;
 	std::unordered_multimap<AssetType, AssetPath> mScannedAssetPathsByType;
+	ReferenceMap mAssetPaths_ReferencerToReferenced;
+	ReferenceMap mAssetPaths_ReferencedToReferencer;
 
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 

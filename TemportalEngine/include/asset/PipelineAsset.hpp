@@ -79,7 +79,8 @@ public:
 	DECLARE_PROPERTY_MUTATORS(f32, mLineWidth, LineWidth)
 	DECLARE_PROPERTY_MUTATORS(std::vector<DescriptorGroup>, mDescriptorGroups, DescriptorGroups)
 
-	
+	std::unordered_set<AssetPath> getReferencedAssetPaths() const override;
+
 private:
 
 	TypedAssetPath<Shader> mVertexShader;

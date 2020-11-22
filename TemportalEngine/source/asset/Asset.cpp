@@ -35,6 +35,11 @@ std::string Asset::getFileName() const
 	return this->mFilePath.stem().string();
 }
 
+std::unordered_set<AssetPath> Asset::getReferencedAssetPaths() const
+{
+	return std::unordered_set<AssetPath>();
+}
+
 #pragma endregion
 
 #pragma region Serialization
@@ -49,6 +54,7 @@ void Asset::writeToDisk(std::filesystem::path filePath, EAssetSerialization type
 		std::ofstream os(filePath);
 		cereal::JSONOutputArchive archive(os, Asset::JsonFormat);
 		this->write(archive, true);
+		AssetManager::get()->setAssetReferences(filePath, this->getReferencedAssetPaths());
 		return;
 	}
 	case EAssetSerialization::Binary:

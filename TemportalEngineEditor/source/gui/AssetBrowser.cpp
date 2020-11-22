@@ -5,6 +5,7 @@
 #include "Editor.hpp"
 #include "Engine.hpp"
 #include "asset/AssetManager.hpp"
+#include "gui/AssetReferenceViewer.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -26,6 +27,7 @@ AssetBrowser::AssetBrowser(std::string title)
 	
 	DirectoryViewConfig::ContextMenuItem onPathDelete = { "Delete", std::bind(&AssetBrowser::onPathDelete, this, std::placeholders::_1) };
 	this->mViewConfig.FileContextMenuItems.push_back({ "Edit", this->mViewConfig.OnFileOpen });
+	this->mViewConfig.FileContextMenuItems.push_back({ "View References", std::bind(&AssetBrowser::onViewReferences, this, std::placeholders::_1) });
 	this->mViewConfig.FileContextMenuItems.push_back(onPathDelete);
 	this->mViewConfig.DirectoryContextMenuItems.push_back(onPathDelete);
 
@@ -135,19 +137,28 @@ void AssetBrowser::onPathDelete(std::filesystem::path const &path)
 	if (std::filesystem::is_directory(path))
 	{
 		auto amountDeleted = std::filesystem::remove_all(path);
-		getLog()->log(LOG_INFO, "Deleted %i items at %s", amountDeleted, path.string().c_str());
+		getLog()->log(LOG_INFO, "Deleted %i items at %s", amountDeleted, path.filename().string().c_str());
 		return;
 	}
 
 	if (isAnAsset(path))
 	{
-		asset::AssetManager::get()->deleteFile(path);
-		getLog()->log(LOG_INFO, "Deleted %s", path.string().c_str());
+		auto manager = asset::AssetManager::get();
+		if (manager->isAssetReferenced(path))
+		{
+			getLog()->log(LOG_INFO, "Cannot delete %s, it is referenced by other assets.", path.filename().string().c_str());
+			this->onViewReferences(path);
+		}
+		else
+		{
+			manager->deleteFile(path);
+			getLog()->log(LOG_INFO, "Deleted %s", path.filename().string().c_str());
+		}
 		return;
 	}
 
 	std::filesystem::remove(path);
-	getLog()->log(LOG_INFO, "Deleted %s", path.string().c_str());
+	getLog()->log(LOG_INFO, "Deleted %s", path.filename().string().c_str());
 }
 
 void AssetBrowser::onStartDragDrop(std::filesystem::path const &path)
@@ -162,4 +173,10 @@ void AssetBrowser::onStartDragDrop(std::filesystem::path const &path)
 		ImGui::Text(assetPathPtr->toShortName().c_str());
 		ImGui::EndDragDropSource();
 	}
+}
+
+void AssetBrowser::onViewReferences(std::filesystem::path const &path)
+{
+	auto viewer = Editor::EDITOR->openNewGui<gui::AssetReferenceViewer>("Reference Viewer: " + path.filename().stem().string());
+	viewer->setAssetFilePath(path);
 }

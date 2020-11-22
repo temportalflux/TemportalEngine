@@ -34,6 +34,7 @@ private:
 	void onFileOpen(std::filesystem::path const &path);
 	void onPathDelete(std::filesystem::path const &path);
 	void onStartDragDrop(std::filesystem::path const &path);
+	void onViewReferences(std::filesystem::path const &path);
 
 };
 

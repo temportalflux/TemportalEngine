@@ -132,6 +132,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\PropertyVector.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetReferenceViewer.hpp">
+      <Filter>gui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -273,5 +276,8 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\PropertyVector.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetReferenceViewer.cpp">
+      <Filter>gui</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

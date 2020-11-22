@@ -48,6 +48,8 @@ void AssetManager::queryAssetTypes()
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
 {
+	this->mActiveDirectory = directory;
+
 	this->mScannedAssetPathsByType.clear();
 	this->mScannedAssetPathsByExtension.clear();
 	this->mScannedAssetMetadataByPath.clear();
@@ -72,7 +74,15 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 			assetType = asset->getAssetType();
 		}
 
-		this->addScannedAsset(AssetPath(assetType, std::filesystem::relative(entry.path(), directory.parent_path())), entry.path());
+		auto assetPath = AssetPath(assetType, std::filesystem::relative(entry.path(), directory.parent_path()));
+		this->addScannedAsset(assetPath, entry.path());
+
+		// Read the assets in their actual type to determine any asset references
+		{
+			auto asset = this->getAssetTypeMetadata(assetType).createEmptyAsset();
+			asset->readFromDisk(entry.path(), type);
+			this->setAssetReferences(entry.path(), asset->getReferencedAssetPaths());
+		}
 	}
 
 	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
@@ -178,4 +188,49 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 		}
 	}
 	std::filesystem::remove(filePath);
+}
+
+void AssetManager::setAssetReferences(std::filesystem::path absolutePath, std::unordered_set<AssetPath> const& paths)
+{
+	auto assetPath = this->getAssetMetadata(absolutePath);
+	assert(assetPath);
+
+	auto iterReferenced = this->mAssetPaths_ReferencerToReferenced.equal_range(*assetPath);
+	for (auto iter = iterReferenced.first; iter != iterReferenced.second; ++iter)
+	{
+		AssetPath const& referencedAssetPath = iter->second;
+		for (auto it = this->mAssetPaths_ReferencedToReferencer.begin(); it != this->mAssetPaths_ReferencedToReferencer.end(); )
+		{
+			if (it->first == referencedAssetPath && it->second == *assetPath)
+				it = this->mAssetPaths_ReferencedToReferencer.erase(it);
+			else ++it;
+		}
+	}
+
+	this->mAssetPaths_ReferencerToReferenced.erase(*assetPath);
+	for (auto const& path : paths)
+	{
+		this->mAssetPaths_ReferencerToReferenced.insert(std::make_pair(*assetPath, path));
+		this->mAssetPaths_ReferencedToReferencer.insert(std::make_pair(path, *assetPath));
+	}
+}
+
+AssetManager::ReferenceIterRange AssetManager::getAssetPathsReferencedBy(std::filesystem::path const& absolutePath) const
+{
+	auto assetPath = this->getAssetMetadata(absolutePath);
+	assert(assetPath);
+	return this->mAssetPaths_ReferencerToReferenced.equal_range(*assetPath);
+}
+
+AssetManager::ReferenceIterRange AssetManager::getAssetPathsWhichReference(std::filesystem::path const& absolutePath) const
+{
+	auto assetPath = this->getAssetMetadata(absolutePath);
+	assert(assetPath);
+	return this->mAssetPaths_ReferencedToReferencer.equal_range(*assetPath);
+}
+
+bool AssetManager::isAssetReferenced(std::filesystem::path const& absolutePath) const
+{
+	auto iterRange = this->getAssetPathsWhichReference(absolutePath);
+	return iterRange.first != this->mAssetPaths_ReferencedToReferencer.end();
 }
