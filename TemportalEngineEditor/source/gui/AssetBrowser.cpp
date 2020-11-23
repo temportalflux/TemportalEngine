@@ -112,29 +112,28 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 
 	bool bIsDirectory = std::filesystem::is_directory(path);
 	bool bIsHovered = false;
-	if (!bIsDirectory)
+	if (!bIsDirectory && !this->canShowFileInView(path)) return;
+	if (this->mRenamingAsset == path)
 	{
-		if (!this->canShowFileInView(path)) return;
-		if (this->mRenamingAsset == path)
+		if (ImGui::InputText(
+			("###" + itemName).c_str(), &this->mRenamingStr,
+			ImGuiInputTextFlags_EnterReturnsTrue
+			| ImGuiInputTextFlags_CharsNoBlank
+			| ImGuiInputTextFlags_AutoSelectAll
+		))
 		{
-			if (ImGui::InputText(("###" + itemName).c_str(), &this->mRenamingStr,
-				ImGuiInputTextFlags_EnterReturnsTrue
-				| ImGuiInputTextFlags_CharsNoBlank
-				| ImGuiInputTextFlags_AutoSelectAll
-			))
-			{
-				asset::AssetManager::get()->renameAsset(path, this->mRenamingStr);
-				this->mRenamingAsset = std::filesystem::path();
-				this->mRenamingStr = std::string();
-			}
-			ImGui::SetItemDefaultFocus();
+			if (!bIsDirectory) asset::AssetManager::get()->renameAsset(path, this->mRenamingStr);
+			else if (std::filesystem::is_empty(path)) std::filesystem::rename(path, path.parent_path() / this->mRenamingStr);
+			this->mRenamingAsset = std::filesystem::path();
+			this->mRenamingStr = std::string();
 		}
-		else
-		{
-			ImGui::Text(itemName.c_str());
-			bIsHovered = ImGui::IsItemHovered();
-			this->onStartDragDrop(path);
-		}
+		ImGui::SetItemDefaultFocus();
+	}
+	else if (!bIsDirectory)
+	{
+		ImGui::Text(itemName.c_str());
+		bIsHovered = ImGui::IsItemHovered();
+		this->onStartDragDrop(path);
 	}
 	else
 	{
@@ -156,7 +155,7 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	{
 		if (!bIsDirectory && ImGui::Selectable("Edit")) this->onFileOpen(path);
 		if (!bIsDirectory && ImGui::Selectable("View References")) this->onViewReferences(path);
-		if (!bIsDirectory && ImGui::Selectable("Rename"))
+		if ((!bIsDirectory || std::filesystem::is_empty(path)) && ImGui::Selectable("Rename"))
 		{
 			this->mRenamingAsset = path;
 			this->mRenamingStr = path.stem().string();
