@@ -31,24 +31,23 @@ void AssetReferenceViewer::renderView()
 	auto manager = asset::AssetManager::get();
 	ImGui::BeginChild("scroll-area", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-	if (ImGui::TreeNode("Referenced By"))
+	ImGui::Columns(2);
+	if (ImGui::CollapsingHeader("Referenced By", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto iterRange = manager->getAssetPathsWhichReference(this->mAbsolutePath);
 		for (auto iter = iterRange.first; iter != iterRange.second; ++iter)
 		{
 			ImGui::Text(iter->second.filename().c_str());
 		}
-		ImGui::TreePop();
 	}
-
-	if (ImGui::TreeNode("References"))
+	ImGui::NextColumn();
+	if (ImGui::CollapsingHeader("References", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto iterRange = manager->getAssetPathsReferencedBy(this->mAbsolutePath);
 		for (auto iter = iterRange.first; iter != iterRange.second; ++iter)
 		{
 			ImGui::Text(iter->second.filename().c_str());
 		}
-		ImGui::TreePop();
 	}
 
 	ImGui::EndChild();
