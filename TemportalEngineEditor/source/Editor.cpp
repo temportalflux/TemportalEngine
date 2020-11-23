@@ -126,6 +126,7 @@ void Editor::buildAllAssets()
 			asset::EAssetSerialization::Json
 		);
 	}
+	std::filesystem::remove_all(this->getProject()->getAbsoluteDirectoryPath() / this->getOutputDirectory());
 	this->buildAssets(assets);
 }
 
