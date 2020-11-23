@@ -97,10 +97,6 @@ void AssetBrowser::renderDirectoryTree()
 		ImGui::EndChild();
 		return;
 	}
-	for (ui8 i = 0; i < ImGuiMouseButton_COUNT; ++i)
-	{
-		if (ImGui::IsMouseReleased(i)) getLog()->log(LOG_INFO, "Release %i", i);
-	}
 	renderDirectoryContents(path);
 	ImGui::EndChild();
 }
@@ -112,6 +108,7 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 
 	bool bIsDirectory = std::filesystem::is_directory(path);
 	bool bIsHovered = false;
+	bool bShowContents = false;
 	if (!bIsDirectory && !this->canShowFileInView(path)) return;
 	if (this->mRenamingAsset == path)
 	{
@@ -137,7 +134,7 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	}
 	else
 	{
-		bool bShowContents = ImGui::TreeNode(itemName.c_str());
+		bShowContents = ImGui::TreeNode(itemName.c_str());
 		bIsHovered = ImGui::IsItemHovered();
 		this->onStartDragDrop(path);
 		if (bShowContents)
@@ -153,6 +150,12 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	}
 	if (ImGui::BeginPopup(itemName.c_str()))
 	{
+		if (bIsDirectory && bShowContents && ImGui::Selectable("New Folder"))
+		{
+			this->mRenamingStr = "New Folder";
+			this->mRenamingAsset = path / this->mRenamingStr;
+			std::filesystem::create_directory(this->mRenamingAsset);
+		}
 		if (!bIsDirectory && ImGui::Selectable("Edit")) this->onFileOpen(path);
 		if (!bIsDirectory && ImGui::Selectable("View References")) this->onViewReferences(path);
 		if ((!bIsDirectory || std::filesystem::is_empty(path)) && ImGui::Selectable("Rename"))
