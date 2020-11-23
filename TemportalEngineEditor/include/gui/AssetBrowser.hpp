@@ -26,6 +26,9 @@ private:
 	std::filesystem::path mCurrentPath;
 	DirectoryViewConfig mViewConfig;
 
+	std::filesystem::path mRenamingAsset;
+	std::string mRenamingStr;
+
 	void setPath(std::filesystem::path path);
 	std::filesystem::path getCurrentRelativePath() const;
 

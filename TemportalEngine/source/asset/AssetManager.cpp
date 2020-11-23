@@ -256,29 +256,44 @@ bool AssetManager::isAssetReferenced(std::filesystem::path const& absolutePath) 
 	return iterRange.first != this->mAssetPaths_ReferencedToReferencer.end();
 }
 
+void AssetManager::renameAsset(std::filesystem::path const& absolutePath, std::string newName)
+{
+	auto assetPath = this->getAssetMetadata(absolutePath);
+	assert(assetPath);
+	auto newAssetPath = AssetPath(assetPath->type(), assetPath->path().parent_path() / (newName + assetPath->path().extension().string()));
+	this->moveAsset(*assetPath, newAssetPath);
+}
+
 void AssetManager::moveAsset(AssetPath path, std::filesystem::path const& newParent)
 {
 	auto oldAbsolutePath = this->mActiveDirectory / path.path();
 	auto newAbsolutePath = newParent / path.path().filename();
 	auto newAssetPath = AssetPath(path.type(), std::filesystem::relative(newAbsolutePath, this->mActiveDirectory));
+	this->moveAsset(path, newAssetPath);
+}
+
+void AssetManager::moveAsset(AssetPath const& prev, AssetPath const& next)
+{
+	auto oldAbsolutePath = this->mActiveDirectory / prev.path();
+	auto newAbsolutePath = this->mActiveDirectory / next.path();
 	// Update any assets which reference the asset being moved
 	while (true)
 	{
-		auto iter = this->mAssetPaths_ReferencedToReferencer.find(path);
+		auto iter = this->mAssetPaths_ReferencedToReferencer.find(prev);
 		if (iter == this->mAssetPaths_ReferencedToReferencer.end()) break;
 		auto referencerPath = std::filesystem::absolute(this->mActiveDirectory / iter->second.path());
 		auto referencerAsset = asset::readAssetFromDisk(referencerPath, EAssetSerialization::Json);
-		referencerAsset->replaceAssetReference(path, newAssetPath);
+		referencerAsset->replaceAssetReference(prev, next);
 		referencerAsset->writeToDisk(referencerPath, EAssetSerialization::Json);
 	}
 
 	// Remove any references from the asset being moved to other assets
-	this->mAssetPaths_ReferencerToReferenced.erase(path);
+	this->mAssetPaths_ReferencerToReferenced.erase(prev);
 
 	// Load the asset so extra data can be moved and asset references can be updated
 	std::unordered_set<AssetPath> referenceAssets;
 	{
-		auto asset = this->getAssetTypeMetadata(path.type()).createEmptyAsset();
+		auto asset = this->getAssetTypeMetadata(prev.type()).createEmptyAsset();
 		asset->readFromDisk(oldAbsolutePath, EAssetSerialization::Json);
 		// move any extra data for things like shaders and textures, which store the actual content in a different file
 		asset->onPreMoveAsset(oldAbsolutePath, newAbsolutePath);
@@ -288,12 +303,12 @@ void AssetManager::moveAsset(AssetPath path, std::filesystem::path const& newPar
 	}
 
 	// Remove scanned asset (so the asset path is no longer in the manager)
-	this->removeScannedAsset(path, oldAbsolutePath);
+	this->removeScannedAsset(prev, oldAbsolutePath);
 
 	// Actually move the asset
 	std::filesystem::rename(oldAbsolutePath, newAbsolutePath);
 
 	// Re-add the asset and asset references
-	this->addScannedAsset(newAssetPath, newAbsolutePath);
+	this->addScannedAsset(next, newAbsolutePath);
 	this->setAssetReferences(newAbsolutePath, referenceAssets);
 }

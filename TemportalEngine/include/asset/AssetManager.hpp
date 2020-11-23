@@ -101,6 +101,7 @@ public:
 	bool isAssetReferenced(std::filesystem::path const& absolutePath) const;
 
 	void moveAsset(AssetPath path, std::filesystem::path const& newParent);
+	void renameAsset(std::filesystem::path const& absolutePath, std::string newName);
 
 private:
 	std::filesystem::path mActiveDirectory;
@@ -140,6 +141,8 @@ private:
 
 	void removeScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
+
+	void moveAsset(AssetPath const& prev, AssetPath const& next);
 
 };
 

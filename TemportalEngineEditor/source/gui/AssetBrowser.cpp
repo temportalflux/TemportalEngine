@@ -7,12 +7,8 @@
 #include "asset/AssetManager.hpp"
 #include "gui/AssetReferenceViewer.hpp"
 
-#include <algorithm>
-#include <functional>
-#include <optional>
-#include <string>
-#include <vector>
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 using namespace gui;
 
@@ -119,9 +115,26 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	if (!bIsDirectory)
 	{
 		if (!this->canShowFileInView(path)) return;
-		ImGui::Text(itemName.c_str());
-		bIsHovered = ImGui::IsItemHovered();
-		this->onStartDragDrop(path);
+		if (this->mRenamingAsset == path)
+		{
+			if (ImGui::InputText(("###" + itemName).c_str(), &this->mRenamingStr,
+				ImGuiInputTextFlags_EnterReturnsTrue
+				| ImGuiInputTextFlags_CharsNoBlank
+				| ImGuiInputTextFlags_AutoSelectAll
+			))
+			{
+				asset::AssetManager::get()->renameAsset(path, this->mRenamingStr);
+				this->mRenamingAsset = std::filesystem::path();
+				this->mRenamingStr = std::string();
+			}
+			ImGui::SetItemDefaultFocus();
+		}
+		else
+		{
+			ImGui::Text(itemName.c_str());
+			bIsHovered = ImGui::IsItemHovered();
+			this->onStartDragDrop(path);
+		}
 	}
 	else
 	{
@@ -143,6 +156,11 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	{
 		if (!bIsDirectory && ImGui::Selectable("Edit")) this->onFileOpen(path);
 		if (!bIsDirectory && ImGui::Selectable("View References")) this->onViewReferences(path);
+		if (!bIsDirectory && ImGui::Selectable("Rename"))
+		{
+			this->mRenamingAsset = path;
+			this->mRenamingStr = path.stem().string();
+		}
 		if (ImGui::Selectable("Delete")) this->onPathDelete(path);
 		ImGui::EndPopup();
 	}
