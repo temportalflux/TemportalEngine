@@ -1,0 +1,34 @@
+{
+	"type": "pipeline",
+	"shader-vert": "shader:assets/shaders/TextVertex.te-asset",
+	"shader-frag": "shader:assets/shaders/TextFragment.te-asset",
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": true,
+			"value": {
+				"color": {
+					"operation": "Add",
+					"src": "SrcAlpha",
+					"dst": "OneMinusSrcAlpha"
+				},
+				"alpha": {
+					"operation": "Add",
+					"src": "One",
+					"dst": "Zero"
+				}
+			}
+		}
+	},
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "fontAtlas",
+					"type": 1,
+					"stage": 16
+				}
+			]
+		}
+	]
+}

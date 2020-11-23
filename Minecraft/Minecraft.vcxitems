@@ -53,44 +53,4 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Bedrock.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Dirt.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Grass.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\blocks\Stone.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\ChunkLinePipeline.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\PerspectiveLinePipeline.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\RenderPass.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.PerspectiveLineFragment.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.PerspectiveLineVertex.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextFragment.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TextVertex.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TriangleFragment.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\.TriangleVertex.glsl" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\PerspectiveLineFragment.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\PerspectiveLineVertex.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\TextFragment.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\TextVertex.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\TriangleFragment.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\shaders\TriangleVertex.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Bedrock.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Dirt.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\GrassSide.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\GrassTop.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\block\Stone.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\textures\NearestNeighborSampler.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\UIPipeline.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)assets\WorldPipeline.te-asset" />
-    <None Include="$(MSBuildThisFileDirectory)Minecraft.te-project" />
-  </ItemGroup>
-  <ItemGroup>
-    <Font Include="$(MSBuildThisFileDirectory)assets\font\Montserrat Regular.otf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="$(MSBuildThisFileDirectory)assets\textures\block\dirt.png" />
-    <Image Include="$(MSBuildThisFileDirectory)assets\textures\block\grass_block_side.png" />
-    <Image Include="$(MSBuildThisFileDirectory)assets\textures\block\grass_block_side_overlay.png" />
-    <Image Include="$(MSBuildThisFileDirectory)assets\textures\block\grass_block_top.png" />
-  </ItemGroup>
 </Project>

@@ -1,14 +1,5 @@
 {
 	"type": "renderpass",
-	"clearColor": {
-		"hasValue": true,
-		"value": [
-			0.0,
-			0.0,
-			0.0,
-			1.0
-		]
-	},
 	"clearDepthStencil": {
 		"hasValue": true,
 		"value": {
@@ -16,17 +7,6 @@
 			"second": 0
 		}
 	},
-	"renderArea": {
-		"offset": [
-			0.0,
-			0.0
-		],
-		"size": [
-			1.0,
-			1.0
-		]
-	},
-	"pipelines": [],
 	"phases": [
 		{
 			"name": "default",
