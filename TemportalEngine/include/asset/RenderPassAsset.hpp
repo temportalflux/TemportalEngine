@@ -27,6 +27,9 @@ public:
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPPhase>, mPhases, Phases)
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPDependency>, mPhaseDependencies, PhaseDependencies)
 
+	std::vector<AssetPath const*> getAssetRefs() const override;
+	std::vector<AssetPath*> getAssetRefs() override;
+
 private:
 
 	std::optional<math::Color> mClearColor;

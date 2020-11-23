@@ -34,6 +34,9 @@ public:
 	std::string getDisplayName() const;
 	graphics::LogicalDeviceInfo getGraphicsDeviceInitInfo() const;
 
+	std::vector<AssetPath const*> getAssetRefs() const override;
+	std::vector<AssetPath*> getAssetRefs() override;
+
 private:
 	std::string mName;
 	Version mVersion;

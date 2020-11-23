@@ -28,6 +28,9 @@ Project::Project(std::string name, Version version) : Project()
 	this->mVersion = version;
 }
 
+std::vector<AssetPath const*> Project::getAssetRefs() const { return { &mRenderPass.path() }; }
+std::vector<AssetPath*> Project::getAssetRefs() { return { &mRenderPass.path() }; }
+
 std::filesystem::path Project::getAbsoluteDirectoryPath() const
 {
 	return this->mFilePath.parent_path();

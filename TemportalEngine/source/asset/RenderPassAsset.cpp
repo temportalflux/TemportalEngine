@@ -14,6 +14,26 @@ DEFINE_ASSET_CONSTRUCTORS(RenderPass)
 {
 }
 
+std::vector<AssetPath const*> RenderPass::getAssetRefs() const
+{
+	auto refs = std::vector<AssetPath const*>();
+	for (auto const& pipeline : this->mPipelines)
+	{
+		refs.push_back(&pipeline.path());
+	}
+	return refs;
+}
+
+std::vector<AssetPath*> RenderPass::getAssetRefs()
+{
+	auto refs = std::vector<AssetPath*>();
+	for (auto& pipeline : this->mPipelines)
+	{
+		refs.push_back(&pipeline.path());
+	}
+	return refs;
+}
+
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, RenderPass::write, cereal::JSONOutputArchive, RenderPass::serialize);
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(, RenderPass::read, cereal::JSONInputArchive, RenderPass::deserialize);
 CREATE_DEFAULT_SERIALIZATION_DEFINITION(const, RenderPass::compile, cereal::PortableBinaryOutputArchive, RenderPass::serialize);

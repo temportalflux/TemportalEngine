@@ -52,6 +52,9 @@ public:
 		}
 	};
 
+	std::vector<AssetPath const*> getAssetRefs() const override;
+	std::vector<AssetPath*> getAssetRefs() override;
+
 public:
 	BlockType() = default;
 	BlockType(std::filesystem::path filePath);

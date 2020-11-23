@@ -37,7 +37,8 @@ void AssetReferenceViewer::renderView()
 		auto iterRange = manager->getAssetPathsWhichReference(this->mAbsolutePath);
 		for (auto iter = iterRange.first; iter != iterRange.second; ++iter)
 		{
-			ImGui::Text(iter->second.filename().c_str());
+			std::string display = iter->second.filename() + " (" + iter->second.path().parent_path().string() + ")";
+			ImGui::Text(display.c_str());
 		}
 	}
 	ImGui::NextColumn();
@@ -46,7 +47,8 @@ void AssetReferenceViewer::renderView()
 		auto iterRange = manager->getAssetPathsReferencedBy(this->mAbsolutePath);
 		for (auto iter = iterRange.first; iter != iterRange.second; ++iter)
 		{
-			ImGui::Text(iter->second.filename().c_str());
+			std::string display = iter->second.filename() + " (" + iter->second.path().parent_path().string() + ")";
+			ImGui::Text(display.c_str());
 		}
 	}
 
