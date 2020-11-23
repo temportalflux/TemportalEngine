@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": "shader:assets/shaders/TriangleVertex.te-asset",
-	"shader-frag": "shader:assets/shaders/TriangleFragment.te-asset",
+	"shader-vert": "shader:assets/render/world/TriangleVertex.te-asset",
+	"shader-frag": "shader:assets/render/world/TriangleFragment.te-asset",
 	"descriptorGroups": [
 		{
 			"descriptors": [

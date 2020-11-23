@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": "shader:assets/shaders/PerspectiveLineVertex.te-asset",
-	"shader-frag": "shader:assets/shaders/PerspectiveLineFragment.te-asset",
+	"shader-vert": "shader:assets/render/debug/PerspectiveLineVertex.te-asset",
+	"shader-frag": "shader:assets/render/debug/PerspectiveLineFragment.te-asset",
 	"viewport": {
 		"offset": [
 			0.0,

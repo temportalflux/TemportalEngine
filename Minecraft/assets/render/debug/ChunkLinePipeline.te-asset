@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": "shader:assets/shaders/ChunkLineVertex.te-asset",
-	"shader-frag": "shader:assets/shaders/ChunkLineFragment.te-asset",
+	"shader-vert": "shader:assets/render/debug/ChunkLineVertex.te-asset",
+	"shader-frag": "shader:assets/render/debug/ChunkLineFragment.te-asset",
 	"blendMode": {
 		"mask": "RGBA",
 		"blend": {

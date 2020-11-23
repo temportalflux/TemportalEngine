@@ -372,7 +372,7 @@ void Game::createVoxelGridRenderer()
 		std::weak_ptr(this->mpVoxelInstanceBuffer)
 	);
 	this->mpVoxelGridRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
-		"assets/WorldPipeline.te-asset"
+		"assets/render/world/WorldPipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpVoxelGridRenderer.get());
 	this->mpVoxelGridRenderer->createVoxelDescriptorMapping(this->mpVoxelTypeRegistry, this->mpVoxelModelManager);
@@ -384,7 +384,7 @@ void Game::createWorldAxesRenderer()
 		std::weak_ptr(this->mpGlobalDescriptorPool)
 	);
 	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
-		"assets/PerspectiveLinePipeline.te-asset"
+		"assets/render/debug/PerspectiveLinePipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
 	// Y: 0->1 green up
@@ -402,7 +402,7 @@ void Game::createChunkBoundaryRenderer()
 		std::weak_ptr(this->mpGlobalDescriptorPool)
 	);
 	this->mpChunkBoundaryRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
-		"assets/ChunkLinePipeline.te-asset"
+		"assets/render/debug/ChunkLinePipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpChunkBoundaryRenderer.get());
 

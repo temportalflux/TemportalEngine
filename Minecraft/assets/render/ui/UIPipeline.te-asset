@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": "shader:assets/shaders/TextVertex.te-asset",
-	"shader-frag": "shader:assets/shaders/TextFragment.te-asset",
+	"shader-vert": "shader:assets/render/ui/TextVertex.te-asset",
+	"shader-frag": "shader:assets/render/ui/TextFragment.te-asset",
 	"blendMode": {
 		"mask": "RGBA",
 		"blend": {
