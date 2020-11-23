@@ -61,5 +61,5 @@
 			}
 		]
 	},
-	"renderPass": "renderpass:assets/RenderPass.te-asset"
+	"renderPass": "renderpass:assets/render/RenderPass.te-asset"
 }
