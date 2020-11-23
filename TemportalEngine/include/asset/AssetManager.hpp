@@ -60,6 +60,7 @@ public:
 	 * Generally collects `AssetPath`.
 	 */
 	void scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type);
+	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath, EAssetSerialization type);
 
 	template <typename TAsset>
 	void registerType()
@@ -140,7 +141,6 @@ private:
 	ReferenceMap mAssetPaths_ReferencedToReferencer;
 
 	void removeScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
-	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath);
 
 	void moveAsset(AssetPath const& prev, AssetPath const& next);
 

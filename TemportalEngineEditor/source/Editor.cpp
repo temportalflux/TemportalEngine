@@ -316,7 +316,9 @@ void Editor::setProject(asset::AssetPtrStrong asset)
 	this->mpEditorSettings.reset();
 	this->loadEditorSettings(project->getAbsoluteDirectoryPath());
 	
-	asset::AssetManager::get()->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
+	auto assetManager = asset::AssetManager::get();
+	assetManager->addScannedAsset(this->mpProject->assetPath(), this->mpProject->getPath(), asset::EAssetSerialization::Json);
+	assetManager->scanAssetDirectory(this->mpProject->getAssetDirectory(), asset::EAssetSerialization::Json);
 
 	this->OnProjectLoaded.broadcast(project);
 }

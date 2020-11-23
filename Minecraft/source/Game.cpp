@@ -98,12 +98,17 @@ bool Game::initializeSystems()
 void Game::openProject()
 {
 	auto pEngine = engine::Engine::Get();
-	auto project = asset::TypedAssetPath<asset::Project>(
-		asset::AssetPath("project", std::filesystem::absolute("Minecraft.te-project"), true)
-	).load(asset::EAssetSerialization::Binary, false);
+	auto assetManager = pEngine->getAssetManager();
+	
+	auto projectPath = std::filesystem::absolute("Minecraft.te-project");
+	auto projectAssetPath = asset::AssetPath("project", projectPath, true);
+	assetManager->addScannedAsset(projectAssetPath, projectPath, asset::EAssetSerialization::Binary);
+	
+	auto project = asset::TypedAssetPath<asset::Project>(projectAssetPath).load(asset::EAssetSerialization::Binary);
 	pEngine->setProject(project);
-	pEngine->getAssetManager()->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 	this->mProjectLog = DeclareLog(project->getDisplayName().c_str());
+
+	assetManager->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 }
 
 void Game::initializeNetwork()
@@ -372,7 +377,7 @@ void Game::createVoxelGridRenderer()
 		std::weak_ptr(this->mpVoxelInstanceBuffer)
 	);
 	this->mpVoxelGridRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
-		"assets/render/world/WorldPipeline.te-asset"
+		"assets/render/world/VoxelPipeline.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpVoxelGridRenderer.get());
 	this->mpVoxelGridRenderer->createVoxelDescriptorMapping(this->mpVoxelTypeRegistry, this->mpVoxelModelManager);
