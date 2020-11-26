@@ -26,6 +26,7 @@
 #include "render/VoxelModelManager.hpp"
 #include "render/line/LineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
+#include "render/ui/UIRenderer.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -297,50 +298,8 @@ void Game::createPipelineRenderers()
 	this->createVoxelGridRenderer();
 	this->createWorldAxesRenderer();
 	this->createChunkBoundaryRenderer();
-	
-	// Setup UI Shader Pipeline
-	//{
-	//	this->mpRenderer->setBindings(1,
-	//		{
-	//			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-	//			.setStructType<graphics::Font::UIVertex>()
-	//			.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(graphics::Font::UIVertex, position) })
-	//			.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(graphics::Font::UIVertex, texCoord) })
-	//		}
-	//	);
-	//}
-	//// Update font texture
-	//{
-	//	auto fontAsset = asset::TypedAssetPath<asset::Font>::Create(
-	//		"assets/font/Montserrat Regular.te-asset"
-	//	).load(asset::EAssetSerialization::Binary);
-	//	assert(fontAsset->supportsFontSize(48));
-	//	auto stringRenderer = this->mpRenderer->setFont(fontAsset);
-	//	auto renderedString = stringRenderer->makeGlobalString(48, { -1, -1 }, "Sphinx of black quartz, Judge my vow");
-	//	this->mpCameraForwardStr = stringRenderer->makeGlobalString(48, { -1, -1 + 0.1f }, "<0, 0, 0>");
-	//	this->mpRenderer->prepareUIBuffers(1000);
-	//}
-
-	// Add textures
-	/*
-	{
-		auto sampler = asset::TypedAssetPath<asset::TextureSampler>::Create(
-			"assets/textures/NearestNeighborSampler.te-asset"
-		).load(asset::EAssetSerialization::Binary);
-		auto idxSampler = this->mpRenderer->createTextureSampler(sampler);
-
-		auto dirtTexture = asset::TypedAssetPath<asset::Texture>::Create(
-			"assets/textures/block/Dirt.te-asset"
-		).load(asset::EAssetSerialization::Binary);
-		auto idxTex = this->mpRenderer->createTextureAssetImage(dirtTexture, idxSampler);
-		this->mpRenderer->allocateTextureMemory(); // allocates the memory for all images created
-		this->mpRenderer->writeTextureData(idxTex, dirtTexture);
-	}
-	//*/
-
-
+	this->createUIRenderer();
 }
-
 
 constexpr ui64 blockCountForRenderDistance(ui8 chunkRenderDistance)
 {
@@ -485,6 +444,21 @@ void Game::createChunkBoundaryRenderer()
 	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
+void Game::createUIRenderer()
+{
+	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>(std::weak_ptr(this->mpGlobalDescriptorPool));
+
+	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/render/ui/UIPipeline.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+
+	this->mpUIRenderer->addFont("montserrat", asset::TypedAssetPath<asset::Font>::Create(
+		"assets/font/Montserrat.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+
+	this->mpRenderer->addRenderer(this->mpUIRenderer.get());
+}
+
 void Game::destroyRenderers()
 {
 	//this->mpCameraForwardStr.reset();
@@ -495,6 +469,7 @@ void Game::destroyRenderers()
 	this->mpChunkBoundaryRenderer->destroyBuffers();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpGlobalDescriptorPool->invalidate();
+	this->mpUIRenderer->destroyRenderDevices();
 
 	this->mpRenderer->invalidate();
 
@@ -502,6 +477,7 @@ void Game::destroyRenderers()
 	this->mpVoxelGridRenderer.reset();
 	this->mpWorldAxesRenderer.reset();
 	this->mpChunkBoundaryRenderer.reset();
+	this->mpUIRenderer.reset();
 	this->mpRenderer.reset();
 }
 

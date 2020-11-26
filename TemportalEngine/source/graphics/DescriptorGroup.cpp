@@ -141,6 +141,35 @@ DescriptorGroup& DescriptorGroup::attachToBinding(
 	return *this;
 }
 
+DescriptorGroup& DescriptorGroup::attachToBinding(
+	std::string const &id, uIndex idxArchetype, uIndex idxSet,
+	vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler
+)
+{
+	if (view == nullptr || sampler == nullptr) return *this;
+	auto const idxBinding = this->mBindingIdxById[id];
+
+	auto& writeSet = this->mArchetypes[idxArchetype].mWriteInstructions[idxSet];
+
+	auto& writeInfo = writeSet.pushImageInfo()
+		.setImageLayout(layout)
+		.setImageView(*reinterpret_cast<vk::ImageView*>(view->get()))
+		.setSampler(*reinterpret_cast<vk::Sampler*>(sampler->get()));
+
+	writeSet.writes.push_back(
+		vk::WriteDescriptorSet()
+		// The destination set is handled when the write is actually written
+		//.setDstSet(INTERNAL_SET)
+		.setDstBinding((ui32)idxBinding)
+		.setDescriptorType(this->mBindings[idxBinding].descriptorType)
+		.setDescriptorCount(this->mBindings[idxBinding].descriptorCount)
+		.setDstArrayElement(0)
+		.setPImageInfo(&writeInfo)
+	);
+
+	return *this;
+}
+
 DescriptorGroup& DescriptorGroup::create(std::shared_ptr<GraphicsDevice> device, DescriptorPool *pool)
 {
 	this->mInternalLayout = device->createDescriptorSetLayout(

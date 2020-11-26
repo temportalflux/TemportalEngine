@@ -5,7 +5,6 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "graphics/ImageSampler.hpp"
-#include "graphics/GameRenderer.hpp"
 #include "graphics/GraphicsDevice.hpp"
 #include "graphics/Memory.hpp"
 #include "model/CubeModelLoader.hpp"

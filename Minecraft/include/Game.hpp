@@ -16,6 +16,7 @@ FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_GRAPHICS, class LineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
+FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
@@ -71,6 +72,7 @@ private:
 	std::shared_ptr<graphics::VoxelGridRenderer> mpVoxelGridRenderer;
 	std::shared_ptr<graphics::LineRenderer> mpWorldAxesRenderer;
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
+	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 	//std::weak_ptr<graphics::RenderedString> mpCameraForwardStr;
 
 	std::shared_ptr<Controller> mpController;
@@ -93,6 +95,7 @@ private:
 	void createVoxelGridRenderer();
 	void createWorldAxesRenderer();
 	void createChunkBoundaryRenderer();
+	void createUIRenderer();
 
 	void bindInput();
 	void unbindInput();

@@ -22,6 +22,9 @@
     <Filter Include="render\line">
       <UniqueIdentifier>{71811d0d-7c44-4a7c-8804-ae225d9d532f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\ui">
+      <UniqueIdentifier>{a4049840-49d3-43cd-b9f0-7a98474c0663}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -75,6 +78,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\ChunkBoundaryRenderer.hpp">
       <Filter>render\line</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp">
+      <Filter>render\ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -115,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\ChunkBoundaryRenderer.cpp">
       <Filter>render\line</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp">
+      <Filter>render\ui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

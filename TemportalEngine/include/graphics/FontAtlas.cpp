@@ -20,21 +20,6 @@ std::vector<Font::Face>& Font::faces()
 	return this->mGlyphFaces;
 }
 
-graphics::ImageSampler& Font::Face::sampler()
-{
-	return this->mSampler;
-}
-
-graphics::Image& Font::Face::image()
-{
-	return this->mImage;
-}
-
-graphics::ImageView& Font::Face::view()
-{
-	return this->mView;
-}
-
 math::Vector2UInt Font::Face::getAtlasSize() const
 {
 	return this->atlasSize;
@@ -170,36 +155,6 @@ void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2
 		this->textureData[idxData + 2] = 0xff;
 		this->textureData[idxData + 3] = alpha[idxAlpha];
 	}
-}
-
-void Font::invalidate()
-{
-	for (auto& face : this->mGlyphFaces)
-	{
-		face.invalidate();
-	}
-	this->mGlyphFaces.clear();
-}
-
-void Font::Face::invalidate()
-{
-	this->mView.invalidate();
-	this->mImage.invalidate();
-	this->mSampler.invalidate();
-}
-
-void Font::setText(std::string const key, ui8 fontSize, math::Vector2Int pos, std::string const content)
-{
-	auto idxMaybe = this->findSet(fontSize);
-	if (!idxMaybe) return;
-	this->mGlyphFaces[*idxMaybe].setText(key, pos, content);
-}
-
-void Font::Face::setText(std::string const key, math::Vector2Int pos, std::string const content)
-{
-	PositionedString strPos = { pos, content };
-	strPos.verticies;
-	this->mRenderingText.insert(std::make_pair(key, strPos));
 }
 
 i32 Font::Face::appendGlyph(

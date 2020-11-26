@@ -64,6 +64,11 @@ public:
 		uIndex idxArchetype = 0
 	);
 
+	DescriptorGroup& attachToBinding(
+		std::string const &id, uIndex idxArchetype, uIndex idxSet,
+		vk::ImageLayout const layout, ImageView *view, ImageSampler *sampler
+	);
+
 	DescriptorGroup& create(std::shared_ptr<GraphicsDevice> device, DescriptorPool *pool);
 	DescriptorGroup& writeAttachments(std::shared_ptr<GraphicsDevice> device);
 	void invalidate();

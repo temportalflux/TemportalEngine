@@ -32,10 +32,8 @@ public:
 	{
 		friend class Font;
 	public:
+		ui8 getFontSize() const { return this->fontSize; }
 		std::pair<math::Vector2UInt, math::Vector2Int> measure(std::string const& str) const;
-		graphics::ImageSampler& sampler();
-		graphics::Image& image();
-		graphics::ImageView& view();
 		math::Vector2UInt getAtlasSize() const;
 		std::vector<ui8>& getPixelData();
 		i32 appendGlyph(
@@ -50,32 +48,15 @@ public:
 		std::vector<GlyphSprite> glyphs;
 		math::Vector2UInt atlasSize;
 		std::vector<ui8> textureData;
-		graphics::Image mImage;
-		graphics::ImageSampler mSampler;
-		graphics::ImageView mView;
 		void loadGlyphSet(FontGlyphSet const &src);
 		// Determines the glyph offsets and atlas size
 		math::Vector2UInt calculateAtlasLayout();
 		void writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha);
-		void invalidate();
-
-		struct PositionedString
-		{
-			math::Vector2Int pos;
-			std::string content;
-			std::vector<UIVertex> verticies;
-		};
-		std::unordered_map<std::string, PositionedString> mRenderingText;
-		void setText(std::string const key, math::Vector2Int pos, std::string const content);
 	};
 
 	Font& loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
 	Face& getFace(ui8 size);
 	std::vector<Face>& faces();
-
-	void setText(std::string const key, ui8 fontSize, math::Vector2Int pos, std::string const content);
-
-	void invalidate();
 
 private:
 	std::vector<ui8> mSupportedSizes;

@@ -12,6 +12,7 @@
 
 NS_GRAPHICS
 
+// Photoshop Blend Modes! https://twitter.com/John_O_Really/status/1331601558224695298?s=20
 struct BlendMode
 {
 	struct Component

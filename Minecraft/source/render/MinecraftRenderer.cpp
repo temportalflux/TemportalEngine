@@ -61,6 +61,7 @@ void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
 {
 	renderer->setDevice(this->getDevice());
 	renderer->setRenderPass(this->mpRenderPass);
+	renderer->initializeData(&this->getTransientPool());
 	this->mpRenderers.push_back(renderer);
 }
 

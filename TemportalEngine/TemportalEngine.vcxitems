@@ -43,7 +43,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FontGlyph.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Frame.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FrameBuffer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GraphicsDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Image.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageSampler.cpp" />
@@ -134,7 +133,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DeviceObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GraphicsDevice.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp" />

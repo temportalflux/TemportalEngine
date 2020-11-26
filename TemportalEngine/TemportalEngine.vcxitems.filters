@@ -209,9 +209,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GameRenderer.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp">
@@ -518,9 +515,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
       <Filter>memory</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GameRenderer.hpp">
-      <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
