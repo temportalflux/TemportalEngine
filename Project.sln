@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemportalEngine", "TemportalEngine\TemportalEngine.vcxitems", "{4EE09EDD-0BB4-4D4D-9777-55A748CC77FE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoGame", "DemoGame\DemoGame.vcxproj", "{ABDE6299-5814-4811-91D4-5908CE699B57}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cereal", "libs\cereal.vcxitems", "{2AB47AA3-AB49-45C6-9969-D08FE23F6AB8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Executables", "Executables", "{E4CD3244-0C3C-4397-9E6D-570CFE1D5641}"
@@ -20,9 +18,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glm", "libs\glm.vcxitems", "{DF1B4953-8F99-46D2-B1B4-D65B8EA778A8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DemoGameEditor", "DemoGameEditor\DemoGameEditor.vcxproj", "{3AD6343C-1563-4DE2-B16D-20031AE18E2B}"
-	ProjectSection(ProjectDependencies) = postProject
-		{ABDE6299-5814-4811-91D4-5908CE699B57} = {ABDE6299-5814-4811-91D4-5908CE699B57}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TemportalEngineEditor", "TemportalEngineEditor\TemportalEngineEditor.vcxitems", "{A48E2E14-7909-4A4E-9A1B-D6231FE8CFC2}"
 EndProject
@@ -46,12 +41,6 @@ Global
 		TemportalEngine\TemportalEngine.vcxitems*{4ee09edd-0bb4-4d4d-9777-55a748cc77fe}*SharedItemsImports = 9
 		TemportalEngineEditor\libs\imgui.vcxitems*{73b768d0-a7f2-46d0-8097-539bb96c7305}*SharedItemsImports = 9
 		TemportalEngineEditor\TemportalEngineEditor.vcxitems*{a48e2e14-7909-4a4e-9a1b-d6231fe8cfc2}*SharedItemsImports = 9
-		libs\cereal.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		libs\glm.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		libs\Optick.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		libs\vulkan.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		Minecraft\Minecraft.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		TemportalEngine\TemportalEngine.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Minecraft\Minecraft.vcxitems*{d899098e-bbad-4b50-bc5c-ce68af938fe3}*SharedItemsImports = 9
 		libs\glm.vcxitems*{df1b4953-8f99-46d2-b1b4-d65b8ea778a8}*SharedItemsImports = 9
 		libs\vulkan.vcxitems*{e30d2c09-c680-4cbc-ab6d-126acf07ecb3}*SharedItemsImports = 9
@@ -64,14 +53,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Debug|x64.ActiveCfg = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Debug|x64.Build.0 = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Debug|x86.ActiveCfg = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Debug|x86.Build.0 = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Release|x64.ActiveCfg = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Release|x64.Build.0 = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Release|x86.ActiveCfg = Debug|x64
-		{ABDE6299-5814-4811-91D4-5908CE699B57}.Release|x86.Build.0 = Debug|x64
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Debug|x64.ActiveCfg = Debug|x64
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Debug|x64.Build.0 = Debug|x64
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Debug|x86.ActiveCfg = Debug|Win32
@@ -86,7 +67,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EE09EDD-0BB4-4D4D-9777-55A748CC77FE} = {3D9AF383-0C2A-4F25-989C-33D158C1FD99}
-		{ABDE6299-5814-4811-91D4-5908CE699B57} = {E4CD3244-0C3C-4397-9E6D-570CFE1D5641}
 		{2AB47AA3-AB49-45C6-9969-D08FE23F6AB8} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 		{E30D2C09-C680-4CBC-AB6D-126ACF07ECB3} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}
 		{DF1B4953-8F99-46D2-B1B4-D65B8EA778A8} = {A5434285-BC95-4F21-9E00-A96FD6FBD01E}

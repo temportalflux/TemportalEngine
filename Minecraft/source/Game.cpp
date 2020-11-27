@@ -14,7 +14,6 @@
 #include "ecs/component/Transform.hpp"
 #include "controller/Controller.hpp"
 #include "graphics/DescriptorPool.hpp"
-#include "graphics/StringRenderer.hpp"
 #include "graphics/Uniform.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"

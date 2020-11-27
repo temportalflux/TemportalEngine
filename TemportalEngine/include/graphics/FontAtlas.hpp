@@ -44,12 +44,6 @@ public:
 		std::pair<math::Vector2UInt, math::Vector2Int> measure(std::string const& str) const;
 		math::Vector2UInt getAtlasSize() const;
 		std::vector<ui8>& getPixelData();
-		i32 appendGlyph(
-			ui32 const charCode,
-			math::Vector2 const &rootPos, math::Vector2 const &resolution,
-			i32 const &advance,
-			std::vector<UIVertex> &verticies, std::vector<ui16> &indicies
-		) const;
 		std::optional<GlyphData> getGlyph(char const& charCode) const;
 	private:
 		ui8 fontSize;
