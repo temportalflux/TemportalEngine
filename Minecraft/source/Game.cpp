@@ -205,15 +205,15 @@ struct ChunkViewProj
 {
 	math::Matrix4x4 view;
 	glm::mat4 proj;
-	math::Vector3 posOfCurrentChunk;
-	math::Vector3 sizeOfChunkInBlocks;
+	math::Vector3Padded posOfCurrentChunk;
+	math::Vector3Padded sizeOfChunkInBlocks;
 
 	ChunkViewProj()
 	{
 		view = math::Matrix4x4(1);
 		proj = glm::mat4(1);
-		posOfCurrentChunk = math::Vector3({ 0, 0, 0 });
-		sizeOfChunkInBlocks = math::Vector3({ CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH });
+		posOfCurrentChunk = math::Vector3Padded({ 0, 0, 0 });
+		sizeOfChunkInBlocks = math::Vector3Padded({ CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH });
 	}
 };
 
@@ -707,9 +707,9 @@ void Game::changeVoxelDemoSmol()
 		idCount.insert(std::make_pair(id, 0));
 	}
 
-	for (i32 x = CHUNK_HALF_LENGTH - 2; x <= CHUNK_HALF_LENGTH + 2; ++x)
+	for (i32 x = 0; x < CHUNK_SIDE_LENGTH; ++x)
 	{
-		for (i32 z = CHUNK_HALF_LENGTH - 2; z <= CHUNK_HALF_LENGTH + 2; ++z)
+		for (i32 z = 0; z < CHUNK_SIDE_LENGTH; ++z)
 		{
 			auto const& id = allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())];
 			this->mpVoxelInstanceBuffer->changeVoxelId(
