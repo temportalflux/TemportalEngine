@@ -27,3 +27,21 @@ To compile shaders, the editor uses libshaderc
 4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Debug\shaderc_combined.lib`
 5. Copy the contents of (Release build zip) `install\include\shaderc\` to ``Editor\libs\shaderc\include\Release\shaderc`
 6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Release\shaderc_combined.lib`
+
+---
+# Text/UI Rendering Plan
+
+UIRenderer:
+	
+	CommittedElement:
+	- idx of first vertex index in index buffer
+	- # of indicies in index buffer
+	- descriptor set handle
+
+	for committed data:
+	- SOME MAPPING OF DESCRIPTORS (so text can say "my font is this and my face size is this, gimme descriptor")
+	- Vertex and Index graphics buffers (for committed data)
+	- Map: string->CommittedElement for text and images
+
+	for uncommitted data:
+	- 

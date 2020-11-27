@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 #include "graphics/DescriptorGroup.hpp"
 #include "graphics/FontAtlas.hpp"
+#include "thread/MutexLock.hpp"
 
 #include "render/IPipelineRenderer.hpp"
 
@@ -10,11 +11,13 @@ FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_ASSET, class Font);
 FORWARD_DEF(NS_GRAPHICS, class Pipeline);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
+FORWARD_DEF(NS_GRAPHICS, class UIString);
 
 NS_GRAPHICS
 
 class UIRenderer : public graphics::IPipelineRenderer
 {
+	friend class UIString;
 
 public:
 	UIRenderer(
@@ -22,6 +25,10 @@ public:
 		uSize maximumDisplayedCharacters
 	);
 	~UIRenderer();
+
+	void lock();
+	void unlock();
+	bool hasChanges() const;
 
 	UIRenderer& setTextPipeline(std::shared_ptr<asset::Pipeline> asset);
 	UIRenderer& addFont(std::string fontId, std::shared_ptr<asset::Font> asset);
@@ -40,9 +47,24 @@ public:
 	void destroyRenderChain() override;
 
 	void destroyRenderDevices();
+
+	/**
+	 * Writes any changes made by `updateGlyphVertices` to the GPU buffer object.
+	 */
+	void commitToBuffer(graphics::CommandPool* transientPool);
+
+protected:
+
+	void addString(std::shared_ptr<UIString> pStr);
+	void removeString(UIString const* pStr);
+	void updateString(UIString const* pStr);
+	math::Vector2 measure(UIString const* pStr) const;
 	
 private:
 	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
+
+	math::Vector2UInt mScreenResolution;
+	thread::MutexLock mMutex;
 
 	struct FontFaceImage
 	{
@@ -68,31 +90,35 @@ private:
 		/**
 		 * The coordinate of the glyph vertex in the font atlas allocated for a given `RegisteredFont`.
 		 */
-		math::Vector2 texCoord;
+		math::Vector2Padded texCoord;
 	};
 	// Renderable data pertaining to a unique piece of text that is rendered.
+	// Generated from a `UIString`.
 	struct GlyphString
 	{
-		// The value of the text. This is converted using `fontId` and `fontSize` into `vertices`.
-		std::string value;
+		std::shared_ptr<UIString> handle;
 
-		// The identifier of the `RegisteredFont`.
-		std::string fontId;
-		// The size of the font-face in `RegisteredFont`.
-		ui8 fontSize;
+		struct
+		{
+			math::Vector2 position;
+			std::string content;
+			std::string fontId;
+			ui8 fontSize;
+		} prev;
 
 		/**
 		 * The vertex list for the string converted into glyphs.
-		 * Each character in `value` has exactly 4 vertices in this list,  which composed into 2 triangles via `indices`.
+		 * Each character in `content` has exactly 4 vertices in this list,  which composed into 2 triangles via `indices`.
 		 */
 		std::vector<FontGlyphVertex> vertices;
+
 		/**
 		 * The indices for the vertex buffer data in `vertices`.
-		 * Each character in `value` has exactly 6 indices in this list (for the 2 triangles).
+		 * Each character in `content` has exactly 6 indices in this list (for the 2 triangles).
 		 */
 		std::vector<ui16> indices;
 	};
-	struct TextData
+	struct UncommittedTextData
 	{
 
 		/**
@@ -105,6 +131,21 @@ private:
 		 */
 		std::unordered_map<std::string, GlyphString> strings;
 
+		bool bHasChanges;
+
+	};
+	struct GlyphStringIndices
+	{
+		std::string stringId;
+		uIndex idxDescriptor;
+		ui32 idxStartIndex;
+		ui32 indexCount;
+		ui32 vertexPreCount;
+	};
+	struct CommittedTextData
+	{
+		// TODO: Sort the ids according to font id and size (idxDescriptor) so different descriptors don't need to be bound for EVERY string render
+		std::vector<GlyphStringIndices> strings;
 	};
 	struct
 	{
@@ -121,9 +162,8 @@ private:
 		// the number of faces across all fonts
 		ui8 fontFaceCount;
 
-		TextData uncommittedData;
-		bool bHasUncommittedDataChanges;
-		TextData committedData;
+		UncommittedTextData uncommittedData;
+		CommittedTextData committedData;
 
 		std::shared_ptr<Memory> memoryTextBuffers;
 		graphics::Buffer vertexBuffer;
@@ -131,7 +171,8 @@ private:
 
 	} mText;
 
-	void* getTextDescriptor(std::string const& fontId, ui8 fontSize) const;
+	void updateGlyphVertices(UIString const* updatedString, GlyphString &glyphStr) const;
+	uIndex getTextDescriptorIdx(std::string const& fontId, ui8 fontSize) const;
 
 };
 

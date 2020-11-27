@@ -81,6 +81,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp">
       <Filter>render\ui</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp">
+      <Filter>render\ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -123,6 +126,9 @@
       <Filter>render\line</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp">
+      <Filter>render\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp">
       <Filter>render\ui</Filter>
     </ClCompile>
   </ItemGroup>

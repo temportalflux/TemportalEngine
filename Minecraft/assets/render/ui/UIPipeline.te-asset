@@ -2,6 +2,7 @@
 	"type": "pipeline",
 	"shader-vert": "shader:assets/render/ui/TextVertex.te-asset",
 	"shader-frag": "shader:assets/render/ui/TextFragment.te-asset",
+	"frontFace": "Clockwise",
 	"blendMode": {
 		"mask": "RGBA",
 		"blend": {

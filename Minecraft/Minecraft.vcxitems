@@ -27,6 +27,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\LineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
@@ -47,6 +48,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\LineRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />

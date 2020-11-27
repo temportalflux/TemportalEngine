@@ -8,6 +8,13 @@ std::optional<uIndex> Font::findSet(ui8 size) const
 	return iter != this->mSupportedSizes.end() ? std::make_optional(std::distance(this->mSupportedSizes.begin(), iter)) : std::nullopt;
 }
 
+Font::Face const& Font::getFace(ui8 size) const
+{
+	auto idxSet = this->findSet(size);
+	assert(idxSet);
+	return this->mGlyphFaces[*idxSet];
+}
+
 Font::Face& Font::getFace(ui8 size)
 {
 	auto idxSet = this->findSet(size);
@@ -87,6 +94,7 @@ Font::GlyphSprite& Font::GlyphSprite::operator=(FontGlyph const &other)
 }
 
 // See https://snorristurluson.github.io/TextRenderingWithFreetype/ for reference
+// See http://freetype.sourceforge.net/freetype2/docs/tutorial/step2.html for unit of measurement reference
 std::pair<math::Vector2UInt, math::Vector2Int> Font::Face::measure(std::string const& str) const
 {
 	math::Vector2UInt size;
@@ -155,6 +163,23 @@ void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2
 		this->textureData[idxData + 2] = 0xff;
 		this->textureData[idxData + 3] = alpha[idxAlpha];
 	}
+}
+
+std::optional<Font::GlyphData> Font::Face::getGlyph(char const& charCode) const
+{
+	auto const& iterGlyph = this->codeToGlyphIdx.find((ui32)charCode);
+	if (iterGlyph == this->codeToGlyphIdx.end()) { return std::nullopt; }
+	auto const& sprite = this->glyphs[iterGlyph->second];
+	math::Vector2 const atlasSize = this->atlasSize.toFloat();
+
+	GlyphData data;
+	data.bearing = sprite.bearing.toFloat();
+	data.size = sprite.size.toFloat();
+	data.advance = f32(sprite.advance);
+	data.uvPos = sprite.atlasOffset.toFloat() / atlasSize;
+	data.uvSize = sprite.size.toFloat() / atlasSize;
+
+	return data;
 }
 
 i32 Font::Face::appendGlyph(

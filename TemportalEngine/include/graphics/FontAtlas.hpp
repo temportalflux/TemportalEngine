@@ -27,6 +27,14 @@ public:
 		math::Vector4 position;
 		math::Vector2 texCoord;
 	};
+	struct GlyphData
+	{
+		math::Vector2 bearing;
+		math::Vector2 size;
+		f32 advance;
+		math::Vector2 uvPos;
+		math::Vector2 uvSize;
+	};
 
 	class Face
 	{
@@ -42,6 +50,7 @@ public:
 			i32 const &advance,
 			std::vector<UIVertex> &verticies, std::vector<ui16> &indicies
 		) const;
+		std::optional<GlyphData> getGlyph(char const& charCode) const;
 	private:
 		ui8 fontSize;
 		std::unordered_map<ui32, ui32> codeToGlyphIdx;
@@ -55,6 +64,7 @@ public:
 	};
 
 	Font& loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
+	Face const& getFace(ui8 size) const;
 	Face& getFace(ui8 size);
 	std::vector<Face>& faces();
 

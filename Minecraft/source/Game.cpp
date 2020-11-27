@@ -27,6 +27,7 @@
 #include "render/line/LineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/ui/UIRenderer.hpp"
+#include "render/ui/UIString.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -230,6 +231,43 @@ void Game::createRenderers()
 	this->createPipelineRenderers();
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
+
+	graphics::UIString::create("debug:textTest", this->mpUIRenderer)
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.f, 0.f })
+		.setContent("Sphinx of Black Quartz, Judge my vow")
+		.update();
+
+	graphics::UIString::create("debug:chunkPosLabel", this->mpUIRenderer)
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.f, 0.04f }).setContent("Chunk:")
+		.update();
+
+	(this->mpDebugChunkPosStr = graphics::UIString::create("debug:chunkPosValue", this->mpUIRenderer))
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.12f, 0.04f }).setContent("<?,?,?>")
+		.update();
+
+	graphics::UIString::create("debug:voxelPosLabel", this->mpUIRenderer)
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.f, 0.08f }).setContent("Voxel:")
+		.update();
+
+	(this->mpDebugVoxelPosStr = graphics::UIString::create("debug:voxelPosValue", this->mpUIRenderer))
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
+		.update();
+
+	graphics::UIString::create("debug:cameraForwardLabel", this->mpUIRenderer)
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.f, 0.12f }).setContent("Forward:")
+		.update();
+
+	(this->mpCameraForwardStr = graphics::UIString::create("debug:cameraForwardValue", this->mpUIRenderer))
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.12f, 0.12f }).setContent("<?,?,?>")
+		.update();
+
 }
 
 void Game::createGameRenderer()
@@ -514,8 +552,6 @@ void Game::createScene()
 	this->mpCameraTransform = std::make_shared<ecs::ComponentTransform>();
 	this->mpCameraTransform->setPosition(math::Vector3unitY * 3);
 	this->mpCameraTransform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
-	auto fwd = this->mpCameraTransform->forward();
-	this->mProjectLog.log(LOG_INFO, "<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z());
 
 	// TODO: Allocate from entity pool
 	this->mpController = pEngine->getMainMemory()->make_shared<Controller>();
@@ -563,14 +599,12 @@ void Game::run()
 	pEngine->start();
 	auto prevTime = std::chrono::high_resolution_clock::now();
 	f32 deltaTime = 0.0f;
-	ui32 i = 0;
 	while (pEngine->isActive())
 	{
 		this->update(deltaTime);
 		auto nextTime = std::chrono::high_resolution_clock::now();
 		deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
 		prevTime = nextTime;
-		i = (i + 1) % 6000;
 	}
 	pEngine->joinThreads();
 }
@@ -578,19 +612,20 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
+	static ui32 iDebugHUDUpdate = 0;
 
 	auto pEngine = engine::Engine::Get();
 
-	/*
-	if (i == 0)
+	if (iDebugHUDUpdate == 0)
 	{
 		auto rot = this->mpCameraTransform->orientation.euler() * math::rad2deg();
+		auto pos = this->mpCameraTransform->position;
 		auto fwd = this->mpCameraTransform->forward();
-		this->mpCameraForwardStr.lock()->content(
-			utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())
-		);
+		//this->mpDebugChunkPosStr->setContent(utility::formatStr("<%.0f, %.0f, %.0f>", fwd.x(), fwd.y(), fwd.z())).update();
+		this->mpDebugVoxelPosStr->setContent(utility::formatStr("<%.0f, %.0f, %.0f>", pos.x(), pos.y(), pos.z())).update();
+		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
 	}
-	//*/
+	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
 
 	if (this->mpRenderer)
 	{
@@ -638,6 +673,12 @@ void Game::updateWorldGraphics()
 		this->mpVoxelInstanceBuffer->lock();
 		this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
 		this->mpVoxelInstanceBuffer->unlock();
+	}
+	if (this->mpUIRenderer->hasChanges())
+	{
+		this->mpUIRenderer->lock();
+		this->mpUIRenderer->commitToBuffer(&this->mpRenderer->getTransientPool());
+		this->mpUIRenderer->unlock();
 	}
 }
 
