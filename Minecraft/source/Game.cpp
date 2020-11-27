@@ -244,17 +244,17 @@ void Game::createRenderers()
 		.update();
 
 	(this->mpDebugPositionStr = graphics::UIString::create("debug:position", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(48)
+		->setFontId("montserrat").setFontSize(20)
 		.setPosition({ 0.0f, 0.04f }).setContent("Position| X:<?,?,?> Y:<?,?,?> Z:<?,?,?>")
 		.update();
 
 	graphics::UIString::create("debug:cameraForwardLabel", this->mpUIRenderer)
-		->setFontId("montserrat").setFontSize(48)
+		->setFontId("montserrat").setFontSize(20)
 		.setPosition({ 0.f, 0.08f }).setContent("Forward:")
 		.update();
 
 	(this->mpCameraForwardStr = graphics::UIString::create("debug:cameraForwardValue", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(48)
+		->setFontId("montserrat").setFontSize(20)
 		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
 		.update();
 

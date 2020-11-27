@@ -2,6 +2,6 @@
   "type": "font",
   "path": "Montserrat Regular.otf",
   "fontSizes": [
-    48
+    10, 20, 48
   ]
 }
