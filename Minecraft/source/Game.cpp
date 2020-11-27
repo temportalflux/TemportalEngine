@@ -243,34 +243,19 @@ void Game::createRenderers()
 		.setContent("Sphinx of Black Quartz, Judge my vow")
 		.update();
 
-	graphics::UIString::create("debug:chunkPosLabel", this->mpUIRenderer)
+	(this->mpDebugPositionStr = graphics::UIString::create("debug:position", this->mpUIRenderer))
 		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.f, 0.04f }).setContent("Chunk:")
-		.update();
-
-	(this->mpDebugChunkPosStr = graphics::UIString::create("debug:chunkPosValue", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.12f, 0.04f }).setContent("<?,?,?>")
-		.update();
-
-	graphics::UIString::create("debug:voxelPosLabel", this->mpUIRenderer)
-		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.f, 0.08f }).setContent("Voxel:")
-		.update();
-
-	(this->mpDebugVoxelPosStr = graphics::UIString::create("debug:voxelPosValue", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
+		.setPosition({ 0.0f, 0.04f }).setContent("Position| X:<?,?,?> Y:<?,?,?> Z:<?,?,?>")
 		.update();
 
 	graphics::UIString::create("debug:cameraForwardLabel", this->mpUIRenderer)
 		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.f, 0.12f }).setContent("Forward:")
+		.setPosition({ 0.f, 0.08f }).setContent("Forward:")
 		.update();
 
 	(this->mpCameraForwardStr = graphics::UIString::create("debug:cameraForwardValue", this->mpUIRenderer))
 		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.12f, 0.12f }).setContent("<?,?,?>")
+		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
 		.update();
 
 }
@@ -626,8 +611,12 @@ void Game::update(f32 deltaTime)
 		auto rot = this->mpCameraTransform->orientation().euler() * math::rad2deg();
 		auto const& pos = this->mpCameraTransform->position();
 		auto fwd = this->mpCameraTransform->forward();
-		this->mpDebugChunkPosStr->setContent(utility::formatStr("<%i, %i, %i>", pos.chunk().x(), pos.chunk().y(), pos.chunk().z())).update();
-		this->mpDebugVoxelPosStr->setContent(utility::formatStr("<%i, %i, %i>", pos.local().x(), pos.local().y(), pos.local().z())).update();
+		this->mpDebugPositionStr->setContent(utility::formatStr(
+			"Position| X:<%i,%i,%.2f> Y:<%i,%i,%.2f> Z:<%i,%i,%.2f>",
+			pos.chunk().x(), pos.local().x(), pos.offset().x(),
+			pos.chunk().y(), pos.local().y(), pos.offset().y(),
+			pos.chunk().z(), pos.local().z(), pos.offset().z()
+		)).update();
 		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
 	}
 	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;

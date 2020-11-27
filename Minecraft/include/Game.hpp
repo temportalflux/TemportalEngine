@@ -77,8 +77,7 @@ private:
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 
-	std::shared_ptr<graphics::UIString> mpDebugChunkPosStr;
-	std::shared_ptr<graphics::UIString> mpDebugVoxelPosStr;
+	std::shared_ptr<graphics::UIString> mpDebugPositionStr;
 	std::shared_ptr<graphics::UIString> mpCameraForwardStr;
 
 	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;

@@ -103,6 +103,23 @@ bool Coordinate::operator<(Coordinate const& other) const
 void Coordinate::adjustForChunkSize()
 {
 	this->mBlockPosition += this->mBlockOffset.removeExcess(1);
+	for (ui8 iAxis = 0; iAxis < 3; ++iAxis)
+	{
+		if (this->mBlockOffset[iAxis] < 0)
+		{
+			this->mBlockOffset[iAxis] += 1.0f;
+			this->mBlockPosition[iAxis]--;
+		}
+	}
+	
 	auto voxelExcess = this->mBlockPosition.removeExcess((i32)ChunkSize());
 	this->mChunkPosition += voxelExcess / (i32)ChunkSize();
+	for (ui8 iAxis = 0; iAxis < 3; ++iAxis)
+	{
+		if (this->mBlockPosition[iAxis] < 0)
+		{
+			this->mBlockPosition[iAxis] += i32(ChunkSize());
+			this->mChunkPosition[iAxis]--;
+		}
+	}
 }
