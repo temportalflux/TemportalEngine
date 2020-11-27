@@ -52,6 +52,12 @@
     <Filter Include="ecs\component">
       <UniqueIdentifier>{9dea8749-c600-454e-89c8-58cdd941aae4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs\entity">
+      <UniqueIdentifier>{de8dc365-20a1-46c4-827f-c0bfa6f4fd2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\view">
+      <UniqueIdentifier>{ac510b11-d729-40a7-94e5-b0f1e19469be}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -275,7 +281,18 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\transform.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\EntityManager.cpp">
+      <Filter>ecs\entity</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp">
+      <Filter>ecs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -486,7 +503,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\VertexDescription.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp">
       <Filter>asset</Filter>
     </ClInclude>
@@ -549,9 +565,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\transform.hpp">
       <Filter>math</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Entity.hpp">
-      <Filter>ecs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\values.hpp">
       <Filter>math</Filter>
@@ -617,6 +630,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\EntityManager.hpp">
+      <Filter>ecs\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp">
+      <Filter>ecs\entity</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

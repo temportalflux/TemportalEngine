@@ -10,7 +10,7 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "ecs/Core.hpp"
-#include "ecs/Entity.hpp"
+#include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/system/ControllerCoordinateSystem.hpp"
 #include "graphics/DescriptorPool.hpp"
@@ -99,7 +99,7 @@ bool Game::initializeSystems()
 
 void Game::registerECSTypes(ecs::Core *ecs)
 {
-	ecs->registerType<ecs::CoordinateTransform, ECS_MAX_COMPONENT_COUNT>("CoordinateTransform");
+	ecs->components().registerType<ecs::CoordinateTransform>("CoordinateTransform");
 }
 
 void Game::openProject()
@@ -530,8 +530,9 @@ void Game::createScene()
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
+
+	this->mpEntityLocalPlayer = pEngine->getECS().entities().create();
 	/*
-	auto camera = pEngine->getECS().createEntity();
 	{
 		//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();
 		//camera->components[0] = { ecs::ComponentTransform::TypeId, comp->id };
@@ -563,6 +564,7 @@ void Game::destroyScene()
 {
 	this->mpController.reset();
 	this->mpCameraTransform.reset();
+	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();
 }
 

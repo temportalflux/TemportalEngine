@@ -30,7 +30,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\EntityManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\BlendMode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp" />
@@ -118,9 +121,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Entity.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\EntityManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />

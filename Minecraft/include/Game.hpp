@@ -9,6 +9,7 @@ class Window;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
 FORWARD_DEF(NS_ECS, class Core);
+FORWARD_DEF(NS_ECS, struct Entity);
 FORWARD_DEF(NS_ECS, class CoordinateTransform);
 FORWARD_DEF(NS_ECS, class ControllerCoordinateSystem);
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
@@ -80,6 +81,7 @@ private:
 	std::shared_ptr<graphics::UIString> mpDebugPositionStr;
 	std::shared_ptr<graphics::UIString> mpCameraForwardStr;
 
+	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
 	std::shared_ptr<ecs::CoordinateTransform> mpCameraTransform;
 

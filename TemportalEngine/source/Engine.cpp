@@ -143,9 +143,9 @@ std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 void Engine::initializeECS()
 {
 	this->mECS.setLog(DeclareLog("ECS"));
-	this->mECS.registerType<ecs::ComponentTransform, ECS_MAX_COMPONENT_COUNT>("Transform");
+	this->mECS.components().registerType<ecs::ComponentTransform>("Transform");
 	this->ECSRegisterTypesEvent.execute(&this->mECS);
-	this->mECS.constructComponentPools();
+	this->mECS.components().allocatePools();
 }
 
 ecs::Core& Engine::getECS()
