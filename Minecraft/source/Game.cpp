@@ -530,15 +530,11 @@ void Game::createScene()
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
+	auto& ecs = pEngine->getECS();
 
-	this->mpEntityLocalPlayer = pEngine->getECS().entities().create();
-	/*
-	{
-		//auto comp = pEngine->getECS().create<ecs::ComponentTransform>();
-		//camera->components[0] = { ecs::ComponentTransform::TypeId, comp->id };
-		//camera->componentCount++;
-	}
-	//*/
+	(this->mpEntityLocalPlayer = ecs.entities().create())
+		->addComponent(ecs.components().create<ecs::CoordinateTransform>());
+	//auto transform = this->mpEntityLocalPlayer->getComponent<ecs::CoordinateTransform>();
 
 	this->mpCameraTransform = std::make_shared<ecs::CoordinateTransform>();
 	this->mpCameraTransform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));

@@ -9,7 +9,7 @@ class Window;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
 FORWARD_DEF(NS_ECS, class Core);
-FORWARD_DEF(NS_ECS, struct Entity);
+FORWARD_DEF(NS_ECS, class Entity);
 FORWARD_DEF(NS_ECS, class CoordinateTransform);
 FORWARD_DEF(NS_ECS, class ControllerCoordinateSystem);
 FORWARD_DEF(NS_GAME, class VoxelModelManager);

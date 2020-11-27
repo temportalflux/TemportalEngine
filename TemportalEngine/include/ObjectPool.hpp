@@ -41,6 +41,8 @@ public:
 			return;
 		}
 		auto idxInMemory = *lookupPtr;
+		((TObject*)(&this->mMemory[idxInMemory]))->~TObject();
+
 		this->mMemory.deallocate(idxInMemory);
 		
 		// Remove it from the map

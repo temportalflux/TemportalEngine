@@ -58,7 +58,7 @@ public:
 		auto id = this->dequeueOrCreateId(TComponent::TypeId, pool);
 		auto ptr = std::shared_ptr<TComponent>(
 			pool->create(id),
-			std::bind(&ComponentManager::destroy, this, std::placeholders::_1)
+			std::bind(&ComponentManager::destroy<TComponent>, this, std::placeholders::_1)
 		);
 		ptr->id = id;
 
@@ -67,7 +67,7 @@ public:
 	}
 
 	template <typename TComponent>
-	std::shared_ptr<TComponent> get(Identifier const &id)
+	TComponent* get(Identifier const &id)
 	{
 		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
 		if (pool == nullptr) return nullptr;
@@ -111,10 +111,13 @@ private:
 	void destroy(TComponent *pCreated)
 	{
 		this->mMutex.lock();
+		
 		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
 		if (pool == nullptr) return;
-		pool->destroy(TComponent->id);
-		this->mAvailableIdsByType[TComponent::TypeId].insert(TComponent->id);
+		
+		this->mAvailableIdsByType[TComponent::TypeId].insert(pCreated->id);
+		pool->destroy(pCreated->id);
+		
 		this->mMutex.unlock();
 	}
 

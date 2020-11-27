@@ -10,6 +10,7 @@ ComponentManager::ComponentManager(Core *pCore)
 	, mpPoolMemory(nullptr)
 	, mRegisteredTypeCount(0)
 {
+
 }
 
 ComponentManager::~ComponentManager()
