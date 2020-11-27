@@ -13,13 +13,15 @@ public:
 	Coordinate() = default;
 	Coordinate(math::Vector3Int chunk, math::Vector3Int local);
 
-	math::Vector3Int chunk() const { return this->mChunkPosition; }
-	math::Vector3Int local() const { return this->mBlockPosition; }
+	math::Vector3Int const& chunk() const { return this->mChunkPosition; }
+	math::Vector3Int const& local() const { return this->mBlockPosition; }
+	math::Vector3 const& offset() const { return this->mBlockOffset; }
 
 	bool operator==(Coordinate const& other) const;
 	bool operator!=(Coordinate const& other) const;
 	void operator=(Coordinate const &other);
-	void operator+=(Coordinate const &other);
+	Coordinate& operator+=(Coordinate const &other);
+	Coordinate& operator+=(math::Vector3 const &other);
 	Coordinate const operator+(Coordinate const &other) const;
 	void operator-=(Coordinate const &other);
 	Coordinate const operator-(Coordinate const &other) const;

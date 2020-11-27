@@ -6,6 +6,7 @@
 #include "WindowFlags.hpp"
 #include "dependency/SDL.hpp"
 #include "graphics/VulkanInstance.hpp"
+#include "Delegate.hpp"
 
 #include "ecs/Core.hpp"
 #include "input/InputWatcher.hpp"
@@ -83,6 +84,7 @@ public:
 
 	void initializeECS();
 	ecs::Core& getECS();
+	ExecuteDelegate<void(ecs::Core* ecs)> ECSRegisterTypesEvent;
 
 #pragma region Windows
 	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);

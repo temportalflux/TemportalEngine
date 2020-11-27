@@ -217,9 +217,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp">
       <Filter>utility</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Transform.cpp">
-      <Filter>ecs\component</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Image.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
@@ -275,6 +272,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\SwapChainSupport.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\math\transform.cpp">
+      <Filter>math</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -537,9 +538,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Transform.hpp">
-      <Filter>ecs\component</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
@@ -619,5 +617,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
   </ItemGroup>
 </Project>

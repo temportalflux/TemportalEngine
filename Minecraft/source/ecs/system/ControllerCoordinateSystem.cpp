@@ -1,15 +1,15 @@
-#include "controller/Controller.hpp"
+#include "ecs/system/ControllerCoordinateSystem.hpp"
 
 #include "Engine.hpp"
 #include "input/Queue.hpp"
 #include "logging/Logger.hpp"
-#include "ecs/component/ComponentTransform.hpp"
-#include "glm/gtc/quaternion.hpp"
+#include "ecs/component/CoordinateTransform.hpp"
 
-Controller::Controller()
+using namespace ecs;
+
+ControllerCoordinateSystem::ControllerCoordinateSystem()
 {
 	f32 moveSpeed = 4.0f;
-	// TODO: These are using y up directions (it should really be Z up)
 	this->mForward = { math::Vector3unitZ, false, moveSpeed };
 	this->mBackward = { -math::Vector3unitZ, false, moveSpeed };
 	this->mStrafeRight = { math::Vector3unitX, false, moveSpeed };
@@ -24,25 +24,25 @@ Controller::Controller()
 		{ input::EKey::E, &this->mUp },
 		{ input::EKey::Q, &this->mDown },
 	};
-	this->mLookHorizontal = { math::Vector3unitY, glm::radians(90.0f) };
-	this->mLookVertical = { math::Vector3unitX, glm::radians(90.0f) };
+	this->mLookHorizontal = { math::Vector3unitY, math::toRadians(90.0f) };
+	this->mLookVertical = { math::Vector3unitX, math::toRadians(90.0f) };
 }
 
-void Controller::assignCameraTransform(ecs::ComponentTransform *transform)
+void ControllerCoordinateSystem::assignCameraTransform(ecs::CoordinateTransform *transform)
 {
 	this->mpCameraTransform = transform;
 }
 
-void Controller::subscribeToInput()
+void ControllerCoordinateSystem::subscribeToInput()
 {
 	auto inputQueue = engine::Engine::Get()->getInputQueue();
 #define REGISTER_INPUT(EVENT, FUNC_PTR) inputQueue->OnInputEvent.bind(EVENT, this->weak_from_this(), std::bind(FUNC_PTR, this, std::placeholders::_1))
-	REGISTER_INPUT(input::EInputType::KEY, &Controller::onKeyInput);
-	REGISTER_INPUT(input::EInputType::MOUSE_MOVE, &Controller::onMouseMove);
+	REGISTER_INPUT(input::EInputType::KEY, &ControllerCoordinateSystem::onKeyInput);
+	REGISTER_INPUT(input::EInputType::MOUSE_MOVE, &ControllerCoordinateSystem::onMouseMove);
 #undef REGISTER_INPUT
 }
 
-void Controller::onKeyInput(input::Event const & evt)
+void ControllerCoordinateSystem::onKeyInput(input::Event const & evt)
 {
 	auto mapping = this->mInputMappings.find(evt.inputKey.key);
 	if (mapping != this->mInputMappings.end())
@@ -54,21 +54,21 @@ void Controller::onKeyInput(input::Event const & evt)
 	}
 }
 
-void Controller::onMouseMove(input::Event const & evt)
+void ControllerCoordinateSystem::onMouseMove(input::Event const & evt)
 {
 	this->mLookHorizontal.delta = evt.inputMouseMove.xDelta;
 	this->mLookVertical.delta = evt.inputMouseMove.yDelta;
 }
 
-void Controller::tick(f32 deltaTime)
+void ControllerCoordinateSystem::tick(f32 deltaTime)
 {
 	OPTICK_EVENT();
 	static logging::Logger ControllerLog = DeclareLog("Controller");
-	
-	auto orientation = this->mpCameraTransform->orientation;
+
+	auto orientation = this->mpCameraTransform->orientation();
 	auto euler = orientation.euler();
 	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitY, euler.y());
-	
+
 	for (auto&[key, mapping] : this->mInputMappings)
 	{
 		if (!mapping->bIsActive) continue;
@@ -97,6 +97,6 @@ void Controller::tick(f32 deltaTime)
 		), orientation);
 		this->mLookHorizontal.delta = 0.0f;
 	}
-	
-	this->mpCameraTransform->orientation = orientation;
+
+	this->mpCameraTransform->setOrientation(orientation);
 }

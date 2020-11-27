@@ -2,7 +2,7 @@
 
 #include "ITickable.hpp"
 #include "Window.hpp"
-#include "ecs/component/Transform.hpp"
+#include "ecs/component/ComponentTransform.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "input/Queue.hpp"
 #include "memory/MemoryChunk.hpp"
@@ -143,7 +143,8 @@ std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 void Engine::initializeECS()
 {
 	this->mECS.setLog(DeclareLog("ECS"));
-	this->mECS.registerType<ecs::ComponentTransform>("Transform");
+	this->mECS.registerType<ecs::ComponentTransform, ECS_MAX_COMPONENT_COUNT>("Transform");
+	this->ECSRegisterTypesEvent.execute(&this->mECS);
 	this->mECS.constructComponentPools();
 }
 

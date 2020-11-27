@@ -1,4 +1,4 @@
-#include "ecs/component/Transform.hpp"
+#include "ecs/component/ComponentTransform.hpp"
 
 #include "math/transform.hpp"
 

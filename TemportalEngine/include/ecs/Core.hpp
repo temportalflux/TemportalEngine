@@ -55,13 +55,13 @@ public:
 		this->mLog.log(category, format, args...);
 	}
 
-	template <typename TComponent>
+	template <typename TComponent, uSize Capacity>
 	ComponentTypeId registerType(char const *name)
 	{
 		TComponent::TypeId = this->mRegisteredTypeCount;
 		this->mComponentMetadataByType[TComponent::TypeId] = {
 			sizeof(TComponent),
-			sizeof(ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>)
+			sizeof(ObjectPool<Identifier, TComponent, Capacity>)
 		};
 		this->mRegisteredTypeCount++;
 		this->log(LOG_INFO, "Registered ECS component type %s with id %i and size %i",
@@ -74,7 +74,11 @@ public:
 	{
 		uSize sumSizeOfAllPools = 0;
 		for (uSize i = 0; i < this->mRegisteredTypeCount; ++i)
+		{
 			sumSizeOfAllPools += this->mComponentMetadataByType[i].objectPoolSize;
+		}
+
+		this->log(LOG_INFO, "Allocating %i bytes for object pools", sumSizeOfAllPools);
 
 		// this memory chunk should now have enough room for:
 		// 1) memory manager header

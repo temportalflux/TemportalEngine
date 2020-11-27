@@ -11,8 +11,8 @@
 #include "asset/TextureSampler.hpp"
 #include "ecs/Core.hpp"
 #include "ecs/Entity.hpp"
-#include "ecs/component/Transform.hpp"
-#include "controller/Controller.hpp"
+#include "ecs/component/CoordinateTransform.hpp"
+#include "ecs/system/ControllerCoordinateSystem.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/Uniform.hpp"
 #include "input/Queue.hpp"
@@ -92,8 +92,14 @@ bool Game::initializeSystems()
 {
 	auto pEngine = engine::Engine::Get();
 	if (!pEngine->initializeDependencies()) return false;
+	pEngine->ECSRegisterTypesEvent.bind(std::bind(&Game::registerECSTypes, this, std::placeholders::_1));
 	pEngine->initializeECS();
 	return true;
+}
+
+void Game::registerECSTypes(ecs::Core *ecs)
+{
+	ecs->registerType<ecs::CoordinateTransform, ECS_MAX_COMPONENT_COUNT>("CoordinateTransform");
 }
 
 void Game::openProject()
@@ -548,13 +554,13 @@ void Game::createScene()
 	}
 	//*/
 
-	this->mpCameraTransform = std::make_shared<ecs::ComponentTransform>();
-	this->mpCameraTransform->setPosition(math::Vector3unitY * 3);
+	this->mpCameraTransform = std::make_shared<ecs::CoordinateTransform>();
+	this->mpCameraTransform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
 	this->mpCameraTransform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
 
 	// TODO: Allocate from entity pool
-	this->mpController = pEngine->getMainMemory()->make_shared<Controller>();
-	pEngine->addTicker(this->mpController);
+	this->mpController = pEngine->getMainMemory()->make_shared<ecs::ControllerCoordinateSystem>();
+	pEngine->addTicker(this->mpController); 
 	this->mpController->subscribeToInput();
 	this->mpController->assignCameraTransform(this->mpCameraTransform.get());
 
@@ -617,11 +623,11 @@ void Game::update(f32 deltaTime)
 
 	if (iDebugHUDUpdate == 0)
 	{
-		auto rot = this->mpCameraTransform->orientation.euler() * math::rad2deg();
-		auto pos = this->mpCameraTransform->position;
+		auto rot = this->mpCameraTransform->orientation().euler() * math::rad2deg();
+		auto const& pos = this->mpCameraTransform->position();
 		auto fwd = this->mpCameraTransform->forward();
-		//this->mpDebugChunkPosStr->setContent(utility::formatStr("<%.0f, %.0f, %.0f>", fwd.x(), fwd.y(), fwd.z())).update();
-		this->mpDebugVoxelPosStr->setContent(utility::formatStr("<%.0f, %.0f, %.0f>", pos.x(), pos.y(), pos.z())).update();
+		this->mpDebugChunkPosStr->setContent(utility::formatStr("<%i, %i, %i>", pos.chunk().x(), pos.chunk().y(), pos.chunk().z())).update();
+		this->mpDebugVoxelPosStr->setContent(utility::formatStr("<%i, %i, %i>", pos.local().x(), pos.local().y(), pos.local().z())).update();
 		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
 	}
 	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
@@ -646,19 +652,21 @@ void Game::updateCameraUniform()
 	perspective[1][1] *= -1;
 	perspective[0][0] *= -1;
 
+	auto view = this->mpCameraTransform->calculateView();
+
 	if (this->mpRendererMVP)
 	{
 		auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
-		uniData.view = this->mpCameraTransform->calculateView();
+		uniData.view = view;
 		uniData.proj = perspective;
-		//uniData.chunkPos = { 0, 0, 0 };
+		uniData.posOfCurrentChunk = this->mpCameraTransform->position().chunk().toFloat();
 		this->mpRendererMVP->write(&uniData);
 	}
 
 	if (this->mpUniformLocalCamera)
 	{
 		auto localCamera = this->mpUniformLocalCamera->read<LocalCamera>();
-		localCamera.view = this->mpCameraTransform->calculateViewFrom(this->mpCameraTransform->position);
+		localCamera.view = view;
 		localCamera.proj = perspective;
 		this->mpUniformLocalCamera->write(&localCamera);
 	}

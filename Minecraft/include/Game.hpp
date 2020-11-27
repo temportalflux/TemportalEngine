@@ -8,7 +8,9 @@
 class Window;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
-FORWARD_DEF(NS_ECS, struct ComponentTransform);
+FORWARD_DEF(NS_ECS, class Core);
+FORWARD_DEF(NS_ECS, class CoordinateTransform);
+FORWARD_DEF(NS_ECS, class ControllerCoordinateSystem);
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
@@ -79,8 +81,8 @@ private:
 	std::shared_ptr<graphics::UIString> mpDebugVoxelPosStr;
 	std::shared_ptr<graphics::UIString> mpCameraForwardStr;
 
-	std::shared_ptr<Controller> mpController;
-	std::shared_ptr<ecs::ComponentTransform> mpCameraTransform;
+	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
+	std::shared_ptr<ecs::CoordinateTransform> mpCameraTransform;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	std::shared_ptr<game::VoxelModelManager> mpVoxelModelManager;
@@ -89,6 +91,8 @@ private:
 		
 	void initializeAssetTypes();
 	void destroyWindow();
+
+	void registerECSTypes(ecs::Core *ecs);
 
 	void createVoxelTypeRegistry();
 	void destroyVoxelTypeRegistry();

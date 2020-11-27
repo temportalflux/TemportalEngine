@@ -27,12 +27,20 @@ void Coordinate::operator=(Coordinate const &other)
 	this->mBlockOffset = other.mBlockOffset;
 }
 
-void Coordinate::operator+=(Coordinate const &other)
+Coordinate& Coordinate::operator+=(Coordinate const &other)
 {
 	this->mChunkPosition += other.mChunkPosition;
 	this->mBlockPosition += other.mBlockPosition;
 	this->mBlockOffset += other.mBlockOffset;
 	this->adjustForChunkSize();
+	return *this;
+}
+
+Coordinate& Coordinate::operator+=(math::Vector3 const &other)
+{
+	this->mBlockOffset += other;
+	this->adjustForChunkSize();
+	return *this;
 }
 
 Coordinate const Coordinate::operator+(Coordinate const &other) const
@@ -95,5 +103,6 @@ bool Coordinate::operator<(Coordinate const& other) const
 void Coordinate::adjustForChunkSize()
 {
 	this->mBlockPosition += this->mBlockOffset.removeExcess(1);
-	this->mChunkPosition += this->mBlockPosition.removeExcess((i32)ChunkSize());
+	auto voxelExcess = this->mBlockPosition.removeExcess((i32)ChunkSize());
+	this->mChunkPosition += voxelExcess / (i32)ChunkSize();
 }

@@ -16,14 +16,23 @@
     <Filter Include="world">
       <UniqueIdentifier>{361f49e2-4e28-46bc-b13e-87b13b295ff7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="registry">
-      <UniqueIdentifier>{020894d5-d284-4248-b246-bbe611e0f350}</UniqueIdentifier>
-    </Filter>
     <Filter Include="render\line">
       <UniqueIdentifier>{71811d0d-7c44-4a7c-8804-ae225d9d532f}</UniqueIdentifier>
     </Filter>
     <Filter Include="render\ui">
       <UniqueIdentifier>{a4049840-49d3-43cd-b9f0-7a98474c0663}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs">
+      <UniqueIdentifier>{d90ef6f5-65ab-4ed7-bb37-ec280663982e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\component">
+      <UniqueIdentifier>{e1f089d6-f492-4126-b78e-f509f43fa63c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="registry">
+      <UniqueIdentifier>{7644110f-ecd6-4ee0-8fe8-f9ca6be130d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ecs\system">
+      <UniqueIdentifier>{f62ee253-e17e-4035-9b94-ef278b828ab1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -65,7 +74,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -83,6 +91,15 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp">
       <Filter>render\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp">
+      <Filter>registry</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp">
+      <Filter>ecs\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +129,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -130,6 +146,15 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp">
       <Filter>render\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp">
+      <Filter>registry</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp">
+      <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
