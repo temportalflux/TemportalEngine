@@ -1,5 +1,8 @@
 #include "render/ui/UIRenderer.hpp"
 
+#include "Engine.hpp"
+#include "logging/Logger.hpp"
+
 #include "asset/Font.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "asset/Shader.hpp"
@@ -9,16 +12,12 @@
 
 using namespace graphics;
 
-struct UIVertex
-{
-	// <x,y> is the position of the string
-	// <z,w> is the offset from the string position of this vertex, composed from `FontGlyphMeta#metricsOffset` and `FontGlyphMeta#advance`
-	// These two vec2s will be summed in the shader when rendering the vertex
-	math::Vector4 position;
-	math::Vector2 texCoord;
-};
+static logging::Logger UIRenderLog = DeclareLog("UIRenderer");
 
-UIRenderer::UIRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
+UIRenderer::UIRenderer(
+	std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
+	uSize maximumDisplayedCharacters
+)
 {
 	this->mpDescriptorPool = pDescriptorPool;
 
@@ -38,6 +37,15 @@ UIRenderer::UIRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
 		.setNormalizeCoordinates(true)
 		.setCompare(std::nullopt)
 		.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 });
+
+	this->mText.memoryTextBuffers = std::make_shared<graphics::Memory>();
+	this->mText.memoryTextBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+	uSize const vBufferSize = maximumDisplayedCharacters * /*vertices per character*/ 4 * /*size per vertex*/ sizeof(FontGlyphVertex);
+	uSize const iBufferSize = maximumDisplayedCharacters * /*indices per character*/ 6 * /*size per vertex*/ sizeof(ui16);
+	UIRenderLog.log(LOG_INFO, "Allocating UI text buffer for %i characters (%i bytes)", maximumDisplayedCharacters, (vBufferSize + iBufferSize));
+	this->mText.vertexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer).setSize(vBufferSize);
+	this->mText.indexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer).setSize(iBufferSize);
 }
 
 UIRenderer::~UIRenderer()
@@ -65,9 +73,9 @@ UIRenderer& UIRenderer::setTextPipeline(std::shared_ptr<asset::Pipeline> asset)
 		ui8 slot = 0;
 		this->mText.pipeline->setBindings({
 				graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-				.setStructType<UIVertex>()
-				.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(UIVertex, position) })
-				.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(UIVertex, texCoord) })
+				.setStructType<FontGlyphVertex>()
+				.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(FontGlyphVertex, position) })
+				.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(FontGlyphVertex, texCoord) })
 		});
 	}
 
@@ -115,6 +123,7 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 
 void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
+	OPTICK_EVENT();
 	this->mText.memoryFontImages->setDevice(device);
 	for (auto& fontEntry : this->mText.fonts)
 	{
@@ -123,7 +132,7 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 			faceImageEntry.second.image.setDevice(device);
 			faceImageEntry.second.image.create();
 			// Configure the image so the memory object knows how much to allocate on the GPU
-			// Has to be done after the internal vulkan image is created above
+			// Has to be done after the internal Vulkan image is created above
 			faceImageEntry.second.image.configureSlot(this->mText.memoryFontImages);
 
 			faceImageEntry.second.view.setDevice(device);
@@ -134,7 +143,19 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 
 	this->mText.sampler.setDevice(device);
 	this->mText.sampler.create();
+	
 	this->mText.pipeline->setDevice(device);
+
+	this->mText.memoryTextBuffers->setDevice(device);
+	this->mText.vertexBuffer.setDevice(device);
+	this->mText.indexBuffer.setDevice(device);
+	this->mText.vertexBuffer.create();
+	this->mText.vertexBuffer.configureSlot(this->mText.memoryTextBuffers);
+	this->mText.indexBuffer.create();
+	this->mText.indexBuffer.configureSlot(this->mText.memoryTextBuffers);
+	this->mText.memoryTextBuffers->create();
+	this->mText.vertexBuffer.bindMemory();
+	this->mText.indexBuffer.bindMemory();
 }
 
 void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -245,4 +266,8 @@ void UIRenderer::destroyRenderDevices()
 	this->mText.sampler.destroy();
 	this->mText.fonts.clear();
 	this->mText.memoryFontImages.reset();
+
+	this->mText.vertexBuffer.destroy();
+	this->mText.indexBuffer.destroy();
+	this->mText.memoryTextBuffers.reset();
 }

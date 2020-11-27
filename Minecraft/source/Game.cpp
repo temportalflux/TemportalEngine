@@ -446,7 +446,10 @@ void Game::createChunkBoundaryRenderer()
 
 void Game::createUIRenderer()
 {
-	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>(std::weak_ptr(this->mpGlobalDescriptorPool));
+	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>(
+		std::weak_ptr(this->mpGlobalDescriptorPool),
+		/*maximum displayed characters=*/ 256
+	);
 
 	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/UIPipeline.te-asset"
