@@ -124,7 +124,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />

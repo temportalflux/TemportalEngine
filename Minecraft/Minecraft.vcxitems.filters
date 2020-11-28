@@ -104,8 +104,19 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewCameraPerspective.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
   </ItemGroup>
@@ -168,6 +179,15 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp">
       <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewCameraPerspective.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp">
+      <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

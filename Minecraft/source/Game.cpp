@@ -13,10 +13,12 @@
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerInput.hpp"
+#include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
+#include "ecs/view/ViewCameraPerspective.hpp"
 #include "ecs/system/ControllerCoordinateSystem.hpp"
+#include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "graphics/DescriptorPool.hpp"
-#include "graphics/Uniform.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
@@ -32,10 +34,6 @@
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE // perspective needs to use [0,1] range for Vulkan
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 
 using namespace game;
@@ -103,7 +101,9 @@ void Game::registerECSTypes(ecs::Core *ecs)
 {
 	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
 	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
+	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
+	ecs->views().registerType<ecs::view::CameraPerspective>();
 }
 
 void Game::openProject()
@@ -204,39 +204,17 @@ void Game::destroyWindow()
 	}
 }
 
-// UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
-struct ChunkViewProj
-{
-	math::Matrix4x4 view;
-	glm::mat4 proj;
-	math::Vector3Padded posOfCurrentChunk;
-	math::Vector3Padded sizeOfChunkInBlocks;
-
-	ChunkViewProj()
-	{
-		view = math::Matrix4x4(1);
-		proj = glm::mat4(1);
-		posOfCurrentChunk = math::Vector3Padded({ 0, 0, 0 });
-		sizeOfChunkInBlocks = math::Vector3Padded({ CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH, CHUNK_SIDE_LENGTH });
-	}
-};
-
-struct LocalCamera
-{
-	math::Matrix4x4 view;
-	glm::mat4 proj;
-
-	LocalCamera()
-	{
-		view = math::Matrix4x4(1);
-		proj = glm::mat4(1);
-	}
-};
-
 void Game::createRenderers()
 {
 	this->createGameRenderer();
 	this->loadVoxelTypeTextures();
+	
+	// Create the camera perspective system so we only update the camera data if we actually need to render
+	auto pEngine = engine::Engine::Get();
+	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
+		pEngine->getMiscMemory(), this->mpRenderer
+	);
+
 	this->createPipelineRenderers();
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
@@ -303,7 +281,6 @@ void Game::createGameRenderer()
 
 	auto renderPassAssetPath = engine::Engine::Get()->getProject()->getRenderPass();
 	this->mpRenderer->setRenderPass(renderPassAssetPath.load(asset::EAssetSerialization::Binary));
-
 }
 
 void Game::loadVoxelTypeTextures()
@@ -317,12 +294,6 @@ void Game::loadVoxelTypeTextures()
 
 void Game::createPipelineRenderers()
 {
-	// TODO: Use dedicated graphics memory
-	this->mpRendererMVP = graphics::Uniform::create<ChunkViewProj>(engine::Engine::Get()->getMiscMemory());
-	this->mpRenderer->addMutableUniform("mvpUniform", this->mpRendererMVP);
-	this->mpUniformLocalCamera = graphics::Uniform::create<LocalCamera>(engine::Engine::Get()->getMiscMemory());
-	this->mpRenderer->addMutableUniform("localCamera", this->mpUniformLocalCamera);
-
 	this->mpGlobalDescriptorPool = std::make_shared<graphics::DescriptorPool>();
 	this->mpGlobalDescriptorPool->setDevice(this->mpRenderer->getDevice());
 	this->mpGlobalDescriptorPool->setPoolSize(64, {
@@ -504,9 +475,7 @@ void Game::createUIRenderer()
 }
 
 void Game::destroyRenderers()
-{
-	//this->mpCameraForwardStr.reset();
-	
+{	
 	this->mpVoxelModelManager.reset();
 	this->mpVoxelGridRenderer->destroyRenderDevices();
 	this->mpWorldAxesRenderer->destroyBuffers();
@@ -545,22 +514,42 @@ void Game::createScene()
 	auto pEngine = engine::Engine::Get();
 	auto& ecs = pEngine->getECS();
 	{
+		auto& components = ecs.components();
+		auto& views = ecs.views();
+
 		this->mpEntityLocalPlayer = ecs.entities().create();
 
-		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
-		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
-		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
-		this->mpEntityLocalPlayer->addComponent(transform);
+		// Add Transform
+		{
+			auto transform = components.create<ecs::component::CoordinateTransform>();
+			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
+			transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+			this->mpEntityLocalPlayer->addComponent(transform);
+		}
 
-		this->mpEntityLocalPlayer->addView(ecs.views().create<ecs::view::PlayerInputMovement>());
+		// Add PlayerInput support for moving the entity around
+		{
+			// View and Component can be added in any order.
+			// This order (transform, view, player-input) is used to test the any-order functionality
 
-		auto input = ecs.components().create<ecs::component::PlayerInput>();
-		input->subscribeToQueue();
-		this->mpEntityLocalPlayer->addComponent(input);
+			this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerInputMovement>());
+
+			auto input = components.create<ecs::component::PlayerInput>();
+			input->subscribeToQueue();
+			this->mpEntityLocalPlayer->addComponent(input);
+		}
+
+		// Camera Perspective support for rendering from the entity
+		{
+			// Required by `view::CameraPerspective`
+			this->mpEntityLocalPlayer->addComponent(components.create<ecs::component::CameraPOV>());
+			// This view enables the `UpdateCameraPerspective` system to run
+			this->mpEntityLocalPlayer->addView(views.create<ecs::view::CameraPerspective>());
+		}
 	}
 
 	this->mpController = pEngine->getMainMemory()->make_shared<ecs::ControllerCoordinateSystem>();
-
+	
 	if (this->mpVoxelInstanceBuffer)
 	{
 		while (this->mpVoxelInstanceBuffer->hasChanges())
@@ -573,6 +562,7 @@ void Game::createScene()
 
 void Game::destroyScene()
 {
+	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpController.reset();
 	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();
@@ -617,11 +607,15 @@ void Game::update(f32 deltaTime)
 	static ui32 iDebugHUDUpdate = 0;
 
 	auto pEngine = engine::Engine::Get();
-	
-	auto view = this->mpEntityLocalPlayer->getView<ecs::view::PlayerInputMovement>();
-	if (view && view->hasAllComponents())
+
+	// Run the UpdatePlayerMovement system
+	if (this->mpController)
 	{
-		this->mpController->update(deltaTime, view);
+		auto view = this->mpEntityLocalPlayer->getView<ecs::view::PlayerInputMovement>();
+		if (view && view->hasAllComponents())
+		{
+			this->mpController->update(deltaTime, view);
+		}
 	}
 
 	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::component::CoordinateTransform>();
@@ -644,44 +638,19 @@ void Game::update(f32 deltaTime)
 	}
 	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
 
-	if (this->mpRenderer)
+	// Run the UpdateCameraPerspective system
+	if (this->mpSystemUpdateCameraPerspective)
 	{
-		this->updateCameraUniform(playerTransform);
+		auto view = this->mpEntityLocalPlayer->getView<ecs::view::CameraPerspective>();
+		if (view && view->hasAllComponents())
+		{
+			this->mpSystemUpdateCameraPerspective->update(deltaTime, view);
+		}
 	}
 
 	this->mpWorld->handleDirtyCoordinates();
 	pEngine->update(deltaTime);
 
-}
-
-void Game::updateCameraUniform(std::shared_ptr<ecs::component::CoordinateTransform> transform)
-{
-	OPTICK_EVENT();
-
-	auto perspective = glm::perspective(glm::radians(45.0f), this->mpRenderer->getAspectRatio(), /*near plane*/ 0.01f, /*far plane*/ 100.0f);
-	// GLM by default is not Y-up Right-Handed, so we have to flip the x and y coord bits
-	// that said, this tweet says differently... https://twitter.com/FreyaHolmer/status/644881436982575104
-	perspective[1][1] *= -1;
-	perspective[0][0] *= -1;
-
-	auto view = transform->calculateView();
-
-	if (this->mpRendererMVP)
-	{
-		auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
-		uniData.view = view;
-		uniData.proj = perspective;
-		uniData.posOfCurrentChunk = transform->position().chunk().toFloat();
-		this->mpRendererMVP->write(&uniData);
-	}
-
-	if (this->mpUniformLocalCamera)
-	{
-		auto localCamera = this->mpUniformLocalCamera->read<LocalCamera>();
-		localCamera.view = view;
-		localCamera.proj = perspective;
-		this->mpUniformLocalCamera->write(&localCamera);
-	}
 }
 
 // Runs on the render thread

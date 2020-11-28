@@ -102,7 +102,7 @@ private:
 		i64 startIndex = 0, endIndex = mSize - 1;
 		while (startIndex <= endIndex)
 		{
-			uIndex middle = startIndex + (endIndex - startIndex) / 2;
+			i64 middle = startIndex + (endIndex - startIndex) / 2;
 			auto comp = predicate(mValues[middle]);
 			if (comp < 0)
 			{
@@ -111,7 +111,8 @@ private:
 			}
 			else if (comp > 0)
 			{
-				endIndex = middle - 1;
+				if (middle == startIndex && middle < endIndex) startIndex++;
+				else endIndex = middle - 1;
 				if (startIndex > endIndex) return std::make_pair(false, middle + 1);
 			}
 			else return std::make_pair(true, middle);
