@@ -7,6 +7,7 @@
 #include "ecs/types.h"
 #include "ecs/entity/EntityManager.hpp"
 #include "ecs/component/ComponentManager.hpp"
+#include "ecs/view/ECViewManager.hpp"
 #include "logging/Logger.hpp"
 
 NS_ECS
@@ -23,6 +24,7 @@ public:
 
 	EntityManager& entities();
 	ComponentManager& components();
+	view::Manager& views();
 
 	template <typename... TArgs>
 	void log(logging::ECategory category, logging::Message format, TArgs... args)
@@ -34,6 +36,7 @@ private:
 	logging::Logger mLog;
 	EntityManager mEntityManager;
 	ComponentManager mComponentManager;
+	view::Manager mViewManager;
 
 };
 

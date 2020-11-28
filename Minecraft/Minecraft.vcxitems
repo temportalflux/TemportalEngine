@@ -19,8 +19,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\PlayerInputComponent.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\CubeModelLoader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelCube.hpp" />
@@ -44,8 +45,9 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\PlayerInputComponent.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelCube.cpp" />

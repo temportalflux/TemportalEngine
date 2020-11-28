@@ -3,7 +3,7 @@
 #include "CoreInclude.hpp"
 
 FORWARD_DEF(NS_ECS, class CoordinateTransform);
-FORWARD_DEF(NS_ECS, class PlayerInputComponent);
+FORWARD_DEF(NS_ECS, class PlayerInput);
 
 NS_ECS
 
@@ -16,7 +16,7 @@ public:
 	void update(
 		f32 deltaTime,
 		std::shared_ptr<ecs::CoordinateTransform> transform,
-		std::shared_ptr<ecs::PlayerInputComponent> input
+		std::shared_ptr<ecs::PlayerInput> input
 	);
 
 };

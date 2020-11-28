@@ -35,6 +35,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\Entity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\EntityManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECViewManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\BlendMode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp" />
@@ -128,6 +130,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\EntityManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECView.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECViewManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Engine.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />

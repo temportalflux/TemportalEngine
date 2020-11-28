@@ -296,6 +296,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\Entity.cpp">
       <Filter>ecs\entity</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECView.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECViewManager.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -647,6 +653,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp">
       <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECView.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECViewManager.hpp">
+      <Filter>ecs\view</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

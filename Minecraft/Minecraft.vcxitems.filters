@@ -34,6 +34,9 @@
     <Filter Include="ecs\system">
       <UniqueIdentifier>{f62ee253-e17e-4035-9b94-ef278b828ab1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs\view">
+      <UniqueIdentifier>{8e7645bd-3022-46c5-987b-72ac32095bfe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -101,9 +104,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\PlayerInputComponent.hpp">
-      <Filter>ecs\component</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -159,8 +161,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\PlayerInputComponent.cpp">
-      <Filter>ecs\component</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp">
+      <Filter>ecs\view</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp" />
   </ItemGroup>
 </Project>

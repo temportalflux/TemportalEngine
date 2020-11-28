@@ -6,7 +6,12 @@
 #define NS_BUILD namespace build {
 #define NS_DEPENDENCY namespace dependency {
 #define NS_ENGINE namespace engine {
+
 #define NS_ECS namespace ecs {
+#define NS_VIEW namespace view {
+#define NS_COMPONENT namespace component {
+#define NS_SYSTEM namespace system {
+
 #define NS_GRAPHICS namespace graphics {
 #define NS_GUI namespace gui {
 #define NS_INPUT namespace input {

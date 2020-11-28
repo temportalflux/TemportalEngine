@@ -2,16 +2,36 @@
 
 #include "ecs/types.h"
 
+#include "FixedSortedArray.hpp"
+
 NS_ECS
 struct Component;
 
+FORWARD_DEF(NS_VIEW, class View);
+
 class Entity
 {
+
+	template <typename TItemId, typename TItem>
+	struct ItemEntry
+	{
+		TItemId typeId;
+		std::shared_ptr<TItem> ptr;
+		bool operator<(ItemEntry<TItemId, TItem> const& other) const { return typeId < other.typeId; }
+		bool operator>(ItemEntry<TItemId, TItem> const& other) const { return typeId > other.typeId; }
+	};
+	
+	using ComponentEntry = ItemEntry<ComponentTypeId, Component>;
+	using ViewEntry = ItemEntry<ViewTypeId, view::View>;
 
 public:
 	Identifier id;
 
 	~Entity();
+
+#pragma region Components
+
+public:
 
 	template <typename TComponent>
 	Entity& addComponent(std::shared_ptr<TComponent> pComp)
@@ -28,20 +48,41 @@ public:
 	}
 
 private:
-	struct ComponentEntry
-	{
-		ComponentTypeId typeId;
-		std::shared_ptr<Component> component;
-	};
-	
-	std::array<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
-	uSize mComponentCount;
 
-	void forEachComponent(std::function<bool(ComponentEntry const& entry)> forEach) const;
-	void forEachComponent(std::function<bool(ComponentEntry& entry)> forEach);
+	FixedSortedArray<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
 
 	Entity& addComponent(ComponentTypeId const& typeId, std::shared_ptr<Component> pComp);
 	std::shared_ptr<Component> getComponent(ComponentTypeId const& typeId);
+
+#pragma endregion
+
+#pragma region Views
+
+public:
+
+	template <typename TView>
+	Entity& addView(std::shared_ptr<TView> pView)
+	{
+		return this->addView(TView::TypeId, pView);
+	}
+
+	template <typename TView>
+	std::shared_ptr<TView> getView()
+	{
+		return std::reinterpret_pointer_cast<TView>(
+			this->getView(TView::TypeId)
+		);
+	}
+
+private:
+	FixedSortedArray<ViewEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
+
+	Entity& addView(ViewTypeId const& typeId, std::shared_ptr<view::View> pView);
+	std::shared_ptr<view::View> getView(ViewTypeId const& typeId);
+
+#pragma endregion
+
+
 
 };
 

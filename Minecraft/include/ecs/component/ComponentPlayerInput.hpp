@@ -6,13 +6,13 @@
 
 NS_ECS
 
-class PlayerInputComponent : public Component, public std::enable_shared_from_this<PlayerInputComponent>
+class PlayerInput : public Component, public std::enable_shared_from_this<PlayerInput>
 {
 	DECLARE_ECS_COMPONENT_STATICS(1)
 
 public:
-	PlayerInputComponent();
-	~PlayerInputComponent();
+	PlayerInput();
+	~PlayerInput();
 
 	void subscribeToQueue();
 

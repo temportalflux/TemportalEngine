@@ -12,7 +12,8 @@
 #include "ecs/Core.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
-#include "ecs/component/PlayerInputComponent.hpp"
+#include "ecs/component/ComponentPlayerInput.hpp"
+#include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/system/ControllerCoordinateSystem.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/Uniform.hpp"
@@ -101,7 +102,8 @@ bool Game::initializeSystems()
 void Game::registerECSTypes(ecs::Core *ecs)
 {
 	ecs->components().registerType<ecs::CoordinateTransform>("CoordinateTransform");
-	ecs->components().registerType<ecs::PlayerInputComponent>("PlayerInput");
+	ecs->components().registerType<ecs::PlayerInput>("PlayerInput");
+	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 }
 
 void Game::openProject()
@@ -550,7 +552,9 @@ void Game::createScene()
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
 		this->mpEntityLocalPlayer->addComponent(transform);
 
-		auto input = ecs.components().create<ecs::PlayerInputComponent>();
+		this->mpEntityLocalPlayer->addView(ecs.views().create<ecs::view::PlayerInputMovement>());
+
+		auto input = ecs.components().create<ecs::PlayerInput>();
 		input->subscribeToQueue();
 		this->mpEntityLocalPlayer->addComponent(input);
 	}
@@ -618,7 +622,7 @@ void Game::update(f32 deltaTime)
 	this->mpController->update(
 		deltaTime,
 		playerTransform,
-		this->mpEntityLocalPlayer->getComponent<ecs::PlayerInputComponent>()
+		this->mpEntityLocalPlayer->getComponent<ecs::PlayerInput>()
 	);
 
 	if (iDebugHUDUpdate == 0)
