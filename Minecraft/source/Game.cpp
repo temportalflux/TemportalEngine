@@ -240,29 +240,29 @@ void Game::createRenderers()
 	this->mpRenderer->finalizeInitialization();
 
 	graphics::UIString::create("debug:textTest", this->mpUIRenderer)
-		->setFontId("montserrat").setFontSize(48)
+		->setFontId("sicret").setFontSize(48)
 		.setPosition({ 0.f, 0.f })
 		.setContent("Sphinx of Black Quartz, Judge my vow")
 		.update();
 
 	(this->mpDebugPositionStr = graphics::UIString::create("debug:position", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(20)
+		->setFontId("sicret").setFontSize(20)
 		.setPosition({ 0.0f, 0.04f }).setContent("Position| X:<?,?,?> Y:<?,?,?> Z:<?,?,?>")
 		.update();
 
 	graphics::UIString::create("debug:cameraForwardLabel", this->mpUIRenderer)
-		->setFontId("montserrat").setFontSize(20)
+		->setFontId("sicret").setFontSize(20)
 		.setPosition({ 0.f, 0.08f }).setContent("Forward:")
 		.update();
 
 	(this->mpCameraForwardStr = graphics::UIString::create("debug:cameraForwardValue", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(20)
+		->setFontId("sicret").setFontSize(20)
 		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
 		.update();
 
 	(this->mpDebugStrFPS = graphics::UIString::create("debug:fps", this->mpUIRenderer))
-		->setFontId("montserrat").setFontSize(48)
-		.setPosition({ 0.80f, 0.01f }).setContent("? fps")
+		->setFontId("sicret").setFontSize(48)
+		.setPosition({ 0.79f, 0.01f }).setContent("? fps")
 		.update();
 
 }
@@ -494,6 +494,10 @@ void Game::createUIRenderer()
 		"assets/font/Montserrat.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 
+	this->mpUIRenderer->addFont("sicret", asset::TypedAssetPath<asset::Font>::Create(
+		"assets/font/Sicret.te-asset"
+	).load(asset::EAssetSerialization::Binary));
+
 	this->mpRenderer->addRenderer(this->mpUIRenderer.get());
 }
 
@@ -630,9 +634,9 @@ void Game::update(f32 deltaTime)
 		)).update();
 		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
 
-		//auto deltaMS = this->mpWindow->renderDurationMS();
-		//i32 fps = i32((1.0f / deltaMS) * 1000.0f);
-		//this->mpDebugStrFPS->setContent(utility::formatStr("%i fps (%.2f ms)", fps, deltaMS)).update();
+		auto deltaMS = this->mpWindow->renderDurationMS();
+		i32 fps = i32((1.0f / deltaMS) * 1000.0f);
+		this->mpDebugStrFPS->setContent(utility::formatStr("%i fps (%.2f ms)", fps, deltaMS)).update();
 	}
 	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
 
