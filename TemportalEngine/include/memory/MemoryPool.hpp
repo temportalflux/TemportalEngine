@@ -20,6 +20,8 @@ public:
 	{
 		this->mSize = 0;
 		memset(this->mValues, 0, memSize());
+		this->mEmptySlotCount = 0;
+		memset(this->mEmptySlots, 0, sizeof(mEmptySlots));
 	}
 
 	template <typename... TArgs>

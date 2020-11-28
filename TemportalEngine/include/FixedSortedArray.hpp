@@ -60,7 +60,8 @@ public:
 	{
 		assert(size() > 0 && idx < size());
 		TValue value = this->mValues[idx];
-		memcpy(this->mValues + idx - 1, this->mValues + idx, sizeof(TValue) * (this->mSize - idx));
+		memcpy(this->mValues + idx, this->mValues + idx + 1, (this->mSize - idx - 1) * sizeof(TValue));
+		memset(this->mValues + this->mSize - 1, 0, sizeof(TValue));
 		this->mSize--;
 		return value;
 	}
