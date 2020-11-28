@@ -5,7 +5,9 @@
 #include "FixedSortedArray.hpp"
 #include "ecs/types.h"
 
-FORWARD_DEF(NS_ECS, struct Component);
+NS_ECS
+FORWARD_DEF(NS_COMPONENT, class Component);
+NS_END
 
 #define DECLARE_ECS_VIEW_STATICS() public: static ViewTypeId TypeId;
 #define DEFINE_ECS_VIEW_STATICS(COMP_TYPE) ViewTypeId COMP_TYPE::TypeId = 0;
@@ -26,7 +28,7 @@ public:
 
 	bool hasAllComponents() const;
 
-	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<Component> const& ptr);
+	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr);
 
 	template <typename TComponent>
 	std::shared_ptr<TComponent> get()
@@ -40,7 +42,7 @@ private:
 	struct ComponentSlot
 	{
 		ComponentTypeId typeId;
-		std::weak_ptr<Component> component;
+		std::weak_ptr<component::Component> component;
 		bool operator<(ComponentSlot const& other) const { return typeId < other.typeId; }
 		bool operator>(ComponentSlot const& other) const { return typeId > other.typeId; }
 	};
@@ -48,7 +50,7 @@ private:
 	Identifier mId;
 	FixedSortedArray<ComponentSlot, SlotCapacity> mSlots;
 
-	std::shared_ptr<Component> lockComponent(ComponentTypeId const& typeId);
+	std::shared_ptr<component::Component> lockComponent(ComponentTypeId const& typeId);
 
 };
 

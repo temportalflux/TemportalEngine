@@ -4,31 +4,16 @@
 #include "logging/Logger.hpp"
 
 using namespace ecs;
+using namespace ecs::component;
 
-
-struct TestType
-{
-
-	static constexpr uSize maxPoolSize() { return 5; }
-
-};
-
-template <uSize Capacity>
-class Pool
-{
-	ui32 pool[Capacity];
-};
-
-
-ComponentManager::ComponentManager(Core *pCore)
+Manager::Manager(Core *pCore)
 	: mpCore(pCore)
 	, mpPoolMemory(nullptr)
 	, mRegisteredTypeCount(0)
 {
-	auto testPool = Pool<TestType::maxPoolSize()>();
 }
 
-ComponentManager::~ComponentManager()
+Manager::~Manager()
 {
 	if (this->mpPoolMemory != nullptr)
 	{
@@ -37,7 +22,7 @@ ComponentManager::~ComponentManager()
 	}
 }
 
-void ComponentManager::registerType(ComponentTypeId const& id, TypeMetadata const& metadata)
+void Manager::registerType(ComponentTypeId const& id, TypeMetadata const& metadata)
 {
 	this->mMetadataByType[id] = metadata;
 	this->mRegisteredTypeCount++;
@@ -47,7 +32,7 @@ void ComponentManager::registerType(ComponentTypeId const& id, TypeMetadata cons
 	);
 }
 
-void ComponentManager::allocatePools()
+void Manager::allocatePools()
 {
 	uSize sumSizeOfAllPools = 0;
 	uSize sumSizeOfAllIdLists = 0;

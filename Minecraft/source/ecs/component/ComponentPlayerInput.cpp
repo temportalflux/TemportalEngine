@@ -4,6 +4,7 @@
 #include "input/Queue.hpp"
 
 using namespace ecs;
+using namespace ecs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(PlayerInput)
 

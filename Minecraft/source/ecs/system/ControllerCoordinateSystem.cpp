@@ -16,8 +16,8 @@ void ControllerCoordinateSystem::update(
 	OPTICK_EVENT();
 	static logging::Logger ControllerLog = DeclareLog("Controller");
 	
-	auto transform = view->get<ecs::CoordinateTransform>();
-	auto input = view->get<ecs::PlayerInput>();
+	auto transform = view->get<component::CoordinateTransform>();
+	auto input = view->get<component::PlayerInput>();
 	assert(transform && input);
 	
 	auto orientation = transform->orientation();

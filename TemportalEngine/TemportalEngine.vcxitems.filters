@@ -660,5 +660,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECViewManager.hpp">
       <Filter>ecs\view</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\ecs\component\ComponentCameraPOV.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

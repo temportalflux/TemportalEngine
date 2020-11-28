@@ -12,8 +12,9 @@
 FORWARD_DEF(NS_ECS, class Core);
 
 NS_ECS
+NS_COMPONENT
 
-class ComponentManager
+class Manager
 {
 	template <typename TComponent>
 	using TAvailableIds = FixedSortedArray<Identifier, TComponent::MaxPoolSize>;
@@ -32,8 +33,8 @@ class ComponentManager
 	};
 
 public:
-	ComponentManager(Core *pCore);
-	~ComponentManager();
+	Manager(Core *pCore);
+	~Manager();
 
 	template <typename TComponent>
 	ComponentTypeId registerType(std::string const& name)
@@ -61,7 +62,7 @@ public:
 		auto id = this->dequeueOrCreateId(TComponent::TypeId, pool);
 		auto ptr = std::shared_ptr<TComponent>(
 			pool->create(id),
-			std::bind(&ComponentManager::destroy<TComponent>, this, std::placeholders::_1)
+			std::bind(&Manager::destroy<TComponent>, this, std::placeholders::_1)
 		);
 		ptr->id = id;
 
@@ -128,4 +129,5 @@ private:
 
 };
 
+NS_END
 NS_END

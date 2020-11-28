@@ -101,8 +101,8 @@ bool Game::initializeSystems()
 
 void Game::registerECSTypes(ecs::Core *ecs)
 {
-	ecs->components().registerType<ecs::CoordinateTransform>("CoordinateTransform");
-	ecs->components().registerType<ecs::PlayerInput>("PlayerInput");
+	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
+	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 }
 
@@ -547,14 +547,14 @@ void Game::createScene()
 	{
 		this->mpEntityLocalPlayer = ecs.entities().create();
 
-		auto transform = ecs.components().create<ecs::CoordinateTransform>();
+		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
 		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
 		this->mpEntityLocalPlayer->addComponent(transform);
 
 		this->mpEntityLocalPlayer->addView(ecs.views().create<ecs::view::PlayerInputMovement>());
 
-		auto input = ecs.components().create<ecs::PlayerInput>();
+		auto input = ecs.components().create<ecs::component::PlayerInput>();
 		input->subscribeToQueue();
 		this->mpEntityLocalPlayer->addComponent(input);
 	}
@@ -624,7 +624,7 @@ void Game::update(f32 deltaTime)
 		this->mpController->update(deltaTime, view);
 	}
 
-	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::CoordinateTransform>();
+	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::component::CoordinateTransform>();
 	if (iDebugHUDUpdate == 0)
 	{
 		auto rot = playerTransform->orientation().euler() * math::rad2deg();
@@ -654,7 +654,7 @@ void Game::update(f32 deltaTime)
 
 }
 
-void Game::updateCameraUniform(std::shared_ptr<ecs::CoordinateTransform> transform)
+void Game::updateCameraUniform(std::shared_ptr<ecs::component::CoordinateTransform> transform)
 {
 	OPTICK_EVENT();
 

@@ -6,6 +6,7 @@
 #include "world/WorldCoordinate.hpp"
 
 NS_ECS
+NS_COMPONENT
 
 class CoordinateTransform : public Component
 {
@@ -46,4 +47,5 @@ private:
 
 };
 
+NS_END
 NS_END

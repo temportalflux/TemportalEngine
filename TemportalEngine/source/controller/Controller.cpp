@@ -28,7 +28,7 @@ Controller::Controller()
 	this->mLookVertical = { math::Vector3unitX, glm::radians(90.0f) };
 }
 
-void Controller::assignCameraTransform(ecs::ComponentTransform *transform)
+void Controller::assignCameraTransform(ecs::component::Transform *transform)
 {
 	this->mpCameraTransform = transform;
 }

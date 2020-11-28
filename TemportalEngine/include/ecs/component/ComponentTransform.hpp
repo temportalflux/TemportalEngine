@@ -5,13 +5,14 @@
 #include "math/Matrix.hpp"
 
 NS_ECS
+NS_COMPONENT
 
-struct ComponentTransform : public Component
+class Transform : public Component
 {
 	DECLARE_ECS_COMPONENT_STATICS(0)
 
 public:
-	ComponentTransform();
+	Transform();
 
 	math::Vector3 position;
 	math::Quaternion orientation;
@@ -39,15 +40,16 @@ public:
 	}
 	math::Vector3 down() const { return -this->up(); }
 
-	ComponentTransform& setPosition(math::Vector3 const &pos);
+	Transform& setPosition(math::Vector3 const &pos);
 	void move(math::Vector3 const &v);
-	ComponentTransform& setOrientation(math::Vector3 const &axis, f32 const &radians);
+	Transform& setOrientation(math::Vector3 const &axis, f32 const &radians);
 	void rotate(math::Vector3 const &axis, f32 const &radians);
-	ComponentTransform& setSize(math::Vector3 const &size);
+	Transform& setSize(math::Vector3 const &size);
 
 	math::Matrix4x4 calculateView() const;
 	math::Matrix4x4 calculateViewFrom(math::Vector3 const &pos) const;
 	
 };
 
+NS_END
 NS_END

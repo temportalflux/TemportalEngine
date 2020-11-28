@@ -6,7 +6,9 @@
 
 #include <glm/glm.hpp>
 
-FORWARD_DEF(NS_ECS, struct ComponentTransform)
+NS_ECS
+FORWARD_DEF(NS_COMPONENT, class Transform);
+NS_END
 
 class Controller : public ITickable
 {
@@ -16,7 +18,7 @@ public:
 
 	void subscribeToInput();
 	// TODO: This should be an ecs entity or component id
-	void assignCameraTransform(ecs::ComponentTransform *transform);
+	void assignCameraTransform(ecs::component::Transform *transform);
 
 private:
 	struct InputMapping
@@ -42,6 +44,6 @@ private:
 	void onMouseMove(input::Event const & evt);
 	void tick(f32 deltaTime) override;
 
-	ecs::ComponentTransform *mpCameraTransform;
+	ecs::component::Transform *mpCameraTransform;
 
 };

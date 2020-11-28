@@ -3,6 +3,7 @@
 #include "math/transform.hpp"
 
 using namespace ecs;
+using namespace ecs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(CoordinateTransform)
 

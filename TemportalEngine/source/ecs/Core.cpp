@@ -19,6 +19,6 @@ Core& Core::setLog(logging::Logger log)
 
 EntityManager& Core::entities() { return this->mEntityManager; }
 
-ComponentManager& Core::components() { return this->mComponentManager; }
+component::Manager& Core::components() { return this->mComponentManager; }
 
 view::Manager& Core::views() { return this->mViewManager; }

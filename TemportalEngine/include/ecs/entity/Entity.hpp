@@ -5,8 +5,7 @@
 #include "FixedSortedArray.hpp"
 
 NS_ECS
-struct Component;
-
+FORWARD_DEF(NS_COMPONENT, class Component);
 FORWARD_DEF(NS_VIEW, class View);
 
 class Entity
@@ -21,7 +20,7 @@ class Entity
 		bool operator>(ItemEntry<TItemId, TItem> const& other) const { return typeId > other.typeId; }
 	};
 	
-	using ComponentEntry = ItemEntry<ComponentTypeId, Component>;
+	using ComponentEntry = ItemEntry<ComponentTypeId, component::Component>;
 	using ViewEntry = ItemEntry<ViewTypeId, view::View>;
 
 public:
@@ -51,8 +50,8 @@ private:
 
 	FixedSortedArray<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
 
-	Entity& addComponent(ComponentTypeId const& typeId, std::shared_ptr<Component> pComp);
-	std::shared_ptr<Component> getComponent(ComponentTypeId const& typeId);
+	Entity& addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp);
+	std::shared_ptr<component::Component> getComponent(ComponentTypeId const& typeId);
 
 #pragma endregion
 

@@ -9,11 +9,14 @@
 #define DEFINE_ECS_COMPONENT_STATICS(COMP_TYPE) ComponentTypeId COMP_TYPE::TypeId = 0;
 
 NS_ECS
+NS_COMPONENT
 
-struct Component
+class Component
 {
+public:
 	// The unique-id for an instance of a given component
 	Identifier id;
 };
 
+NS_END
 NS_END

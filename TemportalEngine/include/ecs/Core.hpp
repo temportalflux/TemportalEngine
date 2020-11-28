@@ -23,7 +23,7 @@ public:
 	Core& setLog(logging::Logger log);
 
 	EntityManager& entities();
-	ComponentManager& components();
+	component::Manager& components();
 	view::Manager& views();
 
 	template <typename... TArgs>
@@ -35,7 +35,7 @@ public:
 private:
 	logging::Logger mLog;
 	EntityManager mEntityManager;
-	ComponentManager mComponentManager;
+	component::Manager mComponentManager;
 	view::Manager mViewManager;
 
 };

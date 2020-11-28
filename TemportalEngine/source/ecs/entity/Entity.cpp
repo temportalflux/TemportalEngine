@@ -10,7 +10,7 @@ Entity::~Entity()
 	// All components are automatically deleted because the shared_ptrs go out of scope
 }
 
-Entity& Entity::addComponent(ComponentTypeId const& typeId, std::shared_ptr<Component> pComp)
+Entity& Entity::addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp)
 {
 	this->mComponents.insert(ComponentEntry{ typeId, pComp });
 	for (auto const& entry : this->mViews)
@@ -20,7 +20,7 @@ Entity& Entity::addComponent(ComponentTypeId const& typeId, std::shared_ptr<Comp
 	return *this;
 }
 
-std::shared_ptr<Component> Entity::getComponent(ComponentTypeId const& typeId)
+std::shared_ptr<component::Component> Entity::getComponent(ComponentTypeId const& typeId)
 {
 	auto idx = this->mComponents.search([typeId](ComponentEntry const& entry)
 	{

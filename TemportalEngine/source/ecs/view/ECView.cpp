@@ -22,7 +22,7 @@ bool View::hasAllComponents() const
 	return true;
 }
 
-void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<Component> const& ptr)
+void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr)
 {
 	auto idxSlot = this->mSlots.search([typeId](ComponentSlot const& slot) -> ui8
 	{
@@ -33,13 +33,13 @@ void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<Compone
 	this->mSlots[*idxSlot].component = ptr;
 }
 
-std::shared_ptr<Component> View::lockComponent(ComponentTypeId const& typeId)
+std::shared_ptr<component::Component> View::lockComponent(ComponentTypeId const& typeId)
 {
 	for (auto& slot : this->mSlots)
 	{
 		if (slot.typeId == typeId)
 		{
-			std::shared_ptr<Component> component = nullptr;
+			std::shared_ptr<component::Component> component = nullptr;
 			if (!slot.component.expired())
 			{
 				component = slot.component.lock();

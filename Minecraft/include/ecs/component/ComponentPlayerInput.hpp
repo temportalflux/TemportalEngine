@@ -5,6 +5,7 @@
 #include "input/Event.hpp"
 
 NS_ECS
+NS_COMPONENT
 
 class PlayerInput : public Component, public std::enable_shared_from_this<PlayerInput>
 {
@@ -47,4 +48,5 @@ private:
 
 };
 
+NS_END
 NS_END

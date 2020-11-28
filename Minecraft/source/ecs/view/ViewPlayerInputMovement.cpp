@@ -8,5 +8,6 @@ using namespace ecs::view;
 
 DEFINE_ECS_VIEW_STATICS(PlayerInputMovement);
 PlayerInputMovement::PlayerInputMovement() : View({
-	ecs::CoordinateTransform::TypeId, ecs::PlayerInput::TypeId
+	ecs::component::CoordinateTransform::TypeId,
+	ecs::component::PlayerInput::TypeId
 }) {}

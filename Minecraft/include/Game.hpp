@@ -8,10 +8,14 @@
 class Window;
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
-FORWARD_DEF(NS_ECS, class Core);
-FORWARD_DEF(NS_ECS, class Entity);
-FORWARD_DEF(NS_ECS, class CoordinateTransform);
-FORWARD_DEF(NS_ECS, class ControllerCoordinateSystem);
+
+NS_ECS
+class Core;
+class Entity;
+FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
+class ControllerCoordinateSystem;
+NS_END
+
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
@@ -111,7 +115,7 @@ private:
 	void onInputKey(input::Event const& evt);
 
 	void update(f32 deltaTime);
-	void updateCameraUniform(std::shared_ptr<ecs::CoordinateTransform> transform);
+	void updateCameraUniform(std::shared_ptr<ecs::component::CoordinateTransform> transform);
 	void updateWorldGraphics();
 
 	void changeVoxelDemoSmol();
