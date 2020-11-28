@@ -12,6 +12,7 @@
 #include "ecs/Core.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
+#include "ecs/component/PlayerInputComponent.hpp"
 #include "ecs/system/ControllerCoordinateSystem.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "graphics/Uniform.hpp"
@@ -100,6 +101,7 @@ bool Game::initializeSystems()
 void Game::registerECSTypes(ecs::Core *ecs)
 {
 	ecs->components().registerType<ecs::CoordinateTransform>("CoordinateTransform");
+	ecs->components().registerType<ecs::PlayerInputComponent>("PlayerInput");
 }
 
 void Game::openProject()
@@ -531,20 +533,20 @@ void Game::createScene()
 
 	auto pEngine = engine::Engine::Get();
 	auto& ecs = pEngine->getECS();
+	{
+		this->mpEntityLocalPlayer = ecs.entities().create();
 
-	(this->mpEntityLocalPlayer = ecs.entities().create())
-		->addComponent(ecs.components().create<ecs::CoordinateTransform>());
-	//auto transform = this->mpEntityLocalPlayer->getComponent<ecs::CoordinateTransform>();
+		auto transform = ecs.components().create<ecs::CoordinateTransform>();
+		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
+		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+		this->mpEntityLocalPlayer->addComponent(transform);
 
-	this->mpCameraTransform = std::make_shared<ecs::CoordinateTransform>();
-	this->mpCameraTransform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
-	this->mpCameraTransform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+		auto input = ecs.components().create<ecs::PlayerInputComponent>();
+		input->subscribeToQueue();
+		this->mpEntityLocalPlayer->addComponent(input);
+	}
 
-	// TODO: Allocate from entity pool
 	this->mpController = pEngine->getMainMemory()->make_shared<ecs::ControllerCoordinateSystem>();
-	pEngine->addTicker(this->mpController); 
-	this->mpController->subscribeToInput();
-	this->mpController->assignCameraTransform(this->mpCameraTransform.get());
 
 	if (this->mpVoxelInstanceBuffer)
 	{
@@ -559,7 +561,6 @@ void Game::createScene()
 void Game::destroyScene()
 {
 	this->mpController.reset();
-	this->mpCameraTransform.reset();
 	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();
 }
@@ -604,11 +605,18 @@ void Game::update(f32 deltaTime)
 
 	auto pEngine = engine::Engine::Get();
 
+	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::CoordinateTransform>();
+	this->mpController->update(
+		deltaTime,
+		playerTransform,
+		this->mpEntityLocalPlayer->getComponent<ecs::PlayerInputComponent>()
+	);
+
 	if (iDebugHUDUpdate == 0)
 	{
-		auto rot = this->mpCameraTransform->orientation().euler() * math::rad2deg();
-		auto const& pos = this->mpCameraTransform->position();
-		auto fwd = this->mpCameraTransform->forward();
+		auto rot = playerTransform->orientation().euler() * math::rad2deg();
+		auto const& pos = playerTransform->position();
+		auto fwd = playerTransform->forward();
 		this->mpDebugPositionStr->setContent(utility::formatStr(
 			"Position| X:<%i,%i,%.2f> Y:<%i,%i,%.2f> Z:<%i,%i,%.2f>",
 			pos.chunk().x(), pos.local().x(), pos.offset().x(),
@@ -621,7 +629,7 @@ void Game::update(f32 deltaTime)
 
 	if (this->mpRenderer)
 	{
-		this->updateCameraUniform();
+		this->updateCameraUniform(playerTransform);
 	}
 
 	this->mpWorld->handleDirtyCoordinates();
@@ -629,7 +637,7 @@ void Game::update(f32 deltaTime)
 
 }
 
-void Game::updateCameraUniform()
+void Game::updateCameraUniform(std::shared_ptr<ecs::CoordinateTransform> transform)
 {
 	OPTICK_EVENT();
 
@@ -639,14 +647,14 @@ void Game::updateCameraUniform()
 	perspective[1][1] *= -1;
 	perspective[0][0] *= -1;
 
-	auto view = this->mpCameraTransform->calculateView();
+	auto view = transform->calculateView();
 
 	if (this->mpRendererMVP)
 	{
 		auto uniData = this->mpRendererMVP->read<ChunkViewProj>();
 		uniData.view = view;
 		uniData.proj = perspective;
-		uniData.posOfCurrentChunk = this->mpCameraTransform->position().chunk().toFloat();
+		uniData.posOfCurrentChunk = transform->position().chunk().toFloat();
 		this->mpRendererMVP->write(&uniData);
 	}
 

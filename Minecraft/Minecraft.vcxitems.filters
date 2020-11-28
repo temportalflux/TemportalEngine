@@ -101,6 +101,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\PlayerInputComponent.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -155,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp">
       <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\PlayerInputComponent.cpp">
+      <Filter>ecs\component</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

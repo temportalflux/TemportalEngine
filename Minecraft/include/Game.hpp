@@ -83,7 +83,6 @@ private:
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
-	std::shared_ptr<ecs::CoordinateTransform> mpCameraTransform;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	std::shared_ptr<game::VoxelModelManager> mpVoxelModelManager;
@@ -111,7 +110,7 @@ private:
 	void onInputKey(input::Event const& evt);
 
 	void update(f32 deltaTime);
-	void updateCameraUniform();
+	void updateCameraUniform(std::shared_ptr<ecs::CoordinateTransform> transform);
 	void updateWorldGraphics();
 
 	void changeVoxelDemoSmol();
