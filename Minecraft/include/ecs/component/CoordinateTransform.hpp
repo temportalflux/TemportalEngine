@@ -9,9 +9,9 @@ NS_ECS
 
 class CoordinateTransform : public Component
 {
-public:
-	static ComponentTypeId TypeId;
+	DECLARE_ECS_COMPONENT_STATICS(16)
 
+public:
 	CoordinateTransform();
 
 	world::Coordinate const& position() const;

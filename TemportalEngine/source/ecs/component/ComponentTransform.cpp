@@ -4,7 +4,7 @@
 
 using namespace ecs;
 
-ComponentTypeId ComponentTransform::TypeId = 0;
+DEFINE_ECS_COMPONENT_STATICS(ComponentTransform)
 
 ComponentTransform::ComponentTransform()
 {

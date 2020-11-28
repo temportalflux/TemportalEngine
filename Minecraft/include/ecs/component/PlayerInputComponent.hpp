@@ -8,9 +8,9 @@ NS_ECS
 
 class PlayerInputComponent : public Component, public std::enable_shared_from_this<PlayerInputComponent>
 {
-public:
-	static ComponentTypeId TypeId;
+	DECLARE_ECS_COMPONENT_STATICS(1)
 
+public:
 	PlayerInputComponent();
 	~PlayerInputComponent();
 

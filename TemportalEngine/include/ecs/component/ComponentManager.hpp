@@ -15,9 +15,10 @@ NS_ECS
 
 class ComponentManager
 {
-	typedef FixedSortedArray<Identifier, ECS_MAX_COMPONENT_COUNT> TAvailableIds;
 	template <typename TComponent>
-	using TPool = ObjectPool<Identifier, TComponent, ECS_MAX_COMPONENT_COUNT>;
+	using TAvailableIds = FixedSortedArray<Identifier, TComponent::MaxPoolSize>;
+	template <typename TComponent>
+	using TPool = ObjectPool<Identifier, TComponent, TComponent::MaxPoolSize>;
 
 	struct TypeMetadata
 	{
@@ -25,6 +26,7 @@ class ComponentManager
 		uSize size;
 		// the sizeof an object pool for a component type
 		uSize objectPoolSize;
+		uSize availableIdArraySize;
 
 		std::string name;
 	};
@@ -40,6 +42,7 @@ public:
 		this->registerType(TComponent::TypeId, {
 			sizeof(TComponent),
 			sizeof(TPool<TComponent>),
+			sizeof(TAvailableIds<TComponent>),
 			name
 		});
 		return TComponent::TypeId;
@@ -88,9 +91,10 @@ private:
 	 * ahead of time, so dynamic memory management is not needed here.
 	 */
 	void* mpPoolMemory;
+	void* mpAvailableIdMemory;
 
 	void* mPoolByType[ECS_MAX_COMPONENT_TYPE_COUNT];
-	TAvailableIds mAvailableIdsByType[ECS_MAX_COMPONENT_TYPE_COUNT];
+	void* mAvailableIdsByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 
 	void registerType(ComponentTypeId const& id, TypeMetadata const& metadata);
 
@@ -103,8 +107,8 @@ private:
 	template <typename TComponent>
 	Identifier dequeueOrCreateId(ComponentTypeId const& typeId, TPool<TComponent> *pool)
 	{
-		auto& unusedIds = this->mAvailableIdsByType[typeId];
-		return unusedIds.size() > 0 ? unusedIds.dequeue() : (Identifier)pool->size();
+		auto* unusedIds = reinterpret_cast<TAvailableIds<TComponent>*>(this->mAvailableIdsByType[typeId]);
+		return unusedIds->size() > 0 ? unusedIds->dequeue() : (Identifier)pool->size();
 	}
 
 	template <typename TComponent>
@@ -114,8 +118,9 @@ private:
 		
 		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
 		if (pool == nullptr) return;
-		
-		this->mAvailableIdsByType[TComponent::TypeId].insert(pCreated->id);
+
+		auto* unusedIds = reinterpret_cast<TAvailableIds<TComponent>*>(this->mAvailableIdsByType[TComponent::TypeId]);
+		unusedIds->insert(pCreated->id);
 		pool->destroy(pCreated->id);
 		
 		this->mMutex.unlock();

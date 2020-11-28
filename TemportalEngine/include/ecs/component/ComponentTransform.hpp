@@ -8,8 +8,9 @@ NS_ECS
 
 struct ComponentTransform : public Component
 {
-	static ComponentTypeId TypeId;
+	DECLARE_ECS_COMPONENT_STATICS(0)
 
+public:
 	ComponentTransform();
 
 	math::Vector3 position;

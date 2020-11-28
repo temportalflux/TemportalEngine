@@ -4,7 +4,7 @@
 
 using namespace ecs;
 
-ComponentTypeId CoordinateTransform::TypeId = 0;
+DEFINE_ECS_COMPONENT_STATICS(CoordinateTransform)
 
 CoordinateTransform::CoordinateTransform()
 	: mPosition(world::Coordinate(math::Vector3Int::ZERO, math::Vector3Int::ZERO))

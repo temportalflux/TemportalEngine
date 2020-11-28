@@ -5,7 +5,7 @@
 
 using namespace ecs;
 
-ComponentTypeId PlayerInputComponent::TypeId = 0;
+DEFINE_ECS_COMPONENT_STATICS(PlayerInputComponent)
 
 PlayerInputComponent::PlayerInputComponent()
 {
