@@ -542,7 +542,10 @@ void Game::createScene()
 		// Camera Perspective support for rendering from the entity
 		{
 			// Required by `view::CameraPerspective`
-			this->mpEntityLocalPlayer->addComponent(components.create<ecs::component::CameraPOV>());
+			auto cameraPOV = components.create<ecs::component::CameraPOV>();
+			cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
+			this->mpEntityLocalPlayer->addComponent(cameraPOV);
+
 			// This view enables the `UpdateCameraPerspective` system to run
 			this->mpEntityLocalPlayer->addView(views.create<ecs::view::CameraPerspective>());
 		}

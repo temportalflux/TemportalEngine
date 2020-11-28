@@ -15,6 +15,12 @@ CameraPOV::CameraPOV()
 {
 }
 
+CameraPOV& CameraPOV::setFOV(f32 verticalFOV)
+{
+	this->mFOV = verticalFOV;
+	return *this;
+}
+
 f32 const& CameraPOV::fov() const { return this->mFOV; }
 f32 const& CameraPOV::nearPlane() const { return this->mNearPlane; }
 f32 const& CameraPOV::farPlane() const { return this->mFarPlane; }
