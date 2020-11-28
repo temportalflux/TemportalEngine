@@ -174,6 +174,7 @@ void Window::onEvent(void* pSdlEvent)
 void Window::startThread()
 {
 	if (!this->hasFlag(WindowFlags::RENDER_ON_THREAD)) return;
+
 	this->mRenderThread = Thread("Thread:" + this->mpTitle, &engine::Engine::LOG_SYSTEM);
 	this->mRenderThread.setFunctor(std::bind(&Window::renderUntilClose, this));
 	this->mRenderThread.setOnComplete(std::bind(&Window::waitForCleanup, this));
@@ -208,11 +209,16 @@ bool Window::update()
 	return true;
 }
 
+using duration_ms = std::chrono::duration<f32, std::milli>;
+
 bool Window::renderUntilClose()
 {
 	if (this->mpRenderer)
 	{
+		auto prevTime = std::chrono::high_resolution_clock::now();
 		this->mpRenderer->drawFrame();
+		auto nextTime = std::chrono::high_resolution_clock::now();
+		this->mDeltaMS = std::chrono::duration_cast<duration_ms>(nextTime - prevTime).count();
 	}
 	return this->isValid() && !this->isPendingClose();
 }
@@ -223,4 +229,9 @@ void Window::waitForCleanup()
 	{
 		this->mpRenderer->waitUntilIdle();
 	}
+}
+
+f32 Window::renderDurationMS() const
+{
+	return this->mDeltaMS;
 }

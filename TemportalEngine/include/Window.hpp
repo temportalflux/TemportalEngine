@@ -43,6 +43,7 @@ private:
 	bool hasFlag(WindowFlags flag) const;
 
 	Thread mRenderThread;
+	f32 mDeltaMS;
 
 	graphics::VulkanRenderer *mpRenderer;
 
@@ -95,6 +96,8 @@ public:
 	 * Waits for the renderer to be idle before exiting the thread.
 	 */
 	void waitForCleanup();
+
+	f32 renderDurationMS() const;
 
 };
 

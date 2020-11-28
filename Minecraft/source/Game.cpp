@@ -260,6 +260,11 @@ void Game::createRenderers()
 		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
 		.update();
 
+	(this->mpDebugStrFPS = graphics::UIString::create("debug:fps", this->mpUIRenderer))
+		->setFontId("montserrat").setFontSize(48)
+		.setPosition({ 0.80f, 0.01f }).setContent("? fps")
+		.update();
+
 }
 
 void Game::createGameRenderer()
@@ -592,8 +597,8 @@ void Game::run()
 	{
 		this->update(deltaTime);
 		auto nextTime = std::chrono::high_resolution_clock::now();
-		deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(nextTime - prevTime).count();
-		prevTime = nextTime;
+		deltaTime = std::chrono::duration<f32, std::chrono::seconds::period>(nextTime - prevTime).count();
+		prevTime = nextTime;		
 	}
 	pEngine->joinThreads();
 }
@@ -624,6 +629,10 @@ void Game::update(f32 deltaTime)
 			pos.chunk().z(), pos.local().z(), pos.offset().z()
 		)).update();
 		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
+
+		//auto deltaMS = this->mpWindow->renderDurationMS();
+		//i32 fps = i32((1.0f / deltaMS) * 1000.0f);
+		//this->mpDebugStrFPS->setContent(utility::formatStr("%i fps (%.2f ms)", fps, deltaMS)).update();
 	}
 	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
 

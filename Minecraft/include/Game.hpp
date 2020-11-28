@@ -80,6 +80,7 @@ private:
 
 	std::shared_ptr<graphics::UIString> mpDebugPositionStr;
 	std::shared_ptr<graphics::UIString> mpCameraForwardStr;
+	std::shared_ptr<graphics::UIString> mpDebugStrFPS;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
