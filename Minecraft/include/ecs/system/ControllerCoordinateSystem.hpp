@@ -2,10 +2,8 @@
 
 #include "CoreInclude.hpp"
 
-FORWARD_DEF(NS_ECS, class CoordinateTransform);
-FORWARD_DEF(NS_ECS, class PlayerInput);
-
 NS_ECS
+FORWARD_DEF(NS_VIEW, class PlayerInputMovement);
 
 class ControllerCoordinateSystem
 {
@@ -15,8 +13,7 @@ public:
 
 	void update(
 		f32 deltaTime,
-		std::shared_ptr<ecs::CoordinateTransform> transform,
-		std::shared_ptr<ecs::PlayerInput> input
+		std::shared_ptr<ecs::view::PlayerInputMovement> view
 	);
 
 };

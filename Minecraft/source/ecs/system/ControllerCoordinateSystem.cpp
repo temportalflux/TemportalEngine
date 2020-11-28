@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "logging/Logger.hpp"
+#include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerInput.hpp"
 
@@ -9,15 +10,16 @@ using namespace ecs;
 
 void ControllerCoordinateSystem::update(
 	f32 deltaTime,
-	std::shared_ptr<ecs::CoordinateTransform> transform,
-	std::shared_ptr<ecs::PlayerInput> input
+	std::shared_ptr<ecs::view::PlayerInputMovement> view
 )
 {
 	OPTICK_EVENT();
-	if (!transform || !input) return;
-	
 	static logging::Logger ControllerLog = DeclareLog("Controller");
-
+	
+	auto transform = view->get<ecs::CoordinateTransform>();
+	auto input = view->get<ecs::PlayerInput>();
+	assert(transform && input);
+	
 	auto orientation = transform->orientation();
 	auto euler = orientation.euler();
 	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitY, euler.y());

@@ -617,14 +617,14 @@ void Game::update(f32 deltaTime)
 	static ui32 iDebugHUDUpdate = 0;
 
 	auto pEngine = engine::Engine::Get();
+	
+	auto view = this->mpEntityLocalPlayer->getView<ecs::view::PlayerInputMovement>();
+	if (view && view->hasAllComponents())
+	{
+		this->mpController->update(deltaTime, view);
+	}
 
 	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::CoordinateTransform>();
-	this->mpController->update(
-		deltaTime,
-		playerTransform,
-		this->mpEntityLocalPlayer->getComponent<ecs::PlayerInput>()
-	);
-
 	if (iDebugHUDUpdate == 0)
 	{
 		auto rot = playerTransform->orientation().euler() * math::rad2deg();

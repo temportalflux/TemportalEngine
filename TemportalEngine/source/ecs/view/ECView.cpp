@@ -13,6 +13,15 @@ View::View(std::vector<ComponentTypeId> slotTypes)
 
 Identifier const& View::id() const { return this->mId; }
 
+bool View::hasAllComponents() const
+{
+	for (auto const& slot : this->mSlots)
+	{
+		if (slot.component.expired()) return false;
+	}
+	return true;
+}
+
 void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<Component> const& ptr)
 {
 	auto idxSlot = this->mSlots.search([typeId](ComponentSlot const& slot) -> ui8

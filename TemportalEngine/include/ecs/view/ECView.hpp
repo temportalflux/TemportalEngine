@@ -24,6 +24,8 @@ public:
 	View(std::vector<ComponentTypeId> slotTypes);
 	Identifier const& id() const;
 
+	bool hasAllComponents() const;
+
 	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<Component> const& ptr);
 
 	template <typename TComponent>
