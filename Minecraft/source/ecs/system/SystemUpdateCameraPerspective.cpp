@@ -97,13 +97,10 @@ void UpdateCameraPerspective::update(
 )
 {
 	OPTICK_EVENT();
-	static logging::Logger ControllerLog = DeclareLog("Controller");
 
 	auto transform = view->get<component::CoordinateTransform>();
 	auto cameraPOV = view->get<component::CameraPOV>();
 	assert(transform && cameraPOV);
-
-	OPTICK_EVENT();
 
 	auto xyAspectRatio = this->mpRenderer->getAspectRatio(); // x/y
 	auto verticalFOV = math::toRadians(cameraPOV->fov());

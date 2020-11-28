@@ -15,7 +15,7 @@ NS_VIEW
 class Manager
 {
 	typedef FixedSortedArray<Identifier, ECS_MAX_VIEW_COUNT> TAvailableIds;
-	typedef ObjectPool<Identifier, View, ECS_MAX_VIEW_COUNT> TPool;
+	typedef ObjectPool<View, ECS_MAX_VIEW_COUNT> TPool;
 	typedef std::unordered_map<Identifier, std::weak_ptr<View>> TAllocatedObjectMap;
 
 public:
@@ -23,6 +23,7 @@ public:
 	template <typename TView>
 	void registerType()
 	{
+		assert(sizeof(TView) == sizeof(View));
 		TView::TypeId = this->mRegisteredTypeCount++;
 	}
 
@@ -48,7 +49,6 @@ private:
 	TAllocatedObjectMap mAllocatedObjects;
 
 	std::shared_ptr<View> createView();
-	Identifier dequeueOrCreateId();
 	void destroy(View *pCreated);
 
 };

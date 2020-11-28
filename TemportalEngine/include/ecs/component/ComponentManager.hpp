@@ -19,7 +19,7 @@ class Manager
 	template <typename TComponent>
 	using TAvailableIds = FixedSortedArray<Identifier, TComponent::MaxPoolSize>;
 	template <typename TComponent>
-	using TPool = ObjectPool<Identifier, TComponent, TComponent::MaxPoolSize>;
+	using TPool = ObjectPool<TComponent, TComponent::MaxPoolSize>;
 
 	struct TypeMetadata
 	{
@@ -59,12 +59,12 @@ public:
 
 		this->mMutex.lock();
 
-		auto id = this->dequeueOrCreateId(TComponent::TypeId, pool);
+		uIndex objectId;
 		auto ptr = std::shared_ptr<TComponent>(
-			pool->create(id),
+			pool->create(objectId),
 			std::bind(&Manager::destroy<TComponent>, this, std::placeholders::_1)
 		);
-		ptr->id = id;
+		ptr->id = objectId;
 
 		this->mMutex.unlock();
 		return ptr;

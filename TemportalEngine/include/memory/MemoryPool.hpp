@@ -23,10 +23,14 @@ public:
 	}
 
 	template <typename... TArgs>
-	uSize allocate(TArgs... args)
+	uIndex allocate(TArgs... args)
 	{
 		assert(size() < capacity());
-		uSize idx = this->mSize;
+		uIndex idx = this->mSize;
+		if (this->mEmptySlotCount > 0)
+		{
+			idx = this->mEmptySlots[--this->mEmptySlotCount];
+		}
 		new (&this->mValues[idx]) TObject(args...);
 		this->mSize++;
 		return idx;
@@ -34,8 +38,9 @@ public:
 
 	void deallocate(uSize idx)
 	{
-		// Shift all memory to collapse over that element
-		memcpy(this->mValues + idx, this->mValues + idx + 1, sizeof(TObject) * (this->mSize - idx - 1));
+		assert(this->mEmptySlotCount < capacity());
+		this->mEmptySlots[this->mEmptySlotCount++] = idx;
+		memset(this->mValues + idx, 0, sizeof(TObject));
 		this->mSize--;
 	}
 
@@ -47,6 +52,9 @@ public:
 private:	
 	TObject mValues[Capacity];
 	uSize mSize;
+
+	uIndex mEmptySlots[Capacity];
+	uSize mEmptySlotCount;
 
 };
 

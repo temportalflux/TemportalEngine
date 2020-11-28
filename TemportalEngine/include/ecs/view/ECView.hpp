@@ -24,8 +24,9 @@ class View
 public:
 	View() = default;
 	View(std::vector<ComponentTypeId> slotTypes);
+	~View();
+	
 	Identifier const& id() const;
-
 	bool hasAllComponents() const;
 
 	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr);

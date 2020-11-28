@@ -7,7 +7,8 @@ using namespace ecs;
 
 Entity::~Entity()
 {
-	// All components are automatically deleted because the shared_ptrs go out of scope
+	this->mViews.clear();
+	this->mComponents.clear();
 }
 
 Entity& Entity::addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp)

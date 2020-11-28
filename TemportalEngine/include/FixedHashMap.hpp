@@ -57,8 +57,13 @@ public:
 		// Perform opposite shift as insert does
 		auto srcIdx = desiredIdx + 1, destIdx = desiredIdx;
 		auto count = this->mSize - srcIdx;
-		memcpy(this->mKeys + destIdx, this->mKeys + srcIdx, sizeof(TKey) * count);
+
 		memcpy(this->mValues + destIdx, this->mValues + srcIdx, sizeof(TValue) * count);
+		memset(this->mValues + destIdx + count, 0, sizeof(TValue));
+
+		memcpy(this->mKeys + destIdx, this->mKeys + srcIdx, sizeof(TKey) * count);
+		memset(this->mKeys + destIdx + count, 0, sizeof(TKey));
+
 		this->mSize--;
 	}
 

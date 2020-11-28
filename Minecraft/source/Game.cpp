@@ -16,8 +16,10 @@
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewCameraPerspective.hpp"
+#include "ecs/view/ViewDebugHUD.hpp"
 #include "ecs/system/ControllerCoordinateSystem.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
+#include "ecs/system/SystemUpdateDebugHUD.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
@@ -30,7 +32,6 @@
 #include "render/line/LineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/ui/UIRenderer.hpp"
-#include "render/ui/UIString.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 
@@ -104,6 +105,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::CameraPerspective>();
+	ecs->views().registerType<ecs::view::DebugHUD>();
 }
 
 void Game::openProject()
@@ -219,31 +221,8 @@ void Game::createRenderers()
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
 
-	graphics::UIString::create("debug:textTest", this->mpUIRenderer)
-		->setFontId("sicret").setFontSize(48)
-		.setPosition({ 0.f, 0.f })
-		.setContent("Sphinx of Black Quartz, Judge my vow")
-		.update();
-
-	(this->mpDebugPositionStr = graphics::UIString::create("debug:position", this->mpUIRenderer))
-		->setFontId("sicret").setFontSize(20)
-		.setPosition({ 0.0f, 0.04f }).setContent("Position| X:<?,?,?> Y:<?,?,?> Z:<?,?,?>")
-		.update();
-
-	graphics::UIString::create("debug:cameraForwardLabel", this->mpUIRenderer)
-		->setFontId("sicret").setFontSize(20)
-		.setPosition({ 0.f, 0.08f }).setContent("Forward:")
-		.update();
-
-	(this->mpCameraForwardStr = graphics::UIString::create("debug:cameraForwardValue", this->mpUIRenderer))
-		->setFontId("sicret").setFontSize(20)
-		.setPosition({ 0.12f, 0.08f }).setContent("<?,?,?>")
-		.update();
-
-	(this->mpDebugStrFPS = graphics::UIString::create("debug:fps", this->mpUIRenderer))
-		->setFontId("sicret").setFontSize(48)
-		.setPosition({ 0.79f, 0.01f }).setContent("? fps")
-		.update();
+	this->mpSystemUpdateDebugHUD = pEngine->getMainMemory()->make_shared<ecs::system::UpdateDebugHUD>(this->mpWindow);
+	this->mpSystemUpdateDebugHUD->createHUD(this->mpUIRenderer);
 
 }
 
@@ -482,6 +461,9 @@ void Game::destroyRenderers()
 	this->mpChunkBoundaryRenderer->destroyBuffers();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpGlobalDescriptorPool->invalidate();
+
+	this->mpSystemUpdateCameraPerspective.reset();
+	this->mpSystemUpdateDebugHUD.reset();
 	this->mpUIRenderer->destroyRenderDevices();
 
 	this->mpRenderer->invalidate();
@@ -512,45 +494,7 @@ void Game::createScene()
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
-	auto& ecs = pEngine->getECS();
-	{
-		auto& components = ecs.components();
-		auto& views = ecs.views();
-
-		this->mpEntityLocalPlayer = ecs.entities().create();
-
-		// Add Transform
-		{
-			auto transform = components.create<ecs::component::CoordinateTransform>();
-			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
-			transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
-			this->mpEntityLocalPlayer->addComponent(transform);
-		}
-
-		// Add PlayerInput support for moving the entity around
-		{
-			// View and Component can be added in any order.
-			// This order (transform, view, player-input) is used to test the any-order functionality
-
-			this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerInputMovement>());
-
-			auto input = components.create<ecs::component::PlayerInput>();
-			input->subscribeToQueue();
-			this->mpEntityLocalPlayer->addComponent(input);
-		}
-
-		// Camera Perspective support for rendering from the entity
-		{
-			// Required by `view::CameraPerspective`
-			auto cameraPOV = components.create<ecs::component::CameraPOV>();
-			cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
-			this->mpEntityLocalPlayer->addComponent(cameraPOV);
-
-			// This view enables the `UpdateCameraPerspective` system to run
-			this->mpEntityLocalPlayer->addView(views.create<ecs::view::CameraPerspective>());
-		}
-	}
-
+	this->createLocalPlayer();
 	this->mpController = pEngine->getMainMemory()->make_shared<ecs::ControllerCoordinateSystem>();
 	
 	if (this->mpVoxelInstanceBuffer)
@@ -563,9 +507,51 @@ void Game::createScene()
 	}
 }
 
+void Game::createLocalPlayer()
+{
+	auto pEngine = engine::Engine::Get();
+	auto& ecs = pEngine->getECS();
+	auto& components = ecs.components();
+	auto& views = ecs.views();
+
+	this->mpEntityLocalPlayer = ecs.entities().create();
+
+	// Add Transform
+	{
+		auto transform = components.create<ecs::component::CoordinateTransform>();
+		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
+		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+		this->mpEntityLocalPlayer->addComponent(transform);
+	}
+
+	// Add PlayerInput support for moving the entity around
+	{
+		// View and Component can be added in any order.
+		// This order (transform, view, player-input) is used to test the any-order functionality
+
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerInputMovement>());
+
+		auto input = components.create<ecs::component::PlayerInput>();
+		input->subscribeToQueue();
+		this->mpEntityLocalPlayer->addComponent(input);
+	}
+
+	// Camera Perspective support for rendering from the entity
+	{
+		// Required by `view::CameraPerspective`
+		auto cameraPOV = components.create<ecs::component::CameraPOV>();
+		cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
+		this->mpEntityLocalPlayer->addComponent(cameraPOV);
+
+		// This view enables the `UpdateCameraPerspective` system to run
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::CameraPerspective>());
+	}
+
+	this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
+}
+
 void Game::destroyScene()
 {
-	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpController.reset();
 	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();
@@ -607,7 +593,6 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
-	static ui32 iDebugHUDUpdate = 0;
 
 	auto pEngine = engine::Engine::Get();
 
@@ -621,25 +606,15 @@ void Game::update(f32 deltaTime)
 		}
 	}
 
-	auto playerTransform = this->mpEntityLocalPlayer->getComponent<ecs::component::CoordinateTransform>();
-	if (iDebugHUDUpdate == 0)
+	// Run the UpdateDebugHUD system
+	if (this->mpSystemUpdateDebugHUD)
 	{
-		auto rot = playerTransform->orientation().euler() * math::rad2deg();
-		auto const& pos = playerTransform->position();
-		auto fwd = playerTransform->forward();
-		this->mpDebugPositionStr->setContent(utility::formatStr(
-			"Position| X:<%i,%i,%.2f> Y:<%i,%i,%.2f> Z:<%i,%i,%.2f>",
-			pos.chunk().x(), pos.local().x(), pos.offset().x(),
-			pos.chunk().y(), pos.local().y(), pos.offset().y(),
-			pos.chunk().z(), pos.local().z(), pos.offset().z()
-		)).update();
-		this->mpCameraForwardStr->setContent(utility::formatStr("<%.2f, %.2f, %.2f>", fwd.x(), fwd.y(), fwd.z())).update();
-
-		auto deltaMS = this->mpWindow->renderDurationMS();
-		i32 fps = i32((1.0f / deltaMS) * 1000.0f);
-		this->mpDebugStrFPS->setContent(utility::formatStr("%i fps (%.2f ms)", fps, deltaMS)).update();
+		auto view = this->mpEntityLocalPlayer->getView<ecs::view::DebugHUD>();
+		if (view && view->hasAllComponents())
+		{
+			this->mpSystemUpdateDebugHUD->update(deltaTime, view);
+		}
 	}
-	iDebugHUDUpdate = (iDebugHUDUpdate + 1) % 6000;
 
 	// Run the UpdateCameraPerspective system
 	if (this->mpSystemUpdateCameraPerspective)

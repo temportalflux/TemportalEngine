@@ -68,6 +68,15 @@ public:
 	TValue dequeue() { return remove(0); }
 	TValue pop() { return remove(size() - 1); }
 
+	void clear()
+	{
+		for (uIndex idx = 0; idx < size(); ++idx)
+		{
+			this->mValues[idx].~TValue();
+			memset(this->mValues + idx, 0, sizeof(TValue));
+		}
+	}
+
 	std::optional<uIndex> search(std::function<i8(TValue const& value)> predicate)
 	{
 		auto foundEntry = this->findIndex(predicate);

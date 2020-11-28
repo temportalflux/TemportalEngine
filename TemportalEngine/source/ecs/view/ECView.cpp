@@ -5,10 +5,17 @@ using namespace ecs::view;
 
 View::View(std::vector<ComponentTypeId> slotTypes)
 {
+	// Slot types cannot exceed slot capacity. If they do, `ECS_MAX_COMPONENT_VIEW_SLOTS` needs to change.
+	assert(slotTypes.size() <= View::SlotCapacity);
 	for (uIndex iSlot = 0; iSlot < math::min(View::SlotCapacity, slotTypes.size()); ++iSlot)
 	{
 		this->mSlots.push(ComponentSlot { slotTypes[iSlot] });
 	}
+}
+
+View::~View()
+{
+	this->mSlots.clear();
 }
 
 Identifier const& View::id() const { return this->mId; }

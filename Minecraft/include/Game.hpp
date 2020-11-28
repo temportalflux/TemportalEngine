@@ -15,6 +15,7 @@ class Entity;
 FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
 class ControllerCoordinateSystem;
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
+FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
 NS_END
 
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
@@ -25,7 +26,6 @@ FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_GRAPHICS, class LineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
-FORWARD_DEF(NS_GRAPHICS, class UIString);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
@@ -80,13 +80,10 @@ private:
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 
-	std::shared_ptr<graphics::UIString> mpDebugPositionStr;
-	std::shared_ptr<graphics::UIString> mpCameraForwardStr;
-	std::shared_ptr<graphics::UIString> mpDebugStrFPS;
-
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
+	std::shared_ptr<ecs::system::UpdateDebugHUD> mpSystemUpdateDebugHUD;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	std::shared_ptr<game::VoxelModelManager> mpVoxelModelManager;
@@ -112,6 +109,8 @@ private:
 	void bindInput();
 	void unbindInput();
 	void onInputKey(input::Event const& evt);
+
+	void createLocalPlayer();
 
 	void update(f32 deltaTime);
 	void updateWorldGraphics();

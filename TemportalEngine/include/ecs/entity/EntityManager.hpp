@@ -13,8 +13,7 @@ NS_ECS
 
 class EntityManager
 {
-	typedef FixedSortedArray<Identifier, ECS_MAX_ENTITY_COUNT> TAvailableIds;
-	typedef ObjectPool<Identifier, Entity, ECS_MAX_ENTITY_COUNT> TPool;
+	typedef ObjectPool<Entity, ECS_MAX_ENTITY_COUNT> TPool;
 	typedef std::unordered_map<Identifier, std::weak_ptr<Entity>> TAllocatedObjectMap;
 
 public:
@@ -27,11 +26,9 @@ public:
 private:
 	thread::MutexLock mMutex;
 
-	TAvailableIds mAvailableIds;
 	TPool mPool;
 	TAllocatedObjectMap mAllocatedObjects;
 
-	Identifier dequeueOrCreateId();
 	void destroy(Entity *pCreated);
 
 };

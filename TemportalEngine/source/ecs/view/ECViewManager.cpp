@@ -7,18 +7,13 @@ std::shared_ptr<View> Manager::createView()
 {
 	this->mMutex.lock();
 
-	auto id = this->dequeueOrCreateId();
-	auto shared = std::shared_ptr<View>(this->mPool.create(id), std::bind(&Manager::destroy, this, std::placeholders::_1));
-	shared->mId = id;
-	this->mAllocatedObjects.insert(std::make_pair(id, shared));
+	uIndex objectId;
+	auto shared = std::shared_ptr<View>(this->mPool.create(objectId), std::bind(&Manager::destroy, this, std::placeholders::_1));
+	shared->mId = objectId;
+	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 
 	this->mMutex.unlock();
 	return shared;
-}
-
-Identifier Manager::dequeueOrCreateId()
-{
-	return this->mAvailableIds.size() > 0 ? this->mAvailableIds.dequeue() : (Identifier)this->mAllocatedObjects.size();
 }
 
 void Manager::destroy(View *pCreated)
@@ -27,9 +22,8 @@ void Manager::destroy(View *pCreated)
 
 	auto allocatedIter = this->mAllocatedObjects.find(pCreated->mId);
 	assert(allocatedIter != this->mAllocatedObjects.end());
-
-	this->mAvailableIds.insert(pCreated->mId);
 	this->mAllocatedObjects.erase(allocatedIter);
+
 	this->mPool.destroy(pCreated->mId);
 
 	this->mMutex.unlock();

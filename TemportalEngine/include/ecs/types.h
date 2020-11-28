@@ -17,6 +17,6 @@ NS_ECS
 
 typedef uIndex ComponentTypeId;
 typedef uIndex ViewTypeId;
-typedef ui16 Identifier;
+typedef uIndex Identifier;
 
 NS_END
