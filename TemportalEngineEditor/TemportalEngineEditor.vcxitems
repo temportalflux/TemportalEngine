@@ -25,6 +25,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Editor.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiFrame.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetBrowser.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetReferenceViewer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\asset\AssetEditor.hpp" />

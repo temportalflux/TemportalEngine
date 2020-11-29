@@ -32,7 +32,6 @@ public:
 	void invalidate() override;
 	void resetConfiguration() override;
 
-	Memory& bind(uIndex const idxSlot, Buffer const *buffer);
 	Memory& bind(uIndex const idxSlot, Image const *image);
 
 	template <typename TData>

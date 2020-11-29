@@ -63,7 +63,6 @@ private:
 	CommandPool mCommandPoolTransient;
 	
 	std::unordered_map<std::string, std::weak_ptr<Uniform>> mpMutableUniforms;
-	std::shared_ptr<Memory> mpMemoryUniformBuffers;
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> mMutableUniformBuffersByDescriptorId;
 
 	std::vector<IPipelineRenderer*> mpRenderers;

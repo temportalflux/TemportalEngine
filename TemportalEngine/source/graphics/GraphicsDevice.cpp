@@ -8,6 +8,7 @@
 #include "graphics/Memory.hpp"
 #include "graphics/SwapChain.hpp"
 #include "graphics/VulkanInstance.hpp"
+#include "graphics/vma/VMA.hpp"
 
 using namespace graphics;
 
@@ -21,14 +22,34 @@ GraphicsDevice::~GraphicsDevice()
 	this->destroy();
 }
 
+std::shared_ptr<VulkanInstance> GraphicsDevice::instance() const
+{
+	return this->mpInstance.lock();
+}
+
+PhysicalDevice const& GraphicsDevice::physical() const
+{
+	return this->mPhysicalDevice;
+}
+
 PhysicalDevice& GraphicsDevice::physical()
 {
 	return this->mPhysicalDevice;
 }
 
+LogicalDevice const& GraphicsDevice::logical() const
+{
+	return this->mLogicalDevice;
+}
+
 LogicalDevice& GraphicsDevice::logical()
 {
 	return this->mLogicalDevice;
+}
+
+std::shared_ptr<VulkanMemoryAllocator> GraphicsDevice::getVMA()
+{
+	return this->mpAllocator;
 }
 
 vk::UniqueDevice const& GraphicsDevice::internalLogic() const
@@ -77,11 +98,13 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 		instance->getLog().log(LOG_INFO, "Failed to instantiate Optick GPU, no valid graphics queue.");
 	}
 
+	this->mpAllocator = std::make_shared<VulkanMemoryAllocator>(instance->apiVersion(), this);
 }
 
 void GraphicsDevice::destroy()
 {
 	OPTICK_GPU_SHUTDOWN();
+	this->mpAllocator.reset();
 	this->mQueues.clear();
 	this->mLogicalDevice.invalidate();
 	this->mPhysicalDevice.invalidate();
@@ -116,20 +139,6 @@ std::optional<vk::Format> GraphicsDevice::pickFirstSupportedFormat(
 }
 
 #pragma region Initializer Functions
-
-#pragma region Buffer
-
-vk::UniqueBuffer GraphicsDevice::createBuffer(vk::BufferCreateInfo const &info) const
-{
-	return this->internalLogic()->createBufferUnique(info);
-}
-
-vk::MemoryRequirements GraphicsDevice::getMemoryRequirements(Buffer const *buffer) const
-{
-	return this->internalLogic()->getBufferMemoryRequirements(buffer->mInternal.get());
-}
-
-#pragma endregion
 
 #pragma region CommandPool
 
@@ -251,11 +260,6 @@ vk::UniqueImageView GraphicsDevice::createImageView(vk::ImageViewCreateInfo cons
 vk::UniqueDeviceMemory GraphicsDevice::allocateMemory(vk::MemoryAllocateInfo const &info) const
 {
 	return this->internalLogic()->allocateMemoryUnique(info);
-}
-
-void GraphicsDevice::bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const
-{
-	this->internalLogic()->bindBufferMemory(buffer->mInternal.get(), memory->mInternal.get(), offset);
 }
 
 void GraphicsDevice::bindMemory(Memory const *memory, Image const *image, ui64 offset) const

@@ -3,7 +3,6 @@
 #include "graphics/Command.hpp"
 #include "graphics/CommandPool.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "graphics/Memory.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
@@ -16,11 +15,14 @@ Buffer::Buffer(Buffer &&other)
 Buffer& Buffer::operator=(Buffer &&other)
 {
 	this->setDevice(other.device());
-	this->copyMemoryAllocatedFrom(other);
 
 	this->mUsageFlags = other.mUsageFlags;
 	this->mSize = other.mSize;
-	this->mInternal.swap(other.mInternal);
+
+	this->mMemoryUsageFlag = other.mMemoryUsageFlag;
+	this->mAllocated = std::move(other.mAllocated);
+	this->mAllocHandle = other.mAllocHandle;
+	other.mAllocHandle = nullptr;
 	
 	return *this;
 }
@@ -30,9 +32,10 @@ Buffer::~Buffer()
 	destroy();
 }
 
-Buffer& Buffer::setUsage(vk::BufferUsageFlags flags)
+Buffer& Buffer::setUsage(vk::BufferUsageFlags flags, MemoryUsage memUsage)
 {
 	this->mUsageFlags = flags;
+	this->mMemoryUsageFlag = memUsage;
 	return *this;
 }
 
@@ -50,38 +53,33 @@ uSize Buffer::getSize() const
 void Buffer::create()
 {
 	OPTICK_EVENT();
-	this->mInternal = this->device()->createBuffer(
+	this->mAllocHandle = this->device()->getVMA()->createBuffer(
 		vk::BufferCreateInfo()
 		.setUsage(this->mUsageFlags)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSize((ui64)this->mSize)
+		.setSize((ui64)this->mSize),
+		this->mMemoryUsageFlag, this->mAllocated
 	);
 }
 
 void* Buffer::get()
 {
-	return &this->mInternal.get();
+	return &this->mAllocated;
 }
 
 void Buffer::invalidate()
 {
-	this->mInternal.reset();
+	if (this->mAllocHandle)
+	{
+		this->device()->getVMA()->destroyBuffer(this->mAllocated, this->mAllocHandle);
+		this->mAllocHandle = nullptr;
+	}
 }
 
 void Buffer::resetConfiguration()
 {
 	this->mUsageFlags = {};
 	this->mSize = 0;
-}
-
-vk::MemoryRequirements Buffer::getRequirements() const
-{
-	return this->device()->getMemoryRequirements(this);
-}
-
-void Buffer::bindMemory()
-{
-	this->memory()->bind(this->memorySlot(), this);
 }
 
 void Buffer::writeBuffer(CommandPool* transientPool, uSize offset, void* data, uSize size, bool bClear)
@@ -97,12 +95,6 @@ void Buffer::writeBuffer(CommandPool* transientPool, uSize offset, void* data, u
 	);
 }
 
-void Buffer::write(uSize const offset, void* src, uSize size, bool bClear)
-{
-	OPTICK_EVENT();
-	this->memory()->write(this->memorySlot(), offset, src, size, bClear);
-}
-
 void Buffer::writeDataToGPU(
 	std::shared_ptr<GraphicsDevice> device,
 	CommandPool* transientPool,
@@ -116,29 +108,12 @@ void Buffer::writeDataToGPU(
 	Buffer stagingBuffer;
 	stagingBuffer.setDevice(device);
 	stagingBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
+		.setUsage(vk::BufferUsageFlagBits::eTransferSrc, MemoryUsage::eCPUSource)
 		.setSize(bufferSize);
 	stagingBuffer.create();
 
-	// Setup a memory chunk which can be written to by CPU and copyable to GPU
-	Memory stagingMemory;
-	stagingMemory.setDevice(device);
-	stagingMemory
-		.setFlags(
-			vk::MemoryPropertyFlagBits::eHostVisible
-			| vk::MemoryPropertyFlagBits::eHostCoherent
-		);
-
-	// Configure memory with buffer needs
-	uIndex i;
-	stagingMemory.configureSlot(stagingBuffer.getRequirements(), i);
-	// Create the memory, now fully configured
-	stagingMemory.create();
-	// Link the buffer and allocated memory
-	stagingMemory.bind(i, &stagingBuffer);
-
 	// Perform write
-	stagingMemory.write(i, dataOffset, data, dataSize, bClear);
+	stagingBuffer.write(dataOffset, data, dataSize, bClear);
 
 	/*
 		TODO: submitOneOff contains a waitIdle at the end of the call. This causes all commands to be synchronous.
@@ -153,5 +128,15 @@ void Buffer::writeDataToGPU(
 
 	// Destroy buffer and GPU memory
 	stagingBuffer.destroy();
-	stagingMemory.destroy();
+}
+
+void Buffer::write(uSize const offset, void* src, uSize size, bool bClear)
+{
+	OPTICK_EVENT();
+	auto vma = this->device()->getVMA();
+	auto ptr = vma->mapMemory(this->mAllocHandle);
+	void* destOffsetted = (void*)(uIndex(ptr) + offset);
+	if (bClear) memset(destOffsetted, 0, size);
+	memcpy(destOffsetted, src, size);
+	vma->unmapMemory(this->mAllocHandle);
 }

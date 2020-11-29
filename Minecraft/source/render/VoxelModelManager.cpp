@@ -220,35 +220,23 @@ Model VoxelModelManager::VoxelTextureEntry::TextureSetHandle::createModel() cons
 
 void VoxelModelManager::createModelBuffers(std::shared_ptr<graphics::GraphicsDevice> device, uSize modelVertexBufferSize, uSize modelIndexBufferSize)
 {
-	this->mpMemoryModelBuffers = std::make_shared<graphics::Memory>();
-	this->mpMemoryModelBuffers->setDevice(device);
-	this->mpMemoryModelBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
 	this->mModelVertexBuffer.setDevice(device);
 	this->mModelVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly)
 		.setSize(modelVertexBufferSize)
 		.create();
-	this->mModelVertexBuffer.configureSlot(this->mpMemoryModelBuffers);
 
 	this->mModelIndexBuffer.setDevice(device);
 	this->mModelIndexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, graphics::MemoryUsage::eGPUOnly)
 		.setSize(modelIndexBufferSize)
 		.create();
-	this->mModelIndexBuffer.configureSlot(this->mpMemoryModelBuffers);
-
-	this->mpMemoryModelBuffers->create();
-
-	this->mModelVertexBuffer.bindMemory();
-	this->mModelIndexBuffer.bindMemory();
 }
 
 void VoxelModelManager::destroyModels()
 {
 	this->mModelVertexBuffer.destroy();
 	this->mModelIndexBuffer.destroy();
-	this->mpMemoryModelBuffers.reset();
 }
 
 ui32 VoxelModelManager::VoxelTextureEntry::indexCount() const

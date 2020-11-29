@@ -193,21 +193,11 @@ private:
 	std::set<uIndex> mChangedBufferIndices;
 
 	/**
-	 * The memory for `mStagingBuffer`.
-	 */
-	std::shared_ptr<graphics::Memory> mpMemoryStagingBuffer;
-
-	/**
 	 * The literal GPU buffer which serves as the go between
 	 * for CPU (`mMutableCategoryList`) to GPU (`mInstanceBuffer`) writes.
 	 * Used during `commitToBuffer()` to write buffer updates.
 	 */
 	graphics::Buffer mStagingBuffer;
-
-	/**
-	 * The memory for `mInstanceBuffer`.
-	 */
-	std::shared_ptr<graphics::Memory> mpMemoryInstanceBuffer;
 
 	/**
 	 * The literal GPU buffer which is written to via `commitToBuffer()`.

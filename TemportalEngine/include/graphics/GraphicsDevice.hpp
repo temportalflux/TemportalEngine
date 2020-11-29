@@ -20,6 +20,7 @@ class Memory;
 class Surface;
 class SwapChain;
 class VulkanInstance;
+class VulkanMemoryAllocator;
 
 /**
  * A wrapper class for bundling `PhysicalDevice` and `LogicalDevice`.
@@ -46,8 +47,12 @@ public:
 	GraphicsDevice(std::weak_ptr<VulkanInstance> instance);
 	~GraphicsDevice();
 
+	std::shared_ptr<VulkanInstance> instance() const;
+	PhysicalDevice const& physical() const;
 	PhysicalDevice& physical();
+	LogicalDevice const& logical() const;
 	LogicalDevice& logical();
+	std::shared_ptr<VulkanMemoryAllocator> getVMA();
 
 	void create(PhysicalDevicePreference prefs, LogicalDeviceInfo const &info, Surface const *pSurface);
 	void destroy();
@@ -64,6 +69,7 @@ public:
 
 private:
 	std::weak_ptr<VulkanInstance> mpInstance;
+	std::shared_ptr<VulkanMemoryAllocator> mpAllocator;
 
 	PhysicalDevice mPhysicalDevice;
 	LogicalDevice mLogicalDevice;
@@ -71,10 +77,6 @@ private:
 
 #pragma region Initializer Functions
 	vk::UniqueDevice const& internalLogic() const;
-#pragma region Buffer
-	vk::UniqueBuffer createBuffer(vk::BufferCreateInfo const &info) const;
-	vk::MemoryRequirements getMemoryRequirements(Buffer const *buffer) const;
-#pragma endregion
 #pragma region CommandPool
 	vk::UniqueCommandPool createCommandPool(vk::CommandPoolCreateInfo const &info) const;
 	std::vector<CommandBuffer> allocateCommandBuffers(CommandPool const *pool, vk::CommandBufferLevel const level, ui32 const count) const;
@@ -105,7 +107,6 @@ private:
 #pragma endregion
 #pragma region Memory
 	vk::UniqueDeviceMemory allocateMemory(vk::MemoryAllocateInfo const &info) const;
-	void bindMemory(Memory const *memory, Buffer const *buffer, ui64 offset) const;
 	void bindMemory(Memory const *memory, Image const *image, ui64 offset) const;
 	void* mapMemory(Memory const *memory, ui64 offset, ui64 size) const;
 	void unmapMemory(Memory const *memory) const;

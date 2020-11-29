@@ -165,7 +165,6 @@ private:
 		UncommittedTextData uncommittedData;
 		CommittedTextData committedData;
 
-		std::shared_ptr<Memory> memoryTextBuffers;
 		graphics::Buffer vertexBuffer;
 		graphics::Buffer indexBuffer;
 

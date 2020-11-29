@@ -27,6 +27,7 @@ class VulkanInstance
 public:
 	VulkanInstance();
 
+	ui32 apiVersion() const;
 	void* get();
 
 	VulkanInstance& createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug);
@@ -35,6 +36,7 @@ public:
 	VulkanInstance& setApplicationInfo(std::string const &name, Version const &version);
 	VulkanInstance& setEngineInfo(utility::SExecutableInfo const &info);
 	VulkanInstance& setRequiredExtensions(std::vector<char const*> extensions);
+	std::unordered_set<char const*> const& enabledExtensions() const;
 	VulkanInstance& setValidationLayers(std::optional<std::vector<std::string>> layers = std::nullopt);
 
 	bool isValid() const;

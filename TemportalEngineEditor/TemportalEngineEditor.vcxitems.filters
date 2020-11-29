@@ -135,6 +135,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetReferenceViewer.hpp">
       <Filter>gui</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiTexture.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">

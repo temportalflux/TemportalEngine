@@ -40,14 +40,15 @@ UIRenderer::UIRenderer(
 		.setCompare(std::nullopt)
 		.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 });
 
-	this->mText.memoryTextBuffers = std::make_shared<graphics::Memory>();
-	this->mText.memoryTextBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
 	uSize const vBufferSize = maximumDisplayedCharacters * /*vertices per character*/ 4 * /*size per vertex*/ sizeof(FontGlyphVertex);
 	uSize const iBufferSize = maximumDisplayedCharacters * /*indices per character*/ 6 * /*size per vertex*/ sizeof(ui16);
 	UIRenderLog.log(LOG_INFO, "Allocating UI text buffer for %i characters (%i bytes)", maximumDisplayedCharacters, (vBufferSize + iBufferSize));
-	this->mText.vertexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer).setSize(vBufferSize);
-	this->mText.indexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer).setSize(iBufferSize);
+	this->mText.vertexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, MemoryUsage::eGPUOnly)
+		.setSize(vBufferSize);
+	this->mText.indexBuffer
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, MemoryUsage::eGPUOnly)
+		.setSize(iBufferSize);
 }
 
 UIRenderer::~UIRenderer()
@@ -163,16 +164,10 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 	
 	this->mText.pipeline->setDevice(device);
 
-	this->mText.memoryTextBuffers->setDevice(device);
 	this->mText.vertexBuffer.setDevice(device);
 	this->mText.indexBuffer.setDevice(device);
 	this->mText.vertexBuffer.create();
-	this->mText.vertexBuffer.configureSlot(this->mText.memoryTextBuffers);
 	this->mText.indexBuffer.create();
-	this->mText.indexBuffer.configureSlot(this->mText.memoryTextBuffers);
-	this->mText.memoryTextBuffers->create();
-	this->mText.vertexBuffer.bindMemory();
-	this->mText.indexBuffer.bindMemory();
 }
 
 void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -314,7 +309,6 @@ void UIRenderer::destroyRenderDevices()
 
 	this->mText.vertexBuffer.destroy();
 	this->mText.indexBuffer.destroy();
-	this->mText.memoryTextBuffers.reset();
 }
 
 void UIRenderer::addString(std::shared_ptr<UIString> pStr)

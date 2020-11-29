@@ -11,8 +11,6 @@ using namespace graphics;
 LineRenderer::LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
 {
 	this->mpDescriptorPool = pDescriptorPool;
-	this->mpMemoryGraphicsBuffers = std::make_shared<graphics::Memory>();
-	this->mpMemoryGraphicsBuffers->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 }
 
 LineRenderer::~LineRenderer()
@@ -61,21 +59,14 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 {
 	this->mVertexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly)
 		.setSize(this->vertexBufferSize())
 		.create();
-	this->mVertexBuffer.configureSlot(this->mpMemoryGraphicsBuffers);
 
 	this->mIndexBuffer
-		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
+		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, graphics::MemoryUsage::eGPUOnly)
 		.setSize(this->indexBufferSize())
 		.create();
-	this->mIndexBuffer.configureSlot(this->mpMemoryGraphicsBuffers);
-
-	this->mpMemoryGraphicsBuffers->create();
-
-	this->mVertexBuffer.bindMemory();
-	this->mIndexBuffer.bindMemory();
 
 	// TODO: These can be done in one operation, and we don't need to wait for the graphics device to be done (nothing relies on this process except starting rendering)
 	this->mVertexBuffer.writeBuffer(transientPool, 0, this->vertexBufferData(), this->vertexBufferSize());
@@ -87,7 +78,6 @@ void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 void LineRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
-	this->mpMemoryGraphicsBuffers->setDevice(device);
 	this->mVertexBuffer.setDevice(device);
 	this->mIndexBuffer.setDevice(device);
 }
@@ -158,7 +148,6 @@ void LineRenderer::destroyBuffers()
 {
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
-	this->mpMemoryGraphicsBuffers.reset();
 }
 
 void LineRenderer::draw(graphics::Command *command)

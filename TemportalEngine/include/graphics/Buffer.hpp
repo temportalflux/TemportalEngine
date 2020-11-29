@@ -1,24 +1,24 @@
 #pragma once
 
 #include "graphics/DeviceObject.hpp"
-#include "graphics/MemoryAllocated.hpp"
+#include "graphics/vma/VMA.hpp"
 
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 class CommandPool;
 
-class Buffer : public DeviceObject, public MemoryAllocated
+class Buffer : public DeviceObject
 {
 	friend class GraphicsDevice;
 
 public:
-	Buffer() : mSize(0) {}
+	Buffer() : mSize(0), mAllocHandle(nullptr) {}
 	Buffer(Buffer &&other);
 	Buffer& operator=(Buffer &&other);
 	~Buffer();
 
-	Buffer& setUsage(vk::BufferUsageFlags flags);
+	Buffer& setUsage(vk::BufferUsageFlags flags, MemoryUsage memUsage);
 	Buffer& setSize(uSize size);
 	uSize getSize() const;
 
@@ -26,8 +26,6 @@ public:
 	void* get() override;
 	void invalidate() override;
 	void resetConfiguration() override;
-
-	void bindMemory() override;
 
 	template <typename TData>
 	void writeBuffer(CommandPool* transientPool, uSize offset, std::vector<TData> const &dataSet)
@@ -49,9 +47,10 @@ public:
 private:
 	vk::BufferUsageFlags mUsageFlags;
 	uSize mSize;
-	vk::UniqueBuffer mInternal;
-
-	vk::MemoryRequirements getRequirements() const override;
+	
+	MemoryUsage mMemoryUsageFlag;
+	vk::Buffer mAllocated;
+	AllocationHandle mAllocHandle;
 
 };
 

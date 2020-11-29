@@ -19,6 +19,11 @@ VulkanInstance::VulkanInstance()
 	setValidationLayers(std::nullopt);
 }
 
+ui32 VulkanInstance::apiVersion() const
+{
+	return this->mInfo.apiVersion;
+}
+
 void* VulkanInstance::get()
 {
 	return &this->mInstance.get();
@@ -61,6 +66,11 @@ VulkanInstance& VulkanInstance::setRequiredExtensions(std::vector<char const*> e
 	return *this;
 }
 
+std::unordered_set<char const*> const& VulkanInstance::enabledExtensions() const
+{
+	return this->mEnabledExtensions;
+}
+
 VulkanInstance& VulkanInstance::setValidationLayers(std::optional<std::vector<std::string>> layers)
 {
 	assert(!mInstanceCreated);
@@ -96,14 +106,13 @@ void VulkanInstance::initialize()
 	assert(!mInstanceCreated);
 
 	// Append debug extensions as needed
-	std::unordered_set<char const*> enabledExtensions(mEnabledExtensions.begin(), mEnabledExtensions.end());
 	if (this->mUseVulkanDebugMessenger)
 	{
-		enabledExtensions.insert(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		this->mEnabledExtensions.insert(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
 
 	// Copy the set back into a vector for sending to create info
-	std::vector<char const*> extensionNames(enabledExtensions.begin(), enabledExtensions.end());
+	std::vector<char const*> extensionNames(this->mEnabledExtensions.begin(), this->mEnabledExtensions.end());
 	mCreateInfo.setEnabledExtensionCount((ui32)extensionNames.size());
 	mCreateInfo.setPpEnabledExtensionNames(extensionNames.data());
 

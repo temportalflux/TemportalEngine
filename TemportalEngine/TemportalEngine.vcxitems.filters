@@ -61,6 +61,9 @@
     <Filter Include="ecs\system">
       <UniqueIdentifier>{5da4311c-94d9-4550-8325-6b459b67b2e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="graphics\vma">
+      <UniqueIdentifier>{c1f48e88-9962-4899-a9b9-5f420ffa0dde}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -307,6 +310,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\System.cpp">
       <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\vma\VMA.cpp">
+      <Filter>graphics\vma</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -668,6 +674,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\System.hpp">
       <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\vma\VMA.hpp">
+      <Filter>graphics\vma</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

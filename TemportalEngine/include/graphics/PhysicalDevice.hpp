@@ -24,7 +24,7 @@ public:
 	PhysicalDevice();
 	PhysicalDevice(PhysicalDevice const &other);
 
-	void* get();
+	void* get() const;
 
 	vk::PhysicalDeviceProperties const getProperties() const;
 	std::unordered_set<std::string> getSupportedExtensionNames() const;

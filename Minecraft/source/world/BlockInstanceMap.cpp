@@ -276,17 +276,10 @@ BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_s
 
 	this->mInstanceData = (ValueData*)malloc(this->size());
 
-	this->mpMemoryStagingBuffer = std::make_shared<graphics::Memory>();
-	this->mpMemoryStagingBuffer->setFlags(
-		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
-	);
-	this->mStagingBuffer.setUsage(vk::BufferUsageFlagBits::eTransferSrc);
+	this->mStagingBuffer.setUsage(vk::BufferUsageFlagBits::eTransferSrc, graphics::MemoryUsage::eCPUSource);
 	this->mStagingBuffer.setSize(BlockInstanceBuffer::stagingBufferSize());
 
-	this->mpMemoryInstanceBuffer = std::make_shared<graphics::Memory>();
-	this->mpMemoryInstanceBuffer->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
-	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer);
+	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly);
 	this->mInstanceBuffer.setSize(this->size());
 
 	for (auto const& id : voxelIds)
@@ -301,9 +294,7 @@ BlockInstanceBuffer::~BlockInstanceBuffer()
 	this->mCommittedCategories.clear();
 
 	this->mInstanceBuffer.destroy();
-	this->mpMemoryInstanceBuffer.reset();
 	this->mStagingBuffer.destroy();
-	this->mpMemoryStagingBuffer.reset();
 
 	free(this->mInstanceData);
 	this->mInstanceData = nullptr;
@@ -328,26 +319,15 @@ void BlockInstanceBuffer::unlock()
 
 void BlockInstanceBuffer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
-	this->mpMemoryInstanceBuffer->setDevice(device);
 	this->mInstanceBuffer.setDevice(device);
-	this->mpMemoryStagingBuffer->setDevice(device);
 	this->mStagingBuffer.setDevice(device);
 }
 
 void BlockInstanceBuffer::createBuffer()
 {
 	OPTICK_EVENT();
-
 	this->mInstanceBuffer.create();
-	this->mInstanceBuffer.configureSlot(this->mpMemoryInstanceBuffer);
-	this->mpMemoryInstanceBuffer->create();
-	this->mInstanceBuffer.bindMemory();
-
 	this->mStagingBuffer.create();
-	this->mStagingBuffer.configureSlot(this->mpMemoryStagingBuffer);
-	this->mpMemoryStagingBuffer->create();
-	this->mStagingBuffer.bindMemory();
-
 }
 
 void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> const& coordinates)

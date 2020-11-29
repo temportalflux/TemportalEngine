@@ -14,20 +14,11 @@ void MinecraftRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
 	this->initializeTransientCommandPool();
-
-	// TODO: Use a `MemoryChunk` instead of global memory
-	this->mpMemoryUniformBuffers = std::make_shared<graphics::Memory>();
-	this->mpMemoryUniformBuffers->setDevice(this->getDevice());
-	// Host Coherent means this entire buffer will be automatically flushed per write.
-	// This can be optimized later by only flushing the portion of the buffer which actually changed.
-	this->mpMemoryUniformBuffers->setFlags(vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
-
 }
 
 void MinecraftRenderer::invalidate()
 {
 	this->destroyRenderChain();
-	this->mpMemoryUniformBuffers.reset();
 	this->mCommandPoolTransient.destroy();
 	VulkanRenderer::invalidate();
 }
@@ -160,22 +151,13 @@ void MinecraftRenderer::createMutableUniformBuffers()
 				graphics::Buffer buffer;
 				buffer.setDevice(this->mpGraphicsDevice);
 				buffer
-					.setUsage(vk::BufferUsageFlagBits::eUniformBuffer)
+					.setUsage(vk::BufferUsageFlagBits::eUniformBuffer, MemoryUsage::eCPUToGPU)
 					.setSize(uniformEntry.second.lock()->size())
 					.create();
-				buffer.configureSlot(this->mpMemoryUniformBuffers);
 				frame.uniformBuffers.insert(std::pair<std::string, graphics::Buffer>(uniformBindingId, std::move(buffer)));
 				buffers.push_back(&frame.uniformBuffers[uniformBindingId]);
 			}
 			this->mMutableUniformBuffersByDescriptorId.insert(std::pair(uniformBindingId, buffers));
-		}
-		this->mpMemoryUniformBuffers->create();
-		for (uIndex i = 0; i < viewCount; ++i)
-		{
-			for (auto& entry : this->mFrames[i].uniformBuffers)
-			{
-				entry.second.bindMemory();
-			}
 		}
 	}
 }

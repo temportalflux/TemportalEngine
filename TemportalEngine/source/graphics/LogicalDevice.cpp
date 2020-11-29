@@ -10,9 +10,9 @@ LogicalDevice::LogicalDevice(PhysicalDevice const *pPhysicalDevice, vk::UniqueDe
 	this->mInternal.swap(device);
 }
 
-void* LogicalDevice::get()
+void* LogicalDevice::get() const
 {
-	return &this->mInternal.get();
+	return (void*)&this->mInternal.get();
 }
 
 bool LogicalDevice::isValid() const

@@ -72,14 +72,6 @@ void Memory::resetConfiguration()
 	this->mFlags = {};
 }
 
-Memory& Memory::bind(uIndex const idxSlot, Buffer const *buffer)
-{
-	OPTICK_EVENT();
-	assert(this->mInternal);
-	this->device()->bindMemory(this, buffer, this->mSlots[idxSlot].offset);
-	return *this;
-}
-
 Memory& Memory::bind(uIndex const idxSlot, Image const *image)
 {
 	assert(this->mInternal);

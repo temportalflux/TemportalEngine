@@ -55,7 +55,6 @@ private:
 
 	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	std::shared_ptr<graphics::Memory> mpMemoryGraphicsBuffers;
 	graphics::Buffer mVertexBuffer, mIndexBuffer;
 
 	virtual void draw(graphics::Command *command);

@@ -123,7 +123,6 @@ private:
 	std::shared_ptr<graphics::ImageSampler> mpSampler;
 
 	std::vector<std::shared_ptr<StitchedTexture>> mStitchedTextures;
-	std::shared_ptr<graphics::Memory> mpMemoryModelBuffers;
 	graphics::Buffer mModelVertexBuffer, mModelIndexBuffer;
 
 	void addTexturesToStitch(
