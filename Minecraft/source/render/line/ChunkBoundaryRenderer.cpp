@@ -24,15 +24,23 @@ void ChunkBoundaryRenderer::setBoundarySegments(ChunkBoundaryType boundaryType, 
 	this->mBoundarySettings.insert(std::make_pair(boundaryType, settings));
 }
 
+bool ChunkBoundaryRenderer::isBoundaryEnabled(ChunkBoundaryType boundaryType) const
+{
+	auto iter = this->mBoundarySettings.find(boundaryType);
+	assert(iter != this->mBoundarySettings.end());
+	auto& boundary = iter->second;
+	return boundary.bShouldRender;
+}
+
 // This will execute on the main/input thread but affects the render thread
 // Assumes that the command buffer will be re-recorded to (because blocks need to anyway) each frame
-void ChunkBoundaryRenderer::toggleBoundaryRender(ChunkBoundaryType boundaryType)
+void ChunkBoundaryRenderer::setIsBoundaryEnabled(ChunkBoundaryType boundaryType, bool bRender)
 {
 	auto iter = this->mBoundarySettings.find(boundaryType);
 	assert(iter != this->mBoundarySettings.end());
 	auto& boundary = iter->second;
 	boundary.mutex.lock();
-	boundary.bShouldRender = !boundary.bShouldRender;
+	boundary.bShouldRender = bRender;
 	boundary.mutex.unlock();
 }
 
@@ -44,7 +52,11 @@ void ChunkBoundaryRenderer::draw(graphics::Command *command)
 	{
 		auto& boundary = entry.second;
 		boundary.mutex.lock();
-		if (!boundary.bShouldRender) continue;
+		if (!boundary.bShouldRender)
+		{
+			boundary.mutex.unlock();
+			continue;
+		}
 		command->draw(
 			boundary.firstIndex, boundary.indexCount,
 			0, // index shift

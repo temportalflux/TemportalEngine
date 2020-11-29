@@ -122,9 +122,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\include\ecs\system\SystemMovePlayerByInput.hpp">
-      <Filter>ecs\system</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -198,8 +196,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\source\ecs\system\SystemMovePlayerByInput.cpp">
-      <Filter>ecs\system</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
   </ItemGroup>
 </Project>

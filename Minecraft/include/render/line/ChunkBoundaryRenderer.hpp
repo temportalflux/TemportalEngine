@@ -22,7 +22,8 @@ public:
 	~ChunkBoundaryRenderer();
 
 	void setBoundarySegments(ChunkBoundaryType boundaryType, std::vector<LineSegment> const& segments, bool bEnabledByDefault);
-	void toggleBoundaryRender(ChunkBoundaryType boundaryType);
+	bool isBoundaryEnabled(ChunkBoundaryType boundaryType) const;
+	void setIsBoundaryEnabled(ChunkBoundaryType boundaryType, bool bRender);
 
 	void draw(graphics::Command *command) override;
 
