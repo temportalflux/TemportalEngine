@@ -107,7 +107,9 @@ void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::V
 	// And by shifting the math to get horizontal from vertical, the equation is actually the same except the aspectRatio is flipped.
 	auto horizontalFOV = 2.0f * atan(tan(verticalFOV / 2.0f) * xyAspectRatio);
 
-	auto viewMatrix = transform->calculateView();
+	auto const& posCoord = transform->position();
+	auto cameraViewPos = posCoord.local().toFloat() + posCoord.offset();
+	auto viewMatrix = transform->calculateViewFrom(cameraViewPos + cameraPOV->offset());
 	auto perspectiveMatrix = perspective_RightHand_DepthZeroToOne(
 		horizontalFOV, xyAspectRatio,
 		cameraPOV->nearPlane(), cameraPOV->farPlane()

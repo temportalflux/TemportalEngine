@@ -20,11 +20,13 @@ public:
 	 */
 	CameraPOV& setFOV(f32 verticalFOV);
 
+	math::Vector3 const& offset() const;
 	f32 const& fov() const;
 	f32 const& nearPlane() const;
 	f32 const& farPlane() const;
 
 private:
+	math::Vector3 mOffset;
 	/**
 	 * This is the vertical FOV of the camera.
 	 * Fun Math Fact: the equation is almost the same from h->v as v->h:
