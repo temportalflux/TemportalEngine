@@ -26,8 +26,8 @@
 #include "utility/StringUtils.hpp"
 #include "gui/IGui.hpp"
 
-#include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_vulkan.h>
 
 Editor* Editor::EDITOR = nullptr;
 

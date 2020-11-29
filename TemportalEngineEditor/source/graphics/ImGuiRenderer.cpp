@@ -10,8 +10,8 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <examples/imgui_impl_sdl.h>
-#include <examples/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_sdl.h>
+#include <backends/imgui_impl_vulkan.h>
 
 using namespace graphics;
 
@@ -213,6 +213,7 @@ void ImGuiRenderer::finalizeInitialization()
 		info.MSAASamples = (VkSampleCountFlagBits)vk::SampleCountFlagBits::e1;
 		info.MinImageCount = (ui32)this->mFrameImageViews.size();
 		info.ImageCount = (ui32)this->mFrameImageViews.size();
+		info.Subpass = 0;
 		info.CheckVkResultFn = nullptr;
 		ImGui_ImplVulkan_Init(&info, extract<VkRenderPass>(&this->mRenderPass));
 	}
