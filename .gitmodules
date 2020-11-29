@@ -14,3 +14,6 @@
 [submodule "TemportalEngine/libs/freetype"]
 	path = TemportalEngine/libs/freetype
 	url = git@github.com:ubawurinna/freetype-windows-binaries.git
+[submodule "libs/VulkanMemoryAllocator"]
+	path = libs/VulkanMemoryAllocator
+	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
