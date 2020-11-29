@@ -75,6 +75,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Editor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiFrame.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetBrowser.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetReferenceViewer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\asset\AssetEditor.cpp" />

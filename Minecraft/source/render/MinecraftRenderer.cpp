@@ -56,11 +56,6 @@ void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
 	this->mpRenderers.push_back(renderer);
 }
 
-std::shared_ptr<GraphicsDevice> MinecraftRenderer::getDevice()
-{
-	return this->mpGraphicsDevice;
-}
-
 CommandPool& MinecraftRenderer::getTransientPool()
 {
 	return this->mCommandPoolTransient;

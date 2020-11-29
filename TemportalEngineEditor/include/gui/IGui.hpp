@@ -29,7 +29,7 @@ public:
 	bool isOpen() const;
 	virtual void open();
 	void openOrFocus();
-	void close() { this->mbIsOpen = false; }
+	virtual void close() { this->mbIsOpen = false; }
 	void focus();
 
 protected:

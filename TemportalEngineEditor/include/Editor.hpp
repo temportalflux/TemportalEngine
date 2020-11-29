@@ -39,6 +39,8 @@ public:
 	bool setup();
 	void run();
 
+	std::shared_ptr<graphics::ImGuiRenderer> renderer();
+
 #pragma region Project Being Editted
 	BroadcastDelegate<void(asset::ProjectPtrStrong project)> OnProjectLoaded;
 

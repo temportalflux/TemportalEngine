@@ -47,6 +47,7 @@ public:
 	f32 getAspectRatio() const;
 
 	virtual void initializeDevices();
+	std::shared_ptr<GraphicsDevice> getDevice();
 	
 	// Creates a swap chain, and all objects that depend on it
 	virtual void createRenderChain() = 0;

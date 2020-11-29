@@ -65,6 +65,11 @@ void VulkanRenderer::initializeDevices()
 	this->mpGraphicsDevice->create(this->mPhysicalDevicePreference, this->mLogicalDeviceInfo, &this->mSurface);
 }
 
+std::shared_ptr<GraphicsDevice> VulkanRenderer::getDevice()
+{
+	return this->mpGraphicsDevice;
+}
+
 vk::Queue const& VulkanRenderer::getQueue(EQueueFamily type) const
 {
 	return this->mpGraphicsDevice->getQueue(type);

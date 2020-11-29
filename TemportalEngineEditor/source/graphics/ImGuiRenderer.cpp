@@ -1,11 +1,13 @@
 #include "graphics/ImGuiRenderer.hpp"
 
+#include "Engine.hpp"
 #include "graphics/DescriptorPool.hpp"
-#include "graphics/VulkanInstance.hpp"
-#include "graphics/PhysicalDevice.hpp"
+#include "graphics/ImGuiTexture.hpp"
 #include "graphics/LogicalDevice.hpp"
+#include "graphics/PhysicalDevice.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/VulkanApi.hpp"
+#include "graphics/VulkanInstance.hpp"
 #include "gui/IGui.hpp"
 
 #include <imgui.h>
@@ -14,6 +16,8 @@
 #include <backends/imgui_impl_vulkan.h>
 
 using namespace graphics;
+
+logging::Logger IMGUI_LOG = DeclareLog("ImGui");
 
 void ImGuiRenderer::renderImGui(const ImDrawList* parent_list, const ImDrawCmd* cmd)
 {
@@ -43,20 +47,41 @@ void ImGuiRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
 	this->createDescriptorPoolImgui();
+	this->initializeTransientCommandPool();
 }
 
 void ImGuiRenderer::invalidate()
 {
 	this->mGuis.clear();
+	this->mUnusedTextures.clear();
 
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 
 	this->mDescriptorPool.invalidate();
+	this->mCommandPoolTransient.invalidate();
 
 	this->destroyRenderChain();
 	VulkanRenderer::invalidate();
+}
+
+CommandPool& ImGuiRenderer::getTransientPool()
+{
+	return this->mCommandPoolTransient;
+}
+
+void ImGuiRenderer::initializeTransientCommandPool()
+{
+	auto device = this->getDevice();
+	this->mCommandPoolTransient.setDevice(device);
+	this->mCommandPoolTransient
+		.setFlags(vk::CommandPoolCreateFlagBits::eTransient)
+		.setQueueFamily(
+			graphics::EQueueFamily::eGraphics,
+			device->queryQueueFamilyGroup()
+		)
+		.create();
 }
 
 void ImGuiRenderer::createRenderChain()
@@ -158,7 +183,7 @@ void ImGuiRenderer::createDescriptorPoolImgui()
 	this->mDescriptorPool.setDevice(this->mpGraphicsDevice);
 	this->mDescriptorPool
 		.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
-		.setPoolSize(frameCount, poolSizes)
+		.setPoolSize(frameCount * poolSize, poolSizes)
 		.setAllocationMultiplier(frameCount)
 		.create();
 }
@@ -241,6 +266,29 @@ void ImGuiRenderer::removeGui(std::weak_ptr<gui::IGui> const &gui)
 	this->mGuisToClose.push_back(gui);
 }
 
+std::shared_ptr<ImGuiTexture> ImGuiRenderer::reserveTexture()
+{
+	auto unusedCount = this->mUnusedTextures.size();
+	if (unusedCount > 0)
+	{
+		auto texture = this->mUnusedTextures[unusedCount - 1];
+		this->mUnusedTextures.pop_back();
+		return texture;
+	}
+	auto textureId = ImGui_ImplVulkan_CreateTexture();
+	if (!textureId)
+	{
+		IMGUI_LOG.log(LOG_ERR, "Failed to create texture id");
+		return nullptr;
+	}
+	return std::make_shared<ImGuiTexture>(this->shared_from_this(), textureId);
+}
+
+void ImGuiRenderer::releaseTextureToPool(std::shared_ptr<ImGuiTexture> texture)
+{
+	this->mUnusedTextures.push_back(texture);
+}
+
 void ImGuiRenderer::onInputEvent(void* evt)
 {
 	ImGui_ImplSDL2_ProcessEvent(reinterpret_cast<SDL_Event*>(evt));
@@ -253,8 +301,6 @@ void ImGuiRenderer::drawFrame()
 	this->startGuiFrame();
 	this->makeGui();
 	this->endGuiFrame();
-
-	//ImGui::GetWindowDrawList()->AddCallback(&ImGuiRenderer::renderImGui, this);
 
 	VulkanRenderer::drawFrame();
 

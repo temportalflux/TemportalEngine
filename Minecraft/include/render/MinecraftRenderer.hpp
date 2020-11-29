@@ -22,7 +22,6 @@ public:
 	SimpleExecuteDelegate UpdateWorldGraphicsOnFramePresented;
 
 	void initializeDevices() override;
-	std::shared_ptr<GraphicsDevice> getDevice();
 	CommandPool& getTransientPool();
 	ui32 getSwapChainImageViewCount() const;
 

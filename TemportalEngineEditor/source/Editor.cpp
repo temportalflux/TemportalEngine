@@ -295,6 +295,11 @@ void Editor::initializeRenderer(std::shared_ptr<graphics::VulkanRenderer> pRende
 	pRenderer->createRenderChain();
 }
 
+std::shared_ptr<graphics::ImGuiRenderer> Editor::renderer()
+{
+	return this->mpRenderer;
+}
+
 #pragma region Project Being Editted
 
 bool Editor::hasProject() const

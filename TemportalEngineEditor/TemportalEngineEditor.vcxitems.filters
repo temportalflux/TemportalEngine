@@ -282,5 +282,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetReferenceViewer.cpp">
       <Filter>gui</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiTexture.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

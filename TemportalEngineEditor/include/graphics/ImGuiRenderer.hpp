@@ -19,8 +19,9 @@ NS_END
 NS_GRAPHICS
 class VulkanInstance;
 class Surface;
+class ImGuiTexture;
 
-class ImGuiRenderer : public VulkanRenderer
+class ImGuiRenderer : public VulkanRenderer, public std::enable_shared_from_this<ImGuiRenderer>
 {
 	static void renderImGui(ImDrawList const* parent_list, ImDrawCmd const* cmd);
 
@@ -31,21 +32,31 @@ public:
 	void finalizeInitialization() override;
 	void invalidate() override;
 
+	void initializeTransientCommandPool();
+	CommandPool& getTransientPool();
+
 	void addGui(std::shared_ptr<gui::IGui> gui);
 	void removeGui(std::weak_ptr<gui::IGui> const &gui);
+	
+	std::shared_ptr<ImGuiTexture> reserveTexture();
+	void releaseTextureToPool(std::shared_ptr<ImGuiTexture> texture);
 
 	void onInputEvent(void* evt) override;
 
 	void drawFrame() override;
 
 private:
-
+	CommandPool mCommandPoolTransient;
 	RenderPass mRenderPass;
 
 	graphics::DescriptorPool mDescriptorPool;
 	std::vector<graphics::ImGuiFrame> mGuiFrames;
 	ImGuiFrame* mpCurrentFrame;
 	math::Vector2Int mpCurrentBufferOffsets;
+
+	// A pool of unused textures is maintained because the DescriptorSets created by ImGui
+	// cannot be released once created.
+	std::vector<std::shared_ptr<ImGuiTexture>> mUnusedTextures;
 
 	void createDescriptorPoolImgui();
 	void submitFonts();
