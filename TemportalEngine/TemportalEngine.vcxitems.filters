@@ -254,13 +254,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\GraphicsDevice.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Memory.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DeviceObject.cpp">
-      <Filter>graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\MemoryAllocated.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp">
@@ -616,12 +610,6 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GraphicsDevice.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Memory.hpp">
-      <Filter>graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryAllocated.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DeviceObject.hpp">

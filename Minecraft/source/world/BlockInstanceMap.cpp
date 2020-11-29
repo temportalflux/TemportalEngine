@@ -2,7 +2,6 @@
 
 #include "graphics/Command.hpp"
 #include "graphics/CommandPool.hpp"
-#include "graphics/Memory.hpp"
 
 using namespace world;
 

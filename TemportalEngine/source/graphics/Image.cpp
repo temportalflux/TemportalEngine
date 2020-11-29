@@ -3,10 +3,37 @@
 #include "graphics/Buffer.hpp"
 #include "graphics/CommandPool.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "graphics/Memory.hpp"
 #include "graphics/VulkanApi.hpp"
 
 using namespace graphics;
+
+Image::Image(Image &&other)
+{
+	*this = std::move(other);
+}
+
+Image& Image::operator=(Image &&other)
+{
+	this->setDevice(other.device());
+
+	this->mType = other.mType;
+	this->mFormat = other.mFormat;
+	this->mTiling = other.mTiling;
+	this->mUsage = other.mUsage;
+	this->mImageSize = other.mImageSize;
+
+	this->mMemoryUsageFlag = other.mMemoryUsageFlag;
+	this->mAllocated = std::move(other.mAllocated);
+	this->mAllocHandle = other.mAllocHandle;
+	other.mAllocHandle = nullptr;
+
+	return *this;
+}
+
+Image::~Image()
+{
+	destroy();
+}
 
 Image& Image::setFormat(vk::Format format)
 {
@@ -33,6 +60,7 @@ Image& Image::setTiling(vk::ImageTiling tiling)
 Image& Image::setUsage(vk::ImageUsageFlags usage)
 {
 	this->mUsage = usage;
+	this->mMemoryUsageFlag = graphics::MemoryUsage::eGPUOnly;
 	return *this;
 }
 
@@ -49,7 +77,8 @@ math::Vector3UInt Image::getSize() const
 
 void Image::create()
 {
-	this->mInternal = this->device()->createImage(
+	OPTICK_EVENT()
+	this->mAllocHandle = this->device()->getVMA()->createImage(
 		vk::ImageCreateInfo()
 		.setImageType(this->mType)
 		.setExtent(
@@ -65,27 +94,27 @@ void Image::create()
 		.setUsage(this->mUsage)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
 		.setSharingMode(vk::SharingMode::eExclusive)
-		.setSamples(vk::SampleCountFlagBits::e1)
+		.setSamples(vk::SampleCountFlagBits::e1),
+		this->mMemoryUsageFlag, this->mAllocated
 	);
 }
 
 void* Image::get()
 {
-	return &this->mInternal.get();
+	return &this->mAllocated;
 }
 
 void Image::invalidate()
 {
-	this->mInternal.reset();
+	if (this->mAllocHandle)
+	{
+		this->device()->getVMA()->destroyImage(this->mAllocated, this->mAllocHandle);
+		this->mAllocHandle = nullptr;
+	}
 }
 
 void Image::resetConfiguration()
 {
-}
-
-vk::MemoryRequirements Image::getRequirements() const
-{
-	return this->device()->getMemoryRequirements(this);
 }
 
 uSize Image::getExpectedDataCount() const
@@ -98,11 +127,6 @@ uSize Image::getExpectedDataCount() const
 		assert(false);
 		return 0;
 	}
-}
-
-void Image::bindMemory()
-{
-	this->memory()->bind(this->memorySlot(), this);
 }
 
 void Image::transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, CommandPool* transientPool)

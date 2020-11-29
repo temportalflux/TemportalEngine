@@ -6,7 +6,6 @@
 #include "asset/TextureSampler.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "graphics/Memory.hpp"
 #include "model/CubeModelLoader.hpp"
 #include "registry/VoxelType.hpp"
 

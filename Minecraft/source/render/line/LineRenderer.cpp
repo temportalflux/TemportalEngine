@@ -3,7 +3,6 @@
 #include "asset/PipelineAsset.hpp"
 #include "asset/Shader.hpp"
 #include "graphics/Command.hpp"
-#include "graphics/Memory.hpp"
 #include "graphics/Pipeline.hpp"
 
 using namespace graphics;

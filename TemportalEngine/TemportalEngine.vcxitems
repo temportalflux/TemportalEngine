@@ -56,8 +56,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImageView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\LogicalDeviceInfo.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Memory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\MemoryAllocated.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevice.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\PhysicalDevicePreference.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Pipeline.cpp" />
@@ -149,8 +147,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\GraphicsDevice.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Image.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageSampler.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Memory.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\MemoryAllocated.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\RenderPassMeta.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Buffer.hpp" />

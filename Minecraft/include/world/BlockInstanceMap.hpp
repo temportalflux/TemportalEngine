@@ -12,7 +12,6 @@
 FORWARD_DEF(NS_GRAPHICS, class CommandPool)
 FORWARD_DEF(NS_GRAPHICS, class Command)
 FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice)
-FORWARD_DEF(NS_GRAPHICS, class Memory)
 
 NS_WORLD
 

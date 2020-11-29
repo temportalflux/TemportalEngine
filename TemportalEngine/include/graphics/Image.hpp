@@ -1,15 +1,15 @@
 #pragma once
 
 #include "graphics/DeviceObject.hpp"
-#include "graphics/MemoryAllocated.hpp"
 
 #include "math/Vector.hpp"
+#include "graphics/vma/VMA.hpp"
 
 #include <vulkan/vulkan.hpp>
 
 NS_GRAPHICS
 
-class Image : public DeviceObject, public MemoryAllocated
+class Image : public DeviceObject
 {
 	friend class GraphicsDevice;
 
@@ -18,7 +18,12 @@ public:
 		: mType(vk::ImageType::e2D)
 		, mFormat((vk::Format)0)
 		, mTiling((vk::ImageTiling)0)
-	{}
+		, mAllocHandle(nullptr)
+	{
+	}
+	Image(Image &&other);
+	Image& operator=(Image &&other);
+	~Image();
 
 	vk::ImageType getType() const { return this->mType; }
 	Image& setFormat(vk::Format format);
@@ -36,7 +41,6 @@ public:
 	void invalidate() override;
 	void resetConfiguration() override;
 
-	void bindMemory() override;
 	void transitionLayout(vk::ImageLayout prev, vk::ImageLayout next, class CommandPool* transientPool);
 	void writeImage(void* data, uSize size, class CommandPool* transientPool);
 
@@ -47,9 +51,9 @@ private:
 	vk::ImageUsageFlags mUsage;
 	math::Vector3UInt mImageSize;
 
-	vk::UniqueImage mInternal;
-
-	vk::MemoryRequirements getRequirements() const override;
+	graphics::MemoryUsage mMemoryUsageFlag;
+	vk::Image mAllocated;
+	AllocationHandle mAllocHandle;
 
 };
 

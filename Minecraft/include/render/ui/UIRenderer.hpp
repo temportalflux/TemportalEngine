@@ -155,8 +155,6 @@ private:
 		std::vector<graphics::DescriptorGroup> descriptorGroups;
 		// The sampler vulkan uses to read each font atlas
 		graphics::ImageSampler sampler;
-		// The memory that font atlases are allocated from
-		std::shared_ptr<Memory> memoryFontImages;
 		// A map of all fonts, their typefaces, and font sizes, including their atlases for each combination
 		std::unordered_map<std::string, RegisteredFont> fonts;
 		// the number of faces across all fonts

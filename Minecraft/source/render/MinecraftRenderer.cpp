@@ -174,10 +174,6 @@ void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution
 	);
 	if (!supportedFormat) throw std::runtime_error("failed to find supported depth buffer format");
 
-	this->mpMemoryDepthImage = std::make_shared<Memory>();
-	this->mpMemoryDepthImage->setDevice(device);
-	this->mpMemoryDepthImage->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
 	this->mDepthImage.setDevice(device);
 	this->mDepthImage
 		.setFormat(*supportedFormat)
@@ -186,9 +182,6 @@ void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution
 		.setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment);
 	this->mDepthImage.create();
 
-	this->mDepthImage.configureSlot(this->mpMemoryDepthImage);
-	this->mpMemoryDepthImage->create();
-	this->mDepthImage.bindMemory();
 	// TODO this should not wait for idle GPU, and instead use the pipeline barrier
 	this->mDepthImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, &transientCmdPool);
 
@@ -202,7 +195,6 @@ void MinecraftRenderer::destroyDepthResources()
 {
 	this->mDepthView.invalidate();
 	this->mDepthImage.invalidate();
-	this->mpMemoryDepthImage.reset();
 }
 
 void MinecraftRenderer::createRenderPass()

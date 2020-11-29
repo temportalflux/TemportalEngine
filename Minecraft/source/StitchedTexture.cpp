@@ -6,7 +6,6 @@
 #include "graphics/Image.hpp"
 #include "graphics/ImageView.hpp"
 #include "graphics/ImageSampler.hpp"
-#include "graphics/Memory.hpp"
 
 ui32 CHANNELS_PER_PIXEL = 4;
 vk::Format FORMAT = vk::Format::eR8G8B8A8Srgb;
@@ -151,10 +150,6 @@ void StitchedTexture::increaseSize()
 
 void StitchedTexture::finalize(std::shared_ptr<graphics::GraphicsDevice> graphicsDevice, graphics::CommandPool* cmdPool)
 {
-	this->mpImageMemory = std::make_shared<graphics::Memory>();
-	this->mpImageMemory->setDevice(graphicsDevice);
-	this->mpImageMemory->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
-
 	this->mpImage = std::make_shared<graphics::Image>();
 	this->mpImage->setDevice(graphicsDevice);
 	this->mpImage
@@ -163,11 +158,7 @@ void StitchedTexture::finalize(std::shared_ptr<graphics::GraphicsDevice> graphic
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 	this->mpImage->create();
-	this->mpImage->configureSlot(this->mpImageMemory);
-
-	this->mpImageMemory->create();
-
-	this->mpImage->bindMemory();
+	
 	this->mpImage->transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, cmdPool);
 	this->mpImage->writeImage((void*)this->mPixelData.data(), this->mPixelData.size() * sizeof(ui8), cmdPool);
 	this->mpImage->transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, cmdPool);

@@ -7,7 +7,6 @@
 #include "asset/PipelineAsset.hpp"
 #include "asset/Shader.hpp"
 #include "graphics/Command.hpp"
-#include "graphics/Memory.hpp"
 #include "graphics/Pipeline.hpp"
 #include "graphics/VulkanApi.hpp"
 #include "render/ui/UIString.hpp"
@@ -24,8 +23,6 @@ UIRenderer::UIRenderer(
 	this->mpDescriptorPool = pDescriptorPool;
 
 	this->mText.fontFaceCount = 0;
-	this->mText.memoryFontImages = std::make_shared<Memory>();
-	this->mText.memoryFontImages->setFlags(vk::MemoryPropertyFlagBits::eDeviceLocal);
 
 	this->mText.sampler
 		.setFilter(graphics::FilterMode::Enum::Linear, graphics::FilterMode::Enum::Linear)
@@ -142,22 +139,15 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	OPTICK_EVENT();
-	this->mText.memoryFontImages->setDevice(device);
 	for (auto& fontEntry : this->mText.fonts)
 	{
 		for (auto& faceImageEntry : fontEntry.second.faces)
 		{
 			faceImageEntry.second.image.setDevice(device);
 			faceImageEntry.second.image.create();
-			// Configure the image so the memory object knows how much to allocate on the GPU
-			// Has to be done after the internal Vulkan image is created above
-			faceImageEntry.second.image.configureSlot(this->mText.memoryFontImages);
-
 			faceImageEntry.second.view.setDevice(device);
 		}
 	}
-	// Allocate the memory buffer for the face images
-	this->mText.memoryFontImages->create();
 
 	this->mText.sampler.setDevice(device);
 	this->mText.sampler.create();
@@ -186,7 +176,6 @@ void UIRenderer::initializeData(graphics::CommandPool* transientPool)
 			auto& faceImage = fontEntry.second.faces[fontFace.getFontSize()];
 
 			auto& data = fontFace.getPixelData();
-			faceImage.image.bindMemory();
 			faceImage.image.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, transientPool);
 			faceImage.image.writeImage((void*)data.data(), data.size() * sizeof(ui8), transientPool);
 			faceImage.image.transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, transientPool);
@@ -200,7 +189,7 @@ void UIRenderer::initializeData(graphics::CommandPool* transientPool)
 
 void UIRenderer::setFrameCount(uSize frameCount)
 {
-	// We dont actually need frames to set the amount of descriptors to be used.
+	// We don't actually need frames to set the amount of descriptors to be used.
 	// Each face for each font needs its own descriptor because each have a different image.
 	// They all share the same format though, which is why they are in the same group.
 	this->mText.descriptorGroups[0].setAmount(this->mText.fontFaceCount);
@@ -305,8 +294,6 @@ void UIRenderer::destroyRenderDevices()
 {
 	this->mText.sampler.destroy();
 	this->mText.fonts.clear();
-	this->mText.memoryFontImages.reset();
-
 	this->mText.vertexBuffer.destroy();
 	this->mText.indexBuffer.destroy();
 }

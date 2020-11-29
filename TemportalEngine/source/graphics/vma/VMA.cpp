@@ -81,7 +81,7 @@ void VulkanMemoryAllocator::destroyBuffer(vk::Buffer &buffer, AllocationHandle h
 
 AllocationHandle VulkanMemoryAllocator::createImage(vk::ImageCreateInfo const &info, MemoryUsage usage, vk::Image &outImage)
 {
-	VmaAllocationCreateInfo allocInfo;
+	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = (VmaMemoryUsage)usage;
 
 	VmaAllocation allocation;

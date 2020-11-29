@@ -16,7 +16,6 @@ FORWARD_DEF(NS_GAME, class VoxelTypeRegistry);
 FORWARD_DEF(NS_GRAPHICS, class GameRenderer);
 FORWARD_DEF(NS_GRAPHICS, class ImageSampler);
 FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice);
-FORWARD_DEF(NS_GRAPHICS, class Memory);
 
 NS_GAME
 

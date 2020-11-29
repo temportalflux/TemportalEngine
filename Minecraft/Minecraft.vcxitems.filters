@@ -123,9 +123,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp">
       <Filter>render\line</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\include\ecs\view\ViewPlayerCamera.hpp">
-      <Filter>ecs\view</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -200,8 +198,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp">
       <Filter>render\line</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\source\ecs\view\ViewPlayerCamera.cpp">
-      <Filter>ecs\view</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
   </ItemGroup>
 </Project>

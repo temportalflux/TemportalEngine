@@ -16,7 +16,6 @@ class CommandPool;
 class DescriptorGroup;
 class DescriptorPool;
 class Image;
-class Memory;
 class Surface;
 class SwapChain;
 class VulkanInstance;
@@ -98,18 +97,8 @@ private:
 #pragma region FrameBuffer
 	vk::UniqueFramebuffer createFrameBuffer(vk::FramebufferCreateInfo const &info) const;
 #pragma endregion
-#pragma region Image
-	vk::UniqueImage createImage(vk::ImageCreateInfo const &info) const;
-	vk::MemoryRequirements getMemoryRequirements(Image const *image) const;
-#pragma endregion
 #pragma region ImageView
 	vk::UniqueImageView createImageView(vk::ImageViewCreateInfo const &info) const;
-#pragma endregion
-#pragma region Memory
-	vk::UniqueDeviceMemory allocateMemory(vk::MemoryAllocateInfo const &info) const;
-	void bindMemory(Memory const *memory, Image const *image, ui64 offset) const;
-	void* mapMemory(Memory const *memory, ui64 offset, ui64 size) const;
-	void unmapMemory(Memory const *memory) const;
 #pragma endregion
 #pragma region Pipeline
 	vk::UniquePipelineLayout createPipelineLayout(vk::PipelineLayoutCreateInfo const &info) const;

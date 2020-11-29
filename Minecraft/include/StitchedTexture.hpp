@@ -11,7 +11,6 @@ FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 FORWARD_DEF(NS_GRAPHICS, class Image);
 FORWARD_DEF(NS_GRAPHICS, class ImageSampler);
 FORWARD_DEF(NS_GRAPHICS, class ImageView);
-FORWARD_DEF(NS_GRAPHICS, class Memory);
 
 class StitchedTexture
 {
@@ -56,7 +55,6 @@ private:
 
 	// Post-Stitch
 	bool mbHasWrittenStitchings;
-	std::shared_ptr<graphics::Memory> mpImageMemory;
 	std::shared_ptr<graphics::Image> mpImage;
 	std::shared_ptr<graphics::ImageView> mpView;
 

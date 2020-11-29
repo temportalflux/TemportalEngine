@@ -6,7 +6,6 @@
 #include "graphics/CommandPool.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/ImageView.hpp"
-#include "graphics/Memory.hpp"
 
 FORWARD_DEF(NS_ASSET, class RenderPass)
 FORWARD_DEF(NS_GRAPHICS, class IPipelineRenderer)
@@ -68,7 +67,6 @@ private:
 	std::vector<IPipelineRenderer*> mpRenderers;
 	std::shared_ptr<graphics::RenderPass> mpRenderPass;
 
-	std::shared_ptr<graphics::Memory> mpMemoryDepthImage;
 	graphics::Image mDepthImage;
 	graphics::ImageView mDepthView;
 
