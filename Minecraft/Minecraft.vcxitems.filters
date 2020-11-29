@@ -123,6 +123,9 @@
       <Filter>ecs\system</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp">
+      <Filter>render\line</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -197,5 +200,8 @@
       <Filter>ecs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp">
+      <Filter>render\line</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

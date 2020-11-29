@@ -18,6 +18,13 @@ class ChunkBoundaryRenderer : public LineRenderer
 {
 
 public:
+	struct LineSegment
+	{
+		math::Vector3Padded pos1;
+		math::Vector3Padded pos2;
+		math::Vector4 color;
+	};
+
 	ChunkBoundaryRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
 	~ChunkBoundaryRenderer();
 
@@ -25,9 +32,37 @@ public:
 	bool isBoundaryEnabled(ChunkBoundaryType boundaryType) const;
 	void setIsBoundaryEnabled(ChunkBoundaryType boundaryType, bool bRender);
 
+	void attachDescriptors(
+		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
+	) override;
 	void draw(graphics::Command *command) override;
 
+protected:
+
+	graphics::AttributeBinding makeVertexBinding(ui8 &slot) const override;
+	uSize vertexBufferSize() const override;
+	void* vertexBufferData() const override;
+	uSize indexBufferSize() const override;
+	void* indexBufferData() const override;
+	ui32 indexCount() const override;
+
 private:
+
+	struct LineVertex
+	{
+		math::Vector3Padded position;
+		math::Vector4 color;
+		// If a given dimension is 0, the vertex is rendered in world space.
+		// If it is 1, the vertex is rendered in chunk space.
+		math::Vector3Padded chunkSpaceMask;
+	};
+
+	std::vector<LineVertex> mVerticies;
+	std::vector<ui16> mIndicies;
+
+	ui32 addLineSegment(LineSegment const& segmentl, math::Vector3 const& chunkSpaceMask);
+	ui16 pushVertex(LineVertex vertex);
+	
 	struct BoundarySettings
 	{
 		ui32 firstIndex;

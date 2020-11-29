@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "render/IPipelineRenderer.hpp"
+#include "graphics/AttributeBinding.hpp"
 #include "graphics/DescriptorGroup.hpp"
 #include "graphics/Buffer.hpp"
 
@@ -13,13 +14,6 @@ FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 
 NS_GRAPHICS
 
-struct LineSegment
-{
-	math::Vector3Padded pos1;
-	math::Vector3Padded pos2;
-	math::Vector4 color;
-};
-
 class LineRenderer : public graphics::IPipelineRenderer
 {
 
@@ -28,7 +22,6 @@ public:
 	~LineRenderer();
 
 	LineRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
-	ui32 addLineSegment(LineSegment const& segment);
 	void createGraphicsBuffers(graphics::CommandPool* transientPool);
 
 	// ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~
@@ -36,7 +29,7 @@ public:
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass);
 	void setFrameCount(uSize frameCount);
 	void createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device);
-	void attachDescriptors(
+	virtual void attachDescriptors(
 		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 	);
 	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device);
@@ -49,25 +42,21 @@ public:
 
 protected:
 
-	ui32 indexCount() const;
+	std::vector<graphics::DescriptorGroup> mDescriptorGroups;
+
+	virtual graphics::AttributeBinding makeVertexBinding(ui8 &slot) const = 0;
+	virtual uSize vertexBufferSize() const = 0;
+	virtual void* vertexBufferData() const = 0;
+	virtual ui32 indexCount() const = 0;
+	virtual uSize indexBufferSize() const = 0;
+	virtual void* indexBufferData() const = 0;
 
 private:
 
-	struct LineVertex
-	{
-		math::Vector3Padded position;
-		math::Vector4 color;
-	};
-
 	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	std::vector<graphics::DescriptorGroup> mDescriptorGroups;
 	std::shared_ptr<graphics::Memory> mpMemoryGraphicsBuffers;
 	graphics::Buffer mVertexBuffer, mIndexBuffer;
-
-	std::vector<LineVertex> mVerticies;
-	std::vector<ui16> mIndicies;
-	ui16 pushVertex(LineVertex vertex);
 
 	virtual void draw(graphics::Command *command);
 

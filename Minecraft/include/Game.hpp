@@ -23,7 +23,7 @@ FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
-FORWARD_DEF(NS_GRAPHICS, class LineRenderer);
+FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_WORLD, class World);
@@ -76,7 +76,7 @@ private:
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
 	std::shared_ptr<world::BlockInstanceBuffer> mpVoxelInstanceBuffer;
 	std::shared_ptr<graphics::VoxelGridRenderer> mpVoxelGridRenderer;
-	std::shared_ptr<graphics::LineRenderer> mpWorldAxesRenderer;
+	std::shared_ptr<graphics::SimpleLineRenderer> mpWorldAxesRenderer;
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 

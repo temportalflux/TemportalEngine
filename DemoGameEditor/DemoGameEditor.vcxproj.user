@@ -3,21 +3,21 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>memory-main=32768 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-main=65536 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>memory-main=32768 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-main=65536 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>memory-main=32768 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-main=65536 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>memory-main=32768 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-main=65536 memory-asset=65536 memory-misc=65536 memory-gui=65536</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

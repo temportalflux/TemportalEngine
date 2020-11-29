@@ -29,7 +29,7 @@
 #include "world/BlockInstanceMap.hpp"
 #include "render/VoxelGridRenderer.hpp"
 #include "render/VoxelModelManager.hpp"
-#include "render/line/LineRenderer.hpp"
+#include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/ui/UIRenderer.hpp"
 #include "utility/StringUtils.hpp"
@@ -332,7 +332,7 @@ void Game::createVoxelGridRenderer()
 
 void Game::createWorldAxesRenderer()
 {
-	this->mpWorldAxesRenderer = std::make_shared<graphics::LineRenderer>(
+	this->mpWorldAxesRenderer = std::make_shared<graphics::SimpleLineRenderer>(
 		std::weak_ptr(this->mpGlobalDescriptorPool)
 	);
 	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
@@ -365,7 +365,7 @@ void Game::createChunkBoundaryRenderer()
 	{
 		f32 const h = CHUNK_SIDE_LENGTH * 16;
 		math::Vector4 color = { 0, 1, 0, 1 };
-		auto segments = std::vector<graphics::LineSegment>();
+		auto segments = std::vector<graphics::ChunkBoundaryRenderer::LineSegment>();
 		segments.push_back({ { 0, 0, 0 }, { 0, h, 0 }, color });
 		segments.push_back({ { l, 0, 0 }, { l, h, 0 }, color });
 		segments.push_back({ { l, 0, l }, { l, h, l }, color });
@@ -375,7 +375,7 @@ void Game::createChunkBoundaryRenderer()
 	// Cube
 	{
 		math::Vector4 color = { 1, 0, 0, 1 };
-		auto segments = std::vector<graphics::LineSegment>();
+		auto segments = std::vector<graphics::ChunkBoundaryRenderer::LineSegment>();
 		for (f32 h : axisSides)
 		{
 			segments.push_back({ { 0, h, 0 }, { l, h, 0 }, color });
@@ -388,7 +388,7 @@ void Game::createChunkBoundaryRenderer()
 	// Side Grid
 	{
 		math::Vector4 color = { 0, 0, 1, 1 };
-		auto segments = std::vector<graphics::LineSegment>();
+		auto segments = std::vector<graphics::ChunkBoundaryRenderer::LineSegment>();
 
 		// Y-Faces (Up/Down)
 		for (auto const y : axisSides)
@@ -602,6 +602,7 @@ void Game::update(f32 deltaTime)
 // Runs on the render thread
 void Game::updateWorldGraphics()
 {
+	OPTICK_EVENT();
 	if (this->mpVoxelInstanceBuffer->hasChanges())
 	{
 		this->mpVoxelInstanceBuffer->lock();

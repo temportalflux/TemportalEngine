@@ -39,12 +39,7 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 
 	{
 		ui8 slot = 0;
-		this->mpPipeline->setBindings({
-			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-			.setStructType<LineVertex>()
-			.addAttribute({ slot++, /*vec3*/(ui32)vk::Format::eR32G32B32Sfloat, offsetof(LineVertex, position) })
-			.addAttribute({ slot++, /*vec4*/(ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(LineVertex, color) })
-		});
+		this->mpPipeline->setBindings({ this->makeVertexBinding(slot) });
 	}
 
 	// Create descriptor groups for the pipeline
@@ -63,36 +58,17 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 	return *this;
 }
 
-ui32 LineRenderer::addLineSegment(LineSegment const& segment)
-{
-	this->mIndicies.push_back(this->pushVertex({ segment.pos1, segment.color }));
-	this->mIndicies.push_back(this->pushVertex({ segment.pos2, segment.color }));
-	return 2;
-}
-
-ui16 LineRenderer::pushVertex(LineVertex vertex)
-{
-	auto i = (ui16)this->mVerticies.size();
-	this->mVerticies.push_back(vertex);
-	return i;
-}
-
-ui32 LineRenderer::indexCount() const
-{
-	return (ui32)this->mIndicies.size();
-}
-
 void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 {
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer)
-		.setSize(this->mVerticies.size() * sizeof(LineVertex))
+		.setSize(this->vertexBufferSize())
 		.create();
 	this->mVertexBuffer.configureSlot(this->mpMemoryGraphicsBuffers);
 
 	this->mIndexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer)
-		.setSize(this->indexCount() * sizeof(ui16))
+		.setSize(this->indexBufferSize())
 		.create();
 	this->mIndexBuffer.configureSlot(this->mpMemoryGraphicsBuffers);
 
@@ -102,8 +78,8 @@ void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 	this->mIndexBuffer.bindMemory();
 
 	// TODO: These can be done in one operation, and we don't need to wait for the graphics device to be done (nothing relies on this process except starting rendering)
-	this->mVertexBuffer.writeBuffer(transientPool, 0, this->mVerticies);
-	this->mIndexBuffer.writeBuffer(transientPool, 0, this->mIndicies);
+	this->mVertexBuffer.writeBuffer(transientPool, 0, this->vertexBufferData(), this->vertexBufferSize());
+	this->mIndexBuffer.writeBuffer(transientPool, 0, this->indexBufferData(), this->indexBufferSize());
 }
 
 // ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~

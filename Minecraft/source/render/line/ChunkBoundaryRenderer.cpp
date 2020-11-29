@@ -17,9 +17,16 @@ ChunkBoundaryRenderer::~ChunkBoundaryRenderer()
 void ChunkBoundaryRenderer::setBoundarySegments(ChunkBoundaryType boundaryType, std::vector<LineSegment> const& segments, bool bEnabledByDefault)
 {
 	BoundarySettings settings = { this->indexCount(), 0, bEnabledByDefault, thread::MutexLock() };
+	
+	math::Vector3 chunkSpaceMask = math::Vector3(1);
+	if (boundaryType == ChunkBoundaryType::eColumn)
+	{
+		chunkSpaceMask.y() = 0;
+	}
+	
 	for (auto const& segment : segments)
 	{
-		settings.indexCount += this->addLineSegment(segment);
+		settings.indexCount += this->addLineSegment(segment, chunkSpaceMask);
 	}
 	this->mBoundarySettings.insert(std::make_pair(boundaryType, settings));
 }
@@ -42,6 +49,61 @@ void ChunkBoundaryRenderer::setIsBoundaryEnabled(ChunkBoundaryType boundaryType,
 	boundary.mutex.lock();
 	boundary.bShouldRender = bRender;
 	boundary.mutex.unlock();
+}
+
+graphics::AttributeBinding ChunkBoundaryRenderer::makeVertexBinding(ui8 &slot) const
+{
+	return graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
+		.setStructType<LineVertex>()
+		.addAttribute({ slot++, /*vec3*/(ui32)vk::Format::eR32G32B32Sfloat, offsetof(LineVertex, position) })
+		.addAttribute({ slot++, /*vec4*/(ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(LineVertex, color) })
+		.addAttribute({ slot++, /*vec3*/(ui32)vk::Format::eR32G32B32Sfloat, offsetof(LineVertex, chunkSpaceMask) });
+}
+
+ui32 ChunkBoundaryRenderer::addLineSegment(LineSegment const& segment, math::Vector3 const& chunkSpaceMask)
+{
+	this->mIndicies.push_back(this->pushVertex({ segment.pos1, segment.color, chunkSpaceMask }));
+	this->mIndicies.push_back(this->pushVertex({ segment.pos2, segment.color, chunkSpaceMask }));
+	return 2;
+}
+
+ui16 ChunkBoundaryRenderer::pushVertex(LineVertex vertex)
+{
+	auto i = (ui16)this->mVerticies.size();
+	this->mVerticies.push_back(vertex);
+	return i;
+}
+
+uSize ChunkBoundaryRenderer::vertexBufferSize() const
+{
+	return this->mVerticies.size() * sizeof(LineVertex);
+}
+
+void* ChunkBoundaryRenderer::vertexBufferData() const
+{
+	return (void*)this->mVerticies.data();
+}
+
+uSize ChunkBoundaryRenderer::indexBufferSize() const
+{
+	return this->mIndicies.size() * sizeof(ui16);
+}
+
+void* ChunkBoundaryRenderer::indexBufferData() const
+{
+	return (void*)this->mIndicies.data();
+}
+
+ui32 ChunkBoundaryRenderer::indexCount() const
+{
+	return (ui32)this->mIndicies.size();
+}
+
+void ChunkBoundaryRenderer::attachDescriptors(
+	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
+)
+{
+	this->mDescriptorGroups[0].attachToBinding("mvpCamera", mutableUniforms["mvpUniform"]);
 }
 
 void ChunkBoundaryRenderer::draw(graphics::Command *command)
