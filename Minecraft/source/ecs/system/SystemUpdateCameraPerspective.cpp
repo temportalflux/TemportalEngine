@@ -6,7 +6,7 @@
 #include "memory/MemoryChunk.hpp"
 #include "render/MinecraftRenderer.hpp"
 
-#include "ecs/view/ViewCameraPerspective.hpp"
+#include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
 
@@ -81,7 +81,7 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 UpdateCameraPerspective::UpdateCameraPerspective(
 	std::shared_ptr<memory::MemoryChunk> uniformMemory,
 	std::shared_ptr<graphics::MinecraftRenderer> renderer
-) : System(view::CameraPerspective::TypeId), mpRenderer(renderer)
+) : System(view::PlayerCamera::TypeId), mpRenderer(renderer)
 {
 	// TODO: Use dedicated graphics memory
 	this->mpUniform_ChunkViewProjection = graphics::Uniform::create<ChunkViewProj>(uniformMemory);

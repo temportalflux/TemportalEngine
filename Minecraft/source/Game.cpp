@@ -15,7 +15,7 @@
 #include "ecs/component/ComponentPlayerInput.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
-#include "ecs/view/ViewCameraPerspective.hpp"
+#include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
@@ -104,7 +104,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
-	ecs->views().registerType<ecs::view::CameraPerspective>();
+	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
 }
 
@@ -546,7 +546,7 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addComponent(cameraPOV);
 
 		// This view enables the `UpdateCameraPerspective` system to run
-		this->mpEntityLocalPlayer->addView(views.create<ecs::view::CameraPerspective>());
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerCamera>());
 	}
 
 	this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());

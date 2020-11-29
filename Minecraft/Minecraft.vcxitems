@@ -24,7 +24,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewCameraPerspective.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewDebugHUD.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
@@ -56,7 +56,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewCameraPerspective.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewDebugHUD.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />

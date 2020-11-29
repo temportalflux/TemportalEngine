@@ -7,11 +7,11 @@
 NS_ECS
 NS_VIEW
 
-class CameraPerspective : public View
+class PlayerCamera : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	CameraPerspective();
+	PlayerCamera();
 };
 
 NS_END
