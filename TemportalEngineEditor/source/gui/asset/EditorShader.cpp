@@ -129,6 +129,12 @@ void EditorShader::saveAsset()
 	AssetEditor::saveAsset();
 }
 
+void EditorShader::compileAsset()
+{
+	this->mShaderCompilationErrors.clear();
+	AssetEditor::compileAsset();
+}
+
 void EditorShader::onBuildFailure(std::vector<std::string> const &errors)
 {
 	static std::regex RegexParseError(".*:([0-9]+): (.*)");

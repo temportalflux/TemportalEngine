@@ -25,6 +25,7 @@ protected:
 	void renderDetailsPanel() override;
 	void renderContent() override;
 	void saveAsset() override;
+	void compileAsset() override;
 	void onBuildFailure(std::vector<std::string> const &errors) override;
 
 private:
