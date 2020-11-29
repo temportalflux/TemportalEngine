@@ -1,4 +1,4 @@
-#include "ecs/system/ControllerCoordinateSystem.hpp"
+#include "ecs/system/SystemMovePlayerByInput.hpp"
 
 #include "Engine.hpp"
 #include "logging/Logger.hpp"
@@ -7,11 +7,13 @@
 #include "ecs/component/ComponentPlayerInput.hpp"
 
 using namespace ecs;
+using namespace ecs::system;
 
-void ControllerCoordinateSystem::update(
-	f32 deltaTime,
-	std::shared_ptr<ecs::view::PlayerInputMovement> view
-)
+MovePlayerByInput::MovePlayerByInput() : System(view::PlayerInputMovement::TypeId)
+{
+}
+
+void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 {
 	OPTICK_EVENT();
 	static logging::Logger ControllerLog = DeclareLog("Controller");

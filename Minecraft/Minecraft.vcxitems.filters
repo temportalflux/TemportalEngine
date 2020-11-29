@@ -101,9 +101,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp">
       <Filter>registry</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp">
-      <Filter>ecs\system</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
@@ -123,6 +120,9 @@
       <Filter>ecs\view</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\include\ecs\system\SystemMovePlayerByInput.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
   </ItemGroup>
@@ -177,9 +177,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp">
       <Filter>registry</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp">
-      <Filter>ecs\system</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp">
       <Filter>ecs\view</Filter>
     </ClCompile>
@@ -199,6 +196,9 @@
       <Filter>ecs\view</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp">
+      <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\source\ecs\system\SystemMovePlayerByInput.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>

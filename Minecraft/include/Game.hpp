@@ -13,7 +13,7 @@ NS_ECS
 class Core;
 class Entity;
 FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
-class ControllerCoordinateSystem;
+FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
 FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
 NS_END
@@ -81,7 +81,7 @@ private:
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
-	std::shared_ptr<ecs::ControllerCoordinateSystem> mpController;
+	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
 	std::shared_ptr<ecs::system::UpdateDebugHUD> mpSystemUpdateDebugHUD;
 

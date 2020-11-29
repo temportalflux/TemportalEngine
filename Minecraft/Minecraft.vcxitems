@@ -21,7 +21,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\ControllerCoordinateSystem.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewCameraPerspective.hpp" />
@@ -52,7 +52,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\ControllerCoordinateSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewCameraPerspective.cpp" />

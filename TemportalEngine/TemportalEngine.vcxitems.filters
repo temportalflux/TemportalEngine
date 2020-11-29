@@ -58,6 +58,9 @@
     <Filter Include="ecs\view">
       <UniqueIdentifier>{ac510b11-d729-40a7-94e5-b0f1e19469be}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ecs\system">
+      <UniqueIdentifier>{5da4311c-94d9-4550-8325-6b459b67b2e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -301,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECViewManager.cpp">
       <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\System.cpp">
+      <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -659,6 +665,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECViewManager.hpp">
       <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\System.hpp">
+      <Filter>ecs\system</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

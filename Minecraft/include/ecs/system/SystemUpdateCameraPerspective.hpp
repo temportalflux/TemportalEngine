@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreInclude.hpp"
+#include "ecs/system/System.hpp"
 
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
@@ -11,7 +11,7 @@ FORWARD_DEF(NS_VIEW, class CameraPerspective);
 
 NS_SYSTEM
 
-class UpdateCameraPerspective
+class UpdateCameraPerspective : public System
 {
 
 public:
@@ -20,10 +20,7 @@ public:
 		std::shared_ptr<graphics::MinecraftRenderer>
 	);
 
-	void update(
-		f32 deltaTime,
-		std::shared_ptr<ecs::view::CameraPerspective> view
-	);
+	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
 
 private:
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;

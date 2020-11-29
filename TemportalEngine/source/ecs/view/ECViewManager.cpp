@@ -3,34 +3,74 @@
 using namespace ecs;
 using namespace ecs::view;
 
-std::shared_ptr<View> Manager::createView()
+bool Manager::ViewRecord::operator<(Manager::ViewRecord const& other) const
+{
+	return typeId < other.typeId && objectId < other.objectId;
+}
+
+bool Manager::ViewRecord::operator>(Manager::ViewRecord const& other) const
+{
+	return typeId > other.typeId && objectId > other.objectId;
+}
+
+std::shared_ptr<View> Manager::createView(ViewTypeId const& typeId)
 {
 	this->mMutex.lock();
 
 	uIndex objectId;
-	auto shared = std::shared_ptr<View>(this->mPool.create(objectId), std::bind(&Manager::destroy, this, std::placeholders::_1));
+	auto shared = std::shared_ptr<View>(
+		this->mPool.create(objectId),
+		std::bind(&Manager::destroy, this, typeId, std::placeholders::_1)
+	);
 	shared->mId = objectId;
-	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
+	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, std::weak_ptr(shared) });
+
+	auto& typeMeta = this->getTypeMetadata(typeId);
+	if (typeMeta.mCount == 0 || idxRecord < typeMeta.mFirstAllocatedIdx)
+	{
+		typeMeta.mFirstAllocatedIdx = idxRecord;
+	}
+	typeMeta.mCount++;
 
 	this->mMutex.unlock();
 	return shared;
 }
 
-void Manager::destroy(View *pCreated)
+void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 {
 	this->mMutex.lock();
 
-	auto allocatedIter = this->mAllocatedObjects.find(pCreated->mId);
-	assert(allocatedIter != this->mAllocatedObjects.end());
-	this->mAllocatedObjects.erase(allocatedIter);
+	auto idxRecord = this->mAllocatedObjects.search([typeId, pCreated](ViewRecord const& record) -> i8
+	{
+		// record.typeId <=> typeId
+		auto typeComp = record.typeId < typeId ? -1 : (record.typeId > typeId ? 1 : 0);
+		if (typeComp != 0) return typeComp;
+		// record.objectId <=> pCreated->mId
+		auto objComp = record.objectId < pCreated->mId ? -1 : (record.objectId > pCreated->mId ? 1 : 0);
+		return objComp;
+	});
+	assert(idxRecord);
+	this->mAllocatedObjects.remove(*idxRecord);
+
+	auto& typeMeta = this->getTypeMetadata(typeId);
+	typeMeta.mCount--;
+	if (typeMeta.mFirstAllocatedIdx == *idxRecord)
+	{
+		typeMeta.mFirstAllocatedIdx = typeMeta.mCount > 0 ? *idxRecord + 1 : 0;
+	}
 
 	this->mPool.destroy(pCreated->mId);
 
 	this->mMutex.unlock();
 }
 
-std::shared_ptr<View> Manager::get(Identifier const &id) const
+Manager::ViewIterable Manager::getAllOfType(ViewTypeId const &typeId)
 {
-	auto iter = this->mAllocatedObjects.find(id);
-	return iter != this->mAllocatedObjects.end() ? iter->second.lock() : nullptr;
+	auto& typeMeta = this->getTypeMetadata(typeId);
+	return Manager::ViewIterable(this, typeMeta.mFirstAllocatedIdx, typeMeta.mCount);
+}
+
+Manager::ViewRecord& Manager::getRecord(uIndex const& idxRecord)
+{
+	return this->mAllocatedObjects[idxRecord];
 }

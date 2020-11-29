@@ -11,7 +11,7 @@ using namespace ecs;
 using namespace ecs::system;
 
 UpdateDebugHUD::UpdateDebugHUD(std::weak_ptr<Window> window)
-	: mpWindow(window)
+	: System(view::DebugHUD::TypeId), mpWindow(window)
 {
 }
 
@@ -44,10 +44,7 @@ void UpdateDebugHUD::createHUD(std::shared_ptr<graphics::UIRenderer> renderer)
 		.update();
 }
 
-void UpdateDebugHUD::update(
-	f32 deltaTime,
-	std::shared_ptr<ecs::view::DebugHUD> view
-)
+void UpdateDebugHUD::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 {
 	this->mOccurance = (this->mOccurance + 1) % 6000;
 	if (this->mOccurance == 0)
@@ -56,7 +53,7 @@ void UpdateDebugHUD::update(
 	}
 }
 
-void UpdateDebugHUD::updateOnOccurance(std::shared_ptr<ecs::view::DebugHUD> view)
+void UpdateDebugHUD::updateOnOccurance(std::shared_ptr<ecs::view::View> view)
 {
 	OPTICK_EVENT();
 	auto transform = view->get<component::CoordinateTransform>();

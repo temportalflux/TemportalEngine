@@ -17,7 +17,7 @@
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewCameraPerspective.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
-#include "ecs/system/ControllerCoordinateSystem.hpp"
+#include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemUpdateDebugHUD.hpp"
 #include "graphics/DescriptorPool.hpp"
@@ -208,14 +208,15 @@ void Game::destroyWindow()
 
 void Game::createRenderers()
 {
+	auto pEngine = engine::Engine::Get();
+
 	this->createGameRenderer();
 	this->loadVoxelTypeTextures();
 	
-	// Create the camera perspective system so we only update the camera data if we actually need to render
-	auto pEngine = engine::Engine::Get();
 	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
 		pEngine->getMiscMemory(), this->mpRenderer
 	);
+	pEngine->addTicker(this->mpSystemUpdateCameraPerspective);
 
 	this->createPipelineRenderers();
 	this->mpRenderer->createRenderChain();
@@ -223,7 +224,7 @@ void Game::createRenderers()
 
 	this->mpSystemUpdateDebugHUD = pEngine->getMainMemory()->make_shared<ecs::system::UpdateDebugHUD>(this->mpWindow);
 	this->mpSystemUpdateDebugHUD->createHUD(this->mpUIRenderer);
-
+	pEngine->addTicker(this->mpSystemUpdateDebugHUD);
 }
 
 void Game::createGameRenderer()
@@ -495,7 +496,8 @@ void Game::createScene()
 
 	auto pEngine = engine::Engine::Get();
 	this->createLocalPlayer();
-	this->mpController = pEngine->getMainMemory()->make_shared<ecs::ControllerCoordinateSystem>();
+	this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
+	pEngine->addTicker(this->mpSystemMovePlayerByInput);
 	
 	if (this->mpVoxelInstanceBuffer)
 	{
@@ -552,7 +554,7 @@ void Game::createLocalPlayer()
 
 void Game::destroyScene()
 {
-	this->mpController.reset();
+	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();
 }
@@ -593,42 +595,8 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
-
-	auto pEngine = engine::Engine::Get();
-
-	// Run the UpdatePlayerMovement system
-	if (this->mpController)
-	{
-		auto view = this->mpEntityLocalPlayer->getView<ecs::view::PlayerInputMovement>();
-		if (view && view->hasAllComponents())
-		{
-			this->mpController->update(deltaTime, view);
-		}
-	}
-
-	// Run the UpdateDebugHUD system
-	if (this->mpSystemUpdateDebugHUD)
-	{
-		auto view = this->mpEntityLocalPlayer->getView<ecs::view::DebugHUD>();
-		if (view && view->hasAllComponents())
-		{
-			this->mpSystemUpdateDebugHUD->update(deltaTime, view);
-		}
-	}
-
-	// Run the UpdateCameraPerspective system
-	if (this->mpSystemUpdateCameraPerspective)
-	{
-		auto view = this->mpEntityLocalPlayer->getView<ecs::view::CameraPerspective>();
-		if (view && view->hasAllComponents())
-		{
-			this->mpSystemUpdateCameraPerspective->update(deltaTime, view);
-		}
-	}
-
 	this->mpWorld->handleDirtyCoordinates();
-	pEngine->update(deltaTime);
-
+	engine::Engine::Get()->update(deltaTime);
 }
 
 // Runs on the render thread

@@ -81,7 +81,7 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 UpdateCameraPerspective::UpdateCameraPerspective(
 	std::shared_ptr<memory::MemoryChunk> uniformMemory,
 	std::shared_ptr<graphics::MinecraftRenderer> renderer
-) : mpRenderer(renderer)
+) : System(view::CameraPerspective::TypeId), mpRenderer(renderer)
 {
 	// TODO: Use dedicated graphics memory
 	this->mpUniform_ChunkViewProjection = graphics::Uniform::create<ChunkViewProj>(uniformMemory);
@@ -91,10 +91,7 @@ UpdateCameraPerspective::UpdateCameraPerspective(
 	renderer->addMutableUniform("localCamera", this->mpUniform_LocalViewProjection);
 }
 
-void UpdateCameraPerspective::update(
-	f32 deltaTime,
-	std::shared_ptr<ecs::view::CameraPerspective> view
-)
+void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 {
 	OPTICK_EVENT();
 

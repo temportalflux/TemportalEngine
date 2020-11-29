@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CoreInclude.hpp"
+#include "ecs/system/System.hpp"
 
 class Window;
 FORWARD_DEF(NS_GRAPHICS, class UIString);
@@ -11,7 +11,7 @@ FORWARD_DEF(NS_VIEW, class DebugHUD);
 
 NS_SYSTEM
 
-class UpdateDebugHUD
+class UpdateDebugHUD : public System
 {
 
 public:
@@ -19,11 +19,8 @@ public:
 
 	void createHUD(std::shared_ptr<graphics::UIRenderer> renderer);
 
-	void update(
-		f32 deltaTime,
-		std::shared_ptr<ecs::view::DebugHUD> view
-	);
-	void updateOnOccurance(std::shared_ptr<ecs::view::DebugHUD> view);
+	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
+	void updateOnOccurance(std::shared_ptr<ecs::view::View> view);
 
 private:
 	std::weak_ptr<Window> mpWindow;
