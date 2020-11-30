@@ -17,3 +17,6 @@
 [submodule "libs/VulkanMemoryAllocator"]
 	path = libs/VulkanMemoryAllocator
 	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "TemportalEngineEditor/libs/tinyobjloader"]
+	path = TemportalEngineEditor/libs/tinyobjloader
+	url = git@github.com:tinyobjloader/tinyobjloader.git
