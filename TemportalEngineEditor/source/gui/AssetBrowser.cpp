@@ -76,6 +76,21 @@ void AssetBrowser::renderView()
 	renderDirectoryTree();
 }
 
+bool isAnAsset(std::filesystem::path const &path)
+{
+	auto extension = path.extension().string();
+	auto assetManager = engine::Engine::Get()->getAssetManager();
+	return assetManager->isValidAssetExtension(extension);
+}
+
+void buildAsset(std::filesystem::path const &path)
+{
+	if (isAnAsset(path))
+	{
+		Editor::EDITOR->buildAssets({ asset::readAssetFromDisk(path, asset::EAssetSerialization::Json) });
+	}
+}
+
 void AssetBrowser::renderDirectoryTree()
 {
 	auto& path = this->mCurrentPath;
@@ -157,6 +172,7 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 			std::filesystem::create_directory(this->mRenamingAsset);
 		}
 		if (!bIsDirectory && ImGui::Selectable("Edit")) this->onFileOpen(path);
+		if (!bIsDirectory && isAnAsset(path) && ImGui::Selectable("Build")) buildAsset(path);
 		if (!bIsDirectory && ImGui::Selectable("View References")) this->onViewReferences(path);
 		if ((!bIsDirectory || std::filesystem::is_empty(path)) && ImGui::Selectable("Rename"))
 		{
@@ -204,13 +220,6 @@ void AssetBrowser::renderMenuBar()
 			this->bShowingNonAssets = !this->bShowingNonAssets;
 		ImGui::EndMenuBar();
 	}
-}
-
-bool isAnAsset(std::filesystem::path const &path)
-{
-	auto extension = path.extension().string();
-	auto assetManager = engine::Engine::Get()->getAssetManager();
-	return assetManager->isValidAssetExtension(extension);
 }
 
 bool AssetBrowser::canShowFileInView(std::filesystem::path const &path)
