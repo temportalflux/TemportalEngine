@@ -56,7 +56,7 @@ std::vector<ui32> BuildShader::getBinary() const
 	return this->mCompiledBinary;
 }
 
-std::vector<std::string> BuildShader::compile()
+std::vector<std::string> BuildShader::compile(logging::Logger &logger)
 {
 	auto compilationResult = shaderc::Compiler().CompileGlslToSpv(
 		this->mSourceContent,

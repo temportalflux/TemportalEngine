@@ -5,6 +5,7 @@
 
 #include "asset/Asset.hpp"
 #include "asset/Font.hpp"
+#include "asset/ModelAsset.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "asset/Project.hpp"
 #include "asset/RenderPassAsset.hpp"
@@ -48,6 +49,7 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 void AssetManager::queryAssetTypes()
 {
 	this->registerType<Font>();
+	this->registerType<Model>();
 	this->registerType<Pipeline>();
 	this->registerType<Project>();
 	this->registerType<RenderPass>();
@@ -212,7 +214,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 void AssetManager::setAssetReferences(std::filesystem::path absolutePath, std::unordered_set<AssetPath> const& paths)
 {
 	auto assetPath = this->getAssetMetadata(absolutePath);
-	assert(assetPath);
+	if (!assetPath) return;
 
 	// Erase the tracking of asset -> things it references
 	this->mAssetPaths_ReferencerToReferenced.erase(*assetPath);

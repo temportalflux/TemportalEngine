@@ -33,7 +33,7 @@ std::vector<ui8> BuildTexture::loadImage(std::filesystem::path const &path, math
 	return imageData;
 }
 
-std::vector<std::string> BuildTexture::compile()
+std::vector<std::string> BuildTexture::compile(logging::Logger &logger)
 {
 	this->mSourceBinary = loadImage(this->get<asset::Texture>()->getAbsoluteSourcePath(), this->mSourceSize);
 	return {};

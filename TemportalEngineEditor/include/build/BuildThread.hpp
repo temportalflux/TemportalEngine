@@ -39,7 +39,7 @@ private:
 	std::vector<BuildState> mBuildStates;
 
 	bool executeBuild();
-	ErrorList buildAsset(std::shared_ptr<asset::Asset> asset) const;
+	ErrorList buildAsset(std::shared_ptr<asset::Asset> asset);
 	void onBuildComplete();
 
 };

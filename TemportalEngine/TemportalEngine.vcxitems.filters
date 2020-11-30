@@ -308,6 +308,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\vma\VMA.cpp">
       <Filter>graphics\vma</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\ModelAsset.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -665,6 +668,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\vma\VMA.hpp">
       <Filter>graphics\vma</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\asset\ModelAsset.hpp">
+      <Filter>asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

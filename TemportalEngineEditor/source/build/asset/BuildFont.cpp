@@ -24,7 +24,7 @@ std::vector<std::string> buildFontSize(FT_Face &face, ui8 size, math::Vector2UIn
 bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &glyph, std::vector<std::string> &glyphErrors);
 
 // See https://www.freetype.org/freetype2/docs/tutorial/step1.html
-std::vector<std::string> BuildFont::compile()
+std::vector<std::string> BuildFont::compile(logging::Logger &logger)
 {
 	// Ensure that the freetype library is loaded
 	if (!g_FreeTypeInitialized)

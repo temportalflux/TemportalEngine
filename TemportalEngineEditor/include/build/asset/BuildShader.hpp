@@ -15,7 +15,7 @@ public:
 	BuildShader(std::shared_ptr<asset::Asset> asset);
 
 	void setContent(std::string content, ui32 stage);
-	std::vector<std::string> compile() override;
+	std::vector<std::string> compile(logging::Logger &logger) override;
 	std::vector<ui32> getBinary() const;
 	graphics::ShaderMetadata parseShader() const;
 	void save() override;

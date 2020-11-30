@@ -72,3 +72,8 @@ void Thread::join()
 	delete pThread;
 	this->mpThreadHandle = nullptr;
 }
+
+logging::Logger& Thread::logger()
+{
+	return this->mLogger;
+}

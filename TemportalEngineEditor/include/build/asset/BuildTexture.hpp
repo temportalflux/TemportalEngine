@@ -16,7 +16,7 @@ public:
 	BuildTexture() = default;
 	BuildTexture(std::shared_ptr<asset::Asset> asset);
 
-	std::vector<std::string> compile() override;
+	std::vector<std::string> compile(logging::Logger &logger) override;
 	void save() override;
 
 private:

@@ -42,13 +42,13 @@ bool BuildThread::executeBuild()
 	return false; // not iterative, we don't care about return value
 }
 
-BuildThread::ErrorList BuildThread::buildAsset(std::shared_ptr<asset::Asset> asset) const
+BuildThread::ErrorList BuildThread::buildAsset(std::shared_ptr<asset::Asset> asset)
 {
 	auto builder = Editor::EDITOR->createAssetBuilder(asset);
 	if (builder)
 	{
 		builder->setOutputPath(Editor::EDITOR->getAssetBinaryPath(asset));
-		auto errors = builder->compile();
+		auto errors = builder->compile(this->mThread.logger());
 		if (errors.empty()) builder->save();
 		return errors;
 	}

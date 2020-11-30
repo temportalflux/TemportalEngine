@@ -138,6 +138,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImGuiTexture.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildModel.hpp">
+      <Filter>build\asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -284,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\ImGuiTexture.cpp">
       <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildModel.cpp">
+      <Filter>build\asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

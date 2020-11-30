@@ -2,6 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "logging/Logger.hpp"
+
 FORWARD_DEF(NS_ASSET, class Asset);
 
 NS_BUILD
@@ -22,7 +24,7 @@ public:
 	}
 
 	void setOutputPath(std::filesystem::path const &path);
-	virtual std::vector<std::string> compile();
+	virtual std::vector<std::string> compile(logging::Logger &logger);
 	virtual void save();
 
 protected:

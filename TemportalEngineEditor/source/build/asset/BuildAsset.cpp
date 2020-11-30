@@ -24,7 +24,7 @@ void BuildAsset::setOutputPath(std::filesystem::path const &path)
 	this->mOutputPath = path;
 }
 
-std::vector<std::string> BuildAsset::compile()
+std::vector<std::string> BuildAsset::compile(logging::Logger &logger)
 {
 	// No-op for generic assets
 	return {};

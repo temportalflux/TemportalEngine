@@ -34,6 +34,8 @@ public:
 
 	bool isActive() const;
 
+	logging::Logger& logger();
+
 	template <typename... TArgs>
 	void log(logging::ECategory category, logging::Message format, TArgs... args)
 	{

@@ -17,6 +17,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Settings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildFont.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildModel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildShader.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\BuildThread.hpp" />
@@ -68,6 +69,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Settings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildFont.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildModel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildShader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\BuildThread.cpp" />
