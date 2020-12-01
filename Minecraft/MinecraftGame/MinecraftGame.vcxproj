@@ -20,10 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{3AD6343C-1563-4DE2-B16D-20031AE18E2B}</ProjectGuid>
-    <RootNamespace>DemoGameEditor</RootNamespace>
+    <ProjectGuid>{ABDE6299-5814-4811-91D4-5908CE699B57}</ProjectGuid>
+    <RootNamespace>MinecraftGame</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <ProjectName>MinecraftEditor</ProjectName>
+    <ProjectName>MinecraftGame</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -56,16 +56,13 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\libs\cereal.vcxitems" Label="Shared" />
-    <Import Project="..\libs\glm.vcxitems" Label="Shared" />
-    <Import Project="..\libs\vulkan.vcxitems" Label="Shared" />
-    <Import Project="..\TemportalEngineEditor\libs\imgui.vcxitems" Label="Shared" />
-    <Import Project="..\libs\Optick.vcxitems" Label="Shared" />
-    <Import Project="..\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
-    <Import Project="..\TemportalEngineEditor\libs\TinyObjLoader.vcxitems" Label="Shared" />
     <Import Project="..\MinecraftCore\MinecraftCore.vcxitems" Label="Shared" />
-    <Import Project="..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
-    <Import Project="..\Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
+    <Import Project="..\..\libs\cereal.vcxitems" Label="Shared" />
+    <Import Project="..\..\libs\glm.vcxitems" Label="Shared" />
+    <Import Project="..\..\libs\Optick.vcxitems" Label="Shared" />
+    <Import Project="..\..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
+    <Import Project="..\..\libs\vulkan.vcxitems" Label="Shared" />
+    <Import Project="..\..\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -83,69 +80,107 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <RuntimeLibrary>
-    </RuntimeLibrary>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <RuntimeLibrary>
-    </RuntimeLibrary>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngineEditor\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)TemportalEngineEditor/libs/freetype/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-    </Link>
-    <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngineEditor\libs\freetype\win64\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
-    </PreLinkEvent>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngineEditor\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)TemportalEngineEditor/libs/freetype/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngineEditor\libs\freetype\win32\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <PreLinkEvent>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,20 +191,37 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngineEditor\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)TemportalEngineEditor/libs/freetype/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngineEditor\libs\freetype\win32\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -180,41 +232,55 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)TemportalEngineEditor\libs\imgui;$(SolutionDir)TemportalEngineEditor\libs\shaderc\include\$(Configuration);$(SolutionDir)TemportalEngineEditor\libs\stb;$(SolutionDir)TemportalEngineEditor\libs\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)libs\Vulkan\include;$(SolutionDir)libs\cereal\include;$(SolutionDir)libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)TemportalEngineEditor/libs/freetype/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs/SDL2/lib/$(PlatformTarget)/;$(SolutionDir)libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)TemportalEngineEditor\libs\freetype\win64\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="source\main.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\GameEditor.hpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets" Condition="Exists('..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets')" />
-    <Import Project="..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets" Condition="Exists('..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets')" />
+    <Import Project="..\..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets" Condition="Exists('..\..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets')" />
+    <Import Project="..\..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets" Condition="Exists('..\..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets'))" />
-    <Error Condition="!Exists('..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets'))" />
+    <Error Condition="!Exists('..\..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\sdl2.nuget.redist.2.0.12\build\native\sdl2.nuget.redist.targets'))" />
+    <Error Condition="!Exists('..\..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\sdl2.nuget.2.0.12\build\native\sdl2.nuget.targets'))" />
   </Target>
 </Project>
