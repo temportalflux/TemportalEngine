@@ -40,6 +40,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "Core\TemportalEngi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TinyObjLoader", "Core\TemportalEngineEditor\libs\TinyObjLoader.vcxitems", "{424522BA-36D4-4AB8-BFF8-EDC5BAB96174}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{2ED92AFB-7F78-4C1E-9EB3-75A2186BC063}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Modules\Test\Test.vcxproj", "{62E31BE0-42A6-4153-A810-79B93887FC52}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems*{235e2e0c-656d-4db7-a39d-d69fa8862561}*SharedItemsImports = 9
@@ -56,6 +60,12 @@ Global
 		Minecraft\MinecraftCore\MinecraftCore.vcxitems*{3ad6343c-1563-4de2-b16d-20031ae18e2b}*SharedItemsImports = 4
 		Core\TemportalEngineEditor\libs\TinyObjLoader.vcxitems*{424522ba-36d4-4ab8-bff8-edc5bab96174}*SharedItemsImports = 9
 		Core\TemportalEngine\TemportalEngine.vcxitems*{4ee09edd-0bb4-4d4d-9777-55a748cc77fe}*SharedItemsImports = 9
+		Core\TemportalEngine\libs\cereal.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
+		Core\TemportalEngine\libs\Optick.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
+		Core\TemportalEngine\libs\vulkan.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
+		Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
+		Core\TemportalEngine\TemportalEngine.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
+		Minecraft\MinecraftCore\MinecraftCore.vcxitems*{62e31be0-42a6-4153-a810-79b93887fc52}*SharedItemsImports = 4
 		Core\TemportalEngineEditor\libs\imgui.vcxitems*{73b768d0-a7f2-46d0-8097-539bb96c7305}*SharedItemsImports = 9
 		Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems*{a48e2e14-7909-4a4e-9a1b-d6231fe8cfc2}*SharedItemsImports = 9
 		Core\TemportalEngine\libs\cereal.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
@@ -93,6 +103,14 @@ Global
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Release|x64.Build.0 = Release|x64
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Release|x86.ActiveCfg = Release|Win32
 		{3AD6343C-1563-4DE2-B16D-20031AE18E2B}.Release|x86.Build.0 = Release|Win32
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Debug|x64.ActiveCfg = Debug|x64
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Debug|x64.Build.0 = Debug|x64
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Debug|x86.ActiveCfg = Debug|Win32
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Debug|x86.Build.0 = Debug|Win32
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Release|x64.ActiveCfg = Release|x64
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Release|x64.Build.0 = Release|x64
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Release|x86.ActiveCfg = Release|Win32
+		{62E31BE0-42A6-4153-A810-79B93887FC52}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +130,7 @@ Global
 		{235E2E0C-656D-4DB7-A39D-D69FA8862561} = {9D824023-3AAC-4BFD-BF12-39159BFAB682}
 		{73B768D0-A7F2-46D0-8097-539BB96C7305} = {A7341B2C-44E0-46EE-BACA-732C086CE887}
 		{424522BA-36D4-4AB8-BFF8-EDC5BAB96174} = {A7341B2C-44E0-46EE-BACA-732C086CE887}
+		{62E31BE0-42A6-4153-A810-79B93887FC52} = {2ED92AFB-7F78-4C1E-9EB3-75A2186BC063}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8539DF67-6A94-4B0F-9423-D8016914363B}

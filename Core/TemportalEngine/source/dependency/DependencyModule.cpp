@@ -1,4 +1,4 @@
-#include "dependency/Module.hpp"
+#include "dependency/DependencyModule.hpp"
 
 using namespace dependency;
 

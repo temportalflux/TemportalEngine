@@ -68,9 +68,6 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp">
-      <Filter>dependency</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp">
       <Filter>dependency</Filter>
     </ClCompile>
@@ -311,6 +308,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\ModelAsset.cpp">
       <Filter>asset</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\source\dependency\DependencyModule.cpp">
+      <Filter>dependency</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -319,9 +320,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp">
-      <Filter>dependency</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp">
       <Filter>dependency</Filter>
     </ClInclude>
@@ -548,7 +546,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
       <Filter>memory</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
@@ -671,6 +668,11 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\ModelAsset.hpp">
       <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\dependency\DependencyModule.hpp">
+      <Filter>dependency</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

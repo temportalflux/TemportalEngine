@@ -2,7 +2,7 @@
 #define TE_DEPENDENCY_SDL_HPP
 
 // Parents --------------------------------------------------------------------
-#include "dependency/Module.hpp"
+#include "dependency/DependencyModule.hpp"
 
 // ----------------------------------------------------------------------------
 NS_DEPENDENCY

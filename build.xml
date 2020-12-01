@@ -34,8 +34,8 @@
 
 	<target name="run.demo" description="Runs the Minecraft game executable.">
 		<echo message="Running Minecraft on ${cfg} ${platform}" />
-		<mkdir dir="output/Minecraft" />
-		<exec dir="output/Minecraft" executable="Binaries/Build/${cfg}/${platform}/MinecraftGame/MinecraftGame.exe">
+		<mkdir dir="output/MinecraftGame" />
+		<exec dir="output/MinecraftGame" executable="Binaries/Build/${cfg}/${platform}/MinecraftGame/MinecraftGame.exe">
 			<arg line="memory-main=65536" />
 			<arg line="memory-asset=65536" />
 			<arg line="memory-misc=65536" />

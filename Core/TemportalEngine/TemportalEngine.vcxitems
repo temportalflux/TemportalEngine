@@ -29,7 +29,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\Module.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
@@ -80,6 +80,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionRejected.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\ServiceClient.cpp" />
@@ -101,7 +102,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp" />
@@ -123,7 +123,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\Module.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\Pool.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionAccepted.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionRejected.hpp" />

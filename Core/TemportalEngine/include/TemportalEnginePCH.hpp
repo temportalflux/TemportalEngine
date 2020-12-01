@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Optick/src/optick.h"
+#include "optick.h"
 
 #include "Api.h"
 #include "Namespace.hpp"

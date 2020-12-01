@@ -2,6 +2,7 @@
 #include "Game.hpp"
 #include "logging/Logger.hpp"
 #include "utility/StringUtils.hpp"
+#include "Module.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +16,13 @@ int main(int argc, char *argv[])
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);
 	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+
+	for (auto const& entry : std::filesystem::directory_iterator(std::filesystem::absolute("Modules")))
+	{
+		if (!entry.is_directory()) continue;
+		auto dllPath = entry.path() / (entry.path().stem().string() + ".dll");
+		module_ext::loadModule(dllPath);
+	}
 
 	{
 		auto pGame = game::Game::Create(argc, argv);

@@ -20,33 +20,32 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{ABDE6299-5814-4811-91D4-5908CE699B57}</ProjectGuid>
-    <RootNamespace>MinecraftGame</RootNamespace>
+    <ProjectGuid>{62E31BE0-42A6-4153-A810-79B93887FC52}</ProjectGuid>
+    <RootNamespace>Test</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <ProjectName>MinecraftGame</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -56,13 +55,12 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\..\Core\TemportalEngine\libs\cereal.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngine\libs\glm.vcxitems" Label="Shared" />
-    <Import Project="..\MinecraftCore\MinecraftCore.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngine\libs\Optick.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngine\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
+    <Import Project="..\..\Core\TemportalEngine\libs\cereal.vcxitems" Label="Shared" />
+    <Import Project="..\..\Core\TemportalEngine\libs\vulkan.vcxitems" Label="Shared" />
+    <Import Project="..\..\Core\TemportalEngine\libs\Optick.vcxitems" Label="Shared" />
+    <Import Project="..\..\Minecraft\MinecraftCore\MinecraftCore.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -80,72 +78,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
-    <IncludePath>include;$(IncludePath)</IncludePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-    </Link>
-    <PostBuildEvent>
-      <Command>
-      </Command>
-    </PostBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Message>
-      </Message>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Outputs>
-      </Outputs>
-    </CustomBuildStep>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -153,35 +98,38 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Lib/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
+copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
     </PostBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Message>
-      </Message>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Outputs>
-      </Outputs>
-    </CustomBuildStep>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Lib32/</AdditionalLibraryDirectories>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
+copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -192,37 +140,20 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Lib32/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
+copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
     </PostBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Message>
-      </Message>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Outputs>
-      </Outputs>
-    </CustomBuildStep>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -233,43 +164,26 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)/Lib/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
+copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
     </PostBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Message>
-      </Message>
-    </CustomBuildStep>
-    <CustomBuildStep>
-      <Outputs>
-      </Outputs>
-    </CustomBuildStep>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
