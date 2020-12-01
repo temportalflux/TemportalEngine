@@ -20,3 +20,12 @@
 [submodule "TemportalEngineEditor/libs/freetype"]
 	path = TemportalEngineEditor/libs/freetype
 	url = git@github.com:ubawurinna/freetype-windows-binaries.git
+[submodule "Core/TemportalEngineEditor/libs/freetype"]
+	path = Core/TemportalEngineEditor/libs/freetype
+	url = git@github.com:ubawurinna/freetype-windows-binaries.git
+[submodule "Core/TemportalEngineEditor/libs/tinyobjloader"]
+	path = Core/TemportalEngineEditor/libs/tinyobjloader
+	url = git@github.com:tinyobjloader/tinyobjloader.git
+[submodule "Core/TemportalEngineEditor/libs/imgui"]
+	path = Core/TemportalEngineEditor/libs/imgui
+	url = git@github.com:temportalflux/imgui.git
