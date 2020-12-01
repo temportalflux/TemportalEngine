@@ -73,7 +73,7 @@ bool buildAsset(asset::AssetPtrStrong asset, std::filesystem::path outPath)
 		LOG.log(LOG_INFO, "Building: %s", asset->getPath().filename().string().c_str());
 
 		builder->setOutputPath(outPath);
-		auto errors = builder->compile();
+		auto errors = builder->compile(LOG);
 		if (errors.empty())
 		{
 			builder->save();

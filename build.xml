@@ -8,7 +8,7 @@
 		<sequential>
 			<echo message="Running editor on ${cfg} ${platform}" />
 			<exec dir="output/DemoGameEditor" executable="Binaries/Build/${cfg}/${platform}/DemoGameEditor/DemoGameEditor.exe">
-				<arg line="memory-main=16384" />
+				<arg line="memory-main=65536" />
 				<arg line="memory-asset=65536" />
 				<arg line="memory-misc=65536" />
 				<extArgs/>
@@ -34,7 +34,7 @@
 	<target name="run.demo" description="Runs the DemoGame">
 		<echo message="Running DemoGame on ${cfg} ${platform}" />
 		<exec dir="output/DemoGame" executable="Binaries/Build/${cfg}/${platform}/DemoGame/DemoGame.exe">
-			<arg line="memory-main=16384" />
+			<arg line="memory-main=65536" />
 			<arg line="memory-asset=65536" />
 			<arg line="memory-misc=65536" />
 		</exec>

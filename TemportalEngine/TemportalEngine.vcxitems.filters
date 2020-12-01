@@ -669,7 +669,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\vma\VMA.hpp">
       <Filter>graphics\vma</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\TemportalEngine\include\asset\ModelAsset.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\ModelAsset.hpp">
       <Filter>asset</Filter>
     </ClInclude>
   </ItemGroup>
