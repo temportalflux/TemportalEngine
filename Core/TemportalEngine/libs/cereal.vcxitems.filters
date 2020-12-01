@@ -1,0 +1,295 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cereal">
+      <UniqueIdentifier>{3d8dcaa7-ae87-4ff4-8e39-1d43bcc32ca6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\archives">
+      <UniqueIdentifier>{86eb5564-8742-4be8-b6f9-54f5a426eb86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\details">
+      <UniqueIdentifier>{236f01d6-9edf-410c-b2dd-3093fae3383c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external">
+      <UniqueIdentifier>{10ac8b3f-23e0-44ea-9539-32f8edfd513a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\types">
+      <UniqueIdentifier>{4125dfe6-c9bc-41d4-80ca-1e1e88616a93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external\rapidjson">
+      <UniqueIdentifier>{c728050d-21fa-452d-80eb-a785aa99e576}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external\rapidxml">
+      <UniqueIdentifier>{7dc96c12-a562-49b8-8f15-aa055e709cc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external\rapidjson\error">
+      <UniqueIdentifier>{e37da8c1-4d4f-44ef-8218-583f940ca6f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external\rapidjson\internal">
+      <UniqueIdentifier>{815cc295-d730-40a7-9e80-f04444c51aa9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\external\rapidjson\msinttypes">
+      <UniqueIdentifier>{26caa4bd-2a76-43bb-8ba1-bd63d8dd4828}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cereal\types\concepts">
+      <UniqueIdentifier>{b1d198d2-1e3c-4fbe-acaf-58a9145c0867}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\cereal.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\macros.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\specialize.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\version.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\access.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\binary.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\json.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\portable_binary.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\xml.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\archives\adapters.hpp">
+      <Filter>cereal\archives</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\polymorphic_impl_fwd.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\static_object.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\traits.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\util.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\helpers.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\details\polymorphic_impl.hpp">
+      <Filter>cereal\details</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\base64.hpp">
+      <Filter>cereal\external</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\document.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\encodedstream.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\encodings.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\filereadstream.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\filewritestream.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\fwd.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\istreamwrapper.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\memorybuffer.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\memorystream.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\ostreamwrapper.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\pointer.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\prettywriter.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\rapidjson.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\reader.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\schema.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\stream.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\stringbuffer.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\writer.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\allocators.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\cursorstreamwrapper.h">
+      <Filter>cereal\external\rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\error\en.h">
+      <Filter>cereal\external\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\error\error.h">
+      <Filter>cereal\external\rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\itoa.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\meta.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\pow10.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\regex.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\stack.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\strfunc.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\strtod.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\swap.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\biginteger.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\diyfp.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\dtoa.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\internal\ieee754.h">
+      <Filter>cereal\external\rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\msinttypes\inttypes.h">
+      <Filter>cereal\external\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidjson\msinttypes\stdint.h">
+      <Filter>cereal\external\rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml.hpp">
+      <Filter>cereal\external\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_iterators.hpp">
+      <Filter>cereal\external\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_print.hpp">
+      <Filter>cereal\external\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\external\rapidxml\rapidxml_utils.hpp">
+      <Filter>cereal\external\rapidxml</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\unordered_set.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\utility.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\valarray.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\variant.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\vector.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\array.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\atomic.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\base_class.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\bitset.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\boost_variant.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\chrono.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\common.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\complex.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\deque.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\forward_list.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\functional.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\list.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\map.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\memory.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\optional.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\polymorphic.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\queue.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\set.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\stack.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\string.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\tuple.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\unordered_map.hpp">
+      <Filter>cereal\types</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)cereal\include\cereal\types\concepts\pair_associative_container.hpp">
+      <Filter>cereal\types\concepts</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

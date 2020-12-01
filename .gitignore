@@ -1,8 +1,10 @@
 .vs/
 Binaries
 output
-libs
 packages
 recordings
 *.png
 *.obj
+*.zip
+Core/TemportalEngineEditor/libs/shaderc
+*.lib

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{eceb4e74-7ac7-4536-8ee3-10daee16b038}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick.config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_capi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_common.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.freebsd.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.linux.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.macos.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.platform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.win.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_gpu.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_memory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_message.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_miniz.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_serialization.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Optick\src\optick_server.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_capi.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_core.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_gpu.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_gpu.d3d12.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_gpu.vulkan.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_message.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_miniz.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_serialization.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Optick\src\optick_server.cpp" />
+  </ItemGroup>
+</Project>
