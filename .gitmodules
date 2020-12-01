@@ -29,3 +29,15 @@
 [submodule "Core/TemportalEngineEditor/libs/imgui"]
 	path = Core/TemportalEngineEditor/libs/imgui
 	url = git@github.com:temportalflux/imgui.git
+[submodule "Core/TemportalEngine/libs/cereal"]
+	path = Core/TemportalEngine/libs/cereal
+	url = git@github.com:USCiLab/cereal
+[submodule "Core/TemportalEngine/libs/glm"]
+	path = Core/TemportalEngine/libs/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "Core/TemportalEngine/libs/vulkan"]
+	path = Core/TemportalEngine/libs/vulkan
+	url = git@github.com:KhronosGroup/Vulkan-Headers.git
+[submodule "Core/TemportalEngine/libs/VulkanMemoryAllocator"]
+	path = Core/TemportalEngine/libs/VulkanMemoryAllocator
+	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
