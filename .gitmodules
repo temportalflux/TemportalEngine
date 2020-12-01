@@ -11,12 +11,12 @@
 [submodule "TemportalEngineEditor/libs/imgui"]
 	path = TemportalEngineEditor/libs/imgui
 	url = git@github.com:ocornut/imgui.git
-[submodule "TemportalEngine/libs/freetype"]
-	path = TemportalEngine/libs/freetype
-	url = git@github.com:ubawurinna/freetype-windows-binaries.git
 [submodule "libs/VulkanMemoryAllocator"]
 	path = libs/VulkanMemoryAllocator
 	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
 [submodule "TemportalEngineEditor/libs/tinyobjloader"]
 	path = TemportalEngineEditor/libs/tinyobjloader
 	url = git@github.com:tinyobjloader/tinyobjloader.git
+[submodule "TemportalEngineEditor/libs/freetype"]
+	path = TemportalEngineEditor/libs/freetype
+	url = git@github.com:ubawurinna/freetype-windows-binaries.git
