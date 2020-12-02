@@ -9,18 +9,30 @@
 
 static logging::Logger MODULE_LOADER_LOG = DeclareLog("ModuleLoader");
 
+// Loading DLLs at runtime on windows:
 // https://docs.microsoft.com/en-us/windows/win32/dlls/using-run-time-dynamic-linking
+// and on unix:
 // https://tldp.org/HOWTO/html_single/C++-dlopen/
+
 void* loadDll(std::filesystem::path const& path)
 {
 	auto strAbsPath = std::filesystem::absolute(path).string();
+#ifdef _WIN32
 	LPCSTR absPath = strAbsPath.c_str();
 	return (void*)LoadLibrary(absPath);
+#else
+	return nullptr; // TODO: dlopen
+#endif
 }
 
 bool tryInitModule(void* handle)
 {
-	auto initModule = (TInitModule)GetProcAddress((HMODULE)handle, "initModule");
+#ifdef _WIN32
+	TInitModule initModule = (TInitModule)GetProcAddress((HMODULE)handle, "initModule");
+#else
+	TInitModule initModule = nullptr; // TODO: unix
+	return false;
+#endif
 	if (initModule == nullptr)
 	{
 		MODULE_LOADER_LOG.log(LOG_ERR, "Failed to find initModule entrance for dll module.");
@@ -32,7 +44,11 @@ bool tryInitModule(void* handle)
 
 void freeDLL(void* handle)
 {
+#ifdef _WIN32
 	FreeLibrary((HMODULE)handle);
+#else
+	// TODO: dlclose
+#endif
 }
 
 bool module_ext::loadModule(std::filesystem::path const& path)
