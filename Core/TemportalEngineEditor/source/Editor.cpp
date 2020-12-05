@@ -371,8 +371,6 @@ std::filesystem::path Editor::getOutputDirectory() const
 std::filesystem::path Editor::getAssetBinaryPath(asset::AssetPtrStrong asset) const
 {
 	// Example:
-	// AbsolutePath: asset->getPath() => "C:/Desktop/Engine/DemoGame/assets/shader/Shader1.te-asset"
-	// AbsolutePath: projectDir => "C:/Desktop/Engine/DemoGame/"
 	auto projectDir = this->getProject()->getAbsoluteDirectoryPath();
 	// RelativePath: pathRelativeToProject = "assets/shader/Shader1.te-asset"
 	auto pathRelativeToProject = std::filesystem::relative(asset->getPath(), projectDir);
