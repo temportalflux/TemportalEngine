@@ -165,6 +165,13 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 	}
 	if (ImGui::BeginPopup(itemName.c_str()))
 	{
+		if (bIsDirectory && bShowContents && ImGui::Selectable("New Asset"))
+		{
+			auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
+			gui->setRoot(Editor::EDITOR->getProject()->getAssetDirectory());
+			gui->setDefaultPath(path);
+			gui->setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
+		}
 		if (bIsDirectory && bShowContents && ImGui::Selectable("New Folder"))
 		{
 			this->mRenamingStr = "New Folder";
@@ -186,10 +193,15 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 
 void AssetBrowser::renderDirectoryContents(std::filesystem::path const& path)
 {
+	auto directories = std::vector<std::filesystem::path>();
+	auto files = std::vector<std::filesystem::path>();
 	for (auto const& entry : std::filesystem::directory_iterator(path))
 	{
-		renderDirectoryItem(entry.path());
+		if (entry.is_directory()) directories.push_back(entry.path());
+		else files.push_back(entry.path());
 	}
+	for (auto const& path : directories) renderDirectoryItem(path);
+	for (auto const& path : files) renderDirectoryItem(path);
 }
 
 void AssetBrowser::setPath(std::filesystem::path path)
@@ -207,13 +219,6 @@ void AssetBrowser::renderMenuBar()
 {
 	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::MenuItem("New Asset", "", false, true))
-		{
-			auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
-			gui->setRoot(Editor::EDITOR->getProject()->getAssetDirectory());
-			gui->setDefaultPath(this->getCurrentRelativePath());
-			gui->setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
-		}
 		if (ImGui::MenuItem("New Folder", "", false, true))
 			std::filesystem::create_directory(this->mCurrentPath / "New Folder");
 		if (ImGui::MenuItem(((this->bShowingNonAssets ? "Hide" : "Show") + std::string(" Misc Files###AssetToggle")).c_str(), "", false, true))
