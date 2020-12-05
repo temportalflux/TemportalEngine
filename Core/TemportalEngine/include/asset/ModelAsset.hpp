@@ -21,6 +21,10 @@ public:
 		math::Vector3Padded position;
 		math::Vector2Padded texCoord;
 
+		math::Vector3Padded normal;
+		math::Vector3Padded tangent;
+		math::Vector3Padded bitangent;
+
 		bool operator==(Vertex const& other) const;
 
 		void save(cereal::PortableBinaryOutputArchive &archive) const;

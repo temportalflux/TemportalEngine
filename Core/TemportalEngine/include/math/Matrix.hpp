@@ -26,6 +26,8 @@ public:
 			this->mColumns[idx][idx] = identityMultiplier;
 	}
 
+	void* data() { return &this->mColumns; }
+
 	/**
 	 * Returns the column for the specified index.
 	 */
