@@ -42,11 +42,11 @@ void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 
 	auto idxRecord = this->mAllocatedObjects.search([typeId, pCreated](ViewRecord const& record) -> i8
 	{
-		// record.typeId <=> typeId
-		auto typeComp = record.typeId < typeId ? -1 : (record.typeId > typeId ? 1 : 0);
+		// typeId <=> record.typeId
+		auto typeComp = typeId < record.typeId ? -1 : (typeId > record.typeId ? 1 : 0);
 		if (typeComp != 0) return typeComp;
-		// record.objectId <=> pCreated->mId
-		auto objComp = record.objectId < pCreated->mId ? -1 : (record.objectId > pCreated->mId ? 1 : 0);
+		// pCreated->mId <=> record.objectId
+		auto objComp = pCreated->mId < record.objectId ? -1 : (pCreated->mId > record.objectId ? 1 : 0);
 		return objComp;
 	});
 	assert(idxRecord);

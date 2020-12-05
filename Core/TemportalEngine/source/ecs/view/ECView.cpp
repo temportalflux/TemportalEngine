@@ -33,8 +33,8 @@ void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<compone
 {
 	auto idxSlot = this->mSlots.search([typeId](ComponentSlot const& slot) -> ui8
 	{
-		// slot.typeId <=> typeId
-		return slot.typeId < typeId ? -1 : (slot.typeId > typeId ? 1 : 0);
+		// typeId <=> slot.typeId
+		return typeId < slot.typeId ? -1 : (typeId > slot.typeId ? 1 : 0);
 	});
 	if (!idxSlot) return;
 	this->mSlots[*idxSlot].component = ptr;

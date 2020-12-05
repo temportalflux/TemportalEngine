@@ -19,7 +19,7 @@ public:
 	void save() override;
 
 private:
-	std::vector<asset::Model::Vertex> mCompiledVertices;
+	std::vector<ModelVertex> mCompiledVertices;
 	std::vector<ui32> mCompiledIndices;
 
 };

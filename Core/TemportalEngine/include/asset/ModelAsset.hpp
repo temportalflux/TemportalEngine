@@ -2,6 +2,8 @@
 
 #include "asset/Asset.hpp"
 
+#include "render/ModelVertex.hpp"
+
 NS_ASSET
 
 class Model : public Asset
@@ -16,28 +18,13 @@ public:
 	Model() = default;
 	Model(std::filesystem::path filePath);
 
-	struct Vertex
-	{
-		math::Vector3Padded position;
-		math::Vector2Padded texCoord;
-
-		math::Vector3Padded normal;
-		math::Vector3Padded tangent;
-		math::Vector3Padded bitangent;
-
-		bool operator==(Vertex const& other) const;
-
-		void save(cereal::PortableBinaryOutputArchive &archive) const;
-		void load(cereal::PortableBinaryInputArchive &archive);
-	};
-
 	// For text asset
 	void setSourcePath(std::filesystem::path sourceFilePath);
 	std::filesystem::path getAbsoluteSourcePath() const;
 	// For build
-	void setSourceBinary(std::vector<Vertex> const& vertices, std::vector<ui32> const& indices);
+	void setSourceBinary(std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices);
 	// For binary asset
-	std::vector<Vertex> const& vertces() const;
+	std::vector<ModelVertex> const& vertices() const;
 	std::vector<ui32> const& indices() const;
 
 	void onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute) override;
@@ -46,7 +33,7 @@ private:
 	// For text asset
 	std::string mSourceFilePath;
 	// For binary asset
-	std::vector<Vertex> mVertices;
+	std::vector<ModelVertex> mVertices;
 	std::vector<ui32> mIndices;
 
 #pragma region Serialization

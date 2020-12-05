@@ -64,6 +64,9 @@
     <Filter Include="graphics\vma">
       <UniqueIdentifier>{c1f48e88-9962-4899-a9b9-5f420ffa0dde}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render">
+      <UniqueIdentifier>{9d4347af-fa93-4566-bcc8-250c3d736195}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -310,6 +313,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelVertex.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -670,5 +676,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelVertex.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

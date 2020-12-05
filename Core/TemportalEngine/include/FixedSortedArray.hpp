@@ -41,7 +41,10 @@ public:
 	{
 		assert(size() < capacity());
 		auto desiredIdx = this->findDesiredIdx(value);
-		memcpy(this->mValues + desiredIdx + 1, this->mValues + desiredIdx, sizeof(TValue) * (this->mSize - desiredIdx));
+		for (auto idxValue = this->mSize; idxValue > desiredIdx; --idxValue)
+		{
+			this->mValues[idxValue] = this->mValues[idxValue - 1];
+		}
 		this->mValues[desiredIdx] = value;
 		this->mSize++;
 		return desiredIdx;
@@ -60,9 +63,12 @@ public:
 	{
 		assert(size() > 0 && idx < size());
 		TValue value = this->mValues[idx];
-		memcpy(this->mValues + idx, this->mValues + idx + 1, (this->mSize - idx - 1) * sizeof(TValue));
-		memset(this->mValues + this->mSize - 1, 0, sizeof(TValue));
 		this->mSize--;
+		for (auto idxValue = idx; idxValue < this->mSize; ++idxValue)
+		{
+			this->mValues[idxValue] = this->mValues[idxValue + 1];
+		}
+		this->mValues[this->mSize] = TValue();
 		return value;
 	}
 
@@ -116,13 +122,12 @@ private:
 			auto comp = predicate(mValues[middle]);
 			if (comp < 0)
 			{
-				startIndex = middle + 1;
+				endIndex = middle - 1;
 				if (startIndex > endIndex) return std::make_pair(false, middle - 1);
 			}
 			else if (comp > 0)
 			{
-				if (middle == startIndex && middle < endIndex) startIndex++;
-				else endIndex = middle - 1;
+				startIndex = middle + 1;
 				if (startIndex > endIndex) return std::make_pair(false, middle + 1);
 			}
 			else return std::make_pair(true, middle);

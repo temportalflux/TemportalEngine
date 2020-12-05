@@ -15,6 +15,7 @@ class System : public ITickable
 public:
 	System(ViewTypeId const& viewTypeId);
 
+	ViewTypeId const& viewId() const;
 	void tick(f32 deltaTime) override;
 
 protected:

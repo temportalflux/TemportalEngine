@@ -17,11 +17,15 @@ int main(int argc, char *argv[])
 	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);
 	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
 
-	for (auto const& entry : std::filesystem::directory_iterator(std::filesystem::absolute("Modules")))
+	auto modulesDir = std::filesystem::absolute("Modules");
+	if (std::filesystem::exists(modulesDir))
 	{
-		if (!entry.is_directory()) continue;
-		auto dllPath = entry.path() / (entry.path().stem().string() + ".dll");
-		module_ext::loadModule(dllPath);
+		for (auto const& entry : std::filesystem::directory_iterator(modulesDir))
+		{
+			if (!entry.is_directory()) continue;
+			auto dllPath = entry.path() / (entry.path().stem().string() + ".dll");
+			module_ext::loadModule(dllPath);
+		}
 	}
 
 	{

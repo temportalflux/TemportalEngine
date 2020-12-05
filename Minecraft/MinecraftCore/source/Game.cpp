@@ -4,6 +4,7 @@
 #include "Window.hpp"
 #include "asset/BlockType.hpp"
 #include "asset/Font.hpp"
+#include "asset/ModelAsset.hpp"
 #include "asset/Project.hpp"
 #include "asset/RenderPassAsset.hpp"
 #include "asset/PipelineAsset.hpp"
@@ -14,12 +15,15 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerInput.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
+#include "ecs/component/ComponentPlayerModel.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
+#include "ecs/view/ViewRenderedPlayer.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemUpdateDebugHUD.hpp"
+#include "ecs/system/SystemRenderPlayer.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
@@ -31,6 +35,7 @@
 #include "render/VoxelModelManager.hpp"
 #include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
+#include "render/model/SkinnedModelManager.hpp"
 #include "render/ui/UIRenderer.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
@@ -103,9 +108,11 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
 	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
+	ecs->components().registerType<ecs::component::PlayerModel>("PlayerModel");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
+	ecs->views().registerType<ecs::view::RenderedPlayer>();
 }
 
 void Game::openProject()
@@ -225,6 +232,16 @@ void Game::createRenderers()
 	this->mpSystemUpdateDebugHUD = pEngine->getMainMemory()->make_shared<ecs::system::UpdateDebugHUD>(this->mpWindow);
 	this->mpSystemUpdateDebugHUD->createHUD(this->mpUIRenderer);
 	pEngine->addTicker(this->mpSystemUpdateDebugHUD);
+
+	this->mpSkinnedModelManager = std::make_shared<graphics::SkinnedModelManager>(
+		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
+	);
+
+	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
+		std::weak_ptr(this->mpSkinnedModelManager)
+	);
+	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
+
 }
 
 void Game::createGameRenderer()
@@ -455,7 +472,8 @@ void Game::createUIRenderer()
 }
 
 void Game::destroyRenderers()
-{	
+{
+	this->mpSkinnedModelManager.reset();
 	this->mpVoxelModelManager.reset();
 	this->mpVoxelGridRenderer->destroyRenderDevices();
 	this->mpWorldAxesRenderer->destroyBuffers();
@@ -538,8 +556,9 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addComponent(input);
 	}
 
-	// Camera Perspective support for rendering from the entity
+	if (this->requiresGraphics())
 	{
+		// Camera Perspective support for rendering from the entity
 		// Required by `view::CameraPerspective`
 		auto cameraPOV = components.create<ecs::component::CameraPOV>();
 		cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
@@ -547,9 +566,18 @@ void Game::createLocalPlayer()
 
 		// This view enables the `UpdateCameraPerspective` system to run
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerCamera>());
+	
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
+
+		// This view enables the `RenderPlayer` system to run
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedPlayer>());
+
+		// Required by `view::RenderedPlayer`
+		auto playerModel = components.create<ecs::component::PlayerModel>();
+		playerModel->createModel(this->mpSkinnedModelManager);
+		this->mpEntityLocalPlayer->addComponent(playerModel);
 	}
 
-	this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
 }
 
 void Game::destroyScene()

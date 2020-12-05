@@ -37,6 +37,9 @@
     <Filter Include="ecs\view">
       <UniqueIdentifier>{8e7645bd-3022-46c5-987b-72ac32095bfe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="render\model">
+      <UniqueIdentifier>{98639349-876d-48a2-9047-f679bf44eaea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -124,6 +127,18 @@
       <Filter>render\line</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\model\SkinnedModelManager.hpp">
+      <Filter>render\model</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderPlayer.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedPlayer.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerModel.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -199,5 +214,17 @@
       <Filter>render\line</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\model\SkinnedModelManager.cpp">
+      <Filter>render\model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderPlayer.cpp">
+      <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedPlayer.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerModel.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

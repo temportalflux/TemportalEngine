@@ -16,16 +16,18 @@ FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
 FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
 FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
+FORWARD_DEF(NS_SYSTEM, class RenderPlayer);
 NS_END
 
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
+FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
-FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
-FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
+FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
+FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
@@ -79,6 +81,8 @@ private:
 	std::shared_ptr<graphics::SimpleLineRenderer> mpWorldAxesRenderer;
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
+	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
+	std::shared_ptr<ecs::system::RenderPlayer> mpSystemRenderPlayer;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;

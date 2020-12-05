@@ -25,8 +25,8 @@ std::shared_ptr<component::Component> Entity::getComponent(ComponentTypeId const
 {
 	auto idx = this->mComponents.search([typeId](ComponentEntry const& entry)
 	{
-		// entry.typeId <=> typeId
-		return entry.typeId < typeId ? -1 : (entry.typeId > typeId ? 1 : 0);
+		// typeId <=> entry.typeId
+		return typeId < entry.typeId ? -1 : (typeId > entry.typeId ? 1 : 0);
 	});
 	return idx ? this->mComponents[*idx].ptr : nullptr;
 }
@@ -45,8 +45,8 @@ std::shared_ptr<view::View> Entity::getView(ViewTypeId const& typeId)
 {
 	auto idx = this->mViews.search([typeId](ViewEntry const& entry)
 	{
-		// entry.typeId <=> typeId
-		return entry.typeId < typeId ? -1 : (entry.typeId > typeId ? 1 : 0);
+		// typeId <=> entry.typeId
+		return typeId < entry.typeId ? -1 : (typeId > entry.typeId ? 1 : 0);
 	});
 	return idx ? this->mViews[*idx].ptr : nullptr;
 }

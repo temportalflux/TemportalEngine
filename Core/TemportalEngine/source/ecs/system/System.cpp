@@ -11,6 +11,11 @@ System::System(ViewTypeId const& viewTypeId)
 {
 }
 
+ViewTypeId const& System::viewId() const
+{
+	return this->mViewTypeId;
+}
+
 void System::tick(f32 deltaTime)
 {
 	auto& ecs = engine::Engine::Get()->getECS();

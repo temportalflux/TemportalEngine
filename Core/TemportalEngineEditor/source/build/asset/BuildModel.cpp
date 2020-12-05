@@ -42,7 +42,7 @@ BuildModel::BuildModel(std::shared_ptr<asset::Asset> asset) : BuildAsset(asset)
 {
 }
 
-asset::Model::Vertex convertVertex(aiMesh const* mesh, uIndex iVertex);
+ModelVertex convertVertex(aiMesh const* mesh, uIndex iVertex);
 
 std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 {
@@ -144,11 +144,11 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 	return errors;
 }
 
-asset::Model::Vertex convertVertex(aiMesh const* mesh, uIndex iVertex)
+ModelVertex convertVertex(aiMesh const* mesh, uIndex iVertex)
 {
 	static uSize SIZE_OF_V3 = sizeof(math::Vector3);
 	
-	auto vertex = asset::Model::Vertex{};
+	auto vertex = ModelVertex{};
 
 	memcpy_s(vertex.position.data(), SIZE_OF_V3, &mesh->mVertices[iVertex], SIZE_OF_V3);
 	memcpy_s(vertex.normal.data(), SIZE_OF_V3, &mesh->mNormals[iVertex], SIZE_OF_V3);

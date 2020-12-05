@@ -22,13 +22,13 @@ std::filesystem::path Model::getAbsoluteSourcePath() const
 	return std::filesystem::absolute(this->getPath().parent_path() / this->mSourceFilePath);
 }
 
-void Model::setSourceBinary(std::vector<Vertex> const& vertices, std::vector<ui32> const& indices)
+void Model::setSourceBinary(std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices)
 {
 	this->mVertices = vertices;
 	this->mIndices = indices;
 }
 
-std::vector<Model::Vertex> const& Model::vertces() const
+std::vector<ModelVertex> const& Model::vertices() const
 {
 	return this->mVertices;
 }
@@ -73,23 +73,6 @@ void Model::decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDe
 	Asset::decompile(archive, bCheckDefaults);
 	archive(this->mVertices);
 	archive(this->mIndices);
-}
-
-bool Model::Vertex::operator==(Vertex const& other) const
-{
-	return this->position == other.position && this->texCoord == other.texCoord;
-}
-
-void Model::Vertex::save(cereal::PortableBinaryOutputArchive &archive) const
-{
-	archive(this->position);
-	archive(this->texCoord);
-}
-
-void Model::Vertex::load(cereal::PortableBinaryInputArchive &archive)
-{
-	archive(this->position);
-	archive(this->texCoord);
 }
 
 #pragma endregion
