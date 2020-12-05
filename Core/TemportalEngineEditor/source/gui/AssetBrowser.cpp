@@ -168,8 +168,9 @@ void AssetBrowser::renderDirectoryItem(std::filesystem::path const& path)
 		if (bIsDirectory && bShowContents && ImGui::Selectable("New Asset"))
 		{
 			auto gui = Editor::EDITOR->openNewGui<gui::modal::NewAsset>("New Asset");
-			gui->setRoot(Editor::EDITOR->getProject()->getAssetDirectory());
-			gui->setDefaultPath(path);
+			auto assetDir = Editor::EDITOR->getProject()->getAssetDirectory();
+			gui->setRoot(assetDir);
+			gui->setDefaultPath(std::filesystem::relative(path, assetDir));
 			gui->setCallback([](auto asset) { Editor::EDITOR->openAssetEditor(asset); });
 		}
 		if (bIsDirectory && bShowContents && ImGui::Selectable("New Folder"))
