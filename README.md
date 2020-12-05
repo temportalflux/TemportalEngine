@@ -27,3 +27,9 @@ To compile shaders, the editor uses libshaderc
 4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Debug\shaderc_combined.lib`
 5. Copy the contents of (Release build zip) `install\include\shaderc\` to ``Editor\libs\shaderc\include\Release\shaderc`
 6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Release\shaderc_combined.lib`
+
+### Open Asset Import Library Setup
+cd "Core\TemportalEngine\libs\assimp"
+cmake -G "Visual Studio 15 2017 Win64"
+open Assimp.sln
+build ALL_BUILD

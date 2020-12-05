@@ -20,3 +20,6 @@
 [submodule "Core/TemportalEngine/libs/VulkanMemoryAllocator"]
 	path = Core/TemportalEngine/libs/VulkanMemoryAllocator
 	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "Core/TemportalEngine/libs/assimp"]
+	path = Core/TemportalEngine/libs/assimp
+	url = git@github.com:assimp/assimp.git

@@ -114,19 +114,22 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PreLinkEvent>
       <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win64\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
     </PreLinkEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -134,19 +137,22 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PreLinkEvent>
       <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win32\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
     </PreLinkEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -156,7 +162,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -164,13 +170,16 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PreLinkEvent>
       <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win32\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
     </PreLinkEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -180,7 +189,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -188,13 +197,16 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration);$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
     <PreLinkEvent>
       <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win64\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
     </PreLinkEvent>
+    <PreBuildEvent>
+      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
