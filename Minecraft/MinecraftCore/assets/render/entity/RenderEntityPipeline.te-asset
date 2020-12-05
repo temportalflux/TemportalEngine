@@ -1,0 +1,25 @@
+{
+	"type": "pipeline",
+	"shader-vert": "shader:C:/Users/dyost/Desktop/TemportalEngine/Minecraft/MinecraftCore/assets/render/entity/RenderEntityVertex.te-asset",
+	"shader-frag": "shader:C:/Users/dyost/Desktop/TemportalEngine/Minecraft/MinecraftCore/assets/render/entity/RenderEntityFragment.te-asset",
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "cameraUniform",
+					"type": 6,
+					"stage": 1
+				}
+			]
+		},
+		{
+			"descriptors": [
+				{
+					"id": "texture",
+					"type": 1,
+					"stage": 16
+				}
+			]
+		}
+	]
+}
