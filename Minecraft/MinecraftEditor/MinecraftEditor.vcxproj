@@ -63,7 +63,6 @@
     <Import Project="..\..\Core\TemportalEngine\libs\Optick.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngineEditor\libs\TinyObjLoader.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
   </ImportGroup>
