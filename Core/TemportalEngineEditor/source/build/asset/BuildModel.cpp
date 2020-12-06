@@ -60,9 +60,10 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 		| aiProcess_Triangulate
 		| aiProcess_JoinIdenticalVertices
 		| aiProcess_SortByPType
-		// | aiProcess_MakeLeftHanded
-		// | aiProcess_FlipWindingOrder
 		| aiProcess_FlipUVs // ensures that the upper-left is the origin for UV coords
+		// TODO: Fix the engine being in left-handed space (+Z forward). It should be right-handed (-Z forward)
+		| aiProcess_MakeLeftHanded
+		| aiProcess_FlipWindingOrder
 	);
 
 	if (!scene)
@@ -144,16 +145,18 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 	return errors;
 }
 
+math::Vector3 convertVector(aiVector3D const& in)
+{
+	return { in.y, -in.z, in.x };
+}
+
 ModelVertex convertVertex(aiMesh const* mesh, uIndex iVertex)
 {
-	static uSize SIZE_OF_V3 = sizeof(math::Vector3);
-	
 	auto vertex = ModelVertex{};
-
-	memcpy_s(vertex.position.data(), SIZE_OF_V3, &mesh->mVertices[iVertex], SIZE_OF_V3);
-	memcpy_s(vertex.normal.data(), SIZE_OF_V3, &mesh->mNormals[iVertex], SIZE_OF_V3);
-	memcpy_s(vertex.tangent.data(), SIZE_OF_V3, &mesh->mTangents[iVertex], SIZE_OF_V3);
-	memcpy_s(vertex.bitangent.data(), SIZE_OF_V3, &mesh->mBitangents[iVertex], SIZE_OF_V3);
+	vertex.position = convertVector(mesh->mVertices[iVertex]);
+	vertex.normal = convertVector(mesh->mNormals[iVertex]);
+	vertex.tangent = convertVector(mesh->mTangents[iVertex]);
+	vertex.bitangent = convertVector(mesh->mBitangents[iVertex]);
 
 	// To support more than 1 texCoord per vertex, iterate over [0, AI_MAX_NUMBER_OF_TEXTURECOORDS) to get the texCoord index
 	ui32 iTexCoord = 0;
