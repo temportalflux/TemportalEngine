@@ -6,6 +6,7 @@
 #include "graphics/AttributeBinding.hpp"
 #include "graphics/Descriptor.hpp"
 #include "graphics/Buffer.hpp"
+#include "asset/TypedAssetPath.hpp"
 
 FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
@@ -21,7 +22,7 @@ public:
 	LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
 	~LineRenderer();
 
-	LineRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
+	LineRenderer& setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	void createGraphicsBuffers(graphics::CommandPool* transientPool);
 
 	// ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~

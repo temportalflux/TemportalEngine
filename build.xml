@@ -9,7 +9,7 @@
 			<echo message="Running editor on ${cfg} ${platform}" />
 			<mkdir dir="output/MinecraftEditor" />
 			<exec dir="output/MinecraftEditor" executable="Binaries/Build/${cfg}/${platform}/MinecraftEditor/MinecraftEditor.exe">
-				<arg line="memory-main=65536" />
+				<arg line="memory-main=524288" />
 				<arg line="memory-asset=65536" />
 				<arg line="memory-misc=65536" />
 				<extArgs/>
@@ -36,7 +36,7 @@
 		<echo message="Running Minecraft on ${cfg} ${platform}" />
 		<mkdir dir="output/MinecraftGame" />
 		<exec dir="output/MinecraftGame" executable="Binaries/Build/${cfg}/${platform}/MinecraftGame/MinecraftGame.exe">
-			<arg line="memory-main=65536" />
+			<arg line="memory-main=524288" />
 			<arg line="memory-asset=65536" />
 			<arg line="memory-misc=65536" />
 		</exec>

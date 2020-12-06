@@ -19,6 +19,7 @@ public:
 	void createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager);
 	void createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer);
 
+	uIndex const& modelHandle() const;
 	std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer() const;
 	uIndex const& instanceHandle() const;
 

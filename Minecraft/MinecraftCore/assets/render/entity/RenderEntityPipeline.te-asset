@@ -1,7 +1,7 @@
 {
 	"type": "pipeline",
-	"shader-vert": "shader:C:/Users/dyost/Desktop/TemportalEngine/Minecraft/MinecraftCore/assets/render/entity/RenderEntityVertex.te-asset",
-	"shader-frag": "shader:C:/Users/dyost/Desktop/TemportalEngine/Minecraft/MinecraftCore/assets/render/entity/RenderEntityFragment.te-asset",
+	"shader-vert": "shader:assets/render/entity/RenderEntityVertex.te-asset",
+	"shader-frag": "shader:assets/render/entity/RenderEntityFragment.te-asset",
 	"descriptorGroups": [
 		{
 			"descriptors": [

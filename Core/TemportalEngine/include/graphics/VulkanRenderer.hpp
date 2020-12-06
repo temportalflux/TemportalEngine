@@ -52,7 +52,7 @@ public:
 	// Creates a swap chain, and all objects that depend on it
 	virtual void createRenderChain() = 0;
 
-	virtual void finalizeInitialization() {}
+	virtual void finalizeInitialization() { bHasInitialized = true; }
 	virtual void onInputEvent(void* evt) {}
 
 	/**
@@ -132,6 +132,7 @@ private:
 
 	uSize mIdxCurrentFrame;
 	ui32 mIdxCurrentImage;
+	bool bHasInitialized;
 
 };
 

@@ -42,6 +42,8 @@ public:
 	bool hasChanges() const;
 	void commitToBuffer(graphics::CommandPool* transientPool);
 
+	graphics::Buffer* buffer();
+
 private:
 	static constexpr ui32 instanceBufferCount() { return ECS_MAX_ENTITY_COUNT; }
 	static constexpr uSize instanceBufferSize() { return sizeof(InstanceData) * instanceBufferCount(); }

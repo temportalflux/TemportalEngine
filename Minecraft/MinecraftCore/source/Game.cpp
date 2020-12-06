@@ -229,8 +229,6 @@ void Game::createRenderers()
 	pEngine->addTicker(this->mpSystemUpdateCameraPerspective);
 
 	this->createPipelineRenderers();
-	this->mpRenderer->createRenderChain();
-	this->mpRenderer->finalizeInitialization();
 
 	this->mpSystemUpdateDebugHUD = pEngine->getMainMemory()->make_shared<ecs::system::UpdateDebugHUD>(this->mpWindow);
 	this->mpSystemUpdateDebugHUD->createHUD(this->mpUIRenderer);
@@ -244,12 +242,12 @@ void Game::createRenderers()
 	this->mpEntityInstanceBuffer->create();
 
 	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
-		std::weak_ptr(this->mpSkinnedModelManager)
+		std::weak_ptr(this->mpSkinnedModelManager), this->mpGlobalDescriptorPool
 	);
 	pEngine->addTicker(this->mpSystemRenderPlayer);
 	this->mpSystemRenderPlayer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/entity/RenderEntityPipeline.te-asset"
-	).load(asset::EAssetSerialization::Binary));
+	));
 	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
 
 	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
@@ -258,6 +256,8 @@ void Game::createRenderers()
 	this->mpTextureRegistry->registerImage(asset::SKIN_DEFAULT_MASCULINE);
 	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
 
+	this->mpRenderer->createRenderChain();
+	this->mpRenderer->finalizeInitialization();
 }
 
 void Game::createGameRenderer()
@@ -370,7 +370,7 @@ void Game::createWorldAxesRenderer()
 	);
 	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/debug/PerspectiveLinePipeline.te-asset"
-	).load(asset::EAssetSerialization::Binary));
+	));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
 	// Y: 0->1 green up
 	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 } });
@@ -388,7 +388,7 @@ void Game::createChunkBoundaryRenderer()
 	);
 	this->mpChunkBoundaryRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/debug/ChunkLinePipeline.te-asset"
-	).load(asset::EAssetSerialization::Binary));
+	));
 	this->mpRenderer->addRenderer(this->mpChunkBoundaryRenderer.get());
 
 	f32 const l = CHUNK_SIDE_LENGTH;
@@ -489,6 +489,7 @@ void Game::createUIRenderer()
 
 void Game::destroyRenderers()
 {
+	this->mpSystemRenderPlayer->destroy();
 	this->mpTextureRegistry.reset();
 	this->mpEntityInstanceBuffer.reset();
 	this->mpSkinnedModelManager.reset();
@@ -498,7 +499,7 @@ void Game::destroyRenderers()
 	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpGlobalDescriptorPool->invalidate();
-
+	
 	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpSystemUpdateDebugHUD.reset();
 	this->mpUIRenderer->destroyRenderDevices();
@@ -506,6 +507,7 @@ void Game::destroyRenderers()
 	this->mpRenderer->invalidate();
 
 	this->mpGlobalDescriptorPool.reset();
+	this->mpSystemRenderPlayer.reset();
 	this->mpVoxelGridRenderer.reset();
 	this->mpWorldAxesRenderer.reset();
 	this->mpChunkBoundaryRenderer.reset();

@@ -71,6 +71,8 @@ public:
 	void destroyScene();
 
 	void run();
+	
+	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
 
 private:
 	logging::Logger mProjectLog;

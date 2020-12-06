@@ -8,6 +8,7 @@ using namespace graphics;
 VulkanRenderer::VulkanRenderer()
 	: mIdxCurrentFrame(0)
 	, mbRenderChainDirty(false)
+	, bHasInitialized(false)
 {
 }
 
@@ -122,6 +123,7 @@ void VulkanRenderer::destroyFrameImageViews()
 
 void VulkanRenderer::drawFrame()
 {
+	if (!bHasInitialized) return;
 	OPTICK_FRAME("RenderThread");
 	if (this->mbRenderChainDirty)
 	{

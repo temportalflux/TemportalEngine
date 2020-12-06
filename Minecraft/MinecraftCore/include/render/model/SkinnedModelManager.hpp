@@ -7,12 +7,15 @@
 
 FORWARD_DEF(NS_ASSET, class Model);
 FORWARD_DEF(NS_GRAPHICS, class CommandPool);
+FORWARD_DEF(NS_GRAPHICS, class Command);
 
 NS_GRAPHICS
 class GraphicsDevice;
 
 class SkinnedModel
 {
+	friend class SkinnedModelManager;
+
 public:
 	SkinnedModel();
 
@@ -58,6 +61,9 @@ public:
 	SkinnedModel& createModel(Handle &outHandle);
 	Handle createAssetModel(std::shared_ptr<asset::Model> asset);
 	void destroyModel(Handle const& validHandle);
+
+	void bindBuffers(Handle const& validHandle, graphics::Command *command);
+	ui32 indexCount(Handle const& validHandle) const;
 
 private:
 	std::weak_ptr<GraphicsDevice> mpDevice;

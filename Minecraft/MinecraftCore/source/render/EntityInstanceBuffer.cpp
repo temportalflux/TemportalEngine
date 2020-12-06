@@ -142,3 +142,8 @@ void EntityInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 	if (regionBeingPrepared.size > 0) regionsToCopy.push_back(regionBeingPrepared);
 	commitRegions();
 }
+
+graphics::Buffer* EntityInstanceBuffer::buffer()
+{
+	return &this->mInstanceBuffer;
+}

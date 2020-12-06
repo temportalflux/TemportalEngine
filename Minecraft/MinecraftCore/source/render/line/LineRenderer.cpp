@@ -4,6 +4,7 @@
 #include "asset/Shader.hpp"
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
+#include "graphics/assetHelpers.hpp"
 
 using namespace graphics;
 
@@ -17,40 +18,18 @@ LineRenderer::~LineRenderer()
 	destroy();
 }
 
-LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
+LineRenderer& LineRenderer::setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
 	if (!this->mpPipeline)
 	{
 		this->mpPipeline = std::make_shared<graphics::Pipeline>();
 	}
 
-	this->mpPipeline->addViewArea(asset->getViewport(), asset->getScissor());
-	this->mpPipeline->setBlendMode(asset->getBlendMode());
-	this->mpPipeline->setFrontFace(asset->getFrontFace());
-	this->mpPipeline->setTopology(asset->getTopology());
-	this->mpPipeline->setLineWidth(asset->getLineWidth());
-
-	// Perform a synchronous load on each shader to create the shader modules
-	this->mpPipeline->addShader(asset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
-	this->mpPipeline->addShader(asset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());
+	graphics::populatePipeline(path, this->mpPipeline.get(), &this->mDescriptorLayout);
 
 	{
 		ui8 slot = 0;
 		this->mpPipeline->setBindings({ this->makeVertexBinding(slot) });
-	}
-
-	// Create descriptor groups for the pipeline
-	for (auto const& assetDescGroup : asset->getDescriptorGroups())
-	{
-		auto const& descriptors = assetDescGroup.descriptors;
-		this->mDescriptorLayout.setBindingCount(descriptors.size());
-		for (uIndex i = 0; i < descriptors.size(); ++i)
-		{
-			this->mDescriptorLayout.setBinding(
-				i, descriptors[i].id,
-				descriptors[i].type, descriptors[i].stage, 1
-			);
-		}
 	}
 
 	return *this;

@@ -1,6 +1,7 @@
 #include "render/model/SkinnedModelManager.hpp"
 
 #include "asset/ModelAsset.hpp"
+#include "graphics/Command.hpp"
 
 using namespace graphics;
 
@@ -11,7 +12,7 @@ SkinnedModel::SkinnedModel()
 		graphics::MemoryUsage::eGPUOnly
 	);
 	this->mIndexBuffer.setUsage(
-		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer,
 		graphics::MemoryUsage::eGPUOnly
 	);
 }
@@ -114,4 +115,16 @@ void SkinnedModelManager::destroyModel(Handle const& validHandle)
 {
 	this->mModels[validHandle].invalidate();
 	this->mUnusedHandles.insert(validHandle);
+}
+
+void SkinnedModelManager::bindBuffers(Handle const& validHandle, graphics::Command *command)
+{
+	auto& model = this->mModels[validHandle];
+	command->bindVertexBuffers(0, { &model.mVertexBuffer });
+	command->bindIndexBuffer(0, & model.mIndexBuffer, vk::IndexType::eUint32);
+}
+
+ui32 SkinnedModelManager::indexCount(Handle const& validHandle) const
+{
+	return (ui32)this->mModels[validHandle].mIndices.size();
 }

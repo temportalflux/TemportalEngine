@@ -50,7 +50,9 @@ void TextureRegistry::registerSampler(SamplerPath const& assetPath)
 	auto entry = SamplerEntry{
 		std::make_shared<ImageSampler>()
 	};
+	entry.sampler->setDevice(this->mpDevice);
 	graphics::populateSampler(entry.sampler.get(), assetPath);
+	entry.sampler->create();
 	this->mSamplers.insert(std::make_pair(assetPath.path(), std::move(entry)));
 }
 

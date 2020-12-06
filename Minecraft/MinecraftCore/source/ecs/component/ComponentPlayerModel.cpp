@@ -39,6 +39,11 @@ void PlayerModel::createInstance(std::shared_ptr<graphics::EntityInstanceBuffer>
 	this->mInstanceHandle = instanceBuffer->createInstance();
 }
 
+uIndex const& PlayerModel::modelHandle() const
+{
+	return this->mModelHandle;
+}
+
 std::shared_ptr<graphics::EntityInstanceBuffer> PlayerModel::instanceBuffer() const
 {
 	return this->mpInstanceBuffer.lock();
