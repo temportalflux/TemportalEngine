@@ -32,7 +32,7 @@ public:
 
 	void destroyRenderChain() override;
 
-	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override { assert(false); }
+	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
 
 private:
 	std::weak_ptr<graphics::SkinnedModelManager> const mpModelManager;

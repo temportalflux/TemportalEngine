@@ -139,6 +139,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerModel.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\EntityInstanceBuffer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -225,6 +228,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerModel.cpp">
       <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\EntityInstanceBuffer.cpp">
+      <Filter>render</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

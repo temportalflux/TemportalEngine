@@ -31,8 +31,9 @@
 #include "registry/VoxelType.hpp"
 #include "render/MinecraftRenderer.hpp"
 #include "world/BlockInstanceMap.hpp"
-#include "render/VoxelGridRenderer.hpp"
+#include "render/EntityInstanceBuffer.hpp"
 #include "render/VoxelModelManager.hpp"
+#include "render/VoxelGridRenderer.hpp"
 #include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/model/SkinnedModelManager.hpp"
@@ -236,10 +237,14 @@ void Game::createRenderers()
 	this->mpSkinnedModelManager = std::make_shared<graphics::SkinnedModelManager>(
 		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
 	);
+	this->mpEntityInstanceBuffer = std::make_shared<graphics::EntityInstanceBuffer>();
+	this->mpEntityInstanceBuffer->setDevice(this->mpRenderer->getDevice());
+	this->mpEntityInstanceBuffer->create();
 
 	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
 		std::weak_ptr(this->mpSkinnedModelManager)
 	);
+	pEngine->addTicker(this->mpSystemRenderPlayer);
 	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
 
 }
@@ -473,6 +478,7 @@ void Game::createUIRenderer()
 
 void Game::destroyRenderers()
 {
+	this->mpEntityInstanceBuffer.reset();
 	this->mpSkinnedModelManager.reset();
 	this->mpVoxelModelManager.reset();
 	this->mpVoxelGridRenderer->destroyRenderDevices();
@@ -575,6 +581,7 @@ void Game::createLocalPlayer()
 		// Required by `view::RenderedPlayer`
 		auto playerModel = components.create<ecs::component::PlayerModel>();
 		playerModel->createModel(this->mpSkinnedModelManager);
+		playerModel->createInstance(this->mpEntityInstanceBuffer);
 		this->mpEntityLocalPlayer->addComponent(playerModel);
 	}
 
@@ -642,6 +649,10 @@ void Game::updateWorldGraphics()
 		this->mpUIRenderer->lock();
 		this->mpUIRenderer->commitToBuffer(&this->mpRenderer->getTransientPool());
 		this->mpUIRenderer->unlock();
+	}
+	if (this->mpEntityInstanceBuffer->hasChanges())
+	{
+		this->mpEntityInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
 	}
 }
 

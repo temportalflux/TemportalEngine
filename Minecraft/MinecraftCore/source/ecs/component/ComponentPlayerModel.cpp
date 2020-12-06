@@ -3,6 +3,7 @@
 #include "asset/TypedAssetPath.hpp"
 #include "asset/ModelAsset.hpp"
 #include "render/model/SkinnedModelManager.hpp"
+#include "render/EntityInstanceBuffer.hpp"
 
 using namespace ecs;
 using namespace ecs::component;
@@ -20,6 +21,7 @@ PlayerModel::PlayerModel() : Component()
 PlayerModel::~PlayerModel()
 {
 	this->mpModelManager.lock()->destroyModel(this->mModelHandle);
+	this->instanceBuffer()->destroyInstance(this->mInstanceHandle);
 }
 
 void PlayerModel::createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager)
@@ -29,4 +31,20 @@ void PlayerModel::createModel(std::shared_ptr<graphics::SkinnedModelManager> mod
 	this->mModelHandle = modelManager->createAssetModel(
 		PLAYER_MODEL_PATH.load(asset::EAssetSerialization::Binary)
 	);
+}
+
+void PlayerModel::createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer)
+{
+	this->mpInstanceBuffer = instanceBuffer;
+	this->mInstanceHandle = instanceBuffer->createInstance();
+}
+
+std::shared_ptr<graphics::EntityInstanceBuffer> PlayerModel::instanceBuffer() const
+{
+	return this->mpInstanceBuffer.lock();
+}
+
+uIndex const& PlayerModel::instanceHandle() const
+{
+	return this->mInstanceHandle;
 }

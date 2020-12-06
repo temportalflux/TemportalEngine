@@ -348,7 +348,7 @@ void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> con
 
 		auto* instance = this->getInstanceAt(valueIndex);
 		instance->posOfChunk = math::Vector3Padded(coordinate.chunk().toFloat());
-		instance->model = math::createModelMatrix(coordinate.local().toFloat());
+		instance->model = math::translate(coordinate.local().toFloat());
 	}
 }
 

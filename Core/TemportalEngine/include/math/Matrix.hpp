@@ -19,6 +19,12 @@ public:
 		memset(mColumns, 0, sizeof(TValue) * Width * Height);
 	}
 
+	Matrix(TMatrix const& other)
+	{
+		uSize size = sizeof(TValue) * Width * Height;
+		memcpy_s(mColumns, size, other.mColumns, size);
+	}
+
 	Matrix(TValue identityMultiplier) : Matrix()
 	{
 		assert(Width == Height);
@@ -44,6 +50,15 @@ public:
 		return *this;
 	}
 
+	TMatrix& operator*=(TMatrix const& other);
+
+	TMatrix operator*(TMatrix const &other) const
+	{
+		TMatrix result = TMatrix(*this);
+		result *= other;
+		return result;
+	}
+
 private:
 	TColumn mColumns[Width];
 
@@ -51,6 +66,9 @@ private:
 
 typedef Matrix<f32, 4, 4> Matrix4x4;
 
-Matrix4x4 createModelMatrix(Vector3 const pos);
+Matrix4x4 translate(Vector3 const& translation);
+Matrix4x4 toMatrix(Quaternion const& quat);
+Matrix4x4 scale(Vector3 const& scale);
+Matrix4x4 createModelMatrix(Vector3 const& translation, Quaternion const& rotation, Vector3 const& scale);
 
 NS_END

@@ -4,10 +4,12 @@
 #include "ecs/Core.hpp"
 
 #include "render/model/SkinnedModelManager.hpp"
+#include "render/EntityInstanceBuffer.hpp"
 
 #include "ecs/view/ViewRenderedPlayer.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
+#include "ecs/component/ComponentPlayerModel.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
@@ -62,6 +64,25 @@ void RenderPlayer::createPipeline(math::Vector2UInt const& resolution)
 
 }
 
+void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
+{
+	OPTICK_EVENT();
+
+	auto transform = view->get<component::CoordinateTransform>();
+	auto playerModel = view->get<component::PlayerModel>();
+	assert(transform && playerModel);
+
+	graphics::EntityInstanceBuffer::InstanceData instance;
+	instance.posOfCurrentChunk = transform->position().chunk().toFloat();
+	instance.localTransform = math::createModelMatrix(
+		transform->position().local().toFloat() + transform->position().offset(),
+		math::Quaternion::FromAxisAngle(math::Vector3unitY, transform->orientation().euler().y()),
+		transform->size()
+	);
+	playerModel->instanceBuffer()->markInstanceForUpdate(playerModel->instanceHandle(), instance);
+
+}
+
 void RenderPlayer::record(graphics::Command *command, uIndex idxFrame)
 {
 	OPTICK_EVENT();
@@ -77,10 +98,11 @@ void RenderPlayer::recordView(graphics::Command *command, std::shared_ptr<ecs::v
 {
 	OPTICK_EVENT();
 
-	auto transform = view->get<component::CoordinateTransform>();
 	auto cameraPOV = view->get<component::CameraPOV>();
-	assert(transform && cameraPOV);
+	auto playerModel = view->get<component::PlayerModel>();
+	assert(cameraPOV && playerModel);
 
+	playerModel->instanceHandle();
 }
 
 void RenderPlayer::destroyRenderChain()

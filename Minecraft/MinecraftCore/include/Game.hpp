@@ -22,6 +22,7 @@ NS_END
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
+FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
@@ -82,6 +83,7 @@ private:
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
+	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
 	std::shared_ptr<ecs::system::RenderPlayer> mpSystemRenderPlayer;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
