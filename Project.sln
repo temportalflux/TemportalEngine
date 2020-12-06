@@ -41,6 +41,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{2ED92AFB-7F78-4C1E-9EB3-75A2186BC063}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Modules\Test\Test.vcxproj", "{62E31BE0-42A6-4153-A810-79B93887FC52}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3AD6343C-1563-4DE2-B16D-20031AE18E2B} = {3AD6343C-1563-4DE2-B16D-20031AE18E2B}
+		{ABDE6299-5814-4811-91D4-5908CE699B57} = {ABDE6299-5814-4811-91D4-5908CE699B57}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

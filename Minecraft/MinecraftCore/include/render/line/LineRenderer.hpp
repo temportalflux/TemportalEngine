@@ -4,7 +4,7 @@
 
 #include "render/IPipelineRenderer.hpp"
 #include "graphics/AttributeBinding.hpp"
-#include "graphics/DescriptorGroup.hpp"
+#include "graphics/Descriptor.hpp"
 #include "graphics/Buffer.hpp"
 
 FORWARD_DEF(NS_ASSET, class Pipeline);
@@ -38,11 +38,12 @@ public:
 	void destroyRenderChain();
 	// ~~~~~~~~~~~~ END: IPipelineRenderer ~~~~~~~~~~
 
-	void destroyBuffers();
+	void destroy();
 
 protected:
 
-	std::vector<graphics::DescriptorGroup> mDescriptorGroups;
+	graphics::DescriptorLayout mDescriptorLayout;
+	std::vector<graphics::DescriptorSet> mDescriptorSets;
 
 	virtual graphics::AttributeBinding makeVertexBinding(ui8 &slot) const = 0;
 	virtual uSize vertexBufferSize() const = 0;

@@ -1,6 +1,7 @@
 #include "graphics/Command.hpp"
 
 #include "graphics/CommandBuffer.hpp"
+#include "graphics/Descriptor.hpp"
 #include "graphics/RenderPass.hpp"
 #include "graphics/FrameBuffer.hpp"
 #include "graphics/Pipeline.hpp"
@@ -194,6 +195,16 @@ Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::v
 		0, (ui32)sets.size(), sets.data(), 0, nullptr
 	);
 	return *this;
+}
+
+Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<graphics::DescriptorSet*> sets)
+{
+	auto vkSets = std::vector<vk::DescriptorSet>();
+	for (auto const* pSet : sets)
+	{
+		vkSets.push_back(reinterpret_cast<VkDescriptorSet>(pSet->get()));
+	}
+	return bindDescriptorSets(pPipeline, vkSets);
 }
 
 Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers)

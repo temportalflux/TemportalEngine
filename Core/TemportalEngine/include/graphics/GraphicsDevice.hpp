@@ -29,6 +29,8 @@ class GraphicsDevice
 	friend class Buffer;
 	friend class CommandPool;
 	friend class DescriptorGroup;
+	friend class DescriptorLayout;
+	friend class DescriptorSet;
 	friend class DescriptorPool;
 	friend class Frame;
 	friend class FrameBuffer;
@@ -82,8 +84,11 @@ private:
 	void resetPool(CommandPool const *pool, vk::CommandPoolResetFlags flags = vk::CommandPoolResetFlags()) const;
 #pragma endregion
 #pragma region DescriptorGroup
-	vk::UniqueDescriptorSetLayout createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo const &info) const;
+	vk::UniqueDescriptorSetLayout createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo const &info) const;
+	vk::DescriptorSetLayout createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo const &info) const;
+	void destroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const;
 	std::vector<vk::DescriptorSet> allocateDescriptorSets(DescriptorPool const *pool, DescriptorGroup const *group, ui32 const count) const;
+	std::vector<vk::DescriptorSet> allocateDescriptorSets(DescriptorPool const *pool, vk::DescriptorSetLayout const& layout, ui32 const& count) const;
 	void updateDescriptorSets(std::vector<vk::WriteDescriptorSet> writes, std::vector<vk::CopyDescriptorSet> copies = {}) const;
 #pragma endregion
 #pragma region DescriptorPool

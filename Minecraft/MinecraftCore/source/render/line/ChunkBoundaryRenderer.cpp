@@ -103,7 +103,10 @@ void ChunkBoundaryRenderer::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
-	this->mDescriptorGroups[0].attachToBinding("mvpCamera", mutableUniforms["mvpUniform"]);
+	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
+	{
+		this->mDescriptorSets[idxSet].attach("mvpCamera", mutableUniforms["mvpUniform"][idxSet]);
+	}
 }
 
 void ChunkBoundaryRenderer::draw(graphics::Command *command)

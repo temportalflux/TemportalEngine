@@ -316,6 +316,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelVertex.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Descriptor.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -678,6 +681,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelVertex.hpp">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Descriptor.hpp">
+      <Filter>graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

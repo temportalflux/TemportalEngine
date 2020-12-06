@@ -4,6 +4,7 @@
 
 #include "render/IPipelineRenderer.hpp"
 
+FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 
 NS_ECS NS_SYSTEM
@@ -15,6 +16,8 @@ public:
 	RenderPlayer(
 		std::weak_ptr<graphics::SkinnedModelManager> modelManager
 	);
+
+	RenderPlayer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;

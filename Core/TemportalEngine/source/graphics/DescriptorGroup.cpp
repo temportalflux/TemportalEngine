@@ -172,7 +172,7 @@ DescriptorGroup& DescriptorGroup::attachToBinding(
 
 DescriptorGroup& DescriptorGroup::create(std::shared_ptr<GraphicsDevice> device, DescriptorPool *pool)
 {
-	this->mInternalLayout = device->createDescriptorSetLayout(
+	this->mInternalLayout = device->createDescriptorSetLayoutUnique(
 		vk::DescriptorSetLayoutCreateInfo()
 		.setBindingCount((ui32)this->mBindings.size())
 		.setPBindings(this->mBindings.data())

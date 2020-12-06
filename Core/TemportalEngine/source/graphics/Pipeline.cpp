@@ -92,6 +92,13 @@ Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup> *descriptors)
 	return *this;
 }
 
+Pipeline& Pipeline::setDescriptorLayout(graphics::DescriptorLayout const& layout, uSize const& setCount)
+{
+	vk::DescriptorSetLayout vkLayout = reinterpret_cast<VkDescriptorSetLayout>(layout.get());
+	this->mDescriptorLayouts = std::vector<vk::DescriptorSetLayout>(setCount, vkLayout);
+	return *this;
+}
+
 bool Pipeline::isValid() const
 {
 	return (bool)this->mPipeline;

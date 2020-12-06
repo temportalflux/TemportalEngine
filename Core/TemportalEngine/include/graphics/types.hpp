@@ -393,4 +393,18 @@ enum class AccessFlags : uint64_t
 };
 typedef utility::EnumWrapper<AccessFlags> Access;
 
+enum class EImageLayout : ui8
+{
+	eUndefined = 0,
+	eGeneral = 1,
+	eColorAttachmentOptimal = 2,
+	eDepthStencilAttachmentOptimal = 3,
+	eDepthStencilReadOnlyOptimal = 4,
+	eShaderReadOnlyOptimal = 5,
+	eTransferSrcOptimal = 6,
+	eTransferDstOptimal = 7,
+	ePreinitialized = 8,
+};
+typedef utility::EnumWrapper<EImageLayout> ImageLayout;
+
 NS_END

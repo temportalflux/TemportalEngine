@@ -45,6 +45,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Command.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandBuffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\CommandPool.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Descriptor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorPool.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorGroup.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DeviceObject.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Area.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Descriptor.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DeviceObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp" />

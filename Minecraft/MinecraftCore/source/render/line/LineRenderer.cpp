@@ -14,7 +14,7 @@ LineRenderer::LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPo
 
 LineRenderer::~LineRenderer()
 {
-	destroyBuffers();
+	destroy();
 }
 
 LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
@@ -43,13 +43,14 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 	for (auto const& assetDescGroup : asset->getDescriptorGroups())
 	{
 		auto const& descriptors = assetDescGroup.descriptors;
-		auto descriptorGroup = graphics::DescriptorGroup();
-		descriptorGroup.setBindingCount(descriptors.size());
+		this->mDescriptorLayout.setBindingCount(descriptors.size());
 		for (uIndex i = 0; i < descriptors.size(); ++i)
 		{
-			descriptorGroup.addBinding(descriptors[i].id, i, descriptors[i].type, descriptors[i].stage);
+			this->mDescriptorLayout.setBinding(
+				i, descriptors[i].id,
+				descriptors[i].type, descriptors[i].stage, 1
+			);
 		}
-		this->mDescriptorGroups.push_back(std::move(descriptorGroup));
 	}
 
 	return *this;
@@ -57,6 +58,8 @@ LineRenderer& LineRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
 
 void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 {
+	this->mDescriptorLayout.create();
+
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly)
 		.setSize(this->vertexBufferSize())
@@ -77,6 +80,7 @@ void LineRenderer::createGraphicsBuffers(graphics::CommandPool* transientPool)
 void LineRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
+	this->mDescriptorLayout.setDevice(device);
 	this->mVertexBuffer.setDevice(device);
 	this->mIndexBuffer.setDevice(device);
 }
@@ -88,36 +92,36 @@ void LineRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPas
 
 void LineRenderer::setFrameCount(uSize frameCount)
 {
-	this->mDescriptorGroups[0].setAmount((ui32)frameCount); // camera uniform needs per-frame
+	this->mDescriptorSets.resize(frameCount);
 }
 
 void LineRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	for (auto& descriptorGroup : this->mDescriptorGroups)
-	{
-		descriptorGroup.create(device, this->mpDescriptorPool.lock().get());
-	}
+	this->mDescriptorLayout.createSets(this->mpDescriptorPool.lock().get(), this->mDescriptorSets);
 }
 
 void LineRenderer::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
-	this->mDescriptorGroups[0].attachToBinding("localCamera", mutableUniforms["localCamera"]);
+	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
+	{
+		this->mDescriptorSets[idxSet].attach("localCamera", mutableUniforms["localCamera"][idxSet]);
+	}
 }
 
 void LineRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	for (auto& descriptorGroup : this->mDescriptorGroups)
+	for (auto& descriptorSet : this->mDescriptorSets)
 	{
-		descriptorGroup.writeAttachments(device);
+		descriptorSet.writeAttachments();
 	}
 }
 
 void LineRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
 	this->mpPipeline
-		->setDescriptors(&this->mDescriptorGroups)
+		->setDescriptorLayout(this->mDescriptorLayout, this->mDescriptorSets.size())
 		.setResolution(resolution)
 		.create();
 }
@@ -125,7 +129,7 @@ void LineRenderer::createPipeline(math::Vector2UInt const& resolution)
 void LineRenderer::record(graphics::Command *command, uIndex idxFrame)
 {
 	OPTICK_EVENT();
-	command->bindDescriptorSets(this->mpPipeline, { this->mDescriptorGroups[0].getDescriptorSet(idxFrame) });
+	command->bindDescriptorSets(this->mpPipeline, { &this->mDescriptorSets[idxFrame] });
 	command->bindPipeline(this->mpPipeline);
 	command->bindVertexBuffers(0, { &this->mVertexBuffer });
 	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
@@ -135,16 +139,14 @@ void LineRenderer::record(graphics::Command *command, uIndex idxFrame)
 void LineRenderer::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
-	for (auto& descriptorGroup : this->mDescriptorGroups)
-	{
-		descriptorGroup.invalidate();
-	}
+	this->mDescriptorSets.clear();
 }
 
 // ~~~~~~~~~~~~ END: IPipelineRenderer ~~~~~~~~~~
 
-void LineRenderer::destroyBuffers()
+void LineRenderer::destroy()
 {
+	this->mDescriptorLayout.invalidate();
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
 }

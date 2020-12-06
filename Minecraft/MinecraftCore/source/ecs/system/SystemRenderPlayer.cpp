@@ -22,6 +22,12 @@ RenderPlayer::RenderPlayer(
 {
 }
 
+RenderPlayer& RenderPlayer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
+{
+
+	return *this;
+}
+
 void RenderPlayer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 

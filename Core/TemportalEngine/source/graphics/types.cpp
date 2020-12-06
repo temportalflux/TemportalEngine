@@ -714,3 +714,22 @@ std::string Access::to_string() const { return vk::to_string(as<vk::AccessFlagBi
 std::string Access::to_display_string() const { return to_string(); }
 
 #pragma endregion
+
+#pragma region Image Layout
+
+std::vector<EImageLayout> ImageLayout::ALL = {
+	EImageLayout::eUndefined,
+	EImageLayout::eGeneral,
+	EImageLayout::eColorAttachmentOptimal,
+	EImageLayout::eDepthStencilAttachmentOptimal,
+	EImageLayout::eDepthStencilReadOnlyOptimal,
+	EImageLayout::eShaderReadOnlyOptimal,
+	EImageLayout::eTransferSrcOptimal,
+	EImageLayout::eTransferDstOptimal,
+	EImageLayout::ePreinitialized,
+};
+
+std::string ImageLayout::to_string() const { return vk::to_string(as<vk::ImageLayout>()); }
+std::string ImageLayout::to_display_string() const { return to_string(); }
+
+#pragma endregion

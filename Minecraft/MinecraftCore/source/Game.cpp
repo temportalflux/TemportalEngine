@@ -245,6 +245,9 @@ void Game::createRenderers()
 		std::weak_ptr(this->mpSkinnedModelManager)
 	);
 	pEngine->addTicker(this->mpSystemRenderPlayer);
+	this->mpSystemRenderPlayer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/render/entity/RenderEntityPipeline.te-asset"
+	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
 
 }
@@ -482,8 +485,8 @@ void Game::destroyRenderers()
 	this->mpSkinnedModelManager.reset();
 	this->mpVoxelModelManager.reset();
 	this->mpVoxelGridRenderer->destroyRenderDevices();
-	this->mpWorldAxesRenderer->destroyBuffers();
-	this->mpChunkBoundaryRenderer->destroyBuffers();
+	this->mpWorldAxesRenderer->destroy();
+	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpGlobalDescriptorPool->invalidate();
 

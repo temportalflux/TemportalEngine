@@ -171,14 +171,35 @@ void GraphicsDevice::resetPool(CommandPool const *pool, vk::CommandPoolResetFlag
 
 #pragma region DescriptorGroup
 
-vk::UniqueDescriptorSetLayout GraphicsDevice::createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo const &info) const
+vk::UniqueDescriptorSetLayout GraphicsDevice::createDescriptorSetLayoutUnique(vk::DescriptorSetLayoutCreateInfo const &info) const
 {
 	return this->internalLogic()->createDescriptorSetLayoutUnique(info);
+}
+
+vk::DescriptorSetLayout GraphicsDevice::createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo const &info) const
+{
+	return this->internalLogic()->createDescriptorSetLayout(info);
+}
+
+void GraphicsDevice::destroyDescriptorSetLayout(vk::DescriptorSetLayout layout) const
+{
+	this->internalLogic()->destroyDescriptorSetLayout(layout);
 }
 
 std::vector<vk::DescriptorSet> GraphicsDevice::allocateDescriptorSets(DescriptorPool const *pool, DescriptorGroup const *group, ui32 const count) const
 {
 	std::vector<vk::DescriptorSetLayout> layouts(count, group->mInternalLayout.get());
+	return this->internalLogic()->allocateDescriptorSets(
+		vk::DescriptorSetAllocateInfo()
+		.setDescriptorPool(pool->mInternal.get())
+		.setDescriptorSetCount(count)
+		.setPSetLayouts(layouts.data())
+	);
+}
+
+std::vector<vk::DescriptorSet> GraphicsDevice::allocateDescriptorSets(DescriptorPool const *pool, vk::DescriptorSetLayout const& layout, ui32 const& count) const
+{
+	std::vector<vk::DescriptorSetLayout> layouts(count, layout);
 	return this->internalLogic()->allocateDescriptorSets(
 		vk::DescriptorSetAllocateInfo()
 		.setDescriptorPool(pool->mInternal.get())
