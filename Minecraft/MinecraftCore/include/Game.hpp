@@ -27,6 +27,7 @@ FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
+FORWARD_DEF(NS_GRAPHICS, class TextureRegistry);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_WORLD, class World);
@@ -85,6 +86,7 @@ private:
 	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
 	std::shared_ptr<ecs::system::RenderPlayer> mpSystemRenderPlayer;
+	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;

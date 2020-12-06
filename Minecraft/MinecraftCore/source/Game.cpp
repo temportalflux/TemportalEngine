@@ -10,6 +10,7 @@
 #include "asset/PipelineAsset.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "asset/MinecraftAssetStatics.hpp"
 #include "ecs/Core.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
@@ -34,6 +35,7 @@
 #include "render/EntityInstanceBuffer.hpp"
 #include "render/VoxelModelManager.hpp"
 #include "render/VoxelGridRenderer.hpp"
+#include "render/TextureRegistry.hpp"
 #include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/model/SkinnedModelManager.hpp"
@@ -250,6 +252,12 @@ void Game::createRenderers()
 	).load(asset::EAssetSerialization::Binary));
 	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
 
+	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
+		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
+	);
+	this->mpTextureRegistry->registerImage(asset::SKIN_DEFAULT_MASCULINE);
+	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
+
 }
 
 void Game::createGameRenderer()
@@ -291,7 +299,7 @@ void Game::createGameRenderer()
 void Game::loadVoxelTypeTextures()
 {
 	this->mpVoxelModelManager = std::make_shared<game::VoxelModelManager>();
-	this->mpVoxelModelManager->setSampler(asset::TypedAssetPath<asset::TextureSampler>::Create("assets/textures/NearestNeighborSampler.te-asset"));
+	this->mpVoxelModelManager->setSampler(asset::TypedAssetPath<asset::TextureSampler>(asset::SAMPLER_NEAREST_NEIGHBOR));
 	this->mpVoxelModelManager->loadRegistry(this->mpVoxelTypeRegistry);
 	this->mpVoxelModelManager->createTextures(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
 	this->mpVoxelModelManager->createModels(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
@@ -481,6 +489,7 @@ void Game::createUIRenderer()
 
 void Game::destroyRenderers()
 {
+	this->mpTextureRegistry.reset();
 	this->mpEntityInstanceBuffer.reset();
 	this->mpSkinnedModelManager.reset();
 	this->mpVoxelModelManager.reset();

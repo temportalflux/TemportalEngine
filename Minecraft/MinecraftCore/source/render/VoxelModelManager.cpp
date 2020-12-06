@@ -4,6 +4,7 @@
 #include "asset/BlockType.hpp"
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+#include "graphics/assetHelpers.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/GraphicsDevice.hpp"
 #include "model/CubeModelLoader.hpp"
@@ -26,22 +27,8 @@ VoxelModelManager::~VoxelModelManager()
 
 void VoxelModelManager::setSampler(SamplerPath const& samplerPath)
 {
-	auto samplerAsset = samplerPath.load(asset::EAssetSerialization::Binary);
 	this->mpSampler = std::make_shared<graphics::ImageSampler>();
-	this->mpSampler
-		->setFilter(
-			samplerAsset->getFilterModeMagnified(),
-			samplerAsset->getFilterModeMinified()
-		)
-		.setAddressMode(samplerAsset->getAddressModes())
-		.setAnistropy(samplerAsset->getAnisotropy())
-		.setBorderColor(samplerAsset->getBorderColor())
-		.setNormalizeCoordinates(samplerAsset->areCoordinatesNormalized())
-		.setCompare(samplerAsset->getCompareOperation())
-		.setMipLOD(
-			samplerAsset->getLodMode(),
-			samplerAsset->getLodBias(), samplerAsset->getLodRange()
-		);
+	graphics::populateSampler(this->mpSampler.get(), samplerPath);
 }
 
 std::shared_ptr<graphics::ImageSampler> VoxelModelManager::getSampler() const

@@ -25,6 +25,9 @@ protected:
 private:
 	std::shared_ptr<graphics::ImGuiTexture> mpTextureView;
 	math::Vector2UInt mTextureSize;
+	
+	f32 mViewScale;
+	math::Vector2UInt mViewSize;
 
 	std::weak_ptr<gui::modal::PathModal> mModalImport;
 

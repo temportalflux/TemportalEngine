@@ -24,6 +24,10 @@ std::vector<ui8> BuildTexture::loadImage(std::filesystem::path const &path, math
 	i32 width, height, srcChannels;
 
 	ui8* data = stbi_load(path.string().c_str(), &width, &height, &srcChannels, LOAD_MODE);
+	if (data == nullptr)
+	{
+		return {};
+	}
 	sizeOut = { (ui32)width, (ui32)height };
 
 	std::vector<ui8> imageData(sizeOut.x() * sizeOut.y() * LOAD_MODE_SIZE);

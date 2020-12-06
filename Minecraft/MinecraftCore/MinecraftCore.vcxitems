@@ -16,6 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\MinecraftAssetStatics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\model\SkinnedModelManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\TextureRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
@@ -56,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\MinecraftAssetStatics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerModel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
@@ -78,6 +81,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\model\SkinnedModelManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\TextureRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />

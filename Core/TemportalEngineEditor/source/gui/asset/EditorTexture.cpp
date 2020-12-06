@@ -7,6 +7,7 @@
 #include "Editor.hpp"
 #include "graphics/ImGuiTexture.hpp"
 #include "build/asset/BuildTexture.hpp"
+#include "property/Property.hpp"
 
 #include "math/Vector.hpp"
 
@@ -54,9 +55,23 @@ void EditorTexture::renderMenuBarItems()
 void EditorTexture::renderContent()
 {
 	AssetEditor::renderContent();
+
+	auto asset = this->get<asset::Texture>();
+	if (properties::renderProperty("Preview Scale", this->mViewScale, 1.0f))
+	{
+		this->mViewSize = this->mTextureSize;
+	}
+	if (properties::renderProperty("Preview Size", this->mViewSize, asset->getSourceSize()))
+	{
+		this->mViewScale = 1.0f;
+	}
+
 	if (this->mpTextureView && this->mpTextureView->isValid())
 	{
-		auto size = ImVec2(300, 300);//this->mTextureSize.x(), this->mTextureSize.y());
+		auto size = ImVec2(
+			this->mViewSize.x() * this->mViewScale,
+			this->mViewSize.y() * this->mViewScale
+		);
 		ImGui::Image(this->mpTextureView->id(), size);
 	}
 }
@@ -75,10 +90,13 @@ void EditorTexture::loadPreview()
 	this->mpTextureView->invalidate();
 
 	auto asset = this->get<asset::Texture>();
+	this->mViewScale = 1.0f;
+
 	auto srcPath = asset->getAbsoluteSourcePath();
 	if (std::filesystem::exists(srcPath))
 	{
 		auto pixelData = build::BuildTexture::loadImage(srcPath, this->mTextureSize);
+		this->mViewSize = this->mTextureSize;
 		this->mpTextureView->image()
 			.setFormat(vk::Format::eR8G8B8A8Srgb)
 			.setSize(math::Vector3UInt(this->mTextureSize).z(1))

@@ -40,6 +40,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECViewManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\assetHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\BlendMode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Buffer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\Command.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Area.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\assetHelpers.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorGroup.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\Descriptor.hpp" />

@@ -142,6 +142,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\EntityInstanceBuffer.hpp">
       <Filter>render</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\TextureRegistry.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\MinecraftAssetStatics.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -231,6 +235,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\EntityInstanceBuffer.cpp">
       <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\TextureRegistry.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\MinecraftAssetStatics.cpp">
+      <Filter>asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
