@@ -13,20 +13,20 @@ PlayerInput::PlayerInput()
 	this->mAxialMoveSpeed = 4.0f;
 	this->mAxisMappings = {{
 		// Forward
-		{ input::EKey::W, math::Vector3unitZ, false },
+		{ input::EKey::W, math::V3_FORWARD, false },
 		// Backward
-		{ input::EKey::S , -math::Vector3unitZ, false },
+		{ input::EKey::S , -math::V3_FORWARD, false },
 		// Strafe Right
-		{ input::EKey::D, math::Vector3unitX, false },
+		{ input::EKey::D, math::V3_RIGHT, false },
 		// Strafe Left
-		{ input::EKey::A , -math::Vector3unitX, false },
+		{ input::EKey::A , -math::V3_RIGHT, false },
 		// Up
-		{ input::EKey::E, math::Vector3unitY, true },
+		{ input::EKey::E, math::V3_UP, true },
 		// Down
-		{ input::EKey::Q, -math::Vector3unitY, true }
+		{ input::EKey::Q, -math::V3_UP, true }
 	}};
-	this->mLookHorizontal = { math::Vector3unitY, math::toRadians(90.0f), false };
-	this->mLookVertical = { math::Vector3unitX, math::toRadians(90.0f), true };
+	this->mLookHorizontal = { math::V3_UP, -math::toRadians(90.0f), false };
+	this->mLookVertical = { math::V3_RIGHT, -math::toRadians(90.0f), true };
 }
 
 PlayerInput::~PlayerInput()

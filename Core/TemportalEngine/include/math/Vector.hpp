@@ -692,21 +692,23 @@ public:
 };
 
 typedef Vector<f32, 2, 2> Vector2;
+typedef Vector<f32, 2, 4> Vector2Padded;
+typedef Vector<i32, 2, 2> Vector2Int;
+typedef Vector<ui32, 2, 2> Vector2UInt;
+extern Vector2 const Vector2unitX, Vector2unitY;
+extern Vector2 const V2_RIGHT, V2_UP;
+
 typedef Vector<f32, 3, 3> Vector3;
+typedef Vector<f32, 3, 4> Vector3Padded;
+typedef Vector<i32, 3, 3> Vector3Int;
+typedef Vector<ui32, 3, 3> Vector3UInt;
+extern Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
+extern Vector3 const V3_RIGHT, V3_UP, V3_FORWARD;
+
 typedef Vector<f32, 4, 4> Vector4;
 typedef Vector4 Color;
-typedef Vector<f32, 2, 4> Vector2Padded;
-typedef Vector<f32, 3, 4> Vector3Padded;
-
-typedef Vector<i32, 2, 2> Vector2Int;
-typedef Vector<i32, 3, 3> Vector3Int;
-
-typedef Vector<ui32, 2, 2> Vector2UInt;
-typedef Vector<ui32, 3, 3> Vector3UInt;
-
-extern Vector2 const Vector2unitX, Vector2unitY;
-extern Vector3 const Vector3unitX, Vector3unitY, Vector3unitZ;
 extern Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
+
 Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat);
 
 // TODO: This should really be in a physics thing, not a math thing

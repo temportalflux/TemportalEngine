@@ -24,7 +24,7 @@ void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	
 	auto orientation = transform->orientation();
 	auto euler = orientation.euler();
-	auto rot = math::Quaternion::FromAxisAngle(math::Vector3unitY, euler.y());
+	auto rot = math::Quaternion::FromAxisAngle(math::V3_UP, euler.y());
 
 	for (auto const& mapping : input->axialMoveMappings())
 	{

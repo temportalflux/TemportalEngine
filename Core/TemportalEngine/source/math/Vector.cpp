@@ -121,23 +121,29 @@ Quaternion const IntegrateKinematic(Quaternion const rotation,
 }
 
 Vector2 const Vector2::ZERO = { 0, 0 };
+Vector2Int const Vector2Int::ZERO = { 0, 0 };
+Vector2UInt const Vector2UInt::ZERO = { 0, 0 };
 Vector2 const Vector2unitX = { 1, 0 };
 Vector2 const Vector2unitY = { 0, 1 };
+Vector2 const V2_RIGHT = Vector2unitX;
+Vector2 const V2_UP = Vector2unitY;
+
 Vector3 const Vector3::ZERO = { 0, 0, 0 };
+Vector3Int const Vector3Int::ZERO = { 0, 0, 0 };
+Vector3UInt const Vector3UInt::ZERO = { 0, 0, 0 };
 Vector3 const Vector3unitX = { 1, 0, 0 };
 Vector3 const Vector3unitY = { 0, 1, 0 };
 Vector3 const Vector3unitZ = { 0, 0, 1 };
+// Y-Up Right-Handed is +X, +Y, -Z
+Vector3 const V3_RIGHT = Vector2unitX;
+Vector3 const V3_UP = Vector2unitY;
+Vector3 const V3_FORWARD = -Vector3unitZ;
+
 Vector4 const Vector4::ZERO = { 0, 0, 0, 0 };
 Vector4 const Vector4unitX = { 1, 0, 0, 0 };
 Vector4 const Vector4unitY = { 0, 1, 0, 0 };
 Vector4 const Vector4unitZ = { 0, 0, 1, 0 };
 Vector4 const Vector4unitW = { 0, 0, 0, 1 };
 Quaternion const Quaternion::Identity = math::Vector4unitW;
-
-Vector2Int const Vector2Int::ZERO = { 0, 0 };
-Vector3Int const Vector3Int::ZERO = { 0, 0, 0 };
-
-Vector2UInt const Vector2UInt::ZERO = { 0, 0 };
-Vector3UInt const Vector3UInt::ZERO = { 0, 0, 0 };
 
 NS_END

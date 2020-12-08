@@ -373,11 +373,11 @@ void Game::createWorldAxesRenderer()
 	));
 	this->mpRenderer->addRenderer(this->mpWorldAxesRenderer.get());
 	// Y: 0->1 green up
-	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { 0, .5f, 0 }, { 0, 1, 0, 1 } });
+	this->mpWorldAxesRenderer->addLineSegment({ math::Vector3::ZERO, 0.5f * math::V3_UP, { 0, 1, 0, 1 } });
 	// X: 0->1 red right
-	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { .5f, 0, 0 }, { 1, 0, 0, 1 } });
+	this->mpWorldAxesRenderer->addLineSegment({ math::Vector3::ZERO, 0.5f * math::V3_RIGHT, { 1, 0, 0, 1 } });
 	// Z: 0->1 blue forward
-	this->mpWorldAxesRenderer->addLineSegment({ { 0, 0, 0 }, { 0, 0, .5f }, { 0, 0, 1, 1 } });
+	this->mpWorldAxesRenderer->addLineSegment({ math::Vector3::ZERO, 0.5f * math::V3_FORWARD, { 0, 0, 1, 1 } });
 	this->mpWorldAxesRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }
 
@@ -559,8 +559,8 @@ void Game::createLocalPlayer()
 	// Add Transform
 	{
 		auto transform = components.create<ecs::component::CoordinateTransform>();
-		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { 1, 1, 3 }));
-		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (+Z)
+		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH }));
+		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		this->mpEntityLocalPlayer->addComponent(transform);
 	}
 

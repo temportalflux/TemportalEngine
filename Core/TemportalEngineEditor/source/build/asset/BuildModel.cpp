@@ -61,9 +61,6 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 		| aiProcess_JoinIdenticalVertices
 		| aiProcess_SortByPType
 		| aiProcess_FlipUVs // ensures that the upper-left is the origin for UV coords
-		// TODO: Fix the engine being in left-handed space (+Z forward). It should be right-handed (-Z forward)
-		| aiProcess_MakeLeftHanded
-		| aiProcess_FlipWindingOrder
 	);
 
 	if (!scene)
@@ -147,7 +144,8 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 
 math::Vector3 convertVector(aiVector3D const& in)
 {
-	return { in.y, -in.z, in.x };
+	// re-orient the model with the proper coordinates because the import format uses different axes
+	return { -in.y, in.z, -in.x };
 }
 
 ModelVertex convertVertex(aiMesh const* mesh, uIndex iVertex)

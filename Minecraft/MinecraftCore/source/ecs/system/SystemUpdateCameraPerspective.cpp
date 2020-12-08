@@ -47,21 +47,21 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 )
 {
 	/* Based on GLM
-		template<typename T>
-		GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveRH_NO(T fovy, T aspect, T zNear, T zFar)
-		{
-			assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
+	template<typename T>
+	GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> perspectiveRH_ZO(T fovy, T aspect, T zNear, T zFar)
+	{
+		assert(abs(aspect - std::numeric_limits<T>::epsilon()) > static_cast<T>(0));
 
-			T const tanHalfFovy = tan(fovy / static_cast<T>(2));
+		T const tanHalfFovy = tan(fovy / static_cast<T>(2));
 
-			mat<4, 4, T, defaultp> Result(static_cast<T>(0));
-			Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
-			Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
-			Result[2][2] = - (zFar + zNear) / (zFar - zNear);
-			Result[2][3] = - static_cast<T>(1);
-			Result[3][2] = - (static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
-			return Result;
-		}
+		mat<4, 4, T, defaultp> Result(static_cast<T>(0));
+		Result[0][0] = static_cast<T>(1) / (aspect * tanHalfFovy);
+		Result[1][1] = static_cast<T>(1) / (tanHalfFovy);
+		Result[2][2] = zFar / (zNear - zFar);
+		Result[2][3] = - static_cast<T>(1);
+		Result[3][2] = -(zFar * zNear) / (zFar - zNear);
+		return Result;
+	}
 	*/
 
 	// A tweet about handedness in different engines: https://twitter.com/FreyaHolmer/status/644881436982575104
@@ -69,7 +69,7 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 	assert(abs(aspectRatio - std::numeric_limits<f32>::epsilon()) > 0.0f);
 	f32 const tanHalfFovY = tan(yFOV / 2.0f);
 	auto perspective = math::Matrix4x4(0.0f);
-	perspective[0][0] = -1.0f / (aspectRatio * tanHalfFovY);
+	perspective[0][0] = 1.0f / (aspectRatio * tanHalfFovY);
 	perspective[1][1] = -1.0f / (tanHalfFovY);
 	perspective[2][2] = farPlane / (nearPlane - farPlane);
 	perspective[2][3] = -1.0f;

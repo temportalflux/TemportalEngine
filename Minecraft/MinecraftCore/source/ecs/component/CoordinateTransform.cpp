@@ -37,32 +37,32 @@ math::Quaternion const& CoordinateTransform::orientation() const
 
 math::Vector3 CoordinateTransform::forward() const
 {
-	return this->mOrientation.rotate(math::Vector3unitZ);
+	return this->mOrientation.rotate(math::V3_FORWARD);
 }
 
 math::Vector3 CoordinateTransform::backward() const
 {
-	return this->mOrientation.rotate(-math::Vector3unitZ);
+	return -forward();
 }
 
 math::Vector3 CoordinateTransform::right() const
 {
-	return this->mOrientation.rotate(math::Vector3unitX);
+	return this->mOrientation.rotate(math::V3_RIGHT);
 }
 
 math::Vector3 CoordinateTransform::left() const
 {
-	return this->mOrientation.rotate(-math::Vector3unitX);
+	return -right();
 }
 
 math::Vector3 CoordinateTransform::up() const
 {
-	return this->mOrientation.rotate(math::Vector3unitY);
+	return this->mOrientation.rotate(math::V3_UP);
 }
 
 math::Vector3 CoordinateTransform::down() const
 {
-	return this->mOrientation.rotate(-math::Vector3unitY);
+	return -up();
 }
 
 CoordinateTransform& CoordinateTransform::setOrientation(math::Quaternion const& orientation)
