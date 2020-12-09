@@ -8,11 +8,19 @@ void PackManager::scanPacksIn(std::filesystem::path const& directory)
 	{
 		this->mPacks.insert(std::make_pair(
 			entry.path().stem().string(),
-			Pack {
-				ResourceManager().scan(entry.path() / "textures")
-			}
+			std::move(Pack(entry.path()).scan())
 		));
 	}
+}
+
+Pack::Pack(std::filesystem::path const& path) : mRootPath(path), mTextures()
+{
+}
+
+Pack& Pack::scan()
+{
+	this->mTextures.scan(this->mRootPath / "texture");
+	return *this;
 }
 
 ResourceManager& ResourceManager::scan(std::filesystem::path const& path)
@@ -32,3 +40,22 @@ ResourceManager& ResourceManager::scan(std::filesystem::path const& path)
 	return *this;
 }
 
+bool PackManager::hasPack(std::string const& packName) const
+{
+	return this->mPacks.find(packName) != this->mPacks.end();
+}
+
+void PackManager::loadPack(std::string const& packName)
+{
+	this->mPacks.find(packName)->second.load();
+}
+
+void Pack::load()
+{
+	this->mTextures.load();
+}
+
+void TextureManager::load()
+{
+
+}

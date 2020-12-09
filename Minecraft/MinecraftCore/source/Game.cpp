@@ -147,7 +147,7 @@ void Game::init()
 	{
 		if (!this->initializeGraphics()) return;
 		if (!this->createWindow()) return;
-		this->scanResourcePacks();
+		if (!this->scanResourcePacks()) return;
 		this->createRenderers();
 	}
 	this->createScene();
@@ -166,10 +166,19 @@ void Game::uninit()
 	this->destroyVoxelTypeRegistry();
 }
 
-void Game::scanResourcePacks()
+bool Game::scanResourcePacks()
 {
 	this->mpResourcePackManager = std::make_shared<resource::PackManager>();
 	this->mpResourcePackManager->scanPacksIn(std::filesystem::absolute("../../resource-packs"));
+
+	if (!this->mpResourcePackManager->hasPack("Default"))
+	{
+		this->mProjectLog.log(LOG_ERR, "Failed to find default resource pack");
+		return false;
+	}
+
+	this->mpResourcePackManager->loadPack("Default");
+	return true;
 }
 
 void Game::destroyResourcePacks()

@@ -108,7 +108,7 @@ private:
 
 	void registerECSTypes(ecs::Core *ecs);
 
-	void scanResourcePacks();
+	bool scanResourcePacks();
 	void destroyResourcePacks();
 
 	void createVoxelTypeRegistry();
