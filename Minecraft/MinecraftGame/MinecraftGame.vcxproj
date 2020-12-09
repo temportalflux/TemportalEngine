@@ -115,7 +115,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -152,7 +152,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -191,7 +191,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -232,7 +232,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

@@ -114,7 +114,7 @@ void RenderPlayer::attachDescriptors(
 		this->mDescriptorSets[idxSet].attach("cameraUniform", mutableUniforms["mvpUniform"][idxSet]);
 		this->mDescriptorSets[idxSet].attach(
 			"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
-			registry->getImage(asset::SKIN_DEFAULT_MASCULINE).lock().get(),
+			registry->getImage("model:DefaultHumanoid").lock().get(),
 			registry->getSampler(asset::SAMPLER_NEAREST_NEIGHBOR).lock().get()
 		);
 	}

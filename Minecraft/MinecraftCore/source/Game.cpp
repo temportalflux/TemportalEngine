@@ -149,6 +149,9 @@ void Game::init()
 		if (!this->createWindow()) return;
 		if (!this->scanResourcePacks()) return;
 		this->createRenderers();
+		this->mpResourcePackManager->loadPack("Default", 0).loadPack("Temportal", 1).commitChanges();
+		this->mpRenderer->createRenderChain();
+		this->mpRenderer->finalizeInitialization();
 	}
 	this->createScene();
 	this->bindInput();
@@ -177,7 +180,6 @@ bool Game::scanResourcePacks()
 		return false;
 	}
 
-	this->mpResourcePackManager->loadPack("Default");
 	return true;
 }
 
@@ -276,11 +278,8 @@ void Game::createRenderers()
 	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
 		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
 	);
-	this->mpTextureRegistry->registerImage(asset::SKIN_DEFAULT_MASCULINE);
 	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
-
-	this->mpRenderer->createRenderChain();
-	this->mpRenderer->finalizeInitialization();
+	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 }
 
 void Game::createGameRenderer()

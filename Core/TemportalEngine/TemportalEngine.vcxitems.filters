@@ -322,6 +322,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\assetHelpers.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -690,6 +693,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\assetHelpers.hpp">
       <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\ImageUtils.hpp">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

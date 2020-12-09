@@ -1,9 +1,11 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "CoreInclude.hpp"
 
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
+
+FORWARD_DEF(NS_RESOURCE, class PackManager);
 
 NS_GRAPHICS
 class GraphicsDevice;
@@ -16,6 +18,7 @@ class CommandPool;
 class TextureRegistry
 {
 public:
+	typedef std::string TextureId;
 	typedef asset::TypedAssetPath<asset::Texture> TexturePath;
 	typedef asset::TypedAssetPath<asset::TextureSampler> SamplerPath;
 
@@ -25,10 +28,11 @@ public:
 	);
 	~TextureRegistry();
 
-	void registerImage(TexturePath const& assetPath);
+	std::function<void(resource::PackManager*)> onTexturesLoadedEvent();
+	void registerImage(TextureId const& id, TexturePath const& assetPath);
 	void registerSampler(SamplerPath const& assetPath);
 
-	std::weak_ptr<ImageView> getImage(TexturePath const& assetPath);
+	std::weak_ptr<ImageView> getImage(TextureId const& id);
 	std::weak_ptr<ImageSampler> getSampler(SamplerPath const& assetPath);
 
 private:
@@ -40,13 +44,16 @@ private:
 		std::shared_ptr<Image> image;
 		std::shared_ptr<ImageView> view;
 	};
-	std::unordered_map<asset::AssetPath, ImageEntry> mImages;
+	std::unordered_map<TextureId, ImageEntry> mImages;
 
 	struct SamplerEntry
 	{
 		std::shared_ptr<ImageSampler> sampler;
 	};
 	std::unordered_map<asset::AssetPath, SamplerEntry> mSamplers;
+
+	void onTexturesLoaded(resource::PackManager *packManager);
+	void registerImage(TextureId const& id, math::Vector2UInt const& size, std::vector<ui8> const& pixels);
 
 };
 
