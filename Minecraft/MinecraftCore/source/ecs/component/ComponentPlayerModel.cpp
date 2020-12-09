@@ -9,7 +9,7 @@ using namespace ecs;
 using namespace ecs::component;
 
 static asset::TypedAssetPath<asset::Model> PLAYER_MODEL_PATH = asset::TypedAssetPath<asset::Model>::Create(
-	"assets/entity/player/PlayerModel.te-asset"
+	"assets/models/DefaultHumanoid/DefaultHumanoid.te-asset"
 );
 
 DEFINE_ECS_COMPONENT_STATICS(PlayerModel)
