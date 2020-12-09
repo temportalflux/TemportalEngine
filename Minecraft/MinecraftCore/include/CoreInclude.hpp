@@ -10,3 +10,4 @@
 
 #define NS_GAME namespace game {
 #define NS_WORLD namespace world {
+#define NS_RESOURCE namespace resource {

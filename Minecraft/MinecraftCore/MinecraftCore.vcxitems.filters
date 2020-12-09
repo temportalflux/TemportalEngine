@@ -40,6 +40,9 @@
     <Filter Include="render\model">
       <UniqueIdentifier>{98639349-876d-48a2-9047-f679bf44eaea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{1c353150-2ce9-419f-b715-64000a601d1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -148,6 +151,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\resource\ResourceManager.hpp">
+      <Filter>resource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -245,6 +251,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp">
       <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp">
+      <Filter>resource</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

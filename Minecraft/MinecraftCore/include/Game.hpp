@@ -30,6 +30,7 @@ FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 FORWARD_DEF(NS_GRAPHICS, class TextureRegistry);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
+FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
@@ -77,6 +78,8 @@ public:
 private:
 	logging::Logger mProjectLog;
 
+	std::shared_ptr<resource::PackManager> mpResourcePackManager;
+
 	std::shared_ptr<Window> mpWindow;
 	std::shared_ptr<graphics::DescriptorPool> mpGlobalDescriptorPool;
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
@@ -104,6 +107,9 @@ private:
 	void destroyWindow();
 
 	void registerECSTypes(ecs::Core *ecs);
+
+	void scanResourcePacks();
+	void destroyResourcePacks();
 
 	void createVoxelTypeRegistry();
 	void destroyVoxelTypeRegistry();

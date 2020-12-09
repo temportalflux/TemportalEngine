@@ -31,6 +31,7 @@
 #include "math/Matrix.hpp"
 #include "registry/VoxelType.hpp"
 #include "render/MinecraftRenderer.hpp"
+#include "resource/ResourceManager.hpp"
 #include "world/BlockInstanceMap.hpp"
 #include "render/EntityInstanceBuffer.hpp"
 #include "render/VoxelModelManager.hpp"
@@ -146,6 +147,7 @@ void Game::init()
 	{
 		if (!this->initializeGraphics()) return;
 		if (!this->createWindow()) return;
+		this->scanResourcePacks();
 		this->createRenderers();
 	}
 	this->createScene();
@@ -162,6 +164,17 @@ void Game::uninit()
 		this->destroyWindow();
 	}
 	this->destroyVoxelTypeRegistry();
+}
+
+void Game::scanResourcePacks()
+{
+	this->mpResourcePackManager = std::make_shared<resource::PackManager>();
+	this->mpResourcePackManager->scanPacksIn(std::filesystem::absolute("../../resource-packs"));
+}
+
+void Game::destroyResourcePacks()
+{
+	this->mpResourcePackManager.reset();
 }
 
 void Game::createVoxelTypeRegistry()

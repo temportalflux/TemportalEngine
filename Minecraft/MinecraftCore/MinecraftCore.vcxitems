@@ -48,6 +48,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\resource\ResourceManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp" />
@@ -86,6 +87,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp" />
