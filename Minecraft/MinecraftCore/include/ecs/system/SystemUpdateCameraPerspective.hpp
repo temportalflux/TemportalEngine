@@ -2,6 +2,10 @@
 
 #include "ecs/system/System.hpp"
 
+#include "input/Event.hpp"
+#include "math/Matrix.hpp"
+#include "world/WorldCoordinate.hpp"
+
 FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
@@ -20,12 +24,28 @@ public:
 		std::shared_ptr<graphics::MinecraftRenderer>
 	);
 
+	void subscribeToQueue();
 	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
 
 private:
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
 	std::shared_ptr<graphics::Uniform> mpUniform_ChunkViewProjection;
 	std::shared_ptr<graphics::Uniform> mpUniform_LocalViewProjection;
+
+	enum class EViewType : ui8
+	{
+		eFirstPerson = 0,
+		eThirdPerson = 1,
+		eThirdPersonReverse = 2,
+		
+		COUNT,
+	};
+	EViewType mViewType;
+
+	void onKeyInput(input::Event const & evt);
+	math::Matrix4x4 calculateViewMatrix(
+		world::Coordinate const& position, math::Quaternion orientation
+	);
 
 };
 

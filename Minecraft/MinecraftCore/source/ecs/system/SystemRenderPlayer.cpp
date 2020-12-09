@@ -139,10 +139,8 @@ void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 	graphics::EntityInstanceBuffer::InstanceData instance;
 	instance.posOfCurrentChunk = transform->position().chunk().toFloat();
 	instance.localTransform = math::createModelMatrix(
-		{ 8, 1, 8 },
-		//transform->position().local().toFloat() + transform->position().offset(),
-		math::Quaternion::Identity,
-		//math::Quaternion::FromAxisAngle(math::Vector3unitY, transform->orientation().euler().y()),
+		transform->position().local().toFloat() + transform->position().offset(),
+		math::Quaternion::FromAxisAngle(math::V3_UP, transform->orientation().euler().y()),
 		transform->size()
 	);
 	playerModel->instanceBuffer()->markInstanceForUpdate(playerModel->instanceHandle(), instance);

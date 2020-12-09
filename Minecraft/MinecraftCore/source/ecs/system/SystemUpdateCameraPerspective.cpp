@@ -1,8 +1,10 @@
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 
 #include "Engine.hpp"
-#include "logging/Logger.hpp"
 #include "graphics/Uniform.hpp"
+#include "input/Queue.hpp"
+#include "logging/Logger.hpp"
+#include "math/transform.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "render/MinecraftRenderer.hpp"
 
@@ -81,7 +83,7 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 UpdateCameraPerspective::UpdateCameraPerspective(
 	std::shared_ptr<memory::MemoryChunk> uniformMemory,
 	std::shared_ptr<graphics::MinecraftRenderer> renderer
-) : System(view::PlayerCamera::TypeId), mpRenderer(renderer)
+) : System(view::PlayerCamera::TypeId), mpRenderer(renderer), mViewType(EViewType::eFirstPerson)
 {
 	// TODO: Use dedicated graphics memory
 	this->mpUniform_ChunkViewProjection = graphics::Uniform::create<ChunkViewProj>(uniformMemory);
@@ -89,6 +91,22 @@ UpdateCameraPerspective::UpdateCameraPerspective(
 
 	this->mpUniform_LocalViewProjection = graphics::Uniform::create<LocalCamera>(uniformMemory);
 	renderer->addMutableUniform("localCamera", this->mpUniform_LocalViewProjection);
+}
+
+void UpdateCameraPerspective::subscribeToQueue()
+{
+	auto inputQueue = engine::Engine::Get()->getInputQueue();
+#define REGISTER_INPUT(EVENT, FUNC_PTR) inputQueue->OnInputEvent.bind(EVENT, this->weak_from_this(), std::bind(FUNC_PTR, this, std::placeholders::_1))
+	REGISTER_INPUT(input::EInputType::KEY, &UpdateCameraPerspective::onKeyInput);
+#undef REGISTER_INPUT
+}
+
+void UpdateCameraPerspective::onKeyInput(input::Event const & evt)
+{
+	if (evt.inputKey.action == input::EAction::PRESS && evt.inputKey.key == input::EKey::F5)
+	{
+		this->mViewType = EViewType((ui8(this->mViewType) + 1) % ui8(EViewType::COUNT));
+	}
 }
 
 void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
@@ -107,9 +125,7 @@ void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::V
 	// And by shifting the math to get horizontal from vertical, the equation is actually the same except the aspectRatio is flipped.
 	auto horizontalFOV = 2.0f * atan(tan(verticalFOV / 2.0f) * xyAspectRatio);
 
-	auto const& posCoord = transform->position();
-	auto cameraViewPos = posCoord.local().toFloat() + posCoord.offset();
-	auto viewMatrix = transform->calculateViewFrom(cameraViewPos + cameraPOV->offset());
+	auto viewMatrix = this->calculateViewMatrix(transform->position(), transform->orientation());
 	auto perspectiveMatrix = perspective_RightHand_DepthZeroToOne(
 		horizontalFOV, xyAspectRatio,
 		cameraPOV->nearPlane(), cameraPOV->farPlane()
@@ -131,4 +147,33 @@ void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::V
 		localCamera.proj = perspectiveMatrix;
 		this->mpUniform_LocalViewProjection->write(&localCamera);
 	}
+}
+
+math::Matrix4x4 UpdateCameraPerspective::calculateViewMatrix(
+	world::Coordinate const& position, math::Quaternion orientation
+)
+{
+	OPTICK_EVENT();
+
+	auto cameraViewPos = position.local().toFloat() + position.offset();
+	switch (this->mViewType)
+	{
+	case EViewType::eFirstPerson:
+		cameraViewPos += { 0, 1.5f, 0 };
+		break;
+	case EViewType::eThirdPerson:
+		cameraViewPos += orientation.rotate({ 0, 2, 5 });
+		break;
+	case EViewType::eThirdPersonReverse:
+		orientation = math::Quaternion::concat(
+			orientation,
+			math::Quaternion::FromAxisAngle(math::V3_UP, math::toRadians(180))
+		);
+		cameraViewPos += orientation.rotate({ 0, 2, 5 });
+		break;
+	}
+
+	auto fwd = orientation.rotate(math::V3_FORWARD);
+	auto up = orientation.rotate(math::V3_UP);
+	return math::lookAt(cameraViewPos, cameraViewPos + fwd, up);
 }

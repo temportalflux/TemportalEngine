@@ -226,6 +226,7 @@ void Game::createRenderers()
 	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
 		pEngine->getMiscMemory(), this->mpRenderer
 	);
+	this->mpSystemUpdateCameraPerspective->subscribeToQueue();
 	pEngine->addTicker(this->mpSystemUpdateCameraPerspective);
 
 	this->createPipelineRenderers();
