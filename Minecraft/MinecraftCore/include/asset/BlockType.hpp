@@ -9,7 +9,6 @@ class TextureSampler;
 class BlockType : public Asset
 {
 	friend class cereal::access;
-	typedef TypedAssetPath<class Texture> TextureAssetPath;
 
 public:
 	DEFINE_ASSET_STATICS("block", "BlockType", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GENERAL);
@@ -19,18 +18,17 @@ public:
 	{
 		friend class cereal::access;
 
-		TypedAssetPath<asset::TextureSampler> sampler; // DEPRECATED
-		TextureAssetPath right;
-		TextureAssetPath left;
-		TextureAssetPath front;
-		TextureAssetPath back;
-		TextureAssetPath up;
-		TextureAssetPath down;
+		// The TextureId for a given face (i.e. "voxel:Stone" or "voxel:GrassTop")
+		std::string right;
+		std::string left;
+		std::string front;
+		std::string back;
+		std::string up;
+		std::string down;
 
 		template <typename Archive>
 		void save(Archive &archive) const
 		{
-			archive(cereal::make_nvp("sampler", this->sampler));
 			archive(cereal::make_nvp("right", this->right));
 			archive(cereal::make_nvp("left", this->left));
 			archive(cereal::make_nvp("front", this->front));
@@ -42,7 +40,6 @@ public:
 		template <typename Archive>
 		void load(Archive &archive)
 		{
-			archive(cereal::make_nvp("sampler", this->sampler));
 			archive(cereal::make_nvp("right", this->right));
 			archive(cereal::make_nvp("left", this->left));
 			archive(cereal::make_nvp("front", this->front));
@@ -51,9 +48,6 @@ public:
 			archive(cereal::make_nvp("down", this->down));
 		}
 	};
-
-	std::vector<AssetPath const*> getAssetRefs() const override;
-	std::vector<AssetPath*> getAssetRefs() override;
 
 public:
 	BlockType() = default;

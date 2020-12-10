@@ -5,12 +5,11 @@
 		"name": "stone"
 	},
   "textures": {
-    "sampler": "sampler:assets/textures/NearestNeighborSampler.te-asset",
-    "right": "texture:assets/textures/block/Stone.te-asset",
-    "left": "texture:assets/textures/block/Stone.te-asset",
-    "front": "texture:assets/textures/block/Stone.te-asset",
-    "back": "texture:assets/textures/block/Stone.te-asset",
-    "up": "texture:assets/textures/block/Stone.te-asset",
-    "down": "texture:assets/textures/block/Stone.te-asset"
+    "right": "stone",
+    "left": "stone",
+    "front": "stone",
+    "back": "stone",
+    "up": "stone",
+    "down": "stone"
   }
 }

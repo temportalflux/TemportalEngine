@@ -1,5 +1,8 @@
 #include "render/VoxelModelManager.hpp"
 
+#include "Engine.hpp"
+#include "logging/Logger.hpp"
+
 #include "StitchedTexture.hpp"
 #include "asset/BlockType.hpp"
 #include "asset/Texture.hpp"
@@ -9,26 +12,30 @@
 #include "graphics/GraphicsDevice.hpp"
 #include "model/CubeModelLoader.hpp"
 #include "registry/VoxelType.hpp"
+#include "resource/ResourceManager.hpp"
 
 using namespace game;
 
-VoxelModelManager::VoxelModelManager()
+static logging::Logger VoxelModelLog = DeclareLog("VoxelModelManager");
+
+VoxelModelManager::VoxelModelManager(std::weak_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool)
+	: mpDevice(device), mpTransientPool(transientPool)
 {
-	this->mStitchedTextures.push_back(std::make_shared<StitchedTexture, math::Vector2UInt, math::Vector2UInt, math::Vector2UInt>(
-		{ 256, 256 }, { 2048, 2048 }, { 16, 16 }
-	));
 }
 
 VoxelModelManager::~VoxelModelManager()
 {
 	destroyModels();
 	destroyTextures();
+	this->mpSampler.reset();
 }
 
 void VoxelModelManager::setSampler(SamplerPath const& samplerPath)
 {
 	this->mpSampler = std::make_shared<graphics::ImageSampler>();
+	this->mpSampler->setDevice(this->mpDevice);
 	graphics::populateSampler(this->mpSampler.get(), samplerPath);
+	this->mpSampler->create();
 }
 
 std::shared_ptr<graphics::ImageSampler> VoxelModelManager::getSampler() const
@@ -40,73 +47,112 @@ void VoxelModelManager::loadRegistry(std::shared_ptr<game::VoxelTypeRegistry> re
 {
 	for (auto const& idPath : registry->getEntriesById())
 	{
-		this->loadVoxelTextures(idPath.first, idPath.second);
+		auto iterHandle = this->mEntriesById.insert(std::make_pair(idPath.first, VoxelTextureEntry()));
+		auto& entry = iterHandle.first->second;
+
+		auto asset = idPath.second.load(asset::EAssetSerialization::Binary);
+		entry.textureSetHandle.right = asset->textureSet().right;
+		entry.textureSetHandle.left = asset->textureSet().left;
+		entry.textureSetHandle.front = asset->textureSet().front;
+		entry.textureSetHandle.back = asset->textureSet().back;
+		entry.textureSetHandle.up = asset->textureSet().up;
+		entry.textureSetHandle.down = asset->textureSet().down;
+		entry.textureSetHandle.uniqueIds = {
+			entry.textureSetHandle.right,
+			entry.textureSetHandle.left,
+			entry.textureSetHandle.front,
+			entry.textureSetHandle.back,
+			entry.textureSetHandle.up,
+			entry.textureSetHandle.down,
+		};
 	}
 }
 
-void VoxelModelManager::loadVoxelTextures(BlockId const& id, BlockTypePath const& assetPath)
+std::function<void(resource::PackManager*)> VoxelModelManager::onTexturesLoadedEvent()
 {
-	auto asset = assetPath.load(asset::EAssetSerialization::Binary);
-	auto textureSet = asset->textureSet();
-
-	auto iterHandle = this->mEntriesById.insert(std::make_pair(id, VoxelTextureEntry()));
-	auto& entry = iterHandle.first->second;
-
-	//this->addSampler(&entry, textureSet.sampler);
-	this->addTexturesToStitch(&entry, textureSet.right, textureSet.left, textureSet.front, textureSet.back, textureSet.up, textureSet.down);
+	return std::bind(&VoxelModelManager::onTexturesLoaded, this, std::placeholders::_1);
 }
 
-std::vector<asset::TypedAssetPath<asset::Texture>> eliminateDuplicatePaths(std::vector<asset::TypedAssetPath<asset::Texture>> paths)
+void VoxelModelManager::onTexturesLoaded(resource::PackManager *packManager)
 {
-	std::unordered_set<asset::AssetPath> filter;
-	paths.erase(std::remove_if(
-		paths.begin(), paths.end(),
-		[&filter](auto const &entry)
+	destroyModels();
+	destroyTextures();
+
+	auto entries = packManager->getTexturesOfType("voxel");
+	auto packEntriesByTextureId = std::unordered_map<std::string, resource::PackManager::PackEntry>();
+	for (auto const& entry : entries)
+	{
+		packEntriesByTextureId.insert(std::make_pair(entry.textureId(), entry));
+	}
+
+	for (auto& voxelEntry : this->mEntriesById)
+	{
+		// Ensure that all the textures for a given voxel type have the same atlas
+		bool bCanPackVoxel = true;
+		std::optional<math::Vector2UInt> prevSize = std::nullopt;
 		{
-			return !filter.insert(entry.path()).second;
+			std::optional<std::string> prev = std::nullopt;
+			for (auto const& shortId : voxelEntry.second.textureSetHandle.uniqueIds)
+			{
+				auto const texId = "voxel:" + shortId;
+				auto nextIter = packEntriesByTextureId.find(texId);
+				if (!prev)
+				{
+					prev = texId;
+					prevSize = packManager->getTextureData(nextIter->second).size;
+					continue;
+				}
+
+				auto prevIter = packEntriesByTextureId.find(*prev);
+				if (nextIter == packEntriesByTextureId.end())
+				{
+					// ERROR texture not found
+					VoxelModelLog.log(LOG_ERR, "Failed to find texture id '%s' for voxel '%s'", texId, voxelEntry.first);
+					bCanPackVoxel = false;
+					continue;
+				}
+
+				auto nextSize = packManager->getTextureData(nextIter->second).size;
+				if (nextSize != *prevSize)
+				{
+					// ERROR sizes dont match
+					VoxelModelLog.log(LOG_ERR, "Voxel '%s' textures '%s' and '%s' do not have the same size.", voxelEntry.first, *prev, texId);
+					bCanPackVoxel = false;
+					continue;
+				}
+			}
 		}
-	), paths.end());
-	return paths;
-}
+		if (!bCanPackVoxel) continue;
 
-void VoxelModelManager::addTexturesToStitch(
-	VoxelTextureEntry *entry,
-	TexturePath const &rightPath, TexturePath const &leftPath,
-	TexturePath const &frontPath, TexturePath const &backPath,
-	TexturePath const &upPath, TexturePath const &downPath
-)
-{
-	auto texturePaths = eliminateDuplicatePaths({
-		rightPath, leftPath, frontPath, backPath, upPath, downPath 
-	});
+		uSize textureCount = voxelEntry.second.textureSetHandle.uniqueIds.size();
+		auto idxAtlas = this->findBestSuitedAtlas(*prevSize, textureCount);
+		// If we don't have a stitched texture, make one
+		if (!idxAtlas)
+		{
+			idxAtlas = this->createAtlas(*prevSize);
+		}
 
-	// Load all the textures
-	std::vector<std::pair<asset::AssetPath, std::shared_ptr<asset::Texture>>> textures;
-	math::Vector2UInt entrySize;
-	for (uIndex i = 0; i < texturePaths.size(); ++i)
-	{
-		textures.push_back(std::make_pair(texturePaths[i].path(), texturePaths[i].load(asset::EAssetSerialization::Binary)));
-		if (i == 0) entrySize = textures[i].second->getSourceSize();
-		else assert(textures[i].second->getSourceSize() == entrySize);
+		auto textureData = std::vector<std::pair<std::string, std::vector<ui8>>>();
+		for (auto const& shortId : voxelEntry.second.textureSetHandle.uniqueIds)
+		{
+			auto const texId = "voxel:" + shortId;
+			auto const& packEntry = packEntriesByTextureId.find(texId)->second;
+			auto const& texData = packManager->getTextureData(packEntry);
+			textureData.push_back(std::make_pair(shortId, texData.pixels));
+		}
+
+		auto atlas = this->mStitchedTextures[*idxAtlas];
+		if (!atlas->addTextures(textureData))
+		{
+			VoxelModelLog.log(LOG_ERR, "Failed to load %i textures into a texture atlas", textureCount);
+		}
+		voxelEntry.second.textureSetHandle.idxAtlas = *idxAtlas;
 	}
 
-	auto idxAtlas = this->findBestSuitedAtlas(entrySize, textures.size());
-	assert(idxAtlas); // TODO: If we don't have a stitched texture, make one
-	auto atlas = this->mStitchedTextures[*idxAtlas];
-	if (!atlas->addTextures(textures))
-	{
-		// ERROR
-		assert(false);
-	}
+	createTextures();
+	createModels();
 
-	entry->textureSetHandle.atlas = atlas;
-	entry->textureSetHandle.idxAtlas = *idxAtlas;
-	entry->textureSetHandle.right = rightPath.path();
-	entry->textureSetHandle.left = leftPath.path();
-	entry->textureSetHandle.front = frontPath.path();
-	entry->textureSetHandle.back = backPath.path();
-	entry->textureSetHandle.up = upPath.path();
-	entry->textureSetHandle.down = downPath.path();
+	this->OnAtlasesCreatedEvent.broadcast();
 }
 
 std::optional<uIndex> VoxelModelManager::findBestSuitedAtlas(math::Vector2UInt const &entrySize, uSize const count)
@@ -119,35 +165,40 @@ std::optional<uIndex> VoxelModelManager::findBestSuitedAtlas(math::Vector2UInt c
 	return std::nullopt;
 }
 
-void VoxelModelManager::createTextures(std::shared_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool)
+uIndex VoxelModelManager::createAtlas(math::Vector2UInt const& entrySize)
 {
-	this->mpSampler->setDevice(device);
-	this->mpSampler->create();
+	uIndex idx = this->mStitchedTextures.size();
+	this->mStitchedTextures.push_back(std::make_shared<StitchedTexture>(
+		math::Vector2UInt{ 256, 256 }, math::Vector2UInt{ 2048, 2048 }, entrySize
+	));
+	return idx;
+}
 
+void VoxelModelManager::createTextures()
+{
 	for (auto& atlas : this->mStitchedTextures)
 	{
-		atlas->finalize(device, transientPool);
+		atlas->finalize(this->mpDevice.lock(), this->mpTransientPool);
 	}
 }
 
 void VoxelModelManager::destroyTextures()
 {
 	this->mStitchedTextures.clear();
-	this->mpSampler.reset();
 }
 
-void VoxelModelManager::createModels(std::shared_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool)
+void VoxelModelManager::createModels()
 {
 	uSize modelVertexBufferSize = 0;
 	uSize modelIndexBufferSize = 0;
 	for (auto& entry : this->mEntriesById)
 	{
-		entry.second.model = entry.second.textureSetHandle.createModel();
+		entry.second.model = this->createModel(entry.second.textureSetHandle);
 		modelVertexBufferSize += entry.second.model.getVertexBufferSize();
 		modelIndexBufferSize += entry.second.model.getIndexBufferSize();
 	}
 
-	this->createModelBuffers(device, modelVertexBufferSize, modelIndexBufferSize);
+	this->createModelBuffers(this->mpDevice.lock(), modelVertexBufferSize, modelIndexBufferSize);
 
 	auto vertices = std::vector<Model::Vertex>();
 	auto indices = std::vector<ui16>();
@@ -161,42 +212,42 @@ void VoxelModelManager::createModels(std::shared_ptr<graphics::GraphicsDevice> d
 		std::copy(modelIndices.begin(), modelIndices.end(), std::back_inserter(indices));
 	}
 	// TODO: These can be done in one operation, and we don't need to wait for the graphics device to be done (nothing relies on this process except starting rendering)
-	this->mModelVertexBuffer.writeBuffer(transientPool, 0, vertices);
-	this->mModelIndexBuffer.writeBuffer(transientPool, 0, indices);
+	this->mModelVertexBuffer.writeBuffer(this->mpTransientPool, 0, vertices);
+	this->mModelIndexBuffer.writeBuffer(this->mpTransientPool, 0, indices);
 }
 
-Model VoxelModelManager::VoxelTextureEntry::TextureSetHandle::createModel() const
+Model VoxelModelManager::createModel(VoxelTextureEntry::TextureSetHandle const& handle) const
 {
 	auto loader = CubeModelLoader();
-	auto atlas = this->atlas.lock();
+	auto atlas = this->mStitchedTextures[handle.idxAtlas];
 
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->right);
+		auto atlasDatum = atlas->getStitchedTexture(handle.right);
 		assert(atlasDatum);
 		loader.pushRight(atlasDatum->offset, atlasDatum->size);
 	}
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->left);
+		auto atlasDatum = atlas->getStitchedTexture(handle.left);
 		assert(atlasDatum);
 		loader.pushLeft(atlasDatum->offset, atlasDatum->size);
 	}
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->front);
+		auto atlasDatum = atlas->getStitchedTexture(handle.front);
 		assert(atlasDatum);
 		loader.pushFront(atlasDatum->offset, atlasDatum->size);
 	}
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->back);
+		auto atlasDatum = atlas->getStitchedTexture(handle.back);
 		assert(atlasDatum);
 		loader.pushBack(atlasDatum->offset, atlasDatum->size);
 	}
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->up);
+		auto atlasDatum = atlas->getStitchedTexture(handle.up);
 		assert(atlasDatum);
 		loader.pushUp(atlasDatum->offset, atlasDatum->size);
 	}
 	{
-		auto atlasDatum = atlas->getStitchedTexture(this->down);
+		auto atlasDatum = atlas->getStitchedTexture(handle.down);
 		assert(atlasDatum);
 		loader.pushDown(atlasDatum->offset, atlasDatum->size);
 	}

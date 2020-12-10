@@ -10,32 +10,6 @@ BlockType::BlockType(std::filesystem::path filePath) : Asset(filePath)
 {
 }
 
-std::vector<AssetPath const*> BlockType::getAssetRefs() const
-{
-	return {
-		&this->mTextures.sampler.path(),
-		&this->mTextures.right.path(),
-		&this->mTextures.left.path(),
-		&this->mTextures.front.path(),
-		&this->mTextures.back.path(),
-		&this->mTextures.up.path(),
-		&this->mTextures.down.path()
-	};
-}
-
-std::vector<AssetPath*> BlockType::getAssetRefs()
-{
-	return {
-		&this->mTextures.sampler.path(),
-		&this->mTextures.right.path(),
-		&this->mTextures.left.path(),
-		&this->mTextures.front.path(),
-		&this->mTextures.back.path(),
-		&this->mTextures.up.path(),
-		&this->mTextures.down.path()
-	};
-}
-
 game::BlockId const& BlockType::uniqueId() const
 {
 	return this->mId;

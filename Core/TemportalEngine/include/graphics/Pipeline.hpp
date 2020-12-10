@@ -33,6 +33,7 @@ public:
 
 	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
 	Pipeline& setDescriptors(std::vector<DescriptorGroup> *descriptors);
+	Pipeline& setDescriptorLayouts(std::vector<graphics::DescriptorLayout*> const& layouts);
 	Pipeline& setDescriptorLayout(graphics::DescriptorLayout const& layout, uSize const& setCount);
 
 	Pipeline& setResolution(math::Vector2UInt resoltion);

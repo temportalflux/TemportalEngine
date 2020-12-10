@@ -5,12 +5,11 @@
 		"name": "grass"
 	},
   "textures": {
-    "sampler": "sampler:assets/textures/NearestNeighborSampler.te-asset",
-    "right": "texture:assets/textures/block/GrassSide.te-asset",
-    "left": "texture:assets/textures/block/GrassSide.te-asset",
-    "front": "texture:assets/textures/block/GrassSide.te-asset",
-    "back": "texture:assets/textures/block/GrassSide.te-asset",
-    "up": "texture:assets/textures/block/GrassTop.te-asset",
-    "down": "texture:assets/textures/block/Dirt.te-asset"
+    "right": "grass-side",
+    "left": "grass-side",
+    "front": "grass-side",
+    "back": "grass-side",
+    "up": "grass-top",
+    "down": "dirt"
   }
 }

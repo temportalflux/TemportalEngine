@@ -23,14 +23,13 @@ public:
 		math::Vector2 size;
 	};
 
-	StitchedTexture() = default;
 	StitchedTexture(math::Vector2UInt minSize, math::Vector2UInt maxSize, math::Vector2UInt unitSize);
 
 	math::Vector2UInt getSizePerEntry() const { return this->mSizePerEntry; }
 	bool canAdd(uSize const count) const;
-	bool addTextures(std::vector<std::pair<asset::AssetPath, std::shared_ptr<asset::Texture>>> textures);
+	bool addTextures(std::vector<std::pair<std::string, std::vector<ui8>>> textures);
 	void finalize(std::shared_ptr<graphics::GraphicsDevice> graphicsDevice, graphics::CommandPool* cmdPool);
-	std::optional<Entry> getStitchedTexture(asset::AssetPath const &path) const;
+	std::optional<Entry> getStitchedTexture(std::string const& textureId) const;
 
 	graphics::Image* image() const;
 	graphics::ImageView* view() const;
@@ -47,7 +46,7 @@ private:
 	
 	// Entry Management
 	std::vector<InternalEntry> mEntries;
-	std::unordered_map<asset::AssetPath, uIndex> mEntryByPath;
+	std::unordered_map<std::string, uIndex> mTextureIdToEntryIdx;
 
 	// Builder
 	std::vector<ui8> mPixelData;

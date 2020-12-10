@@ -56,23 +56,26 @@ void graphics::populatePipeline(
 	pipeline->addShader(asset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
 	pipeline->addShader(asset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());
 
-	uSize descCount = 0;
-	for (auto const& assetDescGroup : asset->getDescriptorGroups())
+	if (layout != nullptr)
 	{
-		descCount += assetDescGroup.descriptors.size();
-	}
-	layout->setBindingCount(descCount);
-	descCount = 0;
-	for (auto const& assetDescGroup : asset->getDescriptorGroups())
-	{
-		auto const& descriptors = assetDescGroup.descriptors;
-		for (uIndex i = 0; i < descriptors.size(); ++i)
+		uSize descCount = 0;
+		for (auto const& assetDescGroup : asset->getDescriptorGroups())
 		{
-			layout->setBinding(
-				descCount + i, descriptors[i].id,
-				descriptors[i].type, descriptors[i].stage, 1
-			);
-			descCount++;
+			descCount += assetDescGroup.descriptors.size();
+		}
+		layout->setBindingCount(descCount);
+		descCount = 0;
+		for (auto const& assetDescGroup : asset->getDescriptorGroups())
+		{
+			auto const& descriptors = assetDescGroup.descriptors;
+			for (uIndex i = 0; i < descriptors.size(); ++i)
+			{
+				layout->setBinding(
+					descCount + i, descriptors[i].id,
+					descriptors[i].type, descriptors[i].stage, 1
+				);
+				descCount++;
+			}
 		}
 	}
 }

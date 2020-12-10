@@ -5,12 +5,11 @@
 		"name": "bedrock"
 	},
   "textures": {
-    "sampler": "sampler:assets/textures/NearestNeighborSampler.te-asset",
-    "right": "texture:assets/textures/block/Bedrock.te-asset",
-    "left": "texture:assets/textures/block/Bedrock.te-asset",
-    "front": "texture:assets/textures/block/Bedrock.te-asset",
-    "back": "texture:assets/textures/block/Bedrock.te-asset",
-    "up": "texture:assets/textures/block/Bedrock.te-asset",
-    "down": "texture:assets/textures/block/Bedrock.te-asset"
+    "right": "bedrock",
+    "left": "bedrock",
+    "front": "bedrock",
+    "back": "bedrock",
+    "up": "bedrock",
+    "down": "bedrock"
   }
 }

@@ -320,11 +320,12 @@ void Game::createGameRenderer()
 
 void Game::loadVoxelTypeTextures()
 {
-	this->mpVoxelModelManager = std::make_shared<game::VoxelModelManager>();
+	this->mpVoxelModelManager = std::make_shared<game::VoxelModelManager>(
+		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
+	);
 	this->mpVoxelModelManager->setSampler(asset::TypedAssetPath<asset::TextureSampler>(asset::SAMPLER_NEAREST_NEIGHBOR));
 	this->mpVoxelModelManager->loadRegistry(this->mpVoxelTypeRegistry);
-	this->mpVoxelModelManager->createTextures(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
-	this->mpVoxelModelManager->createModels(this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool());
+	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpVoxelModelManager, this->mpVoxelModelManager->onTexturesLoadedEvent());
 }
 
 void Game::createPipelineRenderers()
@@ -376,13 +377,14 @@ void Game::createVoxelGridRenderer()
 
 	this->mpVoxelGridRenderer = std::make_shared<graphics::VoxelGridRenderer>(
 		std::weak_ptr(this->mpGlobalDescriptorPool),
-		std::weak_ptr(this->mpVoxelInstanceBuffer)
+		std::weak_ptr(this->mpVoxelInstanceBuffer),
+		this->mpVoxelTypeRegistry, this->mpVoxelModelManager
 	);
 	this->mpVoxelGridRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/world/VoxelPipeline.te-asset"
-	).load(asset::EAssetSerialization::Binary));
+	));
 	this->mpRenderer->addRenderer(this->mpVoxelGridRenderer.get());
-	this->mpVoxelGridRenderer->createVoxelDescriptorMapping(this->mpVoxelTypeRegistry, this->mpVoxelModelManager);
+	this->mpVoxelModelManager->OnAtlasesCreatedEvent.bind(this->mpVoxelGridRenderer, this->mpVoxelGridRenderer->onAtlasesCreatedEvent());
 }
 
 void Game::createWorldAxesRenderer()
@@ -516,7 +518,7 @@ void Game::destroyRenderers()
 	this->mpEntityInstanceBuffer.reset();
 	this->mpSkinnedModelManager.reset();
 	this->mpVoxelModelManager.reset();
-	this->mpVoxelGridRenderer->destroyRenderDevices();
+	this->mpVoxelGridRenderer->destroy();
 	this->mpWorldAxesRenderer->destroy();
 	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();

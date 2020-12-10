@@ -9,6 +9,7 @@
 #include "BlockId.hpp"
 
 class StitchedTexture;
+FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_ASSET, class BlockType);
 FORWARD_DEF(NS_ASSET, class Texture);
 FORWARD_DEF(NS_ASSET, class TextureSampler);
@@ -56,17 +57,15 @@ public:
 		ui32 indexBufferValueOffset;
 	};
 
-	VoxelModelManager();
+	VoxelModelManager(std::weak_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool);
 	~VoxelModelManager();
 
-	void setSampler(SamplerPath const& samplerPath);
-	void loadRegistry(std::shared_ptr<game::VoxelTypeRegistry> registry);
-	void loadVoxelTextures(BlockId const& id, BlockTypePath const& assetPath);
+	BroadcastDelegate<void()> OnAtlasesCreatedEvent;
 
-	void createTextures(std::shared_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool);
-	void destroyTextures();
-	void createModels(std::shared_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool);
-	void destroyModels();
+	void setSampler(SamplerPath const& samplerPath);
+
+	std::function<void(resource::PackManager*)> onTexturesLoadedEvent();
+	void loadRegistry(std::shared_ptr<game::VoxelTypeRegistry> registry);
 
 	std::shared_ptr<graphics::ImageSampler> getSampler() const;
 	uSize getAtlasCount() const;
@@ -75,19 +74,19 @@ public:
 	BufferProfile getBufferProfile(BlockId const &blockId);
 
 private:
+	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
+	graphics::CommandPool* mpTransientPool;
 
 	struct VoxelTextureEntry
 	{
 		struct TextureSetHandle
 		{
-			std::weak_ptr<StitchedTexture> atlas;
 			uIndex idxAtlas;
-
-			asset::AssetPath right, left;
-			asset::AssetPath front, back;
-			asset::AssetPath up, down;
-
-			Model createModel() const;
+			// The TextureId for each face
+			std::string right, left;
+			std::string front, back;
+			std::string up, down;
+			std::unordered_set<std::string> uniqueIds;
 		};
 
 		TextureSetHandle textureSetHandle;
@@ -124,14 +123,17 @@ private:
 	std::vector<std::shared_ptr<StitchedTexture>> mStitchedTextures;
 	graphics::Buffer mModelVertexBuffer, mModelIndexBuffer;
 
-	void addTexturesToStitch(
-		VoxelTextureEntry *entry,
-		TexturePath const &right, TexturePath const &left,
-		TexturePath const &front, TexturePath const &back,
-		TexturePath const &up, TexturePath const &down
-	);
+	void onTexturesLoaded(resource::PackManager *packManager);
+
 	std::optional<uIndex> findBestSuitedAtlas(math::Vector2UInt const &entrySize, uSize const count);
+	uIndex createAtlas(math::Vector2UInt const& entrySize);
 	void createModelBuffers(std::shared_ptr<graphics::GraphicsDevice> device, uSize modelVertexBufferSize, uSize modelIndexBufferSize);
+	Model createModel(VoxelTextureEntry::TextureSetHandle const& handle) const;
+
+	void createTextures();
+	void destroyTextures();
+	void createModels();
+	void destroyModels();
 	
 };
 

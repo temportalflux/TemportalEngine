@@ -1,7 +1,8 @@
 #pragma once
 
 #include "CoreInclude.hpp"
-#include "graphics/DescriptorGroup.hpp"
+#include "graphics/Descriptor.hpp"
+#include "asset/TypedAssetPath.hpp"
 
 #include "BlockId.hpp"
 #include "render/IPipelineRenderer.hpp"
@@ -15,24 +16,24 @@ FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
 NS_GRAPHICS
 
-class VoxelGridRenderer : public graphics::IPipelineRenderer
+class VoxelGridRenderer : public graphics::IPipelineRenderer, public std::enable_shared_from_this<VoxelGridRenderer>
 {
 
 public:
 	VoxelGridRenderer(
 		std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
-		std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer
+		std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer,
+		std::weak_ptr<game::VoxelTypeRegistry> registry,
+		std::weak_ptr<game::VoxelModelManager> modelManager
 	);
 	~VoxelGridRenderer();
+	
+	std::function<void()> onAtlasesCreatedEvent();
 
-	VoxelGridRenderer& setPipeline(std::shared_ptr<asset::Pipeline> asset);
+	VoxelGridRenderer& setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
-	void createVoxelDescriptorMapping(
-		std::shared_ptr<game::VoxelTypeRegistry> registry,
-		std::shared_ptr<game::VoxelModelManager> modelManager
-	);
 	void setFrameCount(uSize frameCount) override;
 	void createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
 	void attachDescriptors(
@@ -44,17 +45,21 @@ public:
 	void record(graphics::Command *command, uIndex idxFrame) override;
 
 	void destroyRenderChain() override;
-	void destroyRenderDevices();
+	void destroy();
 
 private:
+	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
+	std::weak_ptr<world::BlockInstanceBuffer> mpInstanceBuffer;
 	std::weak_ptr<game::VoxelTypeRegistry> mpTypeRegistry;
 	std::weak_ptr<game::VoxelModelManager> mpModelManager;
-	std::weak_ptr<world::BlockInstanceBuffer> mpInstanceBuffer;
 
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
-	std::vector<graphics::DescriptorGroup> mDescriptorGroups;
-	std::unordered_map<game::BlockId, uIndex /*descriptor archetype idx*/> mVoxelIdToDescriptorArchetype;
+	graphics::DescriptorLayout mDescriptorLayoutUniform, mDescriptorLayoutTexture;
+	std::vector<graphics::DescriptorSet> mUniformDescriptors;
+	std::vector<graphics::DescriptorSet> mAtlasDescriptors;
+	std::unordered_map<game::BlockId, uIndex> mDescriptorSetIdxByVoxelId;
+
+	void onAtlasesCreated();
 
 };
 

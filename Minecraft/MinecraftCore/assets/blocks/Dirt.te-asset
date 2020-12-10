@@ -5,12 +5,11 @@
 		"name": "dirt"
 	},
   "textures": {
-    "sampler": "sampler:assets/textures/NearestNeighborSampler.te-asset",
-    "right": "texture:assets/textures/block/Dirt.te-asset",
-    "left": "texture:assets/textures/block/Dirt.te-asset",
-    "front": "texture:assets/textures/block/Dirt.te-asset",
-    "back": "texture:assets/textures/block/Dirt.te-asset",
-    "up": "texture:assets/textures/block/Dirt.te-asset",
-    "down": "texture:assets/textures/block/Dirt.te-asset"
+    "right": "dirt",
+    "left": "dirt",
+    "front": "dirt",
+    "back": "dirt",
+    "up": "dirt",
+    "down": "dirt"
   }
 }

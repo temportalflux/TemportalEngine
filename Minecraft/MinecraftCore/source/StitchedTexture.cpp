@@ -29,7 +29,7 @@ bool StitchedTexture::canAdd(uSize const count) const
 	return this->canFitAdditionalTextures(count) || this->canIncreaseSize();
 }
 
-bool StitchedTexture::addTextures(std::vector<std::pair<asset::AssetPath, std::shared_ptr<asset::Texture>>> textures)
+bool StitchedTexture::addTextures(std::vector<std::pair<std::string, std::vector<ui8>>> textures)
 {
 	if (this->mbHasWrittenStitchings) return false;
 
@@ -38,14 +38,9 @@ bool StitchedTexture::addTextures(std::vector<std::pair<asset::AssetPath, std::s
 		textures.begin(), textures.end(),
 		[&](auto const &texture)
 		{
-			return this->mEntryByPath.find(texture.first) != this->mEntryByPath.end();
+			return this->mTextureIdToEntryIdx.find(texture.first) != this->mTextureIdToEntryIdx.end();
 		}
 	), textures.end());
-	for (auto texture : textures)
-	{
-		// Confirm that all new textures have the appropriate size
-		if (texture.second->getSourceSize() != this->mSizePerEntry) return false;
-	}
 
 	uSize count = textures.size();
 	if (!this->canFitAdditionalTextures(count))
@@ -62,10 +57,10 @@ bool StitchedTexture::addTextures(std::vector<std::pair<asset::AssetPath, std::s
 		if (!nextOffset) return false;
 		this->mLastOffsetAllocated = *nextOffset;
 
-		auto assetPath = textures[i].first;
+		auto textureId = textures[i].first;
 		auto iter = this->mEntries.insert(this->mEntries.end(), { *nextOffset });
-		this->mEntryByPath.insert(std::make_pair(assetPath, std::distance(this->mEntries.begin(), iter)));
-		this->writePixelData(*nextOffset, textures[i].second->getSourceBinary());
+		this->mTextureIdToEntryIdx.insert(std::make_pair(textureId, std::distance(this->mEntries.begin(), iter)));
+		this->writePixelData(*nextOffset, textures[i].second);
 	}
 
 	return true;
@@ -172,11 +167,11 @@ void StitchedTexture::finalize(std::shared_ptr<graphics::GraphicsDevice> graphic
 	this->mPixelData.clear();
 }
 
-std::optional<StitchedTexture::Entry> StitchedTexture::getStitchedTexture(asset::AssetPath const &path) const
+std::optional<StitchedTexture::Entry> StitchedTexture::getStitchedTexture(std::string const& textureId) const
 {
 	if (!this->mbHasWrittenStitchings) return std::nullopt;
-	auto iter = this->mEntryByPath.find(path);
-	if (iter == this->mEntryByPath.end()) return std::nullopt;
+	auto iter = this->mTextureIdToEntryIdx.find(textureId);
+	if (iter == this->mTextureIdToEntryIdx.end()) return std::nullopt;
 	math::Vector2 currentSize = this->mSize.toFloat();
 	Entry entry = {
 		this->mEntries[iter->second].offset.toFloat() / currentSize,

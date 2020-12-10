@@ -92,6 +92,19 @@ Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup> *descriptors)
 	return *this;
 }
 
+Pipeline& Pipeline::setDescriptorLayouts(std::vector<graphics::DescriptorLayout*> const& layouts)
+{
+	this->mDescriptorLayouts.resize(layouts.size());
+	std::transform(
+		layouts.cbegin(), layouts.cend(), this->mDescriptorLayouts.begin(),
+		[](DescriptorLayout const *layout) -> vk::DescriptorSetLayout
+		{
+			return reinterpret_cast<VkDescriptorSetLayout>(layout->get());
+		}
+	);
+	return *this;
+}
+
 Pipeline& Pipeline::setDescriptorLayout(graphics::DescriptorLayout const& layout, uSize const& setCount)
 {
 	vk::DescriptorSetLayout vkLayout = reinterpret_cast<VkDescriptorSetLayout>(layout.get());

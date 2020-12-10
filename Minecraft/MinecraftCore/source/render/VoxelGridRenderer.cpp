@@ -7,6 +7,7 @@
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
 #include "graphics/DescriptorPool.hpp"
+#include "graphics/assetHelpers.hpp"
 
 #include "registry/VoxelType.hpp"
 #include "render/VoxelModelManager.hpp"
@@ -16,37 +17,53 @@ using namespace graphics;
 
 VoxelGridRenderer::VoxelGridRenderer(
 	std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
-	std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer
+	std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer,
+	std::weak_ptr<game::VoxelTypeRegistry> registry,
+	std::weak_ptr<game::VoxelModelManager> modelManager
 )
 {
 	this->mpDescriptorPool = pDescriptorPool;
 	this->mpInstanceBuffer = instanceBuffer;
+	this->mpTypeRegistry = registry;
+	this->mpModelManager = modelManager;
 }
 
 VoxelGridRenderer::~VoxelGridRenderer()
 {
-	destroyRenderDevices();
+	destroy();
 }
 
-void VoxelGridRenderer::destroyRenderDevices()
+void VoxelGridRenderer::destroy()
 {
+	this->mAtlasDescriptors.clear();
+	this->mDescriptorLayoutUniform.invalidate();
+	this->mDescriptorLayoutTexture.invalidate();
 }
 
-VoxelGridRenderer& VoxelGridRenderer::setPipeline(std::shared_ptr<asset::Pipeline> asset)
+void fillDescriptorLayout(graphics::DescriptorLayout &layout, std::vector<asset::Pipeline::Descriptor> const& descriptors)
+{
+	layout.setBindingCount(descriptors.size());
+	for (uIndex i = 0; i < descriptors.size(); ++i)
+	{
+		layout.setBinding(
+			i, descriptors[i].id,
+			descriptors[i].type, descriptors[i].stage, 1
+		);
+	}
+}
+
+VoxelGridRenderer& VoxelGridRenderer::setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
 	if (!this->mpPipeline)
 	{
 		this->mpPipeline = std::make_shared<graphics::Pipeline>();
 	}
 
-	this->mpPipeline->addViewArea(asset->getViewport(), asset->getScissor());
-	this->mpPipeline->setBlendMode(asset->getBlendMode());
-	this->mpPipeline->setFrontFace(asset->getFrontFace());
-	this->mpPipeline->setTopology(asset->getTopology());
+	graphics::populatePipeline(path, this->mpPipeline.get(), nullptr);
 
-	// Perform a synchronous load on each shader to create the shader modules
-	this->mpPipeline->addShader(asset->getVertexShader().load(asset::EAssetSerialization::Binary)->makeModule());
-	this->mpPipeline->addShader(asset->getFragmentShader().load(asset::EAssetSerialization::Binary)->makeModule());
+	auto const& descrGroups = path.load(asset::EAssetSerialization::Binary)->getDescriptorGroups();
+	fillDescriptorLayout(this->mDescriptorLayoutUniform, descrGroups[0].descriptors);
+	fillDescriptorLayout(this->mDescriptorLayoutTexture, descrGroups[1].descriptors);
 
 	{
 		ui8 slot = 0;
@@ -55,25 +72,16 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(std::shared_ptr<asset::Pipelin
 		this->mpPipeline->setBindings(bindings);
 	}
 
-	// Create descriptor groups for the pipeline
-	for (auto const& assetDescGroup : asset->getDescriptorGroups())
-	{
-		auto const& descriptors = assetDescGroup.descriptors;
-		auto descriptorGroup = graphics::DescriptorGroup();
-		descriptorGroup.setBindingCount(descriptors.size());
-		for (uIndex i = 0; i < descriptors.size(); ++i)
-		{
-			descriptorGroup.addBinding(descriptors[i].id, i, descriptors[i].type, descriptors[i].stage);
-		}
-		this->mDescriptorGroups.push_back(std::move(descriptorGroup));
-	}
-
 	return *this;
 }
 
 void VoxelGridRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
+	this->mDescriptorLayoutUniform.setDevice(device);
+	this->mDescriptorLayoutUniform.create();
+	this->mDescriptorLayoutTexture.setDevice(device);
+	this->mDescriptorLayoutTexture.create();
 }
 
 void VoxelGridRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -81,67 +89,63 @@ void VoxelGridRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> rend
 	this->mpPipeline->setRenderPass(renderPass);
 }
 
-void VoxelGridRenderer::createVoxelDescriptorMapping(
-	std::shared_ptr<game::VoxelTypeRegistry> registry,
-	std::shared_ptr<game::VoxelModelManager> modelManager
-)
-{
-	this->mpTypeRegistry = registry;
-	this->mpModelManager = modelManager;
-	this->mDescriptorGroups[1].setArchetypeAmount(modelManager->getAtlasCount());
-	
-	for (auto const& idPath : registry->getEntriesById())
-	{
-		this->mVoxelIdToDescriptorArchetype.insert(std::make_pair(idPath.first, modelManager->getAtlasIndex(idPath.first)));
-	}
-}
-
 void VoxelGridRenderer::setFrameCount(uSize frameCount)
 {
-	this->mDescriptorGroups[0].setAmount((ui32)frameCount);
-	this->mDescriptorGroups[1].setAmount(1);
+	this->mUniformDescriptors.resize(frameCount);
 }
 
 void VoxelGridRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	for (auto& descriptorGroup : this->mDescriptorGroups)
-	{
-		descriptorGroup.create(device, this->mpDescriptorPool.lock().get());
-	}
+	this->mDescriptorLayoutUniform.createSets(this->mpDescriptorPool.lock().get(), this->mUniformDescriptors);
 }
 
 void VoxelGridRenderer::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
-	this->mDescriptorGroups[0].attachToBinding("mvpUniform", mutableUniforms["mvpUniform"]);
-
-	auto modelManager = this->mpModelManager.lock();
-	for (uIndex idxAtlas = 0; idxAtlas < modelManager->getAtlasCount(); ++idxAtlas)
+	for (uIndex idxSet = 0; idxSet < this->mUniformDescriptors.size(); ++idxSet)
 	{
-		auto atlas = modelManager->getAtlas(idxAtlas);
-		this->mDescriptorGroups[1].attachToBinding(
-			"imageAtlas", vk::ImageLayout::eShaderReadOnlyOptimal,
-			atlas->view(), modelManager->getSampler().get(),
-			/*idxArchetype=*/ idxAtlas
-		);
+		this->mUniformDescriptors[idxSet].attach("mvpUniform", mutableUniforms["mvpUniform"][idxSet]);
 	}
 }
 
 void VoxelGridRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	for (auto& descriptorGroup : this->mDescriptorGroups)
-	{
-		descriptorGroup.writeAttachments(device);
-	}
+	for (auto& set : this->mUniformDescriptors) set.writeAttachments();
 }
 
 void VoxelGridRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
 	this->mpPipeline
-		->setDescriptors(&this->mDescriptorGroups)
+		->setDescriptorLayouts({ &this->mDescriptorLayoutUniform, &this->mDescriptorLayoutTexture })
 		.setResolution(resolution)
 		.create();
+}
+
+std::function<void()> VoxelGridRenderer::onAtlasesCreatedEvent()
+{
+	return std::bind(&VoxelGridRenderer::onAtlasesCreated, this);
+}
+
+void VoxelGridRenderer::onAtlasesCreated()
+{
+	auto modelManager = this->mpModelManager.lock();
+	this->mAtlasDescriptors.resize(modelManager->getAtlasCount());
+	this->mDescriptorLayoutTexture.createSets(this->mpDescriptorPool.lock().get(), this->mAtlasDescriptors);
+
+	for (auto const& idPath : this->mpTypeRegistry.lock()->getEntriesById())
+	{
+		this->mDescriptorSetIdxByVoxelId.insert(std::make_pair(idPath.first, modelManager->getAtlasIndex(idPath.first)));
+	}
+
+	for (uIndex idxAtlas = 0; idxAtlas < modelManager->getAtlasCount(); ++idxAtlas)
+	{
+		auto atlas = modelManager->getAtlas(idxAtlas);
+		this->mAtlasDescriptors[idxAtlas].attach(
+			"imageAtlas", graphics::EImageLayout::eShaderReadOnlyOptimal,
+			atlas->view(), modelManager->getSampler().get()
+		).writeAttachments();
+	}
 }
 
 void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
@@ -163,13 +167,12 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		OPTICK_TAG("VoxelId", id.to_string().c_str());
 
 		// TODO: Can optimize by iterating over this map and moving the frame descriptor fetch outside the loop
-		auto atlasIter = this->mVoxelIdToDescriptorArchetype.find(id);
-		assert(atlasIter != this->mVoxelIdToDescriptorArchetype.end());
-		auto descriptorAtlasArchetypeIdx = atlasIter->second;
+		auto descriptorIdxIter = this->mDescriptorSetIdxByVoxelId.find(id);
+		assert(descriptorIdxIter != this->mDescriptorSetIdxByVoxelId.end());
 
-		auto descriptorSets = std::vector<vk::DescriptorSet>();
-		descriptorSets.push_back(this->mDescriptorGroups[0].getDescriptorSet(idxFrame));
-		descriptorSets.push_back(this->mDescriptorGroups[1].getDescriptorSet(0, descriptorAtlasArchetypeIdx));
+		auto descriptorSets = std::vector<graphics::DescriptorSet*>();
+		descriptorSets.push_back(&this->mUniformDescriptors[idxFrame]);
+		descriptorSets.push_back(&this->mAtlasDescriptors[descriptorIdxIter->second]);
 		command->bindDescriptorSets(this->mpPipeline, descriptorSets);
 		command->bindPipeline(this->mpPipeline);
 
@@ -192,8 +195,5 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 void VoxelGridRenderer::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
-	for (auto& descriptorGroup : this->mDescriptorGroups)
-	{
-		descriptorGroup.invalidate();
-	}
+	this->mUniformDescriptors.clear();
 }
