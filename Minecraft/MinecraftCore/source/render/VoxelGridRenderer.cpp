@@ -105,7 +105,7 @@ void VoxelGridRenderer::attachDescriptors(
 {
 	for (uIndex idxSet = 0; idxSet < this->mUniformDescriptors.size(); ++idxSet)
 	{
-		this->mUniformDescriptors[idxSet].attach("mvpUniform", mutableUniforms["mvpUniform"][idxSet]);
+		this->mUniformDescriptors[idxSet].attach("mvpUniform", mutableUniforms["cameraUniform"][idxSet]);
 	}
 }
 

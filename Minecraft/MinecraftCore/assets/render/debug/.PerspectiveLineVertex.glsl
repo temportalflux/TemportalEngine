@@ -5,6 +5,8 @@
 layout(set = 0, binding = 0) uniform CameraUniform {
 	mat4 view;
 	mat4 proj;
+	vec3 posOfCurrentChunk;
+	vec3 chunkSize;
 } localCamera;
 
 // each row in glsl is a column in the matrix

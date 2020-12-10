@@ -85,7 +85,7 @@ void LineRenderer::attachDescriptors(
 {
 	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
 	{
-		this->mDescriptorSets[idxSet].attach("localCamera", mutableUniforms["localCamera"][idxSet]);
+		this->mDescriptorSets[idxSet].attach("localCamera", mutableUniforms["cameraUniform"][idxSet]);
 	}
 }
 

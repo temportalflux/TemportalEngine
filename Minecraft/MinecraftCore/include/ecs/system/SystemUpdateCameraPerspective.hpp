@@ -30,7 +30,6 @@ public:
 private:
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
 	std::shared_ptr<graphics::Uniform> mpUniform_ChunkViewProjection;
-	std::shared_ptr<graphics::Uniform> mpUniform_LocalViewProjection;
 
 	enum class EViewType : ui8
 	{

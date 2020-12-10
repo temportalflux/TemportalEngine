@@ -111,7 +111,7 @@ void RenderPlayer::attachDescriptors(
 	auto registry = game::Game::Get()->textureRegistry();
 	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
 	{
-		this->mDescriptorSets[idxSet].attach("cameraUniform", mutableUniforms["mvpUniform"][idxSet]);
+		this->mDescriptorSets[idxSet].attach("cameraUniform", mutableUniforms["cameraUniform"][idxSet]);
 		this->mDescriptorSets[idxSet].attach(
 			"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
 			registry->getImage("model:DefaultHumanoid").lock().get(),

@@ -105,7 +105,7 @@ void ChunkBoundaryRenderer::attachDescriptors(
 {
 	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
 	{
-		this->mDescriptorSets[idxSet].attach("mvpCamera", mutableUniforms["mvpUniform"][idxSet]);
+		this->mDescriptorSets[idxSet].attach("mvpCamera", mutableUniforms["cameraUniform"][idxSet]);
 	}
 }
 

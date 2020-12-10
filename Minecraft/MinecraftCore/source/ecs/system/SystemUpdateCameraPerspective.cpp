@@ -32,18 +32,6 @@ struct ChunkViewProj
 	}
 };
 
-struct LocalCamera
-{
-	math::Matrix4x4 view;
-	math::Matrix4x4 proj;
-
-	LocalCamera()
-	{
-		view = math::Matrix4x4(1);
-		proj = math::Matrix4x4(1);
-	}
-};
-
 math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 	f32 yFOV, f32 aspectRatio, f32 nearPlane, f32 farPlane
 )
@@ -87,10 +75,7 @@ UpdateCameraPerspective::UpdateCameraPerspective(
 {
 	// TODO: Use dedicated graphics memory
 	this->mpUniform_ChunkViewProjection = graphics::Uniform::create<ChunkViewProj>(uniformMemory);
-	renderer->addMutableUniform("mvpUniform", this->mpUniform_ChunkViewProjection);
-
-	this->mpUniform_LocalViewProjection = graphics::Uniform::create<LocalCamera>(uniformMemory);
-	renderer->addMutableUniform("localCamera", this->mpUniform_LocalViewProjection);
+	renderer->addMutableUniform("cameraUniform", this->mpUniform_ChunkViewProjection);
 }
 
 void UpdateCameraPerspective::subscribeToQueue()
@@ -138,14 +123,6 @@ void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::V
 		uniData.proj = perspectiveMatrix;
 		uniData.posOfCurrentChunk = transform->position().chunk().toFloat();
 		this->mpUniform_ChunkViewProjection->write(&uniData);
-	}
-
-	// Local View Projection
-	{
-		auto localCamera = this->mpUniform_LocalViewProjection->read<LocalCamera>();
-		localCamera.view = viewMatrix;
-		localCamera.proj = perspectiveMatrix;
-		this->mpUniform_LocalViewProjection->write(&localCamera);
 	}
 }
 
