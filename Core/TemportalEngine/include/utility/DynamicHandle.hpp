@@ -22,7 +22,21 @@ class DynamicHandle
 public:
 	DynamicHandle() = default;
 	DynamicHandle(std::weak_ptr<TOwner> owner, uIndex const& idx) : mpOwner(owner), mIdx(idx) {}
+	DynamicHandle(DynamicHandle<TValue> &&other) { *this = std::move(other); }
+
+	DynamicHandle& operator=(DynamicHandle<TValue> &&other)
+	{
+		this->mpOwner = other.mpOwner;
+		other.mpOwner.reset();
+		this->mIdx = other.mIdx;
+		return *this;
+	}
+
 	~DynamicHandle() { destroy(); }
+
+	bool isValid() const { return !this->mpOwner.expired(); }
+
+	operator bool() const { return isValid(); }
 
 	TValue& get() const
 	{
@@ -34,7 +48,7 @@ public:
 	
 	void destroy()
 	{
-		if (!this->mpOwner.expired())
+		if (this->isValid())
 		{
 			this->mpOwner.lock()->destroyHandle(this->mIdx);
 			this->mpOwner.reset();

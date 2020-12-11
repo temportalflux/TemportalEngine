@@ -46,11 +46,7 @@ public:
 
 private:
 	std::weak_ptr<graphics::SkinnedModelManager> const mpModelManager;
-	
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-
-	std::shared_ptr<graphics::DescriptorSetPool> mpModelDescriptors;
-	graphics::DescriptorSetPool::Handle mModelDescriptor_DefaultHumanoid;
 
 };
 

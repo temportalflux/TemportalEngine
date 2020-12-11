@@ -260,9 +260,10 @@ void Game::createRenderers()
 	this->loadVoxelTypeTextures();
 
 	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
-		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
+		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool(), &this->mpRenderer->getDescriptorPool()
 	);
 	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
+	this->mpTextureRegistry->setPackSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
 	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 	
 	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
