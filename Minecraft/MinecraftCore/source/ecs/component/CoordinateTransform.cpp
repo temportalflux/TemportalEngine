@@ -19,10 +19,20 @@ world::Coordinate const& CoordinateTransform::position() const
 	return this->mPosition;
 }
 
+world::Coordinate& CoordinateTransform::position()
+{
+	return this->mPosition;
+}
+
 CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &pos)
 {
 	this->mPosition = pos;
 	return *this;
+}
+
+math::Vector3& CoordinateTransform::velocity()
+{
+	return this->mVelocity;
 }
 
 void CoordinateTransform::move(math::Vector3 const &v)

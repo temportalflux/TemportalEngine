@@ -16,7 +16,10 @@ public:
 	CoordinateTransform();
 
 	world::Coordinate const& position() const;
+	world::Coordinate& position();
 	CoordinateTransform& setPosition(world::Coordinate const &pos);
+	math::Vector3& velocity();
+
 	void move(math::Vector3 const &v);
 
 	math::Quaternion const& orientation() const;
@@ -42,7 +45,10 @@ public:
 
 private:
 	world::Coordinate mPosition;
+	math::Vector3 mVelocity;
+
 	math::Quaternion mOrientation;
+	
 	math::Vector3 mSize;
 
 };

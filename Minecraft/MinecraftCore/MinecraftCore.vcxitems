@@ -25,9 +25,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderPlayer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicsBody.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewDebugHUD.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
@@ -66,9 +68,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderPlayer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicsBody.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewDebugHUD.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp" />

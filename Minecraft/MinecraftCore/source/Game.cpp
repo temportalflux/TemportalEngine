@@ -21,10 +21,12 @@
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
 #include "ecs/view/ViewRenderedPlayer.hpp"
+#include "ecs/view/ViewPhysicsBody.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemUpdateDebugHUD.hpp"
 #include "ecs/system/SystemRenderPlayer.hpp"
+#include "ecs/system/SystemPhysicsIntegration.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
@@ -117,6 +119,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
 	ecs->views().registerType<ecs::view::RenderedPlayer>();
+	ecs->views().registerType<ecs::view::PhysicsBody>();
 }
 
 void Game::openProject()
@@ -142,6 +145,8 @@ void Game::initializeNetwork()
 
 void Game::init()
 {
+	auto pEngine = engine::Engine::Get();
+
 	this->createVoxelTypeRegistry();
 	if (this->requiresGraphics())
 	{
@@ -155,6 +160,10 @@ void Game::init()
 		this->mpRenderer->createRenderChain();
 		this->mpRenderer->finalizeInitialization();
 	}
+
+	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
+	pEngine->addTicker(this->mpSystemPhysicsIntegration);
+	
 	this->createScene();
 	this->bindInput();
 }
@@ -163,6 +172,7 @@ void Game::uninit()
 {
 	this->unbindInput();
 	this->destroyScene();
+	this->mpSystemPhysicsIntegration.reset();
 	if (this->requiresGraphics())
 	{
 		this->destroyRenderers();
@@ -603,6 +613,8 @@ void Game::createLocalPlayer()
 		playerModel->createInstance(this->mpEntityInstanceBuffer);
 		this->mpEntityLocalPlayer->addComponent(playerModel);
 	}
+
+	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicsBody>());
 
 }
 

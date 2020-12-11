@@ -17,6 +17,7 @@ FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
 FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
 FORWARD_DEF(NS_SYSTEM, class RenderPlayer);
+FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
 
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
@@ -97,6 +98,7 @@ private:
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
 	std::shared_ptr<ecs::system::UpdateDebugHUD> mpSystemUpdateDebugHUD;
+	std::shared_ptr<ecs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	std::shared_ptr<game::VoxelModelManager> mpVoxelModelManager;

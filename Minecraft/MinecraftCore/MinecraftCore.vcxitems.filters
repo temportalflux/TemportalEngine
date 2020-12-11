@@ -159,6 +159,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp">
       <Filter>world</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicsBody.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -259,6 +265,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp">
       <Filter>resource</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicsBody.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp">
+      <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
