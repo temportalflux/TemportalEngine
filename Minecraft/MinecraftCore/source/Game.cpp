@@ -627,6 +627,7 @@ void Game::createLocalPlayer()
 		auto playerModel = components.create<ecs::component::PlayerModel>();
 		playerModel->createModel(this->mpSkinnedModelManager);
 		playerModel->createInstance(this->mpEntityInstanceBuffer);
+		playerModel->setTextureId("model:DefaultHumanoid");
 		this->mpEntityLocalPlayer->addComponent(playerModel);
 	}
 

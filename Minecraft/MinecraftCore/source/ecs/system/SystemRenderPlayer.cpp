@@ -154,9 +154,9 @@ void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSe
 	auto playerModel = view->get<component::PlayerModel>();
 	assert(cameraPOV && playerModel);
 
-	auto const& defaultHumanoid = game::Game::Get()->textureRegistry()->getDescriptorHandle("model:DefaultHumanoid");
+	auto const& textureDescriptor = game::Game::Get()->textureRegistry()->getDescriptorHandle(playerModel->textureId());
 	
-	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, defaultHumanoid.get() });
+	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, textureDescriptor.get() });
 	command->bindPipeline(this->mpPipeline);
 	playerModel->modelHandle().get()->bindBuffers(command);
 	command->bindVertexBuffers(1, { playerModel->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer() });

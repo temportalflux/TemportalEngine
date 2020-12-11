@@ -24,24 +24,28 @@ PlayerModel::~PlayerModel()
 	this->mInstanceHandle.destroy();
 }
 
-void PlayerModel::createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager)
+PlayerModel& PlayerModel::createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager)
 {
 	// Create a skinned model instance of the player model
 	this->mModelHandle = modelManager->createHandle();
 	modelManager->setModel(this->mModelHandle, PLAYER_MODEL_PATH.load(asset::EAssetSerialization::Binary));
+	return *this;
 }
 
-void PlayerModel::createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer)
+DynamicHandle<graphics::SkinnedModel> const& PlayerModel::modelHandle() const { return this->mModelHandle; }
+
+PlayerModel& PlayerModel::createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer)
 {
 	this->mInstanceHandle = instanceBuffer->createHandle();
+	return *this;
 }
 
-DynamicHandle<graphics::SkinnedModel> const& PlayerModel::modelHandle() const
+DynamicHandle<graphics::EntityInstanceData> const& PlayerModel::instanceHandle() const { return this->mInstanceHandle; }
+
+PlayerModel& PlayerModel::setTextureId(std::string const& textureId)
 {
-	return this->mModelHandle;
+	this->mTextureId = textureId;
+	return *this;
 }
 
-DynamicHandle<graphics::EntityInstanceData> const& PlayerModel::instanceHandle() const
-{
-	return this->mInstanceHandle;
-}
+std::string const& PlayerModel::textureId() const { return this->mTextureId; }
