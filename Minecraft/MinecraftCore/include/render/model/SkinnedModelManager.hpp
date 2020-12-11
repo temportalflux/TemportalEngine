@@ -4,6 +4,7 @@
 
 #include "graphics/Buffer.hpp"
 #include "render/ModelVertex.hpp"
+#include "utility/DynamicHandle.hpp"
 
 FORWARD_DEF(NS_ASSET, class Model);
 FORWARD_DEF(NS_GRAPHICS, class CommandPool);
@@ -33,6 +34,9 @@ public:
 	void invalidate();
 	void destroy();
 
+	void bindBuffers(graphics::Command *command) const;
+	ui32 indexCount() const;
+
 private:
 	std::vector<ModelVertex> mVertices;
 	std::vector<ui32> mIndices;
@@ -42,36 +46,29 @@ private:
 
 };
 
-class SkinnedModelManager
+class SkinnedModelManager : public IDynamicHandleOwner<SkinnedModel>
 {
 public:
-	typedef uIndex Handle;
-
 	SkinnedModelManager(
 		std::weak_ptr<GraphicsDevice> device,
 		graphics::CommandPool* transientPool
 	);
 	~SkinnedModelManager();
 
-	Handle createAssetModel(std::shared_ptr<asset::Model> asset);
-	Handle createModel(std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices);
-	void destroyModel(Handle const& validHandle);
+	void setModel(DynamicHandle<SkinnedModel> const& handle, std::shared_ptr<asset::Model> asset);
+	void setModel(DynamicHandle<SkinnedModel> const& handle, std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices);
 
-	void bindBuffers(Handle const& validHandle, graphics::Command *command);
-	ui32 indexCount(Handle const& validHandle) const;
+public:
+	DynamicHandle<SkinnedModel> createHandle() override;
+	SkinnedModel* get(uIndex const& idx) override;
+	void destroyHandle(uIndex const& idx) override;
 
 private:
 	std::weak_ptr<GraphicsDevice> mpDevice;
 	graphics::CommandPool *mpTransientCmdPool;
 
-	std::set<Handle> mUnusedHandles;
+	std::set<uIndex> mUnusedModelIndices;
 	std::vector<SkinnedModel> mModels;
-
-	/**
-	 * Creates a skinned model in the manager and returns a reference to the model for modification, but the manager still owns the data.
-	 * The reference parameter `outHandle` can be used after creation to reference the model or destroy it.
-	 */
-	SkinnedModel& createModel(Handle &outHandle);
 
 };
 

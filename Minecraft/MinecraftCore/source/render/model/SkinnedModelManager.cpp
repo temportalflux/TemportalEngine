@@ -67,6 +67,17 @@ void SkinnedModel::destroy()
 	this->mIndexBuffer.destroy();
 }
 
+void SkinnedModel::bindBuffers(graphics::Command *command) const
+{
+	command->bindVertexBuffers(0, { &this->mVertexBuffer });
+	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint32);
+}
+
+ui32 SkinnedModel::indexCount() const
+{
+	return (ui32)this->mIndices.size();
+}
+
 SkinnedModelManager::SkinnedModelManager(
 	std::weak_ptr<GraphicsDevice> device,
 	graphics::CommandPool* transientPool
@@ -79,55 +90,45 @@ SkinnedModelManager::~SkinnedModelManager()
 	for (auto& model : this->mModels) model.destroy();
 }
 
-SkinnedModel& SkinnedModelManager::createModel(Handle &outHandle)
+DynamicHandle<SkinnedModel> SkinnedModelManager::createHandle()
 {
-	if (this->mUnusedHandles.size() > 0)
+	uIndex idx;
+	if (this->mUnusedModelIndices.size() > 0)
 	{
-		auto iter = this->mUnusedHandles.begin();
-		outHandle = *iter;
-		this->mUnusedHandles.erase(iter);
+		auto iter = this->mUnusedModelIndices.begin();
+		idx = *iter;
+		this->mUnusedModelIndices.erase(iter);
 	}
 	else
 	{
-		outHandle = this->mModels.size();
+		idx = this->mModels.size();
+
 		auto model = SkinnedModel();
 		model.setDevice(this->mpDevice);
 		this->mModels.push_back(std::move(model));
 	}
-	return this->mModels[outHandle];
+	return DynamicHandle<SkinnedModel>(this->weak_from_this(), idx);
 }
 
-SkinnedModelManager::Handle SkinnedModelManager::createAssetModel(std::shared_ptr<asset::Model> asset)
+SkinnedModel* SkinnedModelManager::get(uIndex const& idx)
 {
-	return this->createModel(asset->vertices(), asset->indices());
+	return &this->mModels[idx];
 }
 
-SkinnedModelManager::Handle SkinnedModelManager::createModel(
-	std::vector<ModelVertex> const& vertices,
-	std::vector<ui32> const& indices
-)
+void SkinnedModelManager::destroyHandle(uIndex const& idx)
 {
-	Handle handle;
-	SkinnedModel& model = this->createModel(handle);
-	model.setBase(vertices, indices).create();
-	model.initializeBuffers(this->mpTransientCmdPool);
-	return handle;
+	this->mModels[idx].invalidate();
+	this->mUnusedModelIndices.insert(idx);
 }
 
-void SkinnedModelManager::destroyModel(Handle const& validHandle)
+void SkinnedModelManager::setModel(DynamicHandle<SkinnedModel> const& handle, std::shared_ptr<asset::Model> asset)
 {
-	this->mModels[validHandle].invalidate();
-	this->mUnusedHandles.insert(validHandle);
+	this->setModel(handle, asset->vertices(), asset->indices());
 }
 
-void SkinnedModelManager::bindBuffers(Handle const& validHandle, graphics::Command *command)
+void SkinnedModelManager::setModel(DynamicHandle<SkinnedModel> const& handle, std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices)
 {
-	auto& model = this->mModels[validHandle];
-	command->bindVertexBuffers(0, { &model.mVertexBuffer });
-	command->bindIndexBuffer(0, & model.mIndexBuffer, vk::IndexType::eUint32);
-}
-
-ui32 SkinnedModelManager::indexCount(Handle const& validHandle) const
-{
-	return (ui32)this->mModels[validHandle].mIndices.size();
+	SkinnedModel* model = handle.get();
+	model->setBase(vertices, indices).create();
+	model->initializeBuffers(this->mpTransientCmdPool);
 }

@@ -18,7 +18,7 @@ EntityInstanceBuffer::EntityInstanceBuffer() : mMutex()
 	for (uIndex idx = 0; idx < EntityInstanceBuffer::instanceBufferCount(); ++idx)
 	{
 		this->mUnusedInstanceIndices.push(idx);
-		this->mInstances[idx] = InstanceData {};
+		this->mInstances[idx] = EntityInstanceData{};
 		this->mInstanceMetadata[idx] = InstanceMeta { false, false };
 	}
 }
@@ -42,30 +42,34 @@ void EntityInstanceBuffer::create()
 	this->mInstanceBuffer.create();
 }
 
-uIndex EntityInstanceBuffer::createInstance()
+DynamicHandle<EntityInstanceData> EntityInstanceBuffer::createHandle()
 {
 	this->mMutex.lock();
-	auto handle = this->mUnusedInstanceIndices.dequeue();
-	this->mInstanceMetadata[handle].bIsActive = true;
+	auto idx = this->mUnusedInstanceIndices.dequeue();
+	this->mInstanceMetadata[idx].bIsActive = true;
 	this->bHasAnyChanges = true;
 	this->mMutex.unlock();
-	return handle;
+	return DynamicHandle<EntityInstanceData>(this->weak_from_this(), idx);
 }
 
-void EntityInstanceBuffer::destroyInstance(uIndex const& handle)
+EntityInstanceData* EntityInstanceBuffer::get(uIndex const& idx)
+{
+	return &this->mInstances[idx];
+}
+
+void EntityInstanceBuffer::destroyHandle(uIndex const& idx)
 {
 	this->mMutex.lock();
-	this->mUnusedInstanceIndices.insert(handle);
-	this->mInstanceMetadata[handle].bIsActive = false;
+	this->mUnusedInstanceIndices.insert(idx);
+	this->mInstanceMetadata[idx].bIsActive = false;
 	this->bHasAnyChanges = true;
 	this->mMutex.unlock();
 }
 
-void EntityInstanceBuffer::markInstanceForUpdate(uIndex const& handle, InstanceData const& data)
+void EntityInstanceBuffer::markDirty(uIndex const& idx)
 {
 	this->mMutex.lock();
-	this->mInstances[handle] = data;
-	this->mInstanceMetadata[handle].bHasChanged = true;
+	this->mInstanceMetadata[idx].bHasChanged = true;
 	this->bHasAnyChanges = true;
 	this->mMutex.unlock();
 }
@@ -113,7 +117,7 @@ void EntityInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 		{
 			// If the previous entry and next entry are contiguous (next to each other in the buffer)
 			// the the current region can be expanded instead of adding a new region
-			if (prevIdx.has_value() && nextIdx == *prevIdx + 1) regionBeingPrepared.size += sizeof(InstanceData);
+			if (prevIdx.has_value() && nextIdx == *prevIdx + 1) regionBeingPrepared.size += sizeof(EntityInstanceData);
 			// The entries are not contiguous, so we must append the previous region and start a new one
 			else
 			{
@@ -127,13 +131,13 @@ void EntityInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 				}
 				regionBeingPrepared = {
 					/*srcOffset*/ totalStagingBufferSizeWritten,
-					/*dstOffset*/ nextIdx * sizeof(InstanceData),
-					sizeof(InstanceData)
+					/*dstOffset*/ nextIdx * sizeof(EntityInstanceData),
+					sizeof(EntityInstanceData)
 				};
 			}
 			this->mStagingBuffer.write(
 				totalStagingBufferSizeWritten,
-				&instances[nextIdx], sizeof(InstanceData), false
+				&instances[nextIdx], sizeof(EntityInstanceData), false
 			);
 		}
 		prevIdx = nextIdx;

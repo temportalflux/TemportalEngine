@@ -124,7 +124,7 @@ void TextureRegistry::createDescriptor(TextureId const& textureId, SamplerPath c
 	assert(iter != this->mImages.end());
 	auto& entry = iter->second;
 	entry.descriptorHandle = std::move(this->mpTextureDescriptors->createHandle());
-	entry.descriptorHandle.get().attach(
+	entry.descriptorHandle.get()->attach(
 		"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
 		entry.view.get(), this->getSampler(samplerId).lock().get()
 	).writeAttachments();

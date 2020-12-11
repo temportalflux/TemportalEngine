@@ -40,8 +40,8 @@ public:
 	Command& bindPipeline(std::shared_ptr<Pipeline> pPipeline);
 	Command& bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<vk::DescriptorSet> sets);
 	Command& bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<graphics::DescriptorSet const*> sets);
-	Command& bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers);
-	Command& bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType);
+	Command& bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer const*> const pBuffers);
+	Command& bindIndexBuffer(ui64 offset, Buffer const* pBuffer, vk::IndexType indexType);
 	Command& draw(ui32 idxStartIndex, ui32 indexCount, ui32 indexShift, ui32 idxStartInstance, ui32 instanceCount);
 	Command& endRenderPass();
 

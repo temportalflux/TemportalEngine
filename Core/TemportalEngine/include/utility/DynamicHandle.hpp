@@ -6,12 +6,13 @@ template <typename TValue>
 class DynamicHandle;
 
 template <typename TValue>
-class IDynamicHandleOwner
+class IDynamicHandleOwner : public std::enable_shared_from_this<IDynamicHandleOwner<TValue>>
 {
 public:
 	virtual DynamicHandle<TValue> createHandle() = 0;
-	virtual TValue& get(uIndex const& idx) = 0;
+	virtual TValue* get(uIndex const& idx) = 0;
 	virtual void destroyHandle(uIndex const& idx) = 0;
+	virtual void markDirty(uIndex const& idx) {}
 };
 
 template <typename TValue>
@@ -35,16 +36,20 @@ public:
 	~DynamicHandle() { destroy(); }
 
 	bool isValid() const { return !this->mpOwner.expired(); }
-
 	operator bool() const { return isValid(); }
+	operator uIndex() const { return this->mIdx; }
 
-	TValue& get() const
+	template <typename TOwnerReal>
+	std::shared_ptr<TOwnerReal> owner() const { return std::reinterpret_pointer_cast<TOwnerReal>(this->mpOwner.lock()); }
+
+	TValue* get() const
 	{
 		assert(!this->mpOwner.expired());
 		return this->mpOwner.lock()->get(this->mIdx);
 	}
+	TValue* operator*() const { return get(); }
 
-	TValue& operator*() const { return get(); }
+	void markDirty() const { this->mpOwner.lock()->markDirty(this->mIdx); }
 	
 	void destroy()
 	{

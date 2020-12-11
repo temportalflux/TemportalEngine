@@ -24,6 +24,7 @@ public:
 
 	void create() override;
 	void* get() override;
+	void* get() const;
 	void invalidate() override;
 	void resetConfiguration() override;
 

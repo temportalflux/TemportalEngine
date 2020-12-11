@@ -1,8 +1,11 @@
 #pragma once
 
 #include "ecs/component/Component.hpp"
+#include "utility/DynamicHandle.hpp"
 
+FORWARD_DEF(NS_GRAPHICS, class SkinnedModel);
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
+FORWARD_DEF(NS_GRAPHICS, struct EntityInstanceData);
 FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
 
 NS_ECS
@@ -19,15 +22,12 @@ public:
 	void createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager);
 	void createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer);
 
-	uIndex const& modelHandle() const;
-	std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer() const;
-	uIndex const& instanceHandle() const;
+	DynamicHandle<graphics::SkinnedModel> const& modelHandle() const;
+	DynamicHandle<graphics::EntityInstanceData> const& instanceHandle() const;
 
 private:
-	std::weak_ptr<graphics::SkinnedModelManager> mpModelManager;
-	uIndex mModelHandle;
-	std::weak_ptr<graphics::EntityInstanceBuffer> mpInstanceBuffer;
-	uIndex mInstanceHandle;
+	DynamicHandle<graphics::SkinnedModel> mModelHandle;
+	DynamicHandle<graphics::EntityInstanceData> mInstanceHandle;
 
 };
 

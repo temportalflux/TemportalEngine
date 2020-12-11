@@ -45,7 +45,7 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 	graphics::populatePipeline(path, this->mpPipeline.get(), nullptr);
 
 	{
-		typedef graphics::EntityInstanceBuffer::InstanceData TInstance;
+		typedef graphics::EntityInstanceData TInstance;
 		ui8 slot = 0;
 		this->mpPipeline->setBindings({
 			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
@@ -124,14 +124,14 @@ void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 	auto playerModel = view->get<component::PlayerModel>();
 	assert(transform && playerModel);
 
-	graphics::EntityInstanceBuffer::InstanceData instance;
-	instance.posOfCurrentChunk = transform->position().chunk().toFloat();
-	instance.localTransform = math::createModelMatrix(
+	auto* instance = playerModel->instanceHandle().get();
+	instance->posOfCurrentChunk = transform->position().chunk().toFloat();
+	instance->localTransform = math::createModelMatrix(
 		transform->position().local().toFloat() + transform->position().offset(),
 		math::Quaternion::FromAxisAngle(math::V3_UP, transform->orientation().euler().y()),
 		transform->size()
 	);
-	playerModel->instanceBuffer()->markInstanceForUpdate(playerModel->instanceHandle(), instance);
+	playerModel->instanceHandle().markDirty();
 }
 
 void RenderPlayer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -154,15 +154,13 @@ void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSe
 	auto playerModel = view->get<component::PlayerModel>();
 	assert(cameraPOV && playerModel);
 
-	auto modelManager = this->mpModelManager.lock();
-	auto registry = game::Game::Get()->textureRegistry();
-	auto const& defaultHumanoid = registry->getDescriptorHandle("model:DefaultHumanoid");
+	auto const& defaultHumanoid = game::Game::Get()->textureRegistry()->getDescriptorHandle("model:DefaultHumanoid");
 	
-	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, &defaultHumanoid.get() });
+	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, defaultHumanoid.get() });
 	command->bindPipeline(this->mpPipeline);
-	modelManager->bindBuffers(playerModel->modelHandle(), command);
-	command->bindVertexBuffers(1, { playerModel->instanceBuffer()->buffer() });
-	command->draw(0, modelManager->indexCount(playerModel->modelHandle()), 0, (ui32)playerModel->instanceHandle(), 1);
+	playerModel->modelHandle().get()->bindBuffers(command);
+	command->bindVertexBuffers(1, { playerModel->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer() });
+	command->draw(0, playerModel->modelHandle().get()->indexCount(), 0, ui32(uIndex(playerModel->instanceHandle())), 1);
 }
 
 void RenderPlayer::destroyRenderChain()

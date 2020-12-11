@@ -122,7 +122,7 @@ private:
 
 };
 
-class DescriptorSetPool : public std::enable_shared_from_this<DescriptorSetPool>, public IDynamicHandleOwner<DescriptorSet>
+class DescriptorSetPool : public IDynamicHandleOwner<DescriptorSet>
 {
 public:
 	using Handle = DynamicHandle<DescriptorSet>;
@@ -133,7 +133,7 @@ public:
 
 public:
 	Handle createHandle() override;
-	DescriptorSet& get(uIndex const& idx) override;
+	DescriptorSet* get(uIndex const& idx) override;
 	void destroyHandle(uIndex const& idx) override;
 
 private:

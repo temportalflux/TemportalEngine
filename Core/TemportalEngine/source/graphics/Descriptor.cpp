@@ -289,9 +289,9 @@ DynamicHandle<DescriptorSet> DescriptorSetPool::createHandle()
 	return DynamicHandle<DescriptorSet>(this->weak_from_this(), idxSet);
 }
 
-DescriptorSet& DescriptorSetPool::get(uIndex const& idx)
+DescriptorSet* DescriptorSetPool::get(uIndex const& idx)
 {
-	return this->mSets[idx];
+	return &this->mSets[idx];
 }
 
 void DescriptorSetPool::destroyHandle(uIndex const& idx)

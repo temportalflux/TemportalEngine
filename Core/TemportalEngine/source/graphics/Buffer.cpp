@@ -62,10 +62,8 @@ void Buffer::create()
 	);
 }
 
-void* Buffer::get()
-{
-	return &this->mAllocated;
-}
+void* Buffer::get() { return &this->mAllocated; }
+void* Buffer::get() const { return (void*)(&this->mAllocated); }
 
 void Buffer::invalidate()
 {

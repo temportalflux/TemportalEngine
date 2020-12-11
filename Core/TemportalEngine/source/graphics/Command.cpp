@@ -207,7 +207,7 @@ Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::v
 	return bindDescriptorSets(pPipeline, vkSets);
 }
 
-Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> const pBuffers)
+Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer const*> const pBuffers)
 {
 	OPTICK_EVENT();
 	ui32 bufferCount = (ui32)pBuffers.size();
@@ -222,7 +222,7 @@ Command& Command::bindVertexBuffers(ui32 bindingIndex, std::vector<Buffer*> cons
 	return *this;
 }
 
-Command& Command::bindIndexBuffer(ui64 offset, Buffer *pBuffer, vk::IndexType indexType)
+Command& Command::bindIndexBuffer(ui64 offset, Buffer const* pBuffer, vk::IndexType indexType)
 {
 	OPTICK_EVENT();
 	castBuf(this->mpVulkanBuffer)->bindIndexBuffer(extract<vk::Buffer>(pBuffer), offset, indexType);
