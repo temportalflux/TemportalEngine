@@ -84,7 +84,7 @@ void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPas
 void RenderPlayer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
 {
 	this->mpModelDescriptors->layout().create();
-	this->mModelDescriptor_DefaultHumanoid = this->mpModelDescriptors->create();
+	this->mModelDescriptor_DefaultHumanoid = this->mpModelDescriptors->createHandle();
 }
 
 void RenderPlayer::createLocalPlayerDescriptor()

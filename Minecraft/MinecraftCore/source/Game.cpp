@@ -546,7 +546,7 @@ void Game::createWorld()
 	
 	this->createScene();
 	this->createLocalPlayer();
-	this->createEntities();
+	//this->createEntities();
 
 	// Specifically for clients which set player movement/camera information
 	{
@@ -635,11 +635,29 @@ void Game::createLocalPlayer()
 
 void Game::createEntities()
 {
+	auto pEngine = engine::Engine::Get();
+	auto& ecs = pEngine->getECS();
+	auto& components = ecs.components();
+	auto& views = ecs.views();
+
+	auto entity = ecs.entities().create();
+	this->mSpawnedEntities.push_back(entity);
+
+	// Add Transform
+	{
+		auto transform = components.create<ecs::component::CoordinateTransform>();
+		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH }));
+		transform->setOrientation(math::Vector3unitY, 0);
+		entity->addComponent(transform);
+	}
+	entity->addView(views.create<ecs::view::PhysicsBody>());
+
 
 }
 
 void Game::destroyScene()
 {
+	this->mSpawnedEntities.clear();
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();
 	this->mpWorld.reset();

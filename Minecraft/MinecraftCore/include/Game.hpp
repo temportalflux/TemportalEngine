@@ -84,6 +84,7 @@ private:
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
+	std::vector<std::shared_ptr<ecs::Entity>> mSpawnedEntities;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
 	std::shared_ptr<ecs::system::UpdateDebugHUD> mpSystemUpdateDebugHUD;

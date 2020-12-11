@@ -328,6 +328,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp">
       <Filter>utility</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelSimple.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -702,6 +705,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp">
       <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\render\ModelSimple.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

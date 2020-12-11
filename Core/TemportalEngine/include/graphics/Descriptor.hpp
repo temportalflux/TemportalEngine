@@ -3,6 +3,7 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "graphics/types.hpp"
+#include "utility/DynamicHandle.hpp"
 
 NS_GRAPHICS
 class Buffer;
@@ -121,31 +122,19 @@ private:
 
 };
 
-class DescriptorSetPool : public std::enable_shared_from_this<DescriptorSetPool>
+class DescriptorSetPool : public std::enable_shared_from_this<DescriptorSetPool>, public IDynamicHandleOwner<DescriptorSet>
 {
-
 public:
-	struct Handle
-	{
-		friend class DescriptorSetPool;
-		Handle();
-		~Handle();
-		DescriptorSet& get() const;
-		DescriptorSet& operator*() const;
-		void destroy();
-	private:
-		std::weak_ptr<DescriptorSetPool> mpPool;
-		uIndex mIdxSet;
-		Handle(std::weak_ptr<DescriptorSetPool> pool, uIndex idxSet);
-	};
+	using Handle = DynamicHandle<DescriptorSet>;
 
 	DescriptorSetPool(DescriptorPool *descriptorPool);
 
 	DescriptorLayout& layout();
 
-	Handle create();
-	DescriptorSet& get(uIndex const& idxSet);
-	void destroy(Handle const& handle);
+public:
+	Handle createHandle() override;
+	DescriptorSet& get(uIndex const& idx) override;
+	void destroyHandle(uIndex const& idx) override;
 
 private:
 	DescriptorPool *mpDescriptorPool;

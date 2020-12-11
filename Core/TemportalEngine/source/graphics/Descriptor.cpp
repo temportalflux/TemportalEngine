@@ -261,35 +261,6 @@ void* DescriptorSet::get() const
 	return this->mInternal;
 }
 
-DescriptorSetPool::Handle::Handle() {}
-
-DescriptorSetPool::Handle::Handle(std::weak_ptr<DescriptorSetPool> pool, uIndex idxSet)
-	: mpPool(pool), mIdxSet(idxSet)
-{
-}
-
-DescriptorSetPool::Handle::~Handle()
-{
-	destroy();
-}
-
-DescriptorSet& DescriptorSetPool::Handle::get() const
-{
-	assert(!this->mpPool.expired());
-	return this->mpPool.lock()->get(this->mIdxSet);
-}
-
-DescriptorSet& DescriptorSetPool::Handle::operator*() const { return this->get(); }
-
-void DescriptorSetPool::Handle::destroy()
-{
-	if (!this->mpPool.expired())
-	{
-		this->mpPool.lock()->destroy(*this);
-		this->mpPool.reset();
-	}
-}
-
 DescriptorSetPool::DescriptorSetPool(DescriptorPool *descriptorPool)
 	: mpDescriptorPool(descriptorPool)
 {
@@ -297,7 +268,8 @@ DescriptorSetPool::DescriptorSetPool(DescriptorPool *descriptorPool)
 
 DescriptorLayout& DescriptorSetPool::layout() { return this->mLayout; }
 
-DescriptorSetPool::Handle DescriptorSetPool::create()
+
+DynamicHandle<DescriptorSet> DescriptorSetPool::createHandle()
 {
 	uIndex idxSet;
 	if (this->mUnusedSetIndices.size() > 0)
@@ -314,15 +286,15 @@ DescriptorSetPool::Handle DescriptorSetPool::create()
 		this->mLayout.createSet(this->mpDescriptorPool, set);
 		this->mSets.push_back(std::move(set));
 	}
-	return Handle(this->weak_from_this(), idxSet);
+	return DynamicHandle<DescriptorSet>(this->weak_from_this(), idxSet);
 }
 
-DescriptorSet& DescriptorSetPool::get(uIndex const& idxSet)
+DescriptorSet& DescriptorSetPool::get(uIndex const& idx)
 {
-	return this->mSets[idxSet];
+	return this->mSets[idx];
 }
 
-void DescriptorSetPool::destroy(Handle const& handle)
+void DescriptorSetPool::destroyHandle(uIndex const& idx)
 {
-	this->mUnusedSetIndices.insert(handle.mIdxSet);
+	this->mUnusedSetIndices.insert(idx);
 }
