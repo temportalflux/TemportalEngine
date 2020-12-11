@@ -4,8 +4,7 @@
 
 using namespace graphics;
 
-ChunkBoundaryRenderer::ChunkBoundaryRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool)
-	: LineRenderer(pDescriptorPool)
+ChunkBoundaryRenderer::ChunkBoundaryRenderer() : LineRenderer()
 {
 }
 
@@ -97,16 +96,6 @@ void* ChunkBoundaryRenderer::indexBufferData() const
 ui32 ChunkBoundaryRenderer::indexCount() const
 {
 	return (ui32)this->mIndicies.size();
-}
-
-void ChunkBoundaryRenderer::attachDescriptors(
-	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
-)
-{
-	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
-	{
-		this->mDescriptorSets[idxSet].attach("mvpCamera", mutableUniforms["cameraUniform"][idxSet]);
-	}
 }
 
 void ChunkBoundaryRenderer::draw(graphics::Command *command)

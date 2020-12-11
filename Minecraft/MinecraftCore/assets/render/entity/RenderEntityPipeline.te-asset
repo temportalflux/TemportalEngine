@@ -6,15 +6,6 @@
 		{
 			"descriptors": [
 				{
-					"id": "cameraUniform",
-					"type": 6,
-					"stage": 1
-				}
-			]
-		},
-		{
-			"descriptors": [
-				{
 					"id": "texture",
 					"type": 1,
 					"stage": 16

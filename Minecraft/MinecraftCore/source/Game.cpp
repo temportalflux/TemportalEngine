@@ -150,6 +150,8 @@ void Game::init()
 		if (!this->scanResourcePacks()) return;
 		this->createRenderers();
 		this->mpResourcePackManager->loadPack("Default", 0).loadPack("Temportal", 1).commitChanges();
+		this->mpSystemRenderPlayer->createLocalPlayerDescriptor();
+		this->mpRenderer->createMutableUniforms();
 		this->mpRenderer->createRenderChain();
 		this->mpRenderer->finalizeInitialization();
 	}
@@ -246,6 +248,12 @@ void Game::createRenderers()
 
 	this->createGameRenderer();
 	this->loadVoxelTypeTextures();
+
+	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
+		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
+	);
+	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
+	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 	
 	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
 		pEngine->getMiscMemory(), this->mpRenderer
@@ -267,19 +275,13 @@ void Game::createRenderers()
 	this->mpEntityInstanceBuffer->create();
 
 	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
-		std::weak_ptr(this->mpSkinnedModelManager), this->mpGlobalDescriptorPool
+		std::weak_ptr(this->mpSkinnedModelManager)
 	);
 	pEngine->addTicker(this->mpSystemRenderPlayer);
 	this->mpSystemRenderPlayer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/entity/RenderEntityPipeline.te-asset"
 	));
 	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
-
-	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
-		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
-	);
-	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
-	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 }
 
 void Game::createGameRenderer()
@@ -330,15 +332,6 @@ void Game::loadVoxelTypeTextures()
 
 void Game::createPipelineRenderers()
 {
-	this->mpGlobalDescriptorPool = std::make_shared<graphics::DescriptorPool>();
-	this->mpGlobalDescriptorPool->setDevice(this->mpRenderer->getDevice());
-	this->mpGlobalDescriptorPool->setPoolSize(64, {
-		{ vk::DescriptorType::eUniformBuffer, 64 },
-		{ vk::DescriptorType::eCombinedImageSampler, 64 },
-	});
-	this->mpGlobalDescriptorPool->setAllocationMultiplier(this->mpRenderer->getSwapChainImageViewCount());
-	this->mpGlobalDescriptorPool->create();
-
 	this->createVoxelGridRenderer();
 	this->createWorldAxesRenderer();
 	this->createChunkBoundaryRenderer();
@@ -376,7 +369,7 @@ void Game::createVoxelGridRenderer()
 	this->mpVoxelInstanceBuffer->createBuffer();
 
 	this->mpVoxelGridRenderer = std::make_shared<graphics::VoxelGridRenderer>(
-		std::weak_ptr(this->mpGlobalDescriptorPool),
+		&this->mpRenderer->getDescriptorPool(),
 		std::weak_ptr(this->mpVoxelInstanceBuffer),
 		this->mpVoxelTypeRegistry, this->mpVoxelModelManager
 	);
@@ -389,9 +382,7 @@ void Game::createVoxelGridRenderer()
 
 void Game::createWorldAxesRenderer()
 {
-	this->mpWorldAxesRenderer = std::make_shared<graphics::SimpleLineRenderer>(
-		std::weak_ptr(this->mpGlobalDescriptorPool)
-	);
+	this->mpWorldAxesRenderer = std::make_shared<graphics::SimpleLineRenderer>();
 	this->mpWorldAxesRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/debug/PerspectiveLinePipeline.te-asset"
 	));
@@ -407,9 +398,7 @@ void Game::createWorldAxesRenderer()
 
 void Game::createChunkBoundaryRenderer()
 {
-	this->mpChunkBoundaryRenderer = std::make_shared<graphics::ChunkBoundaryRenderer>(
-		std::weak_ptr(this->mpGlobalDescriptorPool)
-	);
+	this->mpChunkBoundaryRenderer = std::make_shared<graphics::ChunkBoundaryRenderer>();
 	this->mpChunkBoundaryRenderer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/debug/ChunkLinePipeline.te-asset"
 	));
@@ -492,7 +481,6 @@ void Game::createChunkBoundaryRenderer()
 void Game::createUIRenderer()
 {
 	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>(
-		std::weak_ptr(this->mpGlobalDescriptorPool),
 		/*maximum displayed characters=*/ 256
 	);
 
@@ -522,7 +510,6 @@ void Game::destroyRenderers()
 	this->mpWorldAxesRenderer->destroy();
 	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();
-	this->mpGlobalDescriptorPool->invalidate();
 	
 	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpSystemUpdateDebugHUD.reset();
@@ -530,7 +517,6 @@ void Game::destroyRenderers()
 
 	this->mpRenderer->invalidate();
 
-	this->mpGlobalDescriptorPool.reset();
 	this->mpSystemRenderPlayer.reset();
 	this->mpVoxelGridRenderer.reset();
 	this->mpWorldAxesRenderer.reset();

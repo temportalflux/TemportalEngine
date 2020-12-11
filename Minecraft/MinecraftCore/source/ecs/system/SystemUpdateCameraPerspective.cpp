@@ -75,7 +75,9 @@ UpdateCameraPerspective::UpdateCameraPerspective(
 {
 	// TODO: Use dedicated graphics memory
 	this->mpUniform_ChunkViewProjection = graphics::Uniform::create<ChunkViewProj>(uniformMemory);
+	renderer->addGlobalMutableDescriptor("camera", 1);
 	renderer->addMutableUniform("cameraUniform", this->mpUniform_ChunkViewProjection);
+	renderer->addMutableUniformToLayout("camera", "cameraUniform", 0, graphics::EDescriptorType::eUniformBuffer, graphics::ShaderStageFlags::eVertex);
 }
 
 void UpdateCameraPerspective::subscribeToQueue()

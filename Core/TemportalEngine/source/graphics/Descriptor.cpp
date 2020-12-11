@@ -102,6 +102,16 @@ void DescriptorLayout::invalidate()
 	}
 }
 
+DescriptorLayout& DescriptorLayout::createSet(DescriptorPool *pool, DescriptorSet &outSet)
+{
+	OPTICK_EVENT();
+	auto vkSets = this->mpDevice.lock()->allocateDescriptorSets(
+		pool, reinterpret_cast<VkDescriptorSetLayout>(this->mInternal), 1
+	);
+	outSet = DescriptorSet(this->mpDevice, this->mBindings, (void*)vkSets[0]);
+	return *this;
+}
+
 DescriptorLayout& DescriptorLayout::createSets(DescriptorPool *pool, std::vector<DescriptorSet> &outSets)
 {
 	OPTICK_EVENT();

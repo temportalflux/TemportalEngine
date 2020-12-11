@@ -92,7 +92,7 @@ Pipeline& Pipeline::setDescriptors(std::vector<DescriptorGroup> *descriptors)
 	return *this;
 }
 
-Pipeline& Pipeline::setDescriptorLayouts(std::vector<graphics::DescriptorLayout*> const& layouts)
+Pipeline& Pipeline::setDescriptorLayouts(std::vector<graphics::DescriptorLayout const*> const& layouts)
 {
 	this->mDescriptorLayouts.resize(layouts.size());
 	std::transform(

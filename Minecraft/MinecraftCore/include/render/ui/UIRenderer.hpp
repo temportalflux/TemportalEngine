@@ -21,7 +21,6 @@ class UIRenderer : public graphics::IPipelineRenderer
 
 public:
 	UIRenderer(
-		std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
 		uSize maximumDisplayedCharacters
 	);
 	~UIRenderer();
@@ -35,15 +34,15 @@ public:
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
-	void initializeData(graphics::CommandPool* transientPool) override;
+	void initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool) override;
 	void setFrameCount(uSize frameCount) override;
-	void createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
+	void createDescriptors(graphics::DescriptorPool *descriptorPool) override;
 	void attachDescriptors(
 		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 	) override;
 	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
 	void createPipeline(math::Vector2UInt const& resolution) override;
-	void record(graphics::Command *command, uIndex idxFrame) override;
+	void record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet) override;
 	void destroyRenderChain() override;
 
 	void destroyRenderDevices();
@@ -61,7 +60,7 @@ protected:
 	math::Vector2 measure(UIString const* pStr) const;
 	
 private:
-	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
+	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 
 	math::Vector2UInt mScreenResolution;
 	thread::MutexLock mMutex;

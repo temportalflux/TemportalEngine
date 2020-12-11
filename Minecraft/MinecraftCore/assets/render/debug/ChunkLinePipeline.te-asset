@@ -20,16 +20,5 @@
 			}
 		}
 	},
-	"topology": "LineList",
-	"descriptorGroups": [
-		{
-			"descriptors": [
-				{
-					"id": "mvpCamera",
-					"type": 6,
-					"stage": 1
-				}
-			]
-		}
-	]
+	"topology": "LineList"
 }

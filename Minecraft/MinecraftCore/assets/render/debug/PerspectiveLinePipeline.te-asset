@@ -34,16 +34,5 @@
 			}
 		}
 	},
-	"topology": "LineList",
-	"descriptorGroups": [
-		{
-			"descriptors": [
-				{
-					"id": "localCamera",
-					"type": 6,
-					"stage": 1
-				}
-			]
-		}
-	]
+	"topology": "LineList"
 }

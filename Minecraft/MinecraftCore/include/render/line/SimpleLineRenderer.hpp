@@ -15,7 +15,7 @@ public:
 		math::Vector4 color;
 	};
 
-	SimpleLineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
+	SimpleLineRenderer();
 
 	ui32 addLineSegment(LineSegment const& segment);
 

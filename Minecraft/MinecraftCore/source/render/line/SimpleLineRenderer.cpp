@@ -2,7 +2,7 @@
 
 using namespace graphics;
 
-SimpleLineRenderer::SimpleLineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool) : LineRenderer(pDescriptorPool)
+SimpleLineRenderer::SimpleLineRenderer() : LineRenderer()
 {
 }
 

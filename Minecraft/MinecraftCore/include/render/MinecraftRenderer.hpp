@@ -4,6 +4,7 @@
 #include "graphics/VulkanRenderer.hpp"
 
 #include "graphics/CommandPool.hpp"
+#include "graphics/DescriptorPool.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/ImageView.hpp"
 
@@ -23,12 +24,20 @@ public:
 
 	void initializeDevices() override;
 	CommandPool& getTransientPool();
+	DescriptorPool& getDescriptorPool();
 	ui32 getSwapChainImageViewCount() const;
 
+	void addGlobalMutableDescriptor(std::string const& layoutId, uSize const& bindingCount);
 	void addMutableUniform(std::string const& key, std::weak_ptr<Uniform> uniform);
+	void addMutableUniformToLayout(
+		std::string const& layoutId, std::string const& uniformId,
+		uIndex const& bindingIndex,
+		graphics::DescriptorType const& type, graphics::ShaderStage const& stage
+	);
 	void addRenderer(IPipelineRenderer *renderer);
 	void setRenderPass(std::shared_ptr<asset::RenderPass> renderPass);
 
+	void createMutableUniforms();
 	void createRenderChain() override;
 	void finalizeInitialization() override;
 
@@ -59,9 +68,17 @@ private:
 
 private:
 	CommandPool mCommandPoolTransient;
+	DescriptorPool mGlobalDescriptorPool;
 	
 	std::unordered_map<std::string, std::weak_ptr<Uniform>> mpMutableUniforms;
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> mMutableUniformBuffersByDescriptorId;
+	struct GlobalMutableDescriptor
+	{
+		std::vector<std::string> mutableUniformIds;
+		graphics::DescriptorLayout layout;
+		std::vector<graphics::DescriptorSet> sets;
+	};
+	std::unordered_map<std::string, GlobalMutableDescriptor> mGlobalMutableDescriptors;
 
 	std::vector<IPipelineRenderer*> mpRenderers;
 	std::shared_ptr<graphics::RenderPass> mpRenderPass;
@@ -80,6 +97,8 @@ private:
 	std::vector<CommandBufferFrame> mFrames;
 
 	void initializeTransientCommandPool();
+	std::unordered_map<std::string, graphics::DescriptorLayout const*> getGlobalDescriptorLayouts() const;
+	graphics::DescriptorSet const* getGlobalDescriptorSet(std::string const& layoutId, uIndex idxFrame) const;
 
 };
 

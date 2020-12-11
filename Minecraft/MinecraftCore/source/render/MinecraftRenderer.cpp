@@ -14,18 +14,55 @@ void MinecraftRenderer::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
 	this->initializeTransientCommandPool();
+
+	this->mGlobalDescriptorPool.setDevice(this->getDevice());
+	this->mGlobalDescriptorPool.setPoolSize(64, {
+		{ vk::DescriptorType::eUniformBuffer, 64 },
+		{ vk::DescriptorType::eCombinedImageSampler, 64 },
+	});
+	this->mGlobalDescriptorPool.setAllocationMultiplier(this->getSwapChainImageViewCount());
+	this->mGlobalDescriptorPool.create();
+
+	this->mFrames.resize(this->getSwapChainImageViewCount());
 }
 
 void MinecraftRenderer::invalidate()
 {
 	this->destroyRenderChain();
+	this->mGlobalMutableDescriptors.clear();
+	this->mMutableUniformBuffersByDescriptorId.clear();
+	this->mGlobalDescriptorPool.destroy();
 	this->mCommandPoolTransient.destroy();
 	VulkanRenderer::invalidate();
+}
+
+DescriptorPool& MinecraftRenderer::getDescriptorPool()
+{
+	return this->mGlobalDescriptorPool;
+}
+
+void MinecraftRenderer::addGlobalMutableDescriptor(std::string const& layoutId, uSize const& bindingCount)
+{
+	auto gmd = GlobalMutableDescriptor {};
+	gmd.layout.setDevice(this->getDevice());
+	gmd.layout.setBindingCount(bindingCount);
+	this->mGlobalMutableDescriptors.insert(std::make_pair(layoutId, std::move(gmd)));
 }
 
 void MinecraftRenderer::addMutableUniform(std::string const& key, std::weak_ptr<Uniform> uniform)
 {
 	this->mpMutableUniforms.insert(std::pair(key, uniform));
+}
+
+void MinecraftRenderer::addMutableUniformToLayout(
+	std::string const& layoutId, std::string const& uniformId,
+	uIndex const& bindingIndex,
+	graphics::DescriptorType const& type, graphics::ShaderStage const& stage
+)
+{
+	auto& gmd = this->mGlobalMutableDescriptors.find(layoutId)->second;
+	gmd.mutableUniformIds.push_back(uniformId);
+	gmd.layout.setBinding(bindingIndex, uniformId, type, stage, 1);
 }
 
 void MinecraftRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
@@ -52,7 +89,7 @@ void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
 {
 	renderer->setDevice(this->getDevice());
 	renderer->setRenderPass(this->mpRenderPass);
-	renderer->initializeData(&this->getTransientPool());
+	renderer->initializeData(&this->getTransientPool(), &this->getDescriptorPool());
 	this->mpRenderers.push_back(renderer);
 }
 
@@ -79,9 +116,44 @@ ui32 MinecraftRenderer::getSwapChainImageViewCount() const
 	return this->mpGraphicsDevice->querySwapChainSupport().getImageViewCount();
 }
 
+void MinecraftRenderer::createMutableUniforms()
+{
+	this->createMutableUniformBuffers();
+	for (auto&[layoutId, gmd] : this->mGlobalMutableDescriptors)
+	{
+		gmd.layout.create();
+		gmd.sets.resize(this->getSwapChainImageViewCount());
+		gmd.layout.createSets(&this->getDescriptorPool(), gmd.sets);
+		for (uIndex idxSet = 0; idxSet < gmd.sets.size(); ++idxSet)
+		{
+			auto& set = gmd.sets[idxSet];
+			for (auto const& uniformId : gmd.mutableUniformIds)
+			{
+				set.attach(uniformId, this->mMutableUniformBuffersByDescriptorId[uniformId][idxSet]);
+			}
+			set.writeAttachments();
+		}
+	}
+}
+
 void MinecraftRenderer::finalizeInitialization()
 {
 	VulkanRenderer::finalizeInitialization();
+}
+
+std::unordered_map<std::string, graphics::DescriptorLayout const*> MinecraftRenderer::getGlobalDescriptorLayouts() const
+{
+	auto layouts = std::unordered_map<std::string, graphics::DescriptorLayout const*>();
+	for (auto& entry : this->mGlobalMutableDescriptors)
+	{
+		layouts.insert(std::make_pair(entry.first, &entry.second.layout));
+	}
+	return layouts;
+}
+
+graphics::DescriptorSet const* MinecraftRenderer::getGlobalDescriptorSet(std::string const& layoutId, uIndex idxFrame) const
+{
+	return &(this->mGlobalMutableDescriptors.find(layoutId)->second.sets[idxFrame]);
 }
 
 void MinecraftRenderer::createRenderChain()
@@ -95,16 +167,16 @@ void MinecraftRenderer::createRenderChain()
 	this->createRenderPass();
 
 	auto viewCount = this->mFrameImageViews.size();
-	
+
 	for (auto& renderer : this->mpRenderers)
 	{
 		renderer->setFrameCount(viewCount);
-		renderer->createDescriptors(this->getDevice());
+		renderer->createDescriptors(&this->getDescriptorPool());
+		renderer->setDescriptorLayouts(this->getGlobalDescriptorLayouts());
 		renderer->createPipeline(resolution);
 	}
 
 	this->createFrames(viewCount);
-	this->createMutableUniformBuffers();
 
 	for (auto& renderer : this->mpRenderers)
 	{
@@ -122,7 +194,6 @@ void MinecraftRenderer::destroyRenderChain()
 		renderer->destroyRenderChain();
 	}
 	this->destroyRenderPass();
-	this->mMutableUniformBuffersByDescriptorId.clear();
 	this->destroyDepthResources();
 	this->destroyFrameImageViews();
 	this->destroySwapChain();
@@ -218,7 +289,6 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 	auto resolution = this->mSwapChain.getResolution();
 	auto queueFamilyGroup = device->queryQueueFamilyGroup();
 
-	this->mFrames.resize(viewCount);
 	for (uIndex i = 0; i < viewCount; ++i)
 	{
 		auto& frame = this->mFrames[i];
@@ -266,13 +336,18 @@ void MinecraftRenderer::destroyFrames()
 void MinecraftRenderer::record(uIndex idxFrame)
 {
 	OPTICK_EVENT();
+	IPipelineRenderer::TGetGlobalDescriptorSet getDescrSet = std::bind(
+		&MinecraftRenderer::getGlobalDescriptorSet, this,
+		std::placeholders::_1, std::placeholders::_2
+	);
+
 	auto& frame = this->mFrames[idxFrame];
 	frame.commandPool.resetPool();
 	auto cmd = frame.commandBuffer.beginCommand();
 	cmd.beginRenderPass(this->getRenderPass(), &frame.frameBuffer, this->mSwapChain.getResolution());
 	for (auto* pRender : this->mpRenderers)
 	{
-		pRender->record(&cmd, idxFrame);
+		pRender->record(&cmd, idxFrame, getDescrSet);
 	}
 	cmd.endRenderPass();
 	cmd.end();

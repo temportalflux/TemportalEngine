@@ -81,7 +81,6 @@ private:
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 
 	std::shared_ptr<Window> mpWindow;
-	std::shared_ptr<graphics::DescriptorPool> mpGlobalDescriptorPool;
 	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
 	std::shared_ptr<world::BlockInstanceBuffer> mpVoxelInstanceBuffer;
 	std::shared_ptr<graphics::VoxelGridRenderer> mpVoxelGridRenderer;

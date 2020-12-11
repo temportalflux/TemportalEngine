@@ -197,7 +197,7 @@ Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::v
 	return *this;
 }
 
-Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<graphics::DescriptorSet*> sets)
+Command& Command::bindDescriptorSets(std::shared_ptr<Pipeline> pPipeline, std::vector<graphics::DescriptorSet const*> sets)
 {
 	auto vkSets = std::vector<vk::DescriptorSet>();
 	for (auto const* pSet : sets)

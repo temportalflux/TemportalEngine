@@ -22,12 +22,10 @@ using namespace ecs;
 using namespace ecs::system;
 
 RenderPlayer::RenderPlayer(
-	std::weak_ptr<graphics::SkinnedModelManager> modelManager,
-	std::weak_ptr<graphics::DescriptorPool> globalDescriptorPool
+	std::weak_ptr<graphics::SkinnedModelManager> modelManager
 )
 	: System(view::RenderedPlayer::TypeId)
 	, mpModelManager(modelManager)
-	, mpDescriptorPool(globalDescriptorPool)
 {
 }
 
@@ -43,7 +41,7 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 		this->mpPipeline = std::make_shared<graphics::Pipeline>();
 	}
 
-	graphics::populatePipeline(path, this->mpPipeline.get(), &this->mDescriptorLayout);
+	graphics::populatePipeline(path, this->mpPipeline.get(), &this->mDescriptorLayoutTexture);
 
 	{
 		typedef graphics::EntityInstanceBuffer::InstanceData TInstance;
@@ -73,7 +71,7 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 void RenderPlayer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
-	this->mDescriptorLayout.setDevice(device);
+	this->mDescriptorLayoutTexture.setDevice(device);
 }
 
 void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -81,51 +79,48 @@ void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPas
 	this->mpPipeline->setRenderPass(renderPass);
 }
 
-void RenderPlayer::initializeData(graphics::CommandPool* transientPool)
+void RenderPlayer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
 {
-	this->mDescriptorLayout.create();
+	this->mDescriptorLayoutTexture.create();
+	this->mDescriptorLayoutTexture.createSet(descriptorPool, this->mLocalPlayerSkinDesc);
+}
+
+void RenderPlayer::createLocalPlayerDescriptor()
+{
+	auto registry = game::Game::Get()->textureRegistry();
+	this->mLocalPlayerSkinDesc.attach(
+		"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
+		registry->getImage("model:DefaultHumanoid").lock().get(),
+		registry->getSampler(asset::SAMPLER_NEAREST_NEIGHBOR).lock().get()
+	).writeAttachments();
 }
 
 void RenderPlayer::setFrameCount(uSize frameCount)
 {
-	this->mDescriptorSets.resize(frameCount);
 }
 
-void RenderPlayer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
+void RenderPlayer::createDescriptors(graphics::DescriptorPool *descriptorPool)
 {
-	this->mDescriptorLayout.createSets(this->mpDescriptorPool.lock().get(), this->mDescriptorSets);
+}
+
+void RenderPlayer::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
+{
+	this->mpPipeline->setDescriptorLayouts({ globalLayouts.find("camera")->second, &this->mDescriptorLayoutTexture });
 }
 
 void RenderPlayer::createPipeline(math::Vector2UInt const& resolution)
 {
-	this->mpPipeline
-		->setDescriptorLayout(this->mDescriptorLayout, this->mDescriptorSets.size())
-		.setResolution(resolution)
-		.create();
+	this->mpPipeline->setResolution(resolution).create();
 }
 
 void RenderPlayer::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
-	auto registry = game::Game::Get()->textureRegistry();
-	for (uIndex idxSet = 0; idxSet < this->mDescriptorSets.size(); ++idxSet)
-	{
-		this->mDescriptorSets[idxSet].attach("cameraUniform", mutableUniforms["cameraUniform"][idxSet]);
-		this->mDescriptorSets[idxSet].attach(
-			"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
-			registry->getImage("model:DefaultHumanoid").lock().get(),
-			registry->getSampler(asset::SAMPLER_NEAREST_NEIGHBOR).lock().get()
-		);
-	}
 }
 
 void RenderPlayer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
-	for (auto& descriptorSet : this->mDescriptorSets)
-	{
-		descriptorSet.writeAttachments();
-	}
 }
 
 void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
@@ -146,18 +141,19 @@ void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 	playerModel->instanceBuffer()->markInstanceForUpdate(playerModel->instanceHandle(), instance);
 }
 
-void RenderPlayer::record(graphics::Command *command, uIndex idxFrame)
+void RenderPlayer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
 {
 	OPTICK_EVENT();
 	auto& ecs = engine::Engine::Get()->getECS();
+	auto pCameraDescSet = getGlobalDescriptorSet("camera", idxFrame);
 	for (auto pView : ecs.views().getAllOfType(this->viewId()))
 	{
 		if (!pView->hasAllComponents()) continue;
-		this->recordView(command, idxFrame, pView);
+		this->recordView(command, pCameraDescSet, pView);
 	}
 }
 
-void RenderPlayer::recordView(graphics::Command *command, uIndex idxFrame, std::shared_ptr<ecs::view::View> view)
+void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, std::shared_ptr<ecs::view::View> view)
 {
 	OPTICK_EVENT();
 
@@ -166,7 +162,7 @@ void RenderPlayer::recordView(graphics::Command *command, uIndex idxFrame, std::
 	assert(cameraPOV && playerModel);
 
 	auto modelManager = this->mpModelManager.lock();
-	command->bindDescriptorSets(this->mpPipeline, { &this->mDescriptorSets[idxFrame] });
+	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, &this->mLocalPlayerSkinDesc });
 	command->bindPipeline(this->mpPipeline);
 	modelManager->bindBuffers(playerModel->modelHandle(), command);
 	command->bindVertexBuffers(1, { playerModel->instanceBuffer()->buffer() });
@@ -176,10 +172,9 @@ void RenderPlayer::recordView(graphics::Command *command, uIndex idxFrame, std::
 void RenderPlayer::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
-	this->mDescriptorSets.clear();
 }
 
 void RenderPlayer::destroy()
 {
-	this->mDescriptorLayout.invalidate();
+	this->mDescriptorLayoutTexture.invalidate();
 }

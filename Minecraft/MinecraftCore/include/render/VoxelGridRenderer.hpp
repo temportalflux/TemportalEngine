@@ -21,7 +21,7 @@ class VoxelGridRenderer : public graphics::IPipelineRenderer, public std::enable
 
 public:
 	VoxelGridRenderer(
-		std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
+		graphics::DescriptorPool *descriptorPool,
 		std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer,
 		std::weak_ptr<game::VoxelTypeRegistry> registry,
 		std::weak_ptr<game::VoxelModelManager> modelManager
@@ -34,28 +34,28 @@ public:
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
-	void setFrameCount(uSize frameCount) override;
-	void createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
+	void setFrameCount(uSize frameCount) override {}
+	void createDescriptors(graphics::DescriptorPool *descriptorPool) override {}
 	void attachDescriptors(
 		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
-	) override;
-	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override;
+	) override {}
+	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override {}
+	void setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts) override;
 	void createPipeline(math::Vector2UInt const& resolution) override;
 
-	void record(graphics::Command *command, uIndex idxFrame) override;
+	void record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet) override;
 
 	void destroyRenderChain() override;
 	void destroy();
 
 private:
-	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
+	graphics::DescriptorPool *mpDescriptorPool;
 	std::weak_ptr<world::BlockInstanceBuffer> mpInstanceBuffer;
 	std::weak_ptr<game::VoxelTypeRegistry> mpTypeRegistry;
 	std::weak_ptr<game::VoxelModelManager> mpModelManager;
 
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	graphics::DescriptorLayout mDescriptorLayoutUniform, mDescriptorLayoutTexture;
-	std::vector<graphics::DescriptorSet> mUniformDescriptors;
+	graphics::DescriptorLayout mDescriptorLayoutTexture;
 	std::vector<graphics::DescriptorSet> mAtlasDescriptors;
 	std::unordered_map<game::BlockId, uIndex> mDescriptorSetIdxByVoxelId;
 

@@ -6,15 +6,6 @@
 		{
 			"descriptors": [
 				{
-					"id": "mvpUniform",
-					"type": 6,
-					"stage": 1
-				}
-			]
-		},
-		{
-			"descriptors": [
-				{
 					"id": "imageAtlas",
 					"type": 1,
 					"stage": 16

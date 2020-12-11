@@ -107,6 +107,7 @@ public:
 	void* get() const;
 	void invalidate();
 
+	DescriptorLayout& createSet(DescriptorPool *pool, DescriptorSet &outSet);
 	DescriptorLayout& createSets(DescriptorPool *pool, std::vector<DescriptorSet> &outSets);
 
 private:

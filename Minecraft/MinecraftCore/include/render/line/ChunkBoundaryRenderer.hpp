@@ -25,16 +25,13 @@ public:
 		math::Vector4 color;
 	};
 
-	ChunkBoundaryRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
+	ChunkBoundaryRenderer();
 	~ChunkBoundaryRenderer();
 
 	void setBoundarySegments(ChunkBoundaryType boundaryType, std::vector<LineSegment> const& segments, bool bEnabledByDefault);
 	bool isBoundaryEnabled(ChunkBoundaryType boundaryType) const;
 	void setIsBoundaryEnabled(ChunkBoundaryType boundaryType, bool bRender);
 
-	void attachDescriptors(
-		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
-	) override;
 	void draw(graphics::Command *command) override;
 
 protected:

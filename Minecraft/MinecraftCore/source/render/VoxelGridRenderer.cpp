@@ -16,13 +16,12 @@
 using namespace graphics;
 
 VoxelGridRenderer::VoxelGridRenderer(
-	std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
+	graphics::DescriptorPool *descriptorPool,
 	std::weak_ptr<world::BlockInstanceBuffer> instanceBuffer,
 	std::weak_ptr<game::VoxelTypeRegistry> registry,
 	std::weak_ptr<game::VoxelModelManager> modelManager
-)
+) : mpDescriptorPool(descriptorPool)
 {
-	this->mpDescriptorPool = pDescriptorPool;
 	this->mpInstanceBuffer = instanceBuffer;
 	this->mpTypeRegistry = registry;
 	this->mpModelManager = modelManager;
@@ -36,7 +35,6 @@ VoxelGridRenderer::~VoxelGridRenderer()
 void VoxelGridRenderer::destroy()
 {
 	this->mAtlasDescriptors.clear();
-	this->mDescriptorLayoutUniform.invalidate();
 	this->mDescriptorLayoutTexture.invalidate();
 }
 
@@ -62,8 +60,7 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(asset::TypedAssetPath<asset::P
 	graphics::populatePipeline(path, this->mpPipeline.get(), nullptr);
 
 	auto const& descrGroups = path.load(asset::EAssetSerialization::Binary)->getDescriptorGroups();
-	fillDescriptorLayout(this->mDescriptorLayoutUniform, descrGroups[0].descriptors);
-	fillDescriptorLayout(this->mDescriptorLayoutTexture, descrGroups[1].descriptors);
+	fillDescriptorLayout(this->mDescriptorLayoutTexture, descrGroups[0].descriptors);
 
 	{
 		ui8 slot = 0;
@@ -78,8 +75,6 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(asset::TypedAssetPath<asset::P
 void VoxelGridRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
-	this->mDescriptorLayoutUniform.setDevice(device);
-	this->mDescriptorLayoutUniform.create();
 	this->mDescriptorLayoutTexture.setDevice(device);
 	this->mDescriptorLayoutTexture.create();
 }
@@ -89,37 +84,17 @@ void VoxelGridRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> rend
 	this->mpPipeline->setRenderPass(renderPass);
 }
 
-void VoxelGridRenderer::setFrameCount(uSize frameCount)
+void VoxelGridRenderer::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
 {
-	this->mUniformDescriptors.resize(frameCount);
-}
-
-void VoxelGridRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
-{
-	this->mDescriptorLayoutUniform.createSets(this->mpDescriptorPool.lock().get(), this->mUniformDescriptors);
-}
-
-void VoxelGridRenderer::attachDescriptors(
-	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
-)
-{
-	for (uIndex idxSet = 0; idxSet < this->mUniformDescriptors.size(); ++idxSet)
-	{
-		this->mUniformDescriptors[idxSet].attach("mvpUniform", mutableUniforms["cameraUniform"][idxSet]);
-	}
-}
-
-void VoxelGridRenderer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
-{
-	for (auto& set : this->mUniformDescriptors) set.writeAttachments();
+	this->mpPipeline->setDescriptorLayouts({
+		globalLayouts.find("camera")->second,
+		&this->mDescriptorLayoutTexture
+	});
 }
 
 void VoxelGridRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
-	this->mpPipeline
-		->setDescriptorLayouts({ &this->mDescriptorLayoutUniform, &this->mDescriptorLayoutTexture })
-		.setResolution(resolution)
-		.create();
+	this->mpPipeline->setResolution(resolution).create();
 }
 
 std::function<void()> VoxelGridRenderer::onAtlasesCreatedEvent()
@@ -131,7 +106,7 @@ void VoxelGridRenderer::onAtlasesCreated()
 {
 	auto modelManager = this->mpModelManager.lock();
 	this->mAtlasDescriptors.resize(modelManager->getAtlasCount());
-	this->mDescriptorLayoutTexture.createSets(this->mpDescriptorPool.lock().get(), this->mAtlasDescriptors);
+	this->mDescriptorLayoutTexture.createSets(this->mpDescriptorPool, this->mAtlasDescriptors);
 
 	for (auto const& idPath : this->mpTypeRegistry.lock()->getEntriesById())
 	{
@@ -148,7 +123,7 @@ void VoxelGridRenderer::onAtlasesCreated()
 	}
 }
 
-void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
+void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
 {
 	OPTICK_EVENT();
 	// TODO: Optimize draw calls by only re-recording if the instance buffer has changed since the last time this frame's command buffer was recorded
@@ -170,8 +145,8 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 		auto descriptorIdxIter = this->mDescriptorSetIdxByVoxelId.find(id);
 		assert(descriptorIdxIter != this->mDescriptorSetIdxByVoxelId.end());
 
-		auto descriptorSets = std::vector<graphics::DescriptorSet*>();
-		descriptorSets.push_back(&this->mUniformDescriptors[idxFrame]);
+		auto descriptorSets = std::vector<graphics::DescriptorSet const*>();
+		descriptorSets.push_back(getGlobalDescriptorSet("camera", idxFrame));
 		descriptorSets.push_back(&this->mAtlasDescriptors[descriptorIdxIter->second]);
 		command->bindDescriptorSets(this->mpPipeline, descriptorSets);
 		command->bindPipeline(this->mpPipeline);
@@ -195,5 +170,4 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame)
 void VoxelGridRenderer::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
-	this->mUniformDescriptors.clear();
 }

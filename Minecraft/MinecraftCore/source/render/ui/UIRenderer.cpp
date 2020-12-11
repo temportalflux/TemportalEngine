@@ -16,12 +16,9 @@ using namespace graphics;
 static logging::Logger UIRenderLog = DeclareLog("UIRenderer");
 
 UIRenderer::UIRenderer(
-	std::weak_ptr<graphics::DescriptorPool> pDescriptorPool,
 	uSize maximumDisplayedCharacters
 )
 {
-	this->mpDescriptorPool = pDescriptorPool;
-
 	this->mText.fontFaceCount = 0;
 
 	this->mText.sampler
@@ -139,6 +136,7 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	OPTICK_EVENT();
+	this->mpDevice = device;
 	for (auto& fontEntry : this->mText.fonts)
 	{
 		for (auto& faceImageEntry : fontEntry.second.faces)
@@ -165,7 +163,7 @@ void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 	this->mText.pipeline->setRenderPass(renderPass);
 }
 
-void UIRenderer::initializeData(graphics::CommandPool* transientPool)
+void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
 {
 	OPTICK_EVENT();
 	// Write face image data to the memory buffer
@@ -195,12 +193,12 @@ void UIRenderer::setFrameCount(uSize frameCount)
 	this->mText.descriptorGroups[0].setAmount(this->mText.fontFaceCount);
 }
 
-void UIRenderer::createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
+void UIRenderer::createDescriptors(graphics::DescriptorPool *descriptorPool)
 {
 	OPTICK_EVENT();
 	for (auto& descriptorGroup : this->mText.descriptorGroups)
 	{
-		descriptorGroup.create(device, this->mpDescriptorPool.lock().get());
+		descriptorGroup.create(this->mpDevice.lock(), descriptorPool);
 	}
 }
 
@@ -241,7 +239,7 @@ void UIRenderer::createPipeline(math::Vector2UInt const& resolution)
 	// TODO: Will need to rebuild all glyphs again because the font measurements need to be in screen space but are in the font-glyphs in terms of pixels
 }
 
-void UIRenderer::record(graphics::Command *command, uIndex idxFrame)
+void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
 {
 	OPTICK_EVENT();
 

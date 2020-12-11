@@ -19,33 +19,30 @@ class LineRenderer : public graphics::IPipelineRenderer
 {
 
 public:
-	LineRenderer(std::weak_ptr<graphics::DescriptorPool> pDescriptorPool);
+	LineRenderer();
 	~LineRenderer();
 
 	LineRenderer& setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	void createGraphicsBuffers(graphics::CommandPool* transientPool);
 
 	// ~~~~~~~~~~ START: IPipelineRenderer ~~~~~~~~~~
-	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
-	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass);
-	void setFrameCount(uSize frameCount);
-	void createDescriptors(std::shared_ptr<graphics::GraphicsDevice> device);
+	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
+	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
+	void setFrameCount(uSize frameCount) override {}
+	void createDescriptors(graphics::DescriptorPool *descriptorPool) override {}
 	virtual void attachDescriptors(
 		std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
-	);
-	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device);
-	void createPipeline(math::Vector2UInt const& resolution);
-	void record(graphics::Command *command, uIndex idxFrame);
-	void destroyRenderChain();
+	) override {}
+	void writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device) override {}
+	void setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts) override;
+	void createPipeline(math::Vector2UInt const& resolution) override;
+	void record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet) override;
+	void destroyRenderChain() override;
 	// ~~~~~~~~~~~~ END: IPipelineRenderer ~~~~~~~~~~
 
 	void destroy();
 
 protected:
-
-	graphics::DescriptorLayout mDescriptorLayout;
-	std::vector<graphics::DescriptorSet> mDescriptorSets;
-
 	virtual graphics::AttributeBinding makeVertexBinding(ui8 &slot) const = 0;
 	virtual uSize vertexBufferSize() const = 0;
 	virtual void* vertexBufferData() const = 0;
@@ -54,8 +51,6 @@ protected:
 	virtual void* indexBufferData() const = 0;
 
 private:
-
-	std::weak_ptr<graphics::DescriptorPool> mpDescriptorPool;
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
 	graphics::Buffer mVertexBuffer, mIndexBuffer;
 
