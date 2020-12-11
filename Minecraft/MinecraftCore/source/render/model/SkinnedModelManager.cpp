@@ -24,11 +24,6 @@ SkinnedModel& SkinnedModel::setBase(std::vector<ModelVertex> const& vertices, st
 	return *this;
 }
 
-SkinnedModel& SkinnedModel::setBase(std::shared_ptr<asset::Model> const& model)
-{
-	return this->setBase(model->vertices(), model->indices());
-}
-
 void SkinnedModel::setDevice(std::weak_ptr<GraphicsDevice> device)
 {
 	this->mVertexBuffer.setDevice(device);
@@ -104,9 +99,17 @@ SkinnedModel& SkinnedModelManager::createModel(Handle &outHandle)
 
 SkinnedModelManager::Handle SkinnedModelManager::createAssetModel(std::shared_ptr<asset::Model> asset)
 {
+	return this->createModel(asset->vertices(), asset->indices());
+}
+
+SkinnedModelManager::Handle SkinnedModelManager::createModel(
+	std::vector<ModelVertex> const& vertices,
+	std::vector<ui32> const& indices
+)
+{
 	Handle handle;
 	SkinnedModel& model = this->createModel(handle);
-	model.setBase(asset).create();
+	model.setBase(vertices, indices).create();
 	model.initializeBuffers(this->mpTransientCmdPool);
 	return handle;
 }

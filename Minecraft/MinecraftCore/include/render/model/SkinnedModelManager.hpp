@@ -20,7 +20,6 @@ public:
 	SkinnedModel();
 
 	SkinnedModel& setBase(std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices);
-	SkinnedModel& setBase(std::shared_ptr<asset::Model> const& model);
 
 	void* vertexBufferData();
 	uSize vertexBufferSize() const;
@@ -54,12 +53,8 @@ public:
 	);
 	~SkinnedModelManager();
 
-	/**
-	 * Creates a skinned model in the manager and returns a reference to the model for modification, but the manager still owns the data.
-	 * The reference parameter `outHandle` can be used after creation to reference the model or destroy it.
-	 */
-	SkinnedModel& createModel(Handle &outHandle);
 	Handle createAssetModel(std::shared_ptr<asset::Model> asset);
+	Handle createModel(std::vector<ModelVertex> const& vertices, std::vector<ui32> const& indices);
 	void destroyModel(Handle const& validHandle);
 
 	void bindBuffers(Handle const& validHandle, graphics::Command *command);
@@ -71,7 +66,13 @@ private:
 
 	std::set<Handle> mUnusedHandles;
 	std::vector<SkinnedModel> mModels;
-	
+
+	/**
+	 * Creates a skinned model in the manager and returns a reference to the model for modification, but the manager still owns the data.
+	 * The reference parameter `outHandle` can be used after creation to reference the model or destroy it.
+	 */
+	SkinnedModel& createModel(Handle &outHandle);
+
 };
 
 NS_END
