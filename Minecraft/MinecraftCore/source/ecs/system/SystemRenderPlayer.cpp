@@ -22,10 +22,12 @@ using namespace ecs;
 using namespace ecs::system;
 
 RenderPlayer::RenderPlayer(
-	std::weak_ptr<graphics::SkinnedModelManager> modelManager
+	std::weak_ptr<graphics::SkinnedModelManager> modelManager,
+	graphics::DescriptorPool *descriptorPool
 )
 	: System(view::RenderedPlayer::TypeId)
 	, mpModelManager(modelManager)
+	, mpModelDescriptors(std::make_shared<graphics::DescriptorSetPool>(descriptorPool))
 {
 }
 
@@ -41,7 +43,7 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 		this->mpPipeline = std::make_shared<graphics::Pipeline>();
 	}
 
-	graphics::populatePipeline(path, this->mpPipeline.get(), &this->mDescriptorLayoutTexture);
+	graphics::populatePipeline(path, this->mpPipeline.get(), &this->mpModelDescriptors->layout());
 
 	{
 		typedef graphics::EntityInstanceBuffer::InstanceData TInstance;
@@ -71,7 +73,7 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 void RenderPlayer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
-	this->mDescriptorLayoutTexture.setDevice(device);
+	this->mpModelDescriptors->layout().setDevice(device);
 }
 
 void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -81,14 +83,14 @@ void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPas
 
 void RenderPlayer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
 {
-	this->mDescriptorLayoutTexture.create();
-	this->mDescriptorLayoutTexture.createSet(descriptorPool, this->mLocalPlayerSkinDesc);
+	this->mpModelDescriptors->layout().create();
+	this->mModelDescriptor_DefaultHumanoid = this->mpModelDescriptors->create();
 }
 
 void RenderPlayer::createLocalPlayerDescriptor()
 {
 	auto registry = game::Game::Get()->textureRegistry();
-	this->mLocalPlayerSkinDesc.attach(
+	this->mModelDescriptor_DefaultHumanoid.get().attach(
 		"texture", graphics::EImageLayout::eShaderReadOnlyOptimal,
 		registry->getImage("model:DefaultHumanoid").lock().get(),
 		registry->getSampler(asset::SAMPLER_NEAREST_NEIGHBOR).lock().get()
@@ -105,7 +107,7 @@ void RenderPlayer::createDescriptors(graphics::DescriptorPool *descriptorPool)
 
 void RenderPlayer::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
 {
-	this->mpPipeline->setDescriptorLayouts({ globalLayouts.find("camera")->second, &this->mDescriptorLayoutTexture });
+	this->mpPipeline->setDescriptorLayouts({ globalLayouts.find("camera")->second, &this->mpModelDescriptors->layout() });
 }
 
 void RenderPlayer::createPipeline(math::Vector2UInt const& resolution)
@@ -162,7 +164,7 @@ void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSe
 	assert(cameraPOV && playerModel);
 
 	auto modelManager = this->mpModelManager.lock();
-	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, &this->mLocalPlayerSkinDesc });
+	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, &this->mModelDescriptor_DefaultHumanoid.get() });
 	command->bindPipeline(this->mpPipeline);
 	modelManager->bindBuffers(playerModel->modelHandle(), command);
 	command->bindVertexBuffers(1, { playerModel->instanceBuffer()->buffer() });
@@ -176,5 +178,6 @@ void RenderPlayer::destroyRenderChain()
 
 void RenderPlayer::destroy()
 {
-	this->mDescriptorLayoutTexture.invalidate();
+	this->mModelDescriptor_DefaultHumanoid.destroy();
+	this->mpModelDescriptors->layout().invalidate();
 }

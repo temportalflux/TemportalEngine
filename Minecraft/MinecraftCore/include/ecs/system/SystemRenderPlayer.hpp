@@ -16,7 +16,8 @@ class RenderPlayer : public System, public graphics::IPipelineRenderer
 
 public:
 	RenderPlayer(
-		std::weak_ptr<graphics::SkinnedModelManager> modelManager
+		std::weak_ptr<graphics::SkinnedModelManager> modelManager,
+		graphics::DescriptorPool *descriptorPool
 	);
 	~RenderPlayer();
 
@@ -45,11 +46,11 @@ public:
 
 private:
 	std::weak_ptr<graphics::SkinnedModelManager> const mpModelManager;
-
+	
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
-	graphics::DescriptorLayout mDescriptorLayoutTexture;
-	// TODO: This will need to be a per-entity thing that gets pooled so that each entity can use its own texture
-	graphics::DescriptorSet mLocalPlayerSkinDesc;
+
+	std::shared_ptr<graphics::DescriptorSetPool> mpModelDescriptors;
+	graphics::DescriptorSetPool::Handle mModelDescriptor_DefaultHumanoid;
 
 };
 

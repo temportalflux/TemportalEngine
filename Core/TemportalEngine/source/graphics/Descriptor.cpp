@@ -260,3 +260,69 @@ void* DescriptorSet::get() const
 {
 	return this->mInternal;
 }
+
+DescriptorSetPool::Handle::Handle() {}
+
+DescriptorSetPool::Handle::Handle(std::weak_ptr<DescriptorSetPool> pool, uIndex idxSet)
+	: mpPool(pool), mIdxSet(idxSet)
+{
+}
+
+DescriptorSetPool::Handle::~Handle()
+{
+	destroy();
+}
+
+DescriptorSet& DescriptorSetPool::Handle::get() const
+{
+	assert(!this->mpPool.expired());
+	return this->mpPool.lock()->get(this->mIdxSet);
+}
+
+DescriptorSet& DescriptorSetPool::Handle::operator*() const { return this->get(); }
+
+void DescriptorSetPool::Handle::destroy()
+{
+	if (!this->mpPool.expired())
+	{
+		this->mpPool.lock()->destroy(*this);
+		this->mpPool.reset();
+	}
+}
+
+DescriptorSetPool::DescriptorSetPool(DescriptorPool *descriptorPool)
+	: mpDescriptorPool(descriptorPool)
+{
+}
+
+DescriptorLayout& DescriptorSetPool::layout() { return this->mLayout; }
+
+DescriptorSetPool::Handle DescriptorSetPool::create()
+{
+	uIndex idxSet;
+	if (this->mUnusedSetIndices.size() > 0)
+	{
+		auto iter = this->mUnusedSetIndices.begin();
+		idxSet = *iter;
+		this->mUnusedSetIndices.erase(iter);
+	}
+	else
+	{
+		idxSet = this->mSets.size();
+		
+		DescriptorSet set = {};
+		this->mLayout.createSet(this->mpDescriptorPool, set);
+		this->mSets.push_back(std::move(set));
+	}
+	return Handle(this->weak_from_this(), idxSet);
+}
+
+DescriptorSet& DescriptorSetPool::get(uIndex const& idxSet)
+{
+	return this->mSets[idxSet];
+}
+
+void DescriptorSetPool::destroy(Handle const& handle)
+{
+	this->mUnusedSetIndices.insert(handle.mIdxSet);
+}

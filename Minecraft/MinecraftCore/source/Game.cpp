@@ -275,7 +275,7 @@ void Game::createRenderers()
 	this->mpEntityInstanceBuffer->create();
 
 	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
-		std::weak_ptr(this->mpSkinnedModelManager)
+		std::weak_ptr(this->mpSkinnedModelManager), &this->mpRenderer->getDescriptorPool()
 	);
 	pEngine->addTicker(this->mpSystemRenderPlayer);
 	this->mpSystemRenderPlayer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(

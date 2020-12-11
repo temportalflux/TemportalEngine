@@ -121,4 +121,38 @@ private:
 
 };
 
+class DescriptorSetPool : public std::enable_shared_from_this<DescriptorSetPool>
+{
+
+public:
+	struct Handle
+	{
+		friend class DescriptorSetPool;
+		Handle();
+		~Handle();
+		DescriptorSet& get() const;
+		DescriptorSet& operator*() const;
+		void destroy();
+	private:
+		std::weak_ptr<DescriptorSetPool> mpPool;
+		uIndex mIdxSet;
+		Handle(std::weak_ptr<DescriptorSetPool> pool, uIndex idxSet);
+	};
+
+	DescriptorSetPool(DescriptorPool *descriptorPool);
+
+	DescriptorLayout& layout();
+
+	Handle create();
+	DescriptorSet& get(uIndex const& idxSet);
+	void destroy(Handle const& handle);
+
+private:
+	DescriptorPool *mpDescriptorPool;
+	DescriptorLayout mLayout;
+	std::vector<DescriptorSet> mSets;
+	std::set<uIndex> mUnusedSetIndices;
+
+};
+
 NS_END
