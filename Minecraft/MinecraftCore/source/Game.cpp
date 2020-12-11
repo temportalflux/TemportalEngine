@@ -164,14 +164,14 @@ void Game::init()
 	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
 	pEngine->addTicker(this->mpSystemPhysicsIntegration);
 	
-	this->createScene();
+	this->createWorld();
 	this->bindInput();
 }
 
 void Game::uninit()
 {
 	this->unbindInput();
-	this->destroyScene();
+	this->destroyWorld();
 	this->mpSystemPhysicsIntegration.reset();
 	if (this->requiresGraphics())
 	{
@@ -535,22 +535,37 @@ void Game::destroyRenderers()
 	this->mpRenderer.reset();
 }
 
-void Game::createScene()
+void Game::createWorld()
 {
 	srand((ui32)time(0));
-	
+
 	this->mpWorld = std::make_shared<world::World>();
 	this->mpWorld->OnLoadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onLoadingChunkEvent());
 	this->mpWorld->OnUnloadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onUnloadingChunkEvent());
 	this->mpWorld->OnVoxelsChanged.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onVoxelsChangedEvent());
+	
+	this->createScene();
+	this->createLocalPlayer();
+	this->createEntities();
 
+	// Specifically for clients which set player movement/camera information
+	{
+		auto pEngine = engine::Engine::Get();
+		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
+		pEngine->addTicker(this->mpSystemMovePlayerByInput);
+	}
+
+}
+
+void Game::destroyWorld()
+{
+	this->destroyScene();
+}
+
+void Game::createScene()
+{
 	for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
 		this->mpWorld->loadChunk({ x, 0, z });
-	
-	auto pEngine = engine::Engine::Get();
-	this->createLocalPlayer();
-	this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
-	pEngine->addTicker(this->mpSystemMovePlayerByInput);
 	
 	if (this->mpVoxelInstanceBuffer)
 	{
@@ -615,6 +630,11 @@ void Game::createLocalPlayer()
 	}
 
 	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicsBody>());
+
+}
+
+void Game::createEntities()
+{
 
 }
 

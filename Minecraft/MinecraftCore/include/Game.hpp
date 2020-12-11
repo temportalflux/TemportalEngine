@@ -61,17 +61,6 @@ public:
 	void initializeNetwork();
 	void init();
 	void uninit();
-
-	bool requiresGraphics() const;
-	bool initializeGraphics();
-	bool createWindow();
-	
-	void createRenderers();
-	void destroyRenderers();
-
-	void createScene();
-	void destroyScene();
-
 	void run();
 	
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
@@ -110,12 +99,14 @@ private:
 
 	void registerECSTypes(ecs::Core *ecs);
 
-	bool scanResourcePacks();
-	void destroyResourcePacks();
-
 	void createVoxelTypeRegistry();
 	void destroyVoxelTypeRegistry();
 
+	bool requiresGraphics() const;
+	bool initializeGraphics();
+	bool createWindow();
+
+	void createRenderers();
 	void createGameRenderer();
 	void loadVoxelTypeTextures();
 	void createPipelineRenderers();
@@ -123,12 +114,21 @@ private:
 	void createWorldAxesRenderer();
 	void createChunkBoundaryRenderer();
 	void createUIRenderer();
+	void destroyRenderers();
+
+	bool scanResourcePacks();
+	void destroyResourcePacks();
+
+	void createScene();
+	void destroyScene();
+	void createWorld();
+	void destroyWorld();
+	void createLocalPlayer();
+	void createEntities();
 
 	void bindInput();
 	void unbindInput();
 	void onInputKey(input::Event const& evt);
-
-	void createLocalPlayer();
 
 	void update(f32 deltaTime);
 	void updateWorldGraphics();

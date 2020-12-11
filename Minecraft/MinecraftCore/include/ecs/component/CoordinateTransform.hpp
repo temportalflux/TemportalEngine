@@ -18,7 +18,8 @@ public:
 	world::Coordinate const& position() const;
 	world::Coordinate& position();
 	CoordinateTransform& setPosition(world::Coordinate const &pos);
-	math::Vector3& velocity();
+	math::Vector3& linearVelocity();
+	math::Vector3& linearAccelleration();
 
 	void move(math::Vector3 const &v);
 
@@ -45,7 +46,8 @@ public:
 
 private:
 	world::Coordinate mPosition;
-	math::Vector3 mVelocity;
+	math::Vector3 mLinearVelocity;
+	math::Vector3 mLinearAcceleration;
 
 	math::Quaternion mOrientation;
 	

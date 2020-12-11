@@ -20,6 +20,8 @@ void PhysicsIntegration::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	auto transform = view->get<component::CoordinateTransform>();
 	assert(transform);
 
-	transform->position() += transform->velocity() * deltaTime;
+	transform->position() += transform->linearVelocity() * deltaTime;
+	transform->position() += 0.5f * transform->linearAccelleration() * deltaTime * deltaTime;
+	transform->linearVelocity() += transform->linearAccelleration() * deltaTime;
 
 }
