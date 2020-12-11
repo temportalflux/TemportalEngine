@@ -156,6 +156,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\TextureRegistry.hpp">
       <Filter>render</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">

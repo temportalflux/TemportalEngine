@@ -5,6 +5,7 @@
 #include "math/Matrix.hpp"
 #include "graphics/Buffer.hpp"
 #include "world/BlockMetadata.hpp"
+#include "world/Events.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "graphics/AttributeBinding.hpp"
 #include "thread/MutexLock.hpp"
@@ -135,6 +136,7 @@ public:
 	void createBuffer();
 
 	void allocateCoordinates(std::vector<world::Coordinate> const& coordinates);
+	void unallocateCoordinates(std::vector<world::Coordinate> const& coordinates);
 
 	/**
 	 * Changes an instance at `coordinate` from its current category to the `desiredVoxelId`.
@@ -150,6 +152,13 @@ public:
 	void commitToBuffer(graphics::CommandPool* transientPool);
 
 	CategoryMeta const& getDataForVoxelId(game::BlockId const& id) const;
+
+	TOnChunkLoadingListener onLoadingChunkEvent();
+	void onLoadingChunk(math::Vector3Int const& coordinate);
+	TOnChunkLoadingListener onUnloadingChunkEvent();
+	void onUnloadingChunk(math::Vector3Int const& coordinate);
+	TOnVoxelsChangedListener onVoxelsChangedEvent();
+	void onVoxelsChanged(TChangedVoxelsList const& changes);
 
 private:
 

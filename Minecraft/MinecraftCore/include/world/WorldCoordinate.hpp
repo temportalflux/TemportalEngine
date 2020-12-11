@@ -4,7 +4,7 @@
 
 NS_WORLD
 
-constexpr uSize ChunkSize() { return 16; }
+constexpr uSize ChunkSize() { return CHUNK_SIDE_LENGTH; }
 
 class Coordinate
 {

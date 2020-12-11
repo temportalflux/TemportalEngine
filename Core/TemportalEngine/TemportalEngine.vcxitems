@@ -127,6 +127,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp" />

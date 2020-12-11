@@ -529,17 +529,10 @@ void Game::createScene()
 {
 	srand((ui32)time(0));
 	
-	auto coordinates = std::vector<world::Coordinate>();
-	FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, x)
-	{
-		coordinates.push_back(world::Coordinate({ 0, 0, 0 }, { x, y, z }));
-	}
-	this->mpVoxelInstanceBuffer->allocateCoordinates(coordinates);
-
-	this->changeVoxelDemoSmol();
-
 	this->mpWorld = std::make_shared<world::World>();
-	//this->mpWorld->OnBlockChanged.bind(this->mpCubeRender, this->mpCubeRender->onBlockChangedListener());
+	this->mpWorld->OnLoadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onLoadingChunkEvent());
+	this->mpWorld->OnUnloadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onUnloadingChunkEvent());
+	this->mpWorld->OnVoxelsChanged.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onVoxelsChangedEvent());
 	this->mpWorld->loadChunk({ 0, 0, 0 });
 
 	auto pEngine = engine::Engine::Get();
@@ -686,7 +679,7 @@ void Game::onInputKey(input::Event const& evt)
 	if (evt.inputKey.key == input::EKey::NUM_1)
 	{
 		this->mProjectLog.log(LOG_INFO, "Regenerate");
-		this->changeVoxelDemoSmol();
+		this->mpWorld->reloadChunk({ 0, 0, 0 });
 	}
 	if (evt.inputKey.key == input::EKey::F6)
 	{
@@ -709,43 +702,4 @@ void Game::onInputKey(input::Event const& evt)
 			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, true);
 		}
 	}
-}
-
-void Game::changeVoxelDemoSmol()
-{
-	this->mpVoxelInstanceBuffer->lock();
-	auto allVoxelIdsSet = this->mpVoxelTypeRegistry->getIds();
-
-	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
-	allVoxelIdOptions.push_back(std::nullopt);
-	std::transform(
-		std::begin(allVoxelIdsSet), std::end(allVoxelIdsSet),
-		std::back_inserter(allVoxelIdOptions),
-		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
-	);
-
-	auto idCount = std::unordered_map<game::BlockId, uSize>();
-	for (auto const& id : allVoxelIdsSet)
-	{
-		idCount.insert(std::make_pair(id, 0));
-	}
-
-	for (i32 x = 0; x < CHUNK_SIDE_LENGTH; ++x)
-	{
-		for (i32 z = 0; z < CHUNK_SIDE_LENGTH; ++z)
-		{
-			auto const& id = allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())];
-			this->mpVoxelInstanceBuffer->changeVoxelId(
-				world::Coordinate({ 0, 0, 0 }, { x, 0, z }), id
-			);
-			if (id) idCount.at(*id)++;
-		}
-	}
-
-	for (auto const& entry : idCount)
-	{
-		this->mProjectLog.log(LOG_INFO, "- %s = %i", entry.first.to_string().c_str(), entry.second);
-	}
-
-	this->mpVoxelInstanceBuffer->unlock();
 }

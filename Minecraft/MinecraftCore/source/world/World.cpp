@@ -4,10 +4,23 @@ using namespace world;
 
 void World::loadChunk(math::Vector3Int const &coordinate)
 {
+	this->OnLoadingChunk.broadcast(coordinate);
 	this->mActiveChunks.insert(
 		this->mActiveChunks.end(),
 		WorldChunk(this->weak_from_this(), coordinate)
 	)->load();
+}
+
+void World::reloadChunk(math::Vector3Int const &coordinate)
+{
+	for (auto& activeChunk : this->mActiveChunks)
+	{
+		if (activeChunk.coordinate() == coordinate)
+		{
+			activeChunk.load();
+			return;
+		}
+	}
 }
 
 void World::unloadChunk(math::Vector3Int const &coordinate)
@@ -27,7 +40,26 @@ void World::unloadChunks(std::vector<math::Vector3Int> coordinates)
 		return false;
 		}
 	), this->mActiveChunks.end());
+
+	for (auto const& coordinate : coordinates)
+	{
+		this->OnUnloadingChunk.broadcast(coordinate);
+	}
 	// TODO: Move the active chunk to a "pending write to disk" operation list
+}
+
+void World::onLoadedChunk(WorldChunk &chunk)
+{
+	auto changes = std::vector<std::pair<world::Coordinate, std::optional<game::BlockId>>>();
+	for (auto iter = chunk.begin(); iter != chunk.end(); ++iter)
+	{
+		auto entry = *iter;
+		auto coord = world::Coordinate{ chunk.coordinate(), entry.localCoord };
+		std::optional<game::BlockId> voxelId = std::nullopt;
+		if (entry.data) voxelId = entry.data->id;
+		changes.push_back(std::make_pair(coord, voxelId));
+	}
+	this->OnVoxelsChanged.broadcast(changes);
 }
 
 void World::markCoordinateDirty(
@@ -42,7 +74,7 @@ void World::markCoordinateDirty(
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, +1, 0 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, -1 }), global);
 	this->markCoordinateWithDirtyNeighbor(global + math::Vector3Int({ 0, 0, +1 }), global);
-	this->OnBlockChanged.broadcast(global, prev, next);
+	//this->OnBlockChanged.broadcast(global, prev, next);
 }
 
 void World::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, world::Coordinate const &dirtyNeighbor)

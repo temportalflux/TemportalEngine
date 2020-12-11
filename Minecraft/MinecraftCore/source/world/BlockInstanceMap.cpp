@@ -213,7 +213,7 @@ std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::const_iterator> 
 	OPTICK_EVENT();
 	auto rangeEnd = this->mCoordinateToIndex.end();
 	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
-	if (range.first != rangeEnd && range.second != rangeEnd)
+	if (range.first != rangeEnd)
 	{
 		return range.first;
 	}
@@ -350,6 +350,11 @@ void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> con
 		instance->posOfChunk = math::Vector3Padded(coordinate.chunk().toFloat());
 		instance->model = math::translate(coordinate.local().toFloat());
 	}
+}
+
+void BlockInstanceBuffer::unallocateCoordinates(std::vector<world::Coordinate> const& coordinates)
+{
+	assert(false); // TODO
 }
 
 BlockInstanceBuffer::ValueData* BlockInstanceBuffer::getInstanceAt(uIndex idx)
@@ -659,4 +664,54 @@ void BlockInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& id) const
 {
 	return this->mCommittedCategories.at(id);
+}
+
+TOnChunkLoadingListener BlockInstanceBuffer::onLoadingChunkEvent()
+{
+	return std::bind(&BlockInstanceBuffer::onLoadingChunk, this, std::placeholders::_1);
+}
+
+void BlockInstanceBuffer::onLoadingChunk(math::Vector3Int const& coordinate)
+{
+	auto coordinates = std::vector<world::Coordinate>();
+	FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, x)
+	{
+		coordinates.push_back(world::Coordinate(coordinate, { x, y, z }));
+	}
+	this->lock();
+	this->allocateCoordinates(coordinates);
+	this->unlock();
+}
+
+TOnChunkLoadingListener BlockInstanceBuffer::onUnloadingChunkEvent()
+{
+	return std::bind(&BlockInstanceBuffer::onUnloadingChunk, this, std::placeholders::_1);
+}
+
+void BlockInstanceBuffer::onUnloadingChunk(math::Vector3Int const& coordinate)
+{
+	auto coordinates = std::vector<world::Coordinate>();
+	FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) FOR_CHUNK_SIZE(i32, x)
+	{
+		coordinates.push_back(world::Coordinate(coordinate, { x, y, z }));
+	}
+	this->lock();
+	this->unallocateCoordinates(coordinates);
+	this->unlock();
+}
+
+TOnVoxelsChangedListener BlockInstanceBuffer::onVoxelsChangedEvent()
+{
+	return std::bind(&BlockInstanceBuffer::onVoxelsChanged, this, std::placeholders::_1);
+}
+
+void BlockInstanceBuffer::onVoxelsChanged(TChangedVoxelsList const& changes)
+{
+	OPTICK_EVENT()
+	this->lock();
+	for (auto const& change : changes)
+	{
+		this->changeVoxelId(change.first, change.second);
+	}
+	this->unlock();
 }

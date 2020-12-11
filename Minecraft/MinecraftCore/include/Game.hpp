@@ -74,6 +74,7 @@ public:
 	void run();
 	
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
+	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 
 private:
 	logging::Logger mProjectLog;
@@ -129,8 +130,6 @@ private:
 
 	void update(f32 deltaTime);
 	void updateWorldGraphics();
-
-	void changeVoxelDemoSmol();
 
 };
 

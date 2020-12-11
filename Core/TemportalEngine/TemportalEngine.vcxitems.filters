@@ -67,6 +67,9 @@
     <Filter Include="render">
       <UniqueIdentifier>{9d4347af-fa93-4566-bcc8-250c3d736195}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dataStructures">
+      <UniqueIdentifier>{b7a2cca0-668b-4227-b804-20d3f812f070}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -696,6 +699,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\ImageUtils.hpp">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp">
+      <Filter>dataStructures</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
