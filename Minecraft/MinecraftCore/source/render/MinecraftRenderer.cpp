@@ -29,6 +29,7 @@ void MinecraftRenderer::initializeDevices()
 void MinecraftRenderer::invalidate()
 {
 	this->destroyRenderChain();
+	this->mFrames.clear();
 	this->mGlobalMutableDescriptors.clear();
 	this->mMutableUniformBuffersByDescriptorId.clear();
 	this->mGlobalDescriptorPool.destroy();
@@ -330,7 +331,6 @@ void MinecraftRenderer::destroyFrames()
 		frame.frameBuffer.destroy();
 		frame.frame.destroy();
 	}
-	this->mFrames.clear();
 }
 
 void MinecraftRenderer::record(uIndex idxFrame)

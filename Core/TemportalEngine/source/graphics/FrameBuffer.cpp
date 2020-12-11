@@ -65,4 +65,7 @@ void* FrameBuffer::get()
 void FrameBuffer::destroy()
 {
 	this->mInternal.reset();
+	this->mRenderPass = vk::RenderPass();
+	this->mAttachments.clear();
+	this->mResolution = {};
 }
