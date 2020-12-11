@@ -533,8 +533,10 @@ void Game::createScene()
 	this->mpWorld->OnLoadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onLoadingChunkEvent());
 	this->mpWorld->OnUnloadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onUnloadingChunkEvent());
 	this->mpWorld->OnVoxelsChanged.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onVoxelsChangedEvent());
-	this->mpWorld->loadChunk({ 0, 0, 0 });
 
+	for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
+		this->mpWorld->loadChunk({ x, 0, z });
+	
 	auto pEngine = engine::Engine::Get();
 	this->createLocalPlayer();
 	this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
