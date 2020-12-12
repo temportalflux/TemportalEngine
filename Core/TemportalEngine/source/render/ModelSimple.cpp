@@ -7,6 +7,13 @@ ui32 render::SimpleModel::pushVertex(ModelVertex const& vertex)
 	return idx;
 }
 
+void render::SimpleModel::pushTri(math::Vector3UInt const& tri)
+{
+	this->indices.push_back(tri[0]);
+	this->indices.push_back(tri[1]);
+	this->indices.push_back(tri[2]);
+}
+
 void render::createIcosahedronFaces(std::vector<math::Vector3> &points, std::vector<math::Vector3UInt> &tris)
 {
 	f32 ro = (1.0f + std::sqrt(5.0f)) / 2.0f;
@@ -116,9 +123,70 @@ render::SimpleModel render::createIcosphere(ui8 subdivisions)
 	}
 	for (auto const& tri : tris)
 	{
-		model.indices.push_back(tri[0]);
-		model.indices.push_back(tri[1]);
-		model.indices.push_back(tri[2]);
+		model.pushTri(tri);
+	}
+
+	return model;
+}
+
+render::SimpleModel render::createCube()
+{
+	SimpleModel model = {};
+
+	f32 r = 0.5f;
+	// Top
+	{
+		auto idxTL = model.pushVertex({ { -r, +r, -r }, math::V3_UP, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { +r, +r, -r }, math::V3_UP, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { +r, +r, +r }, math::V3_UP, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { -r, +r, +r }, math::V3_UP, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
+	}
+	// Bottom
+	{
+		auto idxTL = model.pushVertex({ { +r, -r, -r }, -math::V3_UP, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { -r, -r, -r }, -math::V3_UP, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { -r, -r, +r }, -math::V3_UP, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { +r, -r, +r }, -math::V3_UP, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
+	}
+	// Front
+	{
+		auto idxTL = model.pushVertex({ { +r, +r, -r }, math::V3_FORWARD, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { -r, +r, -r }, math::V3_FORWARD, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { -r, -r, -r }, math::V3_FORWARD, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { +r, -r, -r }, math::V3_FORWARD, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
+	}
+	// Back
+	{
+		auto idxTL = model.pushVertex({ { -r, +r, +r }, -math::V3_FORWARD, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { +r, +r, +r }, -math::V3_FORWARD, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { +r, -r, +r }, -math::V3_FORWARD, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { -r, -r, +r }, -math::V3_FORWARD, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
+	}
+	// Right
+	{
+		auto idxTL = model.pushVertex({ { +r, +r, +r }, math::V3_RIGHT, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { +r, +r, -r }, math::V3_RIGHT, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { +r, -r, -r }, math::V3_RIGHT, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { +r, -r, +r }, math::V3_RIGHT, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
+	}
+	// Left
+	{
+		auto idxTL = model.pushVertex({ { -r, +r, -r }, -math::V3_RIGHT, {}, {}, { 0, 0 } });
+		auto idxTR = model.pushVertex({ { -r, +r, +r }, -math::V3_RIGHT, {}, {}, { 1, 0 } });
+		auto idxBR = model.pushVertex({ { -r, -r, +r }, -math::V3_RIGHT, {}, {}, { 1, 1 } });
+		auto idxBL = model.pushVertex({ { -r, -r, -r }, -math::V3_RIGHT, {}, {}, { 0, 1 } });
+		model.pushTri({ idxTR, idxTL, idxBR });
+		model.pushTri({ idxBR, idxTL, idxBL });
 	}
 
 	return model;

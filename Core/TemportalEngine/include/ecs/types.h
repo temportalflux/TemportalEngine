@@ -13,7 +13,7 @@
 // The maximum number of component types that can be registered.
 #define ECS_MAX_VIEW_TYPE_COUNT 16
 // The maximum number of component slots per `View`.
-#define ECS_MAX_COMPONENT_VIEW_SLOTS 16
+#define ECS_MAX_COMPONENT_VIEW_SLOTS 4
 #define ECS_MAX_VIEWS_PER_ENTITY_COUNT 16
 #define ECS_MAX_VIEW_COUNT ECS_MAX_ENTITY_COUNT*ECS_MAX_VIEWS_PER_ENTITY_COUNT
 

@@ -26,7 +26,14 @@ layout(location = 1) out vec2 fragTexCoord;
 void main()
 {
 	vec3 chunkPosOffset = (posOfCurrentChunk - camera.posOfCurrentChunk) * camera.chunkSize; // component-wise multiple to convert chunk pos to world pos
-	gl_Position = camera.proj * camera.view * modelMatrix * vec4(chunkPosOffset + position, 1.0);
+	mat4 chunkAdjustmentMatrix = mat4(1);
+	chunkAdjustmentMatrix[3] = vec4(chunkPosOffset, 1.0);
+
+	gl_Position =
+		camera.proj
+		* camera.view
+		* chunkAdjustmentMatrix
+		* modelMatrix * vec4(position, 1.0);
 	fragColor = vec4(1);
 	fragTexCoord = texCoord;
 }

@@ -706,6 +706,30 @@ void Game::createEntities()
 		entity->addView(views.create<ecs::view::RenderedMesh>());
 	}
 
+	// Entity 3 - Orbiting Cube
+	{
+		auto entity = ecs.entities().create();
+		this->mSpawnedEntities.push_back(entity);
+
+		// Add Transform
+		{
+			auto transform = components.create<ecs::component::CoordinateTransform>();
+			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 12, CHUNK_HALF_LENGTH }));
+			transform->setOrientation(math::Vector3unitY, 0);
+			transform->linearVelocity() = math::V3_RIGHT * 2.0f;
+			entity->addComponent(transform);
+		}
+		entity->addView(views.create<ecs::view::PhysicsBody>());
+
+		// Add rendering mesh
+		{
+			auto mesh = components.create<ecs::component::RenderMesh>();
+			mesh->setModel(render::createCube());
+			entity->addComponent(mesh);
+		}
+		entity->addView(views.create<ecs::view::RenderedMesh>());
+	}
+
 }
 
 void Game::destroyScene()
@@ -755,10 +779,12 @@ void Game::update(f32 deltaTime)
 	this->mpWorld->handleDirtyCoordinates();
 	
 	auto center = math::Vector3(CHUNK_HALF_LENGTH);
+	f32 gravity = 3.0f;
+	for (auto idxEnt : std::vector<uIndex>({ 0, 2 }))
 	{
-		auto phys = this->mSpawnedEntities[0]->getView<ecs::view::PhysicsBody>();
+		auto phys = this->mSpawnedEntities[idxEnt]->getView<ecs::view::PhysicsBody>();
 		auto transform = phys->get<ecs::component::CoordinateTransform>();
-		transform->linearAccelleration() = (center - transform->localPosition()).normalized() * 3.0f;
+		transform->linearAccelleration() = (center - transform->localPosition()).normalized() * gravity;
 	}
 	
 	engine::Engine::Get()->update(deltaTime);

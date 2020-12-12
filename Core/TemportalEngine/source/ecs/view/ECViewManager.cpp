@@ -5,12 +5,16 @@ using namespace ecs::view;
 
 bool Manager::ViewRecord::operator<(Manager::ViewRecord const& other) const
 {
-	return typeId <= other.typeId ? objectId < other.objectId : false;
+	if (typeId < other.typeId) return true;
+	if (typeId == other.typeId) return objectId < other.objectId;
+	return false;
 }
 
 bool Manager::ViewRecord::operator>(Manager::ViewRecord const& other) const
 {
-	return typeId >= other.typeId ? objectId > other.objectId : false;
+	if (typeId > other.typeId) return true;
+	if (typeId == other.typeId) return objectId > other.objectId;
+	return false;
 }
 
 std::shared_ptr<View> Manager::createView(ViewTypeId const& typeId)
