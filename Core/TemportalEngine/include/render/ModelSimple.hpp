@@ -14,6 +14,8 @@ struct SimpleModel
 	ui32 pushVertex(ModelVertex const& vertex);
 };
 
-SimpleModel createIcosphere();
+void createIcosahedronFaces(std::vector<math::Vector3> &points, std::vector<math::Vector3UInt> &tris);
+
+SimpleModel createIcosphere(ui8 subdivisions);
 
 NS_END

@@ -673,7 +673,7 @@ void Game::createEntities()
 	// Add rendering mesh
 	{
 		auto mesh = components.create<ecs::component::RenderMesh>();
-		mesh->setModel(render::createIcosphere());
+		mesh->setModel(render::createIcosphere(0));
 		entity->addComponent(mesh);
 	}
 	entity->addView(views.create<ecs::view::RenderedMesh>());
