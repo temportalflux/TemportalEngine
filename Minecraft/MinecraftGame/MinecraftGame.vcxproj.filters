@@ -18,4 +18,17 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MinecraftGame.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.png" />
+    <Image Include="icon1.ico" />
+    <Image Include="icon.ico" />
+  </ItemGroup>
 </Project>

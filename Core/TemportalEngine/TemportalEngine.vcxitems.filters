@@ -706,11 +706,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp">
       <Filter>dataStructures</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\render\ModelSimple.hpp">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp">
       <Filter>utility</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
   </ItemGroup>
 </Project>

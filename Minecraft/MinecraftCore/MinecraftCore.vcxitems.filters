@@ -155,18 +155,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\component\ComponentRenderMesh.hpp">
-      <Filter>ecs\component</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\view\ViewRenderedMesh.hpp">
-      <Filter>ecs\view</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\system\SystemRenderEntities.hpp">
-      <Filter>ecs\system</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp">
       <Filter>ecs\view</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -264,17 +258,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\component\ComponentRenderMesh.cpp">
-      <Filter>ecs\component</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\view\ViewRenderedMesh.cpp">
-      <Filter>ecs\view</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\system\SystemRenderEntities.cpp">
-      <Filter>ecs\system</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp">
       <Filter>ecs\view</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp" />
   </ItemGroup>
 </Project>
