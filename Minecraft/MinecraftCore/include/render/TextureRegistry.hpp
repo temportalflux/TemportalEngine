@@ -31,6 +31,8 @@ public:
 
 	std::function<void(resource::PackManager*)> onTexturesLoadedEvent();
 	void registerImage(TextureId const& id, TexturePath const& assetPath);
+	void registerImage(TextureId const& id, math::Vector2UInt const& size, std::vector<ui8> const& pixels);
+	void setInvalidTextureId(TextureId const& id);
 	void registerSampler(SamplerPath const& assetPath);
 	void setPackSampler(SamplerPath const& samplerId);
 	void createDescriptor(TextureId const& textureId, SamplerPath const& samplerId);
@@ -45,6 +47,7 @@ private:
 	CommandPool *mpTransientPool;
 
 	std::shared_ptr<graphics::DescriptorSetPool> mpTextureDescriptors;
+	TextureId mInvalidTextureId;
 	std::optional<SamplerPath> mSamplerIdForPackTextures;
 
 	struct ImageEntry
@@ -62,7 +65,6 @@ private:
 	std::unordered_map<asset::AssetPath, SamplerEntry> mSamplers;
 
 	void onTexturesLoaded(resource::PackManager *packManager);
-	void registerImage(TextureId const& id, math::Vector2UInt const& size, std::vector<ui8> const& pixels);
 
 };
 

@@ -37,6 +37,11 @@ void TextureRegistry::registerImage(TextureId const& id, TexturePath const& asse
 	this->registerImage(id, asset->getSourceSize(), asset->getSourceBinary());
 }
 
+void TextureRegistry::setInvalidTextureId(TextureId const& id)
+{
+	this->mInvalidTextureId = id;
+}
+
 void TextureRegistry::registerSampler(SamplerPath const& assetPath)
 {
 	auto entry = SamplerEntry{
@@ -62,8 +67,9 @@ std::weak_ptr<ImageView> TextureRegistry::getImage(TextureId const& id)
 DescriptorSetPool::Handle const& TextureRegistry::getDescriptorHandle(TextureId const& id) const
 {
 	auto iter = this->mImages.find(id);
-	assert(iter != this->mImages.end());
-	return iter->second.descriptorHandle;
+	if (iter != this->mImages.end()) return iter->second.descriptorHandle;
+	assert(id != this->mInvalidTextureId);
+	return this->getDescriptorHandle(this->mInvalidTextureId);
 }
 
 std::weak_ptr<ImageSampler> TextureRegistry::getSampler(SamplerPath const& assetPath)

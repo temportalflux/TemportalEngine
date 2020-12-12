@@ -63,6 +63,8 @@ public:
 	void uninit();
 	void run();
 	
+	std::shared_ptr<graphics::SkinnedModelManager> modelManager() { return this->mpSkinnedModelManager; }
+	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances() { return this->mpEntityInstanceBuffer; }
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 

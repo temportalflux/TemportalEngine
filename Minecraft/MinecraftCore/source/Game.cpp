@@ -33,6 +33,7 @@
 #include "math/Matrix.hpp"
 #include "registry/VoxelType.hpp"
 #include "render/MinecraftRenderer.hpp"
+#include "render/ModelSimple.hpp"
 #include "resource/ResourceManager.hpp"
 #include "world/BlockInstanceMap.hpp"
 #include "render/EntityInstanceBuffer.hpp"
@@ -264,6 +265,21 @@ void Game::createRenderers()
 	);
 	this->mpTextureRegistry->registerSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
 	this->mpTextureRegistry->setPackSampler(asset::SAMPLER_NEAREST_NEIGHBOR);
+	// Invalid texture
+	{
+		auto size = math::Vector2UInt { 16, 16 };
+		auto pixels = std::vector<ui8>(size.powDim() * 4);
+		for (uIndex iPixel = 0; iPixel < size.powDim(); ++iPixel)
+		{
+			pixels[iPixel + 0] = 255;
+			pixels[iPixel + 1] = 0;
+			pixels[iPixel + 2] = 255;
+			pixels[iPixel + 3] = 255;
+		}
+		this->mpTextureRegistry->registerImage("invalid", size, pixels);
+		this->mpTextureRegistry->createDescriptor("invalid", asset::SAMPLER_NEAREST_NEIGHBOR);
+		this->mpTextureRegistry->setInvalidTextureId("invalid");
+	}
 	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 	
 	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
@@ -625,8 +641,9 @@ void Game::createLocalPlayer()
 
 		// Required by `view::RenderedPlayer`
 		auto playerModel = components.create<ecs::component::PlayerModel>();
-		playerModel->createModel(this->mpSkinnedModelManager);
-		playerModel->createInstance(this->mpEntityInstanceBuffer);
+		playerModel->setModel(asset::TypedAssetPath<asset::Model>::Create(
+			"assets/models/DefaultHumanoid/DefaultHumanoid.te-asset"
+		));
 		playerModel->setTextureId("model:DefaultHumanoid");
 		this->mpEntityLocalPlayer->addComponent(playerModel);
 	}
@@ -654,6 +671,14 @@ void Game::createEntities()
 	}
 	entity->addView(views.create<ecs::view::PhysicsBody>());
 
+	// Add rendering mesh
+	{
+		auto playerModel = components.create<ecs::component::PlayerModel>();
+		playerModel->setModel(render::createIcosphere());
+		//playerModel->setTextureId("model:DefaultHumanoid");
+		this->mpEntityLocalPlayer->addComponent(playerModel);
+	}
+	this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedPlayer>());
 
 }
 

@@ -1,6 +1,8 @@
 #pragma once
 
+#include "asset/TypedAssetPath.hpp"
 #include "ecs/component/Component.hpp"
+#include "render/ModelSimple.hpp"
 #include "utility/DynamicHandle.hpp"
 
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModel);
@@ -8,6 +10,7 @@ FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 FORWARD_DEF(NS_GRAPHICS, struct EntityInstanceData);
 FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorSet);
+FORWARD_DEF(NS_ASSET, class Model);
 
 NS_ECS
 NS_COMPONENT
@@ -20,10 +23,10 @@ public:
 	PlayerModel();
 	~PlayerModel();
 
-	PlayerModel& createModel(std::shared_ptr<graphics::SkinnedModelManager> modelManager);
+	PlayerModel& setModel(asset::TypedAssetPath<asset::Model> const& path);
+	PlayerModel& setModel(render::SimpleModel const& simple);
 	DynamicHandle<graphics::SkinnedModel> const& modelHandle() const;
 
-	PlayerModel& createInstance(std::shared_ptr<graphics::EntityInstanceBuffer> instanceBuffer);
 	DynamicHandle<graphics::EntityInstanceData> const& instanceHandle() const;
 
 	PlayerModel& setTextureId(std::string const& textureId);
