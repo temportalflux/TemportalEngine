@@ -16,6 +16,7 @@ CoordinateTransform::CoordinateTransform()
 
 world::Coordinate const& CoordinateTransform::position() const { return this->mPosition; }
 world::Coordinate& CoordinateTransform::position() { return this->mPosition; }
+math::Vector3 CoordinateTransform::localPosition() const { return this->mPosition.local().toFloat() + this->mPosition.offset(); }
 math::Vector3& CoordinateTransform::linearVelocity() { return this->mLinearVelocity; }
 math::Vector3& CoordinateTransform::linearAccelleration() { return this->mLinearAcceleration; }
 

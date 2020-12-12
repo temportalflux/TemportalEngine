@@ -17,6 +17,7 @@ public:
 
 	world::Coordinate const& position() const;
 	world::Coordinate& position();
+	math::Vector3 localPosition() const;
 	CoordinateTransform& setPosition(world::Coordinate const &pos);
 	math::Vector3& linearVelocity();
 	math::Vector3& linearAccelleration();

@@ -658,25 +658,28 @@ void Game::createEntities()
 	auto& components = ecs.components();
 	auto& views = ecs.views();
 
-	auto entity = ecs.entities().create();
-	this->mSpawnedEntities.push_back(entity);
-
-	// Add Transform
 	{
-		auto transform = components.create<ecs::component::CoordinateTransform>();
-		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 5, CHUNK_HALF_LENGTH }));
-		transform->setOrientation(math::Vector3unitY, 0);
-		entity->addComponent(transform);
-	}
-	entity->addView(views.create<ecs::view::PhysicsBody>());
+		auto entity = ecs.entities().create();
+		this->mSpawnedEntities.push_back(entity);
 
-	// Add rendering mesh
-	{
-		auto mesh = components.create<ecs::component::RenderMesh>();
-		mesh->setModel(render::createIcosphere(0));
-		entity->addComponent(mesh);
+		// Add Transform
+		{
+			auto transform = components.create<ecs::component::CoordinateTransform>();
+			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 4, CHUNK_HALF_LENGTH }));
+			transform->setOrientation(math::Vector3unitY, 0);
+			transform->linearVelocity() = math::V3_FORWARD * 2.0f;
+			entity->addComponent(transform);
+		}
+		entity->addView(views.create<ecs::view::PhysicsBody>());
+
+		// Add rendering mesh
+		{
+			auto mesh = components.create<ecs::component::RenderMesh>();
+			mesh->setModel(render::createIcosphere(0));
+			entity->addComponent(mesh);
+		}
+		entity->addView(views.create<ecs::view::RenderedMesh>());
 	}
-	entity->addView(views.create<ecs::view::RenderedMesh>());
 
 }
 
@@ -725,6 +728,15 @@ void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
 	this->mpWorld->handleDirtyCoordinates();
+	
+	auto center = math::Vector3(CHUNK_HALF_LENGTH);
+	for (auto& entity : this->mSpawnedEntities)
+	{
+		auto phys = entity->getView<ecs::view::PhysicsBody>();
+		auto transform = phys->get<ecs::component::CoordinateTransform>();
+		transform->linearAccelleration() = (center - transform->localPosition()).normalized() * 3.0f;
+	}
+	
 	engine::Engine::Get()->update(deltaTime);
 }
 
