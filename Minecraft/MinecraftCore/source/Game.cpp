@@ -658,6 +658,7 @@ void Game::createEntities()
 	auto& components = ecs.components();
 	auto& views = ecs.views();
 
+	// Entity 1 - Orbiting Sphere
 	{
 		auto entity = ecs.entities().create();
 		this->mSpawnedEntities.push_back(entity);
@@ -668,6 +669,30 @@ void Game::createEntities()
 			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 4, CHUNK_HALF_LENGTH }));
 			transform->setOrientation(math::Vector3unitY, 0);
 			transform->linearVelocity() = math::V3_FORWARD * 2.0f;
+			entity->addComponent(transform);
+		}
+		entity->addView(views.create<ecs::view::PhysicsBody>());
+
+		// Add rendering mesh
+		{
+			auto mesh = components.create<ecs::component::RenderMesh>();
+			mesh->setModel(render::createIcosphere(0));
+			entity->addComponent(mesh);
+		}
+		entity->addView(views.create<ecs::view::RenderedMesh>());
+	}
+
+	// Entity 2 - Stationary Sphere
+	{
+		auto entity = ecs.entities().create();
+		this->mSpawnedEntities.push_back(entity);
+
+		// Add Transform
+		{
+			auto transform = components.create<ecs::component::CoordinateTransform>();
+			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 6, CHUNK_HALF_LENGTH }));
+			transform->setOrientation(math::Vector3unitY, 0);
+			transform->setSize(math::Vector3(2));
 			entity->addComponent(transform);
 		}
 		entity->addView(views.create<ecs::view::PhysicsBody>());
@@ -730,9 +755,8 @@ void Game::update(f32 deltaTime)
 	this->mpWorld->handleDirtyCoordinates();
 	
 	auto center = math::Vector3(CHUNK_HALF_LENGTH);
-	for (auto& entity : this->mSpawnedEntities)
 	{
-		auto phys = entity->getView<ecs::view::PhysicsBody>();
+		auto phys = this->mSpawnedEntities[0]->getView<ecs::view::PhysicsBody>();
 		auto transform = phys->get<ecs::component::CoordinateTransform>();
 		transform->linearAccelleration() = (center - transform->localPosition()).normalized() * 3.0f;
 	}

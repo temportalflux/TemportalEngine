@@ -11,6 +11,7 @@
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
+#include "ecs/component/ComponentRenderMesh.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
@@ -102,7 +103,12 @@ void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::V
 
 	auto transform = view->get<component::CoordinateTransform>();
 	auto cameraPOV = view->get<component::CameraPOV>();
-	assert(transform && cameraPOV);
+	auto mesh = view->get<component::RenderMesh>();
+	assert(transform && cameraPOV && mesh);
+
+	// TODO: This system is only meant to apply to the local player. When other players are present,
+	// there will need to be a way to distinguish between local and non-controlled player cameras.
+	mesh->setVisible(this->mViewType != UpdateCameraPerspective::EViewType::eFirstPerson);
 
 	auto xyAspectRatio = this->mpRenderer->getAspectRatio(); // x/y
 	auto verticalFOV = math::toRadians(cameraPOV->fov());

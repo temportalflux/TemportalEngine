@@ -149,6 +149,7 @@ void RenderEntities::recordView(graphics::Command *command, graphics::Descriptor
 
 	auto renderMesh = view->get<component::RenderMesh>();
 	assert(renderMesh);
+	if (!renderMesh->shouldRender()) return;
 
 	auto const& textureDescriptor = game::Game::Get()->textureRegistry()->getDescriptorHandle(renderMesh->textureId());
 	

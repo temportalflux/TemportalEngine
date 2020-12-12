@@ -10,7 +10,7 @@ using namespace ecs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(RenderMesh)
 
-RenderMesh::RenderMesh() : Component()
+RenderMesh::RenderMesh() : Component(), mbShouldRender(true)
 {
 	auto game = game::Game::Get();
 	this->mModelHandle = game->modelManager()->createHandle();
@@ -22,6 +22,14 @@ RenderMesh::~RenderMesh()
 	this->mModelHandle.destroy();
 	this->mInstanceHandle.destroy();
 }
+
+RenderMesh& RenderMesh::setVisible(bool bVisible)
+{
+	this->mbShouldRender = bVisible;
+	return *this;
+}
+
+bool RenderMesh::shouldRender() const { return this->mbShouldRender; }
 
 RenderMesh& RenderMesh::setModel(asset::TypedAssetPath<asset::Model> const& path)
 {

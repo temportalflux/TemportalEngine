@@ -23,6 +23,9 @@ public:
 	RenderMesh();
 	~RenderMesh();
 
+	RenderMesh& setVisible(bool bVisible);
+	bool shouldRender() const;
+
 	RenderMesh& setModel(asset::TypedAssetPath<asset::Model> const& path);
 	RenderMesh& setModel(render::SimpleModel const& simple);
 	DynamicHandle<graphics::SkinnedModel> const& modelHandle() const;
@@ -36,6 +39,7 @@ private:
 	DynamicHandle<graphics::SkinnedModel> mModelHandle;
 	DynamicHandle<graphics::EntityInstanceData> mInstanceHandle;
 	std::string mTextureId;
+	bool mbShouldRender;
 
 };
 

@@ -128,7 +128,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp">
       <Filter>render\line</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\model\SkinnedModelManager.hpp">
       <Filter>render\model</Filter>
     </ClInclude>
@@ -164,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\system\SystemRenderEntities.hpp">
       <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp">
+      <Filter>ecs\view</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -238,7 +240,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp">
       <Filter>render\line</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\model\SkinnedModelManager.cpp">
       <Filter>render\model</Filter>
     </ClCompile>
@@ -271,6 +272,9 @@
     </ClCompile>
     <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\system\SystemRenderEntities.cpp">
       <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp">
+      <Filter>ecs\view</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
