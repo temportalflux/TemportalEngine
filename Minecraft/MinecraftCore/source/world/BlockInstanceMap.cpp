@@ -131,13 +131,21 @@ uSize VoxelInstanceCategoryList::unallocatedCount() const
 	return this->mUnallocated.count;
 }
 
-uIndex VoxelInstanceCategoryList::allocate()
+uIndex VoxelInstanceCategoryList::allocateToEmpty()
 {
 	// ASSERT: The empty voxels list is immediately before the unallocated voxels list
 	assert(this->mEmpty.index + this->mEmpty.count == this->mUnallocated.index);
 	// Push the value allocation into the set of "empty" voxels
 	this->mEmpty.expandRight();
 	return this->mEmpty.lastIndex();
+}
+
+void VoxelInstanceCategoryList::deallocateFromEmpty(uSize amount)
+{
+	while (amount-- > 0)
+	{
+		this->mUnallocated.expandLeft();
+	}
 }
 
 CategoryMeta& VoxelInstanceCategoryList::getCategoryForValueIndex(uIndex idx)
@@ -230,9 +238,8 @@ std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::iterator> VoxelI
 	OPTICK_EVENT();
 	auto rangeEnd = this->mCoordinateToIndex.end();
 	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
-	if (range.first != rangeEnd && range.second != rangeEnd)
+	if (range.first != rangeEnd)
 	{
-		assert(range.first != range.second);
 		return range.first;
 	}
 	else
@@ -337,11 +344,11 @@ void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> con
 
 	// ASSERT: There is enough room to allocate the coordinates
 	assert(coordinates.size() <= this->mMutableCategoryList.unallocatedCount());
-	
+
 	for (auto const& coordinate : coordinates)
 	{
 		// Push the value allocation into the set of "empty" voxels
-		auto valueIndex = this->mMutableCategoryList.allocate();
+		auto valueIndex = this->mMutableCategoryList.allocateToEmpty();
 
 		// Put the coordinate in the searchable sorted list of allocated voxels
 		this->mMutableCategoryList.setCoordinateIndex(coordinate, valueIndex);
@@ -354,7 +361,19 @@ void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> con
 
 void BlockInstanceBuffer::unallocateCoordinates(std::vector<world::Coordinate> const& coordinates)
 {
-	assert(false); // TODO
+	OPTICK_EVENT();
+
+	// Move all coordinates to the empty set (thereby putting them all at the end of the empty category)
+	for (auto const& coordinate : coordinates)
+	{
+		// Assumes that this results in the data for coordinate being in the LAST index for the empty category
+		this->changeVoxelId(coordinate, std::nullopt);
+	}
+	for (auto const& coordinate : coordinates)
+	{
+		this->mMutableCategoryList.removeCoordinateIndex(coordinate);
+	}
+	this->mMutableCategoryList.deallocateFromEmpty(coordinates.size());
 }
 
 BlockInstanceBuffer::ValueData* BlockInstanceBuffer::getInstanceAt(uIndex idx)
@@ -538,12 +557,21 @@ void BlockInstanceBuffer::changeVoxelId(world::Coordinate const& coordinate, std
 		*/
 		rightCate->expandLeft();
 
+		/* copy the last index of destCategory to the first
+			| srcCategory | category1 | category2 | destCategory  |
+			| A F C D E   | K G H I J | P L M N O | V Q R S T U V |
+					                                    ^ <-------- ^
+		*/
+		this->copyInstanceData(rightCate->lastIndex(), rightCate->firstIndex());
+		this->mMutableCategoryList.moveIndexedCoordinate(rightCate->lastIndex(), rightCate->firstIndex());
+
 		/* so the last index of destCategory can be filled with `B`/`instance`.
 			| srcCategory | category1 | category2 | destCategory  |
-			| A F C D E   | K G H I J | P L M N O | B Q R S T U V |
+			| A F C D E   | K G H I J | P L M N O | V Q R S T U B |
+																							            ^
 		*/
-		this->setInstanceData(rightCate->firstIndex(), &instance);
-		this->mMutableCategoryList.setCoordinateIndex(coordinate, rightCate->firstIndex());
+		this->setInstanceData(rightCate->lastIndex(), &instance);
+		this->mMutableCategoryList.setCoordinateIndex(coordinate, rightCate->lastIndex());
 	}
 	
 	instance.posOfChunk.x() = 0;

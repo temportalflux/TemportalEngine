@@ -13,6 +13,11 @@ void World::loadChunk(math::Vector3Int const &coordinate)
 
 void World::reloadChunk(math::Vector3Int const &coordinate)
 {
+	/*
+	this->unloadChunk(coordinate);
+	this->loadChunk(coordinate);
+	//*/
+	///*
 	for (auto& activeChunk : this->mActiveChunks)
 	{
 		if (activeChunk.coordinate() == coordinate)
@@ -21,6 +26,7 @@ void World::reloadChunk(math::Vector3Int const &coordinate)
 			return;
 		}
 	}
+	//*/
 }
 
 void World::unloadChunk(math::Vector3Int const &coordinate)

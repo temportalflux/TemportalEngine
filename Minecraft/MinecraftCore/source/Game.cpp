@@ -454,7 +454,7 @@ void Game::createChunkBoundaryRenderer()
 			segments.push_back({ { 0, h, 0 }, { 0, h, l }, color });
 			segments.push_back({ { 0, h, l }, { l, h, l }, color });
 		}
-		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eCube, segments, true);
+		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eCube, segments, false);
 	}
 	// Side Grid
 	{
@@ -498,7 +498,7 @@ void Game::createChunkBoundaryRenderer()
 			}
 		}
 
-		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eSideGrid, segments, true);
+		this->mpChunkBoundaryRenderer->setBoundarySegments(graphics::ChunkBoundaryType::eSideGrid, segments, false);
 	}
 	this->mpChunkBoundaryRenderer->createGraphicsBuffers(&this->mpRenderer->getTransientPool());
 }

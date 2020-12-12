@@ -24,6 +24,9 @@ math::Vector3Int const& WorldChunk::coordinate() const
 // TODO: Save and load from file
 void WorldChunk::load()
 {
+	// Only actually needed when re-generating the chunk so that no metadata from the previous gen is left over
+	FOR_CHUNK_SIZE(i32, x) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) this->mBlockMetadata[{ x, y, z }] = std::nullopt;
+
 	auto typeRegistry = game::Game::Get()->voxelTypeRegistry();
 	auto allVoxelIdsSet = typeRegistry->getIds();
 

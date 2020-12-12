@@ -65,7 +65,8 @@ public:
 
 	uSize unallocatedCount() const;
 
-	uIndex allocate();
+	uIndex allocateToEmpty();
+	void deallocateFromEmpty(uSize amount);
 	void setCoordinateIndex(world::Coordinate const& coordinate, uIndex idx);
 	void moveIndexedCoordinate(uIndex const& src, uIndex const& dst);
 	void removeCoordinateIndex(world::Coordinate const& coordinate);
