@@ -132,9 +132,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\model\SkinnedModelManager.hpp">
       <Filter>render\model</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderPlayer.hpp">
-      <Filter>ecs\system</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\EntityInstanceBuffer.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -164,6 +161,9 @@
     </ClInclude>
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\view\ViewRenderedMesh.hpp">
       <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\system\SystemRenderEntities.hpp">
+      <Filter>ecs\system</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -242,9 +242,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\model\SkinnedModelManager.cpp">
       <Filter>render\model</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderPlayer.cpp">
-      <Filter>ecs\system</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\EntityInstanceBuffer.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -271,6 +268,9 @@
     </ClCompile>
     <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\view\ViewRenderedMesh.cpp">
       <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\system\SystemRenderEntities.cpp">
+      <Filter>ecs\system</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

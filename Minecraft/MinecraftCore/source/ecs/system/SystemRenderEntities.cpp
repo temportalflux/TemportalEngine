@@ -1,4 +1,4 @@
-#include "ecs/system/SystemRenderPlayer.hpp"
+#include "ecs/system/SystemRenderEntities.hpp"
 
 #include "Engine.hpp"
 #include "ecs/Core.hpp"
@@ -20,21 +20,17 @@
 using namespace ecs;
 using namespace ecs::system;
 
-RenderPlayer::RenderPlayer(
-	std::weak_ptr<graphics::SkinnedModelManager> modelManager,
-	graphics::DescriptorPool *descriptorPool
-)
+RenderEntities::RenderEntities()
 	: System(view::RenderedMesh::TypeId)
-	, mpModelManager(modelManager)
 {
 }
 
-RenderPlayer::~RenderPlayer()
+RenderEntities::~RenderEntities()
 {
 	destroy();
 }
 
-RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
+RenderEntities& RenderEntities::setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
 	if (!this->mpPipeline)
 	{
@@ -68,54 +64,54 @@ RenderPlayer& RenderPlayer::setPipeline(asset::TypedAssetPath<asset::Pipeline> c
 	return *this;
 }
 
-void RenderPlayer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+void RenderEntities::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpPipeline->setDevice(device);
 }
 
-void RenderPlayer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
+void RenderEntities::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 {
 	this->mpPipeline->setRenderPass(renderPass);
 }
 
-void RenderPlayer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
+void RenderEntities::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
 {
 }
 
-void RenderPlayer::createLocalPlayerDescriptor()
+void RenderEntities::createLocalPlayerDescriptor()
 {
 }
 
-void RenderPlayer::setFrameCount(uSize frameCount)
+void RenderEntities::setFrameCount(uSize frameCount)
 {
 }
 
-void RenderPlayer::createDescriptors(graphics::DescriptorPool *descriptorPool)
+void RenderEntities::createDescriptors(graphics::DescriptorPool *descriptorPool)
 {
 }
 
-void RenderPlayer::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
+void RenderEntities::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
 {
 	auto registry = game::Game::Get()->textureRegistry();
 	this->mpPipeline->setDescriptorLayouts({ globalLayouts.find("camera")->second, registry->textureLayout() });
 }
 
-void RenderPlayer::createPipeline(math::Vector2UInt const& resolution)
+void RenderEntities::createPipeline(math::Vector2UInt const& resolution)
 {
 	this->mpPipeline->setResolution(resolution).create();
 }
 
-void RenderPlayer::attachDescriptors(
+void RenderEntities::attachDescriptors(
 	std::unordered_map<std::string, std::vector<graphics::Buffer*>> &mutableUniforms
 )
 {
 }
 
-void RenderPlayer::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
+void RenderEntities::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> device)
 {
 }
 
-void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
+void RenderEntities::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 {
 	OPTICK_EVENT();
 
@@ -133,7 +129,7 @@ void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 	renderMesh->instanceHandle().markDirty();
 }
 
-void RenderPlayer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
+void RenderEntities::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
 {
 	OPTICK_EVENT();
 	auto& ecs = engine::Engine::Get()->getECS();
@@ -145,7 +141,7 @@ void RenderPlayer::record(graphics::Command *command, uIndex idxFrame, TGetGloba
 	}
 }
 
-void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, std::shared_ptr<ecs::view::View> view)
+void RenderEntities::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, std::shared_ptr<ecs::view::View> view)
 {
 	OPTICK_EVENT();
 
@@ -161,11 +157,11 @@ void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSe
 	command->draw(0, renderMesh->modelHandle().get()->indexCount(), 0, ui32(uIndex(renderMesh->instanceHandle())), 1);
 }
 
-void RenderPlayer::destroyRenderChain()
+void RenderEntities::destroyRenderChain()
 {
 	this->mpPipeline->invalidate();
 }
 
-void RenderPlayer::destroy()
+void RenderEntities::destroy()
 {
 }

@@ -25,7 +25,7 @@
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemUpdateDebugHUD.hpp"
-#include "ecs/system/SystemRenderPlayer.hpp"
+#include "ecs/system/SystemRenderEntities.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "input/Queue.hpp"
@@ -156,7 +156,7 @@ void Game::init()
 		if (!this->scanResourcePacks()) return;
 		this->createRenderers();
 		this->mpResourcePackManager->loadPack("Default", 0).loadPack("Temportal", 1).commitChanges();
-		this->mpSystemRenderPlayer->createLocalPlayerDescriptor();
+		this->mpSystemRenderEntities->createLocalPlayerDescriptor();
 		this->mpRenderer->createMutableUniforms();
 		this->mpRenderer->createRenderChain();
 		this->mpRenderer->finalizeInitialization();
@@ -301,14 +301,12 @@ void Game::createRenderers()
 	this->mpEntityInstanceBuffer->setDevice(this->mpRenderer->getDevice());
 	this->mpEntityInstanceBuffer->create();
 
-	this->mpSystemRenderPlayer = std::make_shared<ecs::system::RenderPlayer>(
-		std::weak_ptr(this->mpSkinnedModelManager), &this->mpRenderer->getDescriptorPool()
-	);
-	pEngine->addTicker(this->mpSystemRenderPlayer);
-	this->mpSystemRenderPlayer->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+	this->mpSystemRenderEntities = std::make_shared<ecs::system::RenderEntities>();
+	pEngine->addTicker(this->mpSystemRenderEntities);
+	this->mpSystemRenderEntities->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/entity/RenderEntityPipeline.te-asset"
 	));
-	this->mpRenderer->addRenderer(this->mpSystemRenderPlayer.get());
+	this->mpRenderer->addRenderer(this->mpSystemRenderEntities.get());
 }
 
 void Game::createGameRenderer()
@@ -528,7 +526,7 @@ void Game::createUIRenderer()
 
 void Game::destroyRenderers()
 {
-	this->mpSystemRenderPlayer->destroy();
+	this->mpSystemRenderEntities->destroy();
 	this->mpTextureRegistry.reset();
 	this->mpEntityInstanceBuffer.reset();
 	this->mpSkinnedModelManager.reset();
@@ -544,7 +542,7 @@ void Game::destroyRenderers()
 
 	this->mpRenderer->invalidate();
 
-	this->mpSystemRenderPlayer.reset();
+	this->mpSystemRenderEntities.reset();
 	this->mpVoxelGridRenderer.reset();
 	this->mpWorldAxesRenderer.reset();
 	this->mpChunkBoundaryRenderer.reset();
@@ -636,7 +634,7 @@ void Game::createLocalPlayer()
 	
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
 
-		// This view enables the `RenderPlayer` system to run
+		// This view enables the `RenderEntities` system to run
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedMesh>());
 
 		// Required by `view::RenderedMesh`

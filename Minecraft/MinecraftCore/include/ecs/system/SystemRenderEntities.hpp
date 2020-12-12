@@ -11,17 +11,14 @@ FORWARD_DEF(NS_GRAPHICS, class Pipeline);
 
 NS_ECS NS_SYSTEM
 
-class RenderPlayer : public System, public graphics::IPipelineRenderer
+class RenderEntities : public System, public graphics::IPipelineRenderer
 {
 
 public:
-	RenderPlayer(
-		std::weak_ptr<graphics::SkinnedModelManager> modelManager,
-		graphics::DescriptorPool *descriptorPool
-	);
-	~RenderPlayer();
+	RenderEntities();
+	~RenderEntities();
 
-	RenderPlayer& setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
+	RenderEntities& setPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	void createLocalPlayerDescriptor();
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
@@ -45,7 +42,6 @@ public:
 	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
 
 private:
-	std::weak_ptr<graphics::SkinnedModelManager> const mpModelManager;
 	std::shared_ptr<graphics::Pipeline> mpPipeline;
 
 };

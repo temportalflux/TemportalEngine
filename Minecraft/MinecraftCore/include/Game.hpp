@@ -16,7 +16,7 @@ FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
 FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
 FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
-FORWARD_DEF(NS_SYSTEM, class RenderPlayer);
+FORWARD_DEF(NS_SYSTEM, class RenderEntities);
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
 
@@ -82,7 +82,7 @@ private:
 	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
 	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
-	std::shared_ptr<ecs::system::RenderPlayer> mpSystemRenderPlayer;
+	std::shared_ptr<ecs::system::RenderEntities> mpSystemRenderEntities;
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
