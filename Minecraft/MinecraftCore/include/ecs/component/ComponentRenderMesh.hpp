@@ -15,21 +15,21 @@ FORWARD_DEF(NS_ASSET, class Model);
 NS_ECS
 NS_COMPONENT
 
-class PlayerModel : public Component
+class RenderMesh : public Component
 {
 	DECLARE_ECS_COMPONENT_STATICS(1)
 
 public:
-	PlayerModel();
-	~PlayerModel();
+	RenderMesh();
+	~RenderMesh();
 
-	PlayerModel& setModel(asset::TypedAssetPath<asset::Model> const& path);
-	PlayerModel& setModel(render::SimpleModel const& simple);
+	RenderMesh& setModel(asset::TypedAssetPath<asset::Model> const& path);
+	RenderMesh& setModel(render::SimpleModel const& simple);
 	DynamicHandle<graphics::SkinnedModel> const& modelHandle() const;
 
 	DynamicHandle<graphics::EntityInstanceData> const& instanceHandle() const;
 
-	PlayerModel& setTextureId(std::string const& textureId);
+	RenderMesh& setTextureId(std::string const& textureId);
 	std::string const& textureId() const;
 
 private:

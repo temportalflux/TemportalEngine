@@ -135,12 +135,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderPlayer.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedPlayer.hpp">
-      <Filter>ecs\view</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerModel.hpp">
-      <Filter>ecs\component</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\EntityInstanceBuffer.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -164,6 +158,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp">
       <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\component\ComponentRenderMesh.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\view\ViewRenderedMesh.hpp">
+      <Filter>ecs\view</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -245,12 +245,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderPlayer.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedPlayer.cpp">
-      <Filter>ecs\view</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerModel.cpp">
-      <Filter>ecs\component</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\EntityInstanceBuffer.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -271,6 +265,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp">
       <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\component\ComponentRenderMesh.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\view\ViewRenderedMesh.cpp">
+      <Filter>ecs\view</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

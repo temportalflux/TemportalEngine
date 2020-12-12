@@ -13,10 +13,9 @@
 #include "render/TextureRegistry.hpp"
 #include "render/ModelVertex.hpp"
 
-#include "ecs/view/ViewRenderedPlayer.hpp"
+#include "ecs/view/ViewRenderedMesh.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
-#include "ecs/component/ComponentCameraPOV.hpp"
-#include "ecs/component/ComponentPlayerModel.hpp"
+#include "ecs/component/ComponentRenderMesh.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
@@ -25,7 +24,7 @@ RenderPlayer::RenderPlayer(
 	std::weak_ptr<graphics::SkinnedModelManager> modelManager,
 	graphics::DescriptorPool *descriptorPool
 )
-	: System(view::RenderedPlayer::TypeId)
+	: System(view::RenderedMesh::TypeId)
 	, mpModelManager(modelManager)
 {
 }
@@ -121,17 +120,17 @@ void RenderPlayer::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
 	OPTICK_EVENT();
 
 	auto transform = view->get<component::CoordinateTransform>();
-	auto playerModel = view->get<component::PlayerModel>();
-	assert(transform && playerModel);
+	auto renderMesh = view->get<component::RenderMesh>();
+	assert(transform && renderMesh);
 
-	auto* instance = playerModel->instanceHandle().get();
+	auto* instance = renderMesh->instanceHandle().get();
 	instance->posOfCurrentChunk = transform->position().chunk().toFloat();
 	instance->localTransform = math::createModelMatrix(
 		transform->position().local().toFloat() + transform->position().offset(),
 		math::Quaternion::FromAxisAngle(math::V3_UP, transform->orientation().euler().y()),
 		transform->size()
 	);
-	playerModel->instanceHandle().markDirty();
+	renderMesh->instanceHandle().markDirty();
 }
 
 void RenderPlayer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -150,17 +149,16 @@ void RenderPlayer::recordView(graphics::Command *command, graphics::DescriptorSe
 {
 	OPTICK_EVENT();
 
-	auto cameraPOV = view->get<component::CameraPOV>();
-	auto playerModel = view->get<component::PlayerModel>();
-	assert(cameraPOV && playerModel);
+	auto renderMesh = view->get<component::RenderMesh>();
+	assert(renderMesh);
 
-	auto const& textureDescriptor = game::Game::Get()->textureRegistry()->getDescriptorHandle(playerModel->textureId());
+	auto const& textureDescriptor = game::Game::Get()->textureRegistry()->getDescriptorHandle(renderMesh->textureId());
 	
 	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, textureDescriptor.get() });
 	command->bindPipeline(this->mpPipeline);
-	playerModel->modelHandle().get()->bindBuffers(command);
-	command->bindVertexBuffers(1, { playerModel->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer() });
-	command->draw(0, playerModel->modelHandle().get()->indexCount(), 0, ui32(uIndex(playerModel->instanceHandle())), 1);
+	renderMesh->modelHandle().get()->bindBuffers(command);
+	command->bindVertexBuffers(1, { renderMesh->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer() });
+	command->draw(0, renderMesh->modelHandle().get()->indexCount(), 0, ui32(uIndex(renderMesh->instanceHandle())), 1);
 }
 
 void RenderPlayer::destroyRenderChain()

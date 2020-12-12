@@ -16,11 +16,11 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerInput.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
-#include "ecs/component/ComponentPlayerModel.hpp"
+#include "ecs/component/ComponentRenderMesh.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
-#include "ecs/view/ViewRenderedPlayer.hpp"
+#include "ecs/view/ViewRenderedMesh.hpp"
 #include "ecs/view/ViewPhysicsBody.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
@@ -115,11 +115,11 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
 	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
-	ecs->components().registerType<ecs::component::PlayerModel>("PlayerModel");
+	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
-	ecs->views().registerType<ecs::view::RenderedPlayer>();
+	ecs->views().registerType<ecs::view::RenderedMesh>();
 	ecs->views().registerType<ecs::view::PhysicsBody>();
 }
 
@@ -637,15 +637,15 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
 
 		// This view enables the `RenderPlayer` system to run
-		this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedPlayer>());
+		this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedMesh>());
 
-		// Required by `view::RenderedPlayer`
-		auto playerModel = components.create<ecs::component::PlayerModel>();
-		playerModel->setModel(asset::TypedAssetPath<asset::Model>::Create(
+		// Required by `view::RenderedMesh`
+		auto mesh = components.create<ecs::component::RenderMesh>();
+		mesh->setModel(asset::TypedAssetPath<asset::Model>::Create(
 			"assets/models/DefaultHumanoid/DefaultHumanoid.te-asset"
 		));
-		playerModel->setTextureId("model:DefaultHumanoid");
-		this->mpEntityLocalPlayer->addComponent(playerModel);
+		mesh->setTextureId("model:DefaultHumanoid");
+		this->mpEntityLocalPlayer->addComponent(mesh);
 	}
 
 	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicsBody>());
@@ -673,12 +673,11 @@ void Game::createEntities()
 
 	// Add rendering mesh
 	{
-		auto playerModel = components.create<ecs::component::PlayerModel>();
-		playerModel->setModel(render::createIcosphere());
-		//playerModel->setTextureId("model:DefaultHumanoid");
-		this->mpEntityLocalPlayer->addComponent(playerModel);
+		auto mesh = components.create<ecs::component::RenderMesh>();
+		mesh->setModel(render::createIcosphere());
+		this->mpEntityLocalPlayer->addComponent(mesh);
 	}
-	this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedPlayer>());
+	this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedMesh>());
 
 }
 

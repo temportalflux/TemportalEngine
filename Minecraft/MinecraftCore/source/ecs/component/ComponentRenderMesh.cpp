@@ -1,4 +1,4 @@
-#include "ecs/component/ComponentPlayerModel.hpp"
+#include "ecs/component/ComponentRenderMesh.hpp"
 
 #include "Game.hpp"
 #include "asset/ModelAsset.hpp"
@@ -8,43 +8,43 @@
 using namespace ecs;
 using namespace ecs::component;
 
-DEFINE_ECS_COMPONENT_STATICS(PlayerModel)
+DEFINE_ECS_COMPONENT_STATICS(RenderMesh)
 
-PlayerModel::PlayerModel() : Component()
+RenderMesh::RenderMesh() : Component()
 {
 	auto game = game::Game::Get();
 	this->mModelHandle = game->modelManager()->createHandle();
 	this->mInstanceHandle = game->entityInstances()->createHandle();
 }
 
-PlayerModel::~PlayerModel()
+RenderMesh::~RenderMesh()
 {
 	this->mModelHandle.destroy();
 	this->mInstanceHandle.destroy();
 }
 
-PlayerModel& PlayerModel::setModel(asset::TypedAssetPath<asset::Model> const& path)
+RenderMesh& RenderMesh::setModel(asset::TypedAssetPath<asset::Model> const& path)
 {
 	this->mModelHandle.owner<graphics::SkinnedModelManager>()
 		->setModel(this->mModelHandle, path.load(asset::EAssetSerialization::Binary));
 	return *this;
 }
 
-PlayerModel& PlayerModel::setModel(render::SimpleModel const& simple)
+RenderMesh& RenderMesh::setModel(render::SimpleModel const& simple)
 {
 	this->mModelHandle.owner<graphics::SkinnedModelManager>()
 		->setModel(this->mModelHandle, simple.vertices, simple.indices);
 	return *this;
 }
 
-DynamicHandle<graphics::SkinnedModel> const& PlayerModel::modelHandle() const { return this->mModelHandle; }
+DynamicHandle<graphics::SkinnedModel> const& RenderMesh::modelHandle() const { return this->mModelHandle; }
 
-DynamicHandle<graphics::EntityInstanceData> const& PlayerModel::instanceHandle() const { return this->mInstanceHandle; }
+DynamicHandle<graphics::EntityInstanceData> const& RenderMesh::instanceHandle() const { return this->mInstanceHandle; }
 
-PlayerModel& PlayerModel::setTextureId(std::string const& textureId)
+RenderMesh& RenderMesh::setTextureId(std::string const& textureId)
 {
 	this->mTextureId = textureId;
 	return *this;
 }
 
-std::string const& PlayerModel::textureId() const { return this->mTextureId; }
+std::string const& RenderMesh::textureId() const { return this->mTextureId; }

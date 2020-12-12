@@ -7,11 +7,11 @@
 NS_ECS
 NS_VIEW
 
-class RenderedPlayer : public View
+class RenderedMesh : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	RenderedPlayer();
+	RenderedMesh();
 };
 
 NS_END
