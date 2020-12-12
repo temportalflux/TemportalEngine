@@ -17,11 +17,12 @@
 #include "ecs/component/ComponentPlayerInput.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
+#include "ecs/component/ComponentPhysicsBody.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
 #include "ecs/view/ViewRenderedMesh.hpp"
-#include "ecs/view/ViewPhysicsBody.hpp"
+#include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemUpdateDebugHUD.hpp"
@@ -116,11 +117,12 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
+	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
 	ecs->views().registerType<ecs::view::RenderedMesh>();
-	ecs->views().registerType<ecs::view::PhysicsBody>();
+	ecs->views().registerType<ecs::view::PhysicalDynamics>();
 }
 
 void Game::openProject()
@@ -647,7 +649,11 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addComponent(mesh);
 	}
 
-	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicsBody>());
+	{
+		auto body = components.create<ecs::component::PhysicsBody>();
+		this->mpEntityLocalPlayer->addComponent(body);
+	}
+	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicalDynamics>());
 
 }
 
@@ -668,10 +674,14 @@ void Game::createEntities()
 			auto transform = components.create<ecs::component::CoordinateTransform>();
 			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 4, CHUNK_HALF_LENGTH }));
 			transform->setOrientation(math::Vector3unitY, 0);
-			transform->linearVelocity() = math::V3_FORWARD * 2.0f;
 			entity->addComponent(transform);
 		}
-		entity->addView(views.create<ecs::view::PhysicsBody>());
+		{
+			auto body = components.create<ecs::component::PhysicsBody>();
+			body->setVelocity(math::V3_FORWARD * 2.0f);
+			entity->addComponent(body);
+		}
+		entity->addView(views.create<ecs::view::PhysicalDynamics>());
 
 		// Add rendering mesh
 		{
@@ -695,7 +705,7 @@ void Game::createEntities()
 			transform->setSize(math::Vector3(2));
 			entity->addComponent(transform);
 		}
-		entity->addView(views.create<ecs::view::PhysicsBody>());
+		entity->addView(views.create<ecs::view::PhysicalDynamics>());
 
 		// Add rendering mesh
 		{
@@ -716,10 +726,14 @@ void Game::createEntities()
 			auto transform = components.create<ecs::component::CoordinateTransform>();
 			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 12, CHUNK_HALF_LENGTH }));
 			transform->setOrientation(math::Vector3unitY, 0);
-			transform->linearVelocity() = math::V3_RIGHT * 2.0f;
 			entity->addComponent(transform);
 		}
-		entity->addView(views.create<ecs::view::PhysicsBody>());
+		{
+			auto body = components.create<ecs::component::PhysicsBody>();
+			body->setVelocity(math::V3_RIGHT * 2.0f);
+			entity->addComponent(body);
+		}
+		entity->addView(views.create<ecs::view::PhysicalDynamics>());
 
 		// Add rendering mesh
 		{
@@ -782,9 +796,10 @@ void Game::update(f32 deltaTime)
 	f32 gravity = 3.0f;
 	for (auto idxEnt : std::vector<uIndex>({ 0, 2 }))
 	{
-		auto phys = this->mSpawnedEntities[idxEnt]->getView<ecs::view::PhysicsBody>();
+		auto phys = this->mSpawnedEntities[idxEnt]->getView<ecs::view::PhysicalDynamics>();
 		auto transform = phys->get<ecs::component::CoordinateTransform>();
-		transform->linearAccelleration() = (center - transform->localPosition()).normalized() * gravity;
+		auto body = phys->get<ecs::component::PhysicsBody>();
+		body->setAcceleration((center - transform->localPosition()).normalized() * gravity);
 	}
 	
 	engine::Engine::Get()->update(deltaTime);

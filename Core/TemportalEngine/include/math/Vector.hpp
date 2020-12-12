@@ -709,12 +709,6 @@ typedef Vector<f32, 4, 4> Vector4;
 typedef Vector4 Color;
 extern Vector4 const Vector4unitX, Vector4unitY, Vector4unitZ, Vector4unitW;
 
-Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat);
-
-// TODO: This should really be in a physics thing, not a math thing
-Quaternion const IntegrateKinematic(Quaternion const rotation,
-	Vector3 const angularVelocity, Vector3 const angularAcceleration, f32 const deltaTime);
-
 NS_END
 
 #endif

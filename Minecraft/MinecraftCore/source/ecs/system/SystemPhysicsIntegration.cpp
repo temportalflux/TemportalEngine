@@ -2,13 +2,14 @@
 
 #include "Engine.hpp"
 #include "logging/Logger.hpp"
-#include "ecs/view/ViewPhysicsBody.hpp"
+#include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
+#include "ecs/component/ComponentPhysicsBody.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
 
-PhysicsIntegration::PhysicsIntegration() : System(view::PhysicsBody::TypeId)
+PhysicsIntegration::PhysicsIntegration() : System(view::PhysicalDynamics::TypeId)
 {
 }
 
@@ -18,10 +19,9 @@ void PhysicsIntegration::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	static logging::Logger ControllerLog = DeclareLog("Physics");
 
 	auto transform = view->get<component::CoordinateTransform>();
-	assert(transform);
+	auto body = view->get<component::PhysicsBody>();
+	assert(transform && body);
 
-	transform->position() += transform->linearVelocity() * deltaTime;
-	transform->position() += 0.5f * transform->linearAccelleration() * deltaTime * deltaTime;
-	transform->linearVelocity() += transform->linearAccelleration() * deltaTime;
+	transform->position() += body->integrateLinear(deltaTime);
 
 }

@@ -7,11 +7,11 @@
 NS_ECS
 NS_VIEW
 
-class PhysicsBody : public View
+class PhysicalDynamics : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	PhysicsBody();
+	PhysicalDynamics();
 };
 
 NS_END

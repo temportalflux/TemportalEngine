@@ -17,8 +17,6 @@ CoordinateTransform::CoordinateTransform()
 world::Coordinate const& CoordinateTransform::position() const { return this->mPosition; }
 world::Coordinate& CoordinateTransform::position() { return this->mPosition; }
 math::Vector3 CoordinateTransform::localPosition() const { return this->mPosition.local().toFloat() + this->mPosition.offset(); }
-math::Vector3& CoordinateTransform::linearVelocity() { return this->mLinearVelocity; }
-math::Vector3& CoordinateTransform::linearAccelleration() { return this->mLinearAcceleration; }
 
 CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &pos)
 {
@@ -26,16 +24,8 @@ CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &p
 	return *this;
 }
 
-
-void CoordinateTransform::move(math::Vector3 const &v)
-{
-	this->mPosition += v;
-}
-
-math::Quaternion const& CoordinateTransform::orientation() const
-{
-	return this->mOrientation;
-}
+math::Quaternion const& CoordinateTransform::orientation() const { return this->mOrientation; }
+math::Quaternion& CoordinateTransform::orientation() { return this->mOrientation; }
 
 math::Vector3 CoordinateTransform::forward() const
 {

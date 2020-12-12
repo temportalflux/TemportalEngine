@@ -331,6 +331,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelSimple.cpp">
       <Filter>render</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -710,5 +713,8 @@
       <Filter>utility</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

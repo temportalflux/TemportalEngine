@@ -26,12 +26,11 @@ void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	auto euler = orientation.euler();
 	auto rot = math::Quaternion::FromAxisAngle(math::V3_UP, euler.y());
 
-	transform->linearVelocity() = math::Vector3::ZERO;
 	for (auto const& mapping : input->axialMoveMappings())
 	{
 		if (!mapping.bIsActive) continue;
 		auto dir = mapping.bIsGlobal ? mapping.direction : rot.rotate(mapping.direction);
-		transform->linearVelocity() += dir * input->axialMoveSpeed();
+		transform->position() += dir * input->axialMoveSpeed() * deltaTime;
 	}
 
 	for (auto& inputAxis : input->lookAxes())

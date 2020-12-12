@@ -92,34 +92,6 @@ Vector<f32, 3> Quaternion::rotate(Vector<f32, 3> const v) const
 	return a + b + c;
 }
 
-Quaternion const MultiplyVector(Vector3 const vector, Quaternion const quat)
-{
-	// r = quat vector3
-	// q* = < vxr + wv, -dot(v, r) >
-	return Quaternion(
-		Vector3::cross(vector, quat.createSubvector<3>())
-		+ vector * quat.w()
-	) + Quaternion::Identity * -Vector3::dot(vector, quat.createSubvector<3>());
-}
-
-Quaternion const IntegrateKinematic(Quaternion const rotation,
-	Vector3 const angularVelocity, Vector3 const angularAcceleration, f32 const deltaTime)
-{
-	// qPrime = q + (dq/dt)dt + (1/2)(d^2q/dt^2)dt^2
-	// qPrime = q + [(1/2)wdt * q] + [(1/2)aq - (1/4)|w|^2*q]dt^2
-	Quaternion integrated = rotation;
-	// integrate velocity
-	integrated += MultiplyVector(0.5f * angularVelocity * deltaTime, rotation);
-	// integrate acceleration
-	integrated += (0.5f * deltaTime * deltaTime) * (
-		MultiplyVector(0.5f * angularAcceleration, rotation)
-		-
-		(0.25f * angularVelocity.magnitudeSq() * rotation)
-	);
-	// normalize
-	return integrated.normalized();
-}
-
 Vector2 const Vector2::ZERO = { 0, 0 };
 Vector2Int const Vector2Int::ZERO = { 0, 0 };
 Vector2UInt const Vector2UInt::ZERO = { 0, 0 };

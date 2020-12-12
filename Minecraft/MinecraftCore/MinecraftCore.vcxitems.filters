@@ -149,18 +149,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicsBody.hpp">
-      <Filter>ecs\view</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp">
       <Filter>ecs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp" />
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ecs\view\ViewPhysicalDynamics.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp">
+      <Filter>ecs\system</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp">
+      <Filter>ecs\view</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -252,17 +258,23 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp">
       <Filter>resource</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicsBody.cpp">
-      <Filter>ecs\view</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp">
       <Filter>ecs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp" />
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ecs\view\ViewPhysicalDynamics.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp">
+      <Filter>ecs\system</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp">
+      <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

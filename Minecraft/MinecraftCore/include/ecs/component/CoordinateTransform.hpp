@@ -19,12 +19,9 @@ public:
 	world::Coordinate& position();
 	math::Vector3 localPosition() const;
 	CoordinateTransform& setPosition(world::Coordinate const &pos);
-	math::Vector3& linearVelocity();
-	math::Vector3& linearAccelleration();
-
-	void move(math::Vector3 const &v);
 
 	math::Quaternion const& orientation() const;
+	math::Quaternion& orientation();
 	math::Vector3 forward() const;
 	math::Vector3 backward() const;
 	math::Vector3 right() const;
@@ -47,11 +44,7 @@ public:
 
 private:
 	world::Coordinate mPosition;
-	math::Vector3 mLinearVelocity;
-	math::Vector3 mLinearAcceleration;
-
 	math::Quaternion mOrientation;
-	
 	math::Vector3 mSize;
 
 };
