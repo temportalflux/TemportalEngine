@@ -66,10 +66,11 @@ void EntityInstanceBuffer::destroyHandle(uIndex const& idx)
 	this->mMutex.unlock();
 }
 
-void EntityInstanceBuffer::markDirty(uIndex const& idx)
+void EntityInstanceBuffer::setData(DynamicHandle<EntityInstanceData> const& handle, EntityInstanceData const& data)
 {
 	this->mMutex.lock();
-	this->mInstanceMetadata[idx].bHasChanged = true;
+	this->mInstances[uIndex(handle)] = data;
+	this->mInstanceMetadata[uIndex(handle)].bHasChanged = true;
 	this->bHasAnyChanges = true;
 	this->mMutex.unlock();
 }
@@ -139,6 +140,7 @@ void EntityInstanceBuffer::commitToBuffer(graphics::CommandPool* transientPool)
 				totalStagingBufferSizeWritten,
 				&instances[nextIdx], sizeof(EntityInstanceData), false
 			);
+			totalStagingBufferSizeWritten += sizeof(EntityInstanceData);
 		}
 		prevIdx = nextIdx;
 		nextIdx++;

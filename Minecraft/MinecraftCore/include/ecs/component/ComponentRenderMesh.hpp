@@ -17,7 +17,7 @@ NS_COMPONENT
 
 class RenderMesh : public Component
 {
-	DECLARE_ECS_COMPONENT_STATICS(1)
+	DECLARE_ECS_COMPONENT_STATICS(16)
 
 public:
 	RenderMesh();

@@ -9,7 +9,7 @@ View::View(std::vector<ComponentTypeId> slotTypes)
 	assert(slotTypes.size() <= View::SlotCapacity);
 	for (uIndex iSlot = 0; iSlot < math::min(View::SlotCapacity, slotTypes.size()); ++iSlot)
 	{
-		this->mSlots.push(ComponentSlot { slotTypes[iSlot] });
+		this->mSlots.push(ComponentSlot { slotTypes[iSlot], std::weak_ptr<component::Component>() });
 	}
 }
 

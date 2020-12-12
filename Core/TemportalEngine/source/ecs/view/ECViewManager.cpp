@@ -5,12 +5,12 @@ using namespace ecs::view;
 
 bool Manager::ViewRecord::operator<(Manager::ViewRecord const& other) const
 {
-	return typeId < other.typeId && objectId < other.objectId;
+	return typeId <= other.typeId ? objectId < other.objectId : false;
 }
 
 bool Manager::ViewRecord::operator>(Manager::ViewRecord const& other) const
 {
-	return typeId > other.typeId && objectId > other.objectId;
+	return typeId >= other.typeId ? objectId > other.objectId : false;
 }
 
 std::shared_ptr<View> Manager::createView(ViewTypeId const& typeId)
@@ -26,11 +26,13 @@ std::shared_ptr<View> Manager::createView(ViewTypeId const& typeId)
 	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, std::weak_ptr(shared) });
 
 	auto& typeMeta = this->getTypeMetadata(typeId);
-	if (typeMeta.mCount == 0 || idxRecord < typeMeta.mFirstAllocatedIdx)
-	{
-		typeMeta.mFirstAllocatedIdx = idxRecord;
-	}
+	if (typeMeta.mCount == 0) typeMeta.mFirstAllocatedIdx = idxRecord;
 	typeMeta.mCount++;
+
+	for (uIndex nextTypeId = typeId + 1; nextTypeId < ECS_MAX_VIEW_TYPE_COUNT; ++nextTypeId)
+	{
+		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx++;
+	}
 
 	this->mMutex.unlock();
 	return shared;
@@ -57,6 +59,11 @@ void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 	if (typeMeta.mFirstAllocatedIdx == *idxRecord)
 	{
 		typeMeta.mFirstAllocatedIdx = typeMeta.mCount > 0 ? *idxRecord + 1 : 0;
+	}
+
+	for (uIndex nextTypeId = typeId + 1; nextTypeId < ECS_MAX_VIEW_TYPE_COUNT; ++nextTypeId)
+	{
+		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx--;
 	}
 
 	this->mPool.destroy(pCreated->mId);

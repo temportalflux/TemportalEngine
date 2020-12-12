@@ -271,10 +271,10 @@ void Game::createRenderers()
 		auto pixels = std::vector<ui8>(size.powDim() * 4);
 		for (uIndex iPixel = 0; iPixel < size.powDim(); ++iPixel)
 		{
-			pixels[iPixel + 0] = 255;
-			pixels[iPixel + 1] = 0;
-			pixels[iPixel + 2] = 255;
-			pixels[iPixel + 3] = 255;
+			pixels[iPixel * 4 + 0] = 255;
+			pixels[iPixel * 4 + 1] = 0;
+			pixels[iPixel * 4 + 2] = 255;
+			pixels[iPixel * 4 + 3] = 255;
 		}
 		this->mpTextureRegistry->registerImage("invalid", size, pixels);
 		this->mpTextureRegistry->createDescriptor("invalid", asset::SAMPLER_NEAREST_NEIGHBOR);
@@ -561,7 +561,7 @@ void Game::createWorld()
 	
 	this->createScene();
 	this->createLocalPlayer();
-	//this->createEntities();
+	this->createEntities();
 
 	// Specifically for clients which set player movement/camera information
 	{
@@ -579,8 +579,9 @@ void Game::destroyWorld()
 
 void Game::createScene()
 {
-	for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
-		this->mpWorld->loadChunk({ x, 0, z });
+	this->mpWorld->loadChunk({ 0, 0, 0 });
+	//for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
+	//	this->mpWorld->loadChunk({ x, 0, z });
 	
 	if (this->mpVoxelInstanceBuffer)
 	{
@@ -663,7 +664,7 @@ void Game::createEntities()
 	// Add Transform
 	{
 		auto transform = components.create<ecs::component::CoordinateTransform>();
-		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH }));
+		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 5, CHUNK_HALF_LENGTH }));
 		transform->setOrientation(math::Vector3unitY, 0);
 		entity->addComponent(transform);
 	}
@@ -673,9 +674,9 @@ void Game::createEntities()
 	{
 		auto mesh = components.create<ecs::component::RenderMesh>();
 		mesh->setModel(render::createIcosphere());
-		this->mpEntityLocalPlayer->addComponent(mesh);
+		entity->addComponent(mesh);
 	}
-	this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedMesh>());
+	entity->addView(views.create<ecs::view::RenderedMesh>());
 
 }
 

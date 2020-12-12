@@ -105,7 +105,7 @@ private:
 			if (comp < 0)
 			{
 				endIndex = middle - 1;
-				if (startIndex > endIndex) return std::make_pair(false, middle - 1);
+				if (startIndex > endIndex) return std::make_pair(false, middle);
 			}
 			else if (comp > 0)
 			{

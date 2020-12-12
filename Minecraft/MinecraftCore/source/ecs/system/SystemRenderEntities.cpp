@@ -119,14 +119,16 @@ void RenderEntities::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view
 	auto renderMesh = view->get<component::RenderMesh>();
 	assert(transform && renderMesh);
 
-	auto* instance = renderMesh->instanceHandle().get();
-	instance->posOfCurrentChunk = transform->position().chunk().toFloat();
-	instance->localTransform = math::createModelMatrix(
+	graphics::EntityInstanceData instance = {};
+	instance.posOfCurrentChunk = transform->position().chunk().toFloat();
+	instance.localTransform = math::createModelMatrix(
 		transform->position().local().toFloat() + transform->position().offset(),
 		math::Quaternion::FromAxisAngle(math::V3_UP, transform->orientation().euler().y()),
 		transform->size()
 	);
-	renderMesh->instanceHandle().markDirty();
+	renderMesh->instanceHandle().owner<graphics::EntityInstanceBuffer>()->setData(
+		renderMesh->instanceHandle(), instance
+	);
 }
 
 void RenderEntities::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -152,9 +154,16 @@ void RenderEntities::recordView(graphics::Command *command, graphics::Descriptor
 	
 	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, textureDescriptor.get() });
 	command->bindPipeline(this->mpPipeline);
+	
 	renderMesh->modelHandle().get()->bindBuffers(command);
-	command->bindVertexBuffers(1, { renderMesh->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer() });
-	command->draw(0, renderMesh->modelHandle().get()->indexCount(), 0, ui32(uIndex(renderMesh->instanceHandle())), 1);
+	
+	auto* instanceBuffer = renderMesh->instanceHandle().owner<graphics::EntityInstanceBuffer>()->buffer();
+	command->bindVertexBuffers(1, { instanceBuffer });
+
+	command->draw(
+		0, renderMesh->modelHandle().get()->indexCount(), 0,
+		ui32(uIndex(renderMesh->instanceHandle())), 1
+	);
 }
 
 void RenderEntities::destroyRenderChain()

@@ -36,6 +36,8 @@ public:
 	void setDevice(std::weak_ptr<GraphicsDevice> device);
 	void create();
 
+	void setData(DynamicHandle<EntityInstanceData> const& handle, EntityInstanceData const& data);
+
 	bool hasChanges() const;
 	void commitToBuffer(graphics::CommandPool* transientPool);
 
@@ -45,7 +47,6 @@ public:
 	DynamicHandle<EntityInstanceData> createHandle() override;
 	EntityInstanceData* get(uIndex const& idx) override;
 	void destroyHandle(uIndex const& idx) override;
-	void markDirty(uIndex const& idx);
 
 private:
 	static constexpr ui32 instanceBufferCount() { return ECS_MAX_ENTITY_COUNT; }

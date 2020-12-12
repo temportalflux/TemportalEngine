@@ -1,16 +1,5 @@
 {
 	"type": "pipeline",
 	"shader-vert": "shader:assets/render/entity/RenderEntityVertex.te-asset",
-	"shader-frag": "shader:assets/render/entity/RenderEntityFragment.te-asset",
-	"descriptorGroups": [
-		{
-			"descriptors": [
-				{
-					"id": "texture",
-					"type": 1,
-					"stage": 16
-				}
-			]
-		}
-	]
+	"shader-frag": "shader:assets/render/entity/RenderEntityFragment.te-asset"
 }

@@ -10,6 +10,8 @@ struct SimpleModel
 {
 	std::vector<ModelVertex> vertices;
 	std::vector<ui32> indices;
+
+	ui32 pushVertex(ModelVertex const& vertex);
 };
 
 SimpleModel createIcosphere();

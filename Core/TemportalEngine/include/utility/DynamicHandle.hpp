@@ -12,7 +12,6 @@ public:
 	virtual DynamicHandle<TValue> createHandle() = 0;
 	virtual TValue* get(uIndex const& idx) = 0;
 	virtual void destroyHandle(uIndex const& idx) = 0;
-	virtual void markDirty(uIndex const& idx) {}
 };
 
 template <typename TValue>
@@ -49,8 +48,6 @@ public:
 	}
 	TValue* operator*() const { return get(); }
 
-	void markDirty() const { this->mpOwner.lock()->markDirty(this->mIdx); }
-	
 	void destroy()
 	{
 		if (this->isValid())
