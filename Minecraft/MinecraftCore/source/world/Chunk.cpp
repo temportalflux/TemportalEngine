@@ -35,6 +35,14 @@ void WorldChunk::load()
 		[](game::BlockId const& id) { return std::optional<game::BlockId>(id); }
 	);
 
+	auto nextId = [allVoxelIdOptions](bool bIncludeNone) -> std::optional<game::BlockId>
+	{
+		uIndex min = bIncludeNone ? 0 : 1;
+		uIndex max = allVoxelIdOptions.size();
+		uIndex idIdx = (rand() % (max - min)) + min;
+		return allVoxelIdOptions[idIdx];
+	};
+
 	auto idCount = std::unordered_map<game::BlockId, uSize>();
 	for (auto const& id : allVoxelIdsSet)
 	{
@@ -45,10 +53,21 @@ void WorldChunk::load()
 	{
 		for (i32 z = 0; z < CHUNK_SIDE_LENGTH; ++z)
 		{
-			auto const& id = allVoxelIdOptions[(uSize)(rand() % allVoxelIdOptions.size())];
+			auto id = nextId(true);
 			this->setBlockId({ x, 0, z }, id);
 			if (id) idCount.at(*id)++;
 		}
+	}
+
+	for (uIndex i = 0; i < 8; ++i)
+	{
+		auto x = i % 2 == 0 ? rand() % CHUNK_SIDE_LENGTH : CHUNK_HALF_LENGTH;
+		auto y = (rand() % (CHUNK_SIDE_LENGTH - 4)) + 4;
+		auto z = i % 2 != 0 ? rand() % CHUNK_SIDE_LENGTH : CHUNK_HALF_LENGTH;
+
+		auto id = nextId(false);
+		this->setBlockId({ x, y, z }, id);
+		if (id) idCount.at(*id)++;
 	}
 
 	ChunkLog.log(LOG_INFO, "Chunk <%i, %i, %i> loaded with:", this->coordinate().x(), this->coordinate().y(), this->coordinate().z());
