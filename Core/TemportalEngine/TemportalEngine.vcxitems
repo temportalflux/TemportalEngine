@@ -28,7 +28,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\TextureSampler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
@@ -95,6 +94,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsSystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysX.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelSimple.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelVertex.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Mutex.c" />
@@ -105,7 +108,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -128,7 +130,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
@@ -226,6 +227,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsScene.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsSystem.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysX.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
@@ -239,6 +244,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\integer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
@@ -247,6 +253,5 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
   </ItemGroup>
 </Project>

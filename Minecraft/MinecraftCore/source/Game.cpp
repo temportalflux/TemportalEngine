@@ -32,20 +32,22 @@
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
+#include "physics/PhysicsSystem.hpp"
+#include "physics/PhysicsScene.hpp"
 #include "registry/VoxelType.hpp"
+#include "render/EntityInstanceBuffer.hpp"
 #include "render/MinecraftRenderer.hpp"
 #include "render/ModelSimple.hpp"
-#include "resource/ResourceManager.hpp"
-#include "world/BlockInstanceMap.hpp"
-#include "render/EntityInstanceBuffer.hpp"
-#include "render/VoxelModelManager.hpp"
-#include "render/VoxelGridRenderer.hpp"
 #include "render/TextureRegistry.hpp"
 #include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/model/SkinnedModelManager.hpp"
 #include "render/ui/UIRenderer.hpp"
+#include "render/VoxelGridRenderer.hpp"
+#include "render/VoxelModelManager.hpp"
+#include "resource/ResourceManager.hpp"
 #include "utility/StringUtils.hpp"
+#include "world/BlockInstanceMap.hpp"
 #include "world/World.hpp"
 
 #include <chrono>
@@ -151,6 +153,13 @@ void Game::init()
 	auto pEngine = engine::Engine::Get();
 
 	this->createVoxelTypeRegistry();
+
+	this->mpPhysics = std::make_shared<physics::System>();
+	this->mpPhysics->init(true);
+	this->mpSceneOverworld = std::make_shared<physics::Scene>();
+	this->mpSceneOverworld->setSystem(this->mpPhysics);
+	this->mpSceneOverworld->create();
+
 	if (this->requiresGraphics())
 	{
 		if (!this->initializeGraphics()) return;
@@ -181,6 +190,8 @@ void Game::uninit()
 		this->destroyRenderers();
 		this->destroyWindow();
 	}
+	this->mpSceneOverworld.reset();
+	this->mpPhysics.reset();
 	this->destroyVoxelTypeRegistry();
 }
 
@@ -803,6 +814,8 @@ void Game::update(f32 deltaTime)
 	}
 	
 	engine::Engine::Get()->update(deltaTime);
+	this->mpSceneOverworld->simulate(deltaTime);
+
 }
 
 // Runs on the render thread

@@ -43,9 +43,6 @@
     <Filter Include="cereal">
       <UniqueIdentifier>{ea5d7b31-cdd4-47e3-8a3b-c3e2e9522bee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="controller">
-      <UniqueIdentifier>{5eb93bd5-8d39-4a31-846c-b840d80d276f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ecs">
       <UniqueIdentifier>{f6d28b4f-41b3-4215-9226-bbbf3a2b7c4b}</UniqueIdentifier>
     </Filter>
@@ -69,6 +66,9 @@
     </Filter>
     <Filter Include="dataStructures">
       <UniqueIdentifier>{b7a2cca0-668b-4227-b804-20d3f812f070}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{079a48a5-7f37-4d2a-9679-9132fded65dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -224,11 +224,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\WorldObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\controller\Controller.cpp">
-      <Filter>controller</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp">
       <Filter>utility</Filter>
     </ClCompile>
@@ -315,7 +311,6 @@
       <Filter>asset</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelVertex.cpp">
       <Filter>render</Filter>
     </ClCompile>
@@ -333,6 +328,21 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp">
       <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp">
+      <Filter>dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsSystem.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysX.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\source\physics\PhysicsScene.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp">
+      <Filter>physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -568,14 +578,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
       <Filter>memory</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\WorldObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\controller\Controller.hpp">
-      <Filter>controller</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp">
@@ -693,7 +699,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelVertex.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -715,6 +720,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp">
       <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsSystem.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp">
+      <Filter>dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysX.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsScene.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\physics\PhysicsObject.hpp">
+      <Filter>physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

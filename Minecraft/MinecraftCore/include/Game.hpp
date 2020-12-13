@@ -31,6 +31,8 @@ FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 FORWARD_DEF(NS_GRAPHICS, class TextureRegistry);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
+FORWARD_DEF(NS_PHYSICS, class System);
+FORWARD_DEF(NS_PHYSICS, class Scene);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
@@ -70,6 +72,9 @@ public:
 
 private:
 	logging::Logger mProjectLog;
+
+	std::shared_ptr<physics::System> mpPhysics;
+	std::shared_ptr<physics::Scene> mpSceneOverworld;
 
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 

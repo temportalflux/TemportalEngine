@@ -69,7 +69,6 @@ Global
 		Core\TemportalEngineEditor\libs\imgui.vcxitems*{73b768d0-a7f2-46d0-8097-539bb96c7305}*SharedItemsImports = 9
 		Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems*{a48e2e14-7909-4a4e-9a1b-d6231fe8cfc2}*SharedItemsImports = 9
 		Core\TemportalEngine\libs\cereal.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
-		Core\TemportalEngine\libs\glm.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Core\TemportalEngine\libs\Optick.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Core\TemportalEngine\libs\vulkan.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4
 		Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems*{abde6299-5814-4811-91d4-5908ce699b57}*SharedItemsImports = 4

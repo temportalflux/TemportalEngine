@@ -20,6 +20,7 @@
 #define NS_MEMORY namespace memory {
 #define NS_NETWORK namespace network {
 #define NS_LOGGING namespace logging {
+#define NS_PHYSICS namespace physics {
 #define NS_THREAD namespace thread {
 #define NS_RENDER namespace render {
 #define NS_TASK namespace task {
