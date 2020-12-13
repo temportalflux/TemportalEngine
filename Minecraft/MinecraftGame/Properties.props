@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <EngineLibs>$(SolutionDir)Core\TemportalEngine\libs\</EngineLibs>
-    <PhysXBin>$(SolutionDir)Core\TemportalEngine\libs\PhysX\physx\bin\win.x86_$(PlatformArchitecture).vc$(PlatformToolsetVersion).mt\checked\</PhysXBin>
+    <PhysXBin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\PhysX</PhysXBin>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />

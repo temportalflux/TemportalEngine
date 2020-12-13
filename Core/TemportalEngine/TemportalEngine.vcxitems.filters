@@ -338,12 +338,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysX.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\source\physics\PhysicsScene.cpp">
-      <Filter>physics</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -736,8 +734,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\physics\PhysicsObject.hpp">
-      <Filter>physics</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp" />
   </ItemGroup>
 </Project>

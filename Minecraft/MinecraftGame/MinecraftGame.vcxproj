@@ -145,9 +145,8 @@
       </Outputs>
     </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(PhysXBin)PhysXCommon_$(PlatformArchitecture).dll" "$(OutputPath)"
-copy /Y "$(PhysXBin)PhysX_$(PlatformArchitecture).dll" "$(OutputPath)"
-copy /Y "$(PhysXBin)PhysXFoundation_$(PlatformArchitecture).dll" "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -183,9 +182,8 @@ copy /Y "$(PhysXBin)PhysXFoundation_$(PlatformArchitecture).dll" "$(OutputPath)"
       </Outputs>
     </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(PhysXBin)PhysXCommon_$(PlatformArchitecture).dll" "$(OutputPath)"
-copy /Y "$(PhysXBin)PhysX_$(PlatformArchitecture).dll" "$(OutputPath)"
-copy /Y "$(PhysXBin)PhysXFoundation_$(PlatformArchitecture).dll" "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
