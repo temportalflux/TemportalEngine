@@ -1,7 +1,8 @@
 #include "physics/PhysicsScene.hpp"
 
-#include "physics/PhysX.hpp"
+#include "physics/PhysicsRigidBody.hpp"
 #include "physics/PhysicsSystem.hpp"
+#include "physics/PhysX.hpp"
 #include "utility/Casting.hpp"
 
 using namespace physics;
@@ -9,6 +10,7 @@ using namespace physics;
 Scene::Scene()
 	: mGravity(math::V3_UP * -9.806f)
 	, mSimulationFrequency(1.0f / 60.0f), mTimeSinceLastSimulate(0.0f)
+	, mpInternal(nullptr)
 {
 }
 
@@ -37,6 +39,13 @@ math::Vector3 const& Scene::gravity() const { return this->mGravity; }
 Scene& Scene::setSimulationStep(f32 const& frequency)
 {
 	this->mSimulationFrequency = frequency;
+	return *this;
+}
+
+Scene& Scene::addActor(RigidBody *pBody)
+{
+	auto pScene = as<physx::PxScene>(this->mpInternal);
+	pScene->addActor(*extract<physx::PxRigidBody>(pBody));
 	return *this;
 }
 

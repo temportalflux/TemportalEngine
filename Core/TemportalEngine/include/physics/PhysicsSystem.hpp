@@ -5,6 +5,9 @@
 #include "utility/Version.hpp"
 
 NS_PHYSICS
+class Material;
+class RigidBody;
+class Shape;
 class Scene;
 
 class System : public std::enable_shared_from_this<System>
@@ -18,6 +21,10 @@ public:
 	System& init(bool bUseDebugger);
 	
 	void* createScene(Scene *pScene);
+	void* createMaterial(f32 staticFriction, f32 dynamicFriction, f32 restitution);
+	void* createShape(Shape *pShape);
+	void* createRigidBody(RigidBody *pBody);
+	void* createRigidBodyPlane(RigidBody *pBody, Shape *pShape);
 
 private:
 	Version const mVersion;

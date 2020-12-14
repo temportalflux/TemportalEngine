@@ -32,8 +32,11 @@
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
-#include "physics/PhysicsSystem.hpp"
+#include "physics/PhysicsMaterial.hpp"
+#include "physics/PhysicsRigidBody.hpp"
 #include "physics/PhysicsScene.hpp"
+#include "physics/PhysicsShape.hpp"
+#include "physics/PhysicsSystem.hpp"
 #include "registry/VoxelType.hpp"
 #include "render/EntityInstanceBuffer.hpp"
 #include "render/MinecraftRenderer.hpp"
@@ -604,6 +607,30 @@ void Game::createScene()
 			this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
 		}
 	}
+
+	this->mpDefaultPhysMaterial = std::make_shared<physics::Material>();
+	this->mpDefaultPhysMaterial->setSystem(this->mpPhysics);
+	this->mpDefaultPhysMaterial->create();
+
+	this->mpBodyPlane = std::make_shared<physics::RigidBody>();
+	this->mpBodyPlane->setSystem(this->mpPhysics);
+	this->mpBodyPlane->setIsStatic(true).createPlane(math::V3_UP, -1.0f, this->mpDefaultPhysMaterial.get());
+	this->mpSceneOverworld->addActor(this->mpBodyPlane.get());
+
+	this->mpBodyBall = std::make_shared<physics::RigidBody>();
+	this->mpBodyBall->setSystem(this->mpPhysics);
+	this->mpBodyBall->setInitialTransform(math::V3_UP * 10 + math::V3_RIGHT * -20, math::Quaternion::Identity);
+	this->mpBodyBall->create();
+	{
+		auto& shape = physics::Shape().setAsSphere(1.0f).setMaterial(this->mpDefaultPhysMaterial.get());
+		shape.setSystem(this->mpPhysics);
+		shape.create();
+		this->mpBodyBall->attachShape(&shape);
+	}
+	this->mpBodyBall->setLinearVelocity(math::V3_RIGHT * 10);
+	this->mpSceneOverworld->addActor(this->mpBodyBall.get());
+
+
 }
 
 void Game::createLocalPlayer()
@@ -759,6 +786,10 @@ void Game::createEntities()
 
 void Game::destroyScene()
 {
+	this->mpBodyBall.reset();
+	this->mpBodyPlane.reset();
+	this->mpDefaultPhysMaterial.reset();
+
 	this->mSpawnedEntities.clear();
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();

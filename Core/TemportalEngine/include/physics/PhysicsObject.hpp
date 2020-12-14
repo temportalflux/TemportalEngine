@@ -12,6 +12,7 @@ public:
 	void setSystem(std::weak_ptr<physics::System> const& pSystem);
 	std::shared_ptr<physics::System> system() const;
 	virtual void create() = 0;
+	bool hasSystem() const { return !this->mpSystem.expired(); }
 
 private:
 	std::weak_ptr<physics::System> mpSystem;

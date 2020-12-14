@@ -13,11 +13,11 @@ dlls=(
 	"PhysXCommon_$PlatformArchitecture.dll" "PhysX_$PlatformArchitecture.dll" "PhysXFoundation_$PlatformArchitecture.dll"
 )
 libs=(
-	"PhysXCommon_$PlatformArchitecture.lib"
-	"PhysX_$PlatformArchitecture.lib"
-	"PhysXFoundation_$PlatformArchitecture.lib"
-	"PhysXPvdSDK_static_$PlatformArchitecture.lib"
-	"PhysXExtensions_static_$PlatformArchitecture.lib"
+	"PhysXCommon_$PlatformArchitecture"
+	"PhysX_$PlatformArchitecture"
+	"PhysXFoundation_$PlatformArchitecture"
+	"PhysXPvdSDK_static_$PlatformArchitecture"
+	"PhysXExtensions_static_$PlatformArchitecture"
 )
 
 # autoselect the VS17-win<32|64>-v141 option
@@ -35,7 +35,8 @@ physxLibOut="$binaries/PhysX"
 mkdir -p "$physxLibOut"
 for libName in "${libs[@]}"
 do
-	cp "$physxBin/$libName" "$physxLibOut/$libName"
+	cp "$physxBin/$libName.lib" "$physxLibOut/"
+	cp "$physxBin/$libName.pdb" "$physxLibOut/"
 done
 
 projectOut="$binaries/$projectName"

@@ -3,6 +3,7 @@
 #include "physics/PhysicsObject.hpp"
 
 NS_PHYSICS
+class RigidBody;
 
 class Scene : public physics::Object
 {
@@ -15,8 +16,9 @@ public:
 
 	Scene& setGravity(math::Vector3 const& gravity);
 	math::Vector3 const& gravity() const;
-
 	Scene& setSimulationStep(f32 const& frequency);
+
+	Scene& addActor(RigidBody *pBody);
 
 	void simulate(f32 const& deltaTime);
 

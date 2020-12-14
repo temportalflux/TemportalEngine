@@ -28,5 +28,6 @@ public:
 };
 
 physx::PxVec3 toPhysX(math::Vector3 const& v);
+physx::PxQuat toPhysX(math::Quaternion const& v);
 
 NS_END

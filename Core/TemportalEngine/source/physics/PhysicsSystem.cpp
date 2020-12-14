@@ -2,7 +2,12 @@
 
 #include "Engine.hpp"
 #include "physics/PhysX.hpp"
+#include "physics/PhysicsMaterial.hpp"
 #include "physics/PhysicsScene.hpp"
+#include "physics/PhysicsShape.hpp"
+#include "physics/PhysicsRigidbody.hpp"
+#include "utility/Casting.hpp"
+
 #include <extensions/PxDefaultCpuDispatcher.h>
 #include <extensions/PxDefaultSimulationFilterShader.h>
 
@@ -112,4 +117,79 @@ void* physics::System::createScene(Scene *pScene)
 	assert(desc.isValid());
 	
 	return pPhysX->createScene(desc);
+}
+
+void* physics::System::createMaterial(f32 staticFriction, f32 dynamicFriction, f32 restitution)
+{
+	auto pPhysX = this->pxphysx<physx::PxPhysics>();
+	return pPhysX->createMaterial(staticFriction, dynamicFriction, restitution);
+}
+
+void* physics::System::createShape(Shape *pShape)
+{
+	assert(pShape->mpMaterial != nullptr);
+	auto pPhysX = this->pxphysx<physx::PxPhysics>();
+	auto pMaterial = as<physx::PxMaterial>(pShape->mpMaterial->mpInternal);
+	switch (pShape->type())
+	{
+		case EShapeType::eSphere:
+		{
+			return pPhysX->createShape(
+				physx::PxSphereGeometry(pShape->mTypeData.sphere.radius),
+				*pMaterial
+			);
+		}
+		case EShapeType::ePlane:
+			assert(false);
+			return nullptr;
+		case EShapeType::eCapsule:
+			assert(false);
+			return nullptr;
+		case EShapeType::eBox:
+		{
+			return pPhysX->createShape(
+				physx::PxBoxGeometry(physics::toPhysX(pShape->mTypeData.box.halfExtents)),
+				*pMaterial
+			);
+		}
+		case EShapeType::eConvexMesh:
+		case EShapeType::eTriangleMesh:
+		case EShapeType::eHeightField:
+		default:
+			assert(false);
+			return nullptr;
+	}
+}
+
+void* physics::System::createRigidBody(RigidBody *pBody)
+{
+	auto pPhysX = this->pxphysx<physx::PxPhysics>();
+	auto transform = physx::PxTransform(
+		physics::toPhysX(pBody->mInitialPosition),
+		physics::toPhysX(pBody->mInitialRotation)
+	);
+	if (pBody->isStatic())
+	{
+		return pPhysX->createRigidStatic(transform);
+	}
+	else
+	{
+		return pPhysX->createRigidDynamic(transform);
+	}
+}
+
+void* physics::System::createRigidBodyPlane(RigidBody *pBody, Shape *pShape)
+{
+	assert(pShape->type() == EShapeType::ePlane);
+	assert(pShape->mpMaterial != nullptr && pShape->mpMaterial->mpInternal != nullptr);
+	auto pPhysX = this->pxphysx<physx::PxPhysics>();
+	auto pMaterial = as<physx::PxMaterial>(pShape->mpMaterial->mpInternal);
+	return physx::PxCreatePlane(
+		*pPhysX,
+		physx::PxPlane(
+			physics::toPhysX(pShape->mTypeData.plane.normal),
+			pShape->mTypeData.plane.distance
+		),
+		*pMaterial
+	);
 }

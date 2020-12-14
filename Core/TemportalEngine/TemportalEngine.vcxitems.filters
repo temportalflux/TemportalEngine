@@ -341,7 +341,18 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsShape.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsRigidBody.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsMaterial.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -734,6 +745,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsShape.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsRigidBody.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsMaterial.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -94,7 +94,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsMaterial.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsRigidBody.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsShape.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsSystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysX.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp" />
@@ -227,8 +230,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsMaterial.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsRigidBody.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsScene.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsShape.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsSystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysX.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp" />
