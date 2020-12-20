@@ -657,10 +657,13 @@ void Game::createLocalPlayer()
 
 	this->mpEntityLocalPlayer = ecs.entities().create();
 
+	auto position = world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH });
+	auto globalPos = (position.chunk() * CHUNK_SIDE_LENGTH).toFloat() + position.local().toFloat() + position.offset();
+
 	// Add Transform
 	{
 		auto transform = components.create<ecs::component::CoordinateTransform>();
-		transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH }));
+		transform->setPosition(position);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		this->mpEntityLocalPlayer->addComponent(transform);
 	}
@@ -704,9 +707,11 @@ void Game::createLocalPlayer()
 
 	{
 		auto component = components.create<ecs::component::PhysicsController>();
+		auto extents = math::Vector3{ 0.4f, 0.9f, 0.3f };
 		component->controller()
 			.setScene(this->mpSceneOverworld)
-			.setAsBox(math::Vector3{ 0.8f, 1.8f, 0.6f })
+			.setAsBox(extents)
+			.setCenterPosition({ globalPos.x(), globalPos.y() + extents.y(), globalPos.z() })
 			.setMaterial(this->mpPlayerPhysicsMaterial.get())
 			.create()
 			;

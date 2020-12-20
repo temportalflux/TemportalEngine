@@ -43,13 +43,19 @@ Controller& Controller::setScene(std::weak_ptr<physics::Scene> pScene)
 Controller& Controller::setAsBox(math::Vector3 const& halfExtents)
 {
 	this->mDescription.type = physx::PxControllerShapeType::eBOX;
-	this->mDescription.typed.box.halfExtents = halfExtents;	
+	this->mDescription.typed.box.halfExtents = halfExtents;
 	return *this;
 }
 
 Controller& Controller::setMaterial(physics::Material *pMaterial)
 {
 	this->mDescription.pMaterial = pMaterial;
+	return *this;
+}
+
+Controller& Controller::setCenterPosition(math::Vector<f64, 3> const& position)
+{
+	this->mDescription.position = position;
 	return *this;
 }
 

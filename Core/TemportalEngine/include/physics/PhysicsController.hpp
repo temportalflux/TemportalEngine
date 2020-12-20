@@ -18,7 +18,9 @@ public:
 	Controller& setScene(std::weak_ptr<physics::Scene> pScene);
 	Controller& setAsBox(math::Vector3 const& halfExtents);
 	Controller& setMaterial(physics::Material *pMaterial);
+	Controller& setCenterPosition(math::Vector<f64, 3> const& position);
 	Controller& create();
+	
 
 public:
 	struct BoxType
