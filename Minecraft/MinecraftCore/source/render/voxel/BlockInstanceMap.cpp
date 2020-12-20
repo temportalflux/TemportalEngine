@@ -694,11 +694,6 @@ CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& 
 	return this->mCommittedCategories.at(id);
 }
 
-TOnChunkLoadingListener BlockInstanceBuffer::onLoadingChunkEvent()
-{
-	return std::bind(&BlockInstanceBuffer::onLoadingChunk, this, std::placeholders::_1);
-}
-
 void BlockInstanceBuffer::onLoadingChunk(math::Vector3Int const& coordinate)
 {
 	auto coordinates = std::vector<world::Coordinate>();
@@ -711,11 +706,6 @@ void BlockInstanceBuffer::onLoadingChunk(math::Vector3Int const& coordinate)
 	this->unlock();
 }
 
-TOnChunkLoadingListener BlockInstanceBuffer::onUnloadingChunkEvent()
-{
-	return std::bind(&BlockInstanceBuffer::onUnloadingChunk, this, std::placeholders::_1);
-}
-
 void BlockInstanceBuffer::onUnloadingChunk(math::Vector3Int const& coordinate)
 {
 	auto coordinates = std::vector<world::Coordinate>();
@@ -726,11 +716,6 @@ void BlockInstanceBuffer::onUnloadingChunk(math::Vector3Int const& coordinate)
 	this->lock();
 	this->unallocateCoordinates(coordinates);
 	this->unlock();
-}
-
-TOnVoxelsChangedListener BlockInstanceBuffer::onVoxelsChangedEvent()
-{
-	return std::bind(&BlockInstanceBuffer::onVoxelsChanged, this, std::placeholders::_1);
 }
 
 void BlockInstanceBuffer::onVoxelsChanged(TChangedVoxelsList const& changes)

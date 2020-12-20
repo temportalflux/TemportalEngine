@@ -100,5 +100,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp" />
   </ItemGroup>
 </Project>

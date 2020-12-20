@@ -284,5 +284,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelModelManager.cpp">
       <Filter>render\voxel</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

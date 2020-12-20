@@ -111,7 +111,7 @@ private:
 
 };
 
-class BlockInstanceBuffer
+class BlockInstanceBuffer : public WorldEventListener
 {
 
 public:
@@ -154,12 +154,11 @@ public:
 
 	CategoryMeta const& getDataForVoxelId(game::BlockId const& id) const;
 
-	TOnChunkLoadingListener onLoadingChunkEvent();
-	void onLoadingChunk(math::Vector3Int const& coordinate);
-	TOnChunkLoadingListener onUnloadingChunkEvent();
-	void onUnloadingChunk(math::Vector3Int const& coordinate);
-	TOnVoxelsChangedListener onVoxelsChangedEvent();
-	void onVoxelsChanged(TChangedVoxelsList const& changes);
+protected:
+
+	void onLoadingChunk(math::Vector3Int const& coordinate) override;
+	void onUnloadingChunk(math::Vector3Int const& coordinate) override;
+	void onVoxelsChanged(TChangedVoxelsList const& changes) override;
 
 private:
 
