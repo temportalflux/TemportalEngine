@@ -30,6 +30,8 @@ private:
 	f32 mSimulationFrequency;
 	f32 mTimeSinceLastSimulate;
 
+	/*physx::PxControllerManager*/ void* mpControllerManager;
+
 };
 
 NS_END

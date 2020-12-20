@@ -16,6 +16,11 @@ Scene::Scene()
 
 Scene::~Scene()
 {
+	if (this->mpControllerManager != nullptr)
+	{
+		as<physx::PxControllerManager>(this->mpControllerManager)->release();
+		this->mpControllerManager = nullptr;
+	}
 	if (this->mpInternal != nullptr)
 	{
 		as<physx::PxScene>(this->mpInternal)->release();
@@ -26,6 +31,7 @@ Scene::~Scene()
 void Scene::create()
 {
 	this->mpInternal = this->system()->createScene(this);
+	this->mpControllerManager = PxCreateControllerManager(*as<physx::PxScene>(this->mpInternal));
 }
 
 Scene& Scene::setGravity(math::Vector3 const& gravity)

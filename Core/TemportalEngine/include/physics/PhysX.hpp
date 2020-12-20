@@ -7,6 +7,7 @@
 #endif
 #include "PxPhysicsAPI.h"
 #include "extensions/PxDefaultAllocator.h"
+#include "characterkinematic/PxControllerManager.h"
 #ifndef NDEBUG
 #undef _DEBUG
 #endif
