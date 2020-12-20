@@ -32,6 +32,7 @@
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
+#include "physics/ChunkCollisionManager.hpp"
 #include "physics/PhysicsMaterial.hpp"
 #include "physics/PhysicsRigidBody.hpp"
 #include "physics/PhysicsScene.hpp"
@@ -159,9 +160,6 @@ void Game::init()
 
 	this->mpPhysics = std::make_shared<physics::System>();
 	this->mpPhysics->init(true);
-	this->mpSceneOverworld = std::make_shared<physics::Scene>();
-	this->mpSceneOverworld->setSystem(this->mpPhysics);
-	this->mpSceneOverworld->create();
 
 	if (this->requiresGraphics())
 	{
@@ -193,7 +191,6 @@ void Game::uninit()
 		this->destroyRenderers();
 		this->destroyWindow();
 	}
-	this->mpSceneOverworld.reset();
 	this->mpPhysics.reset();
 	this->destroyVoxelTypeRegistry();
 }
@@ -570,10 +567,17 @@ void Game::createWorld()
 {
 	srand((ui32)time(0));
 
+	this->mpSceneOverworld = std::make_shared<physics::Scene>();
+	this->mpSceneOverworld->setSystem(this->mpPhysics);
+	this->mpSceneOverworld->create();
+
+	this->mpChunkCollisionManager = std::make_shared<physics::ChunkCollisionManager>(
+		this->mpPhysics, this->mpSceneOverworld
+	);
+
 	this->mpWorld = std::make_shared<world::World>();
-	this->mpWorld->OnLoadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onLoadingChunkEvent());
-	this->mpWorld->OnUnloadingChunk.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onUnloadingChunkEvent());
-	this->mpWorld->OnVoxelsChanged.bind(this->mpVoxelInstanceBuffer, this->mpVoxelInstanceBuffer->onVoxelsChangedEvent());
+	if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
+	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
 	
 	this->createScene();
 	this->createLocalPlayer();
@@ -591,6 +595,9 @@ void Game::createWorld()
 void Game::destroyWorld()
 {
 	this->destroyScene();
+	this->mpChunkCollisionManager.reset();
+	this->mpSceneOverworld.reset();
+	this->mpWorld.reset();
 }
 
 void Game::createScene()
@@ -608,6 +615,7 @@ void Game::createScene()
 		}
 	}
 
+	/*
 	this->mpDefaultPhysMaterial = std::make_shared<physics::Material>();
 	this->mpDefaultPhysMaterial->setSystem(this->mpPhysics);
 	this->mpDefaultPhysMaterial->create();
@@ -629,7 +637,7 @@ void Game::createScene()
 	}
 	this->mpBodyBall->setLinearVelocity(math::V3_RIGHT * 10);
 	this->mpSceneOverworld->addActor(this->mpBodyBall.get());
-
+	//*/
 
 }
 
@@ -793,7 +801,6 @@ void Game::destroyScene()
 	this->mSpawnedEntities.clear();
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();
-	this->mpWorld.reset();
 }
 
 void Game::bindInput()

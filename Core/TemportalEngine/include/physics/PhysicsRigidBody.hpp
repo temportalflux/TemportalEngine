@@ -13,6 +13,7 @@ class RigidBody : public Object
 public:
 	RigidBody();
 	~RigidBody();
+	void release();
 
 	// TODO: Figure out some way to add a reference frame to physx so that demo/MC chunk coordinates arent combined with the local position
 	RigidBody& setInitialTransform(math::Vector3 const& position, math::Quaternion const& rotation);
@@ -22,6 +23,9 @@ public:
 	void create() override;
 	void createPlane(Shape *pShape);
 	void createPlane(math::Vector3 const& normal, f32 const& distance, Material *pMaterial);
+
+	bool hasValue() const { return this->mpInternal != nullptr; }
+	operator bool() const { return hasValue(); }
 	void* get() const { return this->mpInternal; }
 
 	RigidBody& attachShape(Shape *pShape);

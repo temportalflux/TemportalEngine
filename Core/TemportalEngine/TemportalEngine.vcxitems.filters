@@ -757,5 +757,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

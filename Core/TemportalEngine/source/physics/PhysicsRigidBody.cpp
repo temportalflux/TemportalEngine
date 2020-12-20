@@ -13,6 +13,11 @@ RigidBody::RigidBody() : mbIsStatic(false), mpInternal(nullptr)
 
 RigidBody::~RigidBody()
 {
+	release();
+}
+
+void RigidBody::release()
+{
 	if (this->mpInternal != nullptr)
 	{
 		assert(hasSystem());
@@ -59,6 +64,7 @@ void RigidBody::createPlane(math::Vector3 const& normal, f32 const& distance, Ma
 
 RigidBody& RigidBody::attachShape(Shape *pShape)
 {
+	assert(this->mpInternal != nullptr);
 	assert(pShape != nullptr && pShape->isValid());
 	// planes can only be applied to static rigid bodies
 	assert(pShape->type() != EShapeType::ePlane || this->isStatic());

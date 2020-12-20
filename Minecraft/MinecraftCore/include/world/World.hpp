@@ -18,6 +18,7 @@ public:
 
 	TOnChunkLoadingEvent OnLoadingChunk, OnUnloadingChunk;
 	TOnVoxelsChangedEvent OnVoxelsChanged;
+	void addEventListener(std::shared_ptr<WorldEventListener> listener);
 
 	void loadChunk(math::Vector3Int const &coordinate);
 	void reloadChunk(math::Vector3Int const &coordinate);

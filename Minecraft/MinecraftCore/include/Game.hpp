@@ -35,6 +35,7 @@ FORWARD_DEF(NS_PHYSICS, class Material);
 FORWARD_DEF(NS_PHYSICS, class RigidBody);
 FORWARD_DEF(NS_PHYSICS, class Scene);
 FORWARD_DEF(NS_PHYSICS, class System);
+FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
@@ -77,6 +78,8 @@ private:
 
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Scene> mpSceneOverworld;
+	std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager; // for Overworld only
+
 #pragma region DemoScene
 	std::shared_ptr<physics::Material> mpDefaultPhysMaterial;
 	std::shared_ptr<physics::RigidBody> mpBodyPlane;

@@ -2,6 +2,13 @@
 
 using namespace world;
 
+void World::addEventListener(std::shared_ptr<WorldEventListener> listener)
+{
+	this->OnLoadingChunk.bind(listener, listener->onLoadingChunkEvent());
+	this->OnUnloadingChunk.bind(listener, listener->onUnloadingChunkEvent());
+	this->OnVoxelsChanged.bind(listener, listener->onVoxelsChangedEvent());
+}
+
 void World::loadChunk(math::Vector3Int const &coordinate)
 {
 	this->OnLoadingChunk.broadcast(coordinate);

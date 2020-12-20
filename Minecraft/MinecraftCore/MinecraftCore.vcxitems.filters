@@ -161,7 +161,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp">
       <Filter>physics</Filter>
     </ClInclude>
@@ -173,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelModelManager.hpp">
       <Filter>render\voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp">
+      <Filter>ecs\view</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -271,7 +273,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp">
       <Filter>ecs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\ChunkCollisionManager.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -286,6 +287,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp">
       <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp">
+      <Filter>ecs\view</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

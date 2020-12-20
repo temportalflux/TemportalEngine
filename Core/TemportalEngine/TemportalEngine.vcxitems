@@ -251,6 +251,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\math.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
