@@ -16,6 +16,7 @@ public:
 	~Material();
 
 	void create() override;
+	void* get() const { return this->mpInternal; }
 
 private:
 	f32 mStaticFriction;

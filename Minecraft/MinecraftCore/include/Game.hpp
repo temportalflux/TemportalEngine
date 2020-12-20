@@ -79,6 +79,7 @@ private:
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Scene> mpSceneOverworld;
 	std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager; // for Overworld only
+	std::shared_ptr<physics::Material> mpPlayerPhysicsMaterial;
 
 #pragma region DemoScene
 	std::shared_ptr<physics::Material> mpDefaultPhysMaterial;

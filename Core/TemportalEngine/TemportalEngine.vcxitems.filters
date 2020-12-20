@@ -353,6 +353,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsScene.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsController.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -759,6 +765,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsController.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsController.hpp">
+      <Filter>ecs\component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

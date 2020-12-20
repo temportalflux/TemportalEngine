@@ -18,6 +18,7 @@
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
 #include "ecs/component/ComponentPhysicsBody.hpp"
+#include "ecs/component/ComponentPhysicsController.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewDebugHUD.hpp"
@@ -124,6 +125,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
+	ecs->components().registerType<ecs::component::PhysicsController>("PhysicsController");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::PlayerCamera>();
 	ecs->views().registerType<ecs::view::DebugHUD>();
@@ -579,6 +581,10 @@ void Game::createWorld()
 	if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
 	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
 	
+	this->mpPlayerPhysicsMaterial = std::make_shared<physics::Material>();
+	this->mpPlayerPhysicsMaterial->setSystem(this->mpPhysics);
+	this->mpPlayerPhysicsMaterial->create();
+
 	this->createScene();
 	this->createLocalPlayer();
 	this->createEntities();
@@ -595,6 +601,7 @@ void Game::createWorld()
 void Game::destroyWorld()
 {
 	this->destroyScene();
+	this->mpPlayerPhysicsMaterial.reset();
 	this->mpChunkCollisionManager.reset();
 	this->mpSceneOverworld.reset();
 	this->mpWorld.reset();
@@ -695,6 +702,16 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addComponent(mesh);
 	}
 
+	{
+		auto component = components.create<ecs::component::PhysicsController>();
+		component->controller()
+			.setScene(this->mpSceneOverworld)
+			.setAsBox(math::Vector3{ 0.8f, 1.8f, 0.6f })
+			.setMaterial(this->mpPlayerPhysicsMaterial.get())
+			.create()
+			;
+		this->mpEntityLocalPlayer->addComponent(component);
+	}
 	{
 		auto body = components.create<ecs::component::PhysicsBody>();
 		this->mpEntityLocalPlayer->addComponent(body);

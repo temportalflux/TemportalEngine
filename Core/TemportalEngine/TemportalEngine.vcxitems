@@ -32,6 +32,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\Entity.cpp" />
@@ -94,6 +95,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsMaterial.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsRigidBody.cpp" />
@@ -140,6 +142,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsController.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp" />
@@ -230,6 +233,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsController.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsMaterial.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsObject.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsRigidBody.hpp" />

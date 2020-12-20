@@ -1,6 +1,7 @@
 #pragma once
 
 #include "physics/PhysicsObject.hpp"
+#include "physics/PhysicsController.hpp"
 
 NS_PHYSICS
 class RigidBody;
@@ -19,6 +20,10 @@ public:
 	Scene& setSimulationStep(f32 const& frequency);
 
 	Scene& addActor(RigidBody *pBody);
+
+	void createController(Controller &controller);
+	ui32 getControllerCount() const;
+	void getController(ui32 const& index, Controller &out) const;
 
 	void simulate(f32 const& deltaTime);
 
