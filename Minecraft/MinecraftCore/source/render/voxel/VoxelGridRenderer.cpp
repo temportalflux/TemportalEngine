@@ -1,4 +1,4 @@
-#include "render/VoxelGridRenderer.hpp"
+#include "render/voxel/VoxelGridRenderer.hpp"
 
 #include "Model.hpp"
 #include "StitchedTexture.hpp"
@@ -10,8 +10,8 @@
 #include "graphics/assetHelpers.hpp"
 
 #include "registry/VoxelType.hpp"
-#include "render/VoxelModelManager.hpp"
-#include "world/BlockInstanceMap.hpp"
+#include "render/voxel/VoxelModelManager.hpp"
+#include "render/voxel/BlockInstanceMap.hpp"
 
 using namespace graphics;
 

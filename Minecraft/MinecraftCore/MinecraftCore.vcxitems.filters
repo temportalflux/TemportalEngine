@@ -43,6 +43,12 @@
     <Filter Include="resource">
       <UniqueIdentifier>{1c353150-2ce9-419f-b715-64000a601d1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{0daef5e5-6da1-43f9-928e-716bbbf31a03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="render\voxel">
+      <UniqueIdentifier>{66a63ee6-c5b0-42d6-af33-cdd130b1f2b0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
@@ -79,15 +85,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp">
       <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelModelManager.hpp">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\VoxelGridRenderer.hpp">
-      <Filter>render</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockInstanceMap.hpp">
-      <Filter>world</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\LineRenderer.hpp">
       <Filter>render\line</Filter>
@@ -165,6 +162,18 @@
       <Filter>ecs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp">
+      <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\BlockInstanceMap.hpp">
+      <Filter>render\voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelGridRenderer.hpp">
+      <Filter>render\voxel</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelModelManager.hpp">
+      <Filter>render\voxel</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -189,15 +198,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
       <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelModelManager.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\VoxelGridRenderer.cpp">
-      <Filter>render</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\BlockInstanceMap.cpp">
-      <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\LineRenderer.cpp">
       <Filter>render\line</Filter>
@@ -272,5 +272,17 @@
       <Filter>ecs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\ChunkCollisionManager.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\BlockInstanceMap.cpp">
+      <Filter>render\voxel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelGridRenderer.cpp">
+      <Filter>render\voxel</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelModelManager.cpp">
+      <Filter>render\voxel</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

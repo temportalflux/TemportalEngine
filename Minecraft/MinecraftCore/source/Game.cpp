@@ -46,11 +46,11 @@
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/model/SkinnedModelManager.hpp"
 #include "render/ui/UIRenderer.hpp"
-#include "render/VoxelGridRenderer.hpp"
-#include "render/VoxelModelManager.hpp"
+#include "render/voxel/BlockInstanceMap.hpp"
+#include "render/voxel/VoxelGridRenderer.hpp"
+#include "render/voxel/VoxelModelManager.hpp"
 #include "resource/ResourceManager.hpp"
 #include "utility/StringUtils.hpp"
-#include "world/BlockInstanceMap.hpp"
 #include "world/World.hpp"
 
 #include <chrono>

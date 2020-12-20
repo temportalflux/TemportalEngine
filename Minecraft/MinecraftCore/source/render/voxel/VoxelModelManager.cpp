@@ -1,4 +1,4 @@
-#include "render/VoxelModelManager.hpp"
+#include "render/voxel/VoxelModelManager.hpp"
 
 #include "Engine.hpp"
 #include "logging/Logger.hpp"

@@ -1,4 +1,4 @@
-#include "world/BlockInstanceMap.hpp"
+#include "render/voxel/BlockInstanceMap.hpp"
 
 #include "graphics/Command.hpp"
 #include "graphics/CommandPool.hpp"
