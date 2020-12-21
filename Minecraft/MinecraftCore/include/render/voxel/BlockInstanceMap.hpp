@@ -19,6 +19,8 @@ NS_WORLD
 struct CategoryMeta
 {
 
+	std::optional<game::BlockId> id;
+
 	/**
 	 * A pointer to the underlying shared-buffer for all category values.
 	 */
@@ -135,15 +137,6 @@ public:
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	void createBuffer();
-
-	void allocateCoordinates(std::vector<world::Coordinate> const& coordinates);
-	void unallocateCoordinates(std::vector<world::Coordinate> const& coordinates);
-
-	/**
-	 * Changes an instance at `coordinate` from its current category to the `desiredVoxelId`.
-	 * Changes are prepared in CPU data until `commitToBuffer` is called.
-	 */
-	void changeVoxelId(world::Coordinate const& coordinate, std::optional<game::BlockId> const desiredVoxelId);
 	
 	bool hasChanges() const;
 
@@ -165,16 +158,39 @@ private:
 	// 80 bytes (5 vec4s)
 	struct ValueData
 	{
+		
 		/**
 		 * the coordinate of the chunk this block is in
 		 * 16 bytes (4 floats, 4 bytes per float)
 		 */
 		math::Vector3Padded posOfChunk;
+		
 		/**
 		 * the position of the block in the chunk, as well as any rotation on its local origin
 		 * 64 bytes (4 vec4s, 16 bytes per vec4 [4 floats, 4 bytes per float])
 		 */
 		math::Matrix4x4 model;
+
+		/**
+		 * Bit-field for if a given face of a normal block is visible or not.
+		 * [idx, bit] => meaning
+		 * [0, 0] => 1 if the left face is against an opaque block
+		 * [0, 1] => 1 if the right face is against an opaque block
+		 * [0, 2] => 1 if the down face is against an opaque block
+		 * [0, 3] => 1 if the up face is against an opaque block
+		 * [0, 4] => 1 if the back face is against an opaque block
+		 * [0, 5] => 1 if the front face is against an opaque block
+		 */
+		math::Vector4 flags;
+
+		/**
+		 * Marks a face as visible.
+		 * axis => 0 for x, 1 for y, 2 for z
+		 * direction => 1 for positive, -1 for negative
+		 * The `faceVisibility` will be set such that axis & direction determine the bit (axis 1, direction -1, is down/-y).
+		 */
+		void setFaceVisible(ui8 axis, ui8 direction, bool visible);
+
 	};
 
 	thread::MutexLock mMutex;
@@ -220,6 +236,20 @@ private:
 	 */
 	void copyInstanceData(uIndex const& src, uIndex const& dest);
 	void setInstanceData(uIndex const& idx, ValueData const *const data);
+
+	void allocateCoordinates(std::vector<world::Coordinate> const& coordinates);
+	void unallocateCoordinates(std::vector<world::Coordinate> const& coordinates);
+
+	/**
+	 * Changes an instance at `coordinate` from its current category to the `desiredVoxelId`.
+	 * Changes are prepared in CPU data until `commitToBuffer` is called.
+	 */
+	void changeVoxelId(world::Coordinate const& coordinate, std::optional<game::BlockId> const desiredVoxelId);
+
+	/**
+	 * Sets the face visibility of neighbors of `coordinate`.
+	 */
+	void setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsEmpty);
 
 };
 

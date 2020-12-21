@@ -67,12 +67,12 @@ Coordinate const Coordinate::operator-(Coordinate const &other) const
 
 Coordinate const Coordinate::operator+(math::Vector3Int const &other) const
 {
-	return *this + Coordinate(this->mChunkPosition, this->mBlockPosition + other);
+	return *this + Coordinate({}, other);
 }
 
 Coordinate const Coordinate::operator-(math::Vector3Int const &other) const
 {
-	return *this - Coordinate(this->mChunkPosition, this->mBlockPosition + other);
+	return *this - Coordinate({}, other);
 }
 
 bool Coordinate::operator<(Coordinate const& other) const

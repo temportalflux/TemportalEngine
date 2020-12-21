@@ -2,7 +2,7 @@
 
 #include "CoreInclude.hpp"
 
-#include "Model.hpp"
+#include "model/ModelVoxel.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "graphics/Buffer.hpp"
 
@@ -91,7 +91,7 @@ private:
 
 		TextureSetHandle textureSetHandle;
 
-		Model model;
+		ModelVoxel model;
 
 		/**
 		 * The index of the first value in the index buffer to render.
@@ -128,7 +128,7 @@ private:
 	std::optional<uIndex> findBestSuitedAtlas(math::Vector2UInt const &entrySize, uSize const count);
 	uIndex createAtlas(math::Vector2UInt const& entrySize);
 	void createModelBuffers(std::shared_ptr<graphics::GraphicsDevice> device, uSize modelVertexBufferSize, uSize modelIndexBufferSize);
-	Model createModel(VoxelTextureEntry::TextureSetHandle const& handle) const;
+	void createModel(VoxelTextureEntry::TextureSetHandle const& handle, ModelVoxel &out) const;
 
 	void createTextures();
 	void destroyTextures();

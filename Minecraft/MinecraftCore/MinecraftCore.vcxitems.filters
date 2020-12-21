@@ -55,9 +55,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelCube.hpp">
-      <Filter>model</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
@@ -73,9 +70,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp">
       <Filter>world</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\model\CubeModelLoader.hpp">
-      <Filter>model</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp">
       <Filter>world</Filter>
@@ -176,21 +170,18 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp">
       <Filter>ecs\view</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\model\ModelVoxel.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelCube.cpp">
-      <Filter>model</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
       <Filter>world</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\model\CubeModelLoader.cpp">
-      <Filter>model</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
       <Filter>world</Filter>
@@ -290,6 +281,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp">
       <Filter>ecs\view</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\model\ModelVoxel.cpp">
+      <Filter>model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

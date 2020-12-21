@@ -41,7 +41,7 @@ RenderMesh& RenderMesh::setModel(asset::TypedAssetPath<asset::Model> const& path
 RenderMesh& RenderMesh::setModel(render::SimpleModel const& simple)
 {
 	this->mModelHandle.owner<graphics::SkinnedModelManager>()
-		->setModel(this->mModelHandle, simple.vertices, simple.indices);
+		->setModel(this->mModelHandle, simple.vertices(), simple.indices());
 	return *this;
 }
 

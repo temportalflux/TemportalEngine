@@ -1,19 +1,5 @@
 #include "render/ModelSimple.hpp"
 
-ui32 render::SimpleModel::pushVertex(ModelVertex const& vertex)
-{
-	auto idx = ui32(this->vertices.size());
-	this->vertices.push_back(vertex);
-	return idx;
-}
-
-void render::SimpleModel::pushTri(math::Vector3UInt const& tri)
-{
-	this->indices.push_back(tri[0]);
-	this->indices.push_back(tri[1]);
-	this->indices.push_back(tri[2]);
-}
-
 void render::createIcosahedronFaces(std::vector<math::Vector3> &points, std::vector<math::Vector3UInt> &tris)
 {
 	f32 ro = (1.0f + std::sqrt(5.0f)) / 2.0f;

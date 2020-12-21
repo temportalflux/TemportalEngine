@@ -10,7 +10,6 @@
 #include "graphics/assetHelpers.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/GraphicsDevice.hpp"
-#include "model/CubeModelLoader.hpp"
 #include "registry/VoxelType.hpp"
 #include "resource/ResourceManager.hpp"
 
@@ -193,19 +192,19 @@ void VoxelModelManager::createModels()
 	uSize modelIndexBufferSize = 0;
 	for (auto& entry : this->mEntriesById)
 	{
-		entry.second.model = this->createModel(entry.second.textureSetHandle);
+		this->createModel(entry.second.textureSetHandle, entry.second.model);
 		modelVertexBufferSize += entry.second.model.getVertexBufferSize();
 		modelIndexBufferSize += entry.second.model.getIndexBufferSize();
 	}
 
 	this->createModelBuffers(this->mpDevice.lock(), modelVertexBufferSize, modelIndexBufferSize);
 
-	auto vertices = std::vector<Model::Vertex>();
-	auto indices = std::vector<ui16>();
+	auto vertices = std::vector<ModelVoxelVertex>();
+	auto indices = std::vector<ui32>();
 	for (auto& entry : this->mEntriesById)
 	{
-		auto const& modelVertices = entry.second.model.verticies();
-		auto const& modelIndices = entry.second.model.indicies();
+		auto const& modelVertices = entry.second.model.vertices();
+		auto const& modelIndices = entry.second.model.indices();
 		entry.second.indexBufferStartIndex = (ui32)indices.size();
 		entry.second.indexBufferValueOffset = (ui32)vertices.size();
 		std::copy(modelVertices.begin(), modelVertices.end(), std::back_inserter(vertices));
@@ -216,43 +215,40 @@ void VoxelModelManager::createModels()
 	this->mModelIndexBuffer.writeBuffer(this->mpTransientPool, 0, indices);
 }
 
-Model VoxelModelManager::createModel(VoxelTextureEntry::TextureSetHandle const& handle) const
+void VoxelModelManager::createModel(VoxelTextureEntry::TextureSetHandle const& handle, ModelVoxel &out) const
 {
-	auto loader = CubeModelLoader();
 	auto atlas = this->mStitchedTextures[handle.idxAtlas];
 
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.right);
 		assert(atlasDatum);
-		loader.pushRight(atlasDatum->offset, atlasDatum->size);
+		out.pushRight(atlasDatum->offset, atlasDatum->size);
 	}
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.left);
 		assert(atlasDatum);
-		loader.pushLeft(atlasDatum->offset, atlasDatum->size);
+		out.pushLeft(atlasDatum->offset, atlasDatum->size);
 	}
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.front);
 		assert(atlasDatum);
-		loader.pushFront(atlasDatum->offset, atlasDatum->size);
+		out.pushFront(atlasDatum->offset, atlasDatum->size);
 	}
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.back);
 		assert(atlasDatum);
-		loader.pushBack(atlasDatum->offset, atlasDatum->size);
+		out.pushBack(atlasDatum->offset, atlasDatum->size);
 	}
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.up);
 		assert(atlasDatum);
-		loader.pushUp(atlasDatum->offset, atlasDatum->size);
+		out.pushUp(atlasDatum->offset, atlasDatum->size);
 	}
 	{
 		auto atlasDatum = atlas->getStitchedTexture(handle.down);
 		assert(atlasDatum);
-		loader.pushDown(atlasDatum->offset, atlasDatum->size);
+		out.pushDown(atlasDatum->offset, atlasDatum->size);
 	}
-
-	return loader.get();
 }
 
 void VoxelModelManager::createModelBuffers(std::shared_ptr<graphics::GraphicsDevice> device, uSize modelVertexBufferSize, uSize modelIndexBufferSize)
@@ -278,7 +274,7 @@ void VoxelModelManager::destroyModels()
 
 ui32 VoxelModelManager::VoxelTextureEntry::indexCount() const
 {
-	return (ui32)this->model.indicies().size();
+	return (ui32)this->model.indices().size();
 }
 
 uSize VoxelModelManager::getAtlasCount() const

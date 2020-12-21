@@ -732,7 +732,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
@@ -771,6 +770,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsController.hpp">
       <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IModel.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

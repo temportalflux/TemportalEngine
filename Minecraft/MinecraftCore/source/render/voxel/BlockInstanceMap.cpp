@@ -2,6 +2,7 @@
 
 #include "graphics/Command.hpp"
 #include "graphics/CommandPool.hpp"
+#include "model/ModelVoxel.hpp"
 
 using namespace world;
 
@@ -98,10 +99,12 @@ VoxelInstanceCategoryList::VoxelInstanceCategoryList(
 	auto const categories = std::vector<game::BlockId>(voxelIds.begin(), voxelIds.end());
 	this->mOrderedCategories.resize(categoryCount);
 	CategoryMeta* prevCategory = nullptr, *category;
+	auto voxelIdIter = voxelIds.begin();
 	for (uIndex i = 0; i < categoryCount; ++i)
 	{
 		category = &mOrderedCategories[i];
-		*category = { buffer, 0, 0, i32(i), prevCategory, nullptr };
+		*category = { *voxelIdIter, buffer, 0, 0, i32(i), prevCategory, nullptr };
+		voxelIdIter++;
 		if (prevCategory != nullptr)
 		{
 			prevCategory->nextCategory = category;
@@ -109,9 +112,9 @@ VoxelInstanceCategoryList::VoxelInstanceCategoryList(
 		this->mCategoryById.insert(std::make_pair(categories[i], category));
 		prevCategory = category;
 	}
-	this->mEmpty = { buffer, 0, 0, i32(categoryCount), prevCategory, &this->mUnallocated };
+	this->mEmpty = { std::nullopt, buffer, 0, 0, i32(categoryCount), prevCategory, &this->mUnallocated };
 	prevCategory->nextCategory = &this->mEmpty;
-	this->mUnallocated = { buffer, 0, totalValueCount, -1, &this->mEmpty, nullptr };
+	this->mUnallocated = { std::nullopt, buffer, 0, totalValueCount, -1, &this->mEmpty, nullptr };
 	this->mCoordinateToIndex.reserve(totalValueCount);
 	this->mIndexToCoordinate.resize(totalValueCount);
 }
@@ -219,9 +222,15 @@ std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::const_iterator> 
 ) const
 {
 	OPTICK_EVENT();
+	
+	auto rangeBegin = this->mCoordinateToIndex.begin();
 	auto rangeEnd = this->mCoordinateToIndex.end();
-	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
-	if (range.first != rangeEnd)
+	auto dst = std::distance(rangeBegin, rangeEnd);
+	assert(dst == this->mCoordinateToIndex.size());
+	if (dst == 0) return std::nullopt;
+
+	auto range = std::equal_range(rangeBegin, rangeEnd, coordinate, ValueCoordinateComparator{});
+	if (std::distance(range.first, range.second) > 0 && range.first != rangeEnd)
 	{
 		return range.first;
 	}
@@ -236,9 +245,15 @@ std::optional<VoxelInstanceCategoryList::CoordinateToIndexList::iterator> VoxelI
 )
 {
 	OPTICK_EVENT();
+
+	auto rangeBegin = this->mCoordinateToIndex.begin();
 	auto rangeEnd = this->mCoordinateToIndex.end();
-	auto range = std::equal_range(this->mCoordinateToIndex.begin(), rangeEnd, coordinate, ValueCoordinateComparator{});
-	if (range.first != rangeEnd)
+	auto dst = std::distance(rangeBegin, rangeEnd);
+	assert(dst == this->mCoordinateToIndex.size());
+	if (dst == 0) return std::nullopt;
+
+	auto range = std::equal_range(rangeBegin, rangeEnd, coordinate, ValueCoordinateComparator{});
+	if (std::distance(range.first, range.second) > 0 && range.first != rangeEnd)
 	{
 		return range.first;
 	}
@@ -270,7 +285,9 @@ graphics::AttributeBinding BlockInstanceBuffer::getBinding(ui8& slot)
 		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (0 * vec4size) })
 		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (1 * vec4size) })
 		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (2 * vec4size) })
-		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (3 * vec4size) });
+		.addAttribute({ /*slot*/ slot++, /*mat4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, modelMatrix + (3 * vec4size) })
+		.addAttribute({ /*slot*/ slot++, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(ValueData, flags) })
+		;
 }
 
 BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_set<game::BlockId> const& voxelIds)
@@ -694,6 +711,20 @@ CategoryMeta const& BlockInstanceBuffer::getDataForVoxelId(game::BlockId const& 
 	return this->mCommittedCategories.at(id);
 }
 
+void BlockInstanceBuffer::ValueData::setFaceVisible(ui8 axis, ui8 direction, bool visible)
+{
+	ui32* faceVisibility = reinterpret_cast<ui32*>(&this->flags[0]);
+	auto mask = ModelVoxel::makeFaceBitMask(axis, direction);
+	if (visible)
+	{
+		(*faceVisibility) |= mask;
+	}
+	else
+	{
+		(*faceVisibility) &= ~mask;
+	}
+}
+
 void BlockInstanceBuffer::onLoadingChunk(math::Vector3Int const& coordinate)
 {
 	auto coordinates = std::vector<world::Coordinate>();
@@ -721,10 +752,52 @@ void BlockInstanceBuffer::onUnloadingChunk(math::Vector3Int const& coordinate)
 void BlockInstanceBuffer::onVoxelsChanged(TChangedVoxelsList const& changes)
 {
 	OPTICK_EVENT()
-	this->lock();
+		this->lock();
 	for (auto const& change : changes)
 	{
 		this->changeVoxelId(change.first, change.second);
 	}
+	for (auto const& change : changes)
+	{
+		this->setNeighborFaceVisibility(change.first, !change.second.has_value());
+	}
 	this->unlock();
+}
+
+void BlockInstanceBuffer::setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsEmpty)
+{
+	OPTICK_EVENT()
+	
+	auto const idxInstance = this->mMutableCategoryList.searchForCoordinateIndex(coordinate);
+	assert(idxInstance);
+	this->mChangedBufferIndices.insert(*idxInstance);
+	auto* changedInstance = this->getInstanceAt(*idxInstance);
+
+	for (ui8 axis = 0; axis < 3; ++axis)
+	{
+		for (ui8 direction = 0; direction < 2; ++direction)
+		{
+			auto offset = math::Vector3Int(0);
+			offset[axis] = direction == 0 ? -1 : 1;
+			auto neighborCoord = coordinate + offset;
+
+			auto const neighborInstanceIdx = this->mMutableCategoryList.searchForCoordinateIndex(neighborCoord);
+			std::optional<game::BlockId> neighborId = std::nullopt;
+			if (neighborInstanceIdx.has_value()) // neighbor may be in a chunk that is not loaded
+			{
+				auto& neighborCategory = this->mMutableCategoryList.getCategoryForValueIndex(*neighborInstanceIdx);
+				neighborId = neighborCategory.id;
+
+				if (neighborId)
+				{
+					this->mChangedBufferIndices.insert(*neighborInstanceIdx);
+					auto* neighborInstance = this->getInstanceAt(*neighborInstanceIdx);
+					// the face being set is in the opposite direction
+					neighborInstance->setFaceVisible(axis, 1 - direction, bIsEmpty);
+				}
+			}
+
+			changedInstance->setFaceVisible(axis, direction, bIsEmpty || !neighborId.has_value());
+		}
+	}
 }

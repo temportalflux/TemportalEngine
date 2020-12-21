@@ -64,7 +64,7 @@ VoxelGridRenderer& VoxelGridRenderer::setPipeline(asset::TypedAssetPath<asset::P
 
 	{
 		ui8 slot = 0;
-		auto bindings = Model::bindings(slot);
+		auto bindings = ModelVoxel::bindings(slot);
 		bindings.push_back(world::BlockInstanceBuffer::getBinding(slot));
 		this->mpPipeline->setBindings(bindings);
 	}
@@ -153,7 +153,7 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame, TGet
 
 		auto profile = modelManager->getBufferProfile(id);
 		command->bindVertexBuffers(0, { profile.vertexBuffer });
-		command->bindIndexBuffer(0, profile.indexBuffer, vk::IndexType::eUint16);
+		command->bindIndexBuffer(0, profile.indexBuffer, vk::IndexType::eUint32);
 
 		command->bindVertexBuffers(1, { instanceData.buffer });
 		

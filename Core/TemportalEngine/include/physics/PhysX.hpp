@@ -2,13 +2,17 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#ifndef NDEBUG
+#if !defined(_DEBUG)
+#define PHYSX_DEBUG_RESET 
+#endif
+
+#if !defined(NDEBUG) && !defined(_DEBUG)
 #define _DEBUG
 #endif
 #include "PxPhysicsAPI.h"
 #include "extensions/PxDefaultAllocator.h"
 #include "characterkinematic/PxControllerManager.h"
-#ifndef NDEBUG
+#if defined(PHYSX_DEBUG_RESET)
 #undef _DEBUG
 #endif
 

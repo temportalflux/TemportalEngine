@@ -243,6 +243,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysX.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\Registry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\RegistryItem.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IModel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelVertex.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
