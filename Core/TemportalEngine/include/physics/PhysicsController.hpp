@@ -21,6 +21,8 @@ public:
 	Controller& setCenterPosition(math::Vector<f64, 3> const& position);
 	Controller& create();
 	
+	std::shared_ptr<physics::Scene> scene() const;
+	Controller& move(math::Vector3 const& displacement, f32 const& deltaTime);
 
 public:
 	struct BoxType

@@ -629,7 +629,7 @@ void Game::createScene()
 
 	this->mpBodyPlane = std::make_shared<physics::RigidBody>();
 	this->mpBodyPlane->setSystem(this->mpPhysics);
-	this->mpBodyPlane->setIsStatic(true).createPlane(math::V3_UP, -1.0f, this->mpDefaultPhysMaterial.get());
+	this->mpBodyPlane->setIsStatic(true).createPlane(math::V3_UP, -5.0f, this->mpDefaultPhysMaterial.get());
 	this->mpSceneOverworld->addActor(this->mpBodyPlane.get());
 
 	this->mpBodyBall = std::make_shared<physics::RigidBody>();
@@ -707,14 +707,13 @@ void Game::createLocalPlayer()
 
 	{
 		auto component = components.create<ecs::component::PhysicsController>();
-		auto extents = math::Vector3{ 0.4f, 0.9f, 0.3f };
+		auto extents = math::Vector3{ 0.4f, 0.9f, 0.4f };
 		component->controller()
 			.setScene(this->mpSceneOverworld)
 			.setAsBox(extents)
 			.setCenterPosition({ globalPos.x(), globalPos.y() + extents.y(), globalPos.z() })
 			.setMaterial(this->mpPlayerPhysicsMaterial.get())
-			.create()
-			;
+			.create();
 		this->mpEntityLocalPlayer->addComponent(component);
 	}
 	{

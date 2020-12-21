@@ -61,6 +61,21 @@ Controller& Controller::setCenterPosition(math::Vector<f64, 3> const& position)
 
 Controller& Controller::create()
 {
-	this->mpScene.lock()->createController(*this);
+	this->scene()->createController(*this);
+	return *this;
+}
+
+std::shared_ptr<physics::Scene> Controller::scene() const
+{
+	return this->mpScene.lock();
+}
+
+Controller& Controller::move(math::Vector3 const& displacement, f32 const& deltaTime)
+{
+	auto* pController = as<physx::PxController>(this->mpInternal);
+	pController->move(
+		physics::toPhysX(displacement), 0.0f, deltaTime,
+		physx::PxControllerFilters(0)
+	);
 	return *this;
 }
