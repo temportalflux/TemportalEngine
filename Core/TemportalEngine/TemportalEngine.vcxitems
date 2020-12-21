@@ -82,7 +82,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\Vector.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionRejected.cpp" />
@@ -218,7 +217,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\Pool.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionAccepted.hpp" />

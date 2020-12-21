@@ -51,7 +51,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
       <Filter>asset</Filter>
     </ClInclude>

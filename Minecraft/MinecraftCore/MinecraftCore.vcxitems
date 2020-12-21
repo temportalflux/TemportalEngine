@@ -17,7 +17,6 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\MinecraftAssetStatics.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Block.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp" />

@@ -1,6 +1,5 @@
 #include "render/voxel/VoxelGridRenderer.hpp"
 
-#include "Model.hpp"
 #include "StitchedTexture.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "asset/Shader.hpp"

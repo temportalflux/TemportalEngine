@@ -224,7 +224,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\Model.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp">
       <Filter>utility</Filter>
     </ClCompile>
@@ -593,7 +592,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
       <Filter>memory</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Model.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
