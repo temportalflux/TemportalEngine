@@ -117,11 +117,12 @@ public:
 
 	// Operations: General ----------------------------------------------------
 
-	Vector<f32, TAccessibleDimensions, TActualDimensions> toFloat() const
+	template <typename TFloat = f32>
+	Vector<TFloat, TAccessibleDimensions, TActualDimensions> toFloat() const
 	{
-		Vector<f32, TAccessibleDimensions, TActualDimensions> fVector;
+		Vector<TFloat, TAccessibleDimensions, TActualDimensions> fVector;
 		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
-			fVector[i] = (f32)mValues[i];
+			fVector[i] = TFloat(mValues[i]);
 		return fVector;
 	}
 
@@ -468,21 +469,20 @@ public:
 		return vector * scalar;
 	}
 
-	math::Vector<i32, TAccessibleDimensions, TActualDimensions>
-		removeExcess(i32 const scalar)
+	math::Vector<i32, TAccessibleDimensions, TActualDimensions> operator%=(i32 const& step)
 	{
 		math::Vector<i32, TAccessibleDimensions, TActualDimensions> ret;
 		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
 		{
-			while (mValues[i] >= scalar)
+			while (mValues[i] >= step)
 			{
-				ret[i] += scalar;
-				mValues[i] -= scalar;
+				ret[i] += 1;
+				mValues[i] -= step;
 			}
-			while (mValues[i] <= -scalar)
+			while (mValues[i] < 0)
 			{
-				ret[i] -= scalar;
-				mValues[i] += scalar;
+				ret[i] -= 1;
+				mValues[i] += step;
 			}
 		}
 		return ret;

@@ -658,7 +658,6 @@ void Game::createLocalPlayer()
 	this->mpEntityLocalPlayer = ecs.entities().create();
 
 	auto position = world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH });
-	auto globalPos = (position.chunk() * CHUNK_SIDE_LENGTH).toFloat() + position.local().toFloat() + position.offset();
 
 	// Add Transform
 	{
@@ -708,20 +707,16 @@ void Game::createLocalPlayer()
 	{
 		auto component = components.create<ecs::component::PhysicsController>();
 		auto extents = math::Vector3{ 0.4f, 0.9f, 0.4f };
-		component->controller()
-			.setScene(this->mpSceneOverworld)
-			.setAsBox(extents)
-			.setCenterPosition({ globalPos.x(), globalPos.y() + extents.y(), globalPos.z() })
-			.setMaterial(this->mpPlayerPhysicsMaterial.get())
-			.create();
+		component
+			->setIsAffectedByGravity(false)
+			.controller()
+				.setScene(this->mpSceneOverworld)
+				.setAsBox(extents)
+				.setCenterPosition(position.toGlobal() + math::Vector<f64, 3>({ 0, extents.y(), 0 }))
+				.setMaterial(this->mpPlayerPhysicsMaterial.get())
+				.create();
 		this->mpEntityLocalPlayer->addComponent(component);
 	}
-	{
-		auto body = components.create<ecs::component::PhysicsBody>();
-		this->mpEntityLocalPlayer->addComponent(body);
-	}
-	this->mpEntityLocalPlayer->addView(views.create<ecs::view::PhysicalDynamics>());
-
 }
 
 void Game::createEntities()

@@ -33,6 +33,8 @@ public:
 };
 
 physx::PxVec3 toPhysX(math::Vector3 const& v);
+physx::PxExtendedVec3 toPhysX(math::Vector<f64, 3> const& v);
+math::Vector<f64, 3> fromPhysX(physx::PxExtendedVec3 const& v);
 physx::PxQuat toPhysX(math::Quaternion const& v);
 
 NS_END

@@ -7,7 +7,9 @@ using namespace ecs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(PhysicsController)
 
-PhysicsController::PhysicsController() : Component()
+PhysicsController::PhysicsController()
+	: Component()
+	, mbAffectedByGravity(true)
 {
 }
 
@@ -20,3 +22,11 @@ physics::Controller& PhysicsController::controller()
 {
 	return this->mController;
 }
+
+PhysicsController& PhysicsController::setIsAffectedByGravity(bool bAffectedByGravity)
+{
+	this->mbAffectedByGravity = bAffectedByGravity;
+	return *this;
+}
+
+bool PhysicsController::isAffectedByGravity() const { return this->mbAffectedByGravity; }

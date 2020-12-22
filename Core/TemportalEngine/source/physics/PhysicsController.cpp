@@ -79,3 +79,27 @@ Controller& Controller::move(math::Vector3 const& displacement, f32 const& delta
 	);
 	return *this;
 }
+
+math::Vector<f64, 3> Controller::position() const
+{
+	auto* pController = as<physx::PxController>(this->mpInternal);
+	return physics::fromPhysX(pController->getPosition());
+}
+
+f32 Controller::halfHeight() const
+{
+	switch (physx::PxControllerShapeType::Enum(this->mDescription.type))
+	{
+		case physx::PxControllerShapeType::Enum::eBOX:
+			return this->mDescription.typed.box.halfExtents.y();
+		case physx::PxControllerShapeType::Enum::eCAPSULE:
+		case physx::PxControllerShapeType::Enum::eFORCE_DWORD:
+		default: assert(false); return 0.0f;
+	}
+}
+
+math::Vector<f64, 3> Controller::footPosition() const
+{
+	auto* pController = as<physx::PxController>(this->mpInternal);
+	return physics::fromPhysX(pController->getFootPosition());
+}

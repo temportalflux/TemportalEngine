@@ -12,10 +12,14 @@ class Coordinate
 public:
 	Coordinate() = default;
 	Coordinate(math::Vector3Int chunk, math::Vector3Int local);
+	Coordinate(math::Vector3Int const& chunk, math::Vector3Int const& local, math::Vector3 const& offset);
 
 	math::Vector3Int const& chunk() const { return this->mChunkPosition; }
 	math::Vector3Int const& local() const { return this->mBlockPosition; }
 	math::Vector3 const& offset() const { return this->mBlockOffset; }
+	
+	math::Vector<f64, 3> toGlobal() const;
+	static Coordinate fromGlobal(math::Vector<f64, 3> global);
 
 	bool operator==(Coordinate const& other) const;
 	bool operator!=(Coordinate const& other) const;

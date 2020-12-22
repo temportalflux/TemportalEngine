@@ -35,16 +35,16 @@ void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	{
 		if (!mapping.bIsActive) continue;
 		auto dir = mapping.bIsGlobal ? mapping.direction : rot.rotate(mapping.direction);
-		transform->position() += dir * input->axialMoveSpeed() * deltaTime;
 		displacement += dir * input->axialMoveSpeed() * deltaTime;
 	}
 
+	auto& controller = physController->controller();
+	if (physController->isAffectedByGravity())
 	{
-		auto& controller = physController->controller();
-		auto gravityDisp = controller.scene()->gravity() * deltaTime;
-		displacement += gravityDisp;
-		controller.move(displacement, deltaTime);
+		displacement += controller.scene()->gravity() * deltaTime;
 	}
+	controller.move(displacement, deltaTime);
+	transform->position() = world::Coordinate::fromGlobal(controller.footPosition());
 
 	for (auto& inputAxis : input->lookAxes())
 	{

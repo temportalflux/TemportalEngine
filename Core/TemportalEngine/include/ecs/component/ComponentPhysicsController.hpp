@@ -20,8 +20,12 @@ public:
 
 	physics::Controller& controller();
 
+	PhysicsController& setIsAffectedByGravity(bool bAffectedByGravity);
+	bool isAffectedByGravity() const;
+
 private:
 	physics::Controller mController;
+	bool mbAffectedByGravity;
 
 };
 

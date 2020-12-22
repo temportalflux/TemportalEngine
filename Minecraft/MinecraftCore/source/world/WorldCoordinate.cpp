@@ -7,6 +7,32 @@ Coordinate::Coordinate(math::Vector3Int chunk, math::Vector3Int local)
 {
 }
 
+Coordinate::Coordinate(
+	math::Vector3Int const& chunk,
+	math::Vector3Int const& local,
+	math::Vector3 const& offset
+)
+	: mChunkPosition(chunk)
+	, mBlockPosition(local)
+	, mBlockOffset(offset)
+{
+}
+
+math::Vector<f64, 3> Coordinate::toGlobal() const
+{
+	return
+		this->mChunkPosition.toFloat<f64>() * CHUNK_SIDE_LENGTH
+		+ this->mBlockPosition.toFloat<f64>()
+		+ this->mBlockOffset.toFloat<f64>();
+}
+
+Coordinate Coordinate::fromGlobal(math::Vector<f64, 3> global)
+{
+	auto chunk = (global %= i32(CHUNK_SIDE_LENGTH));
+	auto local = (global %= 1);
+	return Coordinate(chunk, local, global.toFloat());
+}
+
 bool Coordinate::operator==(Coordinate const& other) const
 {
 	return
@@ -102,24 +128,6 @@ bool Coordinate::operator<(Coordinate const& other) const
 
 void Coordinate::adjustForChunkSize()
 {
-	this->mBlockPosition += this->mBlockOffset.removeExcess(1);
-	for (ui8 iAxis = 0; iAxis < 3; ++iAxis)
-	{
-		if (this->mBlockOffset[iAxis] < 0)
-		{
-			this->mBlockOffset[iAxis] += 1.0f;
-			this->mBlockPosition[iAxis]--;
-		}
-	}
-	
-	auto voxelExcess = this->mBlockPosition.removeExcess((i32)ChunkSize());
-	this->mChunkPosition += voxelExcess / (i32)ChunkSize();
-	for (ui8 iAxis = 0; iAxis < 3; ++iAxis)
-	{
-		if (this->mBlockPosition[iAxis] < 0)
-		{
-			this->mBlockPosition[iAxis] += i32(ChunkSize());
-			this->mChunkPosition[iAxis]--;
-		}
-	}
+	this->mBlockPosition += (this->mBlockOffset %= 1);
+	this->mChunkPosition += (this->mBlockPosition %= i32(ChunkSize()));
 }

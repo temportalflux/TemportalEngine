@@ -24,6 +24,10 @@ public:
 	std::shared_ptr<physics::Scene> scene() const;
 	Controller& move(math::Vector3 const& displacement, f32 const& deltaTime);
 
+	math::Vector<f64, 3> position() const;
+	f32 halfHeight() const;
+	math::Vector<f64, 3> footPosition() const;
+
 public:
 	struct BoxType
 	{

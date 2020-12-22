@@ -36,6 +36,22 @@ physx::PxVec3 physics::toPhysX(math::Vector3 const& v)
 	return out;
 }
 
+physx::PxExtendedVec3 physics::toPhysX(math::Vector<f64, 3> const& v)
+{
+	static uSize SIZE = sizeof(f64) * 3;
+	physx::PxExtendedVec3 out;
+	memcpy_s(&out, SIZE, v.data(), SIZE);
+	return out;
+}
+
+math::Vector<f64, 3> physics::fromPhysX(physx::PxExtendedVec3 const& v)
+{
+	static uSize SIZE = sizeof(f64) * 3;
+	math::Vector<f64, 3> out;
+	memcpy_s(out.data(), SIZE, &v, SIZE);
+	return out;
+}
+
 physx::PxQuat physics::toPhysX(math::Quaternion const& v)
 {
 	static uSize SIZE = sizeof(f32) * 4;
