@@ -526,14 +526,10 @@ void Game::createUIRenderer()
 
 	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/UIPipeline.te-asset"
-	).load(asset::EAssetSerialization::Binary));
+	));
 
-	this->mpUIRenderer->addFont("montserrat", asset::TypedAssetPath<asset::Font>::Create(
-		"assets/font/Montserrat.te-asset"
-	).load(asset::EAssetSerialization::Binary));
-
-	this->mpUIRenderer->addFont("sicret", asset::TypedAssetPath<asset::Font>::Create(
-		"assets/font/Sicret.te-asset"
+	this->mpUIRenderer->addFont("unispace", asset::TypedAssetPath<asset::Font>::Create(
+		"assets/font/Unispace/Unispace.te-asset"
 	).load(asset::EAssetSerialization::Binary));
 
 	this->mpRenderer->addRenderer(this->mpUIRenderer.get());

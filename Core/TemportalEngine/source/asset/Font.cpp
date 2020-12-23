@@ -3,6 +3,7 @@
 #include "asset/AssetManager.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "cereal/list.hpp"
+#include "cereal/mathVector.hpp"
 
 using namespace asset;
 
@@ -13,19 +14,26 @@ std::filesystem::path Font::getFontPath() const
 	return std::filesystem::absolute(this->getPath().parent_path() / this->mFontPath);
 }
 
-std::vector<ui8> Font::getFontSizes() const
+void Font::setSDF(
+	math::Vector2UInt const& atlasSize,
+	std::vector<ui8> const& atlasPixels,
+	std::vector<Font::Glyph> const& glyphs
+)
 {
-	return this->mSupportedFontSizes;
+	this->mSDFAtlasSize = atlasSize;
+	this->mSDFAtlasBinary = atlasPixels;
+	this->mSDFGlyphs = glyphs;
 }
 
-bool Font::supportsFontSize(ui8 size) const
+void Font::getSDF(
+	math::Vector2UInt &outAtlasSize,
+	std::vector<ui8> &outAtlasPixels,
+	std::vector<Glyph> &outGlyphs
+)
 {
-	return std::find(this->mSupportedFontSizes.begin(), this->mSupportedFontSizes.end(), size) != this->mSupportedFontSizes.end();
-}
-
-std::vector<graphics::FontGlyphSet>& Font::glyphSets()
-{
-	return this->mGlyphSets;
+	outAtlasSize = this->mSDFAtlasSize;
+	outAtlasPixels = this->mSDFAtlasBinary;
+	outGlyphs = this->mSDFGlyphs;
 }
 
 #pragma region Serialization
@@ -34,7 +42,6 @@ void Font::write(cereal::JSONOutputArchive &archive, bool bCheckDefaults) const
 {
 	Asset::write(archive, bCheckDefaults);
 	archive(cereal::make_nvp("path", this->mFontPath.string()));
-	archive(cereal::make_nvp("fontSizes", this->mSupportedFontSizes));
 }
 
 void Font::read(cereal::JSONInputArchive &archive, bool bCheckDefaults)
@@ -43,21 +50,22 @@ void Font::read(cereal::JSONInputArchive &archive, bool bCheckDefaults)
 	std::string pathStr;
 	archive(cereal::make_nvp("path", pathStr));
 	this->mFontPath = pathStr;
-	archive(cereal::make_nvp("fontSizes", this->mSupportedFontSizes));
 }
 
 void Font::compile(cereal::PortableBinaryOutputArchive &archive, bool bCheckDefaults) const
 {
 	Asset::compile(archive, bCheckDefaults);
-	archive(this->mSupportedFontSizes);
-	archive(this->mGlyphSets);
+	archive(this->mSDFAtlasSize);
+	archive(this->mSDFAtlasBinary);
+	archive(this->mSDFGlyphs);
 }
 
 void Font::decompile(cereal::PortableBinaryInputArchive &archive, bool bCheckDefaults)
 {
 	Asset::decompile(archive, bCheckDefaults);
-	archive(this->mSupportedFontSizes);
-	archive(this->mGlyphSets);
+	archive(this->mSDFAtlasSize);
+	archive(this->mSDFAtlasBinary);
+	archive(this->mSDFGlyphs);
 }
 
 #pragma endregion

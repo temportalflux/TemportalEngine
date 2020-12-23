@@ -32,9 +32,15 @@ std::string const& UIString::content() const { return this->mContent; }
 std::string const& UIString::fontId() const { return this->mFontId; }
 ui8 const& UIString::fontSize() const { return this->mFontSize; }
 
-math::Vector2 UIString::size() const
+f32 UIString::pixelHeight() const
 {
-	return this->mpRenderer.lock()->measure(this);
+	// rendering font at 72dpi (pixels per inch)
+	// means the resolution is 1:1 with point size
+	static const f32 dpi = 72;
+	static const f32 POINTS_PER_INCH = (1.0f / 72.0f);
+	ui8 pointSize = this->fontSize();
+	// the height of the text in pixels
+	return f32(pointSize) * POINTS_PER_INCH * dpi;
 }
 
 UIString& UIString::setContent(std::string const& content)
@@ -61,7 +67,8 @@ UIString& UIString::setFontSize(ui8 fontSize)
 	return *this;
 }
 
-void UIString::update() const
+UIString& UIString::update()
 {
 	this->mpRenderer.lock()->updateString(this);
+	return *this;
 }

@@ -2,182 +2,93 @@
 
 using namespace graphics;
 
-std::optional<uIndex> Font::findSet(ui8 size) const
+Font::Font()
 {
-	auto iter = std::find(this->mSupportedSizes.begin(), this->mSupportedSizes.end(), size);
-	return iter != this->mSupportedSizes.end() ? std::make_optional(std::distance(this->mSupportedSizes.begin(), iter)) : std::nullopt;
+	this->mImage
+		.setFormat(vk::Format::eR8G8B8A8Srgb)
+		//.setSize(math::Vector3UInt(face.getAtlasSize()).z(1))
+		.setTiling(vk::ImageTiling::eOptimal)
+		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 }
 
-Font::Face const& Font::getFace(ui8 size) const
+Font::Font(Font &&other)
 {
-	auto idxSet = this->findSet(size);
-	assert(idxSet);
-	return this->mGlyphFaces[*idxSet];
+	*this = std::move(other);
 }
 
-Font::Face& Font::getFace(ui8 size)
+Font& Font::operator=(Font &&other)
 {
-	auto idxSet = this->findSet(size);
-	assert(idxSet);
-	return this->mGlyphFaces[*idxSet];
-}
-
-std::vector<Font::Face>& Font::faces()
-{
-	return this->mGlyphFaces;
-}
-
-math::Vector2UInt Font::Face::getAtlasSize() const
-{
-	return this->atlasSize;
-}
-
-std::vector<ui8>& Font::Face::getPixelData()
-{
-	return this->textureData;
-}
-
-Font& Font::loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets)
-{
-	assert(fontSizes.size() == glyphSets.size());
-	uSize setCount = fontSizes.size();
-	this->mSupportedSizes = fontSizes;
-	this->mGlyphFaces.resize(setCount);
-	for (uIndex idxSet = 0; idxSet < setCount; idxSet++)
-	{
-		this->mGlyphFaces[idxSet].fontSize = this->mSupportedSizes[idxSet];
-		this->mGlyphFaces[idxSet].loadGlyphSet(glyphSets[idxSet]);
-	}
+	this->mAtlasSize = other.mAtlasSize;
+	this->mAtlasPixels = std::move(other.mAtlasPixels);
+	this->mCharToGlyphIdx = std::move(other.mCharToGlyphIdx);
+	this->mGlyphSprites = std::move(other.mGlyphSprites);
+	this->mImage = std::move(other.mImage);
+	this->mView = std::move(other.mView);
+	this->mpSampler = other.mpSampler;
+	this->mDescriptorSet = std::move(other.mDescriptorSet);
 	return *this;
 }
 
-void Font::Face::loadGlyphSet(FontGlyphSet const &src)
+Font::~Font()
 {
-	// Copy over glyph metadata
-	auto glyphCount = src.glyphs.size();
-	this->glyphs.resize(glyphCount);
-	this->codeToGlyphIdx = src.codeToGlyphIdx;
-	for (auto& [charCode, glyphIdx] : src.codeToGlyphIdx)
-	{
-		this->glyphs[glyphIdx] = src.glyphs[glyphIdx];
-	}
-	
-	// Determine the atlas size required for the glyphs
-	this->atlasSize = this->calculateAtlasLayout();
-
-	// Create the atlas texture
-	this->textureData.resize(this->atlasSize.x() * this->atlasSize.y() * 4); // 4 channels RGBA
-
-	// Write glyph buffer data to the face's atlas texture
-	for (auto&[charCode, glyphIdx] : src.codeToGlyphIdx)
-	{
-		const auto& alphaBuffer = src.glyphs[glyphIdx].buffer;
-		if (alphaBuffer.size() > 0)
-		{
-			this->writeAlphaToTexture(
-				this->glyphs[glyphIdx].atlasOffset,
-				this->glyphs[glyphIdx].bufferSize,
-				alphaBuffer
-			);
-		}
-	}
-	
+	this->mView.invalidate();
+	this->mImage.invalidate();
 }
 
-Font::GlyphSprite& Font::GlyphSprite::operator=(FontGlyph const &other)
+void Font::setSampler(graphics::ImageSampler *sampler)
 {
-	this->bearing = other.bearing;
-	this->size = other.size;
-	this->advance = other.advance;
-	this->bufferSize = other.bufferSize;
-	return *this;
+	this->mpSampler = sampler;
 }
 
-// See https://snorristurluson.github.io/TextRenderingWithFreetype/ for reference
-// See http://freetype.sourceforge.net/freetype2/docs/tutorial/step2.html for unit of measurement reference
-std::pair<math::Vector2UInt, math::Vector2Int> Font::Face::measure(std::string const& str) const
+math::Vector2UInt& Font::atlasSize() { return this->mAtlasSize; }
+std::vector<ui8>& Font::atlasPixels() { return this->mAtlasPixels; }
+graphics::DescriptorSet& Font::descriptorSet() { return this->mDescriptorSet; }
+
+void Font::addGlyph(char code, GlyphSprite&& sprite)
 {
-	math::Vector2UInt size;
-	math::Vector2Int offset;
-	for (auto& c : str)
+	uIndex idx = this->mGlyphSprites.size();
+	this->mGlyphSprites.push_back(sprite);
+	this->mCharToGlyphIdx[code] = idx;
+}
+
+void Font::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+{
+	this->mImage.setDevice(device);
+	this->mView.setDevice(device);
+}
+
+void Font::initializeImage(graphics::CommandPool* transientPool)
+{
+	this->mImage.setSize(math::Vector3UInt(this->mAtlasSize).z(1)).create();
+	this->mImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, transientPool);
+	this->mImage.writeImage((void*)this->mAtlasPixels.data(), this->mAtlasPixels.size() * sizeof(ui8), transientPool);
+	this->mImage.transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, transientPool);
+	this->mView.setImage(&this->mImage, vk::ImageAspectFlagBits::eColor).create();
+
+	this->mAtlasPixels.clear();
+
+	this->mDescriptorSet.attach("fontAtlas", graphics::EImageLayout::eShaderReadOnlyOptimal, &this->mView, this->mpSampler);
+	this->mDescriptorSet.writeAttachments();
+}
+
+math::Vector<f32, 3> Font::measure(std::string const& str) const
+{
+	auto measurement = math::Vector<f32, 3>();
+	for (auto const& c : str)
 	{
-		auto& glyph = this->glyphs[c];
-		size.x() += glyph.advance;
-		size.y() = std::max(size.y(), glyph.size.y());
-		offset.y() = std::min(offset.y(), glyph.bearing.y());
+		auto idxGlyph = this->mCharToGlyphIdx.find(c);
+		assert(idxGlyph != this->mCharToGlyphIdx.end());
+		auto const& glyph = this->mGlyphSprites[idxGlyph->second];
+		measurement.x() += glyph.advance;
+		measurement.y() = math::max(measurement.y(), glyph.size.y());
+		measurement.z() = math::max(measurement.z(), glyph.bearing.y());
 	}
-	return std::make_pair(size, offset);
+	return measurement;
 }
 
-math::Vector2UInt Font::Face::calculateAtlasLayout()
+Font::GlyphSprite const& Font::operator[](char const& code) const
 {
-	// Its very unlikely that the atlas could fit all the glyphs in a size smaller than 256x256
-	math::Vector2UInt atlasSize = { 256, 256 };
-
-	bool bCanFitAllGlyphs;
-	do
-	{
-		bCanFitAllGlyphs = true;
-
-		math::Vector2UInt rowSize, rowPos;
-		for (auto& glyph : this->glyphs)
-		{
-			if (!(glyph.bufferSize.x() > 0 && glyph.bufferSize.y() > 0)) continue;
-			// Row will be exceeded if the glyph is appended to the current row.
-			if (rowSize.x() + glyph.bufferSize.x() > atlasSize.x())
-			{
-				// Atlas height will be exceeded if the row is shifted, atlas needs to be bigger
-				if (rowPos.y() + rowSize.y() > atlasSize.y())
-				{
-					bCanFitAllGlyphs = false;
-					// Bumps atlas size to the next power of 2
-					atlasSize = { atlasSize.x() << 1, atlasSize.y() << 1 };
-					break;
-				}
-				// Shift the next row down by the largest size recorded
-				rowPos.y() += rowSize.y();
-				// Reset the size of the row
-				rowSize.x(0).y(0);
-			}
-			glyph.atlasOffset = { rowSize.x(), rowPos.y() };
-			rowSize.x() += glyph.bufferSize.x();
-			rowSize.y() = math::max(rowSize.y(), glyph.bufferSize.y());
-		}
-	}
-	while (!bCanFitAllGlyphs);
-
-	return atlasSize;
-}
-
-void Font::Face::writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha)
-{
-	ui32 const channelCountPerPixel = 4; // 4 channels for rgb+a
-	for (ui32 x = 0; x < dimensions.x(); ++x) for (ui32 y = 0; y < dimensions.y(); ++y)
-	{
-		uIndex idxAlpha = y * dimensions.x() + x;
-		math::Vector2UInt pixelPos = pos + math::Vector2UInt({ x, y });
-		uIndex const idxPixel = pixelPos.y() * this->atlasSize.x() + pixelPos.x();
-		uIndex const idxData = idxPixel * channelCountPerPixel;
-		this->textureData[idxData + 0] = 0xff;
-		this->textureData[idxData + 1] = 0xff;
-		this->textureData[idxData + 2] = 0xff;
-		this->textureData[idxData + 3] = alpha[idxAlpha];
-	}
-}
-
-std::optional<Font::GlyphData> Font::Face::getGlyph(char const& charCode) const
-{
-	auto const& iterGlyph = this->codeToGlyphIdx.find((ui32)charCode);
-	if (iterGlyph == this->codeToGlyphIdx.end()) { return std::nullopt; }
-	auto const& sprite = this->glyphs[iterGlyph->second];
-	math::Vector2 const atlasSize = this->atlasSize.toFloat();
-
-	GlyphData data;
-	data.bearing = sprite.bearing.toFloat();
-	data.size = sprite.size.toFloat();
-	data.advance = f32(sprite.advance);
-	data.uvPos = sprite.atlasOffset.toFloat() / atlasSize;
-	data.uvSize = sprite.size.toFloat() / atlasSize;
-
-	return data;
+	auto idxGlyph = this->mCharToGlyphIdx.find(code);
+	assert(idxGlyph != this->mCharToGlyphIdx.end());
+	return this->mGlyphSprites[idxGlyph->second];
 }

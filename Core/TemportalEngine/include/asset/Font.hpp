@@ -17,23 +17,83 @@ public:
 
 	// Returns the absolute path of the font file relative to this asset path
 	std::filesystem::path getFontPath() const;
-	std::vector<ui8> getFontSizes() const;
-	bool supportsFontSize(ui8 size) const;
-	std::vector<graphics::FontGlyphSet>& glyphSets();
-	
+
+public:
+	struct Glyph
+	{
+		char asciiId;
+
+		/**
+		 * The position of the glyph from the top-left corner of the image.
+		 * Dimensions are ratios of the atlas size.
+		 */
+		math::Vector2 atlasPos;
+		/**
+		 * The size of the glyph in the atlas.
+		 * Dimensions are ratios of the atlas size.
+		 */
+		math::Vector2 atlasSize;
+
+		f32 pointBasis; // TODO: This is per font, so it shouldn't be stored on each glyph
+
+		math::Vector2 size;
+		/**
+		 * The offset/bearing of the glyph from the cursor position when drawing the glyph.
+		 */
+		math::Vector2 bearing;
+		/**
+		 * The amount to move the cursor after drawing the glyph.
+		 */
+		f32 advance;
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+			archive(asciiId);
+			archive(atlasPos);
+			archive(atlasSize);
+			archive(pointBasis);
+			archive(size);
+			archive(bearing);
+			archive(advance);
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+			archive(asciiId);
+			archive(atlasPos);
+			archive(atlasSize);
+			archive(pointBasis);
+			archive(size);
+			archive(bearing);
+			archive(advance);
+		}
+
+	};
+
+	void setSDF(
+		math::Vector2UInt const& atlasSize,
+		std::vector<ui8> const& atlasPixels,
+		std::vector<Glyph> const& glyphs
+	);
+
+	void getSDF(math::Vector2UInt &outAtlasSize, std::vector<ui8> &outAtlasPixels, std::vector<Glyph> &outGlyphs);
+
 #pragma region Properties
 private:
-	#pragma region Common
-	std::vector<ui8> mSupportedFontSizes;
-	#pragma endregion
 
 	#pragma region Json
+	/**
+	 * The path to the `.fnt` file (which also links to the SDF png)
+	 */
 	std::filesystem::path mFontPath;
 	#pragma endregion
 
 	#pragma region Binary
-	// A list of glyph sets, which correspond to `mSupportedFontSizes`
-	std::vector<graphics::FontGlyphSet> mGlyphSets;
+	math::Vector2UInt mSDFAtlasSize;
+	std::vector<ui8> mSDFAtlasBinary;
+	std::vector<Glyph> mSDFGlyphs;
 	#pragma endregion
 
 #pragma endregion

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "CoreInclude.hpp"
-#include "graphics/DescriptorGroup.hpp"
+#include "asset/TypedAssetPath.hpp"
+#include "graphics/Buffer.hpp"
+#include "graphics/Descriptor.hpp"
 #include "graphics/FontAtlas.hpp"
 #include "thread/MutexLock.hpp"
 
@@ -29,7 +31,7 @@ public:
 	void unlock();
 	bool hasChanges() const;
 
-	UIRenderer& setTextPipeline(std::shared_ptr<asset::Pipeline> asset);
+	UIRenderer& setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	UIRenderer& addFont(std::string fontId, std::shared_ptr<asset::Font> asset);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
@@ -57,7 +59,6 @@ protected:
 	void addString(std::shared_ptr<UIString> pStr);
 	void removeString(UIString const* pStr);
 	void updateString(UIString const* pStr);
-	math::Vector2 measure(UIString const* pStr) const;
 	
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
@@ -65,27 +66,12 @@ private:
 	math::Vector2UInt mScreenResolution;
 	thread::MutexLock mMutex;
 
-	struct FontFaceImage
-	{
-		uIndex idxDescriptor;
-		graphics::Image image;
-		graphics::ImageView view;
-	};
-	struct RegisteredFont
-	{
-		graphics::Font font;
-		std::unordered_map<ui8, FontFaceImage> faces;
-	};
 	struct FontGlyphVertex
 	{
 		/**
 		 * The position of a text/string vertex.
-		 * <x,y> is the position of the string screen space, where the range is [0,1].
-		 * <z,w> is the font alignment offers from that position so the glyph is rendered correctly.
-		 *		Derived from `FontGlyphMeta#metricsOffset` and `FontGlyphMeta#advance`.
-		 * These two vec2s will be summed in the shader when rendering the vertex.
 		 */
-		math::Vector4 position;
+		math::Vector2Padded position;
 		/**
 		 * The coordinate of the glyph vertex in the font atlas allocated for a given `RegisteredFont`.
 		 */
@@ -136,7 +122,7 @@ private:
 	struct GlyphStringIndices
 	{
 		std::string stringId;
-		uIndex idxDescriptor;
+		uIndex idxFont;
 		ui32 idxStartIndex;
 		ui32 indexCount;
 		ui32 vertexPreCount;
@@ -150,12 +136,12 @@ private:
 	{
 		// The pipeline used to render all text
 		std::shared_ptr<graphics::Pipeline> pipeline;
-		// The descriptors used to render any font. Specific descriptor sets are allocated for each registered font.
-		std::vector<graphics::DescriptorGroup> descriptorGroups;
+		graphics::DescriptorLayout descriptorLayout;
 		// The sampler vulkan uses to read each font atlas
 		graphics::ImageSampler sampler;
 		// A map of all fonts, their typefaces, and font sizes, including their atlases for each combination
-		std::unordered_map<std::string, RegisteredFont> fonts;
+		std::map<std::string, uIndex> fontIds;
+		std::vector<graphics::Font> fonts;
 		// the number of faces across all fonts
 		ui8 fontFaceCount;
 
@@ -167,8 +153,8 @@ private:
 
 	} mText;
 
+	void updateGlyphString(GlyphString &glyphStr);
 	void updateGlyphVertices(UIString const* updatedString, GlyphString &glyphStr) const;
-	uIndex getTextDescriptorIdx(std::string const& fontId, ui8 fontSize) const;
 
 };
 

@@ -11,7 +11,7 @@ class BuildTexture : public BuildAsset
 
 public:
 	static std::shared_ptr<BuildAsset> create(std::shared_ptr<asset::Asset> asset);
-	static std::vector<ui8> loadImage(std::filesystem::path const &path, math::Vector2UInt &sizeOut);
+	static void loadImage(std::filesystem::path const &path, math::Vector2UInt &sizeOut, std::vector<ui8> &pixels);
 
 	BuildTexture() = default;
 	BuildTexture(std::shared_ptr<asset::Asset> asset);

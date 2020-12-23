@@ -2,12 +2,9 @@
 
 #include "asset/Font.hpp"
 #include "math/Vector.hpp"
+#include "build/asset/BuildTexture.hpp"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-FT_Library g_FreeTypeLibrary;
-bool g_FreeTypeInitialized = false;
+#include <regex>
 
 using namespace build;
 
@@ -20,165 +17,73 @@ BuildFont::BuildFont(std::shared_ptr<asset::Asset> asset) : BuildAsset(asset)
 {
 }
 
-std::vector<std::string> buildFontSize(FT_Face &face, ui8 size, math::Vector2UInt dpi, graphics::FontGlyphSet &glyphSet);
-bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &glyph, std::vector<std::string> &glyphErrors);
-
-// See https://www.freetype.org/freetype2/docs/tutorial/step1.html
 std::vector<std::string> BuildFont::compile(logging::Logger &logger)
 {
-	// Ensure that the freetype library is loaded
-	if (!g_FreeTypeInitialized)
-	{
-		auto errorCode = FT_Init_FreeType(&g_FreeTypeLibrary);
-		if (errorCode)
-		{
-			return { std::string("failed to initialize freetype library, error code:") + std::to_string(errorCode) };
-		}
-		g_FreeTypeInitialized = true;
-	}
+	static auto PATTERN_INFO = std::regex("info.*");
+	static auto PATTERN_COMMON = std::regex("common[\\s]+lineHeight=([^\\s]+)[\\s]+base=([^\\s]+)[\\s]+.*");
+	static auto PATTERN_PAGE = std::regex("page id=[0-9]+ file=\"(.*)\"");
+	static auto PATTERN_CHARCOUNT = std::regex("chars count=([0-9]+)");
+	static auto PATTERN_GLYPH = std::regex("char[\\s]+id=([^\\s]+)[\\s]+x=([^\\s]+)[\\s]+y=([^\\s]+)[\\s]+width=([^\\s]+)[\\s]+height=([^\\s]+)[\\s]+xoffset=([^\\s]+)[\\s]+yoffset=([^\\s]+)[\\s]+xadvance=([^\\s]+)[\\s]+page=([^\\s]+)[\\s]+chnl=([^\\s]+).*");
 
+	auto errors = std::vector<std::string>();
 	auto asset = this->get<asset::Font>();
+	auto fntPath = asset->getFontPath();
 
-	// Load a font face file
-	FT_Face fontFace;
+	auto atlasSize = math::Vector2UInt();
+	auto atlasPixels = std::vector<ui8>();
+	auto glyphs = std::vector<asset::Font::Glyph>();
+
 	{
-		auto errorCode = FT_New_Face(g_FreeTypeLibrary, asset->getFontPath().string().c_str(), 0, &fontFace);
-		switch (errorCode)
+		auto stream = std::ifstream(fntPath.string().c_str(), std::ios::binary);
+		std::string line;
+		std::cmatch match;
+
+		getline(stream, line);
+		assert(std::regex_search(line.c_str(), match, PATTERN_INFO));
+		getline(stream, line);
+		assert(std::regex_search(line.c_str(), match, PATTERN_COMMON));
+		auto pointBasis = math::Vector2UInt({
+			ui32(std::stoi(match[2].str())),
+			ui32(std::stoi(match[1].str()))
+		}).toFloat();
+
+		getline(stream, line);
+		assert(std::regex_search(line.c_str(), match, PATTERN_PAGE));
+		auto atlasPath = fntPath.parent_path() / match[1].str();
+		BuildTexture::loadImage(atlasPath, atlasSize, atlasPixels);
+		auto atlasSizeF = atlasSize.toFloat();
+
+		getline(stream, line);
+		assert(std::regex_search(line.c_str(), match, PATTERN_CHARCOUNT));
+		uSize charCount = std::stoi(match[1].str());
+		glyphs.resize(charCount);
+
+		for (uIndex idxChar = 0; idxChar < charCount; ++idxChar)
 		{
-		case 0: break; // success
-		case FT_Err_Unknown_File_Format:
-			return { "unknown font file format" };
-		default:
-			return { "failed to load font source file" };
-		}
-	}
+			getline(stream, line);
+			assert(std::regex_search(line.c_str(), match, PATTERN_GLYPH));
+			glyphs[idxChar] = asset::Font::Glyph {
+				char(std::stoi(match[1].str())),
+				
+				// atlas pos
+				math::Vector2({ f32(std::stoi(match[2].str())), f32(std::stoi(match[3].str())) }).toFloat() / atlasSizeF,
+				// atlas size
+				math::Vector2({ f32(std::stoi(match[4].str())), f32(std::stoi(match[5].str())) }).toFloat() / atlasSizeF,
 
-	std::vector<std::string> glyphErrors;
+				// the ratio of the basis for usage when rendering
+				pointBasis.x() / pointBasis.y(),
 
-	this->mGlyphSets.clear();
-
-	auto fontSizes = asset->getFontSizes();
-	auto fontSizeCount = fontSizes.size();
-	this->mGlyphSets.resize(fontSizeCount);
-	for (uIndex i = 0; i < fontSizeCount; ++i)
-	{
-		auto errors = buildFontSize(fontFace, fontSizes[i], { 96, 96 }, this->mGlyphSets[i]);
-		if (!errors.empty())
-		{
-			glyphErrors.insert(glyphErrors.end(), errors.begin(), errors.end());
-		}
-	}
-	
-	return glyphErrors;
-}
-
-std::vector<std::string> buildFontSize(FT_Face &face, ui8 size, math::Vector2UInt dpi, graphics::FontGlyphSet &glyphSet)
-{
-	// Set the character size
-	{
-		/*
-			The character widths and heights are specified in 1/64th of points.
-			A point is a physical distance, equaling 1/72th of an inch. Normally, it is not equivalent to a pixel.
-			Value of 0 for the character width means ‘same as character height’, value of 0 for the character height
-			means ‘same as character width’. Otherwise, it is possible to specify different character widths and heights.
-			The horizontal and vertical device resolutions are expressed in dots-per-inch, or dpi. Standard values
-			are 72 or 96 dpi for display devices like the screen. The resolution is used to compute the
-			character pixel size from the character point size.
-			Value of 0 for the horizontal resolution means ‘same as vertical resolution’, value of 0 for the
-			vertical resolution means ‘same as horizontal resolution’.
-			If both values are zero, 72 dpi is used for both dimensions.
-		*/
-		auto error = FT_Set_Char_Size(face, 0, size * 64, dpi.x(), dpi.y());
-		if (error)
-		{
-			return {
-				{ "failed to set character size " + std::to_string(size) + ". error code:" + std::to_string(error) }
+				// size
+				math::Vector2({ f32(std::stoi(match[4].str())), f32(std::stoi(match[5].str())) }) / pointBasis,
+				// bearing/offset
+				math::Vector2({ f32(std::stoi(match[6].str())), f32(std::stoi(match[7].str())) }) / pointBasis,
+				// advance
+				f32(std::stoi(match[8].str())) / pointBasis.x()
+			
 			};
 		}
 	}
 
-	std::vector<std::string> glyphErrors;
-
-	ui32 idxGlyph, charCode;
-	ui32 idxFontGlyph = 0;
-	charCode = FT_Get_First_Char(face, &idxGlyph);
-	graphics::FontGlyph glyph;
-	while (idxGlyph != 0)
-	{
-		if (renderGlyph(face, (char)charCode, idxGlyph, glyph, glyphErrors))
-		{
-			glyphSet.glyphs.push_back(std::move(glyph));
-			glyphSet.codeToGlyphIdx.insert(std::make_pair(charCode, idxFontGlyph++));
-		}
-		charCode = FT_Get_Next_Char(face, charCode, &idxGlyph);
-	}
-
-	return { glyphErrors };
-}
-
-template <typename T, typename U>
-T getMetric(U& metric)
-{
-	return static_cast<T>(metric) / 64;
-}
-
-bool renderGlyph(FT_Face &face, char code, ui32 idxGlyph, graphics::FontGlyph &glyph, std::vector<std::string> &glyphErrors)
-{
-	auto error = FT_Load_Glyph(face, idxGlyph, FT_LOAD_DEFAULT);
-	if (error)
-	{
-		glyphErrors.push_back(std::string("failed to load glyph for char '") + code + "'. code:" + std::to_string(error));
-		return false;
-	}
-	FT_GlyphSlot slot = face->glyph;
-	error = FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
-	if (error)
-	{
-		glyphErrors.push_back(std::string("failed to render glyph bitmap for char '") + code + "'. code:" + std::to_string(error));
-		return false;
-	}
-
-	if (slot->bitmap.pixel_mode != FT_PIXEL_MODE_GRAY || slot->bitmap.num_grays != 256)
-	{
-		glyphErrors.push_back(std::string("unsupported pixel mode ") + std::to_string(slot->bitmap.pixel_mode));
-		return false;
-	}
-
-	// See http://freetype.sourceforge.net/freetype2/docs/tutorial/step2.html for what each metric is
-	glyph.size = { getMetric<ui32>(slot->metrics.width), getMetric<ui32>(slot->metrics.height) };
-	glyph.bearing = { (i32)(slot->bitmap_left), -(i32)(slot->bitmap_top) };
-	glyph.advance = getMetric<ui32>(slot->advance.x);
-	glyph.bufferSize = { slot->bitmap.width, slot->bitmap.rows };
-
-	ui32 bufferSize = glyph.bufferSize.x() * glyph.bufferSize.y(); // a single channel to record only the alpha value (should be used with white color when loaded)
-	if (bufferSize == 0)
-	{
-		// the glyph has nothing to render, but may just be empty space
-		return true;
-	}
-
-	glyph.buffer.resize(bufferSize);
-
-	ui8* src = slot->bitmap.buffer;
-	ui8* rowStart = src;
-	uIndex idxBuffer = 0;
-	for (ui32 y = 0; y < glyph.bufferSize.y(); ++y)
-	{
-		src = rowStart;
-		for (ui32 x = 0; x < glyph.bufferSize.x(); ++x)
-		{
-			glyph.buffer[idxBuffer++] = *src;
-			src++;
-		}
-		rowStart += slot->bitmap.pitch;
-	}
-
-	return true;
-}
-
-void BuildFont::save()
-{
-	auto asset = this->get<asset::Font>();
-	asset->glyphSets() = std::move(this->mGlyphSets);
-	BuildAsset::save();
+	asset->setSDF(atlasSize, atlasPixels, glyphs);
+	return errors;
 }

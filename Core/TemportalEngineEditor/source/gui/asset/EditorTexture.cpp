@@ -95,7 +95,8 @@ void EditorTexture::loadPreview()
 	auto srcPath = asset->getAbsoluteSourcePath();
 	if (std::filesystem::exists(srcPath))
 	{
-		auto pixelData = build::BuildTexture::loadImage(srcPath, this->mTextureSize);
+		auto pixelData = std::vector<ui8>();
+		build::BuildTexture::loadImage(srcPath, this->mTextureSize, pixelData);
 		this->mViewSize = this->mTextureSize;
 		this->mpTextureView->image()
 			.setFormat(vk::Format::eR8G8B8A8Srgb)

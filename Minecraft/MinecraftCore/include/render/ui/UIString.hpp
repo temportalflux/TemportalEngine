@@ -22,7 +22,7 @@ public:
 	std::string const& content() const;
 	std::string const& fontId() const;
 	ui8 const& fontSize() const;
-	math::Vector2 size() const;
+	f32 pixelHeight() const;
 
 	UIString& setContent(std::string const& content);
 	UIString& setPosition(math::Vector2 const& position);
@@ -33,7 +33,7 @@ public:
 	 * Updates the string in the renderer so it gets committed on the next frame.
 	 * MUST be called after any of the mutation operations in order for the change to be rendered.
 	 */
-	void update() const;
+	UIString& update();
 
 private:
 	std::weak_ptr<graphics::UIRenderer> const mpRenderer;
@@ -50,7 +50,6 @@ private:
 
 	// The identifier of the `RegisteredFont` in `UIRenderer`.
 	std::string mFontId;
-	// The size of the font-face in `RegisteredFont` in `UIRenderer`.
 	ui8 mFontSize;
 
 };

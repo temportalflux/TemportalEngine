@@ -84,7 +84,7 @@ AllocationHandle VulkanMemoryAllocator::createImage(vk::ImageCreateInfo const &i
 	VmaAllocationCreateInfo allocInfo = {};
 	allocInfo.usage = (VmaMemoryUsage)usage;
 
-	VmaAllocation allocation;
+	VmaAllocation allocation = {};
 
 	VkResult result = vmaCreateImage(
 		*asVma(this->mInternal),
@@ -96,6 +96,7 @@ AllocationHandle VulkanMemoryAllocator::createImage(vk::ImageCreateInfo const &i
 	{
 		return (AllocationHandle)allocation;
 	}
+	assert(false);
 	return {};
 }
 

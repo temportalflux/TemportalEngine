@@ -2,7 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "graphics/FontGlyph.hpp"
+#include "graphics/Descriptor.hpp"
 #include "graphics/Image.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "graphics/ImageView.hpp"
@@ -11,62 +11,62 @@ NS_GRAPHICS
 
 class Font
 {
-	struct GlyphSprite : public FontGlyphMeta
-	{
-		math::Vector2UInt atlasOffset;
-
-		GlyphSprite& operator=(FontGlyph const &other);
-	};
 
 public:
-	struct UIVertex
+	struct GlyphSprite
 	{
-		// <x,y> is the position of the string
-		// <z,w> is the offset from the string position of this vertex, composed from `FontGlyphMeta#metricsOffset` and `FontGlyphMeta#advance`
-		// These two vec2s will be summed in the shader when rendering the vertex
-		math::Vector4 position;
-		math::Vector2 texCoord;
-	};
-	struct GlyphData
-	{
-		math::Vector2 bearing;
+		math::Vector2 atlasPos;
+		math::Vector2 atlasSize;
+
+		f32 pointBasisRatio;
 		math::Vector2 size;
+		math::Vector2 bearing;
 		f32 advance;
-		math::Vector2 uvPos;
-		math::Vector2 uvSize;
 	};
 
-	class Face
-	{
-		friend class Font;
-	public:
-		ui8 getFontSize() const { return this->fontSize; }
-		std::pair<math::Vector2UInt, math::Vector2Int> measure(std::string const& str) const;
-		math::Vector2UInt getAtlasSize() const;
-		std::vector<ui8>& getPixelData();
-		std::optional<GlyphData> getGlyph(char const& charCode) const;
-	private:
-		ui8 fontSize;
-		std::unordered_map<ui32, ui32> codeToGlyphIdx;
-		std::vector<GlyphSprite> glyphs;
-		math::Vector2UInt atlasSize;
-		std::vector<ui8> textureData;
-		void loadGlyphSet(FontGlyphSet const &src);
-		// Determines the glyph offsets and atlas size
-		math::Vector2UInt calculateAtlasLayout();
-		void writeAlphaToTexture(math::Vector2UInt const &pos, math::Vector2UInt const &dimensions, std::vector<ui8> const &alpha);
-	};
+	Font();
+	Font(Font &&other);
+	Font& operator=(Font &&other);
+	~Font();
 
-	Font& loadGlyphSets(std::vector<ui8> const &fontSizes, std::vector<graphics::FontGlyphSet> const &glyphSets);
-	Face const& getFace(ui8 size) const;
-	Face& getFace(ui8 size);
-	std::vector<Face>& faces();
+	void setSampler(graphics::ImageSampler *sampler);
+
+	math::Vector2UInt& atlasSize();
+	std::vector<ui8>& atlasPixels();
+	graphics::DescriptorSet& descriptorSet();
+	void addGlyph(char code, GlyphSprite&& sprite);
+
+	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
+	void initializeImage(graphics::CommandPool* transientPool);
+
+	/**
+	 * Measures a given string in the font.
+	 * x: total width of the string
+	 * y: total height of the string
+	 * z: the distance from the cursor y-pos to the top of the string
+	 */
+	math::Vector<f32, 3> measure(std::string const& str) const;
+
+	GlyphSprite const& operator[](char const& code) const;
 
 private:
-	std::vector<ui8> mSupportedSizes;
-	std::vector<Face> mGlyphFaces;
+	math::Vector2UInt mAtlasSize;
+	std::vector<ui8> mAtlasPixels;
+
+	std::map<char, uIndex> mCharToGlyphIdx;
+	std::vector<GlyphSprite> mGlyphSprites;
 	
-	std::optional<uIndex> findSet(ui8 size) const;
+	/**
+	 * The graphics image for the signed-distance-field atlas.
+	 */
+	graphics::Image mImage;
+	graphics::ImageView mView;
+	graphics::ImageSampler *mpSampler;
+
+	/**
+	 * The descriptor set for the font SDF atlas.
+	 */
+	graphics::DescriptorSet mDescriptorSet;
 
 };
 
