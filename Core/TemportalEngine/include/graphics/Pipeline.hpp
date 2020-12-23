@@ -50,6 +50,7 @@ private:
 	std::unordered_map<vk::ShaderStageFlagBits, std::shared_ptr<ShaderModule>> mShaderPtrs;
 	std::vector<AttributeBinding> mAttributeBindings;
 
+	std::optional<f32> mEnforcedAspectRatio;
 	std::vector<graphics::Viewport> mViewports;
 	std::vector<graphics::Area> mScissors;
 	graphics::FrontFace mFrontFace;

@@ -161,7 +161,7 @@ void MinecraftRenderer::createRenderChain()
 {
 	OPTICK_EVENT();
 	this->createSwapChain();
-	auto resolution = this->mSwapChain.getResolution();
+	auto resolution = this->getResolution();
 	
 	this->createFrameImageViews();
 	this->createDepthResources(resolution);
@@ -287,7 +287,7 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 {	
 	OPTICK_EVENT();
 	auto device = this->getDevice();
-	auto resolution = this->mSwapChain.getResolution();
+	auto resolution = this->getResolution();
 	auto queueFamilyGroup = device->queryQueueFamilyGroup();
 
 	for (uIndex i = 0; i < viewCount; ++i)
@@ -303,7 +303,7 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 
 		frame.frameBuffer
 			.setRenderPass(this->getRenderPass())
-			.setResolution(this->mSwapChain.getResolution())
+			.setResolution(resolution)
 			.addAttachment(&this->mFrameImageViews[i])
 			.addAttachment(&this->mDepthView)
 			.create(device);
@@ -344,7 +344,7 @@ void MinecraftRenderer::record(uIndex idxFrame)
 	auto& frame = this->mFrames[idxFrame];
 	frame.commandPool.resetPool();
 	auto cmd = frame.commandBuffer.beginCommand();
-	cmd.beginRenderPass(this->getRenderPass(), &frame.frameBuffer, this->mSwapChain.getResolution());
+	cmd.beginRenderPass(this->getRenderPass(), &frame.frameBuffer, this->getResolution());
 	for (auto* pRender : this->mpRenderers)
 	{
 		pRender->record(&cmd, idxFrame, getDescrSet);

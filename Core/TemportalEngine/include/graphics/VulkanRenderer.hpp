@@ -44,6 +44,7 @@ public:
 	void setValidationLayers(std::vector<std::string> layers);
 	void setSwapChainInfo(SwapChainInfo const &info);
 	void setImageViewInfo(ImageViewInfo const &info);
+	virtual math::Vector2UInt getResolution() const;
 	f32 getAspectRatio() const;
 
 	virtual void initializeDevices();

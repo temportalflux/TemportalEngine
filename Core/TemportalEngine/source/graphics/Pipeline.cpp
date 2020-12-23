@@ -8,7 +8,7 @@
 
 using namespace graphics;
 
-Pipeline::Pipeline()
+Pipeline::Pipeline() : mEnforcedAspectRatio(16.0f / 9.0f)
 {
 	this->mLineWidth = 1.0f;
 }
@@ -155,13 +155,32 @@ void Pipeline::create()
 		.setTopology(this->mTopology.as<vk::PrimitiveTopology>())
 		.setPrimitiveRestartEnable(false);
 
+	auto resolutionOffset = math::Vector2::ZERO;
+	auto adjustedResolution = this->mResolutionFloat;
+	if (this->mEnforcedAspectRatio)
+	{
+		auto aspectRatio = this->mResolutionFloat.x() / this->mResolutionFloat.y();
+		if (aspectRatio > this->mEnforcedAspectRatio.value())
+		{
+			// allow ultrawide monitors
+			//adjustedResolution.x() = this->mResolutionFloat.y() * this->mEnforcedAspectRatio.value();
+			//resolutionOffset.x() += 0.5f * (this->mResolutionFloat.x() - adjustedResolution.x());
+		}
+		else
+		{
+			adjustedResolution.y() = this->mResolutionFloat.x() * (1.0f / this->mEnforcedAspectRatio.value());
+			resolutionOffset.y() += 0.5f * (this->mResolutionFloat.y() - adjustedResolution.y());
+		}
+	}
+
 	auto viewports = std::vector<vk::Viewport>(this->mViewports.size());
 	std::transform(
 		this->mViewports.begin(), this->mViewports.end(), viewports.begin(),
 		[&](graphics::Viewport const& viewport) -> vk::Viewport
 		{
-			auto offset = viewport.offset * this->mResolutionFloat;
-			auto size = viewport.size * this->mResolutionFloat;
+			auto offset = viewport.offset * adjustedResolution;
+			offset += resolutionOffset;
+			auto size = viewport.size * adjustedResolution;
 			return vk::Viewport()
 				.setX(offset.x()).setY(offset.y())
 				.setWidth(size.x()).setHeight(size.y())
@@ -174,8 +193,9 @@ void Pipeline::create()
 		this->mScissors.begin(), this->mScissors.end(), scissors.begin(),
 		[&](graphics::Area const& scissor) -> vk::Rect2D
 		{
-			auto offset = scissor.offset * this->mResolutionFloat;
-			auto size = scissor.size * this->mResolutionFloat;
+			auto offset = scissor.offset * adjustedResolution;
+			offset += resolutionOffset;
+			auto size = scissor.size * adjustedResolution;
 			return vk::Rect2D()
 				.setOffset({ (i32)offset.x(), (i32)offset.y() })
 				.setExtent({ (ui32)size.x(), (ui32)size.y() });

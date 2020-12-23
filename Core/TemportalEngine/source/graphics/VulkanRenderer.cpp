@@ -54,10 +54,15 @@ void VulkanRenderer::setImageViewInfo(ImageViewInfo const &info)
 	mImageViewInfo = info;
 }
 
+math::Vector2UInt VulkanRenderer::getResolution() const
+{
+	return this->mSwapChain.getResolution();
+}
+
 f32 VulkanRenderer::getAspectRatio() const
 {
-	auto resolution = this->mSwapChain.getResolution();
-	return resolution.x() / (f32)resolution.y();
+	auto resolution = this->getResolution().toFloat();
+	return resolution.x() / resolution.y();
 }
 
 void VulkanRenderer::initializeDevices()
