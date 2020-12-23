@@ -69,9 +69,10 @@ private:
 	struct FontGlyphVertex
 	{
 		/**
-		 * The position of a text/string vertex.
+		 * <x,y> The position of a text/string vertex.
+		 * <z, w> The width and edge distance of the character in sdf.
 		 */
-		math::Vector2Padded position;
+		math::Vector4 positionAndWidthEdge;
 		/**
 		 * The coordinate of the glyph vertex in the font atlas allocated for a given `RegisteredFont`.
 		 */

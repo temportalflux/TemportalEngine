@@ -15,6 +15,7 @@ UIString::UIString(std::string const& id, std::weak_ptr<graphics::UIRenderer> re
 	: mId(id), mpRenderer(renderer)
 	, mPosition({ 0, 0 }), mContent("")
 	, mFontId(""), mFontSize(0)
+	, mWidth(0.5f), mEdgeDistance(0.1f)
 {
 }
 
@@ -66,6 +67,22 @@ UIString& UIString::setFontSize(ui8 fontSize)
 	this->mFontSize = fontSize;
 	return *this;
 }
+
+UIString& UIString::setThickness(f32 width)
+{
+	this->mWidth = width;
+	return *this;
+}
+
+f32 UIString::thickness() const { return this->mWidth; }
+
+UIString& UIString::setEdgeDistance(f32 distance)
+{
+	this->mEdgeDistance = distance;
+	return *this;
+}
+
+f32 UIString::edgeDistance() const { return this->mEdgeDistance; }
 
 UIString& UIString::update()
 {

@@ -80,7 +80,7 @@ UIRenderer& UIRenderer::setTextPipeline(asset::TypedAssetPath<asset::Pipeline> c
 		this->mText.pipeline->setBindings({
 				graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
 				.setStructType<FontGlyphVertex>()
-				.addAttribute({ 0, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(FontGlyphVertex, position) })
+				.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(FontGlyphVertex, positionAndWidthEdge) })
 				.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(FontGlyphVertex, texCoord) })
 		});
 	}
@@ -267,6 +267,10 @@ void UIRenderer::updateGlyphVertices(UIString const* updatedString, GlyphString 
 	if (resolution.y() <= 0) return;
 	f32 aspectRatio = resolution.x() / resolution.y();
 
+	auto widthAndEdge = math::Vector2({
+		updatedString->thickness(), updatedString->edgeDistance()
+	}).createSubvector<4>(2);
+
 	bool bRequiresFullReset = true;
 		//updatedString->fontId() != glyphStr.prev.fontId
 		//|| updatedString->fontSize() != glyphStr.prev.fontSize;
@@ -309,13 +313,15 @@ void UIRenderer::updateGlyphVertices(UIString const* updatedString, GlyphString 
 			math::Vector2 atlasSize;
 		};
 
-		auto pushVertex = [&glyphStr](
+		auto pushVertex = [&glyphStr, widthAndEdge](
 			math::Vector2 const& cursorPos, ScreenGlyph const& glyph,
 			math::Vector2 const& sizeMult
 		) -> ui16 {
 			uIndex const idxVertex = glyphStr.vertices.size();
 			glyphStr.vertices.push_back(FontGlyphVertex {
-				cursorPos + glyph.screenBearing + (glyph.screenSize * sizeMult),
+				(
+					cursorPos + glyph.screenBearing + (glyph.screenSize * sizeMult)
+				).createSubvector<4>() + widthAndEdge,
 				glyph.atlasPos + (glyph.atlasSize * sizeMult)
 			});
 			return (ui16)idxVertex;

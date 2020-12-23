@@ -23,11 +23,16 @@ public:
 	std::string const& fontId() const;
 	ui8 const& fontSize() const;
 	f32 pixelHeight() const;
+	f32 thickness() const;
+	f32 edgeDistance() const;
 
 	UIString& setContent(std::string const& content);
 	UIString& setPosition(math::Vector2 const& position);
 	UIString& setFontId(std::string const& fontId);
 	UIString& setFontSize(ui8 fontSize);
+
+	UIString& setThickness(f32 width);
+	UIString& setEdgeDistance(f32 distance);
 
 	/**
 	 * Updates the string in the renderer so it gets committed on the next frame.
@@ -51,6 +56,9 @@ private:
 	// The identifier of the `RegisteredFont` in `UIRenderer`.
 	std::string mFontId;
 	ui8 mFontSize;
+
+	f32 mWidth;
+	f32 mEdgeDistance;
 
 };
 
