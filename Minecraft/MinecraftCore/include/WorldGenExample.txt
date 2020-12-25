@@ -1,15 +1,29 @@
 
+struct TerrainSurface
+{
+  game::BlockId top;
+  game::BlockId bottom;
+}
+
 class WorldGenerator
 {
 
-  void generate(world::Coordinate const& coord, std::optional<game::BlockId> &out)
+  game::BlockId mBase, mCore;
+
+  WorldGenerator(
+    game::BlockId const& base,
+    game::BlockId const& core
+  ) : mBase(base), mCore(core)
+  {}
+
+  void generate(TerrainSurface const& surface, world::Coordinate const& coord, std::optional<game::BlockId> &out)
   {
 
     if (coord.chunk().y() == 0)
     {
       if (coord.local().y() == 0)
       {
-        out = Bedrock;
+        out = mBase;
         return;
       }
     }
@@ -19,19 +33,19 @@ class WorldGenerator
       || (coord.chunk().y() == 2 && coord.local().y() < 1)
      )
     {
-      out = Stone;
+      out = mCore;
       return;
     }
     
     if (coord.chunk().y() == 2 && coord.local().y() <= 3)
     {
-      out = Dirt;
+      out = surface.bottom;
       return;
     }
     
     if (coord.chunk().y() == 2 && coord.local().y() == 4)
     {
-      out = Grass;
+      out = surface.top;
       return;
     }
 
