@@ -1,0 +1,40 @@
+
+class WorldGenerator
+{
+
+  void generate(world::Coordinate const& coord, std::optional<game::BlockId> &out)
+  {
+
+    if (coord.chunk().y() == 0)
+    {
+      if (coord.local().y() == 0)
+      {
+        out = Bedrock;
+        return;
+      }
+    }
+
+    if (
+      coord.chunk().y() < 2
+      || (coord.chunk().y() == 2 && coord.local().y() < 1)
+     )
+    {
+      out = Stone;
+      return;
+    }
+    
+    if (coord.chunk().y() == 2 && coord.local().y() <= 3)
+    {
+      out = Dirt;
+      return;
+    }
+    
+    if (coord.chunk().y() == 2 && coord.local().y() == 4)
+    {
+      out = Grass;
+      return;
+    }
+
+  }
+
+}
