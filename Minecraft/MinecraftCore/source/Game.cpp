@@ -583,7 +583,6 @@ void Game::createWorld()
 
 	this->createScene();
 	this->createLocalPlayer();
-	this->createEntities();
 
 	// Specifically for clients which set player movement/camera information
 	{
@@ -617,31 +616,6 @@ void Game::createScene()
 			this->mpVoxelInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
 		}
 	}
-
-	/*
-	this->mpDefaultPhysMaterial = std::make_shared<physics::Material>();
-	this->mpDefaultPhysMaterial->setSystem(this->mpPhysics);
-	this->mpDefaultPhysMaterial->create();
-
-	this->mpBodyPlane = std::make_shared<physics::RigidBody>();
-	this->mpBodyPlane->setSystem(this->mpPhysics);
-	this->mpBodyPlane->setIsStatic(true).createPlane(math::V3_UP, -5.0f, this->mpDefaultPhysMaterial.get());
-	this->mpSceneOverworld->addActor(this->mpBodyPlane.get());
-
-	this->mpBodyBall = std::make_shared<physics::RigidBody>();
-	this->mpBodyBall->setSystem(this->mpPhysics);
-	this->mpBodyBall->setInitialTransform(math::V3_UP * 10 + math::V3_RIGHT * -20, math::Quaternion::Identity);
-	this->mpBodyBall->create();
-	{
-		auto& shape = physics::Shape().setAsSphere(1.0f).setMaterial(this->mpDefaultPhysMaterial.get());
-		shape.setSystem(this->mpPhysics);
-		shape.create();
-		this->mpBodyBall->attachShape(&shape);
-	}
-	this->mpBodyBall->setLinearVelocity(math::V3_RIGHT * 10);
-	this->mpSceneOverworld->addActor(this->mpBodyBall.get());
-	//*/
-
 }
 
 void Game::createLocalPlayer()
@@ -715,102 +689,12 @@ void Game::createLocalPlayer()
 	}
 }
 
-void Game::createEntities()
-{
-	auto pEngine = engine::Engine::Get();
-	auto& ecs = pEngine->getECS();
-	auto& components = ecs.components();
-	auto& views = ecs.views();
-
-	// Entity 1 - Orbiting Sphere
-	{
-		auto entity = ecs.entities().create();
-		this->mSpawnedEntities.push_back(entity);
-
-		// Add Transform
-		{
-			auto transform = components.create<ecs::component::CoordinateTransform>();
-			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 4, CHUNK_HALF_LENGTH }));
-			transform->setOrientation(math::Vector3unitY, 0);
-			entity->addComponent(transform);
-		}
-		{
-			auto body = components.create<ecs::component::PhysicsBody>();
-			body->setVelocity(math::V3_FORWARD * 2.0f);
-			entity->addComponent(body);
-		}
-		entity->addView(views.create<ecs::view::PhysicalDynamics>());
-
-		// Add rendering mesh
-		{
-			auto mesh = components.create<ecs::component::RenderMesh>();
-			mesh->setModel(render::createIcosphere(0));
-			entity->addComponent(mesh);
-		}
-		entity->addView(views.create<ecs::view::RenderedMesh>());
-	}
-
-	// Entity 2 - Stationary Sphere
-	{
-		auto entity = ecs.entities().create();
-		this->mSpawnedEntities.push_back(entity);
-
-		// Add Transform
-		{
-			auto transform = components.create<ecs::component::CoordinateTransform>();
-			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 6, CHUNK_HALF_LENGTH }));
-			transform->setOrientation(math::Vector3unitY, 0);
-			transform->setSize(math::Vector3(2));
-			entity->addComponent(transform);
-		}
-		entity->addView(views.create<ecs::view::PhysicalDynamics>());
-
-		// Add rendering mesh
-		{
-			auto mesh = components.create<ecs::component::RenderMesh>();
-			mesh->setModel(render::createIcosphere(0));
-			entity->addComponent(mesh);
-		}
-		entity->addView(views.create<ecs::view::RenderedMesh>());
-	}
-
-	// Entity 3 - Orbiting Cube
-	{
-		auto entity = ecs.entities().create();
-		this->mSpawnedEntities.push_back(entity);
-
-		// Add Transform
-		{
-			auto transform = components.create<ecs::component::CoordinateTransform>();
-			transform->setPosition(world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 12, CHUNK_HALF_LENGTH }));
-			transform->setOrientation(math::Vector3unitY, 0);
-			entity->addComponent(transform);
-		}
-		{
-			auto body = components.create<ecs::component::PhysicsBody>();
-			body->setVelocity(math::V3_RIGHT * 2.0f);
-			entity->addComponent(body);
-		}
-		entity->addView(views.create<ecs::view::PhysicalDynamics>());
-
-		// Add rendering mesh
-		{
-			auto mesh = components.create<ecs::component::RenderMesh>();
-			mesh->setModel(render::createCube());
-			entity->addComponent(mesh);
-		}
-		entity->addView(views.create<ecs::view::RenderedMesh>());
-	}
-
-}
-
 void Game::destroyScene()
 {
 	this->mpBodyBall.reset();
 	this->mpBodyPlane.reset();
 	this->mpDefaultPhysMaterial.reset();
 
-	this->mSpawnedEntities.clear();
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();
 }
@@ -852,17 +736,6 @@ void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
 	this->mpWorld->handleDirtyCoordinates();
-	
-	auto center = math::Vector3(CHUNK_HALF_LENGTH);
-	f32 gravity = 3.0f;
-	for (auto idxEnt : std::vector<uIndex>({ 0, 2 }))
-	{
-		auto phys = this->mSpawnedEntities[idxEnt]->getView<ecs::view::PhysicalDynamics>();
-		auto transform = phys->get<ecs::component::CoordinateTransform>();
-		auto body = phys->get<ecs::component::PhysicsBody>();
-		body->setAcceleration((center - transform->localPosition()).normalized() * gravity);
-	}
-	
 	engine::Engine::Get()->update(deltaTime);
 	this->mpSceneOverworld->simulate(deltaTime);
 
