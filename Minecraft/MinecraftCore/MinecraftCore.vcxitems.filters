@@ -169,7 +169,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp">
       <Filter>ecs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -279,6 +281,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp">
       <Filter>ecs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

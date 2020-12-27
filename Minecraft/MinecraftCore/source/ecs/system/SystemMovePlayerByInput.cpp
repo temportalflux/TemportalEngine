@@ -25,17 +25,20 @@ void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 	auto input = view->get<component::PlayerInput>();
 	auto physController = view->get<component::PhysicsController>();
 	assert(transform && input && physController);
-	
+
 	auto orientation = transform->orientation();
-	auto euler = orientation.euler();
-	auto rot = math::Quaternion::FromAxisAngle(math::V3_UP, euler.y());
 
 	math::Vector3 displacement = math::Vector3::ZERO;
-	for (auto const& mapping : input->axialMoveMappings())
+	for (auto mapping : input->axialMoveMappings())
 	{
 		if (!mapping.bIsActive) continue;
-		auto dir = mapping.bIsGlobal ? mapping.direction : rot.rotate(mapping.direction);
-		displacement += dir * input->axialMoveSpeed() * deltaTime;
+		if (!mapping.bIsGlobal)
+		{
+			mapping.direction = orientation.rotate(mapping.direction);
+			mapping.direction.y() = 0;
+			mapping.direction.normalize();
+		}
+		displacement += mapping.direction * input->axialMoveSpeed() * deltaTime;
 	}
 
 	auto& controller = physController->controller();
