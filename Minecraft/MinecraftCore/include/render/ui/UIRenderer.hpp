@@ -7,6 +7,7 @@
 #include "graphics/FontAtlas.hpp"
 #include "thread/MutexLock.hpp"
 #include "ui/ImageWidget.hpp"
+#include "ui/WidgetRenderer.hpp"
 
 #include "render/IPipelineRenderer.hpp"
 
@@ -18,7 +19,9 @@ FORWARD_DEF(NS_GRAPHICS, class UIString);
 
 NS_GRAPHICS
 
-class UIRenderer : public graphics::IPipelineRenderer
+class UIRenderer
+	: public graphics::IPipelineRenderer
+	, public ui::ImageWidgetRenderer
 {
 	friend class UIString;
 
@@ -65,7 +68,6 @@ protected:
 	
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
-	graphics::CommandPool* mpTransientPool;
 
 	math::Vector2UInt mScreenResolution;
 	thread::MutexLock mMutex;
@@ -160,14 +162,6 @@ private:
 
 	void updateGlyphString(GlyphString &glyphStr);
 	void updateGlyphVertices(UIString const* updatedString, GlyphString &glyphStr) const;
-
-	struct
-	{
-		std::shared_ptr<graphics::Pipeline> pipeline;
-		graphics::DescriptorLayout descriptorLayout;
-		graphics::ImageSampler sampler;
-	} mImages;
-	ui::Image mImageWidget;
 
 };
 

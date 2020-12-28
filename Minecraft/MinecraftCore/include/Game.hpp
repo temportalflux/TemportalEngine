@@ -4,6 +4,7 @@
 
 #include "logging/Logger.hpp"
 #include "input/Event.hpp"
+#include "ui/Core.hpp"
 
 class Window;
 class Controller;
@@ -39,6 +40,7 @@ FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
+FORWARD_DEF(NS_UI, class TextLogMenu);
 
 NS_GAME
 class VoxelTypeRegistry;
@@ -100,6 +102,7 @@ private:
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
 	std::shared_ptr<ecs::system::RenderEntities> mpSystemRenderEntities;
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
+	std::shared_ptr<ui::TextLogMenu> mpMenuTextLog;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;

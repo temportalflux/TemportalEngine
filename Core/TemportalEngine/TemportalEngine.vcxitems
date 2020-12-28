@@ -109,6 +109,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\ImageWidget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\WidgetRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
@@ -258,6 +259,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\ImageWidget.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Resolution.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Widget.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\WidgetRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp" />

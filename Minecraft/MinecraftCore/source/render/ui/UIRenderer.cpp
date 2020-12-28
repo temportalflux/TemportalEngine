@@ -11,7 +11,6 @@
 #include "graphics/Pipeline.hpp"
 #include "graphics/VulkanApi.hpp"
 #include "render/ui/UIString.hpp"
-#include "ui/Widgets.hpp"
 
 using namespace graphics;
 
@@ -35,7 +34,7 @@ UIRenderer::UIRenderer(
 		.setNormalizeCoordinates(true)
 		.setCompare(std::nullopt)
 		.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 });
-	this->mImages.sampler
+	this->imageSampler()
 		.setFilter(graphics::FilterMode::Enum::Nearest, graphics::FilterMode::Enum::Nearest)
 		.setAddressMode({
 			graphics::SamplerAddressMode::Enum::ClampToEdge,
@@ -57,11 +56,6 @@ UIRenderer::UIRenderer(
 	this->mText.indexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, MemoryUsage::eGPUOnly)
 		.setSize(iBufferSize);
-
-	ui::createMenuBackground(this->mImageWidget, 30)
-		.setRenderPosition({ -256, -256 })
-		.setRenderSize({ 512, 512 });
-
 }
 
 UIRenderer::~UIRenderer()
@@ -130,23 +124,7 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 
 UIRenderer& UIRenderer::setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
-	if (!this->mImages.pipeline)
-	{
-		this->mImages.pipeline = std::make_shared<graphics::Pipeline>();
-	}
-
-	graphics::populatePipeline(path, this->mImages.pipeline.get(), &this->mImages.descriptorLayout);
-
-	{
-		ui8 slot = 0;
-		this->mImages.pipeline->setBindings({
-			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
-			.setStructType<ui::Image::Vertex>()
-			.addAttribute({ 0, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(ui::Image::Vertex, position) })
-			.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(ui::Image::Vertex, textureCoordinate) })
-		});
-	}
-
+	ui::ImageWidgetRenderer::setImagePipeline(path);
 	return *this;
 }
 
@@ -162,8 +140,6 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 
 	this->mText.sampler.setDevice(device);
 	this->mText.sampler.create();
-	this->mImages.sampler.setDevice(device);
-	this->mImages.sampler.create();
 	
 	this->mText.pipeline->setDevice(device);
 
@@ -172,15 +148,13 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 	this->mText.vertexBuffer.create();
 	this->mText.indexBuffer.create();
 
-	this->mImages.pipeline->setDevice(device);
-	this->mImages.descriptorLayout.setDevice(device).create();
-	this->mImageWidget.setDevice(device);
+	ui::ImageWidgetRenderer::setDevice(device);
 }
 
 void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 {
 	this->mText.pipeline->setRenderPass(renderPass);
-	this->mImages.pipeline->setRenderPass(renderPass);
+	this->imagePipeline()->setRenderPass(renderPass);
 }
 
 void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
@@ -191,11 +165,7 @@ void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::
 		this->mText.descriptorLayout.createSet(descriptorPool, font.descriptorSet());
 		font.initializeImage(transientPool);
 	}
-	this->mpTransientPool = transientPool;
-	this->mImageWidget
-		.create(transientPool)
-		.createDescriptor(this->mImages.descriptorLayout, descriptorPool)
-		.attachWithSampler(&this->mImages.sampler);
+	ui::ImageWidgetRenderer::initializeData(transientPool, descriptorPool);
 }
 
 void UIRenderer::setFrameCount(uSize frameCount)
@@ -229,14 +199,7 @@ void UIRenderer::createPipeline(math::Vector2UInt const& resolution)
 		updateGlyphString(glyphString);
 	}
 
-	this->mImages.pipeline
-		->setDescriptorLayout(this->mImages.descriptorLayout, 1)
-		.setResolution(resolution)
-		.create();
-
-	this->mImageWidget.setResolution({
-		resolution, 96
-	}).commit(this->mpTransientPool);
+	ui::ImageWidgetRenderer::createPipeline(resolution);
 }
 
 void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -268,27 +231,24 @@ void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalD
 		);
 	}
 
-	command->bindPipeline(this->mImages.pipeline);
-	this->mImageWidget.bind(command, this->mImages.pipeline);
-	this->mImageWidget.record(command);
+	ui::ImageWidgetRenderer::record(command);
 }
 
 void UIRenderer::destroyRenderChain()
 {
 	this->mText.pipeline->invalidate();
-	this->mImages.pipeline->invalidate();
+	this->imagePipeline()->invalidate();
 }
 
 void UIRenderer::destroyRenderDevices()
 {
 	this->mText.sampler.destroy();
-	this->mImages.sampler.destroy();
+	this->imageSampler().destroy();
 	this->mText.descriptorLayout.invalidate();
 	this->mText.fonts.clear();
 	this->mText.vertexBuffer.destroy();
 	this->mText.indexBuffer.destroy();
-	this->mImages.descriptorLayout.invalidate();
-	this->mImageWidget.releaseGraphics();
+	this->imageDescriptorLayout().invalidate();
 }
 
 void UIRenderer::addString(std::shared_ptr<UIString> pStr)

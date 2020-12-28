@@ -54,6 +54,7 @@
 #include "resource/ResourceManager.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
+#include "ui/TextLogMenu.hpp"
 
 #include <chrono>
 
@@ -322,6 +323,9 @@ void Game::createRenderers()
 		"assets/render/entity/RenderEntityPipeline.te-asset"
 	));
 	this->mpRenderer->addRenderer(this->mpSystemRenderEntities.get());
+
+	this->mpMenuTextLog = std::make_shared<ui::TextLogMenu>();
+	this->mpMenuTextLog->addImagesToRenderer(this->mpUIRenderer.get());
 }
 
 void Game::createGameRenderer()
@@ -549,6 +553,7 @@ void Game::destroyRenderers()
 	this->mpWorldAxesRenderer->destroy();
 	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();
+	this->mpMenuTextLog.reset();
 	
 	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpSystemUpdateDebugHUD.reset();
