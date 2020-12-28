@@ -70,6 +70,9 @@
     <Filter Include="physics">
       <UniqueIdentifier>{079a48a5-7f37-4d2a-9679-9132fded65dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{eb50f8fa-2fc0-4d52-9758-3d10c7d91faf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -357,6 +360,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp">
       <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\ImageWidget.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -774,6 +780,18 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp">
       <Filter>render</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\ImageWidget.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Widget.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Resolution.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Core.hpp">
+      <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

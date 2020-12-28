@@ -34,6 +34,8 @@ class TEMPORTALENGINE_API Vector
 		|| std::is_same<TValue, f64>::value
 		|| std::is_same<TValue, i8>::value
 		|| std::is_same<TValue, ui8>::value
+		|| std::is_same<TValue, i16>::value
+		|| std::is_same<TValue, ui16>::value
 		|| std::is_same<TValue, i32>::value
 		|| std::is_same<TValue, ui32>::value,
 		"Invalid Vector value type"
@@ -695,6 +697,7 @@ typedef Vector<f32, 2, 2> Vector2;
 typedef Vector<f32, 2, 4> Vector2Padded;
 typedef Vector<i32, 2, 2> Vector2Int;
 typedef Vector<ui32, 2, 2> Vector2UInt;
+typedef Vector<ui32, 4, 4> Vector4UInt;
 extern Vector2 const Vector2unitX, Vector2unitY;
 extern Vector2 const V2_RIGHT, V2_UP;
 

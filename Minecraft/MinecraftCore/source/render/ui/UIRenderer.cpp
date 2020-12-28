@@ -11,6 +11,7 @@
 #include "graphics/Pipeline.hpp"
 #include "graphics/VulkanApi.hpp"
 #include "render/ui/UIString.hpp"
+#include "ui/Widgets.hpp"
 
 using namespace graphics;
 
@@ -21,19 +22,31 @@ UIRenderer::UIRenderer(
 )
 {
 	this->mText.fontFaceCount = 0;
-
+	
 	this->mText.sampler
 		.setFilter(graphics::FilterMode::Enum::Linear, graphics::FilterMode::Enum::Linear)
 		.setAddressMode({
 			graphics::SamplerAddressMode::Enum::ClampToEdge,
 			graphics::SamplerAddressMode::Enum::ClampToEdge,
 			graphics::SamplerAddressMode::Enum::ClampToEdge
-										})
+		})
 		.setAnistropy(std::nullopt)
 		.setBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
 		.setNormalizeCoordinates(true)
 		.setCompare(std::nullopt)
 		.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 });
+	this->mImages.sampler
+		.setFilter(graphics::FilterMode::Enum::Nearest, graphics::FilterMode::Enum::Nearest)
+		.setAddressMode({
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge
+		})
+		.setAnistropy(16.0f)
+		.setBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
+		.setNormalizeCoordinates(true)
+		.setCompare(std::nullopt)
+		.setMipLOD(graphics::SamplerLODMode::Enum::Linear, 0, { 0, 0 });
 
 	uSize const vBufferSize = maximumDisplayedCharacters * /*vertices per character*/ 4 * /*size per vertex*/ sizeof(FontGlyphVertex);
 	uSize const iBufferSize = maximumDisplayedCharacters * /*indices per character*/ 6 * /*size per vertex*/ sizeof(ui16);
@@ -44,6 +57,11 @@ UIRenderer::UIRenderer(
 	this->mText.indexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, MemoryUsage::eGPUOnly)
 		.setSize(iBufferSize);
+
+	ui::createMenuBackground(this->mImageWidget, 30)
+		.setRenderPosition({ -256, -256 })
+		.setRenderSize({ 512, 512 });
+
 }
 
 UIRenderer::~UIRenderer()
@@ -110,6 +128,28 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 	return *this;
 }
 
+UIRenderer& UIRenderer::setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
+{
+	if (!this->mImages.pipeline)
+	{
+		this->mImages.pipeline = std::make_shared<graphics::Pipeline>();
+	}
+
+	graphics::populatePipeline(path, this->mImages.pipeline.get(), &this->mImages.descriptorLayout);
+
+	{
+		ui8 slot = 0;
+		this->mImages.pipeline->setBindings({
+			graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
+			.setStructType<ui::Image::Vertex>()
+			.addAttribute({ 0, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(ui::Image::Vertex, position) })
+			.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(ui::Image::Vertex, textureCoordinate) })
+		});
+	}
+
+	return *this;
+}
+
 void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	OPTICK_EVENT();
@@ -122,6 +162,8 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 
 	this->mText.sampler.setDevice(device);
 	this->mText.sampler.create();
+	this->mImages.sampler.setDevice(device);
+	this->mImages.sampler.create();
 	
 	this->mText.pipeline->setDevice(device);
 
@@ -129,11 +171,16 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 	this->mText.indexBuffer.setDevice(device);
 	this->mText.vertexBuffer.create();
 	this->mText.indexBuffer.create();
+
+	this->mImages.pipeline->setDevice(device);
+	this->mImages.descriptorLayout.setDevice(device).create();
+	this->mImageWidget.setDevice(device);
 }
 
 void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 {
 	this->mText.pipeline->setRenderPass(renderPass);
+	this->mImages.pipeline->setRenderPass(renderPass);
 }
 
 void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
@@ -144,6 +191,11 @@ void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::
 		this->mText.descriptorLayout.createSet(descriptorPool, font.descriptorSet());
 		font.initializeImage(transientPool);
 	}
+	this->mpTransientPool = transientPool;
+	this->mImageWidget
+		.create(transientPool)
+		.createDescriptor(this->mImages.descriptorLayout, descriptorPool)
+		.attachWithSampler(&this->mImages.sampler);
 }
 
 void UIRenderer::setFrameCount(uSize frameCount)
@@ -176,6 +228,15 @@ void UIRenderer::createPipeline(math::Vector2UInt const& resolution)
 	{
 		updateGlyphString(glyphString);
 	}
+
+	this->mImages.pipeline
+		->setDescriptorLayout(this->mImages.descriptorLayout, 1)
+		.setResolution(resolution)
+		.create();
+
+	this->mImageWidget.setResolution({
+		resolution, 96
+	}).commit(this->mpTransientPool);
 }
 
 void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -194,33 +255,40 @@ void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalD
 				&this->mText.fonts[*idxPrevFont].descriptorSet()
 			});
 			command->bindPipeline(this->mText.pipeline);
+			command->bindVertexBuffers(0, { &this->mText.vertexBuffer });
+			command->bindIndexBuffer(0, &this->mText.indexBuffer, vk::IndexType::eUint16);
 		}
-
-		command->bindVertexBuffers(0, { &this->mText.vertexBuffer });
-		command->bindIndexBuffer(0, &this->mText.indexBuffer, vk::IndexType::eUint16);
 
 		command->draw(
 			committedString.idxStartIndex,
 			committedString.indexCount,
-			// the actual indicies of vertex data will be the indices in the buffer + their starting offset
+			// the actual indices of vertex data will be the indices in the buffer + their starting offset
 			committedString.vertexPreCount,
 			0, 1
 		);
 	}
+
+	command->bindPipeline(this->mImages.pipeline);
+	this->mImageWidget.bind(command, this->mImages.pipeline);
+	this->mImageWidget.record(command);
 }
 
 void UIRenderer::destroyRenderChain()
 {
 	this->mText.pipeline->invalidate();
+	this->mImages.pipeline->invalidate();
 }
 
 void UIRenderer::destroyRenderDevices()
 {
 	this->mText.sampler.destroy();
+	this->mImages.sampler.destroy();
 	this->mText.descriptorLayout.invalidate();
 	this->mText.fonts.clear();
 	this->mText.vertexBuffer.destroy();
 	this->mText.indexBuffer.destroy();
+	this->mImages.descriptorLayout.invalidate();
+	this->mImageWidget.releaseGraphics();
 }
 
 void UIRenderer::addString(std::shared_ptr<UIString> pStr)

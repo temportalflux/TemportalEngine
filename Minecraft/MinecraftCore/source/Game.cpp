@@ -527,6 +527,9 @@ void Game::createUIRenderer()
 	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/UIPipeline.te-asset"
 	));
+	this->mpUIRenderer->setImagePipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
+		"assets/render/ui/ImagePipeline.te-asset"
+	));
 
 	this->mpUIRenderer->addFont("unispace", asset::TypedAssetPath<asset::Font>::Create(
 		"assets/font/Unispace/Unispace.te-asset"

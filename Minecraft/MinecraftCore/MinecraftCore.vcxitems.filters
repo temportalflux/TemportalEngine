@@ -49,6 +49,9 @@
     <Filter Include="render\voxel">
       <UniqueIdentifier>{66a63ee6-c5b0-42d6-af33-cdd130b1f2b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{515490dc-6b82-4f00-b78c-18f6094a8c68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
@@ -172,6 +175,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp">
       <Filter>model</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Widgets.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -283,6 +289,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp">
       <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\Widgets.cpp">
+      <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

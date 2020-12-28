@@ -1,0 +1,35 @@
+{
+	"type": "pipeline",
+	"shader-vert": "shader:assets/render/ui/ImageVertex.te-asset",
+	"shader-frag": "shader:assets/render/ui/ImageFragment.te-asset",
+	"frontFace": "Clockwise",
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": true,
+			"value": {
+				"color": {
+					"operation": "Add",
+					"src": "SrcAlpha",
+					"dst": "OneMinusSrcAlpha"
+				},
+				"alpha": {
+					"operation": "Add",
+					"src": "One",
+					"dst": "Zero"
+				}
+			}
+		}
+	},
+	"descriptorGroups": [
+		{
+			"descriptors": [
+				{
+					"id": "imgSampler",
+					"type": 1,
+					"stage": 16
+				}
+			]
+		}
+	]
+}

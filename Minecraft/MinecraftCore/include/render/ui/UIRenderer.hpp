@@ -6,6 +6,7 @@
 #include "graphics/Descriptor.hpp"
 #include "graphics/FontAtlas.hpp"
 #include "thread/MutexLock.hpp"
+#include "ui/ImageWidget.hpp"
 
 #include "render/IPipelineRenderer.hpp"
 
@@ -33,6 +34,8 @@ public:
 
 	UIRenderer& setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	UIRenderer& addFont(std::string fontId, std::shared_ptr<asset::Font> asset);
+
+	UIRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
@@ -62,6 +65,7 @@ protected:
 	
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
+	graphics::CommandPool* mpTransientPool;
 
 	math::Vector2UInt mScreenResolution;
 	thread::MutexLock mMutex;
@@ -156,6 +160,14 @@ private:
 
 	void updateGlyphString(GlyphString &glyphStr);
 	void updateGlyphVertices(UIString const* updatedString, GlyphString &glyphStr) const;
+
+	struct
+	{
+		std::shared_ptr<graphics::Pipeline> pipeline;
+		graphics::DescriptorLayout descriptorLayout;
+		graphics::ImageSampler sampler;
+	} mImages;
+	ui::Image mImageWidget;
 
 };
 
