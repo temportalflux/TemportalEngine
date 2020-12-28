@@ -12,7 +12,8 @@ TextLogMenu::TextLogMenu()
 		.setTextureSubsize({ 1, 1 })
 		.setTexturePixels({ 255, 255, 255, 255 })
 		.setRenderPosition({ 0, 0 })
-		.setRenderSize({ 512, 512 });
+		.setRenderSize({ 512, 512 })
+		.setColor({ 0.f, 0.f, 0.f, 0.9f });
 
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
 	ui::createMenuBackground(*this->mpBackgroundDemo.get(), 30)

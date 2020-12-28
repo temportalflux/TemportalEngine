@@ -20,6 +20,7 @@ public:
 	{
 		math::Vector3Padded position;
 		math::Vector2Padded textureCoordinate;
+		math::Vector4 color;
 	};
 
 	struct Slice
@@ -48,6 +49,7 @@ public:
 
 	Image& setTexturePixels(std::vector<ui8> const& pixels);
 	Image& setTextureSize(math::Vector2UInt const& sizeInPixels);
+	Image& setColor(math::Vector4 const& color);
 	Image& setTexturePadding(math::Vector2UInt const& paddingInPixels);
 	Image& setTextureSubsize(math::Vector2UInt const& sizeInPixels);
 
@@ -72,6 +74,8 @@ public:
 
 private:
 	
+	math::Vector4 mColor;
+
 	/**
 	 * The amount of pixels in the image to ignore from the left & top
 	 * (before determining slicing).

@@ -48,6 +48,7 @@ ui::ImageWidgetRenderer& ui::ImageWidgetRenderer::setImagePipeline(asset::TypedA
 			.setStructType<ui::Image::Vertex>()
 			.addAttribute({ 0, /*vec3*/ (ui32)vk::Format::eR32G32B32Sfloat, offsetof(ui::Image::Vertex, position) })
 			.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(ui::Image::Vertex, textureCoordinate) })
+			.addAttribute({ 2, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(ui::Image::Vertex, color) })
 		});
 	}
 

@@ -6,7 +6,7 @@
 
 using namespace ui;
 
-Image::Image() : Widget()
+Image::Image() : Widget(), mColor(1.0f)
 {
 	this->mImage
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
@@ -103,6 +103,12 @@ Image& Image::setTextureSize(math::Vector2UInt const& sizeInPixels)
 {
 	this->mImageSize = sizeInPixels;
 	this->mImage.setSize(math::Vector3UInt(sizeInPixels).z(1));
+	return *this;
+}
+
+Image& Image::setColor(math::Vector4 const& color)
+{
+	this->mColor = color;
 	return *this;
 }
 
@@ -219,7 +225,8 @@ Image& Image::commit(graphics::CommandPool* transientPool)
 			vertexIndices[idxRowCoord][idxColCoord] = ui16(this->mVertices.size());
 			this->mVertices.push_back({
 				{ coords[0][idxRowCoord].pos, coords[1][idxColCoord].pos },
-				{ coords[0][idxRowCoord].texCoord, coords[1][idxColCoord].texCoord }
+				{ coords[0][idxRowCoord].texCoord, coords[1][idxColCoord].texCoord },
+				this->mColor,
 			});
 		}
 	}
