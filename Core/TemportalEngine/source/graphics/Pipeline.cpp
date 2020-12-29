@@ -8,7 +8,10 @@
 
 using namespace graphics;
 
-Pipeline::Pipeline() : mEnforcedAspectRatio(16.0f / 9.0f)
+Pipeline::Pipeline()
+	: mEnforcedAspectRatio(16.0f / 9.0f)
+	, mbDepthTest(true)
+	, mbDepthWrite(true)
 {
 	this->mLineWidth = 1.0f;
 }
@@ -65,6 +68,13 @@ Pipeline& Pipeline::setTopology(graphics::PrimitiveTopology const topology)
 Pipeline& Pipeline::setLineWidth(f32 const& width)
 {
 	this->mLineWidth = width;
+	return *this;
+}
+
+Pipeline& Pipeline::setDepthEnabled(bool test, bool write)
+{
+	this->mbDepthTest = test;
+	this->mbDepthWrite = write;
 	return *this;
 }
 
@@ -270,8 +280,9 @@ void Pipeline::create()
 		.setDynamicStateCount(2)
 		.setPDynamicStates(dynamicStates);
 
+	// https://vulkan-tutorial.com/Depth_buffering#page_Depth-and-stencil-state
 	auto infoDepthStencil = vk::PipelineDepthStencilStateCreateInfo()
-		.setDepthTestEnable(true).setDepthWriteEnable(true)
+		.setDepthTestEnable(this->mbDepthTest).setDepthWriteEnable(this->mbDepthWrite)
 		.setDepthCompareOp(vk::CompareOp::eLess)
 		.setDepthBoundsTestEnable(false).setMinDepthBounds(0.0f).setMaxDepthBounds(1.0f)
 		.setStencilTestEnable(false).setFront(vk::StencilOpState()).setBack(vk::StencilOpState());

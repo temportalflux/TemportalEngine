@@ -30,6 +30,7 @@ public:
 	Pipeline& setBlendMode(std::optional<BlendMode> mode);
 	Pipeline& setTopology(graphics::PrimitiveTopology const topology);
 	Pipeline& setLineWidth(f32 const& width);
+	Pipeline& setDepthEnabled(bool test, bool write);
 
 	Pipeline& setRenderPass(std::weak_ptr<RenderPass> pRenderPass);
 	Pipeline& setDescriptors(std::vector<DescriptorGroup> *descriptors);
@@ -57,6 +58,9 @@ private:
 	std::optional<BlendMode> mBlendMode;
 	graphics::PrimitiveTopology mTopology;
 	f32 mLineWidth;
+
+	bool mbDepthTest;
+	bool mbDepthWrite;
 
 	std::weak_ptr<graphics::RenderPass> mpRenderPass;
 	math::Vector2 mResolutionFloat;

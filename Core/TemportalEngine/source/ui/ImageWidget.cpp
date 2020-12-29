@@ -6,7 +6,7 @@
 
 using namespace ui;
 
-Image::Image() : Widget(), mColor(1.0f)
+Image::Image() : Widget(), mColor(1.0f), mSlicing({})
 {
 	this->mImage
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
@@ -130,7 +130,7 @@ Image& Image::setTextureSlicing(std::array<Slice, 4> const& slices)
 	return *this;
 }
 
-Image& Image::create(graphics::CommandPool* transientPool)
+Widget& Image::create(graphics::CommandPool* transientPool)
 {
 	this->mImage.create();
 	
@@ -147,20 +147,20 @@ Image& Image::create(graphics::CommandPool* transientPool)
 	return *this;
 }
 
-Image& Image::createDescriptor(graphics::DescriptorLayout &layout, graphics::DescriptorPool *descriptorPool)
+Widget& Image::createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool)
 {
-	layout.createSet(descriptorPool, this->mDescriptor);
+	layout->createSet(descriptorPool, this->mDescriptor);
 	return *this;
 }
 
-Image& Image::attachWithSampler(graphics::ImageSampler *sampler)
+Widget& Image::attachWithSampler(graphics::ImageSampler *sampler)
 {
 	this->mDescriptor.attach("imgSampler", graphics::EImageLayout::eShaderReadOnlyOptimal, &this->mView, sampler);
 	this->mDescriptor.writeAttachments();
 	return *this;
 }
 
-Image& Image::commit(graphics::CommandPool* transientPool)
+Widget& Image::commit(graphics::CommandPool* transientPool)
 {
 	this->mVertices.clear();
 	this->mIndices.clear();
@@ -224,7 +224,7 @@ Image& Image::commit(graphics::CommandPool* transientPool)
 		{
 			vertexIndices[idxRowCoord][idxColCoord] = ui16(this->mVertices.size());
 			this->mVertices.push_back({
-				{ coords[0][idxRowCoord].pos, coords[1][idxColCoord].pos },
+				{ coords[0][idxRowCoord].pos, coords[1][idxColCoord].pos, 0 },
 				{ coords[0][idxRowCoord].texCoord, coords[1][idxColCoord].texCoord },
 				this->mColor,
 			});

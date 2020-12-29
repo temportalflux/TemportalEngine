@@ -7,10 +7,6 @@
 #include "graphics/Image.hpp"
 #include "graphics/ImageView.hpp"
 
-FORWARD_DEF(NS_GRAPHICS, class CommandPool);
-FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
-FORWARD_DEF(NS_GRAPHICS, class ImageSampler);
-
 NS_UI
 
 class Image : public ui::Widget
@@ -59,14 +55,14 @@ public:
 	 * Creates the graphics image for the provided pixels and size.
 	 * Creates the buffer objects for the current image.
 	 */
-	Image& create(graphics::CommandPool* transientPool);
-	Image& createDescriptor(graphics::DescriptorLayout &layout, graphics::DescriptorPool *descriptorPool);
-	Image& attachWithSampler(graphics::ImageSampler *sampler);
+	Widget& create(graphics::CommandPool* transientPool) override;
+	Widget& createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool) override;
+	Widget& attachWithSampler(graphics::ImageSampler *sampler) override;
 
 	/**
 	 * Rebuilds the vertex and index buffers and commits them to the graphics object representations.
 	 */
-	Image& commit(graphics::CommandPool* transientPool);
+	Widget& commit(graphics::CommandPool* transientPool) override;
 
 	void releaseGraphics();
 	void bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline) override;

@@ -109,6 +109,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Thread.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\ThreadId.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\ImageWidget.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\Widget.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\WidgetRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />

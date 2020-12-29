@@ -2,6 +2,24 @@
 	"type": "pipeline",
 	"shader-vert": "shader:assets/render/world/VoxelVertex.te-asset",
 	"shader-frag": "shader:assets/render/world/VoxelFragment.te-asset",
+	"blendMode": {
+		"mask": "RGBA",
+		"blend": {
+			"hasValue": true,
+			"value": {
+				"color": {
+					"operation": "Add",
+					"src": "SrcAlpha",
+					"dst": "OneMinusSrcAlpha"
+				},
+				"alpha": {
+					"operation": "Add",
+					"src": "One",
+					"dst": "Zero"
+				}
+			}
+		}
+	},
 	"descriptorGroups": [
 		{
 			"descriptors": [

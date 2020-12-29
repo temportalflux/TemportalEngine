@@ -1,0 +1,15 @@
+{
+	"type": "block",
+	"id": {
+		"module": "minecraft",
+		"name": "glass"
+	},
+  "textures": {
+    "right": "glass",
+    "left": "glass",
+    "front": "glass",
+    "back": "glass",
+    "up": "glass",
+    "down": "glass"
+  }
+}

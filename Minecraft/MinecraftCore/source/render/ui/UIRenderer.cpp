@@ -85,6 +85,7 @@ UIRenderer& UIRenderer::setTextPipeline(asset::TypedAssetPath<asset::Pipeline> c
 		this->mText.pipeline = std::make_shared<graphics::Pipeline>();
 	}
 
+	this->mText.pipeline->setDepthEnabled(false, false);
 	graphics::populatePipeline(path, this->mText.pipeline.get(), &this->mText.descriptorLayout);
 
 	{

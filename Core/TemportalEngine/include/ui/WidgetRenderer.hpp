@@ -15,8 +15,9 @@ FORWARD_DEF(NS_GRAPHICS, class Pipeline);
 
 NS_UI
 class Image;
+class Widget;
 
-class ImageWidgetRenderer
+class ImageWidgetRenderer : public std::enable_shared_from_this<ImageWidgetRenderer>
 {
 
 public:
@@ -29,7 +30,7 @@ public:
 	void initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool);
 
 	void add(std::weak_ptr<ui::Image> widget);
-	void removeExpired();
+	void changeZLayer(std::weak_ptr<ui::Widget> widget, ui32 newZ);
 
 	std::shared_ptr<graphics::Pipeline>& imagePipeline() { return this->mImagePipeline; }
 	graphics::DescriptorLayout& imageDescriptorLayout() { return this->mImageDescriptorLayout; }
@@ -48,10 +49,20 @@ private:
 	graphics::DescriptorLayout mImageDescriptorLayout;
 	graphics::ImageSampler mImageSampler;
 
-	std::vector<std::weak_ptr<ui::Image>> mImageWidgets;
+	struct Layer
+	{
+		ui32 z;
+		std::vector<std::weak_ptr<ui::Widget>> widgets;
+		bool operator<(Layer const& other) const;
+	};
+	std::vector<Layer> mLayers;
 
-	void initializeData_image(std::shared_ptr<ui::Image> img);
-	void commit_image(std::shared_ptr<ui::Image> img);
+	typedef std::pair<std::vector<Layer>::iterator, std::vector<Layer>::iterator> LayerFindResult;
+	LayerFindResult findLayer(ui32 z);
+	Layer& getOrMakeLayer(ui32 z);
+
+	void initializeWidgetData(std::shared_ptr<ui::Widget> img);
+	void commitWidget(std::shared_ptr<ui::Widget> img);
 
 };
 

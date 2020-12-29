@@ -336,20 +336,20 @@ struct AttachmentStoreOp
 // Mirrors vk::PipelineStageFlagBits
 enum class PipelineStageFlags : uint64_t
 {
-	eTopOfPipe = 0x00000001,
-	eDrawIndirect = 0x00000002,
-	eVertexInput = 0x00000004,
-	eVertexShader = 0x00000008,
-	eTessellationControlShader = 0x00000010,
-	eTessellationEvaluationShader = 0x00000020,
-	eGeometryShader = 0x00000040,
-	eFragmentShader = 0x00000080,
-	eEarlyFragmentTests = 0x00000100,
-	eLateFragmentTests = 0x00000200,
-	eColorAttachmentOutput = 0x00000400,
-	eComputeShader = 0x00000800,
-	eTransfer = 0x00001000,
-	eBottomOfPipe = 0x00002000,
+	eTopOfPipe = 0x00000001, // 0b1
+	eDrawIndirect = 0x00000002, // 0b10
+	eVertexInput = 0x00000004, // 0b100
+	eVertexShader = 0x00000008, // 0b1000
+	eTessellationControlShader = 0x00000010, // 0b10000
+	eTessellationEvaluationShader = 0x00000020, // 0b100000
+	eGeometryShader = 0x00000040, // 0b1000000
+	eFragmentShader = 0x00000080, // 0b10000000
+	eEarlyFragmentTests = 0x00000100, // 0b100000000
+	eLateFragmentTests = 0x00000200, // 0b1000000000
+	eColorAttachmentOutput = 0x00000400, // 0b10000000000
+	eComputeShader = 0x00000800, // 0b100000000000
+	eTransfer = 0x00001000, // 0b1000000000000
+	eBottomOfPipe = 0x00002000, // 0b10000000000000
 };
 typedef utility::EnumWrapper<PipelineStageFlags> PipelineStage;
 
@@ -373,23 +373,23 @@ typedef utility::EnumWrapper<EPrimitiveTopology> PrimitiveTopology;
 // Mirrors vk::AccessFlagBits
 enum class AccessFlags : uint64_t
 {
-	eIndirectCommandRead = 0x00000001,
-	eIndexRead = 0x00000002,
-	eVertexAttributeRead = 0x00000004,
-	eUniformRead = 0x00000008,
-	eInputAttachmentRead = 0x00000010,
-	eShaderRead = 0x00000020,
-	eShaderWrite = 0x00000040,
-	eColorAttachmentRead = 0x00000080,
-	eColorAttachmentWrite = 0x00000100,
-	eDepthStencilAttachmentRead = 0x00000200,
-	eDepthStencilAttachmentWrite = 0x00000400,
-	eTransferRead = 0x00000800,
-	eTransferWrite = 0x00001000,
-	eHostRead = 0x00002000,
-	eHostWrite = 0x00004000,
-	eMemoryRead = 0x00008000,
-	eMemoryWrite = 0x00010000,
+	eIndirectCommandRead = 0x00000001, // 0b1
+	eIndexRead = 0x00000002, // 0b10
+	eVertexAttributeRead = 0x00000004, // 0b100
+	eUniformRead = 0x00000008, // 0b1000
+	eInputAttachmentRead = 0x00000010, // 0b10000
+	eShaderRead = 0x00000020, // 0b100000
+	eShaderWrite = 0x00000040, // 0b1000000
+	eColorAttachmentRead = 0x00000080, // 0b10000000
+	eColorAttachmentWrite = 0x00000100, // 0b100000000
+	eDepthStencilAttachmentRead = 0x00000200, // 0b1000000000
+	eDepthStencilAttachmentWrite = 0x00000400, // 0b10000000000
+	eTransferRead = 0x00000800, // 0b100000000000
+	eTransferWrite = 0x00001000, // 0b1000000000000
+	eHostRead = 0x00002000, // 0b10000000000000
+	eHostWrite = 0x00004000, // 0b100000000000000
+	eMemoryRead = 0x00008000, // 0b1000000000000000
+	eMemoryWrite = 0x00010000, // 0b10000000000000000
 };
 typedef utility::EnumWrapper<AccessFlags> Access;
 
