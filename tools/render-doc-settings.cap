@@ -1,0 +1,27 @@
+{
+    "rdocCaptureSettings": 1,
+    "settings": {
+        "autoStart": false,
+        "commandLine": "memory-asset=65536 memory-misc=65536 memory-main=524288",
+        "environment": [
+        ],
+        "executable": "C:\\Users\\dyost\\Desktop\\TemportalEngine\\Binaries\\Build\\Debug\\x64\\MinecraftGame\\MinecraftGame.exe",
+        "inject": false,
+        "numQueuedFrames": 0,
+        "options": {
+            "allowFullscreen": true,
+            "allowVSync": true,
+            "apiValidation": false,
+            "captureAllCmdLists": false,
+            "captureCallstacks": false,
+            "captureCallstacksOnlyDraws": false,
+            "debugOutputMute": true,
+            "delayForDebugger": 0,
+            "hookIntoChildren": false,
+            "refAllResources": false,
+            "verifyBufferAccess": false
+        },
+        "queuedFrameCap": 0,
+        "workingDir": "C:/Users/dyost/Desktop/TemportalEngine/output/MinecraftGame"
+    }
+}
