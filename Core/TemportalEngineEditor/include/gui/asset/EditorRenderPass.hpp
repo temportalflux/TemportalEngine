@@ -5,6 +5,7 @@
 #include "asset/TypedAssetPath.hpp"
 #include "graphics/Area.hpp"
 #include "graphics/RenderPassMeta.hpp"
+#include "node/NodeContext.hpp"
 
 FORWARD_DEF(NS_ASSET, class Pipeline);
 FORWARD_DEF(NS_ASSET, class RenderPass);
@@ -18,6 +19,8 @@ class EditorRenderPass : public AssetEditor
 public:
 	static std::shared_ptr<AssetEditor> create(std::shared_ptr<memory::MemoryChunk> mem);
 
+	EditorRenderPass();
+	~EditorRenderPass();
 	void setAsset(asset::AssetPtrStrong asset) override;
 
 protected:
@@ -42,6 +45,10 @@ private:
 	bool renderPhaseDependency(uIndex const &idx, graphics::RPDependency &dependency);
 	bool renderPhaseDependencyItem(graphics::RPDependency::Item &item);
 	bool renderPhaseDependencyItemPhaseName(uIndex &phaseIdx);
+
+	node::NodeContext mNodeCtx;
+
+	void rootNode(ui32 nodeId, ui32 phasePinId);
 
 };
 

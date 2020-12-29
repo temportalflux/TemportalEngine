@@ -64,6 +64,7 @@
     <Import Project="..\..\Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
+    <Import Project="..\..\Core\TemportalEngineEditor\libs\imgui-node-editor.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -116,7 +117,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -139,7 +140,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

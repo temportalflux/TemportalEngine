@@ -23,3 +23,6 @@
 [submodule "Core/TemportalEngine/libs/PhysX"]
 	path = Core/TemportalEngine/libs/PhysX
 	url = git@github.com:NVIDIAGameWorks/PhysX.git
+[submodule "Core/TemportalEngineEditor/libs/imgui-node-editor"]
+	path = Core/TemportalEngineEditor/libs/imgui-node-editor
+	url = git@github.com:thedmd/imgui-node-editor.git

@@ -175,10 +175,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp">
       <Filter>model</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Widgets.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextLogMenu.hpp">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextLogMenu.hpp">
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ui\UIWidgets.hpp">
       <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>
@@ -293,10 +293,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp">
       <Filter>model</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\Widgets.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp">
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ui\UIWidgets.cpp">
       <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>

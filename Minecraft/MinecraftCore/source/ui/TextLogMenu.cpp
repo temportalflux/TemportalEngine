@@ -1,6 +1,6 @@
 #include "ui/TextLogMenu.hpp"
 
-#include "ui/Widgets.hpp"
+#include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 
 using namespace ui;

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="examples">
+      <UniqueIdentifier>{e37f239c-865c-4989-bfde-4717640b938a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="examples\blueprints-example">
+      <UniqueIdentifier>{bd717094-2006-4ffa-b294-1b146a8529ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="examples\blueprints-example\utilities">
+      <UniqueIdentifier>{5a9bcffa-8552-41e7-a2ae-1d7dafb267fe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\drawing.cpp">
+      <Filter>examples\blueprints-example\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.cpp">
+      <Filter>examples\blueprints-example\utilities</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\drawing.h">
+      <Filter>examples\blueprints-example\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.h">
+      <Filter>examples\blueprints-example\utilities</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

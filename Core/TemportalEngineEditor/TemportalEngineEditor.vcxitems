@@ -53,6 +53,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\filesystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\List.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\widget\Optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\node\NodeCore.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\node\NodeContext.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Base.hpp" />
@@ -99,6 +101,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\TextEditor.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\FieldAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\widget\filesystem.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\node\NodeCore.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\node\NodeContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Base.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Collection.cpp" />

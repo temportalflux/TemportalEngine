@@ -15,6 +15,7 @@
 #include "property/Property.hpp"
 
 #include <imgui.h>
+#include <imgui-node-editor/imgui_node_editor.h>
 
 using namespace gui;
 
@@ -23,6 +24,16 @@ using namespace gui;
 std::shared_ptr<AssetEditor> EditorRenderPass::create(std::shared_ptr<memory::MemoryChunk> mem)
 {
 	return mem->make_shared<EditorRenderPass>();
+}
+
+EditorRenderPass::EditorRenderPass()
+{
+	this->mNodeCtx.create();
+}
+
+EditorRenderPass::~EditorRenderPass()
+{
+	this->mNodeCtx.destroy();
 }
 
 void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
@@ -46,6 +57,7 @@ bool renderPhase(uIndex const &idx, graphics::RPPhase &phase);
 bool renderPhaseAttachmentElement(uIndex const &idx, graphics::RPPhase::Attachment &attachment);
 bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment);
 
+/*
 void EditorRenderPass::renderContent()
 {
 	AssetEditor::renderContent();
@@ -72,7 +84,87 @@ void EditorRenderPass::renderContent()
 	{
 		this->markAssetDirty(1);
 	}
+}
+//*/
 
+void EditorRenderPass::renderContent()
+{
+	AssetEditor::renderContent();
+
+	this->mNodeCtx.activate();
+	node::begin(this->titleId().c_str());
+
+	this->rootNode(0, 0);
+
+	node::end();
+	this->mNodeCtx.deactivate();
+}
+
+void EditorRenderPass::rootNode(ui32 nodeId, ui32 phasePinId)
+{
+	auto asset = this->get<asset::RenderPass>();
+
+	node::beginNode(nodeId);
+
+	ImGui::Text("Root");
+	ImGui::SameLine();
+	node::pin(
+		phasePinId, "Dependencies",
+		node::EPinType::eOutput, node::EPinIconType::eCircle,
+		{ 255, 48, 48 }, false, true
+	);
+
+	ImGui::Spacing();
+
+	ImGui::PushItemWidth(150);
+	{
+		ImGui::Text("Area");
+		ImGui::Indent();
+		{
+			auto& value = asset->REF_PROP(RenderArea);
+			auto const& defaultValue = asset->DEFAULT_PROP(RenderArea);
+			if (properties::renderProperty("Offset", value.offset, defaultValue.offset)) this->markAssetDirty(1);
+			if (properties::renderProperty("Size", value.size, defaultValue.size)) this->markAssetDirty(1);
+		}
+		ImGui::Unindent();
+
+		{
+			auto& value = asset->REF_PROP(ClearColor);
+			bool bToggledOn = value.has_value();
+			if (ImGui::Checkbox("Clear Color", &bToggledOn) && bToggledOn != value.has_value())
+			{
+				value = bToggledOn ? std::make_optional(math::Color()) : std::nullopt;
+				this->markAssetDirty(1);
+			}
+			if (value.has_value())
+			{
+				ImGui::Indent();
+				if (properties::renderProperty("###value", *value, math::Color())) this->markAssetDirty(1);
+				ImGui::Unindent();
+			}
+		}
+
+		{
+			auto& value = asset->REF_PROP(ClearDepthStencil);
+			bool bToggledOn = value.has_value();
+			if (ImGui::Checkbox("Clear Depth/Stencil", &bToggledOn) && bToggledOn != value.has_value())
+			{
+				value = bToggledOn ? std::make_optional(std::pair<f32, ui32>()) : std::nullopt;
+				this->markAssetDirty(1);
+			}
+			if (value.has_value())
+			{
+				ImGui::Indent();
+				if (properties::renderProperty("Depth", value->first, 0.0f)) this->markAssetDirty(1);
+				if (properties::renderProperty("Stencil", value->second, (ui32)0)) this->markAssetDirty(1);
+				ImGui::Unindent();
+			}
+		}
+
+	}
+	ImGui::PopItemWidth();
+
+	node::endNode();
 }
 
 bool EditorRenderPass::renderPhaseName(uIndex const &idx, graphics::RPPhase &phase)

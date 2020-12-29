@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{24262546-1f6e-469c-9a57-da74363a7c3f}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\crude_json.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\drawing.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_canvas.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_api.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\crude_json.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\drawing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_bezier_math.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_canvas.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_extra_math.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_internal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_bezier_math.inl" />
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_extra_math.inl" />
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_internal.inl" />
+  </ItemGroup>
+</Project>

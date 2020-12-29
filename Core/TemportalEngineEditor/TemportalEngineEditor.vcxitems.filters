@@ -130,8 +130,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\Asset.hpp">
       <Filter>property</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\PropertyVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\gui\AssetReferenceViewer.hpp">
       <Filter>gui</Filter>
     </ClInclude>
@@ -140,6 +138,18 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\build\asset\BuildModel.hpp">
       <Filter>build\asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\node\NodeContext.hpp">
+      <Filter>node</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngineEditor\include\node\NodeCore.hpp">
+      <Filter>node</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\PropertyVector.hpp">
+      <Filter>property</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp">
+      <Filter>property\asset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +185,9 @@
     </Filter>
     <Filter Include="property\asset">
       <UniqueIdentifier>{8da4a426-3ee1-4194-83f6-431d4ad509ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="node">
+      <UniqueIdentifier>{565f2f41-4500-4e97-8dd8-8404033f0347}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -280,8 +293,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\Utility.cpp">
       <Filter>property</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\PropertyVector.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\gui\AssetReferenceViewer.cpp">
       <Filter>gui</Filter>
     </ClCompile>
@@ -290,6 +301,18 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\build\asset\BuildModel.cpp">
       <Filter>build\asset</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\node\NodeContext.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngineEditor\source\node\NodeCore.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\PropertyVector.cpp">
+      <Filter>property</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp">
+      <Filter>property\asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
