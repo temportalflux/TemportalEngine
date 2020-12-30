@@ -81,8 +81,13 @@ struct Flags
 
 	void operator|=(TFlagType const& option)
 	{
-		this->mData |= ((ui64)option);
-		this->mSet.insert(option);
+		(*this) |= ui64(option);
+	}
+
+	void operator|=(ui64 const& option)
+	{
+		this->mData |= option;
+		this->mSet.insert(TFlagType(option));
 		this->updateString();
 	}
 
@@ -93,9 +98,21 @@ struct Flags
 		return flags;
 	}
 
+	Flags<TFlagType> operator|(ui64 const& option)
+	{
+		auto flags = Flags<TFlagType>(*this);
+		flags |= option;
+		return flags;
+	}
+
 	void operator&=(TFlagType const& option)
 	{
-		this->mData &= ((ui64)option);
+		(*this) &= ui64(option);
+	}
+
+	void operator&=(ui64 const& option)
+	{
+		this->mData &= option;
 		this->updateSet();
 		this->updateString();
 	}
@@ -107,14 +124,33 @@ struct Flags
 		return flags;
 	}
 
+	Flags<TFlagType> operator&(ui64 const& option)
+	{
+		auto flags = Flags<TFlagType>(*this);
+		flags &= option;
+		return flags;
+	}
+
 	void operator^=(TFlagType const& option)
 	{
-		this->mData ^= ((ui64)option);
+		(*this) ^= ui64(option);
+	}
+
+	void operator^=(ui64 const& option)
+	{
+		this->mData ^= option;
 		this->updateSet();
 		this->updateString();
 	}
 
 	Flags<TFlagType> operator^(TFlagType const& option)
+	{
+		auto flags = Flags<TFlagType>(*this);
+		flags ^= option;
+		return flags;
+	}
+
+	Flags<TFlagType> operator^(ui64 const& option)
 	{
 		auto flags = Flags<TFlagType>(*this);
 		flags ^= option;

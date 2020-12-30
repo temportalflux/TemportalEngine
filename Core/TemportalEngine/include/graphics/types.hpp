@@ -352,6 +352,7 @@ enum class PipelineStageFlags : uint64_t
 	eBottomOfPipe = 0x00002000, // 0b10000000000000
 };
 typedef utility::EnumWrapper<PipelineStageFlags> PipelineStage;
+typedef utility::Flags<PipelineStageFlags> PipelineStageMask;
 
 // Mirrors vk::PrimitiveTopology
 enum class EPrimitiveTopology
@@ -392,6 +393,7 @@ enum class AccessFlags : uint64_t
 	eMemoryWrite = 0x00010000, // 0b10000000000000000
 };
 typedef utility::EnumWrapper<AccessFlags> Access;
+typedef utility::Flags<AccessFlags> AccessMask;
 
 enum class EImageLayout : ui8
 {

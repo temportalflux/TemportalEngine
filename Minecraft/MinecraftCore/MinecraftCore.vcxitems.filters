@@ -178,9 +178,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextLogMenu.hpp">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\ui\UIWidgets.hpp">
-      <Filter>ui</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\UIWidgets.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -296,8 +294,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\ui\UIWidgets.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp" />
   </ItemGroup>
 </Project>

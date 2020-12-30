@@ -19,6 +19,60 @@ public:
 	DEFINE_ASSET_STATICS("renderpass", "Render Pass", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
 	DECLARE_FACTORY_ASSET_METADATA()
 
+	struct NodePhase
+	{
+		math::Vector2 nodePosition;
+		graphics::RPPhase data;
+
+		bool operator==(NodePhase const& other) const
+		{
+			return nodePosition == other.nodePosition && data == other.data;
+		}
+		bool operator!=(NodePhase const& other) const { return !(*this == other); }
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("data", this->data));
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("data", this->data));
+		}
+	};
+	struct NodePhaseDependency
+	{
+		math::Vector2 nodePosition;
+		bool bPrevPhaseIsRoot;
+		graphics::RPDependency data;
+
+		bool operator==(NodePhaseDependency const& other) const
+		{
+			return nodePosition == other.nodePosition && data == other.data && bPrevPhaseIsRoot == other.bPrevPhaseIsRoot;
+		}
+		bool operator!=(NodePhaseDependency const& other) const { return !(*this == other); }
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("prevPhaseIsRoot", this->bPrevPhaseIsRoot));
+			archive(cereal::make_nvp("data", this->data));
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("prevPhaseIsRoot", this->bPrevPhaseIsRoot));
+			archive(cereal::make_nvp("data", this->data));
+		}
+	};
+
 	DECLARE_ASSET_CONTRUCTORS(RenderPass)
 	DECLARE_PROPERTY_MUTATORS(std::optional<math::Color>, mClearColor, ClearColor)
 	DECLARE_PROPERTY_MUTATORS(std::optional<DepthStencil>, mClearDepthStencil, ClearDepthStencil)
@@ -26,6 +80,8 @@ public:
 	DECLARE_PROPERTY_MUTATORS(std::vector<TypedAssetPath<Pipeline>>, mPipelines, PipelineRefs)
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPPhase>, mPhases, Phases)
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPDependency>, mPhaseDependencies, PhaseDependencies)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhase>, mPhaseNodes, PhaseNodes)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhaseDependency>, mPhaseDependencyNodes, PhaseDependencyNodes)
 
 	std::vector<AssetPath const*> getAssetRefs() const override;
 	std::vector<AssetPath*> getAssetRefs() override;
@@ -39,6 +95,8 @@ private:
 
 	std::vector<graphics::RPPhase> mPhases;
 	std::vector<graphics::RPDependency> mPhaseDependencies;
+	std::vector<NodePhase> mPhaseNodes;
+	std::vector<NodePhaseDependency> mPhaseDependencyNodes;
 
 #pragma region Serialization
 protected:
@@ -54,9 +112,10 @@ protected:
 		SAVE_PROPERTY("clearColor", mClearColor);
 		SAVE_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		SAVE_PROPERTY("renderArea", mRenderArea);
-		SAVE_PROPERTY("pipelines", mPipelines);
 		SAVE_PROPERTY("phases", mPhases);
 		SAVE_PROPERTY("phaseDependencies", mPhaseDependencies);
+		SAVE_PROPERTY("phaseNodes", mPhaseNodes);
+		SAVE_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);
 	}
 
 	template <typename Archive>
@@ -66,9 +125,10 @@ protected:
 		LOAD_PROPERTY("clearColor", mClearColor);
 		LOAD_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		LOAD_PROPERTY("renderArea", mRenderArea);
-		LOAD_PROPERTY("pipelines", mPipelines);
 		LOAD_PROPERTY("phases", mPhases);
 		LOAD_PROPERTY("phaseDependencies", mPhaseDependencies);
+		LOAD_PROPERTY("phaseNodes", mPhaseNodes);
+		LOAD_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);
 	}
 #pragma endregion
 

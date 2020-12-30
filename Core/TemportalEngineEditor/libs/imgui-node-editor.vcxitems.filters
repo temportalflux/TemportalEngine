@@ -18,6 +18,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.cpp">
       <Filter>examples\blueprints-example\utilities</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\crude_json.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_canvas.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_api.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\drawing.h">
@@ -26,5 +30,16 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\examples\blueprints-example\utilities\widgets.h">
       <Filter>examples\blueprints-example\utilities</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\crude_json.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_bezier_math.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_canvas.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_extra_math.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_internal.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_bezier_math.inl" />
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_extra_math.inl" />
+    <None Include="$(MSBuildThisFileDirectory)imgui-node-editor\imgui_node_editor_internal.inl" />
   </ItemGroup>
 </Project>

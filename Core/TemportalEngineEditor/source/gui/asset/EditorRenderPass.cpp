@@ -1,14 +1,6 @@
 #include "gui/asset/EditorRenderPass.hpp"
 
 #include "asset/AssetManager.hpp"
-#include "asset/PipelineAsset.hpp"
-#include "asset/RenderPassAsset.hpp"
-#include "gui/widget/Combo.hpp"
-#include "gui/widget/FieldAsset.hpp"
-#include "gui/widget/FieldNumber.hpp"
-#include "gui/widget/FieldText.hpp"
-#include "gui/widget/List.hpp"
-#include "gui/widget/Optional.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/StringUtils.hpp"
 
@@ -19,6 +11,10 @@
 
 using namespace gui;
 
+math::Vector3UInt COLOR_PIN_PHASE = { 255, 48, 48 };
+math::Vector3UInt COLOR_PIN_DEPENDENCY = { 68, 201, 156 };
+math::Vector3UInt COLOR_PIN_ATTACHMENT = { 23, 79, 232 };
+
 // Macros for the bits each field of the project asset correspond to in the dirty flags
 
 std::shared_ptr<AssetEditor> EditorRenderPass::create(std::shared_ptr<memory::MemoryChunk> mem)
@@ -26,7 +22,7 @@ std::shared_ptr<AssetEditor> EditorRenderPass::create(std::shared_ptr<memory::Me
 	return mem->make_shared<EditorRenderPass>();
 }
 
-EditorRenderPass::EditorRenderPass()
+EditorRenderPass::EditorRenderPass() : mbIsFirstFrame(true)
 {
 	this->mNodeCtx.create();
 }
@@ -36,56 +32,63 @@ EditorRenderPass::~EditorRenderPass()
 	this->mNodeCtx.destroy();
 }
 
+ui32 EditorRenderPass::nextId()
+{
+	if (this->mUnusedIds.empty()) return this->mIdCount++;
+	else
+	{
+		ui32 i = *this->mUnusedIds.begin();
+		this->mUnusedIds.erase(this->mUnusedIds.begin());
+		return i;
+	}
+}
+
 void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 {
 	AssetEditor::setAsset(assetGeneric);
 
 	auto asset = this->get<asset::RenderPass>();
-	this->mPhases = asset->getPhases();
-	this->mPhaseDependencies = asset->getPhaseDependencies();
+	
+	// Root node is 0, root node out is 1
+	auto rootNode = this->createNode(ENodeType::eRoot);
+	this->createPin(rootNode->nodeId, ENodeType::ePhase);
 
-	this->mAllPipelinePaths = asset::AssetManager::get()->getAssetList(asset::Pipeline::StaticType());
-	this->mPhaseNames = this->makePhaseNames();
+	std::map<uIndex, std::shared_ptr<PhaseNode>> phaseToNode;
 
-	this->mfRenderPhaseName = std::bind(&EditorRenderPass::renderPhaseName, this, std::placeholders::_1, std::placeholders::_2);
-	this->mfRenderDependencyKey = std::bind(&EditorRenderPass::renderPhaseDependencyKey, this, std::placeholders::_1, std::placeholders::_2);
-	this->mfRenderDependency = std::bind(&EditorRenderPass::renderPhaseDependency, this, std::placeholders::_1, std::placeholders::_2);
-	this->mfRenderDependencyItemName = std::bind(&EditorRenderPass::renderPhaseDependencyItemPhaseName, this, std::placeholders::_1);
-}
-
-bool renderPhase(uIndex const &idx, graphics::RPPhase &phase);
-bool renderPhaseAttachmentElement(uIndex const &idx, graphics::RPPhase::Attachment &attachment);
-bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment);
-
-/*
-void EditorRenderPass::renderContent()
-{
-	AssetEditor::renderContent();
-	auto asset = this->get<asset::RenderPass>();
-
-	if (ImGui::TreeNode("Clear Values"))
+	auto const& phases = asset->getPhaseNodes();
+	for (uIndex idxPhase = 0; idxPhase < phases.size(); ++idxPhase)
 	{
-		RENDER_ASSET_EDITOR_PROPERTY("Color", ClearColor);
-		RENDER_ASSET_EDITOR_PROPERTY("Depth/Stencil", ClearDepthStencil);
-		ImGui::TreePop();
+		auto node = std::reinterpret_pointer_cast<PhaseNode>(this->createNode(ENodeType::ePhase));
+		node->assetData = phases[idxPhase];
+		phaseToNode.insert(std::make_pair(idxPhase, node));
 	}
 
-	RENDER_ASSET_EDITOR_PROPERTY("Render Area", RenderArea);
-	RENDER_ASSET_EDITOR_PROPERTY("Pipelines", PipelineRefs);
-
-	// TODO: Create a node graph for phases and dependencies https://github.com/thedmd/imgui-node-editor
-	if (gui::List<graphics::RPPhase>::Inline("Phases", "Phases", true, this->mPhases, &renderPhase, this->mfRenderPhaseName))
+	auto const& phaseDependencies = asset->getPhaseDependencyNodes();
+	for (auto const& dep : asset->getPhaseDependencyNodes())
 	{
-		this->markAssetDirty(1);
-		if (this->mPhaseNames.size() != this->mPhases.size()) this->mPhaseNames = this->makePhaseNames();
-	}
+		auto node = std::reinterpret_pointer_cast<DependencyNode>(this->createNode(ENodeType::eDependency));
+		node->assetData = dep;
 
-	if (gui::List<graphics::RPDependency>::Inline("deps", "Phase Dependencies", true, this->mPhaseDependencies, this->mfRenderDependency, this->mfRenderDependencyKey))
-	{
-		this->markAssetDirty(1);
+		if (dep.bPrevPhaseIsRoot)
+		{
+			this->addLink(1, node->pinIdPrevPhase);
+		}
+		else if (dep.data.dependee.phaseIndex)
+		{
+			this->addLink(
+				phaseToNode[*dep.data.dependee.phaseIndex]->pinIdSupportedDependencies,
+				node->pinIdPrevPhase
+			);
+		}
+		if (dep.data.depender.phaseIndex)
+		{
+			this->addLink(
+				node->pinIdNextPhase,
+				phaseToNode[*dep.data.depender.phaseIndex]->pinIdRequiredDependencies
+			);
+		}
 	}
 }
-//*/
 
 void EditorRenderPass::renderContent()
 {
@@ -94,25 +97,123 @@ void EditorRenderPass::renderContent()
 	this->mNodeCtx.activate();
 	node::begin(this->titleId().c_str());
 
-	this->rootNode(0, 0);
+	node::setNodePosition(0, math::Vector2::ZERO);
+	this->rootNode(0, 1);
+
+	for (auto& [nodeId, node]: this->mNodes)
+	{
+		switch (node->type)
+		{
+			case ENodeType::ePhase:
+				this->renderPhaseNode(std::reinterpret_pointer_cast<PhaseNode>(node));
+				break;
+			case ENodeType::eDependency:
+				this->renderDependencyNode(std::reinterpret_pointer_cast<DependencyNode>(node));
+				break;
+			default: break;
+		}
+	}
+
+	for (auto const& [linkId, link] : this->mLinks)
+	{
+		node::linkPins(linkId, link.startPinId, link.endPinId);
+	}
+
+	this->pollCreateBuffer();
+	this->pollDeleteBuffer();
+
+	node::suspendGraph();
+	this->renderContextMenus();
+	node::resumeGraph();
+
+	if (this->mbIsFirstFrame)
+	{
+		node::navigateToContent();
+		this->mbIsFirstFrame = false;
+	}
 
 	node::end();
 	this->mNodeCtx.deactivate();
 }
 
+std::shared_ptr<EditorRenderPass::Node> EditorRenderPass::createNode(ENodeType type)
+{
+	auto nodeId = this->nextId();
+	std::shared_ptr<Node> node;
+	switch (type)
+	{
+	case ENodeType::eRoot:
+		node = std::make_shared<Node>();
+		break;
+	case ENodeType::ePhase:
+	{
+		auto phase = std::make_shared<PhaseNode>();
+		phase->pinIdRequiredDependencies = this->createPin(nodeId, ENodeType::eDependency);
+		phase->pinIdSupportedDependencies = this->createPin(nodeId, ENodeType::ePhase);
+		phase->colorAttachmentPinIds = std::vector<ui32>();
+		phase->pinIdDepthAttachment = this->createPin(nodeId, ENodeType::eAttachment);
+		node = phase;
+		break;
+	}
+	case ENodeType::eDependency:
+	{
+		auto dependency = std::make_shared<DependencyNode>();
+		dependency->pinIdPrevPhase = this->createPin(nodeId, ENodeType::ePhase);
+		dependency->pinIdNextPhase = this->createPin(nodeId, ENodeType::eDependency);
+		node = dependency;
+		break;
+	}
+	}
+	node->nodeId = nodeId;
+	node->type = type;
+	this->mNodes.insert(std::make_pair(nodeId, node));
+	return node;
+}
+
+ui32 EditorRenderPass::createPin(ui32 nodeId, ENodeType pinType)
+{
+	auto id = this->nextId();
+	this->mPins.insert(std::make_pair(id, Pin { id, nodeId, pinType }));
+	return id;
+}
+
+void EditorRenderPass::addLink(ui32 startPinId, ui32 endPinId)
+{
+	auto linkId = this->nextId();
+	this->mLinks.insert(std::make_pair(linkId, Link{ linkId, startPinId, endPinId }));
+	this->mPins.at(startPinId).linkId = linkId;
+	this->mPins.at(endPinId).linkId = linkId;
+}
+
+math::Vector3UInt EditorRenderPass::getColorForPinType(ENodeType type)
+{
+	switch (type)
+	{
+		case ENodeType::ePhase: return COLOR_PIN_PHASE;
+		case ENodeType::eDependency: return COLOR_PIN_DEPENDENCY;
+		case ENodeType::eAttachment: return COLOR_PIN_ATTACHMENT;
+		default: return {};
+	}
+}
+
+void EditorRenderPass::renderPin(Pin const& pin, char const* titleId, node::EPinType type)
+{
+	node::pin(
+		pin.pinId, titleId, type, node::EPinIconType::eCircle,
+		this->getColorForPinType(pin.pinType),
+		pin.linkId.has_value(),
+		this->isPinValidTarget(type, pin.pinId)
+	);
+}
+
 void EditorRenderPass::rootNode(ui32 nodeId, ui32 phasePinId)
 {
 	auto asset = this->get<asset::RenderPass>();
-
 	node::beginNode(nodeId);
 
 	ImGui::Text("Root");
 	ImGui::SameLine();
-	node::pin(
-		phasePinId, "Dependencies",
-		node::EPinType::eOutput, node::EPinIconType::eCircle,
-		{ 255, 48, 48 }, false, true
-	);
+	this->renderPin(this->mPins[phasePinId], "Dependencies", node::EPinType::eOutput);
 
 	ImGui::Spacing();
 
@@ -167,194 +268,340 @@ void EditorRenderPass::rootNode(ui32 nodeId, ui32 phasePinId)
 	node::endNode();
 }
 
-bool EditorRenderPass::renderPhaseName(uIndex const &idx, graphics::RPPhase &phase)
+void EditorRenderPass::renderPhaseNode(std::shared_ptr<PhaseNode> node)
 {
-	if (gui::FieldText<16>::Inline("###name", phase.name))
+	if (this->mbIsFirstFrame)
 	{
-		this->mPhaseNames[idx] = phase.name;
-		return true;
-	}
-	return false;
-}
-
-bool renderPhase(uIndex const &idx, graphics::RPPhase &phase)
-{
-	bool bChanged = false;
-	if (gui::List<graphics::RPPhase::Attachment>::Inline("color", "Color Attachments", true, phase.colorAttachments, &renderPhaseAttachmentElement)) bChanged = true;
-	if (ImGui::TreeNode("Depth Attachment"))
-	{
-		if (gui::Optional<graphics::RPPhase::Attachment>::Inline(phase.depthAttachment, "Has Attachment", true, &renderPhaseAttachment)) bChanged = true;
-		ImGui::TreePop();
-	}
-	return bChanged;
-}
-
-bool renderPhaseAttachmentElement(uIndex const &idx, graphics::RPPhase::Attachment &attachment)
-{
-	return renderPhaseAttachment(attachment);
-}
-
-bool renderPhaseAttachment(graphics::RPPhase::Attachment &attachment)
-{
-	bool bChanged = false;
-
-	if (gui::Combo<graphics::ImageFormatReferenceType::Enum>::Inline(
-		"Format Type", graphics::ImageFormatReferenceType::ALL,
-		attachment.formatType,
-		graphics::ImageFormatReferenceType::to_string,
-		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-	)) bChanged = true;
-
-	if (gui::Combo<graphics::SampleCount::Enum>::Inline(
-		"Samples", graphics::SampleCount::ALL,
-		attachment.samples,
-		graphics::SampleCount::to_string,
-		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-	)) bChanged = true;
-
-	if (ImGui::TreeNode("General Operations"))
-	{
-		if (gui::Combo<graphics::AttachmentLoadOp::Enum>::Inline(
-			"Load", graphics::AttachmentLoadOp::ALL,
-			attachment.generalLoadOp,
-			graphics::AttachmentLoadOp::to_string,
-			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-		)) bChanged = true;
-
-		if (gui::Combo<graphics::AttachmentStoreOp::Enum>::Inline(
-			"Store", graphics::AttachmentStoreOp::ALL,
-			attachment.generalStoreOp,
-			graphics::AttachmentStoreOp::to_string,
-			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-		)) bChanged = true;
-
-		ImGui::TreePop();
+		node::setNodePosition(node->nodeId, node->assetData.nodePosition);
 	}
 
-	if (ImGui::TreeNode("Stencil Operations"))
-	{
-		if (gui::Combo<graphics::AttachmentLoadOp::Enum>::Inline(
-			"Load", graphics::AttachmentLoadOp::ALL,
-			attachment.stencilLoadOp,
-			graphics::AttachmentLoadOp::to_string,
-			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-		)) bChanged = true;
+	node::beginNode(node->nodeId);
+	ImGui::Text("Phase");
+	ImGui::Spacing();
 
-		if (gui::Combo<graphics::AttachmentStoreOp::Enum>::Inline(
-			"Store", graphics::AttachmentStoreOp::ALL,
-			attachment.stencilStoreOp,
-			graphics::AttachmentStoreOp::to_string,
-			[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-		)) bChanged = true;
-
-		ImGui::TreePop();
-	}
-
-	return bChanged;
-}
-
-bool EditorRenderPass::renderPhaseDependencyKey(uIndex const &idx, graphics::RPDependency &dependency)
-{
-	ImGui::Text(
-		"%s -> %s",
-		dependency.dependee.phaseIndex ? (
-			this->mPhaseNames.size() > *dependency.dependee.phaseIndex
-			? this->mPhaseNames[*dependency.dependee.phaseIndex].c_str()
-			: "(no name available)"
-		) : "none",
-		dependency.depender.phaseIndex ? (
-			this->mPhaseNames.size() > *dependency.depender.phaseIndex
-			? this->mPhaseNames[*dependency.depender.phaseIndex].c_str()
-			: "(no name available)"
-		) : "none"
-	);
-	return false;
-}
-
-bool EditorRenderPass::renderPhaseDependency(uIndex const &idx, graphics::RPDependency &dependency)
-{
-	bool bChanged = false;
-	if (ImGui::TreeNode("Dependee"))
-	{
-		if (this->renderPhaseDependencyItem(dependency.dependee)) bChanged = true;
-		ImGui::TreePop();
-	}
-	if (ImGui::TreeNode("Depender"))
-	{
-		if (this->renderPhaseDependencyItem(dependency.depender)) bChanged = true;
-		ImGui::TreePop();
-	}
-	return bChanged;
-}
-
-bool EditorRenderPass::renderPhaseDependencyItem(graphics::RPDependency::Item &item)
-{
-	bool bChanged = false;
-	if (gui::Optional<uIndex>::Inline(item.phaseIndex, "Phase", true, this->mfRenderDependencyItemName)) bChanged = true;
-
-	/*
-	auto stageMaskSet = item.stageMask.toSet(graphics::PipelineStage::ALL);
-	std::string stageMaskPreviewStr = std::to_string(stageMaskSet.size()) + " Stages";
-	if (gui::Combo<graphics::PipelineStage::Enum>::InlineMulti(
-		"Stage Mask", graphics::PipelineStage::ALL,
-		stageMaskSet, stageMaskPreviewStr,
-		graphics::PipelineStage::to_string,
-		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-	))
-	{
-		bChanged = true;
-		item.stageMask = utility::Flags<graphics::PipelineStage::Enum>(stageMaskSet);
-	}
-
-	auto accessMaskSet = item.accessMask.toSet(graphics::Access::ALL);
-	std::string accessMaskPreviewStr = std::to_string(accessMaskSet.size()) + " Flags";
-	if (gui::Combo<graphics::Access::Enum>::InlineMulti(
-		"Access Mask", graphics::Access::ALL,
-		accessMaskSet, accessMaskPreviewStr,
-		graphics::Access::to_string,
-		[](auto enumVal) { ImGui::PushID((ui32)enumVal); }
-	))
-	{
-		bChanged = true;
-		item.accessMask = utility::Flags<graphics::Access::Enum>(accessMaskSet);
-	}
-	//*/
-
-	return bChanged;
-}
-
-bool EditorRenderPass::renderPhaseDependencyItemPhaseName(uIndex &phaseIdx)
-{
+	this->renderPin(this->mPins[node->pinIdRequiredDependencies], "Requirements", node::EPinType::eInput);
 	ImGui::SameLine();
-	if (this->mPhaseNames.size() <= phaseIdx)
+	this->renderPin(this->mPins[node->pinIdSupportedDependencies], "Supports", node::EPinType::eOutput);
+
+	ImGui::Spacing();
+
+	ImGui::Text("Color Attachments");
+
+	this->renderPin(this->mPins[node->pinIdDepthAttachment], "Depth Attachment", node::EPinType::eInput);
+
+	node::endNode();
+
+	auto pos = node::getNodePosition(node->nodeId);
+	if (pos != node->assetData.nodePosition)
 	{
-		ImGui::Text("No phase available");
-		return false;
+		node->assetData.nodePosition = pos;
+		this->markAssetDirty(1);
 	}
-	std::string selected = this->mPhaseNames[phaseIdx];
-	if (gui::Combo<std::string>::Inline(
-		"###phaseIndex", this->mPhaseNames, selected,
-		[](auto str) { return str; },
-		[](auto str) { ImGui::PushID(str.c_str()); }
-	))
+}
+
+void EditorRenderPass::renderDependencyNode(std::shared_ptr<DependencyNode> node)
+{
+	if (this->mbIsFirstFrame)
 	{
-		phaseIdx = std::distance(this->mPhaseNames.begin(), std::find(this->mPhaseNames.begin(), this->mPhaseNames.end(), selected));
-		return true;
+		node::setNodePosition(node->nodeId, node->assetData.nodePosition);
 	}
+
+	node::beginNode(node->nodeId);
+	ImGui::Text("Dependency");
+	ImGui::Spacing();
+	ImGui::PushItemWidth(150);
+	{
+		this->renderPin(this->mPins[node->pinIdPrevPhase], "Previous", node::EPinType::eInput);
+		auto& prev = node->assetData.data.dependee;
+		ImGui::PushID("prev");
+		if (this->renderStageMask("Stages", utility::formatStr("%i prev stage", node->nodeId), prev.stageMask)) this->markAssetDirty(1);
+		if (this->renderAccessMask("Access", utility::formatStr("%i prev access", node->nodeId), prev.accessMask)) this->markAssetDirty(1);
+		ImGui::PopID();
+
+		this->renderPin(this->mPins[node->pinIdNextPhase], "Next", node::EPinType::eOutput);
+		auto& next = node->assetData.data.depender;
+		ImGui::PushID("next");
+		if (this->renderStageMask("Stages", utility::formatStr("%i next stage", node->nodeId), next.stageMask)) this->markAssetDirty(1);
+		if (this->renderAccessMask("Access", utility::formatStr("%i next access", node->nodeId), next.accessMask)) this->markAssetDirty(1);
+		ImGui::PopID();
+	}
+	ImGui::PopItemWidth();
+	node::endNode();
+
+	auto pos = node::getNodePosition(node->nodeId);
+	if (pos != node->assetData.nodePosition)
+	{
+		node->assetData.nodePosition = pos;
+		this->markAssetDirty(1);
+	}
+}
+
+template <typename TEnum>
+bool renderFlags(
+	char const* id, utility::Flags<TEnum> &value,
+	std::string const& popupId,
+	std::optional<EditorRenderPass::ComboPopup> &comboPopup, std::optional<std::string> &popupToOpenFlag
+)
+{
+	ImGui::PushID(id);
+
+	ImGui::Text(id);
+	ImGui::SameLine();
+	if (ImGui::Button("Edit"))
+	{
+		popupToOpenFlag = popupId;
+		comboPopup = EditorRenderPass::ComboPopup { popupId, &value.data(), {} };
+		for (const auto& option : value.all())
+		{
+			comboPopup->options.push_back(EditorRenderPass::ComboPopup::Option {
+				ui64(option), utility::EnumWrapper<TEnum>(option).to_display_string()
+			});
+		}
+	}
+
+	ImGui::Indent();
+	{
+		for (const auto& option : value.all())
+		{
+			if ((value.data() & ui64(option)) == ui64(option))
+			{
+				ImGui::Text(utility::EnumWrapper<TEnum>(option).to_display_string().c_str());
+			}
+		}
+	}
+	ImGui::Unindent();
+
+	ImGui::PopID();
 	return false;
 }
 
-std::vector<std::string> EditorRenderPass::makePhaseNames()
+bool EditorRenderPass::renderStageMask(char const* id, std::string const& popupId, graphics::PipelineStageMask &value)
 {
-	auto names = std::vector<std::string>();
-	std::transform(this->mPhases.begin(), this->mPhases.end(), std::back_inserter(names), [](auto phase) { return phase.name; });
-	return names;
+	return renderFlags(id, value, popupId, this->mComboPopup, this->mComboPopupToOpen);
+}
+
+bool EditorRenderPass::renderAccessMask(char const* id, std::string const& popupId, graphics::AccessMask &value)
+{
+	return renderFlags(id, value, popupId, this->mComboPopup, this->mComboPopupToOpen);
+}
+
+void EditorRenderPass::pollCreateBuffer()
+{
+	// When the user begins to create a node or link
+	ui32 startPinId, endPinId;
+	switch (node::beginCreate(startPinId, endPinId))
+	{
+	case node::ECreateType::eNode:
+		if (node::acceptCreate())
+		{
+			this->mCreateNodePinId = startPinId;
+			this->mbOpenCreateNodeMenu = true;
+		}
+		break;
+	case node::ECreateType::eLink:
+	{
+		this->mCreateLink = {
+			startPinId != 0 ? std::make_optional(startPinId) : std::nullopt,
+			endPinId != 0 ? std::make_optional(endPinId) : std::nullopt,
+		};
+		bool bValidPins = this->mCreateLink->startPinId && this->mCreateLink->endPinId && startPinId != endPinId;
+		if (bValidPins && this->canLinkPins(startPinId, endPinId) && node::acceptCreate())
+		{
+			this->addLink(startPinId, endPinId);
+			this->mCreateLink = std::nullopt;
+		}
+		break;
+	}
+	case node::ECreateType::eInactive:
+		this->mCreateLink = std::nullopt;
+		break;
+	}
+	node::endCreate();
+}
+
+void EditorRenderPass::pollDeleteBuffer()
+{
+	if (node::beginDelete())
+	{
+		ui32 linkId;
+		while (node::hasLinkToDelete(linkId))
+		{
+			if (node::acceptDelete())
+			{
+				auto linkIter = this->mLinks.find(linkId);
+				if (linkIter != this->mLinks.end())
+				{
+					this->mPins[linkIter->second.startPinId].linkId = std::nullopt;
+					this->mPins[linkIter->second.endPinId].linkId = std::nullopt;
+					this->mLinks.erase(linkIter);
+				}
+			}
+		}
+
+		ui32 nodeId;
+		while (node::hasNodeToDelete(nodeId))
+		{
+			if (node::acceptDelete())
+			{
+				auto nodeIter = this->mNodes.find(nodeId);
+				if (nodeIter != this->mNodes.end()) this->mNodes.erase(nodeIter);
+				// TODO: delete pins
+			}
+		}
+	}
+	node::endDelete();
+}
+
+void EditorRenderPass::renderContextMenus()
+{
+	this->renderContextNewNode();
+	this->renderContextComboPopup();
+}
+
+void EditorRenderPass::renderContextNewNode()
+{
+	if (this->mbOpenCreateNodeMenu)
+	{
+		ImGui::OpenPopup("newNode");
+		this->mbOpenCreateNodeMenu = false;
+	}
+	else if (this->mNodeCtx.shouldShowContextMenu(node::NodeContext::EContextMenu::eGeneral))
+	{
+		this->mCreateNodePinId = std::nullopt;
+		ImGui::OpenPopup("newNode");
+	}
+
+	if (ImGui::BeginPopup("newNode"))
+	{
+		auto nodePos = node::screenToCanvas(ImGui::GetMousePosOnOpeningCurrentPopup());
+		std::optional<ENodeType> startPinDataType = std::nullopt;
+		if (this->mCreateNodePinId) startPinDataType = this->mPins.at(*this->mCreateNodePinId).pinType;
+		if ((!startPinDataType || startPinDataType == ENodeType::ePhase) && ImGui::MenuItem("Phase"))
+		{
+			auto node = std::reinterpret_pointer_cast<PhaseNode>(this->createNode(ENodeType::ePhase));
+			if (this->mCreateNodePinId)
+			{
+				this->addLink(*this->mCreateNodePinId, node->pinIdRequiredDependencies);
+			}
+			node::setNodePosition(node->nodeId, { nodePos.x, nodePos.y });
+			this->markAssetDirty(1);
+		}
+		if ((!startPinDataType || startPinDataType == ENodeType::eDependency) && ImGui::MenuItem("Dependency"))
+		{
+			auto node = std::reinterpret_pointer_cast<DependencyNode>(this->createNode(ENodeType::eDependency));
+			if (this->mCreateNodePinId)
+			{
+				this->addLink(*this->mCreateNodePinId, node->pinIdPrevPhase);
+			}
+			node::setNodePosition(node->nodeId, { nodePos.x, nodePos.y });
+			this->markAssetDirty(1);
+		}
+		ImGui::EndPopup();
+	}
+}
+
+void EditorRenderPass::renderContextComboPopup()
+{
+	if (!this->mComboPopup) return;
+	if (this->mComboPopupToOpen)
+	{
+		ImGui::OpenPopup(this->mComboPopupToOpen->c_str());
+		this->mComboPopupToOpen = std::nullopt;
+	}
+	if (ImGui::BeginPopup(this->mComboPopup->popupId.c_str()))
+	{
+		ui64& data = *this->mComboPopup->comboData;
+		for (auto const& option : this->mComboPopup->options)
+		{
+			bool bIsSelected = (data & option.flag) == option.flag;
+			ImGui::PushID((ui32)option.flag);
+			if (ImGui::Selectable(option.displayName.c_str(), bIsSelected))
+			{
+				if (!bIsSelected) data |= option.flag;
+				else data ^= option.flag;
+				this->markAssetDirty(1);
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndPopup();
+	}
+	else
+	{
+		this->mComboPopup = std::nullopt;
+	}
+}
+
+bool EditorRenderPass::isPinValidTarget(node::EPinType type, ui32 pinId) const
+{
+	if (!this->mCreateLink) return true;
+	switch (type)
+	{
+		case node::EPinType::eInput:
+			if (!this->mCreateLink->startPinId) return false;
+			return this->canLinkPins(*this->mCreateLink->startPinId, pinId);
+		case node::EPinType::eOutput:
+			if (!this->mCreateLink->endPinId) return false;
+			return this->canLinkPins(pinId, *this->mCreateLink->endPinId);
+		default: return true;
+	}
+}
+
+bool EditorRenderPass::canLinkPins(ui32 startPinId, ui32 endPinId) const
+{
+	auto const& startPin = this->mPins.at(startPinId);
+	//bool bStartIsPhase = startPin.nodeType == ENodeType::eRoot || startPin.nodeType == ENodeType::ePhase;
+	auto const& endPin = this->mPins.at(endPinId);
+	//bool bEndIsPhase = endPin.nodeType == ENodeType::eRoot || endPin.nodeType == ENodeType::ePhase;
+	return true;
 }
 
 void EditorRenderPass::saveAsset()
 {
-	this->get<asset::RenderPass>()
-		->setPhases(this->mPhases)
-		.setPhaseDependencies(this->mPhaseDependencies);
+	auto asset = this->get<asset::RenderPass>();
+	
+	auto& phases = asset->ref_PhaseNodes();
+	phases.clear();
+	auto& dependencies = asset->ref_PhaseDependencyNodes();
+	dependencies.clear();
+
+	std::map<ui32, uIndex> phaseNodeIdToIdx;
+	for (auto& [nodeId, node] : this->mNodes)
+	{
+		if (node->type != ENodeType::ePhase) continue;
+		auto phaseNode = std::reinterpret_pointer_cast<PhaseNode>(node);
+		phaseNodeIdToIdx.insert(std::make_pair(node->nodeId, phases.size()));
+		phases.push_back(phaseNode->assetData);
+	}
+	for (auto&[nodeId, node] : this->mNodes)
+	{
+		if (node->type != ENodeType::eDependency) continue;
+		auto dependencyNode = std::reinterpret_pointer_cast<DependencyNode>(node);
+		auto const& prevPin = this->mPins[dependencyNode->pinIdPrevPhase];
+		if (prevPin.linkId)
+		{
+			auto prevPhasePinId = this->mLinks[*prevPin.linkId].startPinId;
+			auto prevPhaseNodeId = this->mPins[prevPhasePinId].nodeId;
+			auto& prevPhaseIdx = dependencyNode->assetData.data.dependee.phaseIndex;
+			if (prevPhaseNodeId == 0)
+			{
+				prevPhaseIdx = std::nullopt;
+				dependencyNode->assetData.bPrevPhaseIsRoot = true;
+			}
+			else
+			{
+				prevPhaseIdx = phaseNodeIdToIdx[prevPhaseNodeId];
+			}
+		}
+		auto const& nextPin = this->mPins[dependencyNode->pinIdNextPhase];
+		if (nextPin.linkId)
+		{
+			auto nextPhasePinId = this->mLinks[*nextPin.linkId].endPinId;
+			auto nextPhaseNodeId = this->mPins[nextPhasePinId].nodeId;
+			auto prevPhaseIdx = phaseNodeIdToIdx[nextPhaseNodeId];
+			dependencyNode->assetData.data.depender.phaseIndex = prevPhaseIdx;
+			dependencies.push_back(dependencyNode->assetData);
+		}
+	}
+
 	AssetEditor::saveAsset();
 }

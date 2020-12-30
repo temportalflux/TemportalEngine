@@ -41,3 +41,40 @@ void NodeContext::deactivate()
 {
 	IGNE::SetCurrentEditor(nullptr);
 }
+
+void NodeContext::setShouldOpenContextMenu(EContextMenu type, ui32 id)
+{
+	this->mShouldOpenContextMenu[(uIndex)type] = id;
+}
+
+bool NodeContext::consumeShouldOpenContextMenu(EContextMenu type, ui32 expectedValue)
+{
+	auto bShouldOpen = this->mShouldOpenContextMenu[(uIndex)type] == expectedValue;
+	this->mShouldOpenContextMenu[(uIndex)type] = std::nullopt;
+	return bShouldOpen;
+}
+
+bool NodeContext::shouldShowContextMenu(EContextMenu type, ui32 id)
+{
+	if (this->consumeShouldOpenContextMenu(type, id)) return true;
+	switch (type)
+	{
+		case EContextMenu::eGeneral: return IGNE::ShowBackgroundContextMenu();
+		case EContextMenu::eNode:
+		{
+			auto eId = IGNE::NodeId(id);
+			return IGNE::ShowNodeContextMenu(&eId);
+		}
+		case EContextMenu::ePin:
+		{
+			auto eId = IGNE::PinId(id);
+			return IGNE::ShowPinContextMenu(&eId);
+		}
+		case EContextMenu::eLink:
+		{
+			auto eId = IGNE::LinkId(id);
+			return IGNE::ShowLinkContextMenu(&eId);
+		}
+		default: return false;
+	}
+}

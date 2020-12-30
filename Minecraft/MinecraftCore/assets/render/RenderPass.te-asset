@@ -51,5 +51,46 @@
 				"accessMask": "00000000000000000000010100000000"
 			}
 		}
+	],
+	"phaseNodes": [
+		{
+			"position": [
+				740.0,
+				87.0
+			],
+			"data": {
+				"name": "",
+				"colorAttachments": [],
+				"depthAttachment": {
+					"hasValue": false
+				}
+			}
+		}
+	],
+	"phaseDependencyNodes": [
+		{
+			"position": [
+				376.0,
+				-21.0
+			],
+			"prevPhaseIsRoot": true,
+			"data": {
+				"dependee": {
+					"phase": {
+						"hasValue": false
+					},
+					"stageMask": "00000000000000000000010100000000",
+					"accessMask": "00000000000000000000000000000000"
+				},
+				"depender": {
+					"phase": {
+						"hasValue": true,
+						"value": 0
+					},
+					"stageMask": "00000000000000000000010100000000",
+					"accessMask": "00000000000000000000010100000000"
+				}
+			}
+		}
 	]
 }
