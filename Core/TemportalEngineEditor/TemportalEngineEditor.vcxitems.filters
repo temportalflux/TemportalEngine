@@ -148,7 +148,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\property\asset\PropertyGraphicsAsset.hpp">
       <Filter>property\asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\node\NodeCore.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\node\NodeCore.hpp">
+      <Filter>node</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="asset">
@@ -309,6 +311,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\property\asset\PropertyGraphicsAsset.cpp">
       <Filter>property\asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\node\NodeCore.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\node\NodeCore.cpp">
+      <Filter>node</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

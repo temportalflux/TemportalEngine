@@ -28,14 +28,10 @@ public:
 	void activate();
 	void deactivate();
 
-	void setShouldOpenContextMenu(EContextMenu type, ui32 id = 0);
-	bool shouldShowContextMenu(EContextMenu type, ui32 id = 0);
+	bool shouldShowContextMenu(EContextMenu type, ui32 *outId = 0);
 
 private:
 	/*EditorContext*/ void* mpInternal;
-	std::optional<ui32> mShouldOpenContextMenu[uSize(EContextMenu::COUNT)];
-
-	bool consumeShouldOpenContextMenu(EContextMenu type, ui32 expectedValue);
 
 };
 

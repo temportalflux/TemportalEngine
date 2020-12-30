@@ -51,7 +51,7 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 	
 	// Root node is 0, root node out is 1
 	auto rootNode = this->createNode(ENodeType::eRoot);
-	this->createPin(rootNode->nodeId, ENodeType::ePhase);
+	this->createPin(rootNode->nodeId, ENodeType::ePhase, false);
 
 	std::map<uIndex, std::shared_ptr<PhaseNode>> phaseToNode;
 
@@ -148,18 +148,18 @@ std::shared_ptr<EditorRenderPass::Node> EditorRenderPass::createNode(ENodeType t
 	case ENodeType::ePhase:
 	{
 		auto phase = std::make_shared<PhaseNode>();
-		phase->pinIdRequiredDependencies = this->createPin(nodeId, ENodeType::eDependency);
-		phase->pinIdSupportedDependencies = this->createPin(nodeId, ENodeType::ePhase);
+		phase->pinIdRequiredDependencies = this->createPin(nodeId, ENodeType::eDependency, false);
+		phase->pinIdSupportedDependencies = this->createPin(nodeId, ENodeType::ePhase, false);
 		phase->colorAttachmentPinIds = std::vector<ui32>();
-		phase->pinIdDepthAttachment = this->createPin(nodeId, ENodeType::eAttachment);
+		phase->pinIdDepthAttachment = this->createPin(nodeId, ENodeType::eAttachment, true);
 		node = phase;
 		break;
 	}
 	case ENodeType::eDependency:
 	{
 		auto dependency = std::make_shared<DependencyNode>();
-		dependency->pinIdPrevPhase = this->createPin(nodeId, ENodeType::ePhase);
-		dependency->pinIdNextPhase = this->createPin(nodeId, ENodeType::eDependency);
+		dependency->pinIdPrevPhase = this->createPin(nodeId, ENodeType::ePhase, true);
+		dependency->pinIdNextPhase = this->createPin(nodeId, ENodeType::eDependency, true);
 		node = dependency;
 		break;
 	}
@@ -170,10 +170,10 @@ std::shared_ptr<EditorRenderPass::Node> EditorRenderPass::createNode(ENodeType t
 	return node;
 }
 
-ui32 EditorRenderPass::createPin(ui32 nodeId, ENodeType pinType)
+ui32 EditorRenderPass::createPin(ui32 nodeId, ENodeType pinType, bool bSingleLinkOnly)
 {
 	auto id = this->nextId();
-	this->mPins.insert(std::make_pair(id, Pin { id, nodeId, pinType }));
+	this->mPins.insert(std::make_pair(id, Pin { id, nodeId, pinType, bSingleLinkOnly, {} }));
 	return id;
 }
 
@@ -181,8 +181,20 @@ void EditorRenderPass::addLink(ui32 startPinId, ui32 endPinId)
 {
 	auto linkId = this->nextId();
 	this->mLinks.insert(std::make_pair(linkId, Link{ linkId, startPinId, endPinId }));
-	this->mPins.at(startPinId).linkId = linkId;
-	this->mPins.at(endPinId).linkId = linkId;
+	
+	auto& startPin = this->mPins.at(startPinId);
+	if (startPin.bSingleLinkOnly && startPin.linkIds.size() > 0)
+	{
+		node::deleteLink(*startPin.linkIds.begin());
+	}
+	startPin.linkIds.insert(linkId);
+
+	auto& endPin = this->mPins.at(endPinId);
+	if (endPin.bSingleLinkOnly && endPin.linkIds.size() > 0)
+	{
+		node::deleteLink(*endPin.linkIds.begin());
+	}
+	endPin.linkIds.insert(linkId);
 }
 
 math::Vector3UInt EditorRenderPass::getColorForPinType(ENodeType type)
@@ -201,7 +213,7 @@ void EditorRenderPass::renderPin(Pin const& pin, char const* titleId, node::EPin
 	node::pin(
 		pin.pinId, titleId, type, node::EPinIconType::eCircle,
 		this->getColorForPinType(pin.pinType),
-		pin.linkId.has_value(),
+		pin.linkIds.size() > 0,
 		this->isPinValidTarget(type, pin.pinId)
 	);
 }
@@ -409,6 +421,7 @@ void EditorRenderPass::pollCreateBuffer()
 		{
 			this->addLink(startPinId, endPinId);
 			this->mCreateLink = std::nullopt;
+			this->markAssetDirty(1);
 		}
 		break;
 	}
@@ -431,9 +444,14 @@ void EditorRenderPass::pollDeleteBuffer()
 				auto linkIter = this->mLinks.find(linkId);
 				if (linkIter != this->mLinks.end())
 				{
-					this->mPins[linkIter->second.startPinId].linkId = std::nullopt;
-					this->mPins[linkIter->second.endPinId].linkId = std::nullopt;
+					auto& startPin = this->mPins[linkIter->second.startPinId];
+					startPin.linkIds.erase(startPin.linkIds.find(linkId));
+
+					auto& endPin = this->mPins[linkIter->second.endPinId];
+					endPin.linkIds.erase(endPin.linkIds.find(linkId));
+
 					this->mLinks.erase(linkIter);
+					this->markAssetDirty(1);
 				}
 			}
 		}
@@ -441,21 +459,48 @@ void EditorRenderPass::pollDeleteBuffer()
 		ui32 nodeId;
 		while (node::hasNodeToDelete(nodeId))
 		{
+			// cannot delete the root node
+			if (nodeId == 0)
+			{
+				node::rejectDelete();
+				continue;
+			}
 			if (node::acceptDelete())
 			{
 				auto nodeIter = this->mNodes.find(nodeId);
-				if (nodeIter != this->mNodes.end()) this->mNodes.erase(nodeIter);
-				// TODO: delete pins
+				if (nodeIter != this->mNodes.end())
+				{
+					// also delete the pins on the node
+					this->deleteNodePins(nodeIter->second);
+					this->mNodes.erase(nodeIter);
+					this->markAssetDirty(1);
+				}
 			}
 		}
 	}
 	node::endDelete();
 }
 
+void EditorRenderPass::deleteNodePins(std::shared_ptr<Node> node)
+{
+	switch (node->type)
+	{
+		case ENodeType::ePhase:
+		case ENodeType::eDependency:
+		case ENodeType::eAttachment:
+		default: break;
+	}
+}
+
 void EditorRenderPass::renderContextMenus()
 {
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 	this->renderContextNewNode();
+	this->renderContextNode();
+	this->renderContextPin();
+	this->renderContextLink();
 	this->renderContextComboPopup();
+	ImGui::PopStyleVar();
 }
 
 void EditorRenderPass::renderContextNewNode()
@@ -500,6 +545,58 @@ void EditorRenderPass::renderContextNewNode()
 	}
 }
 
+void EditorRenderPass::renderContextNode()
+{
+	if (this->mNodeCtx.shouldShowContextMenu(node::NodeContext::EContextMenu::eNode, &this->mContextMenuId))
+	{
+		ImGui::OpenPopup("nodeCtx");
+	}
+	if (ImGui::BeginPopup("nodeCtx"))
+	{
+		auto& node = this->mNodes[this->mContextMenuId];
+		switch (node->type)
+		{
+			case ENodeType::eRoot: ImGui::Text("Root Node"); break;
+			case ENodeType::ePhase: ImGui::Text("Phase Node"); break;
+			case ENodeType::eDependency: ImGui::Text("Dependency Node"); break;
+			case ENodeType::eAttachment: ImGui::Text("Attachment Node"); break;
+			default: break;
+		}
+		if (node->type != ENodeType::eRoot && ImGui::MenuItem("Delete Node")) node::deleteNode(this->mContextMenuId);
+		ImGui::EndPopup();
+	}
+}
+
+void EditorRenderPass::renderContextPin()
+{
+	if (this->mNodeCtx.shouldShowContextMenu(node::NodeContext::EContextMenu::ePin, &this->mContextMenuId))
+	{
+		ImGui::OpenPopup("pinCtx");
+	}
+	if (ImGui::BeginPopup("pinCtx"))
+	{
+		auto const& pin = this->mPins[this->mContextMenuId];
+		if (pin.linkIds.size() > 0 && ImGui::MenuItem("Unlink All"))
+		{
+			for (auto const& linkId : pin.linkIds) node::deleteLink(linkId);
+		}
+		ImGui::EndPopup();
+	}
+}
+
+void EditorRenderPass::renderContextLink()
+{
+	if (this->mNodeCtx.shouldShowContextMenu(node::NodeContext::EContextMenu::eLink, &this->mContextMenuId))
+	{
+		ImGui::OpenPopup("linkCtx");
+	}
+	if (ImGui::BeginPopup("linkCtx"))
+	{
+		if (ImGui::MenuItem("Sever")) { node::deleteLink(this->mContextMenuId); }
+		ImGui::EndPopup();
+	}
+}
+
 void EditorRenderPass::renderContextComboPopup()
 {
 	if (!this->mComboPopup) return;
@@ -537,10 +634,10 @@ bool EditorRenderPass::isPinValidTarget(node::EPinType type, ui32 pinId) const
 	switch (type)
 	{
 		case node::EPinType::eInput:
-			if (!this->mCreateLink->startPinId) return false;
+			if (this->mCreateLink->endPinId) return false;
 			return this->canLinkPins(*this->mCreateLink->startPinId, pinId);
 		case node::EPinType::eOutput:
-			if (!this->mCreateLink->endPinId) return false;
+			if (this->mCreateLink->startPinId) return false;
 			return this->canLinkPins(pinId, *this->mCreateLink->endPinId);
 		default: return true;
 	}
@@ -549,10 +646,8 @@ bool EditorRenderPass::isPinValidTarget(node::EPinType type, ui32 pinId) const
 bool EditorRenderPass::canLinkPins(ui32 startPinId, ui32 endPinId) const
 {
 	auto const& startPin = this->mPins.at(startPinId);
-	//bool bStartIsPhase = startPin.nodeType == ENodeType::eRoot || startPin.nodeType == ENodeType::ePhase;
 	auto const& endPin = this->mPins.at(endPinId);
-	//bool bEndIsPhase = endPin.nodeType == ENodeType::eRoot || endPin.nodeType == ENodeType::ePhase;
-	return true;
+	return startPin.pinType == endPin.pinType;
 }
 
 void EditorRenderPass::saveAsset()
@@ -577,9 +672,10 @@ void EditorRenderPass::saveAsset()
 		if (node->type != ENodeType::eDependency) continue;
 		auto dependencyNode = std::reinterpret_pointer_cast<DependencyNode>(node);
 		auto const& prevPin = this->mPins[dependencyNode->pinIdPrevPhase];
-		if (prevPin.linkId)
+		assert(prevPin.linkIds.size() <= 1);
+		if (prevPin.linkIds.size() > 0)
 		{
-			auto prevPhasePinId = this->mLinks[*prevPin.linkId].startPinId;
+			auto prevPhasePinId = this->mLinks[*prevPin.linkIds.begin()].startPinId;
 			auto prevPhaseNodeId = this->mPins[prevPhasePinId].nodeId;
 			auto& prevPhaseIdx = dependencyNode->assetData.data.dependee.phaseIndex;
 			if (prevPhaseNodeId == 0)
@@ -593,12 +689,13 @@ void EditorRenderPass::saveAsset()
 			}
 		}
 		auto const& nextPin = this->mPins[dependencyNode->pinIdNextPhase];
-		if (nextPin.linkId)
+		for (auto const& linkId : nextPin.linkIds)
 		{
-			auto nextPhasePinId = this->mLinks[*nextPin.linkId].endPinId;
+			auto nextPhasePinId = this->mLinks[linkId].endPinId;
 			auto nextPhaseNodeId = this->mPins[nextPhasePinId].nodeId;
-			auto prevPhaseIdx = phaseNodeIdToIdx[nextPhaseNodeId];
-			dependencyNode->assetData.data.depender.phaseIndex = prevPhaseIdx;
+			auto nextPhaseIdx = phaseNodeIdToIdx[nextPhaseNodeId];
+			dependencyNode->assetData.data.depender.phaseIndex = nextPhaseIdx;
+			// this is an intentional copy so that the data for each next phase is copied properly
 			dependencies.push_back(dependencyNode->assetData);
 		}
 	}

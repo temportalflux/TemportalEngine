@@ -42,38 +42,40 @@ void NodeContext::deactivate()
 	IGNE::SetCurrentEditor(nullptr);
 }
 
-void NodeContext::setShouldOpenContextMenu(EContextMenu type, ui32 id)
+bool NodeContext::shouldShowContextMenu(EContextMenu type, ui32 *outId)
 {
-	this->mShouldOpenContextMenu[(uIndex)type] = id;
-}
-
-bool NodeContext::consumeShouldOpenContextMenu(EContextMenu type, ui32 expectedValue)
-{
-	auto bShouldOpen = this->mShouldOpenContextMenu[(uIndex)type] == expectedValue;
-	this->mShouldOpenContextMenu[(uIndex)type] = std::nullopt;
-	return bShouldOpen;
-}
-
-bool NodeContext::shouldShowContextMenu(EContextMenu type, ui32 id)
-{
-	if (this->consumeShouldOpenContextMenu(type, id)) return true;
 	switch (type)
 	{
 		case EContextMenu::eGeneral: return IGNE::ShowBackgroundContextMenu();
 		case EContextMenu::eNode:
 		{
-			auto eId = IGNE::NodeId(id);
-			return IGNE::ShowNodeContextMenu(&eId);
+			auto eId = IGNE::NodeId(0);
+			if (IGNE::ShowNodeContextMenu(&eId))
+			{
+				*outId = (ui32)eId.Get();
+				return true;
+			}
+			return false;
 		}
 		case EContextMenu::ePin:
 		{
-			auto eId = IGNE::PinId(id);
-			return IGNE::ShowPinContextMenu(&eId);
+			auto eId = IGNE::PinId(0);
+			if (IGNE::ShowPinContextMenu(&eId))
+			{
+				*outId = (ui32)eId.Get();
+				return true;
+			}
+			return false;
 		}
 		case EContextMenu::eLink:
 		{
-			auto eId = IGNE::LinkId(id);
-			return IGNE::ShowLinkContextMenu(&eId);
+			auto eId = IGNE::LinkId(0);
+			if (IGNE::ShowLinkContextMenu(&eId))
+			{
+				*outId = (ui32)eId.Get();
+				return true;
+			}
+			return false;
 		}
 		default: return false;
 	}

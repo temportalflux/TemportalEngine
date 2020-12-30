@@ -78,7 +78,8 @@ private:
 		ui32 pinId;
 		ui32 nodeId;
 		ENodeType pinType;
-		std::optional<ui32> linkId;
+		bool bSingleLinkOnly;
+		std::set<ui32> linkIds;
 	};
 	std::map<ui32, Pin> mPins;
 	struct Link
@@ -92,7 +93,7 @@ private:
 	ui32 nextId();
 	
 	std::shared_ptr<Node> createNode(ENodeType type);
-	ui32 createPin(ui32 nodeId, ENodeType nodeType);
+	ui32 createPin(ui32 nodeId, ENodeType nodeType, bool bSingleLinkOnly);
 	void addLink(ui32 startPinId, ui32 endPinId);
 
 	math::Vector3UInt getColorForPinType(ENodeType type);
@@ -104,8 +105,15 @@ private:
 	
 	void pollCreateBuffer();
 	void pollDeleteBuffer();
+	void deleteNodePins(std::shared_ptr<Node> node);
+
 	void renderContextMenus();
 	void renderContextNewNode();
+
+	ui32 mContextMenuId;
+	void renderContextNode();
+	void renderContextPin();
+	void renderContextLink();
 
 	bool isPinValidTarget(node::EPinType type, ui32 pinId) const;
 	bool canLinkPins(ui32 startPinId, ui32 endPinId) const;

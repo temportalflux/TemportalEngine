@@ -37,6 +37,8 @@ void node::endNode()
 	IGNE::PopStyleVar();
 }
 
+void node::deleteNode(ui32 id) { IGNE::DeleteNode(IGNE::NodeId(id)); }
+
 void node::beginPin(ui32 pinId, node::EPinType type)
 {
 	IGNE::BeginPin(IGNE::PinId(pinId), IGNE::PinKind(type));
@@ -93,6 +95,7 @@ void node::linkPins(ui32 linkId, ui32 startPinId, ui32 endPinId)
 {
 	IGNE::Link(linkId, startPinId, endPinId);
 }
+void node::deleteLink(ui32 id) { IGNE::DeleteLink(IGNE::LinkId(id)); }
 
 void node::navigateToContent() { IGNE::NavigateToContent(); }
 
@@ -118,6 +121,7 @@ node::ECreateType node::beginCreate(ui32 &outStartPinId, ui32 &outEndPinId)
 }
 
 bool node::acceptCreate() { return IGNE::AcceptNewItem(); }
+void node::rejectCreate() { IGNE::RejectNewItem(); }
 void node::endCreate() { IGNE::EndCreate(); }
 
 bool node::beginDelete() { return IGNE::BeginDelete(); }
@@ -142,6 +146,7 @@ bool node::hasNodeToDelete(ui32 &outNodeId)
 	return false;
 }
 bool node::acceptDelete() { return IGNE::AcceptDeletedItem(); }
+void node::rejectDelete() { IGNE::RejectDeletedItem(); }
 void node::endDelete() { IGNE::EndDelete(); }
 
 void node::suspendGraph()
