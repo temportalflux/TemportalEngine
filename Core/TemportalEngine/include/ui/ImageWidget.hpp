@@ -40,6 +40,7 @@ public:
 	Image& setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	Image& setResolution(ui::Resolution const& resolution);
 
+	Image& setAnchorParent(std::weak_ptr<ui::Widget> parent);
 	Image& setAnchor(math::Vector2 const& anchor);
 	Image& setPivot(math::Vector2 const& pivot);
 	Image& setPosition(math::Vector2Int const& points);

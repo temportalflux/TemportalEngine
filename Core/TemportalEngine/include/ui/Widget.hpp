@@ -25,6 +25,7 @@ public:
 	Widget& setResolution(ui::Resolution const& resolution) { this->mResolution = resolution; return *this; }
 	ui::Resolution const& resolution() const { return this->mResolution; }
 
+	Widget& setAnchorParent(std::weak_ptr<ui::Widget> parent);
 	Widget& setAnchor(math::Vector2 const& anchor);
 	Widget& setPivot(math::Vector2 const& pivot);
 	Widget& setPosition(math::Vector2Int const& points);
@@ -47,6 +48,8 @@ private:
 	std::weak_ptr<ui::WidgetRenderer> mpRenderer;
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 	ui::Resolution mResolution;
+
+	std::weak_ptr<ui::Widget> mpAnchorParent;
 
 	/**
 	 * The position of the widget's anchor as a fraction of the screen size.

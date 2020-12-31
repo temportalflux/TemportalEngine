@@ -10,6 +10,12 @@ Widget::Widget()
 {
 }
 
+Widget& Widget::setAnchorParent(std::weak_ptr<ui::Widget> parent)
+{
+	this->mpAnchorParent = parent;
+	return *this;
+}
+
 Widget& Widget::setAnchor(math::Vector2 const& anchor)
 {
 	this->mAnchor = anchor;
@@ -53,8 +59,19 @@ math::Vector2 Widget::getTopLeftPositionOnScreen() const
 {
 	// This function returns a vector whose components are [-1,1] indicating the fractional position on the screen (based on its resolution).
 	
-	// anchor is already in [0,1] space, so it needs to be converted
-	auto screenPos = (this->mAnchor * 2.0f) - 1.0f;
+	auto screenPos = math::Vector2::ZERO;
+	
+	if (this->mpAnchorParent.expired())
+	{
+		// Convert the position into [-1,1] space since there is no parent
+		screenPos = (this->mAnchor * 2.0f) - 1.0f;
+	}
+	else if (auto parent = this->mpAnchorParent.lock())
+	{
+		// When there is a parent, the anchor behaves similar to a pivot on the parent.
+		// This has the added side-effect of making `screenPos` [-1,1] space due to the dependence on the parent's top left pos.
+		screenPos = parent->getTopLeftPositionOnScreen() + (parent->getSizeOnScreen() * this->mAnchor);
+	}
 
 	// the position is the offset from the anchor.
 	// it is in point space, so that needs to be converted to screen space

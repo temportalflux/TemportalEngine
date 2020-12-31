@@ -25,7 +25,8 @@ TextLogMenu::TextLogMenu()
 		.setPivot({ 1, 1 })
 		.setSize({ 512, 512 });
 
-	ui::createSlotImage(*this->mSlots.emplace_back(std::make_shared<ui::Image>()).get(), 4)
+	ui::createSlotImage(*this->mSlots.emplace_back(std::make_shared<ui::Image>()).get(), 6)
+		.setAnchorParent(this->mpBackgroundDemo)
 		.setAnchor({ 0, 0.5 })
 		.setPivot({ 0, 0.5 })
 		.setSize({ 64, 64 });
