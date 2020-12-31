@@ -15,6 +15,7 @@ public:
 	~TextLogMenu();
 
 	void addImagesToRenderer(ui::WidgetRenderer *renderer);
+	void setIsVisible(bool bVisible);
 
 private:
 	std::shared_ptr<ui::Image> mpInputBarBkgd;

@@ -11,9 +11,9 @@ Widget::Widget()
 {
 }
 
-Widget& Widget::setAnchorParent(std::weak_ptr<ui::Widget> parent)
+Widget& Widget::setParent(std::weak_ptr<ui::Widget> parent)
 {
-	this->mpAnchorParent = parent;
+	this->mpParent = parent;
 	return *this;
 }
 
@@ -59,18 +59,29 @@ ui32 Widget::zLayer() const
 	return this->mZLayer;
 }
 
+Widget& Widget::setIsVisible(bool bVisible)
+{
+	this->mbIsVisible = bVisible;
+	return *this;
+}
+
+bool Widget::isVisible() const
+{
+	return this->mbIsVisible && (this->mpParent.expired() || this->mpParent.lock()->isVisible());
+}
+
 math::Vector2 Widget::getTopLeftPositionOnScreen() const
 {
 	// This function returns a vector whose components are [-1,1] indicating the fractional position on the screen (based on its resolution).
 	
 	auto screenPos = math::Vector2::ZERO;
 	
-	if (this->mpAnchorParent.expired())
+	if (this->mpParent.expired())
 	{
 		// Convert the position into [-1,1] space since there is no parent
 		screenPos = (this->mAnchor * 2.0f) - 1.0f;
 	}
-	else if (auto parent = this->mpAnchorParent.lock())
+	else if (auto parent = this->mpParent.lock())
 	{
 		// When there is a parent, the anchor behaves similar to a pivot on the parent.
 		// This has the added side-effect of making `screenPos` [-1,1] space due to the dependence on the parent's top left pos.
@@ -91,8 +102,8 @@ math::Vector2 Widget::getTopLeftPositionOnScreen() const
 math::Vector2 Widget::getSizeOnScreen() const
 {
 	auto screenSpace = this->mResolution.pointsToScreenSpace(this->mSizeInPoints);
-	auto parentSize = !this->mpAnchorParent.expired()
-		? this->mpAnchorParent.lock()->getSizeOnScreen()
+	auto parentSize = !this->mpParent.expired()
+		? this->mpParent.lock()->getSizeOnScreen()
 		: math::Vector2 { 2, 2 };
 	return {
 		this->mbFillParentWidth ? parentSize.x() : screenSpace.x(),

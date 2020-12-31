@@ -25,7 +25,7 @@ public:
 	Widget& setResolution(ui::Resolution const& resolution) { this->mResolution = resolution; return *this; }
 	ui::Resolution const& resolution() const { return this->mResolution; }
 
-	Widget& setAnchorParent(std::weak_ptr<ui::Widget> parent);
+	Widget& setParent(std::weak_ptr<ui::Widget> parent);
 	Widget& setAnchor(math::Vector2 const& anchor);
 	Widget& setPivot(math::Vector2 const& pivot);
 	Widget& setPosition(math::Vector2Int const& points);
@@ -34,6 +34,9 @@ public:
 	Widget& setFillHeight(bool bFill);
 	Widget& setZLayer(ui32 z);
 	ui32 zLayer() const;
+
+	Widget& setIsVisible(bool bVisible);
+	bool isVisible() const;
 
 	math::Vector2 getTopLeftPositionOnScreen() const;
 	math::Vector2 getSizeOnScreen() const;
@@ -49,7 +52,9 @@ private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 	ui::Resolution mResolution;
 
-	std::weak_ptr<ui::Widget> mpAnchorParent;
+	bool mbIsVisible;
+
+	std::weak_ptr<ui::Widget> mpParent;
 
 	/**
 	 * The position of the widget's anchor as a fraction of the screen size.

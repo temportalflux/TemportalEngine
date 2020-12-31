@@ -147,7 +147,7 @@ Image& Image::setResolution(ui::Resolution const& resolution)
 	return *this;
 }
 
-Image& Image::setAnchorParent(std::weak_ptr<ui::Widget> parent) { Widget::setAnchorParent(parent); return *this; }
+Image& Image::setParent(std::weak_ptr<ui::Widget> parent) { Widget::setParent(parent); return *this; }
 Image& Image::setAnchor(math::Vector2 const& anchor) { Widget::setAnchor(anchor); return *this; }
 Image& Image::setPivot(math::Vector2 const& pivot) { Widget::setPivot(pivot); return *this; }
 Image& Image::setPosition(math::Vector2Int const& points) { Widget::setPosition(points); return *this; }

@@ -157,8 +157,11 @@ void ui::WidgetRenderer::record(graphics::Command *command)
 				continue;
 			}
 			auto pImg = weak_img.lock();
-			pImg->bind(command, this->imagePipeline());
-			pImg->record(command);
+			if (pImg->isVisible())
+			{
+				pImg->bind(command, this->imagePipeline());
+				pImg->record(command);
+			}
 		}
 		if (bHasAnyExpired)
 		{

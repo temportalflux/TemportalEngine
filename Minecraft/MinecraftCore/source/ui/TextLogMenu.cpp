@@ -34,6 +34,7 @@ TextLogMenu::TextLogMenu()
 		.setSize({ 64, 64 });
 	//*/
 
+	this->setIsVisible(false);
 }
 
 TextLogMenu::~TextLogMenu()
@@ -51,4 +52,10 @@ void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
 	renderer->add(this->mpLogBkgd);
 	//renderer->add(this->mpBackgroundDemo);
 	//for (auto& slot : this->mSlots) renderer->add(slot);
+}
+
+void TextLogMenu::setIsVisible(bool bVisible)
+{
+	this->mpInputBarBkgd->setIsVisible(bVisible);
+	this->mpLogBkgd->setIsVisible(bVisible);
 }
