@@ -52,17 +52,58 @@
 			}
 		}
 	],
+	"attachments": [
+		{
+			"position": [
+				314.0,
+				492.0
+			],
+			"data": {
+				"format": 0,
+				"samples": 0,
+				"general-load": 0,
+				"general-store": 0,
+				"stencil-load": 0,
+				"stencil-store": 0
+			}
+		},
+		{
+			"position": [
+				318.0,
+				332.0
+			],
+			"data": {
+				"format": 0,
+				"samples": 0,
+				"general-load": 0,
+				"general-store": 0,
+				"stencil-load": 0,
+				"stencil-store": 0
+			}
+		}
+	],
 	"phaseNodes": [
 		{
 			"position": [
-				772.0,
-				86.0
+				786.0,
+				298.0
 			],
 			"data": {
-				"name": "",
-				"colorAttachments": [],
+				"colorAttachments": [
+					{
+						"hasValue": true,
+						"value": {
+							"attachment": 1,
+							"layout": 2
+						}
+					}
+				],
 				"depthAttachment": {
-					"hasValue": false
+					"hasValue": true,
+					"value": {
+						"attachment": 0,
+						"layout": 3
+					}
 				}
 			}
 		}
@@ -70,19 +111,19 @@
 	"phaseDependencyNodes": [
 		{
 			"position": [
-				376.0,
-				-21.0
+				380.0,
+				-19.0
 			],
 			"prevPhaseIsRoot": true,
 			"data": {
-				"dependee": {
+				"previous": {
 					"phase": {
 						"hasValue": false
 					},
 					"stageMask": "00000000000000000000010100000000",
 					"accessMask": "00000000000000000000000000000000"
 				},
-				"depender": {
+				"next": {
 					"phase": {
 						"hasValue": true,
 						"value": 0

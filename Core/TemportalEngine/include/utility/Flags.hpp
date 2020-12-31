@@ -15,26 +15,27 @@ public:
 	static std::vector<TEnum> ALL;
 
 	EnumWrapper() = default;
-	constexpr EnumWrapper(TEnum value) : mValue(value) {}
-	constexpr EnumWrapper(ui64 value) : EnumWrapper(TEnum(value)) {}
+	constexpr EnumWrapper(TEnum value) : mValue(ui64(value)) {}
+	constexpr EnumWrapper(ui64 value) : EnumWrapper(value) {}
 
-	operator ui64() const { return ui64(mValue); }
-	operator TEnum() const { return mValue; }
-	TEnum& value() { return mValue; }
-	TEnum const& value() const { return mValue; }
+	operator ui64() const { return mValue; }
+	operator TEnum() const { return value(); }
+	ui64& data() { return mValue; }
+	ui64 const& data() const { return mValue; }
+	TEnum value() const { return TEnum(mValue); }
 	explicit operator bool() = delete;
 	constexpr bool operator<(EnumWrapper<TEnum> const& other) const { return mValue < other.mValue; }
 	constexpr bool operator==(EnumWrapper<TEnum> const& other) const { return mValue == other.mValue; }
 	constexpr bool operator!=(EnumWrapper<TEnum> const& other) const { return mValue != other.mValue; }
 
 	template <typename TAs>
-	TAs as() const { return TAs(value()); }
+	TAs as() const { return TAs(data()); }
 
 	std::string to_string() const;
 	std::string to_display_string() const;
 
 private:
-	TEnum mValue;
+	ui64 mValue;
 };
 
 template <typename TFlagType>

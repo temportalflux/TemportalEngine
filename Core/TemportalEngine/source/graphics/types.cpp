@@ -437,7 +437,7 @@ std::string BlendOperation::to_string() const { return vk::to_string(as<vk::Blen
 
 std::string BlendOperation::to_display_string() const
 {
-	switch (mValue)
+	switch (value())
 	{
 	case EBlendOperation::eAdd: return "+";
 	case EBlendOperation::eSubtract: return "-";
@@ -478,7 +478,7 @@ std::string BlendFactor::to_string() const { return vk::to_string(as<vk::BlendFa
 
 std::string BlendFactor::to_display_string() const
 {
-	switch (mValue)
+	switch (value())
 	{
 	case EBlendFactor::eZero: return "0";
 	case EBlendFactor::eOne: return "1";
@@ -516,7 +516,7 @@ std::vector<ColorComponentFlags> ColorComponent::ALL = {
 
 std::string ColorComponent::to_string() const
 {
-	switch (mValue)
+	switch (value())
 	{
 	case ColorComponentFlags::eR: return "R";
 	case ColorComponentFlags::eG: return "G";
@@ -727,6 +727,12 @@ std::vector<EImageLayout> ImageLayout::ALL = {
 	EImageLayout::eTransferSrcOptimal,
 	EImageLayout::eTransferDstOptimal,
 	EImageLayout::ePreinitialized,
+	EImageLayout::eDepthReadWrite,
+	EImageLayout::eDepthReadOnly,
+	EImageLayout::eStencilReadWrite,
+	EImageLayout::eStencilReadOnly,
+	EImageLayout::ePresentSrc,
+	EImageLayout::eSharedPresent,
 };
 
 std::string ImageLayout::to_string() const { return vk::to_string(as<vk::ImageLayout>()); }

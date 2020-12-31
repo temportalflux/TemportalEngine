@@ -32,16 +32,16 @@ public:
 		void save(Archive &archive) const
 		{
 			archive(cereal::make_nvp("id", this->id));
-			archive(cereal::make_nvp("type", this->type.value()));
-			archive(cereal::make_nvp("stage", this->stage.value()));
+			archive(cereal::make_nvp("type", this->type.data()));
+			archive(cereal::make_nvp("stage", this->stage.data()));
 		}
 
 		template <typename Archive>
 		void load(Archive &archive)
 		{
 			archive(cereal::make_nvp("id", this->id));
-			archive(cereal::make_nvp("type", this->type.value()));
-			archive(cereal::make_nvp("stage", this->stage.value()));
+			archive(cereal::make_nvp("type", this->type.data()));
+			archive(cereal::make_nvp("stage", this->stage.data()));
 		}
 	};
 	struct DescriptorGroup

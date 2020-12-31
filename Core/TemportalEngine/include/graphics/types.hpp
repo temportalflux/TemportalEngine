@@ -395,7 +395,7 @@ enum class AccessFlags : uint64_t
 typedef utility::EnumWrapper<AccessFlags> Access;
 typedef utility::Flags<AccessFlags> AccessMask;
 
-enum class EImageLayout : ui8
+enum class EImageLayout : ui32
 {
 	eUndefined = 0,
 	eGeneral = 1,
@@ -406,6 +406,17 @@ enum class EImageLayout : ui8
 	eTransferSrcOptimal = 6,
 	eTransferDstOptimal = 7,
 	ePreinitialized = 8,
+
+	//eDepthReadOnlyStencilAttachmentOptimal = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = 1000117000
+	//eDepthAttachmentStencilReadOnlyOptimal = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL = 1000117001
+
+	eDepthReadWrite = 1000241000,
+	eDepthReadOnly = 1000241001,
+	eStencilReadWrite = 1000241002,
+	eStencilReadOnly = 1000241003,
+
+	ePresentSrc = 1000001002,
+	eSharedPresent = 1000111000,
 };
 typedef utility::EnumWrapper<EImageLayout> ImageLayout;
 

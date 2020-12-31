@@ -19,16 +19,37 @@ public:
 	DEFINE_ASSET_STATICS("renderpass", "Render Pass", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GRAPHICS);
 	DECLARE_FACTORY_ASSET_METADATA()
 
+	struct NodeAttachment
+	{
+		math::Vector2 nodePosition;
+		graphics::RenderPassAttachment data;
+
+		bool operator!=(NodeAttachment const& other) const { return !((*this) == other); }
+		bool operator==(NodeAttachment const& other) const
+		{ return this->nodePosition == other.nodePosition && this->data == other.data; }
+
+		template <typename Archive>
+		void save(Archive &archive) const
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("data", this->data));
+		}
+
+		template <typename Archive>
+		void load(Archive &archive)
+		{
+			archive(cereal::make_nvp("position", this->nodePosition));
+			archive(cereal::make_nvp("data", this->data));
+		}
+	};
 	struct NodePhase
 	{
 		math::Vector2 nodePosition;
-		graphics::RPPhase data;
+		graphics::RenderPassPhase data;
 
+		bool operator!=(NodePhase const& other) const { return !((*this) == other); }
 		bool operator==(NodePhase const& other) const
-		{
-			return nodePosition == other.nodePosition && data == other.data;
-		}
-		bool operator!=(NodePhase const& other) const { return !(*this == other); }
+		{ return this->nodePosition == other.nodePosition && this->data == other.data; }
 
 		template <typename Archive>
 		void save(Archive &archive) const
@@ -48,13 +69,11 @@ public:
 	{
 		math::Vector2 nodePosition;
 		bool bPrevPhaseIsRoot;
-		graphics::RPDependency data;
+		graphics::RenderPassDependency data;
 
+		bool operator!=(NodePhaseDependency const& other) const { return !((*this) == other); }
 		bool operator==(NodePhaseDependency const& other) const
-		{
-			return nodePosition == other.nodePosition && data == other.data && bPrevPhaseIsRoot == other.bPrevPhaseIsRoot;
-		}
-		bool operator!=(NodePhaseDependency const& other) const { return !(*this == other); }
+		{ return this->nodePosition == other.nodePosition && this->data == other.data && this->bPrevPhaseIsRoot == other.bPrevPhaseIsRoot; }
 
 		template <typename Archive>
 		void save(Archive &archive) const
@@ -80,6 +99,7 @@ public:
 	DECLARE_PROPERTY_MUTATORS(std::vector<TypedAssetPath<Pipeline>>, mPipelines, PipelineRefs)
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPPhase>, mPhases, Phases)
 	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPDependency>, mPhaseDependencies, PhaseDependencies)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodeAttachment>, mAttachmentNodes, AttachmentNodes)
 	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhase>, mPhaseNodes, PhaseNodes)
 	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhaseDependency>, mPhaseDependencyNodes, PhaseDependencyNodes)
 
@@ -95,6 +115,8 @@ private:
 
 	std::vector<graphics::RPPhase> mPhases;
 	std::vector<graphics::RPDependency> mPhaseDependencies;
+
+	std::vector<NodeAttachment> mAttachmentNodes;
 	std::vector<NodePhase> mPhaseNodes;
 	std::vector<NodePhaseDependency> mPhaseDependencyNodes;
 
@@ -112,8 +134,11 @@ protected:
 		SAVE_PROPERTY("clearColor", mClearColor);
 		SAVE_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		SAVE_PROPERTY("renderArea", mRenderArea);
+
 		SAVE_PROPERTY("phases", mPhases);
 		SAVE_PROPERTY("phaseDependencies", mPhaseDependencies);
+
+		SAVE_PROPERTY("attachments", mAttachmentNodes);
 		SAVE_PROPERTY("phaseNodes", mPhaseNodes);
 		SAVE_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);
 	}
@@ -125,8 +150,11 @@ protected:
 		LOAD_PROPERTY("clearColor", mClearColor);
 		LOAD_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		LOAD_PROPERTY("renderArea", mRenderArea);
+
 		LOAD_PROPERTY("phases", mPhases);
 		LOAD_PROPERTY("phaseDependencies", mPhaseDependencies);
+
+		LOAD_PROPERTY("attachments", mAttachmentNodes);
 		LOAD_PROPERTY("phaseNodes", mPhaseNodes);
 		LOAD_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);
 	}

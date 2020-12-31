@@ -58,12 +58,26 @@ private:
 		ui32 nodeId;
 		ENodeType type;
 	};
+	struct RootNode : public Node
+	{
+		ui32 pinId;
+	};
+	struct AttachmentNode : public Node
+	{
+		ui32 pinId;
+		asset::RenderPass::NodeAttachment assetData;
+	};
 	struct PhaseNode : public Node
 	{
 		ui32 pinIdRequiredDependencies;
 		ui32 pinIdSupportedDependencies;
-		std::vector<ui32> colorAttachmentPinIds;
-		ui32 pinIdDepthAttachment;
+		struct AttachmentReference
+		{
+			ui32 pinId;
+			graphics::ImageLayout layout;
+		};
+		std::vector<AttachmentReference> colorAttachments;
+		AttachmentReference depthAttachment;
 		asset::RenderPass::NodePhase assetData;
 	};
 	struct DependencyNode : public Node
@@ -72,6 +86,7 @@ private:
 		ui32 pinIdNextPhase;
 		asset::RenderPass::NodePhaseDependency assetData;
 	};
+	std::shared_ptr<RootNode> mpRootNode;
 	std::map<ui32, std::shared_ptr<Node>> mNodes;
 	struct Pin
 	{
@@ -80,6 +95,7 @@ private:
 		ENodeType pinType;
 		bool bSingleLinkOnly;
 		std::set<ui32> linkIds;
+		std::function<void()> deleteCallback;
 	};
 	std::map<ui32, Pin> mPins;
 	struct Link
@@ -100,12 +116,18 @@ private:
 
 	void renderPin(Pin const& pin, char const* titleId, node::EPinType type);
 	void rootNode(ui32 nodeId, ui32 phasePinId);
+	void renderAttachmentNode(std::shared_ptr<AttachmentNode> node);
 	void renderPhaseNode(std::shared_ptr<PhaseNode> node);
 	void renderDependencyNode(std::shared_ptr<DependencyNode> node);
+
+	PhaseNode::AttachmentReference createAttachmentReference(ui32 nodeId);
+	void deleteAttachmentReference(ui32 nodeId, ui32 pinId);
+	void renderAttachmentReference(char const* id, PhaseNode::AttachmentReference &value);
 	
 	void pollCreateBuffer();
 	void pollDeleteBuffer();
 	void deleteNodePins(std::shared_ptr<Node> node);
+	void deletePin(ui32 pinId);
 
 	void renderContextMenus();
 	void renderContextNewNode();
@@ -120,12 +142,14 @@ private:
 
 	bool renderStageMask(char const* id, std::string const& popupId, graphics::PipelineStageMask &value);
 	bool renderAccessMask(char const* id, std::string const& popupId, graphics::AccessMask &value);
+	bool renderImageLayout(char const* id, std::string const& popupId, graphics::ImageLayout &value);
 
 public:
 	struct ComboPopup
 	{
 		std::string popupId;
 		ui64 *comboData;
+		bool bIsMask;
 		struct Option
 		{
 			ui64 flag;
