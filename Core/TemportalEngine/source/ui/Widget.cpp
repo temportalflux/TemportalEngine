@@ -7,6 +7,7 @@ Widget::Widget()
 	: mAnchor({ 0, 0 })
 	, mPivot({ 0, 0 })
 	, mZLayer(0)
+	, mbFillParentWidth(false), mbFillParentHeight(false)
 {
 }
 
@@ -39,6 +40,9 @@ Widget& Widget::setSize(math::Vector2UInt const& points)
 	this->mSizeInPoints = { i32(points.x()), i32(points.y()) };
 	return *this;
 }
+
+Widget& Widget::setFillWidth(bool bFill) { this->mbFillParentWidth = bFill; return *this; }
+Widget& Widget::setFillHeight(bool bFill) { this->mbFillParentHeight = bFill; return *this; }
 
 Widget& Widget::setZLayer(ui32 z)
 {
@@ -86,5 +90,12 @@ math::Vector2 Widget::getTopLeftPositionOnScreen() const
 
 math::Vector2 Widget::getSizeOnScreen() const
 {
-	return this->mResolution.pointsToScreenSpace(this->mSizeInPoints);
+	auto screenSpace = this->mResolution.pointsToScreenSpace(this->mSizeInPoints);
+	auto parentSize = !this->mpAnchorParent.expired()
+		? this->mpAnchorParent.lock()->getSizeOnScreen()
+		: math::Vector2 { 2, 2 };
+	return {
+		this->mbFillParentWidth ? parentSize.x() : screenSpace.x(),
+		this->mbFillParentHeight ? parentSize.y() : screenSpace.y(),
+	};
 }

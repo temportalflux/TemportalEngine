@@ -152,6 +152,8 @@ Image& Image::setAnchor(math::Vector2 const& anchor) { Widget::setAnchor(anchor)
 Image& Image::setPivot(math::Vector2 const& pivot) { Widget::setPivot(pivot); return *this; }
 Image& Image::setPosition(math::Vector2Int const& points) { Widget::setPosition(points); return *this; }
 Image& Image::setSize(math::Vector2UInt const& points) { Widget::setSize(points); return *this; }
+Image& Image::setFillWidth(bool bFill) { Widget::setFillWidth(bFill); return *this; }
+Image& Image::setFillHeight(bool bFill) { Widget::setFillHeight(bFill); return *this; }
 Image& Image::setZLayer(ui32 z) { Widget::setZLayer(z); return *this; }
 
 Image& Image::setResource(std::weak_ptr<ui::ImageResource> const& resource)
@@ -200,7 +202,9 @@ Widget& Image::commit(graphics::CommandPool* transientPool)
 	
 	auto pos = this->getTopLeftPositionOnScreen();
 	auto size = this->getSizeOnScreen();
-	auto const imageSize = this->mpResource.lock()->size().toFloat();
+	auto const resourceSize = this->mpResource.lock()->size();
+	auto const imageSize = resourceSize.toFloat();
+	auto const subSize = this->mSubSize ? this->mSubSize.value() : resourceSize;
 
 	struct Coordinate
 	{
@@ -216,9 +220,9 @@ Widget& Image::commit(graphics::CommandPool* transientPool)
 	auto coords = std::array<std::vector<Coordinate>, 2>();
 	
 	auto left = Coordinate{ pos.x(), this->mPadding.x() / imageSize.x() };
-	auto right = Coordinate{ pos.x() + size.x(), (this->mPadding.x() + this->mSubSize.x()) / imageSize.x() };
+	auto right = Coordinate{ pos.x() + size.x(), (this->mPadding.x() + subSize.x()) / imageSize.x() };
 	auto top = Coordinate{ pos.y(), this->mPadding.y() / imageSize.y() };
-	auto bottom = Coordinate{ pos.y() + size.y(), (this->mPadding.y() + this->mSubSize.y()) / imageSize.y() };
+	auto bottom = Coordinate{ pos.y() + size.y(), (this->mPadding.y() + subSize.y()) / imageSize.y() };
 
 	coords[0].push_back(left);
 	coords[1].push_back(top);
@@ -238,7 +242,7 @@ Widget& Image::commit(graphics::CommandPool* transientPool)
 		if (idx % 2 == 1)
 		{
 			sliceOffsetOnScreen = size - sliceOffsetOnScreen;
-			tex = this->mSubSize - tex;
+			tex = subSize - tex;
 		}
 
 		auto posOnScreen = pos + sliceOffsetOnScreen;

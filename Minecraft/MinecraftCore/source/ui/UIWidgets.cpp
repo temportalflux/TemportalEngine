@@ -8,6 +8,7 @@ ui::AssetImageResource ui::ASSET_IMG_BACKGROUND = {
 ui::AssetImageResource ui::ASSET_IMG_SLOT = {
 	asset::TypedAssetPath<asset::Texture>::Create("assets/textures/ui/slot.te-asset")
 };
+std::shared_ptr<ui::ImageResource> ui::RES_IMG_WHITE = std::shared_ptr<ui::ImageResource>();
 
 void ui::AssetImageResource::create(ResourceRequirements const& requirements)
 {
@@ -28,12 +29,21 @@ void ui::AssetImageResource::destroy()
 
 void ui::createResources(ResourceRequirements const& requirements)
 {
+	(ui::RES_IMG_WHITE = std::make_shared<ui::ImageResource>())
+		->setDevice(requirements.device)
+		.setTextureSize({ 1, 1 })
+		.setTexturePixels({ 255, 255, 255, 255 })
+		.create(requirements.transientPool)
+		.createDescriptor(requirements.layout, requirements.descriptorPool)
+		.attachWithSampler(requirements.sampler);
+
 	ui::ASSET_IMG_BACKGROUND.create(requirements);
 	ui::ASSET_IMG_SLOT.create(requirements);
 }
 
 void ui::destroyResources()
 {
+	ui::RES_IMG_WHITE.reset();
 	ui::ASSET_IMG_BACKGROUND.destroy();
 	ui::ASSET_IMG_SLOT.destroy();
 }

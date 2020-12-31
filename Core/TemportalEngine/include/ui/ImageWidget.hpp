@@ -83,6 +83,8 @@ public:
 	Image& setPivot(math::Vector2 const& pivot);
 	Image& setPosition(math::Vector2Int const& points);
 	Image& setSize(math::Vector2UInt const& points);
+	Image& setFillWidth(bool bFill);
+	Image& setFillHeight(bool bFill);
 	Image& setZLayer(ui32 z);
 
 	Image& setResource(std::weak_ptr<ui::ImageResource> const& resource);
@@ -119,7 +121,7 @@ private:
 	 * The size of the subimage (before slicing).
 	 * Used with `mPadding` to determine the inner extents.
 	 */
-	math::Vector2UInt mSubSize;
+	std::optional<math::Vector2UInt> mSubSize;
 
 	/**
 	 * The amount of pixels from the padding at which the image is 9-sliced.

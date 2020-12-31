@@ -7,18 +7,16 @@ using namespace ui;
 
 TextLogMenu::TextLogMenu()
 {
-	/*
+	///*
 	(*(this->mpInputBarBkgd = std::make_shared<ui::Image>()))
-		.setPosition({ 0, 0 })
-		.setSize({ 512, 512 })
+		.setResource(ui::RES_IMG_WHITE)
+		.setAnchor({ 0, 1 }).setPivot({ 0, 1 }).setSize({ 0, 45 }).setFillWidth(true)
 		.setZLayer(1)
-		.setTextureSize({ 1, 1 })
-		.setTextureSubsize({ 1, 1 })
-		.setTexturePixels({ 255, 255, 255, 255 })
 		.setColor({ 0.f, 0.f, 0.f, 0.9f })
 		;
 	//*/
 
+	/*
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
 	ui::createMenuBackground(*this->mpBackgroundDemo.get(), 30)
 		.setAnchor({ 1, 1 })
@@ -30,6 +28,7 @@ TextLogMenu::TextLogMenu()
 		.setAnchor({ 0, 0.5 })
 		.setPivot({ 0, 0.5 })
 		.setSize({ 64, 64 });
+	//*/
 
 }
 
@@ -42,7 +41,7 @@ TextLogMenu::~TextLogMenu()
 
 void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
 {
-	renderer->add(this->mpBackgroundDemo);
-	//renderer->add(this->mpInputBarBkgd);
-	for (auto& slot : this->mSlots) renderer->add(slot);
+	//renderer->add(this->mpBackgroundDemo);
+	renderer->add(this->mpInputBarBkgd);
+	//for (auto& slot : this->mSlots) renderer->add(slot);
 }

@@ -32,6 +32,8 @@ struct AssetImageResource
 void createResources(ResourceRequirements const& requirements);
 void destroyResources();
 
+extern std::shared_ptr<ui::ImageResource> RES_IMG_WHITE;
+
 extern AssetImageResource ASSET_IMG_BACKGROUND;
 ui::Image& createMenuBackground(ui::Image& img, ui32 borderWidthInPoints);
 

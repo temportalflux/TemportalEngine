@@ -30,6 +30,8 @@ public:
 	Widget& setPivot(math::Vector2 const& pivot);
 	Widget& setPosition(math::Vector2Int const& points);
 	Widget& setSize(math::Vector2UInt const& points);
+	Widget& setFillWidth(bool bFill);
+	Widget& setFillHeight(bool bFill);
 	Widget& setZLayer(ui32 z);
 	ui32 zLayer() const;
 
@@ -67,6 +69,7 @@ private:
 	 */
 	math::Vector2Int mPositionInPoints;
 	math::Vector2Int mSizeInPoints;
+	bool mbFillParentWidth, mbFillParentHeight;
 	ui32 mZLayer;
 
 };
