@@ -36,9 +36,7 @@ public:
 	math::Vector2 getTopLeftPositionOnScreen() const;
 	math::Vector2 getSizeOnScreen() const;
 
-	virtual Widget& create(graphics::CommandPool* transientPool) { return *this; }
-	virtual Widget& createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool) { return *this; }
-	virtual Widget& attachWithSampler(graphics::ImageSampler *sampler) { return *this; }
+	virtual Widget& create() { return *this; }
 	virtual Widget& commit(graphics::CommandPool* transientPool) { return *this; }
 
 	virtual void bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline) {};

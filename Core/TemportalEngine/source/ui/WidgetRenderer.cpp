@@ -116,10 +116,7 @@ void ui::WidgetRenderer::initializeData(graphics::CommandPool *pool, graphics::D
 
 void ui::WidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> widget)
 {
-	widget
-		->create(this->mpTransientPool)
-		.createDescriptor(&this->imageDescriptorLayout(), this->mpDescriptorPool)
-		.attachWithSampler(&this->imageSampler());
+	widget->create();
 }
 
 void ui::WidgetRenderer::createPipeline(math::Vector2UInt const& resolution)

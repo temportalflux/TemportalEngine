@@ -6,13 +6,85 @@
 
 using namespace ui;
 
-Image::Image() : Widget(), mColor(1.0f), mSlicing({})
+ImageResource::ImageResource()
 {
 	this->mImage
 		.setFormat(vk::Format::eR8G8B8A8Srgb)
 		.setTiling(vk::ImageTiling::eOptimal)
 		.setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+}
 
+ImageResource::ImageResource(ImageResource&& other) { *this = std::move(other); }
+
+ImageResource& ImageResource::operator=(ImageResource &&other)
+{
+	this->mPixels = other.mPixels;
+	this->mImageSize = other.mImageSize;
+	this->mImage = std::move(other.mImage);
+	this->mView = std::move(other.mView);
+	this->mDescriptor = std::move(other.mDescriptor);
+	return *this;
+}
+
+ImageResource::~ImageResource()
+{
+	this->release();
+}
+
+void ImageResource::release()
+{
+	this->mView.destroy();
+	this->mImage.destroy();
+}
+
+ImageResource& ImageResource::setTexturePixels(std::vector<ui8> const& srgbPixels)
+{
+	this->mPixels = srgbPixels;
+	return *this;
+}
+
+ImageResource& ImageResource::setTextureSize(math::Vector2UInt const& sizeInPixels)
+{
+	this->mImageSize = sizeInPixels;
+	this->mImage.setSize(math::Vector3UInt(sizeInPixels).z(1));
+	return *this;
+}
+
+ImageResource& ImageResource::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+{
+	this->mImage.setDevice(device);
+	this->mView.setDevice(device);
+	return *this;
+}
+
+ImageResource& ImageResource::create(graphics::CommandPool* transientPool)
+{
+	this->mImage.create();
+
+	this->mImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, transientPool);
+	this->mImage.writeImage((void*)this->mPixels.data(), this->mPixels.size() * sizeof(ui8), transientPool);
+	this->mImage.transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, transientPool);
+	this->mPixels.clear();
+
+	this->mView.setImage(&this->mImage, vk::ImageAspectFlagBits::eColor).create();
+	return *this;
+}
+
+ImageResource& ImageResource::createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool)
+{
+	layout->createSet(descriptorPool, this->mDescriptor);
+	return *this;
+}
+
+ImageResource& ImageResource::attachWithSampler(graphics::ImageSampler *sampler)
+{
+	this->mDescriptor.attach("imgSampler", graphics::EImageLayout::eShaderReadOnlyOptimal, &this->mView, sampler);
+	this->mDescriptor.writeAttachments();
+	return *this;
+}
+
+Image::Image() : Widget(), mColor(1.0f), mSlicing({})
+{
 	this->mVertices.resize(/*maximum number of vertices given how padding and slicing works*/ 16);
 	this->mVertexBuffer
 		.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly)
@@ -38,11 +110,8 @@ Image& Image::operator=(Image &&other)
 	this->mSubSize = other.mSubSize;
 	this->mSlicing = other.mSlicing;
 
-	this->mPixels = other.mPixels;
-	this->mImageSize = other.mImageSize;
-	this->mImage = std::move(other.mImage);
-	this->mView = std::move(other.mView);
-	this->mDescriptor = std::move(other.mDescriptor);
+	this->mpResource = other.mpResource;
+	other.mpResource.reset();
 
 	this->mVertices = other.mVertices;
 	this->mIndices = other.mIndices;
@@ -61,15 +130,12 @@ void Image::releaseGraphics()
 {
 	this->mVertexBuffer.destroy();
 	this->mIndexBuffer.destroy();
-	this->mView.destroy();
-	this->mImage.destroy();
+	this->mpResource.reset();
 }
 
 Image& Image::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	Widget::setDevice(device);
-	this->mImage.setDevice(device);
-	this->mView.setDevice(device);
 	this->mVertexBuffer.setDevice(device);
 	this->mIndexBuffer.setDevice(device);
 	return *this;
@@ -88,16 +154,9 @@ Image& Image::setPosition(math::Vector2Int const& points) { Widget::setPosition(
 Image& Image::setSize(math::Vector2UInt const& points) { Widget::setSize(points); return *this; }
 Image& Image::setZLayer(ui32 z) { Widget::setZLayer(z); return *this; }
 
-Image& Image::setTexturePixels(std::vector<ui8> const& srgbPixels)
+Image& Image::setResource(std::weak_ptr<ui::ImageResource> const& resource)
 {
-	this->mPixels = srgbPixels;
-	return *this;
-}
-
-Image& Image::setTextureSize(math::Vector2UInt const& sizeInPixels)
-{
-	this->mImageSize = sizeInPixels;
-	this->mImage.setSize(math::Vector3UInt(sizeInPixels).z(1));
+	this->mpResource = resource;
 	return *this;
 }
 
@@ -125,44 +184,23 @@ Image& Image::setTextureSlicing(std::array<Slice, 4> const& slices)
 	return *this;
 }
 
-Widget& Image::create(graphics::CommandPool* transientPool)
+Widget& Image::create()
 {
-	this->mImage.create();
-	
-	this->mImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, transientPool);
-	this->mImage.writeImage((void*)this->mPixels.data(), this->mPixels.size() * sizeof(ui8), transientPool);
-	this->mImage.transitionLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal, transientPool);
-	this->mPixels.clear();
-
-	this->mView.setImage(&this->mImage, vk::ImageAspectFlagBits::eColor).create();
-
 	this->mVertexBuffer.create();
 	this->mIndexBuffer.create();
-
-	return *this;
-}
-
-Widget& Image::createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool)
-{
-	layout->createSet(descriptorPool, this->mDescriptor);
-	return *this;
-}
-
-Widget& Image::attachWithSampler(graphics::ImageSampler *sampler)
-{
-	this->mDescriptor.attach("imgSampler", graphics::EImageLayout::eShaderReadOnlyOptimal, &this->mView, sampler);
-	this->mDescriptor.writeAttachments();
 	return *this;
 }
 
 Widget& Image::commit(graphics::CommandPool* transientPool)
 {
+	assert(!this->mpResource.expired());
+
 	this->mVertices.clear();
 	this->mIndices.clear();
 	
 	auto pos = this->getTopLeftPositionOnScreen();
 	auto size = this->getSizeOnScreen();
-	auto imageSize = this->mImageSize.toFloat();
+	auto const imageSize = this->mpResource.lock()->size().toFloat();
 
 	struct Coordinate
 	{
@@ -204,7 +242,7 @@ Widget& Image::commit(graphics::CommandPool* transientPool)
 		}
 
 		auto posOnScreen = pos + sliceOffsetOnScreen;
-		auto texCoordNormalized = (this->mPadding + tex).toFloat() / this->mImageSize.toFloat();
+		auto texCoordNormalized = (this->mPadding + tex).toFloat() / imageSize;
 		coords[axisIdx].push_back({
 			posOnScreen[axisIdx], texCoordNormalized[axisIdx]
 		});
@@ -260,7 +298,7 @@ void Image::pushTri(math::Vector3UInt const& indices)
 void Image::bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline)
 {
 	OPTICK_EVENT();
-	command->bindDescriptorSets(pipeline, { &this->mDescriptor });
+	command->bindDescriptorSets(pipeline, { &this->mpResource.lock()->descriptor() });
 	command->bindVertexBuffers(0, { &this->mVertexBuffer });
 	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
 }

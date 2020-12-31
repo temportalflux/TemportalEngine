@@ -6,13 +6,36 @@
 #include "ui/ImageWidget.hpp"
 
 FORWARD_DEF(NS_ASSET, class Texture);
+FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice);
 
 NS_UI
 
-extern asset::TypedAssetPath<asset::Texture> ASSET_IMG_BACKGROUND;
+struct ResourceRequirements
+{
+	std::weak_ptr<graphics::GraphicsDevice> device;
+	graphics::CommandPool* transientPool;
+	graphics::DescriptorLayout *layout;
+	graphics::DescriptorPool *descriptorPool;
+	graphics::ImageSampler *sampler;
+};
+
+struct AssetImageResource
+{
+	asset::TypedAssetPath<asset::Texture> assetPath;
+	std::shared_ptr<ui::ImageResource> resource;
+	ResourceRequirements requirements;
+	
+	void create(ResourceRequirements const& requirements);
+	void destroy();
+};
+
+void createResources(ResourceRequirements const& requirements);
+void destroyResources();
+
+extern AssetImageResource ASSET_IMG_BACKGROUND;
 ui::Image& createMenuBackground(ui::Image& img, ui32 borderWidthInPoints);
 
-extern asset::TypedAssetPath<asset::Texture> ASSET_IMG_SLOT;
+extern AssetImageResource ASSET_IMG_SLOT;
 ui::Image& createSlotImage(ui::Image& img, ui32 borderWidthInPoints);
 
 NS_END

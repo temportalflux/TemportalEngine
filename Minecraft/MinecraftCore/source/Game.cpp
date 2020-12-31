@@ -55,6 +55,7 @@
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
 #include "ui/TextLogMenu.hpp"
+#include "ui/UIWidgets.hpp"
 
 #include <chrono>
 
@@ -540,6 +541,14 @@ void Game::createUIRenderer()
 	).load(asset::EAssetSerialization::Binary));
 
 	this->mpRenderer->addRenderer(this->mpUIRenderer.get());
+
+	ui::createResources({
+		this->mpRenderer->getDevice(),
+		&this->mpRenderer->getTransientPool(),
+		&this->mpUIRenderer->imageDescriptorLayout(),
+		&this->mpRenderer->getDescriptorPool(),
+		&this->mpUIRenderer->imageSampler()
+	});
 }
 
 void Game::destroyRenderers()
@@ -558,6 +567,7 @@ void Game::destroyRenderers()
 	this->mpSystemUpdateCameraPerspective.reset();
 	this->mpSystemUpdateDebugHUD.reset();
 	this->mpUIRenderer->destroyRenderDevices();
+	ui::destroyResources();
 
 	this->mpRenderer->invalidate();
 

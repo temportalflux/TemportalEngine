@@ -9,6 +9,44 @@
 
 NS_UI
 
+class ImageResource
+{
+
+public:
+	ImageResource();
+	ImageResource(ImageResource const& other) = delete;
+	ImageResource(ImageResource&& other);
+	ImageResource& operator=(ImageResource &&other);
+	~ImageResource();
+
+	ImageResource& setTexturePixels(std::vector<ui8> const& pixels);
+	ImageResource& setTextureSize(math::Vector2UInt const& sizeInPixels);
+
+	ImageResource& setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
+
+	/**
+	 * Creates the graphics image for the provided pixels and size.
+	 */
+	ImageResource& create(graphics::CommandPool* transientPool);
+	ImageResource& createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool);
+	ImageResource& attachWithSampler(graphics::ImageSampler *sampler);
+	void release();
+
+	math::Vector2UInt const& size() const { return this->mImageSize; }
+	graphics::DescriptorSet const& descriptor() const { return this->mDescriptor; }
+
+private:
+	/**
+	 * The pixels of the image in 8-bit SRGB.
+	 */
+	std::vector<ui8> mPixels;
+	math::Vector2UInt mImageSize;
+	graphics::Image mImage;
+	graphics::ImageView mView;
+	graphics::DescriptorSet mDescriptor;
+
+};
+
 class Image : public ui::Widget
 {
 public:
@@ -47,8 +85,7 @@ public:
 	Image& setSize(math::Vector2UInt const& points);
 	Image& setZLayer(ui32 z);
 
-	Image& setTexturePixels(std::vector<ui8> const& pixels);
-	Image& setTextureSize(math::Vector2UInt const& sizeInPixels);
+	Image& setResource(std::weak_ptr<ui::ImageResource> const& resource);
 	Image& setColor(math::Vector4 const& color);
 	Image& setTexturePadding(math::Vector2UInt const& paddingInPixels);
 	Image& setTextureSubsize(math::Vector2UInt const& sizeInPixels);
@@ -56,12 +93,9 @@ public:
 	Image& setTextureSlicing(std::array<Slice, 4> const& slices);
 
 	/**
-	 * Creates the graphics image for the provided pixels and size.
 	 * Creates the buffer objects for the current image.
 	 */
-	Widget& create(graphics::CommandPool* transientPool) override;
-	Widget& createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool) override;
-	Widget& attachWithSampler(graphics::ImageSampler *sampler) override;
+	Widget& create() override;
 
 	/**
 	 * Rebuilds the vertex and index buffers and commits them to the graphics object representations.
@@ -95,15 +129,8 @@ private:
 	 * 3: bottom
 	 */
 	std::array<Slice, 4> mSlicing;
-	
-	/**
-	 * The pixels of the image in 8-bit SRGB.
-	 */
-	std::vector<ui8> mPixels;
-	math::Vector2UInt mImageSize;
-	graphics::Image mImage;
-	graphics::ImageView mView;
-	graphics::DescriptorSet mDescriptor;
+
+	std::weak_ptr<ui::ImageResource> mpResource;
 
 	std::vector<Vertex> mVertices;
 	std::vector<ui16> mIndices;
