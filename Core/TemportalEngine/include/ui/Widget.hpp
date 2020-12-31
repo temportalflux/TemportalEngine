@@ -12,22 +12,14 @@ FORWARD_DEF(NS_GRAPHICS, class ImageSampler);
 FORWARD_DEF(NS_GRAPHICS, class Pipeline);
 
 NS_UI
-class ImageWidgetRenderer;
-
-enum class EAlignment
-{
-	eLeft,
-	eCenter,
-	eRight,
-	eFill,
-};
+class WidgetRenderer;
 
 class Widget : public std::enable_shared_from_this<Widget>
 {
 public:
 	Widget() : mZLayer(0) {}
 
-	void setRenderer(std::weak_ptr<ui::ImageWidgetRenderer> renderer) { this->mpRenderer = renderer; }
+	void setRenderer(std::weak_ptr<ui::WidgetRenderer> renderer) { this->mpRenderer = renderer; }
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) { this->mpDevice = device; }
 	Widget& setResolution(ui::Resolution const& resolution) { this->mResolution = resolution; return *this; }
 
@@ -58,7 +50,7 @@ public:
 	virtual void record(graphics::Command *command) {};
 
 private:
-	std::weak_ptr<ui::ImageWidgetRenderer> mpRenderer;
+	std::weak_ptr<ui::WidgetRenderer> mpRenderer;
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 	ui::Resolution mResolution;
 

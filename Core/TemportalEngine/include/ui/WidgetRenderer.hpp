@@ -17,14 +17,14 @@ NS_UI
 class Image;
 class Widget;
 
-class ImageWidgetRenderer : public std::enable_shared_from_this<ImageWidgetRenderer>
+class WidgetRenderer : public std::enable_shared_from_this<WidgetRenderer>
 {
 
 public:
-	ImageWidgetRenderer();
-	~ImageWidgetRenderer();
+	WidgetRenderer();
+	~WidgetRenderer();
 
-	ImageWidgetRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
+	WidgetRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	void initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool);

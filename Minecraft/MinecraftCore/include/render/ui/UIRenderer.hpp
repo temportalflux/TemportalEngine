@@ -21,7 +21,7 @@ NS_GRAPHICS
 
 class UIRenderer
 	: public graphics::IPipelineRenderer
-	, public ui::ImageWidgetRenderer
+	, public ui::WidgetRenderer
 {
 	friend class UIString;
 

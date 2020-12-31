@@ -125,7 +125,7 @@ UIRenderer& UIRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font>
 
 UIRenderer& UIRenderer::setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
-	ui::ImageWidgetRenderer::setImagePipeline(path);
+	ui::WidgetRenderer::setImagePipeline(path);
 	return *this;
 }
 
@@ -149,7 +149,7 @@ void UIRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 	this->mText.vertexBuffer.create();
 	this->mText.indexBuffer.create();
 
-	ui::ImageWidgetRenderer::setDevice(device);
+	ui::WidgetRenderer::setDevice(device);
 }
 
 void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
@@ -166,7 +166,7 @@ void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::
 		this->mText.descriptorLayout.createSet(descriptorPool, font.descriptorSet());
 		font.initializeImage(transientPool);
 	}
-	ui::ImageWidgetRenderer::initializeData(transientPool, descriptorPool);
+	ui::WidgetRenderer::initializeData(transientPool, descriptorPool);
 }
 
 void UIRenderer::setFrameCount(uSize frameCount)
@@ -200,7 +200,7 @@ void UIRenderer::createPipeline(math::Vector2UInt const& resolution)
 		updateGlyphString(glyphString);
 	}
 
-	ui::ImageWidgetRenderer::createPipeline(resolution);
+	ui::WidgetRenderer::createPipeline(resolution);
 }
 
 void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
@@ -232,7 +232,7 @@ void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalD
 		);
 	}
 
-	ui::ImageWidgetRenderer::record(command);
+	ui::WidgetRenderer::record(command);
 }
 
 void UIRenderer::destroyRenderChain()

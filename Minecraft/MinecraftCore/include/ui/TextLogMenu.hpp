@@ -5,7 +5,7 @@
 #include "ui/ImageWidget.hpp"
 
 NS_UI
-class ImageWidgetRenderer;
+class WidgetRenderer;
 
 class TextLogMenu
 {
@@ -14,7 +14,7 @@ public:
 	TextLogMenu();
 	~TextLogMenu();
 
-	void addImagesToRenderer(ui::ImageWidgetRenderer *renderer);
+	void addImagesToRenderer(ui::WidgetRenderer *renderer);
 
 private:
 	std::shared_ptr<ui::Image> mpInputBarBkgd;

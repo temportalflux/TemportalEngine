@@ -28,7 +28,7 @@ TextLogMenu::~TextLogMenu()
 	this->mpInputBarBkgd.reset();
 }
 
-void TextLogMenu::addImagesToRenderer(ui::ImageWidgetRenderer *renderer)
+void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
 {
 	renderer->add(this->mpBackgroundDemo);
 	renderer->add(this->mpInputBarBkgd);

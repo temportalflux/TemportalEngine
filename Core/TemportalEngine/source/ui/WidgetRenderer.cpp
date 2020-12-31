@@ -5,25 +5,25 @@
 #include "graphics/Pipeline.hpp"
 #include "ui/ImageWidget.hpp"
 
-ui::ImageWidgetRenderer::ImageWidgetRenderer()
+ui::WidgetRenderer::WidgetRenderer()
 	: mResolution({})
 {
 
 }
 
-ui::ImageWidgetRenderer::~ImageWidgetRenderer()
+ui::WidgetRenderer::~WidgetRenderer()
 {
 
 }
 
-ui::ImageWidgetRenderer::LayerFindResult ui::ImageWidgetRenderer::findLayer(ui32 z)
+ui::WidgetRenderer::LayerFindResult ui::WidgetRenderer::findLayer(ui32 z)
 {
 	return std::equal_range(this->mLayers.begin(), this->mLayers.end(), Layer { z });
 }
 
-bool ui::ImageWidgetRenderer::Layer::operator<(Layer const& other) const { return this->z < other.z; }
+bool ui::WidgetRenderer::Layer::operator<(Layer const& other) const { return this->z < other.z; }
 
-ui::ImageWidgetRenderer::Layer& ui::ImageWidgetRenderer::getOrMakeLayer(ui32 z)
+ui::WidgetRenderer::Layer& ui::WidgetRenderer::getOrMakeLayer(ui32 z)
 {
 	auto layerResult = this->findLayer(z);
 	std::vector<Layer>::iterator iter = layerResult.first;
@@ -34,7 +34,7 @@ ui::ImageWidgetRenderer::Layer& ui::ImageWidgetRenderer::getOrMakeLayer(ui32 z)
 	return *iter;
 }
 
-void ui::ImageWidgetRenderer::add(std::weak_ptr<ui::Image> widget)
+void ui::WidgetRenderer::add(std::weak_ptr<ui::Image> widget)
 {
 	auto pWidget = widget.lock();
 	auto& layer = this->getOrMakeLayer(pWidget->zLayer());
@@ -46,7 +46,7 @@ void ui::ImageWidgetRenderer::add(std::weak_ptr<ui::Image> widget)
 	if (this->mResolution.dotsPerInch > 0) this->commitWidget(pWidget);
 }
 
-void ui::ImageWidgetRenderer::changeZLayer(std::weak_ptr<ui::Widget> widget, ui32 newZ)
+void ui::WidgetRenderer::changeZLayer(std::weak_ptr<ui::Widget> widget, ui32 newZ)
 {
 	auto oldZ = widget.lock()->zLayer();
 	auto layerResult = this->findLayer(oldZ);
@@ -62,7 +62,7 @@ void ui::ImageWidgetRenderer::changeZLayer(std::weak_ptr<ui::Widget> widget, ui3
 	layer.widgets.push_back(widget);
 }
 
-ui::ImageWidgetRenderer& ui::ImageWidgetRenderer::setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
+ui::WidgetRenderer& ui::WidgetRenderer::setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
 {
 	if (!this->imagePipeline())
 	{
@@ -83,7 +83,7 @@ ui::ImageWidgetRenderer& ui::ImageWidgetRenderer::setImagePipeline(asset::TypedA
 	return *this;
 }
 
-void ui::ImageWidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpDevice = device;
 	this->imageSampler().setDevice(device);
@@ -100,7 +100,7 @@ void ui::ImageWidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> 
 	}
 }
 
-void ui::ImageWidgetRenderer::initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool)
+void ui::WidgetRenderer::initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool)
 {
 	this->mpTransientPool = pool;
 	this->mpDescriptorPool = descriptorPool;
@@ -114,7 +114,7 @@ void ui::ImageWidgetRenderer::initializeData(graphics::CommandPool *pool, graphi
 	}
 }
 
-void ui::ImageWidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> widget)
+void ui::WidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> widget)
 {
 	widget
 		->create(this->mpTransientPool)
@@ -122,7 +122,7 @@ void ui::ImageWidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> w
 		.attachWithSampler(&this->imageSampler());
 }
 
-void ui::ImageWidgetRenderer::createPipeline(math::Vector2UInt const& resolution)
+void ui::WidgetRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
 	this->mResolution = { resolution, 96 };
 
@@ -140,12 +140,12 @@ void ui::ImageWidgetRenderer::createPipeline(math::Vector2UInt const& resolution
 	}
 }
 
-void ui::ImageWidgetRenderer::commitWidget(std::shared_ptr<ui::Widget> img)
+void ui::WidgetRenderer::commitWidget(std::shared_ptr<ui::Widget> img)
 {
 	img->setResolution(this->mResolution).commit(this->mpTransientPool);
 }
 
-void ui::ImageWidgetRenderer::record(graphics::Command *command)
+void ui::WidgetRenderer::record(graphics::Command *command)
 {
 	OPTICK_EVENT()
 	command->bindPipeline(this->imagePipeline());
