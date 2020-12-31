@@ -38,6 +38,12 @@ namespace cereal
 	DECLARE_CEREALIZATION(utility::Flags<graphics::PipelineStageFlags>, std::string, ui64)
 	DECLARE_CEREALIZATION(utility::Flags<graphics::AccessFlags>, std::string, ui64)
 
+	DECLARE_CEREALIZATION(graphics::ImageFormatCategory, ui32, ui32)
+	DECLARE_CEREALIZATION(graphics::ImageLayout, ui32, ui32)
+	DECLARE_CEREALIZATION(graphics::SampleCount, ui32, ui32)
+	DECLARE_CEREALIZATION(graphics::AttachmentLoadOp, ui32, ui32)
+	DECLARE_CEREALIZATION(graphics::AttachmentStoreOp, ui32, ui32)
+
 }
 
 #undef DECLARE_CEREALIZATION

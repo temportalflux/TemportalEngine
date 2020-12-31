@@ -360,4 +360,124 @@ void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, uti
 
 #pragma endregion
 
+#pragma region Image Format Category
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::ImageFormatCategory const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::ImageFormatCategory &value, ui32 const& i)
+{
+	value = (graphics::EImageFormatCategory)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::ImageFormatCategory const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::ImageFormatCategory &value, ui32 const& i)
+{
+	value = (graphics::EImageFormatCategory)i;
+}
+
+#pragma endregion
+
+#pragma region Image Layout
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::ImageLayout const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::ImageLayout &value, ui32 const& i)
+{
+	value = (graphics::EImageLayout)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::ImageLayout const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::ImageLayout &value, ui32 const& i)
+{
+	value = (graphics::EImageLayout)i;
+}
+
+#pragma endregion
+
+#pragma region Sample Count
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::SampleCount const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::SampleCount &value, ui32 const& i)
+{
+	value = (graphics::ESampleCount)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::SampleCount const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::SampleCount &value, ui32 const& i)
+{
+	value = (graphics::ESampleCount)i;
+}
+
+#pragma endregion
+
+#pragma region AttachmentLoadOp
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::AttachmentLoadOp const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::AttachmentLoadOp &value, ui32 const& i)
+{
+	value = (graphics::EAttachmentLoadOp)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::AttachmentLoadOp const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::AttachmentLoadOp &value, ui32 const& i)
+{
+	value = (graphics::EAttachmentLoadOp)i;
+}
+
+#pragma endregion
+
+#pragma region AttachmentStoreOp
+
+ui32 cereal::save_minimal(cereal::JSONOutputArchive const& archive, graphics::AttachmentStoreOp const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::JSONInputArchive const& archive, graphics::AttachmentStoreOp &value, ui32 const& i)
+{
+	value = (graphics::EAttachmentStoreOp)i;
+}
+
+ui32 cereal::save_minimal(cereal::PortableBinaryOutputArchive const& archive, graphics::AttachmentStoreOp const &value)
+{
+	return (ui32)value;
+}
+
+void cereal::load_minimal(cereal::PortableBinaryInputArchive const& archive, graphics::AttachmentStoreOp &value, ui32 const& i)
+{
+	value = (graphics::EAttachmentStoreOp)i;
+}
+
+#pragma endregion
+
 #undef LOAD_CASE

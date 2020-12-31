@@ -55,7 +55,7 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 	std::map<uIndex, std::shared_ptr<AttachmentNode>> attachmentToNode;
 	std::map<uIndex, std::shared_ptr<PhaseNode>> phaseToNode;
 
-	auto const& attachments = asset->getAttachmentNodes();
+	auto const& attachments = asset->getAttachments();
 	for (uIndex idx = 0; idx < attachments.size(); ++idx)
 	{
 		auto node = std::reinterpret_pointer_cast<AttachmentNode>(this->createNode(ENodeType::eAttachment));
@@ -63,7 +63,7 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 		attachmentToNode.insert(std::make_pair(idx, node));
 	}
 
-	auto const& phases = asset->getPhaseNodes();
+	auto const& phases = asset->getPhases();
 	for (uIndex idxPhase = 0; idxPhase < phases.size(); ++idxPhase)
 	{
 		auto node = std::reinterpret_pointer_cast<PhaseNode>(this->createNode(ENodeType::ePhase));
@@ -96,8 +96,7 @@ void EditorRenderPass::setAsset(asset::AssetPtrStrong assetGeneric)
 		}
 	}
 
-	auto const& phaseDependencies = asset->getPhaseDependencyNodes();
-	for (auto const& dep : asset->getPhaseDependencyNodes())
+	for (auto const& dep : asset->getPhaseDependencies())
 	{
 		auto node = std::reinterpret_pointer_cast<DependencyNode>(this->createNode(ENodeType::eDependency));
 		node->assetData = dep;
@@ -272,6 +271,72 @@ void EditorRenderPass::addLink(ui32 startPinId, ui32 endPinId)
 	endPin.linkIds.insert(linkId);
 }
 
+template <typename TEnum>
+bool renderFlags(
+	char const* id, utility::Flags<TEnum> &value,
+	std::string const& popupId,
+	std::optional<EditorRenderPass::ComboPopup> &comboPopup, std::optional<std::string> &popupToOpenFlag
+)
+{
+	ImGui::PushID(id);
+
+	ImGui::Text(id);
+	ImGui::SameLine();
+	if (ImGui::Button("Edit"))
+	{
+		popupToOpenFlag = popupId;
+		comboPopup = EditorRenderPass::ComboPopup{ popupId, &value.data(), true, {} };
+		for (const auto& option : value.all())
+		{
+			comboPopup->options.push_back(EditorRenderPass::ComboPopup::Option{
+				ui64(option), utility::EnumWrapper<TEnum>(option).to_display_string()
+																		});
+		}
+	}
+
+	ImGui::Indent();
+	{
+		for (const auto& option : value.all())
+		{
+			if ((value.data() & ui64(option)) == ui64(option))
+			{
+				ImGui::Text(utility::EnumWrapper<TEnum>(option).to_display_string().c_str());
+			}
+		}
+	}
+	ImGui::Unindent();
+
+	ImGui::PopID();
+	return false;
+}
+
+template <typename TEnum>
+bool renderEnum(
+	char const* id, utility::EnumWrapper<TEnum> &value,
+	std::string const& popupId,
+	std::optional<EditorRenderPass::ComboPopup> &comboPopup, std::optional<std::string> &popupToOpenFlag
+)
+{
+	ImGui::PushID(id);
+
+	if (ImGui::ArrowButton("###edit", ImGuiDir_Down))
+	{
+		popupToOpenFlag = popupId;
+		comboPopup = EditorRenderPass::ComboPopup{ popupId, &value.data(), false, {} };
+		for (const auto& option : utility::EnumWrapper<TEnum>::ALL)
+		{
+			comboPopup->options.push_back(EditorRenderPass::ComboPopup::Option{
+				ui64(option), utility::EnumWrapper<TEnum>(option).to_display_string()
+			});
+		}
+	}
+	ImGui::SameLine();
+	ImGui::Text(value.to_display_string().c_str());
+
+	ImGui::PopID();
+	return false;
+}
+
 math::Vector3UInt EditorRenderPass::getColorForPinType(ENodeType type)
 {
 	switch (type)
@@ -368,13 +433,70 @@ void EditorRenderPass::renderAttachmentNode(std::shared_ptr<AttachmentNode> node
 	
 	ImGui::Text("Attachment");
 	ImGui::SameLine();
-	ImGui::Dummy(ImVec2(100, 0));
+	ImGui::Dummy(ImVec2(200, 0));
 	ImGui::SameLine();
 	this->renderPin(this->mPins[node->pinId], "", node::EPinType::eOutput);
 
 	ImGui::Spacing();
 
+	auto& attachment = node->assetData.data;
 
+	ImGui::Text("Format");
+	ImGui::SameLine();
+	if (renderEnum("###format", attachment.formatType, "format", this->mComboPopup, this->mComboPopupToOpen))
+		this->markAssetDirty(1);
+
+	ImGui::Text("Samples");
+	ImGui::SameLine();
+	if (renderEnum("###samples", attachment.samples, "samples", this->mComboPopup, this->mComboPopupToOpen))
+		this->markAssetDirty(1);
+
+	{
+		ImGui::Text("Layout");
+		ImGui::Indent();
+		ImGui::Text("Initial");
+		ImGui::SameLine();
+		if (renderEnum("###initial", attachment.initialLayout, "initialLayout", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Text("Final");
+		ImGui::SameLine();
+		if (renderEnum("###final", attachment.finalLayout, "finalLayout", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Unindent();
+	}
+
+	{
+		ImGui::PushID("general");
+		ImGui::Text("General Operations");
+		ImGui::Indent();
+		ImGui::Text("Load");
+		ImGui::SameLine();
+		if (renderEnum("###load", attachment.generalLoadOp, "generalLoad", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Text("Store");
+		ImGui::SameLine();
+		if (renderEnum("###store", attachment.generalStoreOp, "generalStore", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Unindent();
+		ImGui::PopID();
+	}
+
+
+	{
+		ImGui::PushID("stencil");
+		ImGui::Text("Stencil Operations");
+		ImGui::Indent();
+		ImGui::Text("Load");
+		ImGui::SameLine();
+		if (renderEnum("###load", attachment.stencilLoadOp, "stencilLoad", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Text("Store");
+		ImGui::SameLine();
+		if (renderEnum("###store", attachment.stencilStoreOp, "stencilStore", this->mComboPopup, this->mComboPopupToOpen))
+			this->markAssetDirty(1);
+		ImGui::Unindent();
+		ImGui::PopID();
+	}
 
 	node::endNode();
 
@@ -398,7 +520,7 @@ void EditorRenderPass::renderPhaseNode(std::shared_ptr<PhaseNode> node)
 
 	this->renderPin(this->mPins[node->pinIdRequiredDependencies], "Requirements", node::EPinType::eInput);
 	ImGui::SameLine();
-	ImGui::Dummy(ImVec2(75, 0));
+	ImGui::Dummy(ImVec2(150, 0));
 	ImGui::SameLine();
 	this->renderPin(this->mPins[node->pinIdSupportedDependencies], "Supports", node::EPinType::eOutput);
 
@@ -432,6 +554,8 @@ void EditorRenderPass::renderAttachmentReference(char const* id, PhaseNode::Atta
 	ImGui::PushID(id);
 	this->renderPin(this->mPins[value.pinId], id, node::EPinType::eInput);
 	ImGui::Indent();
+	ImGui::Text("Input Layout");
+	ImGui::SameLine();
 	if (this->renderImageLayout("###layout", "attachRefLayout", value.layout)) this->markAssetDirty(1);
 	ImGui::Unindent();
 	ImGui::PopID();
@@ -474,72 +598,6 @@ void EditorRenderPass::renderDependencyNode(std::shared_ptr<DependencyNode> node
 		node->assetData.nodePosition = pos;
 		this->markAssetDirty(1);
 	}
-}
-
-template <typename TEnum>
-bool renderFlags(
-	char const* id, utility::Flags<TEnum> &value,
-	std::string const& popupId,
-	std::optional<EditorRenderPass::ComboPopup> &comboPopup, std::optional<std::string> &popupToOpenFlag
-)
-{
-	ImGui::PushID(id);
-
-	ImGui::Text(id);
-	ImGui::SameLine();
-	if (ImGui::Button("Edit"))
-	{
-		popupToOpenFlag = popupId;
-		comboPopup = EditorRenderPass::ComboPopup { popupId, &value.data(), true, {} };
-		for (const auto& option : value.all())
-		{
-			comboPopup->options.push_back(EditorRenderPass::ComboPopup::Option {
-				ui64(option), utility::EnumWrapper<TEnum>(option).to_display_string()
-			});
-		}
-	}
-
-	ImGui::Indent();
-	{
-		for (const auto& option : value.all())
-		{
-			if ((value.data() & ui64(option)) == ui64(option))
-			{
-				ImGui::Text(utility::EnumWrapper<TEnum>(option).to_display_string().c_str());
-			}
-		}
-	}
-	ImGui::Unindent();
-
-	ImGui::PopID();
-	return false;
-}
-
-template <typename TEnum>
-bool renderEnum(
-	char const* id, utility::EnumWrapper<TEnum> &value,
-	std::string const& popupId,
-	std::optional<EditorRenderPass::ComboPopup> &comboPopup, std::optional<std::string> &popupToOpenFlag
-)
-{
-	ImGui::PushID(id);
-
-	ImGui::Text(value.to_display_string().c_str());
-	ImGui::SameLine();
-	if (ImGui::ArrowButton("###edit", ImGuiDir_Down))
-	{
-		popupToOpenFlag = popupId;
-		comboPopup = EditorRenderPass::ComboPopup{ popupId, &value.data(), false, {} };
-		for (const auto& option : utility::EnumWrapper<TEnum>::ALL)
-		{
-			comboPopup->options.push_back(EditorRenderPass::ComboPopup::Option{
-				ui64(option), utility::EnumWrapper<TEnum>(option).to_display_string()
-			});
-		}
-	}
-
-	ImGui::PopID();
-	return false;
 }
 
 bool EditorRenderPass::renderStageMask(char const* id, std::string const& popupId, graphics::PipelineStageMask &value)
@@ -856,11 +914,11 @@ void EditorRenderPass::saveAsset()
 {
 	auto asset = this->get<asset::RenderPass>();
 
-	auto& attachments = asset->ref_AttachmentNodes();
+	auto& attachments = asset->ref_Attachments();
 	attachments.clear();
-	auto& phases = asset->ref_PhaseNodes();
+	auto& phases = asset->ref_Phases();
 	phases.clear();
-	auto& dependencies = asset->ref_PhaseDependencyNodes();
+	auto& dependencies = asset->ref_PhaseDependencies();
 	dependencies.clear();
 
 	std::map<ui32, uIndex> attachmentNodeIdToIdx;

@@ -76,14 +76,17 @@ void MinecraftRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 	this->mpRenderPass->setClearDepthStencil(asset->getClearDepthStencil());
 	this->mpRenderPass->setRenderArea(asset->getRenderArea());
 
-	for (auto phase : asset->getPhases())
-	{
-		this->mpRenderPass->addPhase(phase);
-	}
-	for (auto dependency : asset->getPhaseDependencies())
-	{
-		this->mpRenderPass->addDependency(dependency);
-	}
+	auto attachments = std::vector<graphics::RenderPassAttachment>();
+	for (auto const& attachment : asset->getAttachments()) attachments.push_back(attachment.data);
+	this->mpRenderPass->setAttachments(attachments);
+
+	auto phases = std::vector<graphics::RenderPassPhase>();
+	for (auto const& phase : asset->getPhases()) phases.push_back(phase.data);
+	this->mpRenderPass->setPhases(phases);
+
+	auto dependencies = std::vector<graphics::RenderPassDependency>();
+	for (auto const& dependency : asset->getPhaseDependencies()) dependencies.push_back(dependency.data);
+	this->mpRenderPass->setPhaseDependencies(dependencies);
 }
 
 void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
@@ -268,8 +271,8 @@ void MinecraftRenderer::createRenderPass()
 {
 	OPTICK_EVENT();
 	getRenderPass()
-		->setImageFormatType(graphics::ImageFormatReferenceType::Enum::Viewport, (ui32)this->mSwapChain.getFormat())
-		.setImageFormatType(graphics::ImageFormatReferenceType::Enum::Depth, (ui32)this->mDepthImage.getFormat())
+		->setImageFormatType(graphics::EImageFormatCategory::Viewport, (ui32)this->mSwapChain.getFormat())
+		.setImageFormatType(graphics::EImageFormatCategory::Depth, (ui32)this->mDepthImage.getFormat())
 		.create();
 }
 

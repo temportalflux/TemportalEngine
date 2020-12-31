@@ -7,93 +7,52 @@
 			"second": 0
 		}
 	},
-	"phases": [
-		{
-			"name": "default",
-			"colorAttachments": [
-				{
-					"format": 0,
-					"samples": 1,
-					"general-load": 1,
-					"general-store": 0,
-					"stencil-load": 2,
-					"stencil-store": 1
-				}
-			],
-			"depthAttachment": {
-				"hasValue": true,
-				"value": {
-					"format": 1,
-					"samples": 1,
-					"general-load": 1,
-					"general-store": 1,
-					"stencil-load": 2,
-					"stencil-store": 1
-				}
-			}
-		}
-	],
-	"phaseDependencies": [
-		{
-			"dependee": {
-				"phase": {
-					"hasValue": false
-				},
-				"stageMask": "00000000000000000000010100000000",
-				"accessMask": "00000000000000000000000000000000"
-			},
-			"depender": {
-				"phase": {
-					"hasValue": true,
-					"value": 0
-				},
-				"stageMask": "00000000000000000000010100000000",
-				"accessMask": "00000000000000000000010100000000"
-			}
-		}
-	],
 	"attachments": [
 		{
 			"position": [
-				314.0,
-				492.0
-			],
-			"data": {
-				"format": 0,
-				"samples": 0,
-				"general-load": 0,
-				"general-store": 0,
-				"stencil-load": 0,
-				"stencil-store": 0
-			}
-		},
-		{
-			"position": [
-				318.0,
+				74.0,
 				332.0
 			],
 			"data": {
 				"format": 0,
-				"samples": 0,
-				"general-load": 0,
+				"samples": 1,
+				"general-load": 1,
 				"general-store": 0,
-				"stencil-load": 0,
-				"stencil-store": 0
+				"stencil-load": 2,
+				"stencil-store": 1,
+				"layout-initial": 0,
+				"layout-final": 1000001002
+			}
+		},
+		{
+			"position": [
+				442.0,
+				444.0
+			],
+			"data": {
+				"format": 1,
+				"samples": 1,
+				"general-load": 1,
+				"general-store": 1,
+				"stencil-load": 2,
+				"stencil-store": 1,
+				"layout-initial": 0,
+				"layout-final": 3
 			}
 		}
 	],
 	"phaseNodes": [
 		{
 			"position": [
-				786.0,
-				298.0
+				840.0,
+				260.0
 			],
 			"data": {
 				"colorAttachments": [
 					{
 						"hasValue": true,
 						"value": {
-							"attachment": 1,
+							"attachment": 0,
 							"layout": 2
 						}
 					}
@@ -101,7 +60,7 @@
 				"depthAttachment": {
 					"hasValue": true,
 					"value": {
-						"attachment": 0,
+						"attachment": 1,
 						"layout": 3
 					}
 				}
@@ -111,7 +70,7 @@
 	"phaseDependencyNodes": [
 		{
 			"position": [
-				380.0,
+				392.0,
 				-19.0
 			],
 			"prevPhaseIsRoot": true,

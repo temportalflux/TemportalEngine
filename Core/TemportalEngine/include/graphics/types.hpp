@@ -271,67 +271,48 @@ enum class ShaderStageFlags
 };
 typedef utility::EnumWrapper<ShaderStageFlags> ShaderStage;
 
-/**
- * Custom enum which indicates a substitution for the vk::ImageFormat.
- */
-struct ImageFormatReferenceType
+enum class EImageFormatCategory
 {
-	enum class Enum
-	{
-		/**
-		 * Treated as the vk::ImageFormat of the SwapChain Image.
-		 */
-		Viewport,
-		/**
-		 * Treated as the vk::ImageFormat of the depth buffer image.
-		 */
-		Depth,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	/**
+	 * Treated as the vk::Format of the SwapChain Image.
+	 */
+	Viewport,
+	/**
+	 * Treated as the vk::Format of the depth buffer image.
+	 */
+	Depth,
 };
+typedef utility::EnumWrapper<EImageFormatCategory> ImageFormatCategory;
 
-struct SampleCount
+// Mirrors vk::SampleCountFlagBits
+enum class ESampleCount
 {
-	// Mirrors vk::SampleCountFlagBits
-	enum class Enum
-	{
-		e1 = 0x00000001,
-		e2 = 0x00000002,
-		e4 = 0x00000004,
-		e8 = 0x00000008,
-		e16 = 0x00000010,
-		e32 = 0x00000020,
-		e64 = 0x00000040,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	e1 = 0x00000001,
+	e2 = 0x00000002,
+	e4 = 0x00000004,
+	e8 = 0x00000008,
+	e16 = 0x00000010,
+	e32 = 0x00000020,
+	e64 = 0x00000040,
 };
+typedef utility::EnumWrapper<ESampleCount> SampleCount;
 
-struct AttachmentLoadOp
+// Mirrors vk::AttachmentLoadOp
+enum class EAttachmentLoadOp
 {
-	// Mirrors vk::AttachmentLoadOp
-	enum class Enum
-	{
-		eLoad = 0,
-		eClear = 1,
-		eDontCare = 2,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	eLoad = 0,
+	eClear = 1,
+	eDontCare = 2,
 };
+typedef utility::EnumWrapper<EAttachmentLoadOp> AttachmentLoadOp;
 
-struct AttachmentStoreOp
+// Mirrors vk::AttachmentStoreOp
+enum class EAttachmentStoreOp
 {
-	// Mirrors vk::AttachmentStoreOp
-	enum class Enum
-	{
-		eStore = 0,
-		eDontCare = 1,
-	};
-	static std::vector<Enum> ALL;
-	static std::string to_string(Enum value);
+	eStore = 0,
+	eDontCare = 1,
 };
+typedef utility::EnumWrapper<EAttachmentStoreOp> AttachmentStoreOp;
 
 // Mirrors vk::PipelineStageFlagBits
 enum class PipelineStageFlags : uint64_t

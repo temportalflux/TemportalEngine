@@ -106,43 +106,44 @@ void ImGuiRenderer::createRenderPass()
 	this->mRenderPass
 		.setClearColor(math::Vector4({ 0.0f, 0.0f, 0.0f, 1.0f }))
 		.setRenderArea({ { 0, 0 }, { 1, 1 } })
-		.setImageFormatType(ImageFormatReferenceType::Enum::Viewport, this->mSwapChain.getFormat());
+		.setImageFormatType(EImageFormatCategory::Viewport, this->mSwapChain.getFormat());
 	
-	this->mRenderPass.addPhase(
+	this->mRenderPass.setAttachments({
+			{
+				graphics::EImageFormatCategory::Viewport,
+				graphics::ESampleCount::e1,
+				graphics::EAttachmentLoadOp::eClear, graphics::EAttachmentStoreOp::eStore,
+				graphics::EAttachmentLoadOp::eDontCare, graphics::EAttachmentStoreOp::eDontCare,
+				graphics::EImageLayout::eUndefined, graphics::EImageLayout::ePresentSrc
+			}
+	});
+	this->mRenderPass.setPhases({
 		// phase
 		{
-			// name
-			"ui",
 			// color attachments
 			{
-				{
-					graphics::ImageFormatReferenceType::Enum::Viewport,
-					graphics::SampleCount::Enum::e1,
-					graphics::AttachmentLoadOp::Enum::eClear,
-					graphics::AttachmentStoreOp::Enum::eStore,
-					graphics::AttachmentLoadOp::Enum::eDontCare,
-					graphics::AttachmentStoreOp::Enum::eDontCare
-				}
+				graphics::RenderPassAttachmentReference { 0, graphics::EImageLayout::eColorAttachmentOptimal }
 			},
 			// depth attachment
 			std::nullopt
 		}
-	);
-	this->mRenderPass.addDependency(
+	});
+	this->mRenderPass.setPhaseDependencies({
 		{
-			// dependee
+			// prev
 			{
 				std::nullopt,
-				utility::Flags<graphics::PipelineStageFlags>(graphics::PipelineStageFlags::eColorAttachmentOutput)
+				graphics::PipelineStageFlags::eColorAttachmentOutput,
+				{}
 			},
-			// depender
+			// next
 			{
 				0,
-				utility::Flags<graphics::PipelineStageFlags>(graphics::PipelineStageFlags::eColorAttachmentOutput),
-				utility::Flags<graphics::AccessFlags>(graphics::AccessFlags::eColorAttachmentWrite)
+				graphics::PipelineStageFlags::eColorAttachmentOutput,
+				graphics::AccessFlags::eColorAttachmentWrite
 			}
 		}
-	);
+	});
 
 	this->mRenderPass.create();
 }

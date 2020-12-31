@@ -97,11 +97,9 @@ public:
 	DECLARE_PROPERTY_MUTATORS(std::optional<DepthStencil>, mClearDepthStencil, ClearDepthStencil)
 	DECLARE_PROPERTY_MUTATORS(graphics::Area, mRenderArea, RenderArea)
 	DECLARE_PROPERTY_MUTATORS(std::vector<TypedAssetPath<Pipeline>>, mPipelines, PipelineRefs)
-	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPPhase>, mPhases, Phases)
-	DECLARE_PROPERTY_MUTATORS(std::vector<graphics::RPDependency>, mPhaseDependencies, PhaseDependencies)
-	DECLARE_PROPERTY_MUTATORS(std::vector<NodeAttachment>, mAttachmentNodes, AttachmentNodes)
-	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhase>, mPhaseNodes, PhaseNodes)
-	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhaseDependency>, mPhaseDependencyNodes, PhaseDependencyNodes)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodeAttachment>, mAttachmentNodes, Attachments)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhase>, mPhaseNodes, Phases)
+	DECLARE_PROPERTY_MUTATORS(std::vector<NodePhaseDependency>, mPhaseDependencyNodes, PhaseDependencies)
 
 	std::vector<AssetPath const*> getAssetRefs() const override;
 	std::vector<AssetPath*> getAssetRefs() override;
@@ -112,9 +110,6 @@ private:
 	std::optional<DepthStencil> mClearDepthStencil;
 	graphics::Area mRenderArea;
 	std::vector<TypedAssetPath<Pipeline>> mPipelines;
-
-	std::vector<graphics::RPPhase> mPhases;
-	std::vector<graphics::RPDependency> mPhaseDependencies;
 
 	std::vector<NodeAttachment> mAttachmentNodes;
 	std::vector<NodePhase> mPhaseNodes;
@@ -134,10 +129,6 @@ protected:
 		SAVE_PROPERTY("clearColor", mClearColor);
 		SAVE_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		SAVE_PROPERTY("renderArea", mRenderArea);
-
-		SAVE_PROPERTY("phases", mPhases);
-		SAVE_PROPERTY("phaseDependencies", mPhaseDependencies);
-
 		SAVE_PROPERTY("attachments", mAttachmentNodes);
 		SAVE_PROPERTY("phaseNodes", mPhaseNodes);
 		SAVE_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);
@@ -150,10 +141,6 @@ protected:
 		LOAD_PROPERTY("clearColor", mClearColor);
 		LOAD_PROPERTY("clearDepthStencil", mClearDepthStencil);
 		LOAD_PROPERTY("renderArea", mRenderArea);
-
-		LOAD_PROPERTY("phases", mPhases);
-		LOAD_PROPERTY("phaseDependencies", mPhaseDependencies);
-
 		LOAD_PROPERTY("attachments", mAttachmentNodes);
 		LOAD_PROPERTY("phaseNodes", mPhaseNodes);
 		LOAD_PROPERTY("phaseDependencyNodes", mPhaseDependencyNodes);

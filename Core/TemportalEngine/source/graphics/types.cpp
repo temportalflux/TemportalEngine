@@ -578,68 +578,63 @@ std::string ShaderStage::to_display_string() const { return to_string(); }
 
 #pragma region Image Format Reference Type
 
-std::vector<ImageFormatReferenceType::Enum> ImageFormatReferenceType::ALL = {
-	Enum::Viewport,
-	Enum::Depth,
+std::vector<EImageFormatCategory> ImageFormatCategory::ALL = {
+	EImageFormatCategory::Viewport,
+	EImageFormatCategory::Depth,
 };
 
-std::string ImageFormatReferenceType::to_string(Enum value)
+std::string ImageFormatCategory::to_string() const
 {
-	switch (value)
+	switch (value())
 	{
-	case Enum::Viewport: return "Viewport";
-	case Enum::Depth: return "Depth";
+	case EImageFormatCategory::Viewport: return "Viewport";
+	case EImageFormatCategory::Depth: return "Depth";
 	default: return "invalid";
 	}
 }
+std::string ImageFormatCategory::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Sample Count
 
-std::vector<SampleCount::Enum> SampleCount::ALL = {
-		Enum::e1,
-		Enum::e2,
-		Enum::e4,
-		Enum::e8,
-		Enum::e16,
-		Enum::e32,
-		Enum::e64,
+std::vector<ESampleCount> SampleCount::ALL = {
+		ESampleCount::e1,
+		ESampleCount::e2,
+		ESampleCount::e4,
+		ESampleCount::e8,
+		ESampleCount::e16,
+		ESampleCount::e32,
+		ESampleCount::e64,
 };
 
-std::string SampleCount::to_string(Enum value)
-{
-	return vk::to_string((vk::SampleCountFlagBits)value);
-}
+std::string SampleCount::to_string() const { return vk::to_string(as<vk::SampleCountFlagBits>()); }
+std::string SampleCount::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Attachment Load
 
-std::vector<AttachmentLoadOp::Enum> AttachmentLoadOp::ALL = {
-		Enum::eLoad,
-		Enum::eClear,
-		Enum::eDontCare,
+std::vector<EAttachmentLoadOp> AttachmentLoadOp::ALL = {
+		EAttachmentLoadOp::eLoad,
+		EAttachmentLoadOp::eClear,
+		EAttachmentLoadOp::eDontCare,
 };
 
-std::string AttachmentLoadOp::to_string(Enum value)
-{
-	return vk::to_string((vk::AttachmentLoadOp)value);
-}
+std::string AttachmentLoadOp::to_string() const { return vk::to_string(as<vk::AttachmentLoadOp>()); }
+std::string AttachmentLoadOp::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
 #pragma region Attachment Store
 
-std::vector<AttachmentStoreOp::Enum> AttachmentStoreOp::ALL = {
-		Enum::eStore,
-		Enum::eDontCare,
+std::vector<EAttachmentStoreOp> AttachmentStoreOp::ALL = {
+		EAttachmentStoreOp::eStore,
+		EAttachmentStoreOp::eDontCare,
 };
 
-std::string AttachmentStoreOp::to_string(Enum value)
-{
-	return vk::to_string((vk::AttachmentStoreOp)value);
-}
+std::string AttachmentStoreOp::to_string() const { return vk::to_string(as<vk::AttachmentStoreOp>()); }
+std::string AttachmentStoreOp::to_display_string() const { return to_string(); }
 
 #pragma endregion
 
