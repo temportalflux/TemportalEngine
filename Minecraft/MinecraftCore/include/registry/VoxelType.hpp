@@ -25,10 +25,17 @@ public:
 
 	std::unordered_set<BlockId> const& getIds() const;
 	std::unordered_map<BlockId, BlockTypePath> const& getEntriesById() const;
+	bool isTranslucent(BlockId const& id) const;
 
 private:
+	struct LoadedMetadata
+	{
+		bool bIsTranslucent;
+	};
+
 	std::unordered_set<BlockId> mIds;
 	std::unordered_map<BlockId, BlockTypePath> mEntriesById;
+	std::unordered_map<BlockId, LoadedMetadata> mMetadataById;
 	std::unordered_multimap<BlockId, BlockTypePath> mConflicts;
 
 };

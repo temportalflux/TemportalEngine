@@ -46,10 +46,10 @@ void VoxelModelManager::loadRegistry(std::shared_ptr<game::VoxelTypeRegistry> re
 {
 	for (auto const& idPath : registry->getEntriesById())
 	{
+		auto asset = idPath.second.load(asset::EAssetSerialization::Binary);
 		auto iterHandle = this->mEntriesById.insert(std::make_pair(idPath.first, VoxelTextureEntry()));
 		auto& entry = iterHandle.first->second;
-
-		auto asset = idPath.second.load(asset::EAssetSerialization::Binary);
+		
 		entry.textureSetHandle.right = asset->textureSet().right;
 		entry.textureSetHandle.left = asset->textureSet().left;
 		entry.textureSetHandle.front = asset->textureSet().front;

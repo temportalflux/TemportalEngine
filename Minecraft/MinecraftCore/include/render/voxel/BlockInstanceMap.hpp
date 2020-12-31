@@ -10,9 +10,10 @@
 #include "graphics/AttributeBinding.hpp"
 #include "thread/MutexLock.hpp"
 
-FORWARD_DEF(NS_GRAPHICS, class CommandPool)
-FORWARD_DEF(NS_GRAPHICS, class Command)
-FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice)
+FORWARD_DEF(NS_GRAPHICS, class CommandPool);
+FORWARD_DEF(NS_GRAPHICS, class Command);
+FORWARD_DEF(NS_GRAPHICS, class GraphicsDevice);
+FORWARD_DEF(NS_GAME, class VoxelTypeRegistry);
 
 NS_WORLD
 
@@ -40,6 +41,8 @@ struct CategoryMeta
 	CategoryMeta* prevCategory;
 	CategoryMeta* nextCategory;
 
+	bool bIsTranslucent;
+
 	uIndex firstIndex() const;
 	uIndex lastIndex() const;
 	bool containsIndex(uIndex idx) const;
@@ -60,7 +63,7 @@ public:
 
 	VoxelInstanceCategoryList(
 		uSize totalValueCount, graphics::Buffer* buffer,
-		std::unordered_set<game::BlockId> const& voxelIds
+		std::shared_ptr<game::VoxelTypeRegistry> const& voxelTypes
 	);
 
 	void clear();
@@ -77,9 +80,16 @@ public:
 
 	CategoryMeta& getCategoryForValueIndex(uIndex idx);
 	CategoryMeta& getCategoryForId(std::optional<game::BlockId> id);
+	CategoryMeta const& getCategoryForId(std::optional<game::BlockId> id) const;
 	CategoryMeta& getCategory(uIndex categoryIndex);
+	std::vector<game::BlockId> const& getRenderOrder() const { return this->mCategoryOrder; }
 
 private:
+
+	/**
+	 * Ordered by the render order (opaque first, then translucent)
+	 */
+	std::vector<game::BlockId> mCategoryOrder;
 
 	std::vector<CategoryMeta> mOrderedCategories;
 
@@ -127,7 +137,7 @@ public:
 	 * Initializes the non-committed data with some amount of uncategorized values.
 	 * Sets the size of the graphics buffer based on the value of `totalValueCount`.
 	 */
-	BlockInstanceBuffer(uSize totalValueCount, std::unordered_set<game::BlockId> const& voxelIds);
+	BlockInstanceBuffer(uSize totalValueCount, std::shared_ptr<game::VoxelTypeRegistry> const& voxelTypes);
 	~BlockInstanceBuffer();
 
 	uSize size() const;
@@ -146,6 +156,7 @@ public:
 	void commitToBuffer(graphics::CommandPool* transientPool);
 
 	CategoryMeta const& getDataForVoxelId(game::BlockId const& id) const;
+	std::vector<game::BlockId> const& getRenderOrder() const { return this->mMutableCategoryList.getRenderOrder(); }
 
 protected:
 
@@ -197,7 +208,7 @@ private:
 
 	uSize mTotalInstanceCount;
 	ValueData* mInstanceData;
-
+	
 	/**
 	 * The category metadata about `mInstanceData`.
 	 * This is mutated by `changeVoxelId()` and is not safe to read from when rendering information from `mInstanceBuffer`.
@@ -249,7 +260,9 @@ private:
 	/**
 	 * Sets the face visibility of neighbors of `coordinate`.
 	 */
-	void setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsEmpty);
+	void setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsTranslucent);
+
+	bool isTranslucent(game::BlockId const& id) const;
 
 };
 

@@ -11,6 +11,7 @@ class BlockType : public Asset
 	friend class cereal::access;
 
 public:
+	DECLARE_PROPERTY_CONTAINER(BlockType)
 	DEFINE_ASSET_STATICS("block", "BlockType", DEFAULT_ASSET_EXTENSION, ASSET_CATEGORY_GENERAL);
 	DECLARE_FACTORY_ASSET_METADATA()
 
@@ -50,8 +51,8 @@ public:
 	};
 
 public:
-	BlockType() = default;
-	BlockType(std::filesystem::path filePath);
+	DECLARE_ASSET_CONTRUCTORS(BlockType)
+	DECLARE_PROPERTY_MUTATORS(bool, mbIsTranslucent, IsTranslucent)
 
 	game::BlockId const& uniqueId() const;
 	TextureSet const& textureSet() const { return this->mTextures; }
@@ -59,6 +60,7 @@ public:
 private:
 	
 	game::BlockId mId;
+	bool mbIsTranslucent;
 
 	TextureSet mTextures;
 
@@ -75,6 +77,7 @@ protected:
 		Asset::serialize(archive, bCheckDefaults);
 		archive(cereal::make_nvp("id", this->mId));
 		archive(cereal::make_nvp("textures", this->mTextures));
+		SAVE_PROPERTY("isTranslucent", mbIsTranslucent);
 	}
 
 	template <typename Archive>
@@ -83,6 +86,7 @@ protected:
 		Asset::deserialize(archive, bCheckDefaults);
 		archive(cereal::make_nvp("id", this->mId));
 		archive(cereal::make_nvp("textures", this->mTextures));
+		LOAD_PROPERTY("isTranslucent", mbIsTranslucent);
 	}
 #pragma endregion
 

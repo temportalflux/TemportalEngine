@@ -22,6 +22,9 @@ void VoxelTypeRegistry::registerEntry(BlockTypePath assetPath)
 	// can add id to the registry
 	this->mIds.insert(voxelId);
 	this->mEntriesById.insert(std::make_pair(voxelId, assetPath));
+	this->mMetadataById.insert(std::make_pair(voxelId, LoadedMetadata {
+		asset->getIsTranslucent()
+	}));
 
 	this->onEntryRegistered.broadcast(voxelId, assetPath);
 }
@@ -43,3 +46,5 @@ std::unordered_map<BlockId, VoxelTypeRegistry::BlockTypePath> const& VoxelTypeRe
 {
 	return this->mEntriesById;
 }
+
+bool VoxelTypeRegistry::isTranslucent(BlockId const& id) const { return true;}//this->mMetadataById.at(id).bIsTranslucent; }

@@ -4,9 +4,11 @@
 
 using namespace asset;
 
+DEFINE_PROPERTY_CONTAINER(BlockType)
 DEFINE_FACTORY_ASSET_METADATA(BlockType)
 
-BlockType::BlockType(std::filesystem::path filePath) : Asset(filePath)
+DEFINE_ASSET_CONSTRUCTORS(BlockType)
+	: mbIsTranslucent(false)
 {
 }
 

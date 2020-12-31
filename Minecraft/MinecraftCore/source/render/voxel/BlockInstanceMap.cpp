@@ -3,6 +3,7 @@
 #include "graphics/Command.hpp"
 #include "graphics/CommandPool.hpp"
 #include "model/ModelVoxel.hpp"
+#include "registry/VoxelType.hpp"
 
 using namespace world;
 
@@ -92,29 +93,46 @@ void CategoryMeta::setIndexFromPrevCategory()
 
 VoxelInstanceCategoryList::VoxelInstanceCategoryList(
 	uSize totalValueCount, graphics::Buffer* buffer,
-	std::unordered_set<game::BlockId> const& voxelIds
+	std::shared_ptr<game::VoxelTypeRegistry> const& voxelTypes
 )
 {
-	uSize const categoryCount = voxelIds.size();
-	auto const categories = std::vector<game::BlockId>(voxelIds.begin(), voxelIds.end());
+	auto uniqueIds = voxelTypes->getIds();
+	uSize const categoryCount = uniqueIds.size();
+
+	this->mCategoryOrder = std::vector<game::BlockId>(uniqueIds.begin(), uniqueIds.end());
+	std::sort(this->mCategoryOrder.begin(), this->mCategoryOrder.end(), [&](
+		game::BlockId const& a, game::BlockId const& b
+	)
+	{
+		bool aTranslucent = voxelTypes->isTranslucent(a) ? 1 : 0;
+		bool bTranslucent = voxelTypes->isTranslucent(b) ? 1 : 0;
+		if (aTranslucent != bTranslucent) return aTranslucent < bTranslucent;
+		return a.to_string() < b.to_string();
+	});
+
 	this->mOrderedCategories.resize(categoryCount);
+
 	CategoryMeta* prevCategory = nullptr, *category;
-	auto voxelIdIter = voxelIds.begin();
+	auto voxelIdIter = this->mCategoryOrder.begin();
 	for (uIndex i = 0; i < categoryCount; ++i)
 	{
 		category = &mOrderedCategories[i];
-		*category = { *voxelIdIter, buffer, 0, 0, i32(i), prevCategory, nullptr };
+		*category = {
+			*voxelIdIter,
+			buffer, 0, 0, i32(i), prevCategory, nullptr,
+			voxelTypes->isTranslucent(*voxelIdIter)
+		};
 		voxelIdIter++;
 		if (prevCategory != nullptr)
 		{
 			prevCategory->nextCategory = category;
 		}
-		this->mCategoryById.insert(std::make_pair(categories[i], category));
+		this->mCategoryById.insert(std::make_pair(*category->id, category));
 		prevCategory = category;
 	}
-	this->mEmpty = { std::nullopt, buffer, 0, 0, i32(categoryCount), prevCategory, &this->mUnallocated };
+	this->mEmpty = { std::nullopt, buffer, 0, 0, i32(categoryCount), prevCategory, &this->mUnallocated, true };
 	prevCategory->nextCategory = &this->mEmpty;
-	this->mUnallocated = { std::nullopt, buffer, 0, totalValueCount, -1, &this->mEmpty, nullptr };
+	this->mUnallocated = { std::nullopt, buffer, 0, totalValueCount, -1, &this->mEmpty, nullptr, true };
 	this->mCoordinateToIndex.reserve(totalValueCount);
 	this->mIndexToCoordinate.resize(totalValueCount);
 }
@@ -178,6 +196,11 @@ CategoryMeta& VoxelInstanceCategoryList::getCategoryForValueIndex(uIndex idx)
 }
 
 CategoryMeta& VoxelInstanceCategoryList::getCategoryForId(std::optional<game::BlockId> id)
+{
+	return id ? *this->mCategoryById.at(*id) : this->mEmpty;
+}
+
+CategoryMeta const& VoxelInstanceCategoryList::getCategoryForId(std::optional<game::BlockId> id) const
 {
 	return id ? *this->mCategoryById.at(*id) : this->mEmpty;
 }
@@ -290,9 +313,9 @@ graphics::AttributeBinding BlockInstanceBuffer::getBinding(ui8& slot)
 		;
 }
 
-BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_set<game::BlockId> const& voxelIds)
+BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::shared_ptr<game::VoxelTypeRegistry> const& voxelTypes)
 	: mTotalInstanceCount(totalValueCount)
-	, mMutableCategoryList(totalValueCount, &mInstanceBuffer, voxelIds)
+	, mMutableCategoryList(totalValueCount, &mInstanceBuffer, voxelTypes)
 {
 	OPTICK_EVENT();
 	OPTICK_TAG("InstanceCount", totalValueCount);
@@ -305,7 +328,7 @@ BlockInstanceBuffer::BlockInstanceBuffer(uSize totalValueCount, std::unordered_s
 	this->mInstanceBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly);
 	this->mInstanceBuffer.setSize(this->size());
 
-	for (auto const& id : voxelIds)
+	for (auto const& id : voxelTypes->getIds())
 	{
 		this->mCommittedCategories.insert(std::make_pair(id, CategoryMeta{}));
 	}
@@ -373,6 +396,7 @@ void BlockInstanceBuffer::allocateCoordinates(std::vector<world::Coordinate> con
 		auto* instance = this->getInstanceAt(valueIndex);
 		instance->posOfChunk = math::Vector3Padded(coordinate.chunk().toFloat());
 		instance->model = math::translate(coordinate.local().toFloat());
+		instance->flags = { f32(i32(0b111111)) };
 	}
 }
 
@@ -752,19 +776,22 @@ void BlockInstanceBuffer::onUnloadingChunk(math::Vector3Int const& coordinate)
 void BlockInstanceBuffer::onVoxelsChanged(TChangedVoxelsList const& changes)
 {
 	OPTICK_EVENT()
-		this->lock();
+	this->lock();
 	for (auto const& change : changes)
 	{
 		this->changeVoxelId(change.first, change.second);
 	}
 	for (auto const& change : changes)
 	{
-		this->setNeighborFaceVisibility(change.first, !change.second.has_value());
+		this->setNeighborFaceVisibility(
+			change.first,
+			!change.second.has_value() || this->isTranslucent(*change.second)
+		);
 	}
 	this->unlock();
 }
 
-void BlockInstanceBuffer::setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsEmpty)
+void BlockInstanceBuffer::setNeighborFaceVisibility(world::Coordinate const& coordinate, bool const& bIsTranslucent)
 {
 	OPTICK_EVENT()
 	
@@ -788,16 +815,24 @@ void BlockInstanceBuffer::setNeighborFaceVisibility(world::Coordinate const& coo
 				auto& neighborCategory = this->mMutableCategoryList.getCategoryForValueIndex(*neighborInstanceIdx);
 				neighborId = neighborCategory.id;
 
-				if (neighborId)
-				{
-					this->mChangedBufferIndices.insert(*neighborInstanceIdx);
-					auto* neighborInstance = this->getInstanceAt(*neighborInstanceIdx);
-					// the face being set is in the opposite direction
-					neighborInstance->setFaceVisible(axis, 1 - direction, bIsEmpty);
-				}
+				this->mChangedBufferIndices.insert(*neighborInstanceIdx);
+				auto* neighborInstance = this->getInstanceAt(*neighborInstanceIdx);
+				// the face being set is in the opposite direction
+				neighborInstance->setFaceVisible(
+					axis, 1 - direction,
+					bIsTranslucent || !neighborId || this->isTranslucent(*neighborId)
+				);
 			}
 
-			changedInstance->setFaceVisible(axis, direction, bIsEmpty || !neighborId.has_value());
+			changedInstance->setFaceVisible(
+				axis, direction,
+				bIsTranslucent || !neighborId.has_value() || this->isTranslucent(*neighborId)
+			);
 		}
 	}
+}
+
+bool BlockInstanceBuffer::isTranslucent(game::BlockId const& id) const
+{
+	return this->mMutableCategoryList.getCategoryForId(id).bIsTranslucent;
 }

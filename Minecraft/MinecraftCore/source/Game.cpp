@@ -408,7 +408,7 @@ void Game::createVoxelGridRenderer()
 {
 	auto const totalBlockCount = blockCountForRenderDistance(6);
 	this->mpVoxelInstanceBuffer = std::make_shared<world::BlockInstanceBuffer>(
-		totalBlockCount, this->mpVoxelTypeRegistry->getIds()
+		totalBlockCount, this->mpVoxelTypeRegistry
 	);
 	this->mpVoxelInstanceBuffer->setDevice(this->mpRenderer->getDevice());
 	this->mpVoxelInstanceBuffer->createBuffer();

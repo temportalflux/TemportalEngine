@@ -11,5 +11,6 @@
     "back": "glass",
     "up": "glass",
     "down": "glass"
-  }
+  },
+  "isTranslucent": true
 }
