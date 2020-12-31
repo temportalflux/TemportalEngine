@@ -19,6 +19,7 @@ public:
 private:
 	std::shared_ptr<ui::Image> mpInputBarBkgd;
 	std::shared_ptr<ui::Image> mpBackgroundDemo;
+	std::vector<std::shared_ptr<ui::Image>> mSlots;
 
 };
 

@@ -9,9 +9,9 @@
 using namespace graphics;
 
 Pipeline::Pipeline()
-	: mEnforcedAspectRatio(16.0f / 9.0f)
-	, mbDepthTest(true)
+	: mbDepthTest(true)
 	, mbDepthWrite(true)
+	//, mEnforcedAspectRatio(16.0f / 9.0f)
 {
 	this->mLineWidth = 1.0f;
 }

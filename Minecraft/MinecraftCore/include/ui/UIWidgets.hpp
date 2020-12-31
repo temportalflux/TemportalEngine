@@ -12,4 +12,7 @@ NS_UI
 extern asset::TypedAssetPath<asset::Texture> ASSET_IMG_BACKGROUND;
 ui::Image& createMenuBackground(ui::Image& img, ui32 borderWidthInPoints);
 
+extern asset::TypedAssetPath<asset::Texture> ASSET_IMG_SLOT;
+ui::Image& createSlotImage(ui::Image& img, ui32 borderWidthInPoints);
+
 NS_END

@@ -178,7 +178,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextLogMenu.hpp">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\UIWidgets.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\UIWidgets.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -294,6 +296,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -17,29 +17,23 @@ class WidgetRenderer;
 class Widget : public std::enable_shared_from_this<Widget>
 {
 public:
-	Widget() : mZLayer(0) {}
+	Widget();
 
 	void setRenderer(std::weak_ptr<ui::WidgetRenderer> renderer) { this->mpRenderer = renderer; }
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) { this->mpDevice = device; }
+
 	Widget& setResolution(ui::Resolution const& resolution) { this->mResolution = resolution; return *this; }
-
-	void setRenderPosition(math::Vector2Int const& points) { this->mRenderPositionInPoints = points; }
-	void setZLayer(ui32 z);
-	ui32 zLayer() const;
-	void setRenderSize(math::Vector2UInt const& points) { this->mRenderSizeInPoints = points; }
-
 	ui::Resolution const& resolution() const { return this->mResolution; }
-	math::Vector2 getTopLeftPositionOnScreen() const
-	{
-		return this->mResolution.pointsToScreenSpace(this->mRenderPositionInPoints);
-	}
-	math::Vector2 getSizeOnScreen() const
-	{
-		return this->mResolution.pointsToScreenSpace({
-			i32(this->mRenderSizeInPoints.x()),
-			i32(this->mRenderSizeInPoints.y())
-		});
-	}
+
+	Widget& setAnchor(math::Vector2 const& anchor);
+	Widget& setPivot(math::Vector2 const& pivot);
+	Widget& setPosition(math::Vector2Int const& points);
+	Widget& setSize(math::Vector2UInt const& points);
+	Widget& setZLayer(ui32 z);
+	ui32 zLayer() const;
+
+	math::Vector2 getTopLeftPositionOnScreen() const;
+	math::Vector2 getSizeOnScreen() const;
 
 	virtual Widget& create(graphics::CommandPool* transientPool) { return *this; }
 	virtual Widget& createDescriptor(graphics::DescriptorLayout *layout, graphics::DescriptorPool *descriptorPool) { return *this; }
@@ -54,9 +48,25 @@ private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 	ui::Resolution mResolution;
 
-	math::Vector2Int mRenderPositionInPoints;
+	/**
+	 * The position of the widget's anchor as a fraction of the screen size.
+	 * 0 means left/top, 1 means right/bottom
+	 */
+	math::Vector2 mAnchor;
+	/**
+	 * The position of the widget's render position relative to its size.
+	 * <0, 0> means the "position in points" is the top left of the widget.
+	 * <0.5, 0.5> means the "position in points" is the center of the widget (based on "size in points").
+	 * <1, 1> means the "position in points" is the bottom right of the widget.
+	 */
+	math::Vector2 mPivot;
+	/**
+	 * The position of the widget from the anchor.
+	 * The true top-left of the widget is based on this and the `pivot`.
+	 */
+	math::Vector2Int mPositionInPoints;
+	math::Vector2Int mSizeInPoints;
 	ui32 mZLayer;
-	math::Vector2UInt mRenderSizeInPoints;
 
 };
 

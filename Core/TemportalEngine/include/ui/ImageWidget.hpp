@@ -40,8 +40,11 @@ public:
 	Image& setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	Image& setResolution(ui::Resolution const& resolution);
 
-	Image& setRenderPosition(math::Vector2Int const& points);
-	Image& setRenderSize(math::Vector2UInt const& points);
+	Image& setAnchor(math::Vector2 const& anchor);
+	Image& setPivot(math::Vector2 const& pivot);
+	Image& setPosition(math::Vector2Int const& points);
+	Image& setSize(math::Vector2UInt const& points);
+	Image& setZLayer(ui32 z);
 
 	Image& setTexturePixels(std::vector<ui8> const& pixels);
 	Image& setTextureSize(math::Vector2UInt const& sizeInPixels);

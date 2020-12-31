@@ -81,17 +81,11 @@ Image& Image::setResolution(ui::Resolution const& resolution)
 	return *this;
 }
 
-Image& Image::setRenderPosition(math::Vector2Int const& points)
-{
-	Widget::setRenderPosition(points);
-	return *this;
-}
-
-Image& Image::setRenderSize(math::Vector2UInt const& points)
-{
-	Widget::setRenderSize(points);
-	return *this;
-}
+Image& Image::setAnchor(math::Vector2 const& anchor) { Widget::setAnchor(anchor); return *this; }
+Image& Image::setPivot(math::Vector2 const& pivot) { Widget::setPivot(pivot); return *this; }
+Image& Image::setPosition(math::Vector2Int const& points) { Widget::setPosition(points); return *this; }
+Image& Image::setSize(math::Vector2UInt const& points) { Widget::setSize(points); return *this; }
+Image& Image::setZLayer(ui32 z) { Widget::setZLayer(z); return *this; }
 
 Image& Image::setTexturePixels(std::vector<ui8> const& srgbPixels)
 {
