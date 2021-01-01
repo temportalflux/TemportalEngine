@@ -3,6 +3,7 @@
 #include "math/Matrix.hpp"
 #include "graphics/Command.hpp"
 #include "graphics/ImageSampler.hpp"
+#include "ui/WidgetRenderer.hpp"
 
 using namespace ui;
 
@@ -133,18 +134,11 @@ void Image::releaseGraphics()
 	this->mpResource.reset();
 }
 
-Image& Image::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
+void Image::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	Widget::setDevice(device);
 	this->mVertexBuffer.setDevice(device);
 	this->mIndexBuffer.setDevice(device);
-	return *this;
-}
-
-Image& Image::setResolution(ui::Resolution const& resolution)
-{
-	Widget::setResolution(resolution);
-	return *this;
 }
 
 Image& Image::setParent(std::weak_ptr<ui::Widget> parent) { Widget::setParent(parent); return *this; }
@@ -299,16 +293,13 @@ void Image::pushTri(math::Vector3UInt const& indices)
 	this->mIndices.push_back(indices[2]);
 }
 
-void Image::bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline)
-{
-	OPTICK_EVENT();
-	command->bindDescriptorSets(pipeline, { &this->mpResource.lock()->descriptor() });
-	command->bindVertexBuffers(0, { &this->mVertexBuffer });
-	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
-}
-
 void Image::record(graphics::Command *command)
 {
 	OPTICK_EVENT();
+	auto pipeline = this->renderer()->imagePipeline();
+	command->bindPipeline(pipeline);
+	command->bindDescriptorSets(pipeline, { &this->mpResource.lock()->descriptor() });
+	command->bindVertexBuffers(0, { &this->mVertexBuffer });
+	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
 	command->draw(0, (ui32)this->mIndices.size(), 0, 0, 1);
 }

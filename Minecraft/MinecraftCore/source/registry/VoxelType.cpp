@@ -47,4 +47,4 @@ std::unordered_map<BlockId, VoxelTypeRegistry::BlockTypePath> const& VoxelTypeRe
 	return this->mEntriesById;
 }
 
-bool VoxelTypeRegistry::isTranslucent(BlockId const& id) const { return true;}//this->mMetadataById.at(id).bIsTranslucent; }
+bool VoxelTypeRegistry::isTranslucent(BlockId const& id) const { return this->mMetadataById.at(id).bIsTranslucent; }

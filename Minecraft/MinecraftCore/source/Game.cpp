@@ -270,6 +270,8 @@ void Game::destroyWindow()
 	}
 }
 
+std::shared_ptr<ui::FontOwner> Game::uiFontOwner() { return this->mpUIRenderer; }
+
 void Game::createRenderers()
 {
 	auto pEngine = engine::Engine::Get();

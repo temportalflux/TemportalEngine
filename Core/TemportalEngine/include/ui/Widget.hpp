@@ -20,7 +20,7 @@ public:
 	Widget();
 
 	void setRenderer(std::weak_ptr<ui::WidgetRenderer> renderer) { this->mpRenderer = renderer; }
-	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) { this->mpDevice = device; }
+	virtual void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) { this->mpDevice = device; }
 
 	Widget& setResolution(ui::Resolution const& resolution) { this->mResolution = resolution; return *this; }
 	ui::Resolution const& resolution() const { return this->mResolution; }
@@ -39,13 +39,15 @@ public:
 	bool isVisible() const;
 
 	math::Vector2 getTopLeftPositionOnScreen() const;
-	math::Vector2 getSizeOnScreen() const;
+	virtual math::Vector2 getSizeOnScreen() const;
 
 	virtual Widget& create() { return *this; }
 	virtual Widget& commit(graphics::CommandPool* transientPool) { return *this; }
 
-	virtual void bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline) {};
 	virtual void record(graphics::Command *command) {};
+
+protected:
+	std::shared_ptr<ui::WidgetRenderer> renderer() { return this->mpRenderer.lock(); }
 
 private:
 	std::weak_ptr<ui::WidgetRenderer> mpRenderer;

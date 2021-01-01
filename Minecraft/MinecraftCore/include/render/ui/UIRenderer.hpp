@@ -22,6 +22,7 @@ NS_GRAPHICS
 class UIRenderer
 	: public graphics::IPipelineRenderer
 	, public ui::WidgetRenderer
+	, public ui::FontOwner
 {
 	friend class UIString;
 
@@ -65,6 +66,8 @@ protected:
 	void addString(std::shared_ptr<UIString> pStr);
 	void removeString(UIString const* pStr);
 	void updateString(UIString const* pStr);
+
+	graphics::Font const& getFont(std::string const& fontId) const override;
 	
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;

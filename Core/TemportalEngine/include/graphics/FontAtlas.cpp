@@ -42,6 +42,7 @@ void Font::setSampler(graphics::ImageSampler *sampler)
 
 math::Vector2UInt& Font::atlasSize() { return this->mAtlasSize; }
 std::vector<ui8>& Font::atlasPixels() { return this->mAtlasPixels; }
+graphics::DescriptorSet const& Font::descriptorSet() const { return this->mDescriptorSet; }
 graphics::DescriptorSet& Font::descriptorSet() { return this->mDescriptorSet; }
 
 void Font::addGlyph(char code, GlyphSprite&& sprite)

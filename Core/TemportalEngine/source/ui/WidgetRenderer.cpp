@@ -4,6 +4,7 @@
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
 #include "ui/ImageWidget.hpp"
+#include "ui/TextWidget.hpp"
 
 ui::WidgetRenderer::WidgetRenderer()
 	: mResolution({})
@@ -34,7 +35,7 @@ ui::WidgetRenderer::Layer& ui::WidgetRenderer::getOrMakeLayer(ui32 z)
 	return *iter;
 }
 
-void ui::WidgetRenderer::add(std::weak_ptr<ui::Image> widget)
+void ui::WidgetRenderer::add(std::weak_ptr<ui::Widget> widget)
 {
 	auto pWidget = widget.lock();
 	auto& layer = this->getOrMakeLayer(pWidget->zLayer());
@@ -83,6 +84,20 @@ ui::WidgetRenderer& ui::WidgetRenderer::setImagePipeline(asset::TypedAssetPath<a
 	return *this;
 }
 
+ui::WidgetRenderer& ui::WidgetRenderer::setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path)
+{
+	if (!this->textPipeline())
+	{
+		this->textPipeline() = std::make_shared<graphics::Pipeline>();
+	}
+
+	graphics::populatePipeline(path, this->textPipeline().get(), &this->textDescriptorLayout());
+	this->textPipeline()->setDepthEnabled(false, false);
+	this->textPipeline()->setBindings({ ui::Text::binding() });
+
+	return *this;
+}
+
 void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpDevice = device;
@@ -90,6 +105,8 @@ void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> devic
 	this->imageSampler().create();
 	this->imagePipeline()->setDevice(device);
 	this->imageDescriptorLayout().setDevice(device).create();
+	this->textPipeline()->setDevice(device);
+	this->textDescriptorLayout().setDevice(device).create();
 
 	for (auto const& layer : this->mLayers)
 	{
@@ -127,6 +144,10 @@ void ui::WidgetRenderer::createPipeline(math::Vector2UInt const& resolution)
 		->setDescriptorLayout(this->imageDescriptorLayout(), 1)
 		.setResolution(resolution)
 		.create();
+	this->textPipeline()
+		->setDescriptorLayout(this->textDescriptorLayout(), 1)
+		.setResolution(resolution)
+		.create();
 
 	for (auto const& layer : this->mLayers)
 	{
@@ -145,7 +166,6 @@ void ui::WidgetRenderer::commitWidget(std::shared_ptr<ui::Widget> img)
 void ui::WidgetRenderer::record(graphics::Command *command)
 {
 	OPTICK_EVENT()
-	command->bindPipeline(this->imagePipeline());
 	for (auto it = this->mLayers.begin(); it != this->mLayers.end(); ++it)
 	{
 		bool bHasAnyExpired = false;
@@ -159,7 +179,6 @@ void ui::WidgetRenderer::record(graphics::Command *command)
 			auto pImg = weak_img.lock();
 			if (pImg->isVisible())
 			{
-				pImg->bind(command, this->imagePipeline());
 				pImg->record(command);
 			}
 		}

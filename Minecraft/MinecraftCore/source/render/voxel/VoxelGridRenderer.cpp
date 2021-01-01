@@ -130,7 +130,6 @@ void VoxelGridRenderer::record(graphics::Command *command, uIndex idxFrame, TGet
 	auto registry = this->mpTypeRegistry.lock();
 	auto modelManager = this->mpModelManager.lock();
 	auto instanceBuffer = this->mpInstanceBuffer.lock();
-	//auto id = game::BlockId("minecraft", "grass");
 	for (auto const& id : instanceBuffer->getRenderOrder())
 	{
 		auto instanceData = instanceBuffer->getDataForVoxelId(id);

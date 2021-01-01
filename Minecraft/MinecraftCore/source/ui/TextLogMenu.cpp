@@ -1,5 +1,6 @@
 #include "ui/TextLogMenu.hpp"
 
+#include "Game.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 
@@ -20,6 +21,12 @@ TextLogMenu::TextLogMenu()
 		.setPosition({ 0, -60 }).setSize({ 800, 500 })
 		;
 
+	(*(this->mpInputText = std::make_shared<ui::Text>()))
+		.setFontOwner(game::Game::Get()->uiFontOwner())
+		.setAnchor({ 0.5, 0 }).setPivot({ 0.5, 0 })
+		.setFont("unispace").setFontSize(30)
+		.setContent("Sphinx of Black Quartz, Judge my vow");
+
 	/*
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
 	ui::createMenuBackground(*this->mpBackgroundDemo.get(), 30)
@@ -34,13 +41,14 @@ TextLogMenu::TextLogMenu()
 		.setSize({ 64, 64 });
 	//*/
 
-	this->setIsVisible(false);
+	this->setIsVisible(true);
 }
 
 TextLogMenu::~TextLogMenu()
 {
 	this->mpInputBarBkgd.reset();
 	this->mpLogBkgd.reset();
+	this->mpInputText.reset();
 
 	this->mpBackgroundDemo.reset();
 	this->mSlots.clear();
@@ -50,6 +58,7 @@ void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
 {
 	renderer->add(this->mpInputBarBkgd);
 	renderer->add(this->mpLogBkgd);
+	renderer->add(this->mpInputText);
 	//renderer->add(this->mpBackgroundDemo);
 	//for (auto& slot : this->mSlots) renderer->add(slot);
 }
@@ -58,4 +67,5 @@ void TextLogMenu::setIsVisible(bool bVisible)
 {
 	this->mpInputBarBkgd->setIsVisible(bVisible);
 	this->mpLogBkgd->setIsVisible(bVisible);
+	this->mpInputText->setIsVisible(bVisible);
 }

@@ -75,8 +75,7 @@ public:
 	Image& operator=(Image &&other);
 	~Image();
 
-	Image& setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
-	Image& setResolution(ui::Resolution const& resolution);
+	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 
 	Image& setParent(std::weak_ptr<ui::Widget> parent);
 	Image& setAnchor(math::Vector2 const& anchor);
@@ -105,7 +104,6 @@ public:
 	Widget& commit(graphics::CommandPool* transientPool) override;
 
 	void releaseGraphics();
-	void bind(graphics::Command *command, std::shared_ptr<graphics::Pipeline> pipeline) override;
 	void record(graphics::Command *command) override;
 
 private:

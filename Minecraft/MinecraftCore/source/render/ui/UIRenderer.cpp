@@ -98,6 +98,7 @@ UIRenderer& UIRenderer::setTextPipeline(asset::TypedAssetPath<asset::Pipeline> c
 		});
 	}
 
+	ui::WidgetRenderer::setTextPipeline(path);
 	return *this;
 }
 
@@ -156,6 +157,7 @@ void UIRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
 {
 	this->mText.pipeline->setRenderPass(renderPass);
 	this->imagePipeline()->setRenderPass(renderPass);
+	this->textPipeline()->setRenderPass(renderPass);
 }
 
 void UIRenderer::initializeData(graphics::CommandPool* transientPool, graphics::DescriptorPool *descriptorPool)
@@ -207,6 +209,7 @@ void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalD
 {
 	OPTICK_EVENT();
 
+	/*
 	std::optional<uIndex> idxPrevFont = std::nullopt;
 	for (auto const& committedString : this->mText.committedData.strings)
 	{
@@ -231,6 +234,7 @@ void UIRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalD
 			0, 1
 		);
 	}
+	//*/
 
 	ui::WidgetRenderer::record(command);
 }
@@ -239,6 +243,7 @@ void UIRenderer::destroyRenderChain()
 {
 	this->mText.pipeline->invalidate();
 	this->imagePipeline()->invalidate();
+	this->textPipeline()->invalidate();
 }
 
 void UIRenderer::destroyRenderDevices()
@@ -250,6 +255,7 @@ void UIRenderer::destroyRenderDevices()
 	this->mText.vertexBuffer.destroy();
 	this->mText.indexBuffer.destroy();
 	this->imageDescriptorLayout().invalidate();
+	this->textDescriptorLayout().invalidate();
 }
 
 void UIRenderer::addString(std::shared_ptr<UIString> pStr)
@@ -288,6 +294,13 @@ void UIRenderer::updateGlyphString(GlyphString &glyphStr)
 	this->mText.uncommittedData.bHasChanges = true;
 	this->updateGlyphVertices(glyphStr.handle.get(), glyphStr);
 	this->unlock();
+}
+
+graphics::Font const& UIRenderer::getFont(std::string const& fontId) const
+{
+	auto fontIter = this->mText.fontIds.find(fontId);
+	assert(fontIter != this->mText.fontIds.end());
+	return this->mText.fonts[fontIter->second];
 }
 
 void UIRenderer::updateGlyphVertices(UIString const* updatedString, GlyphString &glyphStr) const

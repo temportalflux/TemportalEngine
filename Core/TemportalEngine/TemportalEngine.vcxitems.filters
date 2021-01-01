@@ -370,6 +370,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\Widget.cpp">
       <Filter>ui</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -800,6 +803,9 @@
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\WidgetRenderer.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextWidget.hpp">
       <Filter>ui</Filter>
     </ClInclude>
   </ItemGroup>

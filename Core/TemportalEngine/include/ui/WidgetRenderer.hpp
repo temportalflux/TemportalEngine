@@ -3,6 +3,7 @@
 #include "asset/TypedAssetPath.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "graphics/Descriptor.hpp"
+#include "graphics/FontAtlas.hpp"
 #include "graphics/ImageSampler.hpp"
 #include "ui/Core.hpp"
 #include "ui/Resolution.hpp"
@@ -17,6 +18,12 @@ NS_UI
 class Image;
 class Widget;
 
+class FontOwner
+{
+public:
+	virtual graphics::Font const& getFont(std::string const& fontId) const = 0;
+};
+
 class WidgetRenderer : public std::enable_shared_from_this<WidgetRenderer>
 {
 
@@ -25,16 +32,19 @@ public:
 	~WidgetRenderer();
 
 	WidgetRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
+	WidgetRenderer& setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
 	void initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool);
 
-	void add(std::weak_ptr<ui::Image> widget);
+	void add(std::weak_ptr<ui::Widget> widget);
 	void changeZLayer(std::weak_ptr<ui::Widget> widget, ui32 newZ);
 
 	std::shared_ptr<graphics::Pipeline>& imagePipeline() { return this->mImagePipeline; }
 	graphics::DescriptorLayout& imageDescriptorLayout() { return this->mImageDescriptorLayout; }
 	graphics::ImageSampler& imageSampler() { return this->mImageSampler; }
+	std::shared_ptr<graphics::Pipeline>& textPipeline() { return this->mTextPipeline; }
+	graphics::DescriptorLayout& textDescriptorLayout() { return this->mTextDescriptorLayout; }
 
 	void createPipeline(math::Vector2UInt const& resolution);
 	void record(graphics::Command *command);
@@ -48,6 +58,9 @@ private:
 	std::shared_ptr<graphics::Pipeline> mImagePipeline;
 	graphics::DescriptorLayout mImageDescriptorLayout;
 	graphics::ImageSampler mImageSampler;
+
+	std::shared_ptr<graphics::Pipeline> mTextPipeline;
+	graphics::DescriptorLayout mTextDescriptorLayout;
 
 	struct Layer
 	{

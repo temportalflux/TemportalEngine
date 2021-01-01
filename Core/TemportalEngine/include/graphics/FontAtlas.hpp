@@ -33,6 +33,7 @@ public:
 
 	math::Vector2UInt& atlasSize();
 	std::vector<ui8>& atlasPixels();
+	graphics::DescriptorSet const& descriptorSet() const;
 	graphics::DescriptorSet& descriptorSet();
 	void addGlyph(char code, GlyphSprite&& sprite);
 

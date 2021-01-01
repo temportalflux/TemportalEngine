@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 #include "ui/Core.hpp"
 #include "ui/ImageWidget.hpp"
+#include "ui/TextWidget.hpp"
 
 NS_UI
 class WidgetRenderer;
@@ -20,6 +21,7 @@ public:
 private:
 	std::shared_ptr<ui::Image> mpInputBarBkgd;
 	std::shared_ptr<ui::Image> mpLogBkgd;
+	std::shared_ptr<ui::Text> mpInputText;
 
 	std::shared_ptr<ui::Image> mpBackgroundDemo;
 	std::vector<std::shared_ptr<ui::Image>> mSlots;

@@ -40,6 +40,7 @@ FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
+FORWARD_DEF(NS_UI, class FontOwner);
 FORWARD_DEF(NS_UI, class TextLogMenu);
 
 NS_GAME
@@ -74,6 +75,7 @@ public:
 	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances() { return this->mpEntityInstanceBuffer; }
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
+	std::shared_ptr<ui::FontOwner> uiFontOwner();
 
 private:
 	logging::Logger mProjectLog;
