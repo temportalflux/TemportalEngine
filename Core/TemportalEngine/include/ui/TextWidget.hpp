@@ -38,7 +38,8 @@ public:
 
 	Text& setFont(std::string const& fontId);
 	Text& setFontSize(ui16 fontSize);
-	Text& setContent(std::string const& content);
+	Text& setMaxContentLength(ui32 length);
+	Text& setContent(std::string const& content, bool isMaxLength = false);
 	Text& operator=(std::string const& content);
 	std::string const& string() const { return this->mUncommitted.content; }
 	Text& setThickness(f32 characterWidth);
@@ -47,7 +48,7 @@ public:
 	math::Vector2 getSizeOnScreen() const override;
 
 	void releaseGraphics();
-	Text& commit(graphics::CommandPool* transientPool);
+	Text& commit();
 	void record(graphics::Command *command) override;
 
 private:
@@ -73,11 +74,14 @@ private:
 		std::string content;
 		f32 thickness;
 		f32 edgeWidth;
+		ui32 maxLength;
 	};
 	Configuration mUncommitted, mCommitted;
 
 	std::vector<Vertex> mVertices;
 	std::vector<ui16> mIndices;
+	ui32 mCommittedIndexCount;
+
 	graphics::Buffer mVertexBuffer;
 	graphics::Buffer mIndexBuffer;
 

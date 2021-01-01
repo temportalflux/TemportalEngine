@@ -21,11 +21,13 @@ TextLogMenu::TextLogMenu()
 		.setPosition({ 0, -60 }).setSize({ 800, 500 })
 		;
 
+	/*
 	(*(this->mpInputText = std::make_shared<ui::Text>()))
 		.setFontOwner(game::Game::Get()->uiFontOwner())
 		.setAnchor({ 0.5, 0 }).setPivot({ 0.5, 0 })
 		.setFont("unispace").setFontSize(30)
 		.setContent("Sphinx of Black Quartz, Judge my vow");
+	//*/
 
 	/*
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
@@ -41,7 +43,7 @@ TextLogMenu::TextLogMenu()
 		.setSize({ 64, 64 });
 	//*/
 
-	this->setIsVisible(true);
+	this->setIsVisible(false);
 }
 
 TextLogMenu::~TextLogMenu()
@@ -58,7 +60,7 @@ void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
 {
 	renderer->add(this->mpInputBarBkgd);
 	renderer->add(this->mpLogBkgd);
-	renderer->add(this->mpInputText);
+	//renderer->add(this->mpInputText);
 	//renderer->add(this->mpBackgroundDemo);
 	//for (auto& slot : this->mSlots) renderer->add(slot);
 }
@@ -67,5 +69,5 @@ void TextLogMenu::setIsVisible(bool bVisible)
 {
 	this->mpInputBarBkgd->setIsVisible(bVisible);
 	this->mpLogBkgd->setIsVisible(bVisible);
-	this->mpInputText->setIsVisible(bVisible);
+	//this->mpInputText->setIsVisible(bVisible);
 }

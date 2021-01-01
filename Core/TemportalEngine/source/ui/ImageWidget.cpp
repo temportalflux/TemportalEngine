@@ -152,31 +152,46 @@ Image& Image::setZLayer(ui32 z) { Widget::setZLayer(z); return *this; }
 
 Image& Image::setResource(std::weak_ptr<ui::ImageResource> const& resource)
 {
+	this->lock();
 	this->mpResource = resource;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Image& Image::setColor(math::Vector4 const& color)
 {
+	this->lock();
 	this->mColor = color;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Image& Image::setTexturePadding(math::Vector2UInt const& paddingInPixels)
 {
+	this->lock();
 	this->mPadding = paddingInPixels;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Image& Image::setTextureSubsize(math::Vector2UInt const& sizeInPixels)
 {
+	this->lock();
 	this->mSubSize = sizeInPixels;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Image& Image::setTextureSlicing(std::array<Slice, 4> const& slices)
 {
+	this->lock();
 	this->mSlicing = slices;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
@@ -187,9 +202,10 @@ Widget& Image::create()
 	return *this;
 }
 
-Widget& Image::commit(graphics::CommandPool* transientPool)
+Widget& Image::commit()
 {
 	assert(!this->mpResource.expired());
+	this->lock();
 
 	this->mVertices.clear();
 	this->mIndices.clear();
@@ -281,8 +297,11 @@ Widget& Image::commit(graphics::CommandPool* transientPool)
 		}
 	}
 
-	this->mVertexBuffer.writeBuffer(transientPool, 0, this->mVertices);
-	this->mIndexBuffer.writeBuffer(transientPool, 0, this->mIndices);
+	this->mVertexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mVertices);
+	this->mIndexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mIndices);
+
+	this->markClean();
+	this->unlock();
 	return *this;
 }
 

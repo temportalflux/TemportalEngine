@@ -16,7 +16,6 @@ class Entity;
 FORWARD_DEF(NS_COMPONENT, class CoordinateTransform);
 FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
-FORWARD_DEF(NS_SYSTEM, class UpdateDebugHUD);
 FORWARD_DEF(NS_SYSTEM, class RenderEntities);
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
@@ -41,6 +40,7 @@ FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_WORLD, class World);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 FORWARD_DEF(NS_UI, class FontOwner);
+FORWARD_DEF(NS_UI, class DebugHUD);
 FORWARD_DEF(NS_UI, class TextLogMenu);
 
 NS_GAME
@@ -76,6 +76,8 @@ public:
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 	std::shared_ptr<ui::FontOwner> uiFontOwner();
+	std::shared_ptr<Window> getWindow();
+	std::shared_ptr<ecs::Entity> localPlayer();
 
 private:
 	logging::Logger mProjectLog;
@@ -104,12 +106,12 @@ private:
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
 	std::shared_ptr<ecs::system::RenderEntities> mpSystemRenderEntities;
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
+	std::shared_ptr<ui::DebugHUD> mpDebugHUD;
 	std::shared_ptr<ui::TextLogMenu> mpMenuTextLog;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
-	std::shared_ptr<ecs::system::UpdateDebugHUD> mpSystemUpdateDebugHUD;
 	std::shared_ptr<ecs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;

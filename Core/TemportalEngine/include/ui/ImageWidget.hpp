@@ -101,7 +101,7 @@ public:
 	/**
 	 * Rebuilds the vertex and index buffers and commits them to the graphics object representations.
 	 */
-	Widget& commit(graphics::CommandPool* transientPool) override;
+	Widget& commit() override;
 
 	void releaseGraphics();
 	void record(graphics::Command *command) override;

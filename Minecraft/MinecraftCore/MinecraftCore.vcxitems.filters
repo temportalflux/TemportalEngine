@@ -91,9 +91,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp">
       <Filter>render\ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIString.hpp">
-      <Filter>render\ui</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
@@ -111,12 +108,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp">
       <Filter>ecs\component</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewDebugHUD.hpp">
-      <Filter>ecs\view</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateDebugHUD.hpp">
-      <Filter>ecs\system</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp">
       <Filter>render\line</Filter>
@@ -181,6 +172,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\UIWidgets.hpp">
       <Filter>ui</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\DebugHUD.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -209,9 +203,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp">
       <Filter>render\ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIString.cpp">
-      <Filter>render\ui</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp">
       <Filter>ecs\component</Filter>
     </ClCompile>
@@ -228,12 +219,6 @@
       <Filter>ecs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp">
-      <Filter>ecs\system</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewDebugHUD.cpp">
-      <Filter>ecs\view</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateDebugHUD.cpp">
       <Filter>ecs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp">
@@ -297,6 +282,9 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp">
       <Filter>ui</Filter>
     </ClCompile>
   </ItemGroup>

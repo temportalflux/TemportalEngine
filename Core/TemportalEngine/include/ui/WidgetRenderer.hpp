@@ -5,6 +5,7 @@
 #include "graphics/Descriptor.hpp"
 #include "graphics/FontAtlas.hpp"
 #include "graphics/ImageSampler.hpp"
+#include "thread/MutexLock.hpp"
 #include "ui/Core.hpp"
 #include "ui/Resolution.hpp"
 
@@ -31,6 +32,8 @@ public:
 	WidgetRenderer();
 	~WidgetRenderer();
 
+	graphics::CommandPool* getTransientPool() { return this->mpTransientPool; }
+
 	WidgetRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	WidgetRenderer& setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 
@@ -45,9 +48,14 @@ public:
 	graphics::ImageSampler& imageSampler() { return this->mImageSampler; }
 	std::shared_ptr<graphics::Pipeline>& textPipeline() { return this->mTextPipeline; }
 	graphics::DescriptorLayout& textDescriptorLayout() { return this->mTextDescriptorLayout; }
+	graphics::ImageSampler& textSampler() { return this->mTextSampler; }
 
 	void createPipeline(math::Vector2UInt const& resolution);
 	void record(graphics::Command *command);
+
+	void setAnyWidgetIsDirty();
+	bool hasChanges() const;
+	void commitWidgets();
 
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
@@ -61,6 +69,7 @@ private:
 
 	std::shared_ptr<graphics::Pipeline> mTextPipeline;
 	graphics::DescriptorLayout mTextDescriptorLayout;
+	graphics::ImageSampler mTextSampler;
 
 	struct Layer
 	{
@@ -76,6 +85,9 @@ private:
 
 	void initializeWidgetData(std::shared_ptr<ui::Widget> img);
 	void commitWidget(std::shared_ptr<ui::Widget> img);
+
+	thread::MutexLock mMutex;
+	bool mbAnyWidgetHasChanges;
 
 };
 

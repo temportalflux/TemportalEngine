@@ -63,26 +63,59 @@ Text& Text::setZLayer(ui32 z) { Widget::setZLayer(z); return *this; }
 
 Text& Text::setFont(std::string const& fontId)
 {
+	this->lock();
 	this->mUncommitted.fontId = fontId;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Text& Text::setFontSize(ui16 fontSize)
 {
+	this->lock();
 	this->mUncommitted.fontSize = fontSize;
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
-Text& Text::setContent(std::string const& content)
+Text& Text::setMaxContentLength(ui32 length)
 {
+	this->lock();
+	this->mUncommitted.maxLength = length;
+	this->markDirty();
+	this->unlock();
+	return *this;
+}
+
+Text& Text::setContent(std::string const& content, bool isMaxLength)
+{
+	this->lock();
 	this->mUncommitted.content = content;
+	if (isMaxLength) this->mUncommitted.maxLength = (ui32)content.length();
+	this->markDirty();
+	this->unlock();
 	return *this;
 }
 
 Text& Text::operator=(std::string const& content) { return setContent(content); }
 
-Text& Text::setThickness(f32 characterWidth) { this->mUncommitted.thickness = characterWidth; return *this; }
-Text& Text::setEdgeWidth(f32 charEdgeWidth) { this->mUncommitted.edgeWidth = charEdgeWidth; return *this; }
+Text& Text::setThickness(f32 characterWidth)
+{
+	this->lock();
+	this->mUncommitted.thickness = characterWidth;
+	this->markDirty();
+	this->unlock();
+	return *this;
+}
+Text& Text::setEdgeWidth(f32 charEdgeWidth)
+{
+	this->lock();
+	this->mUncommitted.edgeWidth = charEdgeWidth;
+	this->markDirty();
+	this->unlock();
+	return *this;
+}
 
 void Text::releaseGraphics()
 {
@@ -90,37 +123,39 @@ void Text::releaseGraphics()
 	this->mIndexBuffer.invalidate();
 }
 
-Text& Text::commit(graphics::CommandPool* transientPool)
+Text& Text::commit()
 {
+	this->lock();
 	// TODO: Check if there are actually any changes before updating buffers (this needs to include resolution)
 
-	bool bRequiresNewBuffers = this->mUncommitted.content.length() != this->mCommitted.content.length();
-	if (bRequiresNewBuffers)
+	this->mVertices.clear();
+	this->mIndices.clear();
+	this->mVertices.reserve(this->mUncommitted.content.length() * 4);
+	this->mIndices.reserve(this->mUncommitted.content.length() * 6);
+
+	if (this->mUncommitted.maxLength != this->mCommitted.maxLength)
 	{
-		// TODO: Can optimize by keeping the larger size so fewer buffer re-creations happen
 		this->mVertexBuffer.invalidate();
 		this->mIndexBuffer.invalidate();
-		this->mVertices.clear();
-		this->mIndices.clear();
-		auto vertexCount = this->mUncommitted.content.length() * 4;
-		auto indexCount = this->mUncommitted.content.length() * 6;
-		this->mVertices.reserve(vertexCount);
-		this->mIndices.reserve(vertexCount);
 		this->mVertexBuffer
-			.setSize(vertexCount * sizeof(Vertex))
+			.setSize(this->mUncommitted.maxLength * 4 * sizeof(Vertex))
 			.create();
 		this->mIndexBuffer
-			.setSize(indexCount * sizeof(ui16))
+			.setSize(this->mUncommitted.maxLength * 6 * sizeof(ui16))
 			.create();
 	}
 
 	this->populateBufferData();
 
 	// TODO: Can optimize by only writing changed regions (based on the diff between content and committed content, and if the font has changed)
-	this->mVertexBuffer.writeBuffer(transientPool, 0, this->mVertices);
-	this->mIndexBuffer.writeBuffer(transientPool, 0, this->mIndices);
+	this->mVertexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mVertices);
+	this->mIndexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mIndices);
 
 	this->mCommitted = this->mUncommitted;
+	this->mCommittedIndexCount = (ui32)this->mIndices.size();
+	
+	this->markClean();
+	this->unlock();
 	return *this;
 }
 
@@ -223,6 +258,6 @@ void Text::record(graphics::Command *command)
 	command->bindDescriptorSets(pipeline, { &this->getFont()->descriptorSet() });
 	command->bindVertexBuffers(0, { &this->mVertexBuffer });
 	command->bindIndexBuffer(0, &this->mIndexBuffer, vk::IndexType::eUint16);
-	command->draw(0, (ui32)this->mIndices.size(), 0, 0, 1);
+	command->draw(0, this->mCommittedIndexCount, 0, 0, 1);
 }
 

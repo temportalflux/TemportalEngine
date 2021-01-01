@@ -110,3 +110,24 @@ math::Vector2 Widget::getSizeOnScreen() const
 		this->mbFillParentHeight ? parentSize.y() : screenSpace.y(),
 	};
 }
+
+void Widget::lock()
+{
+	this->mMutex.lock();
+}
+
+void Widget::unlock()
+{
+	this->mMutex.unlock();
+}
+
+void Widget::markDirty()
+{
+	if (this->hasRenderer()) this->renderer()->setAnyWidgetIsDirty();
+	this->mbHasChanges = true;
+}
+
+void Widget::markClean()
+{
+	this->mbHasChanges = false;
+}

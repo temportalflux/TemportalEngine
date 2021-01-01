@@ -21,12 +21,10 @@
 #include "ecs/component/ComponentPhysicsController.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
-#include "ecs/view/ViewDebugHUD.hpp"
 #include "ecs/view/ViewRenderedMesh.hpp"
 #include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
-#include "ecs/system/SystemUpdateDebugHUD.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
 #include "graphics/DescriptorPool.hpp"
@@ -54,6 +52,7 @@
 #include "resource/ResourceManager.hpp"
 #include "utility/StringUtils.hpp"
 #include "world/World.hpp"
+#include "ui/DebugHUD.hpp"
 #include "ui/TextLogMenu.hpp"
 #include "ui/UIWidgets.hpp"
 
@@ -130,7 +129,6 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::PhysicsController>("PhysicsController");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>();
 	ecs->views().registerType<ecs::view::PlayerCamera>();
-	ecs->views().registerType<ecs::view::DebugHUD>();
 	ecs->views().registerType<ecs::view::RenderedMesh>();
 	ecs->views().registerType<ecs::view::PhysicalDynamics>();
 }
@@ -261,6 +259,8 @@ bool Game::createWindow()
 	return true;
 }
 
+std::shared_ptr<Window> Game::getWindow() { return this->mpWindow; }
+
 void Game::destroyWindow()
 {
 	if (this->mpWindow)
@@ -309,10 +309,6 @@ void Game::createRenderers()
 
 	this->createPipelineRenderers();
 
-	this->mpSystemUpdateDebugHUD = pEngine->getMainMemory()->make_shared<ecs::system::UpdateDebugHUD>(this->mpWindow);
-	this->mpSystemUpdateDebugHUD->createHUD(this->mpUIRenderer);
-	pEngine->addTicker(this->mpSystemUpdateDebugHUD);
-
 	this->mpSkinnedModelManager = std::make_shared<graphics::SkinnedModelManager>(
 		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
 	);
@@ -326,6 +322,10 @@ void Game::createRenderers()
 		"assets/render/entity/RenderEntityPipeline.te-asset"
 	));
 	this->mpRenderer->addRenderer(this->mpSystemRenderEntities.get());
+
+	this->mpDebugHUD = std::make_shared<ui::DebugHUD>();
+	this->mpDebugHUD->addWidgetsToRenderer(this->mpUIRenderer.get());
+	pEngine->addTicker(this->mpDebugHUD);
 
 	this->mpMenuTextLog = std::make_shared<ui::TextLogMenu>();
 	this->mpMenuTextLog->addImagesToRenderer(this->mpUIRenderer.get());
@@ -527,21 +527,16 @@ void Game::createChunkBoundaryRenderer()
 
 void Game::createUIRenderer()
 {
-	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>(
-		/*maximum displayed characters=*/ 256
-	);
-
+	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>();
 	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/UIPipeline.te-asset"
 	));
 	this->mpUIRenderer->setImagePipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/ImagePipeline.te-asset"
 	));
-
 	this->mpUIRenderer->addFont("unispace", asset::TypedAssetPath<asset::Font>::Create(
 		"assets/font/Unispace/Unispace.te-asset"
 	).load(asset::EAssetSerialization::Binary));
-
 	this->mpRenderer->addRenderer(this->mpUIRenderer.get());
 
 	ui::createResources({
@@ -565,9 +560,9 @@ void Game::destroyRenderers()
 	this->mpChunkBoundaryRenderer->destroy();
 	this->mpVoxelInstanceBuffer.reset();
 	this->mpMenuTextLog.reset();
+	this->mpDebugHUD.reset();
 	
 	this->mpSystemUpdateCameraPerspective.reset();
-	this->mpSystemUpdateDebugHUD.reset();
 	this->mpUIRenderer->destroyRenderDevices();
 	ui::destroyResources();
 
@@ -680,8 +675,6 @@ void Game::createLocalPlayer()
 		// This view enables the `UpdateCameraPerspective` system to run
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::PlayerCamera>());
 	
-		this->mpEntityLocalPlayer->addView(views.create<ecs::view::DebugHUD>());
-
 		// This view enables the `RenderEntities` system to run
 		this->mpEntityLocalPlayer->addView(views.create<ecs::view::RenderedMesh>());
 
@@ -708,6 +701,8 @@ void Game::createLocalPlayer()
 		this->mpEntityLocalPlayer->addComponent(component);
 	}
 }
+
+std::shared_ptr<ecs::Entity> Game::localPlayer() { return this->mpEntityLocalPlayer; }
 
 void Game::destroyScene()
 {
@@ -773,9 +768,7 @@ void Game::updateWorldGraphics()
 	}
 	if (this->mpUIRenderer->hasChanges())
 	{
-		this->mpUIRenderer->lock();
-		this->mpUIRenderer->commitToBuffer(&this->mpRenderer->getTransientPool());
-		this->mpUIRenderer->unlock();
+		this->mpUIRenderer->commitWidgets();
 	}
 	if (this->mpEntityInstanceBuffer->hasChanges())
 	{

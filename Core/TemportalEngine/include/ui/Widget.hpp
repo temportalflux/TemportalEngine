@@ -1,5 +1,6 @@
 #pragma once
 
+#include "thread/MutexLock.hpp"
 #include "ui/Core.hpp"
 #include "ui/Resolution.hpp"
 
@@ -42,17 +43,27 @@ public:
 	virtual math::Vector2 getSizeOnScreen() const;
 
 	virtual Widget& create() { return *this; }
-	virtual Widget& commit(graphics::CommandPool* transientPool) { return *this; }
+
+	void lock();
+	void unlock();
+	void markDirty();
+	bool hasChanges() const { return this->mbHasChanges; }
+	void markClean();
+	virtual Widget& commit() { return *this; }
 
 	virtual void record(graphics::Command *command) {};
 
 protected:
+	bool hasRenderer() const { return !this->mpRenderer.expired(); }
 	std::shared_ptr<ui::WidgetRenderer> renderer() { return this->mpRenderer.lock(); }
 
 private:
 	std::weak_ptr<ui::WidgetRenderer> mpRenderer;
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
 	ui::Resolution mResolution;
+
+	thread::MutexLock mMutex;
+	bool mbHasChanges;
 
 	bool mbIsVisible;
 
