@@ -11,6 +11,23 @@ RigidBody::RigidBody() : mbIsStatic(false), mpInternal(nullptr)
 {
 }
 
+RigidBody::RigidBody(RigidBody &&other) { *this = std::move(other); }
+
+RigidBody& RigidBody::operator=(RigidBody &&other)
+{
+	this->mpSystem = other.mpSystem;
+	other.mpSystem.reset();
+
+	this->mInitialPosition = other.mInitialPosition;
+	this->mInitialRotation = other.mInitialRotation;
+	this->mbIsStatic = other.mbIsStatic;
+
+	this->mpInternal = other.mpInternal;
+	other.mpInternal = nullptr;
+
+	return *this;
+}
+
 RigidBody::~RigidBody()
 {
 	release();
@@ -46,6 +63,7 @@ bool RigidBody::isStatic() const { return this->mbIsStatic; }
 void RigidBody::create()
 {
 	assert(hasSystem());
+	assert(this->mpInternal == nullptr);
 	this->mpInternal = this->system()->createRigidBody(this);
 }
 

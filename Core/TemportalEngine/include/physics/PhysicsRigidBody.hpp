@@ -12,6 +12,9 @@ class RigidBody : public Object
 
 public:
 	RigidBody();
+	RigidBody(RigidBody const& other) = delete;
+	RigidBody(RigidBody &&other);
+	RigidBody& operator=(RigidBody &&other);
 	~RigidBody();
 	void release();
 

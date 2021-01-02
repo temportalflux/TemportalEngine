@@ -14,7 +14,7 @@ public:
 	virtual void create() = 0;
 	bool hasSystem() const { return !this->mpSystem.expired(); }
 
-private:
+protected:
 	std::weak_ptr<physics::System> mpSystem;
 
 };

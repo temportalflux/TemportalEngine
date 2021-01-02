@@ -23,9 +23,24 @@ ChunkCollisionManager::ChunkCollisionManager(
 		.create();
 }
 
+ChunkCollisionManager::~ChunkCollisionManager()
+{
+	this->mChunks.clear();
+}
+
+/*
+ChunkCollisionManager::ChunkCollision::ChunkCollision(ChunkCollision &&other) { *this = std::move(other); }
+
+ChunkCollisionManager::ChunkCollision& ChunkCollisionManager::ChunkCollision::operator=(ChunkCollision &&other)
+{
+	this->collision = std::move(other.collision);
+	return *this;
+}
+//*/
+
 void ChunkCollisionManager::onLoadingChunk(math::Vector3Int const& coordinate)
 {
-	ChunkCollision chunk = {};
+	auto& chunk = this->mChunks.emplace_back(coordinate, ChunkCollision {}).second;
 	for (auto iter = chunk.collision.begin(); iter != chunk.collision.end(); ++iter)
 	{
 		// NOTE: This will cause physics to degrade and eventually overflow at extreme values because the floats only support up to 32-bits.
@@ -42,7 +57,6 @@ void ChunkCollisionManager::onLoadingChunk(math::Vector3Int const& coordinate)
 			.setSystem(this->mpPhysics)
 			;
 	}
-	this->mChunks.push_back(std::move(std::make_pair(coordinate, std::move(chunk))));
 }
 
 void ChunkCollisionManager::onVoxelsChanged(TChangedVoxelsList const& changes)

@@ -578,8 +578,6 @@ void Game::destroyRenderers()
 
 void Game::createWorld()
 {
-	srand((ui32)time(0));
-
 	this->mpSceneOverworld = std::make_shared<physics::Scene>();
 	this->mpSceneOverworld->setSystem(this->mpPhysics);
 	this->mpSceneOverworld->create();
@@ -588,7 +586,7 @@ void Game::createWorld()
 		this->mpPhysics, this->mpSceneOverworld
 	);
 
-	this->mpWorld = std::make_shared<world::World>();
+	this->mpWorld = std::make_shared<world::World>(ui32(time(0)));
 	if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
 	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
 	
@@ -620,6 +618,7 @@ void Game::destroyWorld()
 void Game::createScene()
 {
 	this->mpWorld->loadChunk({ 0, 0, 0 });
+	this->mpWorld->loadChunk({ 0, 0, -1 });
 	//for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
 	//	this->mpWorld->loadChunk({ x, 0, z });
 	
@@ -706,10 +705,6 @@ std::shared_ptr<ecs::Entity> Game::localPlayer() { return this->mpEntityLocalPla
 
 void Game::destroyScene()
 {
-	this->mpBodyBall.reset();
-	this->mpBodyPlane.reset();
-	this->mpDefaultPhysMaterial.reset();
-
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpEntityLocalPlayer.reset();
 }

@@ -2,6 +2,14 @@
 
 using namespace world;
 
+World::World(ui32 seed) : mSeed(seed)
+{
+}
+
+World::~World()
+{
+}
+
 void World::addEventListener(std::shared_ptr<WorldEventListener> listener)
 {
 	this->OnLoadingChunk.bind(listener, listener->onLoadingChunkEvent());

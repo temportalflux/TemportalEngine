@@ -20,6 +20,7 @@ public:
 		std::weak_ptr<physics::System> physics,
 		std::weak_ptr<physics::Scene> scene
 	);
+	~ChunkCollisionManager();
 
 private:
 	std::weak_ptr<physics::System> mpPhysics;
@@ -28,6 +29,9 @@ private:
 	struct ChunkCollision
 	{
 		CoordMap<physics::RigidBody, CHUNK_SIDE_LENGTH> collision;
+		//ChunkCollision(ChunkCollision const& other) = delete;
+		//ChunkCollision(ChunkCollision &&other);
+		//ChunkCollision& operator=(ChunkCollision &&other);
 	};
 
 	std::vector<std::pair<math::Vector3Int, ChunkCollision>> mChunks;

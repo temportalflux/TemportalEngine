@@ -15,6 +15,10 @@ class World : public std::enable_shared_from_this<World>
 	friend class WorldChunk;
 
 public:
+	World(ui32 seed);
+	~World();
+
+	ui32 getSeed() const { return this->mSeed; }
 
 	TOnChunkLoadingEvent OnLoadingChunk, OnUnloadingChunk;
 	TOnVoxelsChangedEvent OnVoxelsChanged;
@@ -33,6 +37,9 @@ public:
 	void handleDirtyCoordinates();
 
 private:
+	ui32 mSeed;
+	world::Coordinate mSpawnCenter;
+
 	void onLoadedChunk(WorldChunk &chunk);
 
 #pragma region Dirty Blocks
