@@ -172,9 +172,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\DebugHUD.hpp">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\world\WorldChunk.hpp">
-      <Filter>world</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -284,8 +282,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\world\WorldChunk.cpp">
-      <Filter>world</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
   </ItemGroup>
 </Project>

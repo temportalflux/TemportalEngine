@@ -4,6 +4,7 @@
   <PropertyGroup Label="UserMacros">
     <EngineLibs>$(SolutionDir)Core\TemportalEngine\libs\</EngineLibs>
     <PhysXBin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\PhysX</PhysXBin>
+    <GameNetworkingSocketsBin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\GameNetworkingSockets</GameNetworkingSocketsBin>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -13,6 +14,9 @@
     </BuildMacro>
     <BuildMacro Include="PhysXBin">
       <Value>$(PhysXBin)</Value>
+    </BuildMacro>
+    <BuildMacro Include="GameNetworkingSocketsBin">
+      <Value>$(GameNetworkingSocketsBin)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

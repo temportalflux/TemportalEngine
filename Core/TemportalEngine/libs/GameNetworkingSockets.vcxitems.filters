@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="steam">
+      <UniqueIdentifier>{c580ba39-ed60-40fa-9426-a10d080a554d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="minbase">
+      <UniqueIdentifier>{e1a903e9-ac6a-4141-9ce6-3b82e0e6280a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_decls.h">
+      <Filter>minbase</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_identify.h">
+      <Filter>minbase</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamclientpublic.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingcustomsignaling.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets_flat.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingtypes.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamtypes.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamuniverse.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingsockets.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingutils.h">
+      <Filter>steam</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

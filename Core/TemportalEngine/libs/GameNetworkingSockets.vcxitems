@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{104fd30c-bcda-4abc-a14c-1627aa0e3894}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_decls.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_identify.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingsockets.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingutils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamclientpublic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingcustomsignaling.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets_flat.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingtypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamtypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamuniverse.h" />
+  </ItemGroup>
+</Project>

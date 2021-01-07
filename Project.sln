@@ -46,8 +46,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MinecraftGame", "Minecraft\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui-node-editor", "Core\TemportalEngineEditor\libs\imgui-node-editor.vcxitems", "{24262546-1F6E-469C-9A57-DA74363A7C3F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameNetworkingSockets", "Core\TemportalEngine\libs\GameNetworkingSockets.vcxitems", "{104FD30C-BCDA-4ABC-A14C-1627AA0E3894}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Core\TemportalEngine\libs\GameNetworkingSockets.vcxitems*{104fd30c-bcda-4abc-a14c-1627aa0e3894}*SharedItemsImports = 9
 		Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems*{235e2e0c-656d-4db7-a39d-d69fa8862561}*SharedItemsImports = 9
 		Core\TemportalEngineEditor\libs\imgui-node-editor.vcxitems*{24262546-1f6e-469c-9a57-da74363a7c3f}*SharedItemsImports = 9
 		Core\TemportalEngine\libs\cereal.vcxitems*{2ab47aa3-ab49-45c6-9969-d08fe23f6ab8}*SharedItemsImports = 9
@@ -157,6 +160,7 @@ Global
 		{62E31BE0-42A6-4153-A810-79B93887FC52} = {2ED92AFB-7F78-4C1E-9EB3-75A2186BC063}
 		{ABDE6299-5814-4811-91D4-5908CE699B57} = {E4CD3244-0C3C-4397-9E6D-570CFE1D5641}
 		{24262546-1F6E-469C-9A57-DA74363A7C3F} = {A7341B2C-44E0-46EE-BACA-732C086CE887}
+		{104FD30C-BCDA-4ABC-A14C-1627AA0E3894} = {9D824023-3AAC-4BFD-BF12-39159BFAB682}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8539DF67-6A94-4B0F-9423-D8016914363B}

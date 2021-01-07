@@ -58,6 +58,8 @@
 
 #include <chrono>
 
+#include <steam/steamnetworkingsockets.h>
+
 using namespace game;
 
 std::shared_ptr<Game> Game::gpInstance = nullptr;

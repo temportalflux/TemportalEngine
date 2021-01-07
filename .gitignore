@@ -11,3 +11,4 @@ Core/TemportalEngineEditor/libs/shaderc
 *.blend1
 *.fbx
 *.blend
+Core/TemportalEngine/libs/GameNetworkingSockets-package
