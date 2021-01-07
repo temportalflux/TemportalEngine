@@ -2,7 +2,7 @@
 
 #include "Engine.hpp"
 #include "ecs/Core.hpp"
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 
 #include "asset/MinecraftAssetStatics.hpp"
 #include "graphics/assetHelpers.hpp"

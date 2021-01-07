@@ -101,7 +101,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)glm;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)glm;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)GameNetworkingSockets\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -121,7 +121,7 @@ copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(Proje
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)glm;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)glm;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)GameNetworkingSockets\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>

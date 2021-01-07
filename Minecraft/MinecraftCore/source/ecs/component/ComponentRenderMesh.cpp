@@ -1,6 +1,6 @@
 #include "ecs/component/ComponentRenderMesh.hpp"
 
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 #include "asset/ModelAsset.hpp"
 #include "render/model/SkinnedModelManager.hpp"
 #include "render/EntityInstanceBuffer.hpp"

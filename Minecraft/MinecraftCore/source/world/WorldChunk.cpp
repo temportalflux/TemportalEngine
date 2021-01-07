@@ -1,7 +1,7 @@
 #include "world/WorldChunk.hpp"
 
 #include "Engine.hpp"
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 #include "world/World.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "registry/VoxelType.hpp"

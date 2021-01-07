@@ -1,6 +1,6 @@
 #include "ui/DebugHUD.hpp"
 
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 #include "Window.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"

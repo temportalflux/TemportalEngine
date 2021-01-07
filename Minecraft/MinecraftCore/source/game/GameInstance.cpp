@@ -1,4 +1,4 @@
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 
 #include "Engine.hpp"
 #include "Window.hpp"
@@ -57,8 +57,6 @@
 #include "ui/UIWidgets.hpp"
 
 #include <chrono>
-
-#include <steam/steamnetworkingsockets.h>
 
 using namespace game;
 

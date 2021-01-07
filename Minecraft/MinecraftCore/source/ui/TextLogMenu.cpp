@@ -1,6 +1,6 @@
 #include "ui/TextLogMenu.hpp"
 
-#include "Game.hpp"
+#include "game/GameInstance.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 

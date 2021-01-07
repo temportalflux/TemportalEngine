@@ -52,13 +52,15 @@
     <Filter Include="ui">
       <UniqueIdentifier>{515490dc-6b82-4f00-b78c-18f6094a8c68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="game">
+      <UniqueIdentifier>{e4c3d641-3269-4325-af3a-fcae5e525c68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
       <Filter>asset</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\CoreInclude.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Game.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\BlockId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp">
@@ -173,12 +175,20 @@
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameInstance.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\Game.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
       <Filter>world</Filter>
@@ -283,5 +293,14 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameInstance.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
