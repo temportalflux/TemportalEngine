@@ -462,6 +462,19 @@ public:
 		return result;
 	}
 
+	void operator%=(VectorFormat const& v)
+	{
+		for (ui8 i = 0; i < TAccessibleDimensions; ++i)
+			mValues[i] %= v.mValues[i];
+	}
+
+	VectorFormat operator%(VectorFormat const& v) const
+	{
+		VectorFormat result = *this;
+		result %= v;
+		return result;
+	}
+
 	/**
 	* Multiplies a vector by a scalar and returns the result.
 	*/
@@ -665,6 +678,12 @@ public:
 	}
 
 };
+
+template <typename TValue, const ui8 TAccessibleDimensions, const ui8 TActualDimensions = TAccessibleDimensions>
+Vector<TValue, TAccessibleDimensions, TActualDimensions> operator%(f32 const scalar, Vector<TValue, TAccessibleDimensions, TActualDimensions> v)
+{
+	return Vector<TValue, TAccessibleDimensions, TActualDimensions>(scalar) % v;
+}
 
 class Quaternion : public Vector<f32, 4, 4>
 {

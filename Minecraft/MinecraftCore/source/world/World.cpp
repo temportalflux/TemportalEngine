@@ -2,12 +2,43 @@
 
 using namespace world;
 
-World::World(ui32 seed) : mSeed(seed)
+World::World(ui32 seed)
+	: mSeed(seed)
+	, mSpawnChunkCoord(makeSpawnChunkCoord(seed))
+	, mSpawnAreaChunkRadius(2)
 {
 }
 
 World::~World()
 {
+}
+
+math::Vector2Int randInRange(math::Vector2Int const& rand, i32 range)
+{
+	auto const min = math::Vector2Int(-range);
+	auto const max = math::Vector2Int(range);
+	return (rand % (max - min)) + min;
+}
+
+math::Vector2Int World::makeSpawnChunkCoord(ui32 seed)
+{
+	srand(seed);
+	static i32 SPAWN_AREA_CENTER_RANGE = 5;
+	return randInRange({ rand(), rand() }, SPAWN_AREA_CENTER_RANGE);
+}
+
+world::Coordinate World::makeSpawnLocation() const
+{
+	srand((ui32)time(0));
+	auto chunkXZ = this->mSpawnChunkCoord + randInRange({ rand(), rand() }, (i32)this->mSpawnAreaChunkRadius);
+	auto chunk = math::Vector3Int({ chunkXZ.x(), 0,chunkXZ.y() });
+	auto block = math::Vector3Int({ rand() % CHUNK_SIDE_LENGTH, 0, rand() % CHUNK_SIDE_LENGTH });
+
+	// TODO: raycast down to find y-coord of both chunk and block
+	chunk.y() = 0;
+	block.y() = 2;
+
+	return world::Coordinate(chunk, block);
 }
 
 void World::addEventListener(std::shared_ptr<WorldEventListener> listener)
@@ -17,13 +48,37 @@ void World::addEventListener(std::shared_ptr<WorldEventListener> listener)
 	this->OnVoxelsChanged.bind(listener, listener->onVoxelsChangedEvent());
 }
 
-void World::loadChunk(math::Vector3Int const &coordinate)
+Chunk* World::getOrLoadChunk(math::Vector3Int const& coordinate)
+{
+	if (auto chunk = this->findChunk(coordinate))
+	{
+		return chunk;
+	}
+	else
+	{
+		return this->loadChunk(coordinate);
+	}
+}
+
+Chunk* World::findChunk(math::Vector3Int const& coordinate)
+{
+	for (auto& activeChunk : this->mActiveChunks)
+	{
+		if (activeChunk.coordinate() == coordinate)
+		{
+			return &activeChunk;
+		}
+	}
+	return nullptr;
+}
+
+Chunk* World::loadChunk(math::Vector3Int const &coordinate)
 {
 	this->OnLoadingChunk.broadcast(coordinate);
-	this->mActiveChunks.insert(
+	return &(this->mActiveChunks.insert(
 		this->mActiveChunks.end(),
-		WorldChunk(this->weak_from_this(), coordinate)
-	)->load();
+		Chunk(this->weak_from_this(), coordinate)
+	)->load());
 }
 
 void World::reloadChunk(math::Vector3Int const &coordinate)
@@ -69,7 +124,7 @@ void World::unloadChunks(std::vector<math::Vector3Int> coordinates)
 	// TODO: Move the active chunk to a "pending write to disk" operation list
 }
 
-void World::onLoadedChunk(WorldChunk &chunk)
+void World::onLoadedChunk(Chunk &chunk)
 {
 	auto changes = std::vector<std::pair<world::Coordinate, std::optional<game::BlockId>>>();
 	for (auto iter = chunk.begin(); iter != chunk.end(); ++iter)

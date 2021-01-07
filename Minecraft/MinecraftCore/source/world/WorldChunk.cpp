@@ -1,4 +1,4 @@
-#include "world/Chunk.hpp"
+#include "world/WorldChunk.hpp"
 
 #include "Engine.hpp"
 #include "Game.hpp"
@@ -6,9 +6,11 @@
 #include "world/WorldCoordinate.hpp"
 #include "registry/VoxelType.hpp"
 
+using namespace world;
+
 static logging::Logger ChunkLog = DeclareLog("ChunkLog");
 
-WorldChunk::WorldChunk(
+Chunk::Chunk(
 	std::weak_ptr<world::World> world, math::Vector3Int coordinate
 )
 	: mpWorld(world)
@@ -16,13 +18,32 @@ WorldChunk::WorldChunk(
 {
 }
 
-math::Vector3Int const& WorldChunk::coordinate() const
+math::Vector3Int const& Chunk::coordinate() const
 {
 	return this->mCoordinate;
 }
 
-// TODO: Save and load from file
-void WorldChunk::load()
+void Chunk::setBlockId(math::Vector3Int const local, std::optional<game::BlockId> id)
+{
+	std::optional<BlockMetadata>& metadata = this->mBlockMetadata[local];
+	auto oldMetadata = metadata;
+	metadata.reset();
+	if (id)
+	{
+		metadata = BlockMetadata(*id);
+	}
+	//this->mpWorld.lock()->markCoordinateDirty(world::Coordinate(
+	//	this->coordinate(), { (i32)local.x(), (i32)local.y(), (i32)local.z() }
+	//), oldMetadata, metadata);
+}
+
+std::optional<game::BlockId> Chunk::getBlockId(math::Vector3Int const local) const
+{
+	auto& metadata = this->mBlockMetadata[local];
+	return metadata ? std::make_optional(metadata->id) : std::nullopt;
+}
+
+void Chunk::generate()
 {
 	srand(this->mpWorld.lock()->getSeed());
 
@@ -64,6 +85,7 @@ void WorldChunk::load()
 		}
 	}
 
+	/*
 	for (uIndex i = 0; i < 8; ++i)
 	{
 		auto x = i % 2 == 0 ? rand() % CHUNK_SIDE_LENGTH : CHUNK_HALF_LENGTH;
@@ -74,26 +96,79 @@ void WorldChunk::load()
 		this->setBlockId({ x, y, z }, id);
 		if (id) idCount.at(*id)++;
 	}
+	//*/
 
 	ChunkLog.log(LOG_INFO, "Chunk <%i, %i, %i> loaded with:", this->coordinate().x(), this->coordinate().y(), this->coordinate().z());
 	for (auto const& entry : idCount)
 	{
 		ChunkLog.log(LOG_INFO, "- %s = %i", entry.first.to_string().c_str(), entry.second);
 	}
-
-	this->mpWorld.lock()->onLoadedChunk(*this);
 }
 
-void WorldChunk::setBlockId(math::Vector3Int const local, std::optional<game::BlockId> id)
+Chunk& Chunk::load()
 {
-	std::optional<BlockMetadata>& metadata = this->mBlockMetadata[local];
-	auto oldMetadata = metadata;
-	metadata.reset();
-	if (id)
+	// TODO: Save and load from file
+	this->generate();
+	this->mpWorld.lock()->onLoadedChunk(*this);
+	return *this;
+}
+
+void Chunk::createLoadHandle(EChunkLoadTier tier, ChunkHandle &out)
+{
+	out = ChunkHandle(this, tier);
+	this->updateLoadTier(tier, 1);
+}
+
+void Chunk::releaseLoadHandle(EChunkLoadTier tier)
+{
+	this->updateLoadTier(tier, -1);
+}
+
+bool Chunk::shouldStayLoaded() const
+{
+	return this->mLoadTier < EChunkLoadTier::eInactive;
+}
+
+ui32& Chunk::loadTierCount(EChunkLoadTier tier) { return this->mChunkLoadFlags[ui32(tier)]; }
+
+void Chunk::updateLoadTier(EChunkLoadTier tier, i32 delta)
+{
+	this->loadTierCount(tier) += delta;
+	this->mLoadTier = EChunkLoadTier::COUNT;
+	for (auto tier = EChunkLoadTier::eActive; tier < EChunkLoadTier::COUNT; tier = EChunkLoadTier(ui32(tier) + 1))
 	{
-		metadata = BlockMetadata(*id);
+		if (this->loadTierCount(tier) > 0)
+		{
+			this->mLoadTier = tier;
+			break;
+		}
 	}
-	//this->mpWorld.lock()->markCoordinateDirty(world::Coordinate(
-	//	this->coordinate(), { (i32)local.x(), (i32)local.y(), (i32)local.z() }
-	//), oldMetadata, metadata);
+}
+
+ChunkHandle::ChunkHandle() : mpChunk(nullptr) {}
+
+ChunkHandle::ChunkHandle(Chunk* chunk, EChunkLoadTier tier) : mpChunk(chunk), mTier(tier) {}
+
+ChunkHandle::ChunkHandle(ChunkHandle &&other) { *this = std::move(other); }
+
+ChunkHandle& ChunkHandle::operator=(ChunkHandle &&other)
+{
+	this->mpChunk = other.mpChunk;
+	other.mpChunk = nullptr;
+	this->mTier = other.mTier;
+	return *this;
+}
+
+ChunkHandle::~ChunkHandle()
+{
+	this->release();
+}
+
+void ChunkHandle::release()
+{
+	if (this->mpChunk != nullptr)
+	{
+		this->mpChunk->releaseLoadHandle(this->mTier);
+		this->mpChunk = nullptr;
+	}
 }

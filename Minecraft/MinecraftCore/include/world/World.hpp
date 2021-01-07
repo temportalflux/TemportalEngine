@@ -4,7 +4,7 @@
 
 #include "Delegate.hpp"
 
-#include "world/Chunk.hpp"
+#include "world/WorldChunk.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "world/Events.hpp"
 
@@ -12,7 +12,7 @@ NS_WORLD
 
 class World : public std::enable_shared_from_this<World>
 {
-	friend class WorldChunk;
+	friend class Chunk;
 
 public:
 	World(ui32 seed);
@@ -20,11 +20,14 @@ public:
 
 	ui32 getSeed() const { return this->mSeed; }
 
+	world::Coordinate makeSpawnLocation() const;
+
 	TOnChunkLoadingEvent OnLoadingChunk, OnUnloadingChunk;
 	TOnVoxelsChangedEvent OnVoxelsChanged;
 	void addEventListener(std::shared_ptr<WorldEventListener> listener);
 
-	void loadChunk(math::Vector3Int const &coordinate);
+	Chunk* getOrLoadChunk(math::Vector3Int const& coordinate);
+	Chunk* loadChunk(math::Vector3Int const &coordinate);
 	void reloadChunk(math::Vector3Int const &coordinate);
 	void unloadChunk(math::Vector3Int const &coordinate);
 	void unloadChunks(std::vector<math::Vector3Int> coordinates);
@@ -38,9 +41,14 @@ public:
 
 private:
 	ui32 mSeed;
-	world::Coordinate mSpawnCenter;
 
-	void onLoadedChunk(WorldChunk &chunk);
+	ui32 mSpawnAreaChunkRadius;
+	math::Vector2Int mSpawnChunkCoord;
+
+	static math::Vector2Int makeSpawnChunkCoord(ui32 seed);
+
+	Chunk* findChunk(math::Vector3Int const& coordinate);
+	void onLoadedChunk(Chunk &chunk);
 
 #pragma region Dirty Blocks
 private:
@@ -50,7 +58,7 @@ private:
 	> DirtyNeighborPair;
 	typedef std::vector<DirtyNeighborPair> DirtyNeighborPairList;
 
-	std::vector<WorldChunk> mActiveChunks;
+	std::vector<Chunk> mActiveChunks;
 	/**
 	 * Map of neighbor coordinate to coordinates which received an update.
 	 */

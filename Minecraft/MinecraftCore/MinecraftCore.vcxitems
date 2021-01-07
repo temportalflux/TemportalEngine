@@ -54,7 +54,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\UIWidgets.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Chunk.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp" />
@@ -94,7 +94,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp" />

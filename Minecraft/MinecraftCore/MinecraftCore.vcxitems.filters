@@ -64,9 +64,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Chunk.hpp">
-      <Filter>world</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp">
       <Filter>world</Filter>
     </ClInclude>
@@ -175,6 +172,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\DebugHUD.hpp">
       <Filter>ui</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\world\WorldChunk.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -186,9 +186,6 @@
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
-      <Filter>world</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\Chunk.cpp">
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
@@ -286,6 +283,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp">
       <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\world\WorldChunk.cpp">
+      <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

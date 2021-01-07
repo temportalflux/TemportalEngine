@@ -641,7 +641,7 @@ void Game::createLocalPlayer()
 
 	this->mpEntityLocalPlayer = ecs.entities().create();
 
-	auto position = world::Coordinate(math::Vector3Int::ZERO, { CHUNK_HALF_LENGTH, 1, CHUNK_HALF_LENGTH });
+	auto position = this->mpWorld->makeSpawnLocation();
 
 	// Add Transform
 	{
