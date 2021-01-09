@@ -14,16 +14,16 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_decls.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\minbase\minbase_identify.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingsockets.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\isteamnetworkingutils.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamclientpublic.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingcustomsignaling.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingsockets_flat.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamnetworkingtypes.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamtypes.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)GameNetworkingSockets\include\steam\steamuniverse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\isteamnetworkingmessages.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\isteamnetworkingsockets.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\isteamnetworkingutils.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamclientpublic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamnetworkingcustomsignaling.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamnetworkingsockets.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamnetworkingsockets_flat.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamnetworkingtypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamtypes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steamuniverse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\..\GNS\include\steam\steam_api_common.h" />
   </ItemGroup>
 </Project>

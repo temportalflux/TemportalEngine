@@ -155,7 +155,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)GameNetworkingSockets\include;$(EngineLibs)stb;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(SolutionDir)GNS\include;$(EngineLibs)stb;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

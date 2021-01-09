@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
 		if (pGame->initializeSystems())
 		{
 			pGame->openProject();
-			pGame->initializeNetwork();
 			pGame->init();
 			pGame->run();
 			pGame->uninit();

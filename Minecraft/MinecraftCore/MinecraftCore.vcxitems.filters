@@ -181,7 +181,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameInstance.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
@@ -299,7 +299,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameInstance.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp">
       <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,30 +2,47 @@
 
 architecture=$1
 target=$2
+if [[ "$architecture" == "" ]]; then
+	echo "No platform architecture. Suggested: \"64\""
+	exit 1
+fi
+if [[ "$target" == "" ]]; then
+	echo "Missing required target binary."
+	exit 1
+fi
+gnsArchitecture="x$architecture-windows"
 
-root=$PWD
-vcpkgRemote="git@github.com:microsoft/vcpkg.git"
-EngineLibs="Core/TemportalEngine/libs"
-gnsSrc="$EngineLibs/GameNetworkingSockets"
-packageDir="$EngineLibs/GameNetworkingSockets-package"
-vcpkgExe="$packageDir/vcpkg.exe"
-gnsArchitecture="x86-windows" # x64 GNS has compilation errors in VCPKG
+packageDir="vcpkg"
 builtPackage="$packageDir/packages/gamenetworkingsockets_$gnsArchitecture"
-binaries="$root/Binaries/Build/Debug/x$architecture"
+binaries="$PWD/Binaries/Build/Debug/x$architecture"
 binaryDst="$binaries/GameNetworkingSockets"
 
-# Initialize vcpkg for GameNetworkingSockets
-rm -rf "$packageDir"
-git clone "$vcpkgRemote" "$packageDir"
-cd "$root/$packageDir"
-./bootstrap-vcpkg.sh
+echo "Building GameNetworkingSockets on x$architecture for $target"
+cd "GNS"
 
-# Compile GameNetworkingSockets
-cd "$root/$gnsSrc"
-"$root/$vcpkgExe" --overlay-ports=vcpkg_ports install gamenetworkingsockets --triplet "$gnsArchitecture"
+rm -rf "vcpkg"
+echo
+echo "-----Cloning vcpkg-----"
+echo
+git clone "git@github.com:microsoft/vcpkg.git" "$packageDir"
 
-# Copy artifacts to binaries
+echo
+echo "----Bootstrapping vcpkg-----"
+./$packageDir/bootstrap-vcpkg.sh
+
+echo
+echo "-----Compiling GameNetworkingSockets:$gnsArchitecture-----"
+echo
+./$packageDir/vcpkg.exe --overlay-ports=vcpkg_ports install gamenetworkingsockets --triplet "$gnsArchitecture"
+
+echo
+echo "Copying GameNetworkingSockets artifacts"
 mkdir -p "$binaryDst"
-cp "$root/$builtPackage/debug/bin/GameNetworkingSockets.dll" "$binaries/$target"
-cp "$root/$builtPackage/debug/bin/GameNetworkingSockets.pdb" "$binaryDst"
-cp "$root/$builtPackage/debug/lib/GameNetworkingSockets.lib" "$binaryDst"
+cp "$builtPackage/debug/bin/GameNetworkingSockets.dll" "$binaries/$target"
+cp "$builtPackage/debug/bin/GameNetworkingSockets.pdb" "$binaryDst"
+cp "$builtPackage/debug/lib/GameNetworkingSockets.lib" "$binaryDst"
+cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libcrypto-1_1-x$architecture.dll" "$binaries/$target"
+cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libssl-1_1-x$architecture.dll" "$binaries/$target"
+cp "$packageDir/packages/protobuf_$gnsArchitecture/debug/bin/libprotobufd.dll" "$binaries/$target"
+
+rm -rf "vcpkg"

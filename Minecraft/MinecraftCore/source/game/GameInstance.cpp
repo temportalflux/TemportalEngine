@@ -31,6 +31,7 @@
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
+#include "network/NetworkCore.hpp"
 #include "physics/ChunkCollisionManager.hpp"
 #include "physics/PhysicsMaterial.hpp"
 #include "physics/PhysicsRigidBody.hpp"
@@ -149,14 +150,13 @@ void Game::openProject()
 	assetManager->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 }
 
-void Game::initializeNetwork()
-{
-	// TODO: STUB
-}
-
 void Game::init()
 {
-	auto pEngine = engine::Engine::Get();
+	if (auto networkInitError = network::init())
+	{
+		this->mProjectLog.log(LOG_ERR, "Failed to initialize network: %s", networkInitError->c_str());
+		return;
+	}
 
 	this->createVoxelTypeRegistry();
 
@@ -175,6 +175,8 @@ void Game::init()
 		this->mpRenderer->createRenderChain();
 		this->mpRenderer->finalizeInitialization();
 	}
+
+	auto pEngine = engine::Engine::Get();
 
 	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
 	pEngine->addTicker(this->mpSystemPhysicsIntegration);
@@ -195,6 +197,7 @@ void Game::uninit()
 	}
 	this->mpPhysics.reset();
 	this->destroyVoxelTypeRegistry();
+	network::uninit();
 }
 
 bool Game::scanResourcePacks()

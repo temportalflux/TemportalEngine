@@ -66,7 +66,6 @@ public:
 
 	bool initializeSystems();
 	void openProject();
-	void initializeNetwork();
 	void init();
 	void uninit();
 	void run();

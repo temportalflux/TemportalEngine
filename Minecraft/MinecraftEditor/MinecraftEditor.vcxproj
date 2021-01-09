@@ -117,7 +117,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)GameNetworkingSockets\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)cereal\include;$(EngineLibs)vulkan\include;$(EngineLibs)Optick\include;$(EngineLibs)assimp\include;$(EngineLibs)PhysX\physx\include;$(EngineLibs)PhysX\pxshared\include;$(SolutionDir)GNS\include;$(EngineLibs)stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
