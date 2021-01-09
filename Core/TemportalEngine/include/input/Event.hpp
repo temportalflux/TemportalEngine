@@ -21,6 +21,7 @@ enum class TEMPORTALENGINE_API EInputType : i32
 	MOUSE_MOVE,
 	MOUSE_BUTTON,
 	MOUSE_SCROLL,
+	TEXT,
 
 };
 
@@ -75,6 +76,11 @@ struct TEMPORTALENGINE_API Event
 				math::Vector2Int delta;
 			};
 		} inputScroll;
+
+		struct
+		{
+			char text[32];
+		} inputText;
 
 	};
 

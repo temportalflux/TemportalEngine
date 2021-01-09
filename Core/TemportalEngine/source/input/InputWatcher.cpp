@@ -1,5 +1,7 @@
 #include "input/InputWatcher.hpp"
 
+#include "input/InputCore.hpp"
+
 #include <SDL.h>
 
 using namespace input;
@@ -60,6 +62,12 @@ inline void makeEventMouseButton(SDL_Event const evtIn, input::Event &evtOut)
 	evtOut.inputMouseButton.yCoord = evtIn.button.y;
 }
 
+inline void makeEventText(SDL_Event const evtIn, input::Event &evtOut)
+{
+	evtOut.type = input::EInputType::TEXT;
+	memcpy_s(evtOut.inputText.text, sizeof(evtOut.inputText.text), evtIn.text.text, sizeof(evtIn.text.text));
+}
+
 bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 {
 	switch (evtIn.type)
@@ -68,8 +76,10 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 #pragma region Keyboard
 	case SDL_KEYDOWN:
 	case SDL_KEYUP:
+	{
 		makeEventKey(evtIn, evtOut);
 		return true;
+	}
 #pragma endregion
 
 #pragma region Mouse
@@ -128,6 +138,15 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 		break;
 #pragma endregion
 
+#pragma region Text
+		case SDL_TEXTINPUT:
+		{
+			makeEventText(evtIn, evtOut);
+			return true;
+		}
+		case SDL_TEXTEDITING: return false;
+#pragma endregion
+
 
 #pragma region Other
 	case SDL_QUIT:
@@ -135,8 +154,7 @@ bool makeInputEvent(SDL_Event const evtIn, input::Event &evtOut)
 		return true;
 #pragma endregion
 
-	default:
-		return false;
+	default: break;
 	}
 
 	return false;

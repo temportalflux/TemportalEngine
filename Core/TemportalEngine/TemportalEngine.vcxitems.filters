@@ -341,6 +341,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkInterface.cpp">
       <Filter>network</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputCore.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -751,6 +754,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkInterface.hpp">
       <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputCore.hpp">
+      <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -30,6 +30,7 @@
 #include "game/GameClient.hpp"
 #include "game/GameServer.hpp"
 #include "graphics/DescriptorPool.hpp"
+#include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
@@ -756,12 +757,14 @@ void Game::bindInput()
 		input::EInputType::KEY, this->weak_from_this(),
 		std::bind(&Game::onInputKey, this, std::placeholders::_1)
 	);
+	this->mpMenuTextLog->bindInput(pInput);
 }
 
 void Game::unbindInput()
 {
 	auto pInput = engine::Engine::Get()->getInputQueue();
 	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
+	this->mpMenuTextLog->unbindInput(pInput);
 }
 
 void Game::run()
@@ -817,6 +820,7 @@ void Game::updateWorldGraphics()
 void Game::onInputKey(input::Event const& evt)
 {
 	if (evt.inputKey.action != input::EAction::RELEASE) return;
+	if (input::isTextInputActive()) return;
 	if (evt.inputKey.key == input::EKey::NUM_1)
 	{
 		this->mProjectLog.log(LOG_INFO, "Regenerate");

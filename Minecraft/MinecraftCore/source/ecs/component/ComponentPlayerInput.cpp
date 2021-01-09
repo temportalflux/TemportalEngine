@@ -1,6 +1,7 @@
 #include "ecs/component/ComponentPlayerInput.hpp"
 
 #include "Engine.hpp"
+#include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 
 using namespace ecs;
@@ -45,6 +46,7 @@ void PlayerInput::subscribeToQueue()
 
 void PlayerInput::onKeyInput(input::Event const & evt)
 {
+	if (input::isTextInputActive()) return;
 	for (auto& mapping : this->mAxisMappings)
 	{
 		if (mapping.key == evt.inputKey.key)

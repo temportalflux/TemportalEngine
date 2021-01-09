@@ -148,8 +148,14 @@ Text& Text::commit()
 	this->populateBufferData();
 
 	// TODO: Can optimize by only writing changed regions (based on the diff between content and committed content, and if the font has changed)
-	this->mVertexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mVertices);
-	this->mIndexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mIndices);
+	if (this->mVertices.size() > 0)
+	{
+		this->mVertexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mVertices);
+	}
+	if (this->mIndices.size() > 0)
+	{
+		this->mIndexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mIndices);
+	}
 
 	this->mCommitted = this->mUncommitted;
 	this->mCommittedIndexCount = (ui32)this->mIndices.size();
@@ -253,6 +259,7 @@ void Text::populateBufferData()
 void Text::record(graphics::Command *command)
 {
 	OPTICK_EVENT();
+	if (this->mCommittedIndexCount == 0) return;
 	auto pipeline = this->renderer()->textPipeline();
 	command->bindPipeline(pipeline);
 	command->bindDescriptorSets(pipeline, { &this->getFont()->descriptorSet() });
