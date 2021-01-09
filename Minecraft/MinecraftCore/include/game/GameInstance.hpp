@@ -22,6 +22,8 @@ FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
 
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
+FORWARD_DEF(NS_GAME, class Client);
+FORWARD_DEF(NS_GAME, class Server);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
@@ -84,6 +86,8 @@ private:
 	logging::Logger mProjectLog;
 
 	network::Interface mNetworkInterface;
+	std::shared_ptr<game::Server> mpServer;
+	std::shared_ptr<game::Client> mpClient;
 
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Scene> mpSceneOverworld;

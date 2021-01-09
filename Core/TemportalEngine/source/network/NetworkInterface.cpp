@@ -50,6 +50,8 @@ void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 
 void Interface::start()
 {
+	if (this->mType == EType::eInvalid) return;
+
 	this->mpInternal = SteamNetworkingSockets();
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 
@@ -86,10 +88,6 @@ void Interface::start()
 			network::logger().log(LOG_ERR, "Failed to create connection to %s", this->mAddress.toString(true).c_str());
 			return;
 		}
-	}
-	else
-	{
-		// No net interface
 	}
 
 }
@@ -128,10 +126,6 @@ void Interface::stop()
 			pInterface->CloseConnection(this->mConnection, 0, nullptr, false);
 			this->mConnection = k_HSteamNetConnection_Invalid;
 		}
-	}
-	else
-	{
-		assert(false);
 	}
 
 	this->mpInternal = nullptr;

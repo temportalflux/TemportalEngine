@@ -27,6 +27,8 @@
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
+#include "game/GameClient.hpp"
+#include "game/GameServer.hpp"
 #include "graphics/DescriptorPool.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
