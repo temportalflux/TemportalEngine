@@ -6,7 +6,14 @@
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
 
+using namespace network;
+
 logging::Logger NETWORK_LOG = DeclareLog("Network");
+
+logging::Logger& network::logger()
+{
+	return NETWORK_LOG;
+}
 
 void OutputDebugNetworkLog(ESteamNetworkingSocketsDebugOutputType type, char const* msg)
 {

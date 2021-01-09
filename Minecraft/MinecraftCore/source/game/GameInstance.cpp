@@ -61,6 +61,8 @@
 
 using namespace game;
 
+logging::Logger GAME_LOG = DeclareLog("Game");
+
 std::shared_ptr<Game> Game::gpInstance = nullptr;
 
 std::shared_ptr<Game> Game::Create(int argc, char *argv[])
@@ -90,9 +92,40 @@ Game::Game(int argc, char *argv[])
 {
 	uSize totalMem = 0;
 	auto args = utility::parseArguments(argc, argv);
+	
+	GAME_LOG.log(LOG_INFO, "Initializing with args:");
+	for (auto iter = args.begin(); iter != args.end(); ++iter)
+	{
+		GAME_LOG.log(
+			LOG_INFO, "  %s = %s",
+			iter->first.c_str(), iter->second ? iter->second->c_str() : "true"
+		);
+	}
+
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
+
+	auto networkAddress = network::Address();
+
+	auto clientParam = args.find("client");
+	auto serverParam = args.find("server");
+	if (clientParam != args.end() && clientParam->second)
+	{
+		if (networkAddress.fromString(clientParam->second.value()))
+		{
+			this->mNetworkInterface
+				.setType(network::Interface::EType::eClient)
+				.setAddress(networkAddress);
+		}
+	}
+	else if (serverParam != args.end() && serverParam->second)
+	{
+		networkAddress.port() = (ui32)std::stoi(serverParam->second.value());
+		this->mNetworkInterface
+			.setType(network::Interface::EType::eServer)
+			.setAddress(networkAddress);
+	}
 }
 
 Game::~Game()
@@ -157,6 +190,7 @@ void Game::init()
 		this->mProjectLog.log(LOG_ERR, "Failed to initialize network: %s", networkInitError->c_str());
 		return;
 	}
+	this->mNetworkInterface.start();
 
 	this->createVoxelTypeRegistry();
 
@@ -197,6 +231,7 @@ void Game::uninit()
 	}
 	this->mpPhysics.reset();
 	this->destroyVoxelTypeRegistry();
+	this->mNetworkInterface.stop();
 	network::uninit();
 }
 
@@ -748,10 +783,13 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
+	
+	// TODO: move network comms to dedicated thread?
+	this->mNetworkInterface.update(deltaTime);
+
 	this->mpWorld->handleDirtyCoordinates();
 	engine::Engine::Get()->update(deltaTime);
 	this->mpSceneOverworld->simulate(deltaTime);
-
 }
 
 // Runs on the render thread

@@ -4,6 +4,7 @@
 
 #include "logging/Logger.hpp"
 #include "input/Event.hpp"
+#include "network/NetworkInterface.hpp"
 #include "ui/Core.hpp"
 
 class Window;
@@ -70,6 +71,7 @@ public:
 	void uninit();
 	void run();
 	
+	network::Interface& networkInterface() { return this->mNetworkInterface; }
 	std::shared_ptr<graphics::SkinnedModelManager> modelManager() { return this->mpSkinnedModelManager; }
 	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances() { return this->mpEntityInstanceBuffer; }
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
@@ -80,6 +82,8 @@ public:
 
 private:
 	logging::Logger mProjectLog;
+
+	network::Interface mNetworkInterface;
 
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Scene> mpSceneOverworld;

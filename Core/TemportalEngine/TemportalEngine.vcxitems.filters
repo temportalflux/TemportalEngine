@@ -62,16 +62,6 @@
     <Filter Include="ui">
       <UniqueIdentifier>{eb50f8fa-2fc0-4d52-9758-3d10c7d91faf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="network_old" />
-    <Filter Include="network_old\client">
-      <UniqueIdentifier>{346ed6d3-47dc-4c18-b6ed-3b0384420921}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network_old\common">
-      <UniqueIdentifier>{8a02bff1-c38c-4122-bf28-06f392a48f06}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network_old\server">
-      <UniqueIdentifier>{3e9369f0-1349-485f-9be4-c8f74d11448e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="network">
       <UniqueIdentifier>{0b5b6f81-c63a-4781-8057-3b720e1faa3e}</UniqueIdentifier>
     </Filter>
@@ -99,39 +89,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c">
       <Filter>memory</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\PacketInternal.cpp">
-      <Filter>network_old</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionAccepted.cpp">
-      <Filter>network_old\client</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\PacketConnectionRejected.cpp">
-      <Filter>network_old\client</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\client\ServiceClient.cpp">
-      <Filter>network_old\client</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\NetworkInterface.cpp">
-      <Filter>network_old\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\Packet.cpp">
-      <Filter>network_old\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\PacketQueue.cpp">
-      <Filter>network_old\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\PacketRegistry.cpp">
-      <Filter>network_old\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\common\Service.cpp">
-      <Filter>network_old\common</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\PacketNewIncomingConnection.cpp">
-      <Filter>network_old\server</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\server\ServiceServer.cpp">
-      <Filter>network_old\server</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\thread\Mutex.c">
       <Filter>thread</Filter>
@@ -378,6 +335,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkCore.cpp">
       <Filter>network</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkAddress.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkInterface.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -460,39 +423,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\types\real.h">
       <Filter>types</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionAccepted.hpp">
-      <Filter>network_old\client</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\PacketConnectionRejected.hpp">
-      <Filter>network_old\client</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\client\ServiceClient.hpp">
-      <Filter>network_old\client</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\PacketNewIncomingConnection.hpp">
-      <Filter>network_old\server</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\server\ServiceServer.hpp">
-      <Filter>network_old\server</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\NetworkInterface.hpp">
-      <Filter>network_old\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Packet.hpp">
-      <Filter>network_old\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\PacketQueue.hpp">
-      <Filter>network_old\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\PacketRegistry.hpp">
-      <Filter>network_old\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\RakNet.hpp">
-      <Filter>network_old\common</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\common\Service.hpp">
-      <Filter>network_old\common</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\PhysicalDevicePreference.hpp">
       <Filter>graphics</Filter>
@@ -814,6 +744,12 @@
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkCore.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkAddress.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkInterface.hpp">
       <Filter>network</Filter>
     </ClInclude>
   </ItemGroup>
