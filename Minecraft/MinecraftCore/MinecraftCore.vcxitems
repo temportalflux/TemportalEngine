@@ -51,6 +51,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelModelManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\resource\ResourceManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ServerSettings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\Settings.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserSettings.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\StitchedTexture.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\DebugHUD.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextLogMenu.hpp" />
@@ -95,6 +98,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelModelManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\Settings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp" />

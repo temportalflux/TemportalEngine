@@ -5,6 +5,8 @@
 #include "logging/Logger.hpp"
 #include "network/NetworkInterface.hpp"
 #include "game/UserIdentity.hpp"
+#include "settings/ServerSettings.hpp"
+#include "settings/UserSettings.hpp"
 
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
@@ -53,6 +55,11 @@ public:
 
 private:
 	logging::Logger mProjectLog;
+
+	// TODO: Move to class dedicated to server logic (should still be accessible by ClientOnTopOfServer)
+	game::ServerSettings mServerSettings;
+	// TODO: Move to a class dedicated to client logic
+	game::UserSettings mUserSettings;
 
 	network::Interface mNetworkInterface;
 	std::shared_ptr<game::WorldLogic> mpWorldLogic;

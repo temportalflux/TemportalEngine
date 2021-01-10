@@ -55,6 +55,9 @@
     <Filter Include="game">
       <UniqueIdentifier>{e4c3d641-3269-4325-af3a-fcae5e525c68}</UniqueIdentifier>
     </Filter>
+    <Filter Include="settings">
+      <UniqueIdentifier>{ab04c31d-c0b0-4bfe-b215-f283925c9c93}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
@@ -187,6 +190,15 @@
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameClient.hpp">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserSettings.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ServerSettings.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\Settings.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -304,6 +316,9 @@
     </ClCompile>
     <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameClient.cpp">
       <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\Settings.cpp">
+      <Filter>settings</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,6 +24,8 @@ class Asset
 	friend class cereal::access;
 
 public:
+	static cereal::JSONOutputArchive::Options JsonFormat;
+
 	Asset() = default;
 	// createAsset constructor
 	Asset(std::filesystem::path filePath);
@@ -46,7 +48,6 @@ public:
 	virtual void onPreMoveAsset(std::filesystem::path const& prevAbsolute, std::filesystem::path const& nextAbsolute) {}
 
 protected:
-	static cereal::JSONOutputArchive::Options JsonFormat;
 
 	/**
 	 * The location of this asset relative to the asset directory.

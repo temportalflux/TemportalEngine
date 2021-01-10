@@ -77,13 +77,15 @@ Game::Game(int argc, char *argv[])
 
 	this->registerCommands();
 
-	this->mpWorldLogic = std::make_shared<game::WorldLogic>();
+	//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 	this->mpClient = std::make_shared<game::Client>();
 	if (args.find("server") != args.end())
 	{
+		this->mServerSettings.readFromDisk();
 	}
 	else
 	{
+		this->mUserSettings.readFromDisk();
 	}
 }
 
@@ -99,14 +101,14 @@ void Game::registerCommands()
 		.pushArgType<std::string>()
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mLocalUserIdentity.name = cmd.get<std::string>(0);
+			this->mUserSettings.setName(cmd.get<std::string>(0)).writeToDisk();
 		})
 	);
 	registry->add(
 		command::Signature("id")
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mProjectLog.log(LOG_INFO, "Name: %s", this->mLocalUserIdentity.name.c_str());
+			this->mProjectLog.log(LOG_INFO, "Name: %s", this->mUserSettings.name().c_str());
 		})
 	);
 

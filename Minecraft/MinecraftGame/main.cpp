@@ -4,6 +4,9 @@
 #include "utility/StringUtils.hpp"
 #include "Module.hpp"
 
+// Name Ides:
+// - Voxellium
+
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();
@@ -12,8 +15,9 @@ int main(int argc, char *argv[])
 	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
-	std::string logFileName = "DemoGame_" + logging::LogSystem::getCurrentTimeString() + ".log";
-	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
+	std::filesystem::path logFileName = std::string("logs/DemoGame_") + logging::LogSystem::getCurrentTimeString() + ".log";
+	std::filesystem::create_directories(logFileName.parent_path());
+	engine::Engine::LOG_SYSTEM.open(logFileName.string().c_str());
 	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);
 	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
 
