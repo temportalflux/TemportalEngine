@@ -1,5 +1,7 @@
 #include "network/NetworkAddress.hpp"
 
+#include "utility/StringUtils.hpp"
+
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
 
@@ -38,10 +40,18 @@ void Address::setIPv4(ui32 data, ui16 port)
 	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->SetIPv4(data, port);
 }
 
-void Address::setLocalHost(ui16 port)
+Address& Address::setLocalHost(ui16 port)
 {
 	assert(port >= 0 && port < 65535);
 	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->SetIPv6LocalHost(port);
+	return *this;
+}
+
+Address& Address::setPort(ui16 port)
+{
+	assert(port >= 0 && port < 65535);
+	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->m_port = port;
+	return *this;
 }
 
 bool Address::isIPv4() const
@@ -79,3 +89,11 @@ std::string Address::toString(bool bWithPort) const
 }
 
 void* Address::get() { return &mData; }
+
+template <>
+network::Address utility::StringParser<network::Address>::parse(std::string arg)
+{
+	auto addr = network::Address();
+	if (!addr.fromString(arg)) throw("invalid network address string");
+	return addr;
+}

@@ -15,6 +15,8 @@ public:
 	{
 	}
 
+	ui16 port() const { return this->mPort; }
+
 private:
 
 	ui16 mPort;

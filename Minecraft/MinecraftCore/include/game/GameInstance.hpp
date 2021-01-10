@@ -7,6 +7,7 @@
 #include "game/UserIdentity.hpp"
 #include "settings/ServerSettings.hpp"
 #include "settings/UserSettings.hpp"
+#include "utility/Flags.hpp"
 
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
@@ -55,6 +56,8 @@ public:
 
 private:
 	logging::Logger mProjectLog;
+
+	utility::Flags<network::Interface::EType> mNetMode;
 
 	// TODO: Move to class dedicated to server logic (should still be accessible by ClientOnTopOfServer)
 	game::ServerSettings mServerSettings;

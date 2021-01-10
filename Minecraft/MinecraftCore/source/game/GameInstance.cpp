@@ -75,18 +75,25 @@ Game::Game(int argc, char *argv[])
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
 
-	this->registerCommands();
-
-	//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
-	this->mpClient = std::make_shared<game::Client>();
 	if (args.find("server") != args.end())
 	{
+		this->mNetMode |= network::Interface::EType::eServer;
 		this->mServerSettings.readFromDisk();
+		this->mNetworkInterface
+			.setType(network::Interface::EType::eServer)
+			.setAddress(network::Address().setPort(this->mServerSettings.port()));
 	}
 	else
 	{
+		this->mNetMode |= network::Interface::EType::eClient;
 		this->mUserSettings.readFromDisk();
+		this->mNetworkInterface.setType(network::Interface::EType::eClient);
+
+		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
+		this->mpClient = std::make_shared<game::Client>();
 	}
+
+	this->registerCommands();
 }
 
 Game::~Game()
@@ -95,6 +102,7 @@ Game::~Game()
 
 void Game::registerCommands()
 {
+	if (!this->mNetMode.includes(network::Interface::EType::eClient)) return;
 	auto registry = engine::Engine::Get()->commands();
 	registry->add(
 		command::Signature("setName")
@@ -111,7 +119,23 @@ void Game::registerCommands()
 			this->mProjectLog.log(LOG_INFO, "Name: %s", this->mUserSettings.name().c_str());
 		})
 	);
-
+	registry->add(
+		command::Signature("connect")
+		.pushArgType<network::Address>()
+		.bind([&](command::Signature const& cmd)
+		{
+			this->mNetworkInterface
+				.setAddress(cmd.get<network::Address>(0))
+				.start();
+		})
+	);
+	registry->add(
+		command::Signature("disconnect")
+		.bind([&](command::Signature const& cmd)
+		{
+			this->mNetworkInterface.stop();
+		})
+	);
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()
@@ -173,8 +197,6 @@ void Game::init()
 		return;
 	}
 
-	//this->mNetworkInterface.start();
-
 	if (this->mpClient)
 	{
 		this->mpClient->init();
@@ -185,10 +207,17 @@ void Game::init()
 	}
 	
 	//this->bindInput();
+
+	if (this->mNetworkInterface.type() == network::Interface::EType::eServer)
+	{
+		this->mNetworkInterface.start();
+	}
 }
 
 void Game::uninit()
 {
+	this->mNetworkInterface.stop();
+
 	//this->unbindInput();
 
 	if (this->mpWorldLogic)
@@ -202,7 +231,6 @@ void Game::uninit()
 		this->mpClient.reset();
 	}
 
-	//this->mNetworkInterface.stop();
 	network::uninit();
 }
 

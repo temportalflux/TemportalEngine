@@ -160,6 +160,11 @@ struct Flags
 
 	bool operator==(Flags<TFlagType> const& other) const { return mData == other.mData; }
 
+	bool includes(TFlagType const& option) const
+	{
+		return (this->mData & ui64(option)) == ui64(option);
+	}
+
 	ui64 const& data() const { return mData; }
 	ui64& data() { return mData; }
 

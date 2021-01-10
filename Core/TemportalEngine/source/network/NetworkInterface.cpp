@@ -9,6 +9,21 @@
 
 using namespace network;
 
+std::vector<Interface::EType> utility::EnumWrapper<Interface::EType>::ALL = {
+	Interface::EType::eClient,
+	Interface::EType::eServer,
+};
+std::string utility::EnumWrapper<Interface::EType>::to_string() const
+{
+	switch (value())
+	{
+		case Interface::EType::eClient: return "client";
+		case Interface::EType::eServer: return "server";
+		default: return "invalid";
+	}
+}
+std::string utility::EnumWrapper<Interface::EType>::to_display_string() const { return to_string(); }
+
 SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key, network::Interface *interface, void (network::Interface::*f)(void*))
 {
 	std::function<void(void*)> callback = std::bind(f, interface, std::placeholders::_1);
@@ -17,7 +32,7 @@ SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key,
 	return option;
 }
 
-Interface::Interface() : mpInternal(nullptr), mType(EType::eInvalid)
+Interface::Interface() : mpInternal(nullptr), mType(EType::eInvalid), mConnection(0)
 {
 }
 
@@ -143,8 +158,8 @@ bool Interface::hasConnection() const
 
 void Interface::update(f32 deltaTime)
 {
+	if (this->mpInternal == nullptr) return;
 	if (!this->hasConnection()) return;
-	assert(this->mpInternal != nullptr);
 	this->pollIncomingMessages();
 	as<ISteamNetworkingSockets>(this->mpInternal)->RunCallbacks();
 }
