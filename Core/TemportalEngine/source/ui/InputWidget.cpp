@@ -88,7 +88,7 @@ void Input::onInput(input::Event const& evt)
 					this->unlock();
 				}
 			}
-			if (evt.inputKey.key == input::EKey::RETURN)
+			if (evt.inputKey.key == input::EKey::RETURN && this->mFieldContent.length() > 0)
 			{
 				this->onConfirm.execute(this->mFieldContent);
 			}

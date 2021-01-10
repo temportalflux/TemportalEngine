@@ -6,6 +6,7 @@
 #include "input/Queue.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
+#include "utility/StringUtils.hpp"
 
 using namespace ui;
 
@@ -92,6 +93,21 @@ void TextLogMenu::onInput(input::Event const& evt)
 
 void TextLogMenu::onInputConfirmed(std::string input)
 {
-	TEXTLOGMENU_LOG.log(LOG_INFO, input.c_str());
 	this->mpInputText->clear();
+	
+	if (input[0] == '/')
+	{
+		auto args = utility::split(input.substr(1), ' ');
+		auto logStr = args[0] + ":";
+		for (auto iter = args.begin() + 1; iter != args.end(); ++iter)
+		{
+			logStr += " " + *iter + ",";
+		}
+		TEXTLOGMENU_LOG.log(LOG_INFO, logStr.c_str());
+	}
+	else
+	{
+		TEXTLOGMENU_LOG.log(LOG_INFO, input.c_str());
+	}
+
 }

@@ -1,6 +1,8 @@
 #include "utility/StringUtils.hpp"
 
 #include <cstdarg>
+#include <sstream>
+#include <iostream>
 
 bool utility::startsWith(std::string a, std::string prefix)
 {
@@ -11,6 +13,18 @@ std::string utility::afterPrefix(std::string a, std::string prefix)
 {
 	assert(utility::startsWith(a, prefix));
 	return a.substr(prefix.length());
+}
+
+std::vector<std::string> utility::split(std::string const& str, char delimeter)
+{
+	std::stringstream ss(str);
+	std::string item;
+	std::vector<std::string> splittedStrings;
+	while (std::getline(ss, item, delimeter))
+	{
+		splittedStrings.push_back(item);
+	}
+	return splittedStrings;
 }
 
 utility::ArgumentMap utility::parseArguments(int argc, char *argv[])

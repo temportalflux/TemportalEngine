@@ -29,6 +29,8 @@ namespace utility
 
 	std::string afterPrefix(std::string a, std::string prefix);
 
+	std::vector<std::string> split(std::string const& str, char delimeter);
+
 	ArgumentMap parseArguments(int argc, char *argv[]);
 
 	ArgumentMap getArgumentsWithPrefix(ArgumentMap args, std::string prefix);
