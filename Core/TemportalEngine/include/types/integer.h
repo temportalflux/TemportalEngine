@@ -4,10 +4,10 @@
 #include "arch.h"
 
 // signed integer types:
-typedef __int8				i8;
-typedef __int16				i16;
-typedef __int32				i32;
-typedef __int64				i64;
+typedef __int8				i8;  // char, 8 bits, 1 byte
+typedef __int16				i16; // short, 16 bits, 2 bytes
+typedef __int32				i32; // int, 32 bits, 4 bytes
+typedef __int64				i64; // long long, 64 bits, 8 bytes
 
 // unsigned integer types:
 typedef unsigned __int8		ui8;

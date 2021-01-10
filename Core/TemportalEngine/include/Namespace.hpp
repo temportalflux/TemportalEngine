@@ -7,6 +7,8 @@
 #define NS_DEPENDENCY namespace dependency {
 #define NS_ENGINE namespace engine {
 
+#define NS_COMMAND namespace command {
+
 #define NS_ECS namespace ecs {
 #define NS_VIEW namespace view {
 #define NS_COMPONENT namespace component {

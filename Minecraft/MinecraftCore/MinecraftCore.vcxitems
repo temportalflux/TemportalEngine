@@ -34,6 +34,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />

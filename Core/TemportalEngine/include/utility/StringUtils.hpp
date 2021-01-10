@@ -2,6 +2,7 @@
 #define STRING_UTILS_H
 
 #include "types/integer.h"
+#include "types/real.h"
 
 #include <string>
 #include <array>
@@ -65,6 +66,12 @@ namespace utility
 	std::vector<char const*> createTemporaryStringSet(std::vector<std::string> const &strs);
 
 	std::string formatStr(std::string const format, ...);
+
+	template <typename T>
+	struct StringParser
+	{
+		static T parse(std::string str);// { static_assert(false); }
+	};
 
 }
 

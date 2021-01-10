@@ -1,5 +1,7 @@
 #include "math/Vector.hpp"
 
+#include "utility/StringUtils.hpp"
+
 NS_MATH
 
 Quaternion Quaternion::FromAxisAngle(Vector<f32, 3> axis, f32 radians)
@@ -119,3 +121,14 @@ Vector4 const Vector4unitW = { 0, 0, 0, 1 };
 Quaternion const Quaternion::Identity = math::Vector4unitW;
 
 NS_END
+
+template <> math::Vector2 utility::StringParser<math::Vector2>::parse(std::string str) { return math::Vector2::parse(str); }
+template <> math::Vector2Padded utility::StringParser<math::Vector2Padded>::parse(std::string str) { return math::Vector2Padded::parse(str); }
+template <> math::Vector2Int utility::StringParser<math::Vector2Int>::parse(std::string str) { return math::Vector2Int::parse(str); }
+template <> math::Vector2UInt utility::StringParser<math::Vector2UInt>::parse(std::string str) { return math::Vector2UInt::parse(str); }
+template <> math::Vector4UInt utility::StringParser<math::Vector4UInt>::parse(std::string str) { return math::Vector4UInt::parse(str); }
+template <> math::Vector3 utility::StringParser<math::Vector3>::parse(std::string str) { return math::Vector3::parse(str); }
+template <> math::Vector3Padded utility::StringParser<math::Vector3Padded>::parse(std::string str) { return math::Vector3Padded::parse(str); }
+template <> math::Vector3Int utility::StringParser<math::Vector3Int>::parse(std::string str) { return math::Vector3Int::parse(str); }
+template <> math::Vector3UInt utility::StringParser<math::Vector3UInt>::parse(std::string str) { return math::Vector3UInt::parse(str); }
+template <> math::Vector4 utility::StringParser<math::Vector4>::parse(std::string str) { return math::Vector4::parse(str); }

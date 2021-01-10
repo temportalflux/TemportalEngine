@@ -184,6 +184,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">

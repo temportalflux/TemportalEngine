@@ -65,6 +65,9 @@
     <Filter Include="network">
       <UniqueIdentifier>{0b5b6f81-c63a-4781-8057-3b720e1faa3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="command">
+      <UniqueIdentifier>{371193c0-58e8-4f35-9347-fbfb74ef21c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -349,6 +352,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputListener.cpp">
       <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandRegistry.cpp">
+      <Filter>command</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandSignature.cpp">
+      <Filter>command</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -769,6 +778,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputListener.hpp">
       <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandRegistry.hpp">
+      <Filter>command</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandSignature.hpp">
+      <Filter>command</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -28,6 +28,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\TextureSampler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandRegistry.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandSignature.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
@@ -133,6 +135,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandRegistry.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandSignature.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />

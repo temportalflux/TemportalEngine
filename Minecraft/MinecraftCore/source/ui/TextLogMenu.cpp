@@ -1,6 +1,7 @@
 #include "ui/TextLogMenu.hpp"
 
 #include "Engine.hpp"
+#include "command/CommandRegistry.hpp"
 #include "game/GameInstance.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
@@ -97,16 +98,14 @@ void TextLogMenu::onInputConfirmed(std::string input)
 	
 	if (input[0] == '/')
 	{
-		auto args = utility::split(input.substr(1), ' ');
-		auto logStr = args[0] + ":";
-		for (auto iter = args.begin() + 1; iter != args.end(); ++iter)
+		if (auto errors = engine::Engine::Get()->commands()->execute(utility::split(input.substr(1), ' ')))
 		{
-			logStr += " " + *iter + ",";
+			for (auto const& error : errors.value()) TEXTLOGMENU_LOG.log(LOG_INFO, error.c_str());
 		}
-		TEXTLOGMENU_LOG.log(LOG_INFO, logStr.c_str());
 	}
 	else
 	{
+		// TODO: Dispatch chat to server
 		TEXTLOGMENU_LOG.log(LOG_INFO, input.c_str());
 	}
 

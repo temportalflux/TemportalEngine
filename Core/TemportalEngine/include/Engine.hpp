@@ -26,6 +26,7 @@
 
 class Window;
 class ITickable;
+FORWARD_DEF(NS_COMMAND, class Registry);
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
 FORWARD_DEF(NS_INPUT, class Queue);
 FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
@@ -105,6 +106,8 @@ public:
 	void markShouldStop();
 #pragma endregion
 
+	std::shared_ptr<command::Registry> commands();
+
 	void createServer(ui16 const port, ui16 maxClients);
 	void createClient(char const *address, ui16 port);
 	bool const hasNetwork() const;
@@ -142,6 +145,8 @@ private:
 	input::InputWatcher mpInputWatcher[1];
 	std::shared_ptr<input::Queue> mpInputQueue;
 #pragma endregion
+
+	std::shared_ptr<command::Registry> mpCommandRegistry;
 
 	bool mbShouldContinueRunning;
 

@@ -18,7 +18,10 @@ inline ui8 mutexIsLocked(TE_Mutex const lock)
 TE_Mutex const mutexLock(TE_Mutex *const pLock)
 {
 	// wait for lock to be released, then set it
-	while (mutexIsLocked(*pLock));
+	while (mutexIsLocked(*pLock))
+	{
+		(void)pLock;
+	}
 
 	// prevents race condition when 2 threads are waiting for the state
 	if (*pLock == 0)

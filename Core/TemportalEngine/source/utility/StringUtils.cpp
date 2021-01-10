@@ -95,3 +95,13 @@ std::string utility::formatStr(std::string const format, ...)
 
 	return std::string(&formatted[0]);
 }
+
+template <> std::string utility::StringParser<std::string>::parse(std::string str) { return str; }
+template <> i32 utility::StringParser<i32>::parse(std::string str) { return std::stoi(str); }
+// there is no dedicated string-to-int for regular 32-bit unsigned ints
+template <> ui32 utility::StringParser<ui32>::parse(std::string arg) { return (ui32)std::stoi(arg); }
+template <> i64 utility::StringParser<i64>::parse(std::string arg) { return std::stoll(arg); }
+template <> ui64 utility::StringParser<ui64>::parse(std::string arg) { return std::stoull(arg); }
+template <> f32 utility::StringParser<f32>::parse(std::string arg) { return std::stof(arg); }
+template <> f64 utility::StringParser<f64>::parse(std::string arg) { return std::stod(arg); }
+template <> f128 utility::StringParser< f128>::parse(std::string arg) { return std::stold(arg); }

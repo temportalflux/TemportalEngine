@@ -10,11 +10,13 @@
 #include <cmath>
 #include <string.h> // memset/memcpy
 #include <type_traits>
+#include <string>
 
 // Engine ---------------------------------------------------------------------
 #include "math/VectorType.hpp"
 #include "types/integer.h"
 #include "types/real.h"
+#include "utility/StringUtils.hpp"
 
 // ----------------------------------------------------------------------------
 NS_MATH
@@ -55,6 +57,8 @@ private:
 	TValue mValues[TActualDimensions];
 
 public:
+
+	static constexpr ui8 dimensions() { return TAccessibleDimensions; }
 
 	/** The zero vector for this format. */
 	static Vector<TValue, TAccessibleDimensions, TActualDimensions> const ZERO;
@@ -675,6 +679,16 @@ public:
 			mask |= (1 << ((i * 2) + (ui8)(mValues[i] < 0)));
 		}
 		return mask;
+	}
+
+	static VectorFormat parse(std::string str)
+	{
+		auto args = utility::split(str, ',');
+		if (args.size() != VectorFormat::dimensions()) throw("Invalid dimensions");
+		auto vec = VectorFormat();
+		for (ui8 i = 0; i < VectorFormat::dimensions(); ++i)
+			vec[i] = utility::StringParser<TValue>::parse(args[i]);
+		return vec;
 	}
 
 };

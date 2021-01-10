@@ -6,6 +6,7 @@
 #include "input/Event.hpp"
 #include "network/NetworkInterface.hpp"
 #include "ui/Core.hpp"
+#include "game/UserIdentity.hpp"
 
 class Window;
 class Controller;
@@ -90,6 +91,8 @@ private:
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
 
+	UserIdentity mLocalUserIdentity;
+
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Scene> mpSceneOverworld;
 	std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager; // for Overworld only
@@ -121,6 +124,8 @@ private:
 
 	std::shared_ptr<world::World> mpWorld;
 		
+	void registerCommands();
+
 	void initializeAssetTypes();
 	void destroyWindow();
 

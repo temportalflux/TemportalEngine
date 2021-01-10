@@ -2,6 +2,7 @@
 
 #include "ITickable.hpp"
 #include "Window.hpp"
+#include "command/CommandRegistry.hpp"
 #include "ecs/component/ComponentTransform.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "input/Queue.hpp"
@@ -76,6 +77,8 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 
 	this->mMiscMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "misc", 1 << 16));
 
+	this->mpCommandRegistry = this->mpMainMemory->make_shared<command::Registry>();
+
 	this->mpInputWatcher[0] = input::InputWatcher(std::bind(
 		&Engine::onRawEvent, this, std::placeholders::_1
 	));
@@ -110,6 +113,9 @@ Engine::~Engine()
 	this->mpAssetManager.reset();
 	assert(!this->mpAssetManager);
 
+	this->mpCommandRegistry.reset();
+	assert(!this->mpCommandRegistry);
+
 	assert(this->mMiscMemory.use_count() == 1);
 	this->mMiscMemory.reset();
 	assert(!this->mMiscMemory);
@@ -119,6 +125,8 @@ Engine::~Engine()
 
 	LogEngineInfo("Engine Destroyed");
 }
+
+std::shared_ptr<command::Registry> Engine::commands() { return this->mpCommandRegistry; }
 
 void Engine::initializeInput()
 {

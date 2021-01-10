@@ -11,6 +11,7 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "asset/MinecraftAssetStatics.hpp"
+#include "command/CommandRegistry.hpp"
 #include "ecs/Core.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
@@ -109,6 +110,8 @@ Game::Game(int argc, char *argv[])
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
 
+	this->registerCommands();
+
 	auto networkAddress = network::Address();
 
 	auto clientParam = args.find("client");
@@ -133,6 +136,27 @@ Game::Game(int argc, char *argv[])
 
 Game::~Game()
 {
+}
+
+void Game::registerCommands()
+{
+	auto registry = engine::Engine::Get()->commands();
+	registry->add(
+		command::Signature("setName")
+		.pushArgType<std::string>()
+		.bind([&](command::Signature const& cmd)
+		{
+			this->mLocalUserIdentity.name = cmd.get<std::string>(0);
+		})
+	);
+	registry->add(
+		command::Signature("id")
+		.bind([&](command::Signature const& cmd)
+		{
+			this->mProjectLog.log(LOG_INFO, "Name: %s", this->mLocalUserIdentity.name.c_str());
+		})
+	);
+
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()
