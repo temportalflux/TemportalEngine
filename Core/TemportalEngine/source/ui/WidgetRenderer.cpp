@@ -1,5 +1,6 @@
 #include "ui/WidgetRenderer.hpp"
 
+#include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 #include "graphics/assetHelpers.hpp"
 #include "graphics/Command.hpp"
@@ -144,7 +145,7 @@ void ui::WidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> widget
 
 void ui::WidgetRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
-	this->mResolution = { resolution, game::Game::Get()->renderer()->dpi() };
+	this->mResolution = { resolution, game::Game::Get()->client()->renderer()->dpi() };
 
 	this->imagePipeline()
 		->setDescriptorLayout(this->imageDescriptorLayout(), 1)

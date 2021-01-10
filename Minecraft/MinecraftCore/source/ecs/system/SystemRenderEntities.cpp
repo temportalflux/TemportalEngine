@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "ecs/Core.hpp"
+#include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 
 #include "asset/MinecraftAssetStatics.hpp"
@@ -92,7 +93,7 @@ void RenderEntities::createDescriptors(graphics::DescriptorPool *descriptorPool)
 
 void RenderEntities::setDescriptorLayouts(std::unordered_map<std::string, graphics::DescriptorLayout const*> const& globalLayouts)
 {
-	auto registry = game::Game::Get()->textureRegistry();
+	auto registry = game::Game::Get()->client()->textureRegistry();
 	this->mpPipeline->setDescriptorLayouts({ globalLayouts.find("camera")->second, registry->textureLayout() });
 }
 
@@ -151,7 +152,7 @@ void RenderEntities::recordView(graphics::Command *command, graphics::Descriptor
 	assert(renderMesh);
 	if (!renderMesh->shouldRender()) return;
 
-	auto const& textureDescriptor = game::Game::Get()->textureRegistry()->getDescriptorHandle(renderMesh->textureId());
+	auto const& textureDescriptor = game::Game::Get()->client()->textureRegistry()->getDescriptorHandle(renderMesh->textureId());
 	
 	command->bindDescriptorSets(this->mpPipeline, std::vector<graphics::DescriptorSet const*>{ cameraSet, textureDescriptor.get() });
 	command->bindPipeline(this->mpPipeline);

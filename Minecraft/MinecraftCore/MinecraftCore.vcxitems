@@ -33,7 +33,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameWorldLogic.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp" />
@@ -79,7 +79,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameWorldLogic.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\ChunkCollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />

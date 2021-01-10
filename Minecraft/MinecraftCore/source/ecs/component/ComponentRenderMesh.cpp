@@ -1,5 +1,6 @@
 #include "ecs/component/ComponentRenderMesh.hpp"
 
+#include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 #include "asset/ModelAsset.hpp"
 #include "render/model/SkinnedModelManager.hpp"
@@ -13,8 +14,8 @@ DEFINE_ECS_COMPONENT_STATICS(RenderMesh)
 RenderMesh::RenderMesh() : Component(), mbShouldRender(true)
 {
 	auto game = game::Game::Get();
-	this->mModelHandle = game->modelManager()->createHandle();
-	this->mInstanceHandle = game->entityInstances()->createHandle();
+	this->mModelHandle = game->client()->modelManager()->createHandle();
+	this->mInstanceHandle = game->client()->entityInstances()->createHandle();
 }
 
 RenderMesh::~RenderMesh()

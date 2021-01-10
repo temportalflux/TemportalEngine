@@ -1,5 +1,6 @@
 #include "ui/DebugHUD.hpp"
 
+#include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 #include "Window.hpp"
 #include "ecs/entity/Entity.hpp"
@@ -13,18 +14,18 @@ using namespace ui;
 DebugHUD::DebugHUD()
 {
 	(*(this->mpAlphabet = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
 		.setFont("unispace").setFontSize(30)
 		.setContent("Sphinx of Black Quartz, Judge my vow", true);
 
 	(*(this->mpPosition = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
 		.setFont("unispace").setFontSize(15)
 		.setPosition({ 0, 40 })
 		.setContent("Position| X:<?,?,?.??> Y:<?,?,?.??> Z:<?,?,?.??>", true);
 
 	(*(this->mpFPS = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
 		.setFont("unispace").setFontSize(20)
 		.setAnchor({ 1, 0 }).setPivot({ 1, 0 })
 		.setContent("FPS: ###", true);
@@ -60,6 +61,7 @@ void DebugHUD::tick(f32 deltaTime)
 
 	auto pGame = game::Game::Get();
 	
+	/*
 	auto const& transform = pGame->localPlayer()->getComponent<ecs::component::CoordinateTransform>();
 	auto const& pos = transform->position();
 	this->mpPosition->setContent(utility::formatStr(
@@ -68,8 +70,9 @@ void DebugHUD::tick(f32 deltaTime)
 		pos.chunk().y(), pos.local().y(), pos.offset().y(),
 		pos.chunk().z(), pos.local().z(), pos.offset().z()
 	));
+	//*/
 
-	auto deltaMS = pGame->getWindow()->renderDurationMS();
+	auto deltaMS = pGame->client()->getWindow()->renderDurationMS();
 	i32 fps = i32((1.0f / deltaMS) * 1000.0f);
 	this->mpFPS->setContent(utility::formatStr("FPS %i", fps));
 }

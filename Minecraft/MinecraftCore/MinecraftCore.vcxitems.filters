@@ -175,16 +175,16 @@
       <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameWorldLogic.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameClient.hpp">
       <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
@@ -296,13 +296,13 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameWorldLogic.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameClient.cpp">
       <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>

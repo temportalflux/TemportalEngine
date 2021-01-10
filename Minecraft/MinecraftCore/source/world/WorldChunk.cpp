@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "game/GameInstance.hpp"
+#include "game/GameWorldLogic.hpp"
 #include "world/World.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "registry/VoxelType.hpp"
@@ -50,7 +51,7 @@ void Chunk::generate()
 	// Only actually needed when re-generating the chunk so that no metadata from the previous gen is left over
 	FOR_CHUNK_SIZE(i32, x) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) this->mBlockMetadata[{ x, y, z }] = std::nullopt;
 
-	auto typeRegistry = game::Game::Get()->voxelTypeRegistry();
+	auto typeRegistry = game::Game::Get()->worldLogic()->voxelTypeRegistry();
 	auto allVoxelIdsSet = typeRegistry->getIds();
 
 	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();

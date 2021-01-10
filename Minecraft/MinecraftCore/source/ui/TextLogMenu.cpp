@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "command/CommandRegistry.hpp"
+#include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
@@ -29,7 +30,7 @@ TextLogMenu::TextLogMenu()
 		;
 
 	(*(this->mpInputText = std::make_shared<ui::Input>()))
-		.setFontOwner(game::Game::Get()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
 		.setParent(this->mpInputBarBkgd)
 		.setAnchor({ 0, 0.5 }).setPivot({ 0, 0.5 })
 		.setFont("unispace").setFontSize(20)
