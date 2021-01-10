@@ -15,10 +15,11 @@ FORWARD_DEF(NS_GRAPHICS, class Pipeline);
 NS_UI
 class WidgetRenderer;
 
-class Widget : public std::enable_shared_from_this<Widget>
+class Widget : public virtual_enable_shared_from_this<Widget>
 {
 public:
 	Widget();
+	virtual ~Widget() {}
 
 	void setRenderer(std::weak_ptr<ui::WidgetRenderer> renderer) { this->mpRenderer = renderer; }
 	virtual void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) { this->mpDevice = device; }

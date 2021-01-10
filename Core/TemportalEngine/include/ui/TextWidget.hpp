@@ -4,6 +4,7 @@
 
 #include "graphics/AttributeBinding.hpp"
 #include "graphics/Buffer.hpp"
+#include "graphics/FontAtlas.hpp"
 
 FORWARD_DEF(NS_GRAPHICS, class Font);
 
@@ -19,7 +20,7 @@ public:
 	Text(Text const& other) = delete;
 	Text(Text&& other);
 	Text& operator=(Text &&other);
-	~Text();
+	virtual ~Text();
 
 	static graphics::AttributeBinding binding();
 
@@ -39,6 +40,7 @@ public:
 	Text& setFont(std::string const& fontId);
 	Text& setFontSize(ui16 fontSize);
 	Text& setMaxContentLength(ui32 length);
+	ui32 maxContentLength() const { return this->mUncommitted.maxLength; }
 	Text& setContent(std::string const& content, bool isMaxLength = false);
 	Text& operator=(std::string const& content);
 	std::string const& string() const { return this->mUncommitted.content; }
@@ -51,7 +53,8 @@ public:
 	Text& commit();
 	void record(graphics::Command *command) override;
 
-private:
+protected:
+
 	struct Vertex
 	{
 		/**
@@ -65,6 +68,20 @@ private:
 		math::Vector2Padded texCoord;
 	};
 
+	std::vector<Vertex> mVertices;
+	std::vector<ui16> mIndices;
+	ui32 mCommittedIndexCount;
+
+	graphics::Font const* getFont() const;
+	math::Vector4 widthEdge() const;
+	ui16 pushVertex(Vertex const& v);
+	void pushGlyph(math::Vector2 &cursorPos, f32 fontHeight, graphics::Font::GlyphSprite const& glyph);
+	virtual void prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight);
+	virtual void onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight);
+	virtual ui32 desiredCharacterCount() const;
+
+private:
+
 	std::weak_ptr<ui::FontOwner> mpFontOwner;
 
 	struct Configuration
@@ -77,16 +94,12 @@ private:
 		ui32 maxLength;
 	};
 	Configuration mUncommitted, mCommitted;
-
-	std::vector<Vertex> mVertices;
-	std::vector<ui16> mIndices;
-	ui32 mCommittedIndexCount;
+	ui32 mBufferCharacterCount;
 
 	graphics::Buffer mVertexBuffer;
 	graphics::Buffer mIndexBuffer;
 
-	graphics::Font const* getFont() const;
-	void populateBufferData();
+	virtual void populateBufferData();
 
 };
 

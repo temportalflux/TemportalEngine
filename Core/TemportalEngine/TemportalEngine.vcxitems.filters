@@ -344,6 +344,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputCore.cpp">
       <Filter>input</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\InputWidget.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\input\InputListener.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -756,6 +762,12 @@
       <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputCore.hpp">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\InputWidget.hpp">
+      <Filter>ui</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\input\InputListener.hpp">
       <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>

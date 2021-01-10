@@ -79,6 +79,7 @@ struct TEMPORTALENGINE_API Event
 
 		struct
 		{
+			EAction action;
 			char text[32];
 		} inputText;
 

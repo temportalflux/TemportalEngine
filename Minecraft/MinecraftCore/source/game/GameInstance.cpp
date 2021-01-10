@@ -369,7 +369,7 @@ void Game::createRenderers()
 	pEngine->addTicker(this->mpDebugHUD);
 
 	this->mpMenuTextLog = std::make_shared<ui::TextLogMenu>();
-	this->mpMenuTextLog->addImagesToRenderer(this->mpUIRenderer.get());
+	this->mpMenuTextLog->init(this->mpUIRenderer.get());
 }
 
 void Game::createGameRenderer()
@@ -757,14 +757,12 @@ void Game::bindInput()
 		input::EInputType::KEY, this->weak_from_this(),
 		std::bind(&Game::onInputKey, this, std::placeholders::_1)
 	);
-	this->mpMenuTextLog->bindInput(pInput);
 }
 
 void Game::unbindInput()
 {
 	auto pInput = engine::Engine::Get()->getInputQueue();
 	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
-	this->mpMenuTextLog->unbindInput(pInput);
 }
 
 void Game::run()

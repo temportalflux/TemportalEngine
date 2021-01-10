@@ -26,7 +26,7 @@ TextLogMenu::TextLogMenu()
 		.setPosition({ 0, -60 }).setSize({ 800, 500 })
 		;
 
-	(*(this->mpInputText = std::make_shared<ui::Text>()))
+	(*(this->mpInputText = std::make_shared<ui::Input>()))
 		.setFontOwner(game::Game::Get()->uiFontOwner())
 		.setParent(this->mpInputBarBkgd)
 		.setAnchor({ 0, 0.5 }).setPivot({ 0, 0.5 })
@@ -46,8 +46,6 @@ TextLogMenu::TextLogMenu()
 		.setPivot({ 0, 0.5 })
 		.setSize({ 64, 64 });
 	//*/
-
-	this->setIsVisible(false);
 }
 
 TextLogMenu::~TextLogMenu()
@@ -60,8 +58,11 @@ TextLogMenu::~TextLogMenu()
 	this->mSlots.clear();
 }
 
-void TextLogMenu::addImagesToRenderer(ui::WidgetRenderer *renderer)
+void TextLogMenu::init(ui::WidgetRenderer *renderer)
 {
+	this->setIsVisible(false);
+	this->startListening(input::EInputType::KEY);
+
 	renderer->add(this->mpInputBarBkgd);
 	renderer->add(this->mpLogBkgd);
 	renderer->add(this->mpInputText);
@@ -77,76 +78,13 @@ void TextLogMenu::setIsVisible(bool bVisible)
 	this->mpInputBarBkgd->setIsVisible(bVisible);
 	this->mpLogBkgd->setIsVisible(bVisible);
 	this->mpInputText->setIsVisible(bVisible);
-	
-	if (bVisible) input::startTextInput();
-	else input::stopTextInput();
 }
 
-void TextLogMenu::bindInput(std::shared_ptr<input::Queue> pInput)
+void TextLogMenu::onInput(input::Event const& evt)
 {
-	pInput->OnInputEvent.bind(
-		input::EInputType::KEY, this->weak_from_this(),
-		std::bind(&TextLogMenu::onInputKey, this, std::placeholders::_1)
-	);
-	pInput->OnInputEvent.bind(
-		input::EInputType::TEXT, this->weak_from_this(),
-		std::bind(&TextLogMenu::onInputText, this, std::placeholders::_1)
-	);
-}
-
-void TextLogMenu::unbindInput(std::shared_ptr<input::Queue> pInput)
-{
-	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
-	pInput->OnInputEvent.unbind(input::EInputType::TEXT, this->weak_from_this());
-}
-
-void TextLogMenu::onInputKey(input::Event const& evt)
-{
-	auto bIsPressed = evt.inputKey.action == input::EAction::PRESS;
-	auto bIsRepeat = evt.inputKey.action == input::EAction::REPEAT;
-	if (evt.inputKey.key == input::EKey::GRAVE && bIsPressed)
+	if (evt.inputKey.key == input::EKey::GRAVE && evt.inputKey.action == input::EAction::PRESS)
 	{
 		this->setIsVisible(!this->isVisible());
-		this->mInputCursorPos = 0;
-		this->mInputContent = "";
-		this->mpInputText->setContent("");
-		return;
+		this->mpInputText->setActive(this->isVisible());
 	}
-	if (!this->isVisible()) return;
-	if (bIsPressed || bIsRepeat)
-	{
-		if (evt.inputKey.key == input::EKey::BACKSPACE)
-		{
-			this->removeInputAtCursor();
-			return;
-		}
-		if (evt.inputKey.key == input::EKey::SP_DELETE)
-		{
-			this->removeInputAfterCursor();
-			return;
-		}
-	}
-}
-
-void TextLogMenu::onInputText(input::Event const& evt)
-{
-	if (!this->isVisible()) return;
-	this->mInputContent.insert(this->mInputContent.begin() + this->mInputCursorPos, evt.inputText.text[0]);
-	this->mInputCursorPos++;
-	this->mpInputText->setContent(this->mInputContent);
-}
-
-void TextLogMenu::removeInputAtCursor()
-{
-	if (this->mInputContent.length() > 0)
-	{
-		this->mInputContent.erase(this->mInputContent.begin() + this->mInputCursorPos);
-		if (this->mInputCursorPos > 0) this->mInputCursorPos--;
-		this->mpInputText->setContent(this->mInputContent);
-	}
-}
-
-void TextLogMenu::removeInputAfterCursor()
-{
-
 }

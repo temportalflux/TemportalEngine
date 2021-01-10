@@ -8,6 +8,7 @@
 #include "logging/Logger.hpp"
 #include "Engine.hpp"
 #include "graphics/VulkanRenderer.hpp"
+#include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 
 #include "ExecutableInfo.hpp"
@@ -38,6 +39,7 @@ Window::Window(
 		return;
 	}
 	this->mId = SDL_GetWindowID(reinterpret_cast<SDL_Window*>(this->mpHandle));
+	input::stopTextInput();
 }
 
 bool Window::hasFlag(WindowFlags flag) const

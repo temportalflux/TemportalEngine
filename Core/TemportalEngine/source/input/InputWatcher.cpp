@@ -65,6 +65,7 @@ inline void makeEventMouseButton(SDL_Event const evtIn, input::Event &evtOut)
 inline void makeEventText(SDL_Event const evtIn, input::Event &evtOut)
 {
 	evtOut.type = input::EInputType::TEXT;
+	evtOut.inputText.action = getActionFromSDLKey(evtIn);
 	memcpy_s(evtOut.inputText.text, sizeof(evtOut.inputText.text), evtIn.text.text, sizeof(evtIn.text.text));
 }
 

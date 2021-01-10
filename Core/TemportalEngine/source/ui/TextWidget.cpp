@@ -1,7 +1,6 @@
 #include "ui/TextWidget.hpp"
 
 #include "graphics/Command.hpp"
-#include "graphics/FontAtlas.hpp"
 #include "ui/WidgetRenderer.hpp"
 
 using namespace ui;
@@ -133,15 +132,16 @@ Text& Text::commit()
 	this->mVertices.reserve(this->mUncommitted.content.length() * 4);
 	this->mIndices.reserve(this->mUncommitted.content.length() * 6);
 
-	if (this->mUncommitted.maxLength != this->mCommitted.maxLength)
+	if (this->desiredCharacterCount() != this->mBufferCharacterCount)
 	{
+		this->mBufferCharacterCount = this->desiredCharacterCount();
 		this->mVertexBuffer.invalidate();
 		this->mIndexBuffer.invalidate();
 		this->mVertexBuffer
-			.setSize(this->mUncommitted.maxLength * 4 * sizeof(Vertex))
+			.setSize(this->mBufferCharacterCount * 4 * sizeof(Vertex))
 			.create();
 		this->mIndexBuffer
-			.setSize(this->mUncommitted.maxLength * 6 * sizeof(ui16))
+			.setSize(this->mBufferCharacterCount * 6 * sizeof(ui16))
 			.create();
 	}
 
@@ -163,6 +163,11 @@ Text& Text::commit()
 	this->markClean();
 	this->unlock();
 	return *this;
+}
+
+ui32 Text::desiredCharacterCount() const
+{
+	return this->mUncommitted.maxLength;
 }
 
 graphics::Font const* Text::getFont() const
@@ -192,17 +197,36 @@ math::Vector2 Text::getSizeOnScreen() const
 	return size;
 }
 
+math::Vector4 Text::widthEdge() const
+{
+	return math::Vector2({ this->mUncommitted.thickness, this->mUncommitted.edgeWidth }).createSubvector<4>(2);
+}
+
+ui16 Text::pushVertex(Vertex const& v)
+{
+	uIndex const idxVertex = this->mVertices.size();
+	this->mVertices.push_back(v);
+	return (ui16)idxVertex;
+}
+
 void Text::populateBufferData()
 {
+	auto cursorPos = this->getTopLeftPositionOnScreen();
+	f32 fontHeight = this->resolution().pointsToScreenSpace({ 0, this->mUncommitted.fontSize }).y();
 	auto const& content = this->mUncommitted.content;
 	auto len = content.length();
 	graphics::Font const& font = *this->getFont();
-	f32 fontHeight = this->resolution().pointsToScreenSpace({ 0, this->mUncommitted.fontSize }).y();	
+	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
+	{
+		this->prePushCharacter(idxChar, cursorPos, fontHeight);
+		auto const& glyph = font[content[idxChar]];
+		this->pushGlyph(cursorPos, fontHeight, glyph);
+	}
+	this->onPushedAllCharacters(cursorPos, fontHeight);
+}
 
-	auto widthAndEdge = math::Vector2({ this->mUncommitted.thickness, this->mUncommitted.edgeWidth }).createSubvector<4>(2);
-	auto const topLeft = this->getTopLeftPositionOnScreen();
-	auto cursorPos = topLeft;
-
+void Text::pushGlyph(math::Vector2 &cursorPos, f32 fontHeight, graphics::Font::GlyphSprite const& glyph)
+{
 	struct ScreenGlyph
 	{
 		math::Vector2 screenBearing;
@@ -211,18 +235,17 @@ void Text::populateBufferData()
 		math::Vector2 atlasSize;
 	};
 
+	auto const widthEdge = this->widthEdge();
 	auto pushVertex = [&](
 		math::Vector2 const& cursorPos, ScreenGlyph const& glyph,
 		math::Vector2 const& sizeMult
 	) -> ui16 {
-		uIndex const idxVertex = this->mVertices.size();
-		this->mVertices.push_back(Text::Vertex {
+		return this->pushVertex(Text::Vertex{
 			(
 				cursorPos + glyph.screenBearing + (glyph.screenSize * sizeMult)
-			).createSubvector<4>() + widthAndEdge,
+			).createSubvector<4>() + widthEdge,
 			glyph.atlasPos + (glyph.atlasSize * sizeMult)
 		});
-		return (ui16)idxVertex;
 	};
 
 	auto pushGlyph = [&](
@@ -240,21 +263,20 @@ void Text::populateBufferData()
 		this->mIndices.push_back(idxTL);
 	};
 
-	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
+	auto toFontSize = math::Vector2({ glyph.pointBasisRatio, (1.0f / glyph.pointBasisRatio) }) * fontHeight;
+	if (glyph.size.x() > 0 && glyph.size.y() > 0)
 	{
-		auto const& glyph = font[content[idxChar]];
-		auto toFontSize = math::Vector2({ glyph.pointBasisRatio, (1.0f / glyph.pointBasisRatio) }) * fontHeight;
-		if (glyph.size.x() > 0 && glyph.size.y() > 0)
-		{
-			pushGlyph(cursorPos, ScreenGlyph {
-				glyph.bearing.toFloat() * toFontSize,
-				glyph.size.toFloat() * toFontSize,
-				glyph.atlasPos, glyph.atlasSize
-			});
-		}
-		cursorPos.x() += glyph.advance * toFontSize.x();
+		pushGlyph(cursorPos, ScreenGlyph {
+			glyph.bearing.toFloat() * toFontSize,
+			glyph.size.toFloat() * toFontSize,
+			glyph.atlasPos, glyph.atlasSize
+		});
 	}
+	cursorPos.x() += glyph.advance * toFontSize.x();
 }
+
+void Text::prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight) {}
+void Text::onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight) {}
 
 void Text::record(graphics::Command *command)
 {
