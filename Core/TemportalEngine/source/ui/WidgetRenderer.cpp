@@ -1,8 +1,10 @@
 #include "ui/WidgetRenderer.hpp"
 
+#include "game/GameInstance.hpp"
 #include "graphics/assetHelpers.hpp"
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
+#include "render/MinecraftRenderer.hpp"
 #include "ui/ImageWidget.hpp"
 #include "ui/TextWidget.hpp"
 
@@ -142,7 +144,7 @@ void ui::WidgetRenderer::initializeWidgetData(std::shared_ptr<ui::Widget> widget
 
 void ui::WidgetRenderer::createPipeline(math::Vector2UInt const& resolution)
 {
-	this->mResolution = { resolution, 96 };
+	this->mResolution = { resolution, game::Game::Get()->renderer()->dpi() };
 
 	this->imagePipeline()
 		->setDescriptorLayout(this->imageDescriptorLayout(), 1)

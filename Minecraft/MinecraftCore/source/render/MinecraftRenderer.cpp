@@ -160,6 +160,14 @@ graphics::DescriptorSet const* MinecraftRenderer::getGlobalDescriptorSet(std::st
 	return &(this->mGlobalMutableDescriptors.find(layoutId)->second.sets[idxFrame]);
 }
 
+void MinecraftRenderer::setDPI(ui32 dotsPerInch)
+{
+	this->mDPI = dotsPerInch;
+	this->markRenderChainDirty();
+}
+
+ui32 MinecraftRenderer::dpi() const { return this->mDPI; }
+
 void MinecraftRenderer::createRenderChain()
 {
 	OPTICK_EVENT();

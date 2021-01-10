@@ -37,6 +37,9 @@ public:
 	void addRenderer(IPipelineRenderer *renderer);
 	void setRenderPass(std::shared_ptr<asset::RenderPass> renderPass);
 
+	void setDPI(ui32 dotsPerInch);
+	ui32 dpi() const;
+
 	void createMutableUniforms();
 	void createRenderChain() override;
 	void finalizeInitialization() override;
@@ -82,6 +85,7 @@ private:
 
 	std::vector<IPipelineRenderer*> mpRenderers;
 	std::shared_ptr<graphics::RenderPass> mpRenderPass;
+	ui32 mDPI;
 
 	graphics::Image mDepthImage;
 	graphics::ImageView mDepthView;

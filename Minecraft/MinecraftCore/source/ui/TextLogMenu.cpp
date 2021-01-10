@@ -32,6 +32,7 @@ TextLogMenu::TextLogMenu()
 		.setAnchor({ 0, 0.5 }).setPivot({ 0, 0.5 })
 		.setFont("unispace").setFontSize(20)
 		.setMaxContentLength(255);
+	this->mpInputText->onConfirm.bind(std::bind(&TextLogMenu::onInputConfirmed, this, std::placeholders::_1));
 
 	/*
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
@@ -87,4 +88,10 @@ void TextLogMenu::onInput(input::Event const& evt)
 		this->setIsVisible(!this->isVisible());
 		this->mpInputText->setActive(this->isVisible());
 	}
+}
+
+void TextLogMenu::onInputConfirmed(std::string input)
+{
+	TEXTLOGMENU_LOG.log(LOG_INFO, input.c_str());
+	this->mpInputText->clear();
 }

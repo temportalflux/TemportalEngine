@@ -3,6 +3,7 @@
 #include "ui/TextWidget.hpp"
 
 #include "input/InputListener.hpp"
+#include "Delegate.hpp"
 
 NS_UI
 
@@ -14,7 +15,10 @@ class Input
 public:
 	Input();
 
+	ExecuteDelegate<void(std::string)> onConfirm;
+
 	void setActive(bool bActive);
+	void clear();
 
 protected:
 	ui32 desiredCharacterCount() const override;

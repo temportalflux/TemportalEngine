@@ -21,9 +21,7 @@ void Input::setActive(bool bActive)
 	if (this->mbIsActive == bActive) return;
 	this->mbIsActive = bActive;
 
-	this->mCursorPos = 0;
-	this->mFieldContent = "";
-	this->setContent(this->mFieldContent);
+	this->clear();
 
 	// TODO: multiple text fields will require this to be a counter instead of just a global state
 	if (bActive) input::startTextInput();
@@ -39,6 +37,13 @@ void Input::setActive(bool bActive)
 		this->stopListening(input::EInputType::KEY);
 		this->stopListening(input::EInputType::TEXT);
 	}
+}
+
+void Input::clear()
+{
+	this->mCursorPos = 0;
+	this->mFieldContent = "";
+	this->setContent(this->mFieldContent);
 }
 
 void Input::onInput(input::Event const& evt)
@@ -82,6 +87,10 @@ void Input::onInput(input::Event const& evt)
 					this->markDirty();
 					this->unlock();
 				}
+			}
+			if (evt.inputKey.key == input::EKey::RETURN)
+			{
+				this->onConfirm.execute(this->mFieldContent);
 			}
 		}
 	}

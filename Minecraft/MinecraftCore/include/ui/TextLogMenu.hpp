@@ -31,6 +31,7 @@ private:
 	std::vector<std::shared_ptr<ui::Image>> mSlots;
 
 	void onInput(input::Event const& evt) override;
+	void onInputConfirmed(std::string input);
 
 };
 

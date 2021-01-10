@@ -375,6 +375,7 @@ void Game::createRenderers()
 void Game::createGameRenderer()
 {
 	this->mpRenderer = std::make_shared<graphics::MinecraftRenderer>();
+	this->mpRenderer->setDPI(96);
 	engine::Engine::Get()->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
 	this->mpWindow->setRenderer(this->mpRenderer.get());
 	this->mpRenderer->UpdateWorldGraphicsOnFramePresented.bind(
