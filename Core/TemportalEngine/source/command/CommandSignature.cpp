@@ -4,6 +4,11 @@ using namespace command;
 
 Signature::Signature(std::string const& id) : mId(id) {}
 
+bool Signature::isBound() const
+{
+	return (bool)this->mCallback;
+}
+
 Signature& Signature::bind(TCallback callback)
 {
 	this->mCallback = callback;

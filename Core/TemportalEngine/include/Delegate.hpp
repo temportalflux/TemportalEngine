@@ -169,7 +169,7 @@ public:
 	{
 		if (this->mBindings.size() < 0) return;
 		auto range = this->mBindings.equal_range(evt);
-		for (auto it = range.first; it != range.second;)
+		for (auto it = range.first; it != range.second && it != this->mBindings.end();)
 		{
 			if (it->second.key.expired())
 			{

@@ -32,6 +32,7 @@ class Client
 {
 
 public:
+	Client();
 
 	std::shared_ptr<Window> getWindow();
 	std::shared_ptr<graphics::MinecraftRenderer> renderer() { return this->mpRenderer; }

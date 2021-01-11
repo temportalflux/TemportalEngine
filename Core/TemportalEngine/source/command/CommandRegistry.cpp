@@ -20,8 +20,14 @@ std::optional<std::vector<std::string>> Registry::execute(std::vector<std::strin
 	}
 
 	auto parsingErrors = std::vector<std::string>();
-	for (auto iter = signaturesWithId.first; iter != signaturesWithId.second; ++iter)
+	for (auto iter = signaturesWithId.first; iter != signaturesWithId.second;)
 	{
+		if (!iter->second.isBound())
+		{
+			iter = this->mSignatures.erase(iter);
+			continue;
+		}
+		
 		auto signatureCopy = iter->second;
 		if (auto parsingError = signatureCopy.parse(args))
 		{
@@ -32,6 +38,7 @@ std::optional<std::vector<std::string>> Registry::execute(std::vector<std::strin
 			signatureCopy.execute();
 			return std::nullopt;
 		}
+		++iter;
 	}
 	return parsingErrors;
 }

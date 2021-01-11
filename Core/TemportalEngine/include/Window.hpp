@@ -55,6 +55,7 @@ public:
 	ui32 getId() const;
 	void* getWindowHandle() const;
 	void setTitle(std::string title);
+	void setSize(math::Vector2UInt const& size);
 
 	void showCursor(bool show);
 	void consumeCursor(bool consume);
@@ -98,6 +99,10 @@ public:
 	void waitForCleanup();
 
 	f32 renderDurationMS() const;
+
+private:
+
+	void registerCommands();
 
 };
 

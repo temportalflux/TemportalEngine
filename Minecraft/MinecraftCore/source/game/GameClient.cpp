@@ -9,6 +9,7 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "asset/MinecraftAssetStatics.hpp"
+#include "command/CommandRegistry.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
@@ -32,6 +33,19 @@
 using namespace game;
 
 static auto CLIENT_LOG = DeclareLog("GameClient");
+
+Client::Client()
+{
+	auto registry = engine::Engine::Get()->commands();
+	registry->add(
+		command::Signature("setDPI")
+		.pushArgType<ui32>() // dots per inch
+		.bind([&](command::Signature const& cmd)
+		{
+			this->renderer()->setDPI(cmd.get<ui32>(0));
+		})
+	);
+}
 
 void Client::init()
 {
@@ -64,7 +78,7 @@ bool Client::createWindow()
 	this->mpWindow = pEngine->createWindow(
 		1280, 720,
 		pEngine->getProject()->getDisplayName(),
-		WindowFlags::RENDER_ON_THREAD | WindowFlags::RESIZABLE
+		WindowFlags::RENDER_ON_THREAD
 	);
 	if (!this->mpWindow) return false;
 	pEngine->initializeVulkan(this->mpWindow->querySDLVulkanExtensions());

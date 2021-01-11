@@ -19,6 +19,7 @@ public:
 
 	Signature(std::string const& id);
 
+	bool isBound() const;
 	Signature& bind(TCallback callback);
 	
 	template <typename T>
