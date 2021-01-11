@@ -49,6 +49,7 @@ public:
 	void run();
 	
 	network::Interface& networkInterface() { return this->mNetworkInterface; }
+	void setLocalUserNetId(ui32 netId);
 	game::UserIdentity& localUser();
 	game::UserIdentity& findConnectedUser(ui32 netId);
 
@@ -71,7 +72,8 @@ private:
 	std::shared_ptr<game::WorldLogic> mpWorldLogic;
 	std::shared_ptr<game::Client> mpClient;
 
-	UserIdentity mLocalUserIdentity;
+	bool mbHasLocalUserNetId;
+	ui32 mLocalUserNetId;
 	std::map<ui32, game::UserIdentity> mConnectedUsers;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;

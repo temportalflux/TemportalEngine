@@ -18,6 +18,16 @@ ChatMessage::ChatMessage()
 {
 }
 
+void ChatMessage::broadcastServerMessage(std::string const& msg)
+{
+	auto packet = ChatMessage::create();
+	packet->mData.senderNetId = 0;
+	packet->mData.bIsServerMessage = true;
+	packet->setMessage(msg);
+	CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", 0, "server", msg.c_str());
+	packet->broadcast();
+}
+
 ChatMessage& ChatMessage::setMessage(std::string const& msg)
 {
 	assert(msg.length() * sizeof(char) < sizeof(this->mData.msg));
@@ -33,16 +43,27 @@ void ChatMessage::process(network::Interface *pInterface)
 	case EType::eServer:
 	{
 		auto netId = pInterface->getNetIdFor(this->connection());
+		this->mData.bIsServerMessage = false;
 		this->mData.senderNetId = netId;
-		CHAT_LOG.log(LOG_INFO, "%s: %s", pGame->findConnectedUser(netId).name.c_str(), this->mData.msg);
+		auto userId = pGame->findConnectedUser(netId);
+		CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", this->mData.senderNetId, userId.name.c_str(), this->mData.msg);
 		this->broadcast();
 		break;
 	}
 	case EType::eClient:
 	{
-		auto userId = pGame->findConnectedUser(this->mData.senderNetId);
-		CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", this->mData.senderNetId, userId.name.c_str(), this->mData.msg);
-		pGame->client()->chat()->onMessageReceived(this->mData.senderNetId, this->mData.msg);
+		std::optional<ui32> senderNetId = std::nullopt;
+		if (this->mData.bIsServerMessage)
+		{
+			CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", 0, "server", this->mData.msg);
+		}
+		else
+		{
+			senderNetId = this->mData.senderNetId;
+			auto userId = pGame->findConnectedUser(this->mData.senderNetId);
+			CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", this->mData.senderNetId, userId.name.c_str(), this->mData.msg);
+		}
+		pGame->client()->chat()->onMessageReceived(senderNetId, this->mData.msg);
 		break;
 	}
 	default: break;

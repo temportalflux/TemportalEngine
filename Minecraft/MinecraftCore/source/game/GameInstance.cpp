@@ -103,7 +103,7 @@ Game::Game(int argc, char *argv[])
 			network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
 		});
 		this->mNetworkInterface.onNetIdReceived.bind(
-			[&](network::Interface *pInterface, ui32 netId) { this->localUser().netId = netId; }
+			[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
 		);
 		this->mNetworkInterface.onClientPeerJoined.bind(
 			[&](network::Interface *pInterface, ui32 netId) { this->addConnectedUser(netId); }
@@ -167,13 +167,22 @@ void Game::addConnectedUser(ui32 netId)
 {
 	auto id = game::UserIdentity();
 	id.netId = netId;
-	id.name = "unknown";
+	id.name = "";
 	this->mConnectedUsers.insert(std::make_pair(netId, id));
+}
+
+void Game::setLocalUserNetId(ui32 netId)
+{
+	assert(!this->mbHasLocalUserNetId);
+	this->mbHasLocalUserNetId = true;
+	this->mLocalUserNetId = netId;
+	this->addConnectedUser(netId);
 }
 
 game::UserIdentity& Game::localUser()
 {
-	return this->mLocalUserIdentity;
+	assert(this->mbHasLocalUserNetId);
+	return this->findConnectedUser(this->mLocalUserNetId);
 }
 
 game::UserIdentity& Game::findConnectedUser(ui32 netId)

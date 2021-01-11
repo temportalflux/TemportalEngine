@@ -11,6 +11,7 @@ class ChatMessage : public Packet
 
 public:
 	ChatMessage();
+	static void broadcastServerMessage(std::string const& msg);
 
 	ChatMessage& setMessage(std::string const& msg);
 
@@ -19,6 +20,7 @@ public:
 private:
 	struct : Packet::Data
 	{
+		bool bIsServerMessage;
 		// empty when sent from client.
 		// filled by server when broadcasting based on the connection id.
 		ui32 senderNetId;

@@ -225,7 +225,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			network::logger().log(LOG_ERR, "Failed to assign a poll group.");
 			return;
 		}
-		
+
 		ui32 const netId = this->nextNetworkId();
 		this->mClients.insert(std::make_pair(data->m_hConn, netId));
 
@@ -239,6 +239,12 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 		packet::ClientJoined::create()->setIsSelf(true).setNetId(netId).send(data->m_hConn);
 		// Tell all other clients that a client has joined
 		packet::ClientJoined::create()->setIsSelf(false).setNetId(netId).broadcast({ data->m_hConn });
+		// Tell the client of the net ids of other already joined clients
+		for (auto const&[connection, clientNetId] : this->mClients)
+		{
+			if (clientNetId == netId) continue;
+			packet::ClientJoined::create()->setIsSelf(false).setNetId(clientNetId).send(data->m_hConn);
+		}
 		break;
 	}
 

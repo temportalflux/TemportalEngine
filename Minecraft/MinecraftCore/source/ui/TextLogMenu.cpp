@@ -110,6 +110,6 @@ void TextLogMenu::onInputConfirmed(std::string input)
 	}
 }
 
-void TextLogMenu::onMessageReceived(ui32 senderNetId, std::string const& message)
+void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string const& message)
 {
 }

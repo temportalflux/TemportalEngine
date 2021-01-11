@@ -21,7 +21,7 @@ public:
 	bool isVisible() const;
 	void setIsVisible(bool bVisible);
 
-	void onMessageReceived(ui32 senderNetId, std::string const& message);
+	void onMessageReceived(std::optional<ui32> senderNetId, std::string const& message);
 
 private:
 	bool mbIsVisible;
