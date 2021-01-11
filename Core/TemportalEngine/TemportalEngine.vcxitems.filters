@@ -359,6 +359,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandSignature.cpp">
       <Filter>command</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacket.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -784,6 +787,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandSignature.hpp">
       <Filter>command</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacket.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketTypeRegistry.hpp">
+      <Filter>network</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

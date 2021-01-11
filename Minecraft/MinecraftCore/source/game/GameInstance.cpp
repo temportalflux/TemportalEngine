@@ -24,6 +24,7 @@
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "network/NetworkCore.hpp"
+#include "network/NetworkPacketChatMessage.hpp"
 #include "utility/StringUtils.hpp"
 
 #include <chrono>
@@ -75,19 +76,22 @@ Game::Game(int argc, char *argv[])
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
 
+	this->mNetworkInterface.packetTypes()
+		.addType<network::PacketChatMessage>();
+
 	if (args.find("server") != args.end())
 	{
-		this->mNetMode |= network::Interface::EType::eServer;
+		this->mNetMode |= network::EType::eServer;
 		this->mServerSettings.readFromDisk();
 		this->mNetworkInterface
-			.setType(network::Interface::EType::eServer)
+			.setType(network::EType::eServer)
 			.setAddress(network::Address().setPort(this->mServerSettings.port()));
 	}
 	else
 	{
-		this->mNetMode |= network::Interface::EType::eClient;
+		this->mNetMode |= network::EType::eClient;
 		this->mUserSettings.readFromDisk();
-		this->mNetworkInterface.setType(network::Interface::EType::eClient);
+		this->mNetworkInterface.setType(network::EType::eClient);
 
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
@@ -102,7 +106,7 @@ Game::~Game()
 
 void Game::registerCommands()
 {
-	if (!this->mNetMode.includes(network::Interface::EType::eClient)) return;
+	if (!this->mNetMode.includes(network::EType::eClient)) return;
 	auto registry = engine::Engine::Get()->commands();
 	registry->add(
 		command::Signature("setName")
@@ -208,7 +212,7 @@ void Game::init()
 	
 	//this->bindInput();
 
-	if (this->mNetworkInterface.type() == network::Interface::EType::eServer)
+	if (this->mNetworkInterface.type() == network::EType::eServer)
 	{
 		this->mNetworkInterface.start();
 	}

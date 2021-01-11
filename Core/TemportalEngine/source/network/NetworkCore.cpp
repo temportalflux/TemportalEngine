@@ -10,6 +10,21 @@ using namespace network;
 
 logging::Logger NETWORK_LOG = DeclareLog("Network");
 
+std::vector<EType> utility::EnumWrapper<EType>::ALL = {
+	EType::eClient,
+	EType::eServer,
+};
+std::string utility::EnumWrapper<EType>::to_string() const
+{
+	switch (value())
+	{
+	case EType::eClient: return "client";
+	case EType::eServer: return "server";
+	default: return "invalid";
+	}
+}
+std::string utility::EnumWrapper<EType>::to_display_string() const { return to_string(); }
+
 logging::Logger& network::logger()
 {
 	return NETWORK_LOG;

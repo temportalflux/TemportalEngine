@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	game::Game::Destroy();
-	logMain.log(logging::ECategory::LOGINFO, "Closing log. File can be found at %s", logFileName.c_str());
+	logMain.log(logging::ECategory::LOGINFO, "Closing log. File can be found at %s", logFileName.string().c_str());
 	engine::Engine::LOG_SYSTEM.close();
 	
 	return 0;

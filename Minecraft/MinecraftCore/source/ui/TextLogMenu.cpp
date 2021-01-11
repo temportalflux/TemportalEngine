@@ -6,6 +6,7 @@
 #include "game/GameInstance.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
+#include "network/NetworkPacketChatMessage.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 #include "utility/StringUtils.hpp"
@@ -106,8 +107,7 @@ void TextLogMenu::onInputConfirmed(std::string input)
 	}
 	else
 	{
-		// TODO: Dispatch chat to server
-		TEXTLOGMENU_LOG.log(LOG_INFO, input.c_str());
+		network::PacketChatMessage::create()->setMessage(input).sendToServer();
 	}
 
 }

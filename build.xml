@@ -49,7 +49,6 @@
   <target name="game.client" description="Runs the Minecraft game executable.">
     <run_game>
       <extArgs>
-        <arg line="client=127.0.0.1:27020" />
       </extArgs>
     </run_game>
   </target>
@@ -57,7 +56,7 @@
   <target name="game.server" description="Runs the Minecraft game executable.">
     <run_game>
       <extArgs>
-        <arg line="server=27020" />
+        <arg line="server" />
       </extArgs>
     </run_game>
   </target>

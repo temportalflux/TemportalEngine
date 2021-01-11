@@ -2,27 +2,13 @@
 
 #include "game/GameInstance.hpp"
 #include "network/NetworkCore.hpp"
+#include "network/NetworkPacket.hpp"
 #include "utility/Casting.hpp"
 
 #include <steam/steamnetworkingsockets.h>
 #include <steam/isteamnetworkingutils.h>
 
 using namespace network;
-
-std::vector<Interface::EType> utility::EnumWrapper<Interface::EType>::ALL = {
-	Interface::EType::eClient,
-	Interface::EType::eServer,
-};
-std::string utility::EnumWrapper<Interface::EType>::to_string() const
-{
-	switch (value())
-	{
-		case Interface::EType::eClient: return "client";
-		case Interface::EType::eServer: return "server";
-		default: return "invalid";
-	}
-}
-std::string utility::EnumWrapper<Interface::EType>::to_display_string() const { return to_string(); }
 
 SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key, network::Interface *interface, void (network::Interface::*f)(void*))
 {
@@ -53,10 +39,10 @@ void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 	auto& netInterface = game::Game::Get()->networkInterface();
 	switch (netInterface.type())
 	{
-	case network::Interface::EType::eServer:
+	case network::EType::eServer:
 		netInterface.onServerConnectionStatusChanged((void*)pInfo);
 		break;
-	case network::Interface::EType::eClient:
+	case network::EType::eClient:
 		netInterface.onClientConnectionStatusChanged((void*)pInfo);
 		break;
 	default: break;
@@ -160,7 +146,16 @@ void Interface::update(f32 deltaTime)
 {
 	if (this->mpInternal == nullptr) return;
 	if (!this->hasConnection()) return;
+	
 	this->pollIncomingMessages();
+	
+	while (this->mReceivedPackets.size() > 0)
+	{
+		auto iter = this->mReceivedPackets.begin();
+		(*iter)->process(this->type());
+		this->mReceivedPackets.erase(iter);
+	}
+	
 	as<ISteamNetworkingSockets>(this->mpInternal)->RunCallbacks();
 }
 
@@ -190,13 +185,18 @@ void Interface::pollIncomingMessages()
 		return;
 	}
 	assert(numMsgs == 1 && pIncomingMsg);
-	// TODO: Add message to queue
+	
+	auto data = reinterpret_cast<Packet::Data*>(pIncomingMsg->m_pData);
+	auto pPacket = this->packetTypes().create(data->packetTypeId);
+	assert(pIncomingMsg->m_cbSize == pPacket->dataSize());
+	memcpy_s(pPacket->data(), pPacket->dataSize(), pIncomingMsg->m_pData, pPacket->dataSize());
 	pIncomingMsg->Release();
+	this->mReceivedPackets.push_back(pPacket);
 }
 
 void Interface::onServerConnectionStatusChanged(void* pInfo)
 {
-	assert(this->mType == Interface::EType::eServer);
+	assert(this->mType == EType::eServer);
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
 	switch (data->m_info.m_eState)
@@ -268,7 +268,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 
 void Interface::onClientConnectionStatusChanged(void* pInfo)
 {
-	assert(this->mType == Interface::EType::eClient);
+	assert(this->mType == EType::eClient);
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
 	assert(data->m_hConn == this->mConnection || this->mConnection == k_HSteamNetConnection_Invalid);
@@ -310,5 +310,38 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	}
 
 	default: break;
+	}
+}
+
+void Interface::sendPackets(ui32 connection, std::vector<std::shared_ptr<Packet>> const& packets)
+{
+	OPTICK_EVENT();
+	assert(this->mpInternal != nullptr);
+
+	auto utils = SteamNetworkingUtils();
+	auto messages = std::vector<SteamNetworkingMessage_t*>();
+	for (auto pPacket : packets)
+	{
+		auto message = utils->AllocateMessage(pPacket->dataSize());
+		message->m_conn = connection;
+		message->m_nFlags = ui32(pPacket->flags().data());
+		memcpy_s(message->m_pData, pPacket->dataSize(), pPacket->data(), pPacket->dataSize());
+		messages.push_back(message);
+	}
+	
+	// All messages ptrs are owned by the interface after this call (no need to free them).
+	// network::Packet objects are either discarded at then end of this stack,
+	// or soon after because of `shared_ptr`.
+	as<ISteamNetworkingSockets>(this->mpInternal)->SendMessages((ui32)messages.size(), messages.data(), nullptr);
+}
+
+void Interface::broadcastPackets(std::vector<std::shared_ptr<Packet>> const& packets)
+{
+	OPTICK_EVENT();
+	assert(this->mpInternal != nullptr);
+	assert(this->type() == EType::eServer);
+	for (auto clientId : this->mClientIds)
+	{
+		this->sendPackets(clientId, packets);
 	}
 }

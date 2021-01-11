@@ -57,7 +57,7 @@ public:
 private:
 	logging::Logger mProjectLog;
 
-	utility::Flags<network::Interface::EType> mNetMode;
+	utility::Flags<network::EType> mNetMode;
 
 	// TODO: Move to class dedicated to server logic (should still be accessible by ClientOnTopOfServer)
 	game::ServerSettings mServerSettings;

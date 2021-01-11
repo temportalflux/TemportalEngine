@@ -58,6 +58,9 @@
     <Filter Include="settings">
       <UniqueIdentifier>{ab04c31d-c0b0-4bfe-b215-f283925c9c93}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{dc362181-efd0-444d-89d9-01bc9bee9fcb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
@@ -199,6 +202,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\Settings.hpp">
       <Filter>settings</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\network\NetworkPacketChatMessage.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -319,6 +325,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\Settings.cpp">
       <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketChatMessage.cpp">
+      <Filter>network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
