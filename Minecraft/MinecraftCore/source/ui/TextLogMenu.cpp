@@ -113,3 +113,8 @@ void TextLogMenu::onInputConfirmed(std::string input)
 void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string const& message)
 {
 }
+
+void TextLogMenu::addToLog(std::string const& message)
+{
+	TEXTLOGMENU_LOG.log(LOG_INFO, message.c_str());
+}

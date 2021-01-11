@@ -134,6 +134,7 @@ public:
 	
 	void sendToServer();
 	void send(ui32 connection);
+	void sendTo(ui32 netId);
 	void broadcast(std::set<ui32> except = {});
 
 	virtual Data* data() = 0;

@@ -3,7 +3,7 @@
 #include "game/GameInstance.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkPacket.hpp"
-#include "network/packet/NetworkPacketClientJoined.hpp"
+#include "network/packet/NetworkPacketClientStatus.hpp"
 #include "utility/Casting.hpp"
 
 #include <steam/steamnetworkingsockets.h>
@@ -22,7 +22,7 @@ SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key,
 Interface::Interface() : mpInternal(nullptr), mType(EType::eInvalid), mConnection(0)
 {
 	this->packetTypes()
-		.addType<network::packet::ClientJoined>()
+		.addType<network::packet::ClientStatus>()
 		;
 }
 
@@ -111,6 +111,7 @@ void Interface::stop()
 			pInterface->CloseConnection(connection, 0, "Server Shutdown", true);
 		}
 		this->mClients.clear();
+		this->mNetIdToConnection.clear();
 
 		if (this->mConnection != k_HSteamListenSocket_Invalid)
 		{
@@ -228,23 +229,33 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 
 		ui32 const netId = this->nextNetworkId();
 		this->mClients.insert(std::make_pair(data->m_hConn, netId));
+		this->mNetIdToConnection.insert(std::make_pair(netId, data->m_hConn));
 
 		network::logger().log(
 			LOG_INFO, "Accepted connection request from %s. Assigned network-id $i.",
 			data->m_info.m_szConnectionDescription, netId
 		);
 
-		this->onConnectionEstablished.execute(this, data->m_hConn, netId);
 		// Tell the client its own net id
-		packet::ClientJoined::create()->setIsSelf(true).setNetId(netId).send(data->m_hConn);
+		packet::ClientStatus::create()
+			->setStatus(EClientStatus::eConnected)
+			.setIsSelf(true).setNetId(netId)
+			.send(data->m_hConn);
 		// Tell all other clients that a client has joined
-		packet::ClientJoined::create()->setIsSelf(false).setNetId(netId).broadcast({ data->m_hConn });
+		packet::ClientStatus::create()
+			->setStatus(EClientStatus::eConnected).
+			setIsSelf(false).setNetId(netId)
+			.broadcast({ data->m_hConn });
 		// Tell the client of the net ids of other already joined clients
 		for (auto const&[connection, clientNetId] : this->mClients)
 		{
 			if (clientNetId == netId) continue;
-			packet::ClientJoined::create()->setIsSelf(false).setNetId(clientNetId).send(data->m_hConn);
+			packet::ClientStatus::create()
+				->setStatus(EClientStatus::eConnected)
+				.setIsSelf(false).setNetId(clientNetId)
+				.send(data->m_hConn);
 		}
+		this->onConnectionEstablished.execute(this, data->m_hConn, netId);
 		break;
 	}
 
@@ -273,7 +284,16 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 				data->m_info.m_eEndReason, data->m_info.m_szEndDebug
 			);
 
-			this->mClients.erase(this->mClients.find(data->m_hConn));
+			auto iterClient = this->mClients.find(data->m_hConn);
+			auto netId = iterClient->second;
+			this->mClients.erase(iterClient);
+			this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId));
+
+			this->onConnectionClosed.execute(this, data->m_hConn, netId);
+			packet::ClientStatus::create()
+				->setStatus(EClientStatus::eDisconnected)
+				.setIsSelf(false).setNetId(netId)
+				.broadcast({ data->m_hConn });
 		}
 		// Actually destroy the connection data in the API
 		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
@@ -377,10 +397,28 @@ ui32 Interface::nextNetworkId()
 	return (ui32)this->mClients.size();
 }
 
+std::set<ui32> Interface::connectedClientNetIds() const
+{
+	auto ids = std::set<ui32>();
+	for (auto const& [connection, netId] : this->mClients)
+	{
+		ids.insert(netId);
+	}
+	return ids;
+}
+
 ui32 Interface::getNetIdFor(ui32 connection) const
 {
 	assert(this->type() == EType::eServer);
 	auto iter = this->mClients.find(connection);
 	assert(iter != this->mClients.end());
+	return iter->second;
+}
+
+ui32 Interface::getConnectionFor(ui32 netId) const
+{
+	assert(this->type() == EType::eServer);
+	auto iter = this->mNetIdToConnection.find(netId);
+	assert(iter != this->mNetIdToConnection.end());
 	return iter->second;
 }

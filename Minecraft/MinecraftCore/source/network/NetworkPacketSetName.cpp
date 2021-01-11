@@ -15,6 +15,12 @@ SetName::SetName()
 {
 }
 
+SetName& SetName::setNetId(ui32 netId)
+{
+	this->mData.netId = netId;
+	return *this;
+}
+
 SetName& SetName::setName(std::string const& name)
 {
 	assert(name.length() * sizeof(char) < sizeof(this->mData.name));
@@ -28,7 +34,7 @@ void SetName::process(Interface *pInterface)
 	{
 	case EType::eServer:
 	{
-		this->mData.netId = pInterface->getNetIdFor(this->connection());
+		this->setNetId(pInterface->getNetIdFor(this->connection()));
 		network::logger().log(LOG_INFO, "Received alias %s for network-id %i", this->mData.name, this->mData.netId);
 		
 		auto& userId = game::Game::Get()->findConnectedUser(this->mData.netId);
@@ -45,11 +51,8 @@ void SetName::process(Interface *pInterface)
 	}
 	case EType::eClient:
 	{
-		if (this->connection() != pInterface->connection())
-		{
-			network::logger().log(LOG_INFO, "Received alias %s for network-id %i", this->mData.name, this->mData.netId);
-			game::Game::Get()->findConnectedUser(this->mData.netId).name = this->mData.name;
-		}
+		network::logger().log(LOG_INFO, "Received alias %s for network-id %i", this->mData.name, this->mData.netId);
+		game::Game::Get()->findConnectedUser(this->mData.netId).name = this->mData.name;
 		break;
 	}
 	default: break;

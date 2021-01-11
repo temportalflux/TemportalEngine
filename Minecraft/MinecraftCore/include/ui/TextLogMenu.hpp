@@ -22,6 +22,7 @@ public:
 	void setIsVisible(bool bVisible);
 
 	void onMessageReceived(std::optional<ui32> senderNetId, std::string const& message);
+	void addToLog(std::string const& message);
 
 private:
 	bool mbIsVisible;

@@ -56,6 +56,12 @@ void Packet::send(ui32 connection)
 	game::Game::Get()->networkInterface().sendPackets(connection, { this->finalize() });
 }
 
+void Packet::sendTo(ui32 netId)
+{
+	auto connection = game::Game::Get()->networkInterface().getConnectionFor(netId);
+	this->send(connection);
+}
+
 void Packet::broadcast(std::set<ui32> except)
 {
 	game::Game::Get()->networkInterface().broadcastPackets({ this->finalize() }, except);

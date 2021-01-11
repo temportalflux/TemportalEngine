@@ -27,6 +27,7 @@
 #include "network/NetworkPacketChatMessage.hpp"
 #include "network/NetworkPacketSetName.hpp"
 #include "utility/StringUtils.hpp"
+#include "ui/TextLogMenu.hpp"
 
 #include <chrono>
 
@@ -59,7 +60,7 @@ void Game::Destroy()
 	}
 }
 
-Game::Game(int argc, char *argv[])
+Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 {
 	uSize totalMem = 0;
 	auto args = utility::parseArguments(argc, argv);
@@ -90,7 +91,29 @@ Game::Game(int argc, char *argv[])
 			.setType(network::EType::eServer)
 			.setAddress(network::Address().setPort(this->mServerSettings.port()));
 		this->mNetworkInterface.onConnectionEstablished.bind(
-			[&](network::Interface *pInterface, ui32 connection, ui32 netId) { this->addConnectedUser(netId); }
+			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
+			{
+				this->addConnectedUser(netId);
+				for (auto const& anyNetId : pInterface->connectedClientNetIds())
+				{
+					if (anyNetId == netId) continue;
+					auto const& existingUser = this->findConnectedUser(anyNetId);
+					network::packet::SetName::create()
+						->setNetId(anyNetId)
+						.setName(existingUser.name)
+						.sendTo(netId);
+				}
+			}
+		);
+		this->mNetworkInterface.onConnectionClosed.bind(
+			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
+			{
+				auto const& user = this->findConnectedUser(netId);
+				network::packet::ChatMessage::broadcastServerMessage(
+					utility::formatStr("%s has left the server.", user.name.c_str())
+				);
+				this->removeConnectedUser(netId);
+			}
 		);
 	}
 	else
@@ -105,8 +128,12 @@ Game::Game(int argc, char *argv[])
 		this->mNetworkInterface.onNetIdReceived.bind(
 			[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
 		);
-		this->mNetworkInterface.onClientPeerJoined.bind(
-			[&](network::Interface *pInterface, ui32 netId) { this->addConnectedUser(netId); }
+		this->mNetworkInterface.onClientPeerStatusChanged.bind(
+			[&](network::Interface *pInterface, ui32 netId, network::EClientStatus status)
+			{
+				if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
+				else this->removeConnectedUser(netId);
+			}
 		);
 
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
@@ -161,14 +188,16 @@ void Game::registerCommands()
 			this->mNetworkInterface.stop();
 		})
 	);
-}
-
-void Game::addConnectedUser(ui32 netId)
-{
-	auto id = game::UserIdentity();
-	id.netId = netId;
-	id.name = "";
-	this->mConnectedUsers.insert(std::make_pair(netId, id));
+	registry->add(
+		command::Signature("listUsers")
+		.bind([&](command::Signature const& cmd)
+		{
+			for (auto const& [netId, user] : this->mConnectedUsers)
+			{
+				this->client()->chat()->addToLog(user.name);
+			}
+		})
+	);
 }
 
 void Game::setLocalUserNetId(ui32 netId)
@@ -185,11 +214,26 @@ game::UserIdentity& Game::localUser()
 	return this->findConnectedUser(this->mLocalUserNetId);
 }
 
+void Game::addConnectedUser(ui32 netId)
+{
+	auto id = game::UserIdentity();
+	id.netId = netId;
+	id.name = "";
+	this->mConnectedUsers.insert(std::make_pair(netId, id));
+}
+
 game::UserIdentity& Game::findConnectedUser(ui32 netId)
 {
 	auto iter = this->mConnectedUsers.find(netId);
 	assert(iter != this->mConnectedUsers.end());
 	return iter->second;
+}
+
+void Game::removeConnectedUser(ui32 netId)
+{
+	auto iter = this->mConnectedUsers.find(netId);
+	assert(iter != this->mConnectedUsers.end());
+	this->mConnectedUsers.erase(iter);
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()

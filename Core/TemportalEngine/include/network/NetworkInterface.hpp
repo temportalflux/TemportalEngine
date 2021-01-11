@@ -23,8 +23,10 @@ public:
 	Interface& setAddress(Address const& address);
 
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionEstablished;
+	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionClosed;
+
 	ExecuteDelegate<void(Interface*, ui32 netId)> onNetIdReceived;
-	ExecuteDelegate<void(Interface*, ui32 netId)> onClientPeerJoined;
+	ExecuteDelegate<void(Interface*, ui32 netId, EClientStatus status)> onClientPeerStatusChanged;
 
 	void start();
 	bool hasConnection() const;
@@ -35,7 +37,9 @@ public:
 	void sendPackets(ui32 connection, std::vector<std::shared_ptr<packet::Packet>> const& packets);
 	void broadcastPackets(std::vector<std::shared_ptr<packet::Packet>> const& packets, std::set<ui32> except = {});
 
+	std::set<ui32> connectedClientNetIds() const;
 	ui32 getNetIdFor(ui32 connection) const;
+	ui32 getConnectionFor(ui32 netId) const;
 
 private:
 	PacketTypeRegistry mPacketRegistry;
@@ -53,6 +57,7 @@ private:
 	ui32 mServerPollGroup;
 
 	std::map<ui32 /*connectionId*/, ui32 /*netId*/> mClients;
+	std::map<ui32 /*netId*/, ui32 /*connectionId*/> mNetIdToConnection;
 	std::set<ui32> mUnusedNetIds;
 	ui32 nextNetworkId();
 

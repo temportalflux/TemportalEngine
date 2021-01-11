@@ -24,7 +24,7 @@ void ChatMessage::broadcastServerMessage(std::string const& msg)
 	packet->mData.senderNetId = 0;
 	packet->mData.bIsServerMessage = true;
 	packet->setMessage(msg);
-	CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", 0, "server", msg.c_str());
+	CHAT_LOG.log(LOG_INFO, "<%s> %s", "server", msg.c_str());
 	packet->broadcast();
 }
 
@@ -46,7 +46,7 @@ void ChatMessage::process(network::Interface *pInterface)
 		this->mData.bIsServerMessage = false;
 		this->mData.senderNetId = netId;
 		auto userId = pGame->findConnectedUser(netId);
-		CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", this->mData.senderNetId, userId.name.c_str(), this->mData.msg);
+		CHAT_LOG.log(LOG_INFO, "<%s> %s", userId.name.c_str(), this->mData.msg);
 		this->broadcast();
 		break;
 	}
@@ -55,13 +55,13 @@ void ChatMessage::process(network::Interface *pInterface)
 		std::optional<ui32> senderNetId = std::nullopt;
 		if (this->mData.bIsServerMessage)
 		{
-			CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", 0, "server", this->mData.msg);
+			CHAT_LOG.log(LOG_INFO, "<%s> %s", "server", this->mData.msg);
 		}
 		else
 		{
 			senderNetId = this->mData.senderNetId;
 			auto userId = pGame->findConnectedUser(this->mData.senderNetId);
-			CHAT_LOG.log(LOG_INFO, "(%i)<%s> %s", this->mData.senderNetId, userId.name.c_str(), this->mData.msg);
+			CHAT_LOG.log(LOG_INFO, "<%s> %s", userId.name.c_str(), this->mData.msg);
 		}
 		pGame->client()->chat()->onMessageReceived(senderNetId, this->mData.msg);
 		break;

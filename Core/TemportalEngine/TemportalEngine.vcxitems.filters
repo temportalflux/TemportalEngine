@@ -365,7 +365,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacket.cpp">
       <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketClientJoined.cpp">
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\source\network\packet\NetworkPacketClientStatus.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
   </ItemGroup>
@@ -800,7 +800,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketTypeRegistry.hpp">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketClientJoined.hpp">
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\network\packet\NetworkPacketClientStatus.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
   </ItemGroup>

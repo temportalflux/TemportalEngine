@@ -52,6 +52,7 @@ public:
 	void setLocalUserNetId(ui32 netId);
 	game::UserIdentity& localUser();
 	game::UserIdentity& findConnectedUser(ui32 netId);
+	void removeConnectedUser(ui32 netId);
 
 	std::shared_ptr<game::WorldLogic> worldLogic() { return this->mpWorldLogic; }
 	std::shared_ptr<game::Client> client() { return this->mpClient; }

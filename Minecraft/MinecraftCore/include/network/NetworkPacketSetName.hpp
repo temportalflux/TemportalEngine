@@ -12,6 +12,7 @@ class SetName : public Packet
 public:
 	SetName();
 
+	SetName& setNetId(ui32 netId);
 	SetName& setName(std::string const& name);
 
 	void process(Interface *pInterface) override;
