@@ -39,6 +39,7 @@ utility::Flags<EPacketFlags> const& Packet::flags() const
 
 std::shared_ptr<Packet> Packet::finalize()
 {
+	this->assetDataPacketTypeId();
 	return this->shared_from_this();
 }
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "network/NetworkCore.hpp"
+#include "Delegate.hpp"
 
+#include "game/UserIdentity.hpp"
 #include "network/NetworkAddress.hpp"
 #include "network/NetworkPacketTypeRegistry.hpp"
 
@@ -21,6 +23,7 @@ public:
 	
 	Interface& setAddress(Address const& address);
 
+	ExecuteDelegate<void(Interface*, ui32 connection)> onConnectionEstablished;
 	void start();
 	bool hasConnection() const;
 	void update(f32 deltaTime);
@@ -29,6 +32,8 @@ public:
 	ui32 connection() const { return this->mConnection; }
 	void sendPackets(ui32 connection, std::vector<std::shared_ptr<Packet>> const& packets);
 	void broadcastPackets(std::vector<std::shared_ptr<Packet>> const& packets);
+
+	game::UserIdentity& findIdentity(ui32 connection);
 
 private:
 	PacketTypeRegistry mPacketRegistry;
@@ -45,7 +50,7 @@ private:
 	ui32 mConnection;
 	ui32 mServerPollGroup;
 
-	std::set<ui32> mClientIds;
+	std::map<ui32, game::UserIdentity> mClients;
 
 	std::vector<std::shared_ptr<Packet>> mReceivedPackets;
 

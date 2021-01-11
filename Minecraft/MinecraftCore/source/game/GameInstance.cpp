@@ -25,6 +25,7 @@
 #include "math/Matrix.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkPacketChatMessage.hpp"
+#include "network/NetworkPacketSetName.hpp"
 #include "utility/StringUtils.hpp"
 
 #include <chrono>
@@ -77,7 +78,9 @@ Game::Game(int argc, char *argv[])
 	this->initializeAssetTypes();
 
 	this->mNetworkInterface.packetTypes()
-		.addType<network::PacketChatMessage>();
+		.addType<network::PacketChatMessage>()
+		.addType<network::PacketSetName>()
+		;
 
 	if (args.find("server") != args.end())
 	{
@@ -92,6 +95,10 @@ Game::Game(int argc, char *argv[])
 		this->mNetMode |= network::EType::eClient;
 		this->mUserSettings.readFromDisk();
 		this->mNetworkInterface.setType(network::EType::eClient);
+		this->mNetworkInterface.onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection)
+		{
+			network::PacketSetName::create()->setName(this->mUserSettings.name()).sendToServer();
+		});
 
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
@@ -113,7 +120,12 @@ void Game::registerCommands()
 		.pushArgType<std::string>()
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mUserSettings.setName(cmd.get<std::string>(0)).writeToDisk();
+			auto name = cmd.get<std::string>(0);
+			this->mUserSettings.setName(name).writeToDisk();
+			if (this->mNetworkInterface.hasConnection())
+			{
+				network::PacketSetName::create()->setName(name).sendToServer();
+			}
 		})
 	);
 	registry->add(

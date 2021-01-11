@@ -205,6 +205,9 @@
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\network\NetworkPacketChatMessage.hpp">
       <Filter>network</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketSetName.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -327,6 +330,9 @@
       <Filter>settings</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketChatMessage.cpp">
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketSetName.cpp">
       <Filter>network</Filter>
     </ClCompile>
   </ItemGroup>

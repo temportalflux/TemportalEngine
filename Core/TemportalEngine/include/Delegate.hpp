@@ -167,6 +167,7 @@ public:
 	template <typename... TArgs>
 	void broadcast(TEventType evt, TArgs... args)
 	{
+		if (this->mBindings.size() < 0) return;
 		auto range = this->mBindings.equal_range(evt);
 		for (auto it = range.first; it != range.second;)
 		{

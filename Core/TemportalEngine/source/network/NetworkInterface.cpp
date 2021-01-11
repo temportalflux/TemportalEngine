@@ -102,11 +102,11 @@ void Interface::stop()
 	{
 		network::logger().log(LOG_INFO, "Server is shutting down.");
 
-		for (auto const& clientId : this->mClientIds)
+		for (auto const& [clientId,identity] : this->mClients)
 		{
 			pInterface->CloseConnection(clientId, 0, "Server Shutdown", true);
 		}
-		this->mClientIds.clear();
+		this->mClients.clear();
 
 		if (this->mConnection != k_HSteamListenSocket_Invalid)
 		{
@@ -152,7 +152,7 @@ void Interface::update(f32 deltaTime)
 	while (this->mReceivedPackets.size() > 0)
 	{
 		auto iter = this->mReceivedPackets.begin();
-		(*iter)->process(this->type());
+		(*iter)->process(this);
 		this->mReceivedPackets.erase(iter);
 	}
 	
@@ -189,6 +189,7 @@ void Interface::pollIncomingMessages()
 	auto data = reinterpret_cast<Packet::Data*>(pIncomingMsg->m_pData);
 	auto pPacket = this->packetTypes().create(data->packetTypeId);
 	assert(pIncomingMsg->m_cbSize == pPacket->dataSize());
+	pPacket->setSourceConnection(pIncomingMsg->m_conn);
 	memcpy_s(pPacket->data(), pPacket->dataSize(), pIncomingMsg->m_pData, pPacket->dataSize());
 	pIncomingMsg->Release();
 	this->mReceivedPackets.push_back(pPacket);
@@ -221,12 +222,14 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			return;
 		}
 
-		this->mClientIds.insert(data->m_hConn);
+		this->mClients.insert(std::make_pair(data->m_hConn, game::UserIdentity()));
 
 		network::logger().log(
 			LOG_INFO, "Accepted connection request from %s",
 			data->m_info.m_szConnectionDescription
 		);
+
+		this->onConnectionEstablished.execute(this, data->m_hConn);
 		break;
 	}
 
@@ -255,7 +258,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 				data->m_info.m_eEndReason, data->m_info.m_szEndDebug
 			);
 
-			this->mClientIds.erase(this->mClientIds.find(data->m_hConn));
+			this->mClients.erase(this->mClients.find(data->m_hConn));
 		}
 		// Actually destroy the connection data in the API
 		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
@@ -283,6 +286,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	case k_ESteamNetworkingConnectionState_Connected:
 	{
 		network::logger().log(LOG_INFO, "Successfully connected to server.");
+		this->onConnectionEstablished.execute(this, data->m_hConn);
 		break;
 	}
 
@@ -340,8 +344,15 @@ void Interface::broadcastPackets(std::vector<std::shared_ptr<Packet>> const& pac
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
 	assert(this->type() == EType::eServer);
-	for (auto clientId : this->mClientIds)
+	for (auto const& [clientId, identity] : this->mClients)
 	{
 		this->sendPackets(clientId, packets);
 	}
+}
+
+game::UserIdentity& Interface::findIdentity(ui32 connection)
+{
+	auto iter = this->mClients.find(connection);
+	assert(iter != this->mClients.end());
+	return iter->second;
 }

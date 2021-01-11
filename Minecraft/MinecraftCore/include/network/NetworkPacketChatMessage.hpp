@@ -6,19 +6,14 @@ NS_NETWORK
 
 class PacketChatMessage : public Packet
 {
+	DECLARE_PACKET_TYPE(PacketChatMessage)
 
 public:
-	static ui32 TypeId;
-
 	PacketChatMessage();
-
-	static std::shared_ptr<PacketChatMessage> create();
-	Packet::Data* data() override { return dynamic_cast<Packet::Data*>(&this->mData); }
-	ui32 dataSize() const override { return sizeof(this->mData); }
 
 	PacketChatMessage& setMessage(std::string const& msg);
 
-	void process(network::EType netType) override;
+	void process(Interface *pInterface) override;
 
 private:
 	struct : Packet::Data

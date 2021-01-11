@@ -4,7 +4,23 @@
 
 #include "utility/Flags.hpp"
 
+#define DECLARE_PACKET_TYPE(ClassType) \
+public: \
+	static ui32 TypeId; \
+	static std::shared_ptr<ClassType> create(); \
+	Packet::Data* data() override; \
+	ui32 dataSize() const override; \
+protected: \
+	void assetDataPacketTypeId() override;
+#define DEFINE_PACKET_TYPE(ClassType, DATA_PROPERTY_NAME) \
+	ui32 ClassType::TypeId = 0; \
+	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); } \
+	void ClassType::assetDataPacketTypeId() { this->data()->packetTypeId = ClassType::TypeId; } \
+	Packet::Data* ClassType::data() { return dynamic_cast<Packet::Data*>(&DATA_PROPERTY_NAME); } \
+	ui32 ClassType::dataSize() const { return sizeof(DATA_PROPERTY_NAME); }
+
 NS_NETWORK
+class Interface;
 
 enum class EPacketFlags
 {
@@ -118,10 +134,16 @@ public:
 	virtual Data* data() = 0;
 	virtual ui32 dataSize() const = 0;
 
-	virtual void process(network::EType netType) = 0;
+	void setSourceConnection(ui32 connection) { this->mConnection = connection; }
+	ui32 connection() const { return this->mConnection; }
+	virtual void process(Interface *pInterface) = 0;
+
+protected:
+	virtual void assetDataPacketTypeId() {}
 
 private:
 	utility::Flags<EPacketFlags> mFlags;
+	ui32 mConnection;
 
 };
 
