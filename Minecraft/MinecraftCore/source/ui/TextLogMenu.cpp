@@ -81,7 +81,6 @@ void TextLogMenu::setIsVisible(bool bVisible)
 {
 	this->mbIsVisible = bVisible;
 	this->mpInputBarBkgd->setIsVisible(bVisible);
-	this->mpLogBkgd->setIsVisible(bVisible);
 	this->mpInputText->setIsVisible(bVisible);
 }
 
@@ -107,7 +106,10 @@ void TextLogMenu::onInputConfirmed(std::string input)
 	}
 	else
 	{
-		network::PacketChatMessage::create()->setMessage(input).sendToServer();
+		network::packet::ChatMessage::create()->setMessage(input).sendToServer();
 	}
+}
 
+void TextLogMenu::onMessageReceived(ui32 senderNetId, std::string const& message)
+{
 }

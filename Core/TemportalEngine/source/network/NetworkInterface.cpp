@@ -3,6 +3,7 @@
 #include "game/GameInstance.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkPacket.hpp"
+#include "network/packet/NetworkPacketClientJoined.hpp"
 #include "utility/Casting.hpp"
 
 #include <steam/steamnetworkingsockets.h>
@@ -20,6 +21,9 @@ SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key,
 
 Interface::Interface() : mpInternal(nullptr), mType(EType::eInvalid), mConnection(0)
 {
+	this->packetTypes()
+		.addType<network::packet::ClientJoined>()
+		;
 }
 
 Interface& Interface::setType(EType type)
@@ -102,9 +106,9 @@ void Interface::stop()
 	{
 		network::logger().log(LOG_INFO, "Server is shutting down.");
 
-		for (auto const& [clientId,identity] : this->mClients)
+		for (auto const& [connection, netId] : this->mClients)
 		{
-			pInterface->CloseConnection(clientId, 0, "Server Shutdown", true);
+			pInterface->CloseConnection(connection, 0, "Server Shutdown", true);
 		}
 		this->mClients.clear();
 
@@ -186,8 +190,8 @@ void Interface::pollIncomingMessages()
 	}
 	assert(numMsgs == 1 && pIncomingMsg);
 	
-	auto data = reinterpret_cast<Packet::Data*>(pIncomingMsg->m_pData);
-	auto pPacket = this->packetTypes().create(data->packetTypeId);
+	auto data = reinterpret_cast<packet::Packet::Data*>(pIncomingMsg->m_pData);
+	std::shared_ptr<packet::Packet> pPacket = this->packetTypes().create(data->packetTypeId);
 	assert(pIncomingMsg->m_cbSize == pPacket->dataSize());
 	pPacket->setSourceConnection(pIncomingMsg->m_conn);
 	memcpy_s(pPacket->data(), pPacket->dataSize(), pIncomingMsg->m_pData, pPacket->dataSize());
@@ -221,15 +225,20 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			network::logger().log(LOG_ERR, "Failed to assign a poll group.");
 			return;
 		}
-
-		this->mClients.insert(std::make_pair(data->m_hConn, game::UserIdentity()));
+		
+		ui32 const netId = this->nextNetworkId();
+		this->mClients.insert(std::make_pair(data->m_hConn, netId));
 
 		network::logger().log(
-			LOG_INFO, "Accepted connection request from %s",
-			data->m_info.m_szConnectionDescription
+			LOG_INFO, "Accepted connection request from %s. Assigned network-id $i.",
+			data->m_info.m_szConnectionDescription, netId
 		);
 
-		this->onConnectionEstablished.execute(this, data->m_hConn);
+		this->onConnectionEstablished.execute(this, data->m_hConn, netId);
+		// Tell the client its own net id
+		packet::ClientJoined::create()->setIsSelf(true).setNetId(netId).send(data->m_hConn);
+		// Tell all other clients that a client has joined
+		packet::ClientJoined::create()->setIsSelf(false).setNetId(netId).broadcast({ data->m_hConn });
 		break;
 	}
 
@@ -286,7 +295,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	case k_ESteamNetworkingConnectionState_Connected:
 	{
 		network::logger().log(LOG_INFO, "Successfully connected to server.");
-		this->onConnectionEstablished.execute(this, data->m_hConn);
+		this->onConnectionEstablished.execute(this, data->m_hConn, 0);
 		break;
 	}
 
@@ -317,7 +326,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	}
 }
 
-void Interface::sendPackets(ui32 connection, std::vector<std::shared_ptr<Packet>> const& packets)
+void Interface::sendPackets(ui32 connection, std::vector<std::shared_ptr<packet::Packet>> const& packets)
 {
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
@@ -339,19 +348,32 @@ void Interface::sendPackets(ui32 connection, std::vector<std::shared_ptr<Packet>
 	as<ISteamNetworkingSockets>(this->mpInternal)->SendMessages((ui32)messages.size(), messages.data(), nullptr);
 }
 
-void Interface::broadcastPackets(std::vector<std::shared_ptr<Packet>> const& packets)
+void Interface::broadcastPackets(std::vector<std::shared_ptr<packet::Packet>> const& packets, std::set<ui32> except)
 {
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
 	assert(this->type() == EType::eServer);
-	for (auto const& [clientId, identity] : this->mClients)
+	for (auto const& [connection, netId] : this->mClients)
 	{
-		this->sendPackets(clientId, packets);
+		if (except.find(connection) != except.end()) continue;
+		this->sendPackets(connection, packets);
 	}
 }
 
-game::UserIdentity& Interface::findIdentity(ui32 connection)
+ui32 Interface::nextNetworkId()
 {
+	if (this->mUnusedNetIds.size() > 0)
+	{
+		auto id = *this->mUnusedNetIds.begin();
+		this->mUnusedNetIds.erase(this->mUnusedNetIds.begin());
+		return id;
+	}
+	return (ui32)this->mClients.size();
+}
+
+ui32 Interface::getNetIdFor(ui32 connection) const
+{
+	assert(this->type() == EType::eServer);
 	auto iter = this->mClients.find(connection);
 	assert(iter != this->mClients.end());
 	return iter->second;

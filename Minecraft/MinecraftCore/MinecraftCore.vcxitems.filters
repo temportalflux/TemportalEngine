@@ -187,12 +187,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameWorldLogic.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\game\GameClient.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserSettings.hpp">
       <Filter>settings</Filter>
     </ClInclude>
@@ -202,11 +196,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\Settings.hpp">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\network\NetworkPacketChatMessage.hpp">
-      <Filter>network</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketSetName.hpp">
       <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketChatMessage.hpp">
+      <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameWorldLogic.hpp">
+      <Filter>game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -320,12 +320,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameWorldLogic.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\game\GameClient.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\Settings.cpp">
       <Filter>settings</Filter>
     </ClCompile>
@@ -334,6 +328,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketSetName.cpp">
       <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameWorldLogic.cpp">
+      <Filter>game</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

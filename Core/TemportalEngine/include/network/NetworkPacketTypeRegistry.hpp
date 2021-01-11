@@ -3,13 +3,13 @@
 #include "network/NetworkCore.hpp"
 
 NS_NETWORK
-class Packet;
+namespace packet { class Packet; };
 
 class PacketTypeRegistry
 {
 	struct EntryMeta
 	{
-		std::function<std::shared_ptr<Packet>()> create;
+		std::function<std::shared_ptr<packet::Packet>()> create;
 	};
 
 public:
@@ -22,7 +22,7 @@ public:
 		return *this;
 	}
 
-	std::shared_ptr<Packet> create(ui32 typeId)
+	std::shared_ptr<packet::Packet> create(ui32 typeId)
 	{
 		return this->mEntries[typeId].create();
 	}

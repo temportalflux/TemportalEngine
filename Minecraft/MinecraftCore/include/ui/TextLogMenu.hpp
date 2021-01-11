@@ -21,11 +21,21 @@ public:
 	bool isVisible() const;
 	void setIsVisible(bool bVisible);
 
+	void onMessageReceived(ui32 senderNetId, std::string const& message);
+
 private:
 	bool mbIsVisible;
 	std::shared_ptr<ui::Image> mpInputBarBkgd;
 	std::shared_ptr<ui::Image> mpLogBkgd;
 	std::shared_ptr<ui::Input> mpInputText;
+
+	struct LogMessage
+	{
+		ui32 senderNetId;
+		math::Color senderColor;
+		std::string content;
+	};
+	std::vector<LogMessage> mMessages;
 
 	std::shared_ptr<ui::Image> mpBackgroundDemo;
 	std::vector<std::shared_ptr<ui::Image>> mSlots;

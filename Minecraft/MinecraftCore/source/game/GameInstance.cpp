@@ -78,8 +78,8 @@ Game::Game(int argc, char *argv[])
 	this->initializeAssetTypes();
 
 	this->mNetworkInterface.packetTypes()
-		.addType<network::PacketChatMessage>()
-		.addType<network::PacketSetName>()
+		.addType<network::packet::ChatMessage>()
+		.addType<network::packet::SetName>()
 		;
 
 	if (args.find("server") != args.end())
@@ -89,16 +89,25 @@ Game::Game(int argc, char *argv[])
 		this->mNetworkInterface
 			.setType(network::EType::eServer)
 			.setAddress(network::Address().setPort(this->mServerSettings.port()));
+		this->mNetworkInterface.onConnectionEstablished.bind(
+			[&](network::Interface *pInterface, ui32 connection, ui32 netId) { this->addConnectedUser(netId); }
+		);
 	}
 	else
 	{
 		this->mNetMode |= network::EType::eClient;
 		this->mUserSettings.readFromDisk();
 		this->mNetworkInterface.setType(network::EType::eClient);
-		this->mNetworkInterface.onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection)
+		this->mNetworkInterface.onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
 		{
-			network::PacketSetName::create()->setName(this->mUserSettings.name()).sendToServer();
+			network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
 		});
+		this->mNetworkInterface.onNetIdReceived.bind(
+			[&](network::Interface *pInterface, ui32 netId) { this->localUser().netId = netId; }
+		);
+		this->mNetworkInterface.onClientPeerJoined.bind(
+			[&](network::Interface *pInterface, ui32 netId) { this->addConnectedUser(netId); }
+		);
 
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
@@ -124,7 +133,7 @@ void Game::registerCommands()
 			this->mUserSettings.setName(name).writeToDisk();
 			if (this->mNetworkInterface.hasConnection())
 			{
-				network::PacketSetName::create()->setName(name).sendToServer();
+				network::packet::SetName::create()->setName(name).sendToServer();
 			}
 		})
 	);
@@ -152,6 +161,26 @@ void Game::registerCommands()
 			this->mNetworkInterface.stop();
 		})
 	);
+}
+
+void Game::addConnectedUser(ui32 netId)
+{
+	auto id = game::UserIdentity();
+	id.netId = netId;
+	id.name = "unknown";
+	this->mConnectedUsers.insert(std::make_pair(netId, id));
+}
+
+game::UserIdentity& Game::localUser()
+{
+	return this->mLocalUserIdentity;
+}
+
+game::UserIdentity& Game::findConnectedUser(ui32 netId)
+{
+	auto iter = this->mConnectedUsers.find(netId);
+	assert(iter != this->mConnectedUsers.end());
+	return iter->second;
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()

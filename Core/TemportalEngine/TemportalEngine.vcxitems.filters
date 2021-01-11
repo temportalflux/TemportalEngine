@@ -68,6 +68,9 @@
     <Filter Include="command">
       <UniqueIdentifier>{371193c0-58e8-4f35-9347-fbfb74ef21c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network\packet">
+      <UniqueIdentifier>{2f1f8d0d-bb4f-4eae-9437-22396ccba16a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -361,6 +364,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacket.cpp">
       <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketClientJoined.cpp">
+      <Filter>network\packet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -793,6 +799,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketTypeRegistry.hpp">
       <Filter>network</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketClientJoined.hpp">
+      <Filter>network\packet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

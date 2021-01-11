@@ -49,6 +49,9 @@ public:
 	void run();
 	
 	network::Interface& networkInterface() { return this->mNetworkInterface; }
+	game::UserIdentity& localUser();
+	game::UserIdentity& findConnectedUser(ui32 netId);
+
 	std::shared_ptr<game::WorldLogic> worldLogic() { return this->mpWorldLogic; }
 	std::shared_ptr<game::Client> client() { return this->mpClient; }
 
@@ -69,11 +72,14 @@ private:
 	std::shared_ptr<game::Client> mpClient;
 
 	UserIdentity mLocalUserIdentity;
+	std::map<ui32, game::UserIdentity> mConnectedUsers;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 		
 	void registerCommands();
+
+	void addConnectedUser(ui32 netId);
 
 	void initializeAssetTypes();
 

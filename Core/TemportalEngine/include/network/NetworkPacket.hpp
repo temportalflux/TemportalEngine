@@ -8,7 +8,7 @@
 public: \
 	static ui32 TypeId; \
 	static std::shared_ptr<ClassType> create(); \
-	Packet::Data* data() override; \
+	network::packet::Packet::Data* data() override; \
 	ui32 dataSize() const override; \
 protected: \
 	void assetDataPacketTypeId() override;
@@ -16,8 +16,10 @@ protected: \
 	ui32 ClassType::TypeId = 0; \
 	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); } \
 	void ClassType::assetDataPacketTypeId() { this->data()->packetTypeId = ClassType::TypeId; } \
-	Packet::Data* ClassType::data() { return dynamic_cast<Packet::Data*>(&DATA_PROPERTY_NAME); } \
+	network::packet::Packet::Data* ClassType::data() { return dynamic_cast<network::packet::Packet::Data*>(&DATA_PROPERTY_NAME); } \
 	ui32 ClassType::dataSize() const { return sizeof(DATA_PROPERTY_NAME); }
+
+#define NS_PACKET namespace packet {
 
 NS_NETWORK
 class Interface;
@@ -114,6 +116,8 @@ enum class EPacketFlags
 
 };
 
+NS_PACKET
+
 class Packet : public std::enable_shared_from_this<Packet>
 {
 
@@ -129,7 +133,8 @@ public:
 	std::shared_ptr<Packet> finalize();
 	
 	void sendToServer();
-	void broadcast();
+	void send(ui32 connection);
+	void broadcast(std::set<ui32> except = {});
 
 	virtual Data* data() = 0;
 	virtual ui32 dataSize() const = 0;
@@ -147,4 +152,5 @@ private:
 
 };
 
+NS_END
 NS_END

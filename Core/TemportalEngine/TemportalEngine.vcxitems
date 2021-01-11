@@ -91,6 +91,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkCore.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkInterface.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacket.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketClientJoined.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsMaterial.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsObject.cpp" />
@@ -230,6 +231,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkInterface.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacket.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketTypeRegistry.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketClientJoined.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsController.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsMaterial.hpp" />

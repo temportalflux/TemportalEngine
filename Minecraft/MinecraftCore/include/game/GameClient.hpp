@@ -39,6 +39,7 @@ public:
 	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances() { return this->mpEntityInstanceBuffer; }
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
 	std::shared_ptr<ui::FontOwner> uiFontOwner();
+	std::shared_ptr<ui::TextLogMenu> chat() { return this->mpMenuTextLog; }
 	
 	void init();
 	void uninit();

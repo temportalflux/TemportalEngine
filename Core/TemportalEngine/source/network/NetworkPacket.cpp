@@ -4,6 +4,7 @@
 #include "network/NetworkInterface.hpp"
 
 using namespace network;
+using namespace network::packet;
 
 std::vector<EPacketFlags> utility::EnumWrapper<EPacketFlags>::ALL = {
 	EPacketFlags::eUnreliable,
@@ -50,7 +51,12 @@ void Packet::sendToServer()
 	network.sendPackets(network.connection(), { this->finalize() });
 }
 
-void Packet::broadcast()
+void Packet::send(ui32 connection)
 {
-	game::Game::Get()->networkInterface().broadcastPackets({ this->finalize() });
+	game::Game::Get()->networkInterface().sendPackets(connection, { this->finalize() });
+}
+
+void Packet::broadcast(std::set<ui32> except)
+{
+	game::Game::Get()->networkInterface().broadcastPackets({ this->finalize() }, except);
 }

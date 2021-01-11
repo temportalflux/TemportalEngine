@@ -6,6 +6,7 @@ NS_GAME
 
 struct UserIdentity
 {
+	ui32 netId;
 	std::string name;
 };
 
