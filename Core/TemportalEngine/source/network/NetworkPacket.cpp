@@ -63,20 +63,20 @@ void Packet::sendToServer()
 void Packet::send(ui32 connection)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
-	assert(network.type() == EType::eServer);
+	assert(network.type().includes(EType::eServer));
 	network.sendPackets(connection, { this->finalize() });
 }
 
 void Packet::sendTo(ui32 netId)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
-	assert(network.type() == EType::eServer);
+	assert(network.type().includes(EType::eServer));
 	this->send(network.getConnectionFor(netId));
 }
 
 void Packet::broadcast(std::set<ui32> except)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
-	assert(network.type() == EType::eServer);
+	assert(network.type().includes(EType::eServer));
 	network.broadcastPackets({ this->finalize() }, except);
 }

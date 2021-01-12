@@ -22,6 +22,7 @@ NS_END
 
 FORWARD_DEF(NS_GAME, class Client);
 FORWARD_DEF(NS_GAME, class WorldLogic);
+FORWARD_DEF(NS_NETWORK, class Interface);
 
 NS_GAME
 
@@ -54,6 +55,7 @@ public:
 	game::UserIdentity& findConnectedUser(ui32 netId);
 	void removeConnectedUser(ui32 netId);
 
+	static network::Interface* networkInterface();
 	std::shared_ptr<game::WorldLogic> worldLogic() { return this->mpWorldLogic; }
 	std::shared_ptr<game::Client> client() { return this->mpClient; }
 
@@ -61,8 +63,6 @@ public:
 
 private:
 	logging::Logger mProjectLog;
-
-	utility::Flags<network::EType> mNetMode;
 
 	game::ServerSettings mServerSettings;
 	game::UserSettings mUserSettings;

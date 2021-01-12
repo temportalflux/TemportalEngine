@@ -33,7 +33,7 @@ ClientStatus& ClientStatus::setStatus(EClientStatus status)
 
 void ClientStatus::process(network::Interface *pInterface)
 {
-	assert(pInterface->type() == EType::eClient);
+	assert((EType)pInterface->type() == EType::eClient);
 	// Server has confirmed data for this client
 	if (this->mData.bIsSelf)
 	{

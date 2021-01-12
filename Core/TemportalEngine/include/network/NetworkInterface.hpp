@@ -5,6 +5,7 @@
 
 #include "network/NetworkAddress.hpp"
 #include "network/NetworkPacketTypeRegistry.hpp"
+#include "utility/Flags.hpp"
 
 NS_NETWORK
 namespace packet { class Packet; };
@@ -17,8 +18,8 @@ public:
 
 	PacketTypeRegistry& packetTypes() { return this->mPacketRegistry; }
 
-	Interface& setType(EType type);
-	EType type() const { return this->mType; }
+	Interface& setType(utility::Flags<network::EType> type);
+	utility::Flags<network::EType> const& type() const;
 	
 	Interface& setAddress(Address const& address);
 
@@ -44,7 +45,7 @@ public:
 private:
 	PacketTypeRegistry mPacketRegistry;
 
-	EType mType;
+	utility::Flags<network::EType> mType;
 	// For clients: the address and port of the server to connect to
 	// For servers: localhost + the port to listen on
 	Address mAddress;

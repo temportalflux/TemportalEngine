@@ -24,6 +24,7 @@
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "network/NetworkCore.hpp"
+#include "network/NetworkInterface.hpp"
 #include "network/NetworkPacketChatMessage.hpp"
 #include "network/NetworkPacketSetName.hpp"
 #include "utility/StringUtils.hpp"
@@ -87,12 +88,10 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 	this->mUserSettings.readFromDisk();
 	if (args.find("server") != args.end())
 	{
-		this->mNetMode = network::EType::eServer;
 		this->startDedicatedServer();
 	}
 	else
 	{
-		this->mNetMode = network::EType::eClient;
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
 	}
@@ -106,7 +105,7 @@ Game::~Game()
 
 void Game::registerCommands()
 {
-	if (!this->mNetMode.includes(network::EType::eClient)) return;
+	if (!Game::networkInterface()->type().includes(network::EType::eClient)) return;
 	auto registry = engine::Engine::Get()->commands();
 	registry->add(
 		command::Signature("setName")
@@ -160,7 +159,6 @@ void Game::registerCommands()
 		command::Signature("startHost")
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mNetMode |= network::EType::eServer;
 			this->startIntegratedClientServer();
 		})
 	);
@@ -168,12 +166,16 @@ void Game::registerCommands()
 		command::Signature("stopHost")
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mNetMode.remove(network::EType::eServer);
-			engine::Engine::Get()->networkInterface().stop();
+			Game::networkInterface()->setType(network::EType::eClient).stop();
 		})
 	);
 #pragma endregion
 
+}
+
+network::Interface* Game::networkInterface()
+{
+	return &engine::Engine::Get()->networkInterface();
 }
 
 void Game::startDedicatedServer()
@@ -234,7 +236,7 @@ void Game::startIntegratedClientServer()
 	auto& networkInterface = engine::Engine::Get()->networkInterface();
 
 	networkInterface
-		.setType(network::EType::eServer)
+		.setType({ network::EType::eServer, network::EType::eClient })
 		.setAddress(network::Address().setPort(this->mServerSettings.port()));
 
 	// Set up the local client
@@ -350,7 +352,7 @@ void Game::init()
 	//this->bindInput();
 
 	auto& netInterface = engine::Engine::Get()->networkInterface();
-	if (netInterface.type() == network::EType::eServer)
+	if (netInterface.type().includes(network::EType::eServer))
 	{
 		netInterface.start();
 	}

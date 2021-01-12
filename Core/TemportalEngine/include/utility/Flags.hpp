@@ -66,6 +66,8 @@ struct Flags
 		this->updateString();
 	}
 
+	constexpr Flags(std::initializer_list<TFlagType> values) : Flags(std::unordered_set<TFlagType>(values)) {}
+
 	std::unordered_set<TFlagType> const& toSet() const { return this->mSet; }
 
 	void updateSet()
@@ -186,6 +188,8 @@ struct Flags
 	{
 		return (this->mData & ui64(option)) == ui64(option);
 	}
+
+	bool hasValue() const { return this->mData != 0; }
 
 	ui64 const& data() const { return mData; }
 	ui64& data() { return mData; }

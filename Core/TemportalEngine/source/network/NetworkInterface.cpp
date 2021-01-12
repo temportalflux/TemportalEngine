@@ -19,18 +19,20 @@ SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key,
 	return option;
 }
 
-Interface::Interface() : mpInternal(nullptr), mType(EType::eInvalid), mConnection(0)
+Interface::Interface() : mpInternal(nullptr), mType(), mConnection(0)
 {
 	this->packetTypes()
 		.addType<network::packet::ClientStatus>()
 		;
 }
 
-Interface& Interface::setType(EType type)
+Interface& Interface::setType(utility::Flags<network::EType> type)
 {
 	this->mType = type;
 	return *this;
 }
+
+utility::Flags<network::EType> const& Interface::type() const { return this->mType; }
 
 Interface& Interface::setAddress(Address const& address)
 {
@@ -41,7 +43,7 @@ Interface& Interface::setAddress(Address const& address)
 void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 {
 	auto& netInterface = engine::Engine::Get()->networkInterface();
-	switch (netInterface.type())
+	switch (EType(netInterface.type()))
 	{
 	case network::EType::eServer:
 		netInterface.onServerConnectionStatusChanged((void*)pInfo);
@@ -55,7 +57,7 @@ void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 
 void Interface::start()
 {
-	if (this->mType == EType::eInvalid) return;
+	if (!this->mType.hasValue()) return;
 
 	this->mpInternal = SteamNetworkingSockets();
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
@@ -67,7 +69,7 @@ void Interface::start()
 	option.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, &connectionCallback);
 	options.push_back(option);
 
-	if (this->mType == EType::eServer)
+	if (this->mType.includes(EType::eServer))
 	{
 		network::logger().log(LOG_INFO, "Listening at IP %s", this->mAddress.toString(true).c_str());
 		this->mConnection = pInterface->CreateListenSocketIP(address, (ui32)options.size(), options.data());
@@ -84,7 +86,7 @@ void Interface::start()
 			return;
 		}
 	}
-	else if (this->mType == EType::eClient)
+	else if (this->mType.includes(EType::eClient))
 	{
 		network::logger().log(LOG_INFO, "Connecting to server at %s", this->mAddress.toString(true).c_str());
 		this->mConnection = pInterface->ConnectByIPAddress(address, (ui32)options.size(), options.data());
@@ -102,7 +104,7 @@ void Interface::stop()
 	if (this->mpInternal == nullptr) return;
 
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
-	if (this->mType == EType::eServer)
+	if (this->mType.includes(EType::eServer))
 	{
 		network::logger().log(LOG_INFO, "Server is shutting down.");
 
@@ -125,7 +127,7 @@ void Interface::stop()
 			this->mServerPollGroup = k_HSteamNetPollGroup_Invalid;
 		}
 	}
-	else if (this->mType == EType::eClient)
+	else if (this->mType.includes(EType::eClient))
 	{
 		if (this->mConnection != k_HSteamNetConnection_Invalid)
 		{
@@ -139,7 +141,7 @@ void Interface::stop()
 
 bool Interface::hasConnection() const
 {
-	switch (this->mType)
+	switch (EType(this->mType))
 	{
 	case EType::eClient: return this->mConnection != k_HSteamNetConnection_Invalid;
 	case EType::eServer: return this->mConnection != k_HSteamListenSocket_Invalid;
@@ -170,11 +172,11 @@ void Interface::pollIncomingMessages()
 	ISteamNetworkingMessage *pIncomingMsg = nullptr;
 	i32 numMsgs = -1;
 
-	if (this->mType == EType::eServer)
+	if (this->mType.includes(EType::eServer))
 	{
 		numMsgs = pInterface->ReceiveMessagesOnPollGroup(this->mServerPollGroup, &pIncomingMsg, 1);
 	}
-	else if (this->mType == EType::eClient)
+	else if (this->mType.includes(EType::eClient))
 	{
 		numMsgs = pInterface->ReceiveMessagesOnConnection(this->mConnection, &pIncomingMsg, 1);
 	}
@@ -202,7 +204,7 @@ void Interface::pollIncomingMessages()
 
 void Interface::onServerConnectionStatusChanged(void* pInfo)
 {
-	assert(this->mType == EType::eServer);
+	assert(this->mType.includes(EType::eServer));
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
 	switch (data->m_info.m_eState)
@@ -306,7 +308,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 
 void Interface::onClientConnectionStatusChanged(void* pInfo)
 {
-	assert(this->mType == EType::eClient);
+	assert(this->mType.includes(EType::eClient));
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
 	assert(data->m_hConn == this->mConnection || this->mConnection == k_HSteamNetConnection_Invalid);
@@ -378,7 +380,7 @@ void Interface::broadcastPackets(std::vector<std::shared_ptr<packet::Packet>> co
 {
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
-	assert(this->type() == EType::eServer);
+	assert(this->type().includes(EType::eServer));
 	for (auto const& [connection, netId] : this->mClients)
 	{
 		if (except.find(connection) != except.end()) continue;
@@ -409,7 +411,7 @@ std::set<ui32> Interface::connectedClientNetIds() const
 
 ui32 Interface::getNetIdFor(ui32 connection) const
 {
-	assert(this->type() == EType::eServer);
+	assert(this->type().includes(EType::eServer));
 	auto iter = this->mClients.find(connection);
 	assert(iter != this->mClients.end());
 	return iter->second;
@@ -417,7 +419,7 @@ ui32 Interface::getNetIdFor(ui32 connection) const
 
 ui32 Interface::getConnectionFor(ui32 netId) const
 {
-	assert(this->type() == EType::eServer);
+	assert(this->type().includes(EType::eServer));
 	auto iter = this->mNetIdToConnection.find(netId);
 	assert(iter != this->mNetIdToConnection.end());
 	return iter->second;
