@@ -86,6 +86,10 @@ private:
 
 	void registerECSTypes(ecs::Core *ecs);
 
+	void startDedicatedServer();
+	void startDedicatedClient();
+	void startIntegratedClientServer();
+
 	//void createLocalPlayer();
 
 	//void bindInput();

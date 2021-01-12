@@ -83,59 +83,16 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 		.addType<network::packet::SetName>()
 		;
 
+	this->mServerSettings.readFromDisk();
+	this->mUserSettings.readFromDisk();
 	if (args.find("server") != args.end())
 	{
-		this->mNetMode |= network::EType::eServer;
-		this->mServerSettings.readFromDisk();
-		pEngine->networkInterface()
-			.setType(network::EType::eServer)
-			.setAddress(network::Address().setPort(this->mServerSettings.port()));
-		pEngine->networkInterface().onConnectionEstablished.bind(
-			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
-			{
-				this->addConnectedUser(netId);
-				for (auto const& anyNetId : pInterface->connectedClientNetIds())
-				{
-					if (anyNetId == netId) continue;
-					auto const& existingUser = this->findConnectedUser(anyNetId);
-					network::packet::SetName::create()
-						->setNetId(anyNetId)
-						.setName(existingUser.name)
-						.sendTo(netId);
-				}
-			}
-		);
-		pEngine->networkInterface().onConnectionClosed.bind(
-			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
-			{
-				auto const& user = this->findConnectedUser(netId);
-				network::packet::ChatMessage::broadcastServerMessage(
-					utility::formatStr("%s has left the server.", user.name.c_str())
-				);
-				this->removeConnectedUser(netId);
-			}
-		);
+		this->mNetMode = network::EType::eServer;
+		this->startDedicatedServer();
 	}
 	else
 	{
-		this->mNetMode |= network::EType::eClient;
-		this->mUserSettings.readFromDisk();
-		pEngine->networkInterface().setType(network::EType::eClient);
-		pEngine->networkInterface().onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
-		{
-			network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
-		});
-		pEngine->networkInterface().onNetIdReceived.bind(
-			[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
-		);
-		pEngine->networkInterface().onClientPeerStatusChanged.bind(
-			[&](network::Interface *pInterface, ui32 netId, network::EClientStatus status)
-			{
-				if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
-				else this->removeConnectedUser(netId);
-			}
-		);
-
+		this->mNetMode = network::EType::eClient;
 		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
 	}
@@ -172,10 +129,22 @@ void Game::registerCommands()
 		})
 	);
 	registry->add(
+		command::Signature("listUsers")
+		.bind([&](command::Signature const& cmd)
+		{
+			for (auto const& [netId, user] : this->mConnectedUsers)
+			{
+				this->client()->chat()->addToLog(user.name);
+			}
+		})
+	);
+#pragma region Dedicated Servers
+	registry->add(
 		command::Signature("connect")
 		.pushArgType<network::Address>()
 		.bind([&](command::Signature const& cmd)
 		{
+			this->startDedicatedClient();
 			engine::Engine::Get()->networkInterface()
 				.setAddress(cmd.get<network::Address>(0))
 				.start();
@@ -188,16 +157,84 @@ void Game::registerCommands()
 			engine::Engine::Get()->networkInterface().stop();
 		})
 	);
+#pragma endregion
+#pragma region Integrated Servers / ClientOnTopOfServer
 	registry->add(
-		command::Signature("listUsers")
+		command::Signature("startHost")
 		.bind([&](command::Signature const& cmd)
 		{
-			for (auto const& [netId, user] : this->mConnectedUsers)
-			{
-				this->client()->chat()->addToLog(user.name);
-			}
+			this->mNetMode |= network::EType::eServer;
+			this->startIntegratedClientServer();
 		})
 	);
+	registry->add(
+		command::Signature("stopHost")
+		.bind([&](command::Signature const& cmd)
+		{
+			this->mNetMode.remove(network::EType::eServer);
+			engine::Engine::Get()->networkInterface().stop();
+		})
+	);
+#pragma endregion
+
+}
+
+void Game::startDedicatedServer()
+{
+	auto pEngine = engine::Engine::Get();
+	pEngine->networkInterface()
+		.setType(network::EType::eServer)
+		.setAddress(network::Address().setPort(this->mServerSettings.port()));
+	pEngine->networkInterface().onConnectionEstablished.bind(
+		[&](network::Interface *pInterface, ui32 connection, ui32 netId)
+		{
+			this->addConnectedUser(netId);
+			for (auto const& anyNetId : pInterface->connectedClientNetIds())
+			{
+				if (anyNetId == netId) continue;
+				auto const& existingUser = this->findConnectedUser(anyNetId);
+				network::packet::SetName::create()
+					->setNetId(anyNetId)
+					.setName(existingUser.name)
+					.sendTo(netId);
+			}
+		}
+	);
+	pEngine->networkInterface().onConnectionClosed.bind(
+		[&](network::Interface *pInterface, ui32 connection, ui32 netId)
+		{
+			auto const& user = this->findConnectedUser(netId);
+			network::packet::ChatMessage::broadcastServerMessage(
+				utility::formatStr("%s has left the server.", user.name.c_str())
+			);
+			this->removeConnectedUser(netId);
+		}
+	);
+}
+
+void Game::startDedicatedClient()
+{
+	auto pEngine = engine::Engine::Get();
+	pEngine->networkInterface().setType(network::EType::eClient);
+	pEngine->networkInterface().onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
+	{
+		network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
+	});
+	pEngine->networkInterface().onNetIdReceived.bind(
+		[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
+	);
+	pEngine->networkInterface().onClientPeerStatusChanged.bind(
+		[&](network::Interface *pInterface, ui32 netId, network::EClientStatus status)
+		{
+			if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
+			else this->removeConnectedUser(netId);
+		}
+	);
+}
+
+void Game::startIntegratedClientServer()
+{
+
 }
 
 void Game::setLocalUserNetId(ui32 netId)

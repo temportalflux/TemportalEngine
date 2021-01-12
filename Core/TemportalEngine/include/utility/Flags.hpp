@@ -106,6 +106,11 @@ struct Flags
 		return flags;
 	}
 
+	void operator&=(Flags<TFlagType> const& flags)
+	{
+		(*this) &= flags.mData;
+	}
+
 	void operator&=(TFlagType const& option)
 	{
 		(*this) &= ui64(option);
@@ -116,6 +121,13 @@ struct Flags
 		this->mData &= option;
 		this->updateSet();
 		this->updateString();
+	}
+
+	Flags<TFlagType> operator&(Flags<TFlagType> const& flags)
+	{
+		auto flags = Flags<TFlagType>(*this);
+		flags &= flags;
+		return flags;
 	}
 
 	Flags<TFlagType> operator&(TFlagType const& option)
@@ -156,6 +168,16 @@ struct Flags
 		auto flags = Flags<TFlagType>(*this);
 		flags ^= option;
 		return flags;
+	}
+
+	Flags<TFlagType> operator~() const
+	{
+		return Flags<TFlagType>(~mData);
+	}
+
+	void remove(TFlagType const& option)
+	{
+		(*this) &= ~ui64(option);
 	}
 
 	bool operator==(Flags<TFlagType> const& other) const { return mData == other.mData; }
