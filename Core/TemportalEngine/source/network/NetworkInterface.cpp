@@ -43,15 +43,13 @@ Interface& Interface::setAddress(Address const& address)
 void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 {
 	auto& netInterface = engine::Engine::Get()->networkInterface();
-	switch (EType(netInterface.type()))
+	if (netInterface.type().includes(EType::eServer))
 	{
-	case network::EType::eServer:
 		netInterface.onServerConnectionStatusChanged((void*)pInfo);
-		break;
-	case network::EType::eClient:
+	}
+	else if (netInterface.type() == EType::eClient)
+	{
 		netInterface.onClientConnectionStatusChanged((void*)pInfo);
-		break;
-	default: break;
 	}
 }
 
@@ -84,6 +82,13 @@ void Interface::start()
 		{
 			network::logger().log(LOG_ERR, "Failed to create listen socket on port %d", this->mAddress.port());
 			return;
+		}
+
+		if (this->type().includes(EType::eClient))
+		{
+			auto const netId = this->nextNetworkId();
+			this->addClient(this->mConnection, netId);
+			this->onConnectionEstablished.execute(this, this->mConnection, netId);
 		}
 	}
 	else if (this->mType.includes(EType::eClient))
@@ -141,12 +146,8 @@ void Interface::stop()
 
 bool Interface::hasConnection() const
 {
-	switch (EType(this->mType))
-	{
-	case EType::eClient: return this->mConnection != k_HSteamNetConnection_Invalid;
-	case EType::eServer: return this->mConnection != k_HSteamListenSocket_Invalid;
-	default: return false;
-	}
+	if (this->type().includes(EType::eServer)) return this->mConnection != k_HSteamListenSocket_Invalid;
+	else return this->mConnection != k_HSteamNetConnection_Invalid;
 }
 
 void Interface::update(f32 deltaTime)
@@ -230,8 +231,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 		}
 
 		ui32 const netId = this->nextNetworkId();
-		this->mClients.insert(std::make_pair(data->m_hConn, netId));
-		this->mNetIdToConnection.insert(std::make_pair(netId, data->m_hConn));
+		this->addClient(data->m_hConn, netId);
 
 		network::logger().log(
 			LOG_INFO, "Accepted connection request from %s. Assigned network-id $i.",
@@ -306,9 +306,15 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 	}
 }
 
+void Interface::addClient(ui32 connection, ui32 netId)
+{
+	this->mClients.insert(std::make_pair(connection, netId));
+	this->mNetIdToConnection.insert(std::make_pair(netId, connection));
+}
+
 void Interface::onClientConnectionStatusChanged(void* pInfo)
 {
-	assert(this->mType.includes(EType::eClient));
+	assert(this->mType == EType::eClient);
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
 	assert(data->m_hConn == this->mConnection || this->mConnection == k_HSteamNetConnection_Invalid);

@@ -28,6 +28,9 @@ private:
 		char msg[128];
 	} mData;
 
+	void writeToLog() const;
+	void writeToClientChat() const;
+
 };
 
 NS_END

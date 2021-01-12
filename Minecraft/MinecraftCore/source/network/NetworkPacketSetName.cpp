@@ -30,31 +30,25 @@ SetName& SetName::setName(std::string const& name)
 
 void SetName::process(Interface *pInterface)
 {
-	switch (pInterface->type())
-	{
-	case EType::eServer:
+	if (pInterface->type().includes(EType::eServer))
 	{
 		this->setNetId(pInterface->getNetIdFor(this->connection()));
 		network::logger().log(LOG_INFO, "Received alias %s for network-id %i", this->mData.name, this->mData.netId);
-		
+
 		auto& userId = game::Game::Get()->findConnectedUser(this->mData.netId);
 		std::string oldName = userId.name;
 		userId.name = this->mData.name;
 		this->broadcast();
-		
+
 		ChatMessage::broadcastServerMessage(
 			oldName.length() == 0
 			? utility::formatStr("%s has joined the server.", this->mData.name)
 			: utility::formatStr("%s is now named %s", oldName.c_str(), this->mData.name)
 		);
-		break;
 	}
-	case EType::eClient:
+	else if (pInterface->type() == EType::eClient)
 	{
 		network::logger().log(LOG_INFO, "Received alias %s for network-id %i", this->mData.name, this->mData.netId);
 		game::Game::Get()->findConnectedUser(this->mData.netId).name = this->mData.name;
-		break;
-	}
-	default: break;
 	}
 }

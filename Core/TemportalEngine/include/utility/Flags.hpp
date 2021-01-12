@@ -183,6 +183,7 @@ struct Flags
 	}
 
 	bool operator==(Flags<TFlagType> const& other) const { return mData == other.mData; }
+	bool operator==(TFlagType const& other) const { return TFlagType(mData) == other; }
 
 	bool includes(TFlagType const& option) const
 	{

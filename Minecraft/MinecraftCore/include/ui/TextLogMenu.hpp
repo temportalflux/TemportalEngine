@@ -34,7 +34,7 @@ private:
 
 	struct Message
 	{
-		std::optional<ui32> senderNetId;
+		std::optional<std::string> senderName;
 		std::string message;
 	};
 	ui8 mDisplayableMessageCount;

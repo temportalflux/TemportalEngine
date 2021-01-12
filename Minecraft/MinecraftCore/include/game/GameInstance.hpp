@@ -79,15 +79,17 @@ private:
 		
 	void registerCommands();
 
-	void addConnectedUser(ui32 netId);
+	game::UserIdentity& addConnectedUser(ui32 netId);
 
 	void initializeAssetTypes();
 
 	void registerECSTypes(ecs::Core *ecs);
 
-	void startDedicatedServer();
-	void startDedicatedClient(network::Address const& serverAddress);
-	void startIntegratedClientServer();
+	void setupNetworkServer(utility::Flags<network::EType> flags);
+	void setupDedicatedClient(network::Address const& serverAddress);
+
+	void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
+	void onNetworkConnnectionClosed(network::Interface *pInterface, ui32 connection, ui32 netId);
 
 	//void createLocalPlayer();
 

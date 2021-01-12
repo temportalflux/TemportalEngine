@@ -24,8 +24,13 @@ void ChatMessage::broadcastServerMessage(std::string const& msg)
 	packet->mData.senderNetId = 0;
 	packet->mData.bIsServerMessage = true;
 	packet->setMessage(msg);
-	CHAT_LOG.log(LOG_INFO, "<%s> %s", "server", msg.c_str());
 	packet->broadcast();
+
+	packet->writeToLog();
+	if (game::Game::networkInterface()->type().includes(EType::eClient))
+	{
+		packet->writeToClientChat();
+	}
 }
 
 ChatMessage& ChatMessage::setMessage(std::string const& msg)
@@ -37,35 +42,35 @@ ChatMessage& ChatMessage::setMessage(std::string const& msg)
 
 void ChatMessage::process(network::Interface *pInterface)
 {
-	auto pGame = game::Game::Get();
-	switch (pInterface->type())
+	if (pInterface->type().includes(EType::eServer))
 	{
-	case EType::eServer:
-	{
-		auto netId = pInterface->getNetIdFor(this->connection());
 		this->mData.bIsServerMessage = false;
-		this->mData.senderNetId = netId;
-		auto userId = pGame->findConnectedUser(netId);
-		CHAT_LOG.log(LOG_INFO, "<%s> %s", userId.name.c_str(), this->mData.msg);
+		this->mData.senderNetId = pInterface->getNetIdFor(this->connection());
 		this->broadcast();
-		break;
 	}
-	case EType::eClient:
+	this->writeToLog();
+	if (pInterface->type().includes(EType::eClient))
 	{
-		std::optional<ui32> senderNetId = std::nullopt;
-		if (this->mData.bIsServerMessage)
-		{
-			CHAT_LOG.log(LOG_INFO, "<%s> %s", "server", this->mData.msg);
-		}
-		else
-		{
-			senderNetId = this->mData.senderNetId;
-			auto userId = pGame->findConnectedUser(this->mData.senderNetId);
-			CHAT_LOG.log(LOG_INFO, "<%s> %s", userId.name.c_str(), this->mData.msg);
-		}
-		pGame->client()->chat()->onMessageReceived(senderNetId, this->mData.msg);
-		break;
+		this->writeToClientChat();
 	}
-	default: break;
+}
+
+void ChatMessage::writeToLog() const
+{
+	std::string src = "server";
+	if (!this->mData.bIsServerMessage)
+	{
+		auto pGame = game::Game::Get();
+		auto userId = pGame->findConnectedUser(this->mData.senderNetId);
+		src = userId.name;
 	}
+	CHAT_LOG.log(LOG_INFO, "<%s> %s", src.c_str(), this->mData.msg);
+}
+
+void ChatMessage::writeToClientChat() const
+{
+	game::Game::Get()->client()->chat()->onMessageReceived(
+		!this->mData.bIsServerMessage ? std::make_optional(this->mData.senderNetId) : std::nullopt,
+		this->mData.msg
+	);
 }

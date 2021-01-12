@@ -125,7 +125,12 @@ void TextLogMenu::onInputConfirmed(std::string input)
 
 void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string const& message)
 {
-	this->pushToLog({ senderNetId, message });
+	std::optional<std::string> name = std::nullopt;
+	if (senderNetId)
+	{
+		name = game::Game::Get()->findConnectedUser(*senderNetId).name;
+	}
+	this->pushToLog({ name, message });
 }
 
 void TextLogMenu::addToLog(std::string const& message)
@@ -145,7 +150,6 @@ void TextLogMenu::pushToLog(Message const& msg)
 
 void TextLogMenu::updateLogText()
 {
-	auto pGame = game::Game::Get();
 	auto ss = std::stringstream();
 	auto iter = this->mRecentMessages.begin();
 	while (iter != this->mRecentMessages.end())
@@ -154,10 +158,9 @@ void TextLogMenu::updateLogText()
 		{
 			ss << '\n';
 		}
-		if (iter->senderNetId)
+		if (iter->senderName)
 		{
-			auto userId = pGame->findConnectedUser(iter->senderNetId.value());
-			ss << '<' << userId.name << '>';
+			ss << '<' << iter->senderName.value() << '>';
 		}
 		ss << iter->message;
 		++iter;

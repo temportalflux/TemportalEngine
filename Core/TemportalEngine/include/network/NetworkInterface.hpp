@@ -46,14 +46,14 @@ private:
 	PacketTypeRegistry mPacketRegistry;
 
 	utility::Flags<network::EType> mType;
-	// For clients: the address and port of the server to connect to
-	// For servers: localhost + the port to listen on
+	// For dedicated clients: the address and port of the server to connect to
+	// For dedicated or integrated servers: localhost + the port to listen on
 	Address mAddress;
 
 	void* /*ISteamNetworkingSockets*/ mpInternal;
 	
-	// For clients: the network connection to a server
-	// For servers: the listen socket
+	// For dedicated clients: the network connection to a server
+	// For dedicated or integrated servers: the listen socket
 	ui32 mConnection;
 	ui32 mServerPollGroup;
 
@@ -61,6 +61,7 @@ private:
 	std::map<ui32 /*netId*/, ui32 /*connectionId*/> mNetIdToConnection;
 	std::set<ui32> mUnusedNetIds;
 	ui32 nextNetworkId();
+	void addClient(ui32 connection, ui32 netId);
 
 	std::vector<std::shared_ptr<packet::Packet>> mReceivedPackets;
 	void pollIncomingMessages();

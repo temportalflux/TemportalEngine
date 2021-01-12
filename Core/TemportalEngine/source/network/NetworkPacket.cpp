@@ -29,7 +29,7 @@ std::string utility::EnumWrapper<EPacketFlags>::to_string() const
 std::string utility::EnumWrapper<EPacketFlags>::to_display_string() const { return to_string(); }
 
 Packet::Packet(utility::Flags<EPacketFlags> flags)
-	: mFlags(flags)
+	: mFlags(flags), mConnection(0)
 {
 }
 
@@ -48,15 +48,18 @@ void Packet::sendToServer()
 {
 	this->finalize();
 	auto& network = engine::Engine::Get()->networkInterface();
-	switch (network.type())
+	if (network.type() == EType::eClient)
 	{
-	case EType::eClient:
 		network.sendPackets(network.connection(), { this->shared_from_this() });
-		break;
-	case EType::eServer:
+	}
+	else if (network.type().includes(EType::eServer))
+	{
+		this->setSourceConnection(network.connection());
 		this->process(&network);
-		break;
-	default: assert(false); break;			
+	}
+	else
+	{
+		assert(false);
 	}
 }
 

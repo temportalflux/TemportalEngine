@@ -8,8 +8,8 @@ NS_NETWORK
 
 enum class EType : ui8
 {
-	eClient = 0,
-	eServer = 1,
+	eClient = 0b01,
+	eServer = 0b10,
 };
 enum class EClientStatus : ui8
 {
