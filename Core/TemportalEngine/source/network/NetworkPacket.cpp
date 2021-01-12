@@ -1,6 +1,6 @@
 #include "network/NetworkPacket.hpp"
 
-#include "game/GameInstance.hpp"
+#include "Engine.hpp"
 #include "network/NetworkInterface.hpp"
 
 using namespace network;
@@ -46,23 +46,23 @@ std::shared_ptr<Packet> Packet::finalize()
 
 void Packet::sendToServer()
 {
-	auto network = game::Game::Get()->networkInterface();
+	auto network = engine::Engine::Get()->networkInterface();
 	assert(network.type() == EType::eClient);
 	network.sendPackets(network.connection(), { this->finalize() });
 }
 
 void Packet::send(ui32 connection)
 {
-	game::Game::Get()->networkInterface().sendPackets(connection, { this->finalize() });
+	engine::Engine::Get()->networkInterface().sendPackets(connection, { this->finalize() });
 }
 
 void Packet::sendTo(ui32 netId)
 {
-	auto connection = game::Game::Get()->networkInterface().getConnectionFor(netId);
+	auto connection = engine::Engine::Get()->networkInterface().getConnectionFor(netId);
 	this->send(connection);
 }
 
 void Packet::broadcast(std::set<ui32> except)
 {
-	game::Game::Get()->networkInterface().broadcastPackets({ this->finalize() }, except);
+	engine::Engine::Get()->networkInterface().broadcastPackets({ this->finalize() }, except);
 }

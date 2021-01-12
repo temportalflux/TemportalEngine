@@ -1,6 +1,6 @@
 #include "network/NetworkInterface.hpp"
 
-#include "game/GameInstance.hpp"
+#include "Engine.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkPacket.hpp"
 #include "network/packet/NetworkPacketClientStatus.hpp"
@@ -11,9 +11,9 @@
 
 using namespace network;
 
-SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key, network::Interface *interface, void (network::Interface::*f)(void*))
+SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key, network::Interface *pInterface, void (network::Interface::*f)(void*))
 {
-	std::function<void(void*)> callback = std::bind(f, interface, std::placeholders::_1);
+	std::function<void(void*)> callback = std::bind(f, pInterface, std::placeholders::_1);
 	SteamNetworkingConfigValue_t option = {};
 	option.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, callback.target<void(void*)>());
 	return option;
@@ -40,7 +40,7 @@ Interface& Interface::setAddress(Address const& address)
 
 void connectionCallback(SteamNetConnectionStatusChangedCallback_t *pInfo)
 {
-	auto& netInterface = game::Game::Get()->networkInterface();
+	auto& netInterface = engine::Engine::Get()->networkInterface();
 	switch (netInterface.type())
 	{
 	case network::EType::eServer:

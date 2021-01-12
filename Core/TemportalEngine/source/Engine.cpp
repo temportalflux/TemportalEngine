@@ -290,6 +290,10 @@ bool const Engine::isActive() const
 void Engine::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
+
+	// TODO: move network comms to dedicated thread?
+	this->mNetworkInterface.update(deltaTime);
+
 	this->pollInput();
 	mpInputQueue->dispatchAll();
 	for (auto tickable : this->mTickers)

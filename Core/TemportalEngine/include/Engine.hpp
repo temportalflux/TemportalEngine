@@ -10,7 +10,7 @@
 
 #include "ecs/Core.hpp"
 #include "input/InputWatcher.hpp"
-//#include "network/common/Service.hpp"
+#include "network/NetworkInterface.hpp"
 #include "thread/Thread.hpp"
 #include "utility/Version.hpp"
 
@@ -98,6 +98,8 @@ public:
 	void initializeRenderer(graphics::VulkanRenderer *renderer, std::shared_ptr<Window> pWindow);
 #pragma endregion
 
+	network::Interface& networkInterface() { return this->mNetworkInterface; }
+
 #pragma region Game Loop
 	void start();
 	bool const isActive() const;
@@ -140,6 +142,8 @@ private:
 #pragma region Graphic
 	std::shared_ptr<graphics::VulkanInstance> mpVulkanInstance;
 #pragma endregion
+
+	network::Interface mNetworkInterface;
 
 #pragma region Input
 	input::InputWatcher mpInputWatcher[1];

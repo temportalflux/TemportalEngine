@@ -3,8 +3,8 @@
 #include "CoreInclude.hpp"
 
 #include "logging/Logger.hpp"
-#include "network/NetworkInterface.hpp"
 #include "game/UserIdentity.hpp"
+#include "network/NetworkCore.hpp"
 #include "settings/ServerSettings.hpp"
 #include "settings/UserSettings.hpp"
 #include "utility/Flags.hpp"
@@ -48,7 +48,6 @@ public:
 	void uninit();
 	void run();
 	
-	network::Interface& networkInterface() { return this->mNetworkInterface; }
 	void setLocalUserNetId(ui32 netId);
 	game::UserIdentity& localUser();
 	game::UserIdentity& findConnectedUser(ui32 netId);
@@ -69,7 +68,6 @@ private:
 	// TODO: Move to a class dedicated to client logic
 	game::UserSettings mUserSettings;
 
-	network::Interface mNetworkInterface;
 	std::shared_ptr<game::WorldLogic> mpWorldLogic;
 	std::shared_ptr<game::Client> mpClient;
 

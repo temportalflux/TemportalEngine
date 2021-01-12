@@ -75,10 +75,10 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 	}
 
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
-	engine::Engine::Create(memoryChunkSizes);
+	auto pEngine = engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
 
-	this->mNetworkInterface.packetTypes()
+	pEngine->networkInterface().packetTypes()
 		.addType<network::packet::ChatMessage>()
 		.addType<network::packet::SetName>()
 		;
@@ -87,10 +87,10 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 	{
 		this->mNetMode |= network::EType::eServer;
 		this->mServerSettings.readFromDisk();
-		this->mNetworkInterface
+		pEngine->networkInterface()
 			.setType(network::EType::eServer)
 			.setAddress(network::Address().setPort(this->mServerSettings.port()));
-		this->mNetworkInterface.onConnectionEstablished.bind(
+		pEngine->networkInterface().onConnectionEstablished.bind(
 			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
 			{
 				this->addConnectedUser(netId);
@@ -105,7 +105,7 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 				}
 			}
 		);
-		this->mNetworkInterface.onConnectionClosed.bind(
+		pEngine->networkInterface().onConnectionClosed.bind(
 			[&](network::Interface *pInterface, ui32 connection, ui32 netId)
 			{
 				auto const& user = this->findConnectedUser(netId);
@@ -120,15 +120,15 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 	{
 		this->mNetMode |= network::EType::eClient;
 		this->mUserSettings.readFromDisk();
-		this->mNetworkInterface.setType(network::EType::eClient);
-		this->mNetworkInterface.onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
+		pEngine->networkInterface().setType(network::EType::eClient);
+		pEngine->networkInterface().onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
 		{
 			network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
 		});
-		this->mNetworkInterface.onNetIdReceived.bind(
+		pEngine->networkInterface().onNetIdReceived.bind(
 			[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
 		);
-		this->mNetworkInterface.onClientPeerStatusChanged.bind(
+		pEngine->networkInterface().onClientPeerStatusChanged.bind(
 			[&](network::Interface *pInterface, ui32 netId, network::EClientStatus status)
 			{
 				if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
@@ -158,7 +158,7 @@ void Game::registerCommands()
 		{
 			auto name = cmd.get<std::string>(0);
 			this->mUserSettings.setName(name).writeToDisk();
-			if (this->mNetworkInterface.hasConnection())
+			if (engine::Engine::Get()->networkInterface().hasConnection())
 			{
 				network::packet::SetName::create()->setName(name).sendToServer();
 			}
@@ -176,7 +176,7 @@ void Game::registerCommands()
 		.pushArgType<network::Address>()
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mNetworkInterface
+			engine::Engine::Get()->networkInterface()
 				.setAddress(cmd.get<network::Address>(0))
 				.start();
 		})
@@ -185,7 +185,7 @@ void Game::registerCommands()
 		command::Signature("disconnect")
 		.bind([&](command::Signature const& cmd)
 		{
-			this->mNetworkInterface.stop();
+			engine::Engine::Get()->networkInterface().stop();
 		})
 	);
 	registry->add(
@@ -306,15 +306,16 @@ void Game::init()
 	
 	//this->bindInput();
 
-	if (this->mNetworkInterface.type() == network::EType::eServer)
+	auto& netInterface = engine::Engine::Get()->networkInterface();
+	if (netInterface.type() == network::EType::eServer)
 	{
-		this->mNetworkInterface.start();
+		netInterface.start();
 	}
 }
 
 void Game::uninit()
 {
-	this->mNetworkInterface.stop();
+	engine::Engine::Get()->networkInterface().stop();
 
 	//this->unbindInput();
 
@@ -443,9 +444,6 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
-	
-	// TODO: move network comms to dedicated thread?
-	this->mNetworkInterface.update(deltaTime);
 
 	//this->mpWorld->handleDirtyCoordinates();
 	engine::Engine::Get()->update(deltaTime);
