@@ -48,6 +48,7 @@ public:
 	 */
 	math::Vector<f32, 3> measure(std::string const& str) const;
 
+	bool contains(char const& code) const;
 	GlyphSprite const& operator[](char const& code) const;
 
 private:

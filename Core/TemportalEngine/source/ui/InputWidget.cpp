@@ -56,17 +56,26 @@ void Input::onInput(input::Event const& evt)
 		{
 			if (evt.inputKey.key == input::EKey::BACKSPACE)
 			{
-				this->lock();
-				this->removeInputAtCursor();
-				this->markDirty();
-				this->unlock();
+				if (this->mFieldContent.length() > 0 && this->mCursorPos > 0)
+				{
+					this->lock();
+					this->mFieldContent.erase(this->mCursorPos - 1, 1);
+					this->mCursorPos--;
+					this->uncommittedContent() = this->mFieldContent;
+					this->markDirty();
+					this->unlock();
+				}
 			}
 			if (evt.inputKey.key == input::EKey::SP_DELETE)
 			{
-				this->lock();
-				this->removeInputAfterCursor();
-				this->markDirty();
-				this->unlock();
+				if (this->mCursorPos < this->mFieldContent.length())
+				{
+					this->lock();
+					this->mFieldContent.erase(this->mCursorPos, 1);
+					this->uncommittedContent() = this->mFieldContent;
+					this->markDirty();
+					this->unlock();
+				}
 			}
 			if (evt.inputKey.key == input::EKey::LEFT)
 			{
@@ -99,30 +108,9 @@ void Input::onInput(input::Event const& evt)
 		this->lock();
 		this->mFieldContent.insert(this->mFieldContent.begin() + this->mCursorPos, evt.inputText.text[0]);
 		this->mCursorPos++;
+		this->uncommittedContent() = this->mFieldContent;
 		this->markDirty();
 		this->unlock();
-	}
-
-	if (this->mFieldContent != this->string())
-	{
-		this->setContent(this->mFieldContent);
-	}
-}
-
-void Input::removeInputAtCursor()
-{
-	if (this->mFieldContent.length() > 0 && this->mCursorPos > 0)
-	{
-		this->mFieldContent.erase(this->mCursorPos - 1, 1);
-		this->mCursorPos--;
-	}
-}
-
-void Input::removeInputAfterCursor()
-{
-	if (this->mCursorPos < this->mFieldContent.length())
-	{
-		this->mFieldContent.erase(this->mCursorPos, 1);
 	}
 }
 
@@ -131,20 +119,14 @@ ui32 Input::desiredCharacterCount() const
 	return Text::desiredCharacterCount() + 1; // +1 for the cursor
 }
 
-void Input::prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight)
+uSize Input::contentLength() const
 {
-	if (charIndex == this->mCursorPos)
-	{
-		graphics::Font const& font = *this->getFont();
-		this->pushGlyph(cursorPos, fontHeight, font['|']);
-	}
+	return Text::contentLength() + 1;
 }
 
-void Input::onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight)
+char Input::charAt(uIndex i) const
 {
-	if (this->mCursorPos == this->mFieldContent.length())
-	{
-		graphics::Font const& font = *this->getFont();
-		this->pushGlyph(cursorPos, fontHeight, font['|']);
-	}
+	if (i == this->mCursorPos) return '|';
+	else if (i < this->mCursorPos) return Text::charAt(i);
+	else return Text::charAt(i - 1);
 }

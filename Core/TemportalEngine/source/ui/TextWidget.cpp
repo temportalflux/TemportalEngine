@@ -1,6 +1,7 @@
 #include "ui/TextWidget.hpp"
 
 #include "graphics/Command.hpp"
+#include "math/Common.hpp"
 #include "ui/WidgetRenderer.hpp"
 
 using namespace ui;
@@ -9,6 +10,7 @@ Text::Text() : ui::Widget()
 {
 	this->mUncommitted.thickness = 0.5f;
 	this->mUncommitted.edgeWidth = 0.1f;
+	this->mUncommitted.maxLength = 0;
 	this->mVertexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly);
 	this->mIndexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, graphics::MemoryUsage::eGPUOnly);
 }
@@ -52,6 +54,7 @@ void Text::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 }
 
 Text& Text::setParent(std::weak_ptr<ui::Widget> parent) { Widget::setParent(parent); return *this; }
+Text& Text::setParentFlag(EParentFlags flag, bool bEnabled) { Widget::setParentFlag(flag, bEnabled); return *this; }
 Text& Text::setAnchor(math::Vector2 const& anchor) { Widget::setAnchor(anchor); return *this; }
 Text& Text::setPivot(math::Vector2 const& pivot) { Widget::setPivot(pivot); return *this; }
 Text& Text::setPosition(math::Vector2Int const& points) { Widget::setPosition(points); return *this; }
@@ -87,15 +90,22 @@ Text& Text::setMaxContentLength(ui32 length)
 	return *this;
 }
 
-Text& Text::setContent(std::string const& content, bool isMaxLength)
+Text& Text::setContent(std::string const& content, bool expandMaxLength)
 {
 	this->lock();
 	this->mUncommitted.content = content;
-	if (isMaxLength) this->mUncommitted.maxLength = (ui32)content.length();
+	if (expandMaxLength)
+	{
+		this->mUncommitted.maxLength = math::max(
+			this->mUncommitted.maxLength, (ui32)content.length()
+		);
+	}
 	this->markDirty();
 	this->unlock();
 	return *this;
 }
+
+std::string& Text::uncommittedContent() { return this->mUncommitted.content; }
 
 Text& Text::operator=(std::string const& content) { return setContent(content); }
 
@@ -150,10 +160,12 @@ Text& Text::commit()
 	// TODO: Can optimize by only writing changed regions (based on the diff between content and committed content, and if the font has changed)
 	if (this->mVertices.size() > 0)
 	{
+		assert(sizeof(this->mVertices) <= this->mVertexBuffer.getSize());
 		this->mVertexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mVertices);
 	}
 	if (this->mIndices.size() > 0)
 	{
+		assert(sizeof(this->mIndices) <= this->mIndexBuffer.getSize());
 		this->mIndexBuffer.writeBuffer(this->renderer()->getTransientPool(), 0, this->mIndices);
 	}
 
@@ -167,7 +179,7 @@ Text& Text::commit()
 
 ui32 Text::desiredCharacterCount() const
 {
-	return this->mUncommitted.maxLength;
+	return math::max(this->mUncommitted.maxLength, (ui32)this->contentLength());
 }
 
 graphics::Font const* Text::getFont() const
@@ -177,24 +189,16 @@ graphics::Font const* Text::getFont() const
 
 math::Vector2 Text::getSizeOnScreen() const
 {
+	// for debugging
 	auto const& content = this->mUncommitted.content;
-	auto len = content.length();
-	auto const& font = *this->getFont();
-	f32 fontHeight = this->resolution().pointsToScreenSpace({ 0, this->mUncommitted.fontSize }).y();
+	
+	auto cursorPos = math::Vector2::ZERO;
+	auto generatedBounds = this->writeGlyphs(
+		math::Vector2::ZERO, cursorPos,
+		Widget::getSizeOnScreen(), nullptr
+	);
 
-	auto size = math::Vector2::ZERO;
-	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
-	{
-		auto const& glyph = font[content[idxChar]];
-		auto toFontSize = math::Vector2({ glyph.pointBasisRatio, (1.0f / glyph.pointBasisRatio) }) * fontHeight;
-		if (glyph.size.x() > 0 && glyph.size.y() > 0)
-		{
-			size.y() = math::max(size.y(), (glyph.size * toFontSize).y());
-		}
-		size.x() += glyph.advance * toFontSize.x();
-	}
-
-	return size;
+	return generatedBounds;
 }
 
 math::Vector4 Text::widthEdge() const
@@ -209,79 +213,137 @@ ui16 Text::pushVertex(Vertex const& v)
 	return (ui16)idxVertex;
 }
 
-void Text::populateBufferData()
+f32 Text::toScreenHeight(i32 points) const
 {
-	auto cursorPos = this->getTopLeftPositionOnScreen();
-	f32 fontHeight = this->resolution().pointsToScreenSpace({ 0, this->mUncommitted.fontSize }).y();
-	auto const& content = this->mUncommitted.content;
-	auto len = content.length();
-	graphics::Font const& font = *this->getFont();
-	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
-	{
-		this->prePushCharacter(idxChar, cursorPos, fontHeight);
-		auto const& glyph = font[content[idxChar]];
-		this->pushGlyph(cursorPos, fontHeight, glyph);
-	}
-	this->onPushedAllCharacters(cursorPos, fontHeight);
+	return this->resolution().pointsToScreenSpace({ 0, points }).y();
 }
 
-void Text::pushGlyph(math::Vector2 &cursorPos, f32 fontHeight, graphics::Font::GlyphSprite const& glyph)
+void Text::populateBufferData()
 {
-	struct ScreenGlyph
+	auto const& topLeft = this->getTopLeftPositionOnScreen();
+	auto cursorPos = math::Vector2::ZERO;
+	this->writeGlyphs(
+		topLeft, cursorPos, Widget::getSizeOnScreen(),
+		std::bind(&Text::pushGlyph, this, std::placeholders::_1, std::placeholders::_2)
+	);
+}
+
+f32 Text::getFontHeight() const
+{
+	return this->toScreenHeight(this->mUncommitted.fontSize);
+}
+
+uSize Text::contentLength() const
+{
+	return this->mUncommitted.content.length();
+}
+
+char Text::charAt(uIndex i) const
+{
+	return this->mUncommitted.content[i];
+}
+
+math::Vector2 Text::writeGlyphs(
+	math::Vector2 const& offset, math::Vector2 &cursorPos, math::Vector2 const& maxBounds,
+	TDrawGlyph drawer
+) const
+{
+	f32 fontHeight = this->getFontHeight();
+	f32 lineHeight = fontHeight + this->toScreenHeight(5);
+
+	auto const len = this->contentLength();
+	graphics::Font const& font = *this->getFont();
+	auto bounds = math::Vector2({ 0, lineHeight });
+	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
 	{
-		math::Vector2 screenBearing;
-		math::Vector2 screenSize;
-		math::Vector2 atlasPos;
-		math::Vector2 atlasSize;
-	};
+		auto c = this->charAt(idxChar);
+		if (c == '\n' || c == '\r')
+		{
+			cursorPos.y() += lineHeight;
+			cursorPos.x() = 0;
+			bounds.y() += lineHeight;
+			continue;
+		}
+		if (!font.contains(c)) c = '?';
+
+		auto const& glyph = font[c];
+		auto toFontSize = this->glyphToFontSize(glyph, fontHeight);
+		auto glyphSize = glyph.size.toFloat() * toFontSize;
+		if (maxBounds.x() > 0 && cursorPos.x() + glyphSize.x() > maxBounds.x())
+		{
+			cursorPos.y() += lineHeight;
+			cursorPos.x() = 0;
+			bounds.y() += lineHeight;
+		}
+		if (maxBounds.y() > 0 && cursorPos.y() + glyphSize.y() > maxBounds.y())
+		{
+			break;
+		}
+		if (drawer) drawer(offset + cursorPos, glyph);
+		cursorPos.x() += glyph.advance * toFontSize.x();
+		bounds.x() = math::max(bounds.x(), cursorPos.x());
+		bounds.y() = math::max(bounds.y(), cursorPos.y());
+	}
+	return bounds;
+}
+
+math::Vector2 Text::glyphToFontSize(
+	graphics::Font::GlyphSprite const& glyph, f32 fontHeight
+) const
+{
+	return math::Vector2({
+		glyph.pointBasisRatio, (1.0f / glyph.pointBasisRatio)
+	}) * fontHeight;
+}
+
+void Text::pushGlyph(
+	math::Vector2 const& cursorPos,
+	graphics::Font::GlyphSprite const& glyph
+)
+{
+	if (glyph.size.x() <= 0 || glyph.size.y() <= 0)
+	{
+		return;
+	}
 
 	auto const widthEdge = this->widthEdge();
+	f32 fontHeight = this->getFontHeight();
+	auto toFontSize = this->glyphToFontSize(glyph, fontHeight);
+	math::Vector2 screenBearing = glyph.bearing.toFloat() * toFontSize;
+	math::Vector2 screenSize = glyph.size.toFloat() * toFontSize;
+
 	auto pushVertex = [&](
-		math::Vector2 const& cursorPos, ScreenGlyph const& glyph,
 		math::Vector2 const& sizeMult
 	) -> ui16 {
 		return this->pushVertex(Text::Vertex{
 			(
-				cursorPos + glyph.screenBearing + (glyph.screenSize * sizeMult)
+				cursorPos + screenBearing + (screenSize * sizeMult)
 			).createSubvector<4>() + widthEdge,
 			glyph.atlasPos + (glyph.atlasSize * sizeMult)
 		});
 	};
 
-	auto pushGlyph = [&](
-		math::Vector2 const& cursorPos, ScreenGlyph const& glyph
-	) {
-		auto idxTL = pushVertex(cursorPos, glyph, { 0, 0 });
-		auto idxTR = pushVertex(cursorPos, glyph, { 1, 0 });
-		auto idxBR = pushVertex(cursorPos, glyph, { 1, 1 });
-		auto idxBL = pushVertex(cursorPos, glyph, { 0, 1 });
-		this->mIndices.push_back(idxTL);
-		this->mIndices.push_back(idxTR);
-		this->mIndices.push_back(idxBR);
-		this->mIndices.push_back(idxBR);
-		this->mIndices.push_back(idxBL);
-		this->mIndices.push_back(idxTL);
-	};
-
-	auto toFontSize = math::Vector2({ glyph.pointBasisRatio, (1.0f / glyph.pointBasisRatio) }) * fontHeight;
-	if (glyph.size.x() > 0 && glyph.size.y() > 0)
-	{
-		pushGlyph(cursorPos, ScreenGlyph {
-			glyph.bearing.toFloat() * toFontSize,
-			glyph.size.toFloat() * toFontSize,
-			glyph.atlasPos, glyph.atlasSize
-		});
-	}
-	cursorPos.x() += glyph.advance * toFontSize.x();
+	auto idxTL = pushVertex({ 0, 0 });
+	auto idxTR = pushVertex({ 1, 0 });
+	auto idxBR = pushVertex({ 1, 1 });
+	auto idxBL = pushVertex({ 0, 1 });
+	this->mIndices.push_back(idxTL);
+	this->mIndices.push_back(idxTR);
+	this->mIndices.push_back(idxBR);
+	this->mIndices.push_back(idxBR);
+	this->mIndices.push_back(idxBL);
+	this->mIndices.push_back(idxTL);
 }
-
-void Text::prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight) {}
-void Text::onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight) {}
 
 void Text::record(graphics::Command *command)
 {
 	OPTICK_EVENT();
-	if (this->mCommittedIndexCount == 0) return;
+	assert(this->mVertices.size() * sizeof(Vertex) <= this->mVertexBuffer.getSize());
+	assert(this->mIndices.size() * sizeof(ui16) <= this->mIndexBuffer.getSize());
+	if (this->mCommittedIndexCount == 0)
+	{
+		return;
+	}
 	auto pipeline = this->renderer()->textPipeline();
 	command->bindPipeline(pipeline);
 	command->bindDescriptorSets(pipeline, { &this->getFont()->descriptorSet() });

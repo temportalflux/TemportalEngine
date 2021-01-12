@@ -1,6 +1,8 @@
 #include "ui/Widget.hpp"
 #include "ui/WidgetRenderer.hpp"
 
+#include "math/Common.hpp"
+
 using namespace ui;
 
 Widget::Widget()
@@ -9,12 +11,26 @@ Widget::Widget()
 	, mZLayer(0)
 	, mbFillParentWidth(false), mbFillParentHeight(false)
 {
+	this->setParentFlag(EParentFlags::eLayout, true);
+	this->setParentFlag(EParentFlags::eVisibility, true);
 }
 
 Widget& Widget::setParent(std::weak_ptr<ui::Widget> parent)
 {
 	this->mpParent = parent;
 	return *this;
+}
+
+Widget& Widget::setParentFlag(EParentFlags flag, bool bEnabled)
+{
+	if (bEnabled) this->mParentFlags |= (ui16)flag;
+	else this->mParentFlags &= ~((ui16)flag);
+	return *this;
+}
+
+bool Widget::isParentFlagEnabled(EParentFlags flag) const
+{
+	return (this->mParentFlags & ui16(flag)) == ui16(flag);
 }
 
 Widget& Widget::setAnchor(math::Vector2 const& anchor)
@@ -67,7 +83,14 @@ Widget& Widget::setIsVisible(bool bVisible)
 
 bool Widget::isVisible() const
 {
-	return this->mbIsVisible && (this->mpParent.expired() || this->mpParent.lock()->isVisible());
+	if (this->isParentFlagEnabled(EParentFlags::eVisibility))
+	{
+		if (!this->mpParent.expired() && !this->mpParent.lock()->isVisible())
+		{
+			return false;
+		}
+	}
+	return this->mbIsVisible;
 }
 
 math::Vector2 Widget::getTopLeftPositionOnScreen() const
@@ -76,7 +99,7 @@ math::Vector2 Widget::getTopLeftPositionOnScreen() const
 	
 	auto screenPos = math::Vector2::ZERO;
 	
-	if (this->mpParent.expired())
+	if (this->mpParent.expired() || !this->isParentFlagEnabled(EParentFlags::eLayout))
 	{
 		// Convert the position into [-1,1] space since there is no parent
 		screenPos = (this->mAnchor * 2.0f) - 1.0f;
@@ -99,16 +122,28 @@ math::Vector2 Widget::getTopLeftPositionOnScreen() const
 	return screenPos;
 }
 
+math::Vector2 Widget::parentScreenSize() const
+{
+	return !this->mpParent.expired()
+		? this->mpParent.lock()->getSizeOnScreen()
+		: math::Vector2{ 2, 2 };
+}
+
+math::Vector2 Widget::fillParentAmount() const
+{
+	return {
+		f32(this->mbFillParentWidth),
+		f32(this->mbFillParentHeight)
+	};
+}
+
 math::Vector2 Widget::getSizeOnScreen() const
 {
-	auto screenSpace = this->mResolution.pointsToScreenSpace(this->mSizeInPoints);
-	auto parentSize = !this->mpParent.expired()
-		? this->mpParent.lock()->getSizeOnScreen()
-		: math::Vector2 { 2, 2 };
-	return {
-		this->mbFillParentWidth ? parentSize.x() : screenSpace.x(),
-		this->mbFillParentHeight ? parentSize.y() : screenSpace.y(),
-	};
+	return math::lerp(
+		this->mResolution.pointsToScreenSpace(this->mSizeInPoints),
+		this->parentScreenSize(),
+		this->fillParentAmount()
+	);
 }
 
 void Widget::lock()

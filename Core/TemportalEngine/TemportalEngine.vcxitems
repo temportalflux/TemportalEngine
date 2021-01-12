@@ -213,6 +213,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\logging\Logger.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Common.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\compare.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Matrix.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\pow.hpp" />

@@ -18,6 +18,12 @@ class WidgetRenderer;
 class Widget : public virtual_enable_shared_from_this<Widget>
 {
 public:
+	enum class EParentFlags : ui16
+	{
+		eLayout = 0,
+		eVisibility = 1,
+	};
+
 	Widget();
 	virtual ~Widget() {}
 
@@ -28,6 +34,7 @@ public:
 	ui::Resolution const& resolution() const { return this->mResolution; }
 
 	Widget& setParent(std::weak_ptr<ui::Widget> parent);
+	Widget& setParentFlag(EParentFlags flag, bool bEnabled);
 	Widget& setAnchor(math::Vector2 const& anchor);
 	Widget& setPivot(math::Vector2 const& pivot);
 	Widget& setPosition(math::Vector2Int const& points);
@@ -58,6 +65,9 @@ protected:
 	bool hasRenderer() const { return !this->mpRenderer.expired(); }
 	std::shared_ptr<ui::WidgetRenderer> renderer() { return this->mpRenderer.lock(); }
 
+	math::Vector2 parentScreenSize() const;
+	math::Vector2 fillParentAmount() const;
+
 private:
 	std::weak_ptr<ui::WidgetRenderer> mpRenderer;
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
@@ -69,6 +79,9 @@ private:
 	bool mbIsVisible;
 
 	std::weak_ptr<ui::Widget> mpParent;
+	ui16 mParentFlags;
+
+	bool isParentFlagEnabled(EParentFlags flag) const;
 
 	/**
 	 * The position of the widget's anchor as a fraction of the screen size.

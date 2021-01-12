@@ -7,6 +7,8 @@
 #include "ui/TextWidget.hpp"
 #include "ui/InputWidget.hpp"
 
+#include <queue>
+
 NS_UI
 class WidgetRenderer;
 
@@ -30,11 +32,23 @@ private:
 	std::shared_ptr<ui::Image> mpLogBkgd;
 	std::shared_ptr<ui::Input> mpInputText;
 
+	struct Message
+	{
+		std::optional<ui32> senderNetId;
+		std::string message;
+	};
+	ui8 mDisplayableMessageCount;
+	std::deque<Message> mRecentMessages;
+	std::shared_ptr<ui::Text> mpChatLog;
+
 	std::shared_ptr<ui::Image> mpBackgroundDemo;
 	std::vector<std::shared_ptr<ui::Image>> mSlots;
 
 	void onInput(input::Event const& evt) override;
 	void onInputConfirmed(std::string input);
+
+	void pushToLog(Message const& msg);
+	void updateLogText();
 
 };
 

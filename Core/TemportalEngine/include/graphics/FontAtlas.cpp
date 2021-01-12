@@ -87,6 +87,11 @@ math::Vector<f32, 3> Font::measure(std::string const& str) const
 	return measurement;
 }
 
+bool Font::contains(char const& code) const
+{
+	return this->mCharToGlyphIdx.find(code) != this->mCharToGlyphIdx.end();
+}
+
 Font::GlyphSprite const& Font::operator[](char const& code) const
 {
 	auto idxGlyph = this->mCharToGlyphIdx.find(code);

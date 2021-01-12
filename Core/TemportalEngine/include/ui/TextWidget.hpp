@@ -29,6 +29,7 @@ public:
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 
 	Text& setParent(std::weak_ptr<ui::Widget> parent);
+	Text& setParentFlag(EParentFlags flag, bool bEnabled);
 	Text& setAnchor(math::Vector2 const& anchor);
 	Text& setPivot(math::Vector2 const& pivot);
 	Text& setPosition(math::Vector2Int const& points);
@@ -54,6 +55,7 @@ public:
 	void record(graphics::Command *command) override;
 
 protected:
+	using TDrawGlyph = std::function<void(math::Vector2 const& pos, graphics::Font::GlyphSprite const& glyph)>;
 
 	struct Vertex
 	{
@@ -72,13 +74,13 @@ protected:
 	std::vector<ui16> mIndices;
 	ui32 mCommittedIndexCount;
 
+	std::string& uncommittedContent();
 	graphics::Font const* getFont() const;
 	math::Vector4 widthEdge() const;
 	ui16 pushVertex(Vertex const& v);
-	void pushGlyph(math::Vector2 &cursorPos, f32 fontHeight, graphics::Font::GlyphSprite const& glyph);
-	virtual void prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight);
-	virtual void onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight);
 	virtual ui32 desiredCharacterCount() const;
+	virtual uSize contentLength() const;
+	virtual char charAt(uIndex i) const;
 
 private:
 
@@ -99,7 +101,21 @@ private:
 	graphics::Buffer mVertexBuffer;
 	graphics::Buffer mIndexBuffer;
 
-	virtual void populateBufferData();
+	void populateBufferData();
+	f32 getFontHeight() const;
+	math::Vector2 writeGlyphs(
+		math::Vector2 const& offset, math::Vector2 &cursorPos, math::Vector2 const& maxBounds,
+		TDrawGlyph draw
+	) const;
+
+	math::Vector2 glyphToFontSize(
+		graphics::Font::GlyphSprite const& glyph, f32 fontHeight
+	) const;
+	void pushGlyph(
+		math::Vector2 const& cursorPos,
+		graphics::Font::GlyphSprite const& glyph
+	);
+	f32 toScreenHeight(i32 points) const;
 
 };
 

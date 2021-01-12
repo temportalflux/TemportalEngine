@@ -23,12 +23,6 @@ TextLogMenu::TextLogMenu()
 		.setAnchor({ 0, 1 }).setPivot({ 0, 1 })
 		.setSize({ 0, 45 }).setFillWidth(true)
 		;
-	(*(this->mpLogBkgd = std::make_shared<ui::Image>()))
-		.setResource(ui::RES_IMG_WHITE)
-		.setColor({ 0.f, 0.f, 0.f, 0.9f })
-		.setAnchor({ 0, 1 }).setPivot({ 0, 1 })
-		.setPosition({ 0, -60 }).setSize({ 800, 500 })
-		;
 
 	(*(this->mpInputText = std::make_shared<ui::Input>()))
 		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
@@ -37,6 +31,23 @@ TextLogMenu::TextLogMenu()
 		.setFont("unispace").setFontSize(20)
 		.setMaxContentLength(255);
 	this->mpInputText->onConfirm.bind(std::bind(&TextLogMenu::onInputConfirmed, this, std::placeholders::_1));
+
+	(*(this->mpLogBkgd = std::make_shared<ui::Image>()))
+		.setResource(ui::RES_IMG_WHITE)
+		.setColor({ 0.f, 0.f, 0.f, 0.9f })
+		.setAnchor({ 0, 1 }).setPivot({ 0, 1 })
+		.setPosition({ 0, -60 }).setSize({ 800, 500 })
+		;
+
+	this->mDisplayableMessageCount = 10;
+	(*(this->mpChatLog = std::make_shared<ui::Text>()))
+		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setParent(this->mpLogBkgd)
+		.setParentFlag(Widget::EParentFlags::eVisibility, false)
+		.setFillWidth(true)
+		.setAnchor({ 0, 1 }).setPivot({ 0, 1 })
+		.setFont("unispace").setFontSize(20)
+		.setIsVisible(true);
 
 	/*
 	this->mpBackgroundDemo = std::make_shared<ui::Image>();
@@ -56,8 +67,9 @@ TextLogMenu::TextLogMenu()
 TextLogMenu::~TextLogMenu()
 {
 	this->mpInputBarBkgd.reset();
-	this->mpLogBkgd.reset();
 	this->mpInputText.reset();
+	this->mpLogBkgd.reset();
+	this->mpChatLog.reset();
 
 	this->mpBackgroundDemo.reset();
 	this->mSlots.clear();
@@ -69,8 +81,9 @@ void TextLogMenu::init(ui::WidgetRenderer *renderer)
 	this->startListening(input::EInputType::KEY);
 
 	renderer->add(this->mpInputBarBkgd);
-	renderer->add(this->mpLogBkgd);
 	renderer->add(this->mpInputText);
+	renderer->add(this->mpLogBkgd);
+	renderer->add(this->mpChatLog);
 	//renderer->add(this->mpBackgroundDemo);
 	//for (auto& slot : this->mSlots) renderer->add(slot);
 }
@@ -96,7 +109,7 @@ void TextLogMenu::onInput(input::Event const& evt)
 void TextLogMenu::onInputConfirmed(std::string input)
 {
 	this->mpInputText->clear();
-	
+
 	if (input[0] == '/')
 	{
 		if (auto errors = engine::Engine::Get()->commands()->execute(utility::split(input.substr(1), ' ')))
@@ -112,9 +125,42 @@ void TextLogMenu::onInputConfirmed(std::string input)
 
 void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string const& message)
 {
+	this->pushToLog({ senderNetId, message });
 }
 
 void TextLogMenu::addToLog(std::string const& message)
 {
-	TEXTLOGMENU_LOG.log(LOG_INFO, message.c_str());
+	this->pushToLog({ std::nullopt, message });
+}
+
+void TextLogMenu::pushToLog(Message const& msg)
+{
+	if (this->mRecentMessages.size() == this->mDisplayableMessageCount)
+	{
+		this->mRecentMessages.pop_front();
+	}
+	this->mRecentMessages.push_back(msg);
+	this->updateLogText();
+}
+
+void TextLogMenu::updateLogText()
+{
+	auto pGame = game::Game::Get();
+	auto ss = std::stringstream();
+	auto iter = this->mRecentMessages.begin();
+	while (iter != this->mRecentMessages.end())
+	{
+		if (iter != this->mRecentMessages.begin())
+		{
+			ss << '\n';
+		}
+		if (iter->senderNetId)
+		{
+			auto userId = pGame->findConnectedUser(iter->senderNetId.value());
+			ss << '<' << userId.name << '>';
+		}
+		ss << iter->message;
+		++iter;
+	}
+	this->mpChatLog->setContent(ss.str(), true);
 }

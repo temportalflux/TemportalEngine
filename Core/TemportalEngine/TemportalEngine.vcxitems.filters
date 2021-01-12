@@ -803,5 +803,8 @@
     <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\network\packet\NetworkPacketClientStatus.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Common.hpp">
+      <Filter>math</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

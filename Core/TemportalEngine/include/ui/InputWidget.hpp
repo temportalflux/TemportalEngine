@@ -22,8 +22,8 @@ public:
 
 protected:
 	ui32 desiredCharacterCount() const override;
-	void prePushCharacter(uIndex charIndex, math::Vector2 &cursorPos, f32 fontHeight) override;
-	void onPushedAllCharacters(math::Vector2 &cursorPos, f32 fontHeight) override;
+	uSize contentLength() const override;
+	char charAt(uIndex i) const override;
 
 private:
 	bool mbIsActive;
@@ -31,8 +31,6 @@ private:
 	std::string mFieldContent;
 
 	void onInput(input::Event const& evt) override;
-	void removeInputAtCursor();
-	void removeInputAfterCursor();
 
 };
 
