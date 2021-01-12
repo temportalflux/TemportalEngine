@@ -46,23 +46,37 @@ std::shared_ptr<Packet> Packet::finalize()
 
 void Packet::sendToServer()
 {
-	auto network = engine::Engine::Get()->networkInterface();
-	assert(network.type() == EType::eClient);
-	network.sendPackets(network.connection(), { this->finalize() });
+	this->finalize();
+	auto& network = engine::Engine::Get()->networkInterface();
+	switch (network.type())
+	{
+	case EType::eClient:
+		network.sendPackets(network.connection(), { this->shared_from_this() });
+		break;
+	case EType::eServer:
+		this->process(&network);
+		break;
+	default: assert(false); break;			
+	}
 }
 
 void Packet::send(ui32 connection)
 {
-	engine::Engine::Get()->networkInterface().sendPackets(connection, { this->finalize() });
+	auto& network = engine::Engine::Get()->networkInterface();
+	assert(network.type() == EType::eServer);
+	network.sendPackets(connection, { this->finalize() });
 }
 
 void Packet::sendTo(ui32 netId)
 {
-	auto connection = engine::Engine::Get()->networkInterface().getConnectionFor(netId);
-	this->send(connection);
+	auto& network = engine::Engine::Get()->networkInterface();
+	assert(network.type() == EType::eServer);
+	this->send(network.getConnectionFor(netId));
 }
 
 void Packet::broadcast(std::set<ui32> except)
 {
-	engine::Engine::Get()->networkInterface().broadcastPackets({ this->finalize() }, except);
+	auto& network = engine::Engine::Get()->networkInterface();
+	assert(network.type() == EType::eServer);
+	network.broadcastPackets({ this->finalize() }, except);
 }

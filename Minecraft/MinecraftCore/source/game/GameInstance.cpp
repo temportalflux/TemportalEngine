@@ -144,10 +144,7 @@ void Game::registerCommands()
 		.pushArgType<network::Address>()
 		.bind([&](command::Signature const& cmd)
 		{
-			this->startDedicatedClient();
-			engine::Engine::Get()->networkInterface()
-				.setAddress(cmd.get<network::Address>(0))
-				.start();
+			this->startDedicatedClient(cmd.get<network::Address>(0));
 		})
 	);
 	registry->add(
@@ -181,11 +178,8 @@ void Game::registerCommands()
 
 void Game::startDedicatedServer()
 {
-	auto pEngine = engine::Engine::Get();
-	pEngine->networkInterface()
-		.setType(network::EType::eServer)
-		.setAddress(network::Address().setPort(this->mServerSettings.port()));
-	pEngine->networkInterface().onConnectionEstablished.bind(
+	auto& networkInterface = engine::Engine::Get()->networkInterface();
+	networkInterface.onConnectionEstablished.bind(
 		[&](network::Interface *pInterface, ui32 connection, ui32 netId)
 		{
 			this->addConnectedUser(netId);
@@ -200,7 +194,7 @@ void Game::startDedicatedServer()
 			}
 		}
 	);
-	pEngine->networkInterface().onConnectionClosed.bind(
+	networkInterface.onConnectionClosed.bind(
 		[&](network::Interface *pInterface, ui32 connection, ui32 netId)
 		{
 			auto const& user = this->findConnectedUser(netId);
@@ -210,31 +204,43 @@ void Game::startDedicatedServer()
 			this->removeConnectedUser(netId);
 		}
 	);
+	networkInterface
+		.setType(network::EType::eServer)
+		.setAddress(network::Address().setPort(this->mServerSettings.port()));
 }
 
-void Game::startDedicatedClient()
+void Game::startDedicatedClient(network::Address const& serverAddress)
 {
-	auto pEngine = engine::Engine::Get();
-	pEngine->networkInterface().setType(network::EType::eClient);
-	pEngine->networkInterface().onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
+	auto& networkInterface = engine::Engine::Get()->networkInterface();
+	networkInterface.onConnectionEstablished.bind([&](network::Interface *pInterface, ui32 connection, ui32 netId)
 	{
 		network::packet::SetName::create()->setName(this->mUserSettings.name()).sendToServer();
 	});
-	pEngine->networkInterface().onNetIdReceived.bind(
+	networkInterface.onNetIdReceived.bind(
 		[&](network::Interface *pInterface, ui32 netId) { this->setLocalUserNetId(netId); }
 	);
-	pEngine->networkInterface().onClientPeerStatusChanged.bind(
+	networkInterface.onClientPeerStatusChanged.bind(
 		[&](network::Interface *pInterface, ui32 netId, network::EClientStatus status)
 		{
 			if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
 			else this->removeConnectedUser(netId);
 		}
 	);
+	networkInterface.setType(network::EType::eClient).setAddress(serverAddress).start();
 }
 
 void Game::startIntegratedClientServer()
 {
+	auto& networkInterface = engine::Engine::Get()->networkInterface();
 
+	networkInterface
+		.setType(network::EType::eServer)
+		.setAddress(network::Address().setPort(this->mServerSettings.port()));
+
+	// Set up the local client
+
+
+	networkInterface.start();
 }
 
 void Game::setLocalUserNetId(ui32 netId)

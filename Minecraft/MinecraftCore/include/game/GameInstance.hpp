@@ -5,6 +5,7 @@
 #include "logging/Logger.hpp"
 #include "game/UserIdentity.hpp"
 #include "network/NetworkCore.hpp"
+#include "network/NetworkAddress.hpp"
 #include "settings/ServerSettings.hpp"
 #include "settings/UserSettings.hpp"
 #include "utility/Flags.hpp"
@@ -63,9 +64,7 @@ private:
 
 	utility::Flags<network::EType> mNetMode;
 
-	// TODO: Move to class dedicated to server logic (should still be accessible by ClientOnTopOfServer)
 	game::ServerSettings mServerSettings;
-	// TODO: Move to a class dedicated to client logic
 	game::UserSettings mUserSettings;
 
 	std::shared_ptr<game::WorldLogic> mpWorldLogic;
@@ -87,7 +86,7 @@ private:
 	void registerECSTypes(ecs::Core *ecs);
 
 	void startDedicatedServer();
-	void startDedicatedClient();
+	void startDedicatedClient(network::Address const& serverAddress);
 	void startIntegratedClientServer();
 
 	//void createLocalPlayer();
