@@ -23,6 +23,7 @@ public:
 	uSize getSize() const;
 
 	void create() override;
+	bool isValid() const;
 	void* get() override;
 	void* get() const;
 	void invalidate() override;

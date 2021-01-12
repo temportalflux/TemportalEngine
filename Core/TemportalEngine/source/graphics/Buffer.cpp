@@ -62,6 +62,11 @@ void Buffer::create()
 	);
 }
 
+bool Buffer::isValid() const
+{
+	return this->mAllocHandle != nullptr;
+}
+
 void* Buffer::get() { return &this->mAllocated; }
 void* Buffer::get() const { return (void*)(&this->mAllocated); }
 

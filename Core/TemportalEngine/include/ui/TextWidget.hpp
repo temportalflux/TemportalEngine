@@ -98,6 +98,9 @@ private:
 	Configuration mUncommitted, mCommitted;
 	ui32 mBufferCharacterCount;
 
+	graphics::Buffer mOldVBuffer, mOldIBuffer;
+	ui8 mFramesSinceBufferRecreation;
+
 	graphics::Buffer mVertexBuffer;
 	graphics::Buffer mIndexBuffer;
 

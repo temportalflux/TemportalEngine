@@ -145,8 +145,11 @@ Text& Text::commit()
 	if (this->desiredCharacterCount() != this->mBufferCharacterCount)
 	{
 		this->mBufferCharacterCount = this->desiredCharacterCount();
-		this->mVertexBuffer.invalidate();
-		this->mIndexBuffer.invalidate();
+		
+		this->mOldVBuffer = std::move(this->mVertexBuffer);
+		this->mOldIBuffer = std::move(this->mIndexBuffer);
+		this->mFramesSinceBufferRecreation = 0;
+		
 		this->mVertexBuffer
 			.setSize(this->mBufferCharacterCount * 4 * sizeof(Vertex))
 			.create();
@@ -338,6 +341,13 @@ void Text::pushGlyph(
 void Text::record(graphics::Command *command)
 {
 	OPTICK_EVENT();
+	if ((this->mOldVBuffer.isValid() || this->mOldIBuffer.isValid()) && this->mFramesSinceBufferRecreation++ >= 3)
+	{
+		this->mOldVBuffer.invalidate();
+		this->mOldIBuffer.invalidate();
+		this->mFramesSinceBufferRecreation = 0;
+	}
+
 	assert(this->mVertices.size() * sizeof(Vertex) <= this->mVertexBuffer.getSize());
 	assert(this->mIndices.size() * sizeof(ui16) <= this->mIndexBuffer.getSize());
 	if (this->mCommittedIndexCount == 0)
