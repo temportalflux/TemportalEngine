@@ -28,23 +28,23 @@ bool Address::operator==(Address const& other) const
 	return reinterpret_cast<SteamNetworkingIPAddr const*>(&this->mData) == reinterpret_cast<SteamNetworkingIPAddr const*>(&other.mData);
 }
 
-void Address::setIPv6(ui8 const* data, ui16 port)
+Address& Address::setIPv6(ui8 const* data, ui16 port)
 {
 	assert(port >= 0 && port < 65535);
 	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->SetIPv6(data, port);
+	return *this;
 }
 
-void Address::setIPv4(ui32 data, ui16 port)
+Address& Address::setIPv4(ui32 data, ui16 port)
 {
 	assert(port >= 0 && port < 65535);
 	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->SetIPv4(data, port);
+	return *this;
 }
 
-Address& Address::setLocalHost(ui16 port)
+Address& Address::setLocalTarget(ui16 port)
 {
-	assert(port >= 0 && port < 65535);
-	reinterpret_cast<SteamNetworkingIPAddr*>(&this->mData)->SetIPv6LocalHost(port);
-	return *this;
+	return this->setIPv4(0x7f000001, port);
 }
 
 Address& Address::setPort(ui16 port)
@@ -62,11 +62,6 @@ bool Address::isIPv4() const
 ui32 Address::getIPv4() const
 {
 	return reinterpret_cast<SteamNetworkingIPAddr const*>(&this->mData)->GetIPv4();
-}
-
-bool Address::isLocalHost() const
-{
-	return reinterpret_cast<SteamNetworkingIPAddr const*>(&this->mData)->IsLocalHost();
 }
 
 ui16& Address::port()

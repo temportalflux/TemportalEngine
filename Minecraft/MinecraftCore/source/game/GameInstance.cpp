@@ -147,11 +147,17 @@ void Game::registerCommands()
 		})
 	);
 	registry->add(
-		command::Signature("leave")
+		command::Signature("joinLocal")
 		.bind([&](command::Signature const& cmd)
 		{
-		Game::networkInterface()->stop();
+			auto localAddress = network::Address().setLocalTarget(ServerSettings().port());
+			this->setupDedicatedClient(localAddress);
+			Game::networkInterface()->start();
 		})
+	);
+	registry->add(
+		command::Signature("leave")
+		.bind(std::bind(&network::Interface::stop, Game::networkInterface()))
 	);
 #pragma endregion
 #pragma region Integrated Servers / ClientOnTopOfServer
