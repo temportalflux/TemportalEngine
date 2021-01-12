@@ -11,7 +11,7 @@ class ServerSettings
 public:
 	ServerSettings()
 		: Settings("serverSettings.json")
-		, mPort(32265)
+		, mPort(25565)
 	{
 	}
 
