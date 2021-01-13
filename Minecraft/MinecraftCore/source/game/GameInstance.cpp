@@ -78,6 +78,30 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 
 	this->registerCommands();
 
+	auto key1 = crypto::RSAKey();
+	if (key1.generate())
+	{
+		auto pubStr = key1.publicKey();
+		auto priStr = key1.privateKey();
+		GAME_LOG.log(LOG_INFO, pubStr->c_str());
+		GAME_LOG.log(LOG_INFO, priStr->c_str());
+
+		auto pubKey = crypto::RSAKey();
+		if (pubStr && crypto::RSAKey::fromPublicString(*pubStr, pubKey))
+		{
+			auto pubStr2 = pubKey.publicKey();
+			assert(pubStr == pubStr2);
+		}
+
+		auto priKey = crypto::RSAKey();
+		if (priStr && crypto::RSAKey::fromPrivateString(*priStr, priKey))
+		{
+			auto pubStr2 = priKey.publicKey();
+			auto priStr2 = priKey.privateKey();
+			assert(pubStr == pubStr2);
+			assert(priStr == priStr2);
+		}
+	}
 }
 
 Game::~Game()
