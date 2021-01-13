@@ -3,8 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <EngineLibs>$(SolutionDir)Core\TemportalEngine\libs\</EngineLibs>
-    <PhysXBin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\PhysX</PhysXBin>
-    <GameNetworkingSocketsBin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\GameNetworkingSockets</GameNetworkingSocketsBin>
+    <Bin>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\</Bin>
   </PropertyGroup>
   <PropertyGroup />
   <ItemDefinitionGroup />
@@ -12,11 +11,8 @@
     <BuildMacro Include="EngineLibs">
       <Value>$(EngineLibs)</Value>
     </BuildMacro>
-    <BuildMacro Include="PhysXBin">
-      <Value>$(PhysXBin)</Value>
-    </BuildMacro>
-    <BuildMacro Include="GameNetworkingSocketsBin">
-      <Value>$(GameNetworkingSocketsBin)</Value>
+    <BuildMacro Include="Bin">
+      <Value>$(Bin)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

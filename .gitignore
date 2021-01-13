@@ -12,3 +12,4 @@ Core/TemportalEngineEditor/libs/shaderc
 *.fbx
 *.blend
 Core/TemportalEngine/libs/GameNetworkingSockets-package
+Core/TemportalEngine/libs/OpenSSL

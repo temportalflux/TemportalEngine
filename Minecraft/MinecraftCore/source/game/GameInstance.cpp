@@ -97,6 +97,7 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 	}
 
 	this->registerCommands();
+
 }
 
 Game::~Game()
