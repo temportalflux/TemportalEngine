@@ -30,6 +30,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandSignature.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\AES.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\Crypto.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\RSA.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
@@ -139,6 +142,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\optional.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\command\CommandSignature.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\AES.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\Crypto.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\RSA.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ValueIterator.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Delegate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\DependencyModule.hpp" />
@@ -247,6 +253,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IModel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelSimple.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ModelVertex.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\Singleton.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\Mutex.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\thread\MutexLock.hpp" />

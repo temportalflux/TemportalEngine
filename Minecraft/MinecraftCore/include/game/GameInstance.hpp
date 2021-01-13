@@ -2,6 +2,7 @@
 
 #include "CoreInclude.hpp"
 
+#include "Singleton.hpp"
 #include "logging/Logger.hpp"
 #include "game/UserIdentity.hpp"
 #include "network/NetworkCore.hpp"
@@ -26,17 +27,8 @@ FORWARD_DEF(NS_NETWORK, class Interface);
 
 NS_GAME
 
-class Game : public std::enable_shared_from_this<Game>
+class Game : public Singleton<Game, int, char*[]>
 {
-
-#pragma region Singleton
-public:
-	static std::shared_ptr<Game> Create(int argc, char *argv[]);
-	static std::shared_ptr<Game> Get();
-	static void Destroy();
-private:
-	static std::shared_ptr<Game> gpInstance;
-#pragma endregion
 
 public:
 	static std::shared_ptr<asset::AssetManager> assetManager();

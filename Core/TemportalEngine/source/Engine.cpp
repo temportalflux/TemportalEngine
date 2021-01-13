@@ -3,6 +3,8 @@
 #include "ITickable.hpp"
 #include "Window.hpp"
 #include "command/CommandRegistry.hpp"
+#include "crypto/AES.hpp"
+#include "crypto/RSA.hpp"
 #include "ecs/component/ComponentTransform.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "input/Queue.hpp"
@@ -75,6 +77,9 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 	mEngineInfo.title = "TemportalEngine";
 	mEngineInfo.version = ENGINE_VERSION;
 
+	crypto::RSA::Create();
+	crypto::AES::Create();
+
 	this->mMiscMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "misc", 1 << 16));
 
 	this->mpCommandRegistry = this->mpMainMemory->make_shared<command::Registry>();
@@ -122,6 +127,9 @@ Engine::~Engine()
 
 	this->mpMainMemory.reset();
 	assert(!this->mpMainMemory);
+
+	crypto::AES::Destroy();
+	crypto::RSA::Destroy();
 
 	LogEngineInfo("Engine Destroyed");
 }

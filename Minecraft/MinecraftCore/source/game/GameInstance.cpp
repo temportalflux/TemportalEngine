@@ -30,36 +30,16 @@
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
 
+#include "crypto/AES.hpp"
+#include "crypto/RSA.hpp"
+
 #include <chrono>
 
 using namespace game;
 
 logging::Logger GAME_LOG = DeclareLog("Game");
 
-std::shared_ptr<Game> Game::gpInstance = nullptr;
-
-std::shared_ptr<Game> Game::Create(int argc, char *argv[])
-{
-	assert(!Game::gpInstance);
-	Game::gpInstance = std::make_shared<Game>(argc, argv);
-	return Game::Get();
-}
-
-std::shared_ptr<Game> Game::Get()
-{
-	return Game::gpInstance;
-}
-
-void Game::Destroy()
-{
-	assert(Game::gpInstance && Game::gpInstance.use_count() == 1);
-	Game::gpInstance.reset();
-
-	if (engine::Engine::Get())
-	{
-		engine::Engine::Destroy();
-	}
-}
+std::shared_ptr<Game> Singleton<Game, int, char*[]>::gpInstance = nullptr;
 
 Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 {
@@ -102,6 +82,10 @@ Game::Game(int argc, char *argv[]) : mbHasLocalUserNetId(false)
 
 Game::~Game()
 {
+	if (engine::Engine::Get())
+	{
+		engine::Engine::Destroy();
+	}
 }
 
 void Game::registerCommands()
