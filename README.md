@@ -17,19 +17,4 @@ Here are some resources for you (and myself) to get started with Vulkan!
 - Vulkan Dos & Don'ts: https://developer.nvidia.com/blog/vulkan-dos-donts/
 - Efficient rendering: https://zeux.io/2020/02/27/writing-an-efficient-vulkan-renderer/
 
-### Shader Compilation
-
-To compile shaders, the editor uses libshaderc
-
-1. Download the Debug and Release build zip files from https://github.com/google/shaderc/blob/master/downloads.md
-2. Create `libs\shaderc`
-3. Copy the contents of (Debug build zip) `install\include\shaderc\` to `Editor\libs\shaderc\include\Debug\shaderc`
-4. Copy (Debug build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Debug\shaderc_combined.lib`
-5. Copy the contents of (Release build zip) `install\include\shaderc\` to ``Editor\libs\shaderc\include\Release\shaderc`
-6. Copy (Release build zip) `install\lib\shaderc_combined.lib` to ``Editor\libs\shaderc\lib\Release\shaderc_combined.lib`
-
-### Open Asset Import Library Setup
-cd "Core\TemportalEngine\libs\assimp"
-cmake -G "Visual Studio 15 2017 Win64"
-open Assimp.sln
-build ALL_BUILD
+[Authentication Flow](https://sequencediagram.org/index.html#initialData=C4S2BsFMAIEEFdgAtIDtQGMCGoD2roAxcXAdwChyBiaAYX1UgzwICNIBzEVAZ2lLBJoyGBnAg0wcrXGSAtAD4FAEUgATENmDroAZUgAnAG6GAXPVSNmAIQCeASQAKsNWoOQePSqlzbouEwM6WXRTfAsrFgBRHmAsVnEeFDVpEOAAHjlVDS0dfWMzGQl0XTjgeB4AHVQsRBR0TRxuDnIfPwDDaGzG7TU9Q0Cw1AimaNj4xOTW3xgOoKLJIYA5SGB7NQAlJkgQExSF9EVu3L78wYAZXC5UAHVBBGR1yixmXZwYAHkRebSvajg6pIejARNAKoZyBh8DwQGpOkgsHwAA7wBKaaAAa0gtmgADNcEFwQZUsUMnIsupgacBmYABRbACO8A8wAAlA96ph3tN2oFgqTTFs5GgMAZbEjgNBashhLgsagSfIjpSTv0CgZTPSPEj8Gp2YCGrlyGgUjR7LjhEgQHxrZaYLiQAZYsIQABbEEoaBIgwBWE6WHQBF8dhoL0+ox+tQAGjtYJ4nVt0twrqa2HA4Bx0s5VMh0L9QUg4HjivQmQpOXe1PVmsZzNirMcqPEGAA0tiS8BySoVZW1YMtTwdag9Y20a3221Znzjr2zmZuGAQFhxAAvSAAVXjxJNlBoB0ltp8pClBq5vRjUNdSKgfgRw6SWCxHcyM96fcKaVKOAq1ShllG6jkC8oBGO8-KSOQr55DSBiKF8KA-KSPDmJ+ZQ-qgf6RIBJC4EieIEtAkAvEIvgIdAmEAX0Yiks+5JQVWgz7l+5RVBhDCUcaw6UPuyoVm+c4apuhj2Kg+LkEAA)
