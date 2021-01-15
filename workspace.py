@@ -3,6 +3,9 @@ import os
 import subprocess
 import sys
 import shutil
+import requests
+import re
+import zipfile
 
 workspaceCfgName = 'workspace.json'
 workspaceCfg = {
@@ -31,8 +34,19 @@ libraries = [
 			'libcrypto-1_1-x{architecture}.dll',
 			'libprotobufd.dll',
 		]
+	},
+	{
+		'name': 'Assimp',
+		'dlls': [ 'assimp-vc141-mtd.dll' ]
 	}
 ]
+
+shadercHtml = "https://storage.googleapis.com/shaderc/badges/build_link_windows_vs2017_release.html"
+
+def getGoogleStorageUrl(gUrl):
+	htmlPage = requests.get(shadercHtml)
+	extracted = re.match('.*content=".*url=(.*)".*', htmlPage.content.decode('utf-8'))
+	return extracted.groups()[0]
 
 def bin(config, architecture, package):
 	return os.path.join(os.getcwd(), f"Binaries/Build/{config}/x{architecture}/{package}")
@@ -89,6 +103,37 @@ def copyLibrariesTo(config, arch, package):
 					os.path.join(dst, dllName)
 				)
 
+def downloadShaderC():
+	shadercZipUrl = getGoogleStorageUrl(shadercHtml)
+	shadercZipReq = requests.get(shadercZipUrl)
+	shadercZipName = 'shaderc.zip'
+	shadercDir = os.path.join(os.getcwd(), 'shaderc')
+	with open(shadercZipName, 'wb') as zipFile:
+		zipFile.write(shadercZipReq.content)
+	with zipfile.ZipFile(shadercZipName, 'r') as zip_ref:
+		zip_ref.extractall(shadercDir)
+	os.remove(shadercZipName)
+	return shadercDir
+
+def installShaderC():
+	sys.stdout.flush()
+	shadercDir = downloadShaderC()
+	shadercDst = os.path.join(os.getcwd(), 'Core/TemportalEngineEditor/libs/shaderc')
+	shadercDstInclude = os.path.join(shadercDst, 'include/shaderc')
+	shadercDstLib = os.path.join(shadercDst, 'lib/')
+	if os.path.exists(shadercDstInclude):
+		shutil.rmtree(shadercDstInclude)
+	shutil.copytree(
+		os.path.join(shadercDir, 'install/include/shaderc'),
+		shadercDstInclude
+	)
+	os.makedirs(shadercDstLib, exist_ok=True)
+	shutil.copyfile(
+		os.path.join(shadercDir, 'install/lib/shaderc_combined.lib'),
+		os.path.join(shadercDstLib, 'shaderc_combined.lib')
+	)
+	shutil.rmtree(shadercDir)
+
 config = 'Debug'
 architecture = '64'
 args = sys.argv[1:]
@@ -103,6 +148,12 @@ if args[0] == 'setup':
 	
 	print('Building GameNetworkingSockets')
 	runScript("gns-build.sh")
+	
+	print('Building assimp')
+	runScript("assimp-build.sh")
+
+	print('Downloading ShaderC')
+	installShaderC()
 
 elif args[0] == 'updateLibs':
 	copyLibrariesTo(config, architecture, 'MinecraftGame')
