@@ -38,11 +38,7 @@ static auto CLIENT_LOG = DeclareLog("GameClient");
 Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 {
 	this->registerCommands();
-	this->userRegistry().setLimit(1);
 	this->userRegistry().scan("users");
-	this->mLocalUserId = this->userRegistry().getUserCount() > 0
-		? this->userRegistry().getId(0)
-		: this->userRegistry().createUser();
 }
 
 void Client::init()
@@ -68,14 +64,21 @@ void Client::uninit()
 void Client::registerCommands()
 {
 	ADD_CMD(CMD_SIGNATURE("setDPI", Client, this, exec_setDPI).pushArgType<ui32>());
-	ADD_CMD(CMD_SIGNATURE("setName", Client, this, exec_setUserName).pushArgType<std::string>());
-	ADD_CMD(CMD_SIGNATURE("id", Client, this, exec_printUserId));
-	ADD_CMD(CMD_SIGNATURE("listUsers", Client, this, exec_printConnectedUsers));
+	
+	ADD_CMD(CMD_SIGNATURE("listIds", Client, this, exec_printAccountList));
+	ADD_CMD(CMD_SIGNATURE("createId", Client, this, exec_createAccount).pushArgType<std::string>());
+	ADD_CMD(CMD_SIGNATURE("setId", Client, this, exec_setAccount).pushArgType<ui32>());
+	ADD_CMD(CMD_SIGNATURE("printId", Client, this, exec_printAccount));
+	ADD_CMD(CMD_SIGNATURE("setName", Client, this, exec_setAccountName).pushArgType<std::string>());
+
 	ADD_CMD(CMD_SIGNATURE("join", Client, this, exec_joinServer).pushArgType<network::Address>());
 	ADD_CMD(CMD_SIGNATURE("joinLocal", Client, this, exec_joinServerLocal));
 	ADD_CMD(CMD_SIGNATURE_0("leave", network::Interface, Game::networkInterface(), stop));
+	
 	ADD_CMD(CMD_SIGNATURE("startHost", Client, this, exec_startHostingServer));
 	ADD_CMD(CMD_SIGNATURE("stopHost", Client, this, exec_stopHostingServer));
+
+	ADD_CMD(CMD_SIGNATURE("listUsers", Client, this, exec_printConnectedUsers));
 }
 
 void Client::exec_setDPI(command::Signature const& cmd)
@@ -83,29 +86,67 @@ void Client::exec_setDPI(command::Signature const& cmd)
 	this->renderer()->setDPI(cmd.get<ui32>(0));
 }
 
-void Client::exec_printUserList(command::Signature const& cmd)
+void Client::exec_printAccountList(command::Signature const& cmd)
 {
-	// TODO: print the list of user ids on the local user registry
-}
-
-void Client::exec_printUserId(command::Signature const& cmd)
-{
-	auto userInfo = this->localUserInfo();
 	std::stringstream ss;
-	ss
-		<< "Id: " << this->localUserId().toString().c_str()
-		<< '\n'
-		<< "Name: " << userInfo.name().c_str()
-		;
+	auto const userCount = this->userRegistry().getUserCount();
+	if (userCount == 0) ss << "There are no users";
+	for (uIndex i = 0; i < userCount; ++i)
+	{
+		auto const& userId = this->userRegistry().getId(i);
+		auto userInfo = this->userRegistry().loadInfo(userId);
+		if (i > 0) ss << '\n';
+		ss << i << ". " << userInfo.name().c_str();
+	}
 	this->chat()->addToLog(ss.str());
 }
 
-void Client::exec_setUserName(command::Signature const& cmd)
+void Client::exec_createAccount(command::Signature const& cmd)
 {
+	auto const& userId = this->userRegistry().createUser();
+	auto userInfo = this->userRegistry().loadInfo(userId);
+	userInfo.setName(cmd.get<std::string>(0)).writeToDisk();
+}
+
+void Client::exec_setAccount(command::Signature const& cmd)
+{
+	auto userIdx = cmd.get<ui32>(0);
+	this->mLocalUserId = std::nullopt;
+	if (userIdx < this->userRegistry().getUserCount())
+	{
+		this->mLocalUserId = this->userRegistry().getId(userIdx);
+	}
+}
+
+void Client::exec_printAccount(command::Signature const& cmd)
+{
+	std::stringstream ss;
+	if (this->hasAccount())
+	{
+		auto userInfo = this->localUserInfo();
+		ss
+			<< "Id: " << this->localUserId().toString().c_str()
+			<< '\n'
+			<< "Name: " << userInfo.name().c_str()
+			;
+	}
+	else
+	{
+		ss << "You have not selected an account.";
+	}
+	this->chat()->addToLog(ss.str());
+}
+
+void Client::exec_setAccountName(command::Signature const& cmd)
+{
+	if (!this->hasAccount())
+	{
+		this->chat()->addToLog("You have not selected an account.");
+		return;
+	}
 	auto name = cmd.get<std::string>(0);
 	auto userInfo = this->localUserInfo();
-	userInfo.setName(name);
-	userInfo.writeToDisk();
+	userInfo.setName(name).writeToDisk();
 	if (Game::networkInterface()->hasConnection())
 	{
 		network::packet::UpdateUserInfo::create()->setInfo(userInfo).sendToServer();
@@ -122,12 +163,22 @@ void Client::exec_printConnectedUsers(command::Signature const& cmd)
 
 void Client::exec_joinServer(command::Signature const& cmd)
 {
+	if (!this->hasAccount())
+	{
+		this->chat()->addToLog("You have not selected an account.");
+		return;
+	}
 	this->setupNetwork(cmd.get<network::Address>(0));
 	Game::networkInterface()->start();
 }
 
 void Client::exec_joinServerLocal(command::Signature const& cmd)
 {
+	if (!this->hasAccount())
+	{
+		this->chat()->addToLog("You have not selected an account.");
+		return;
+	}
 	auto localAddress = network::Address().setLocalTarget(ServerSettings().port());
 	this->setupNetwork(localAddress);
 	Game::networkInterface()->start();
@@ -135,13 +186,18 @@ void Client::exec_joinServerLocal(command::Signature const& cmd)
 
 void Client::exec_startHostingServer(command::Signature const& cmd)
 {
+	if (!this->hasAccount())
+	{
+		this->chat()->addToLog("You have not selected an account.");
+		return;
+	}
 	game::Game::Get()->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
 	Game::networkInterface()->start();
 }
 
 void Client::exec_stopHostingServer(command::Signature const& cmd)
 {
-	// TODO: stop network interface???
+	Game::networkInterface()->stop();
 	game::Game::Get()->server().reset();
 }
 
@@ -199,14 +255,14 @@ void Client::onClientPeerStatusChanged(network::Interface *pInterface, ui32 netI
 	else this->removeConnectedUser(netId);
 }
 
-void Client::setLocalUserNetId(ui32 netId)
+bool Client::hasAccount() const
 {
-	this->mLocalUserNetId = netId;
+	return this->mLocalUserId.has_value();
 }
 
 utility::Guid const& Client::localUserId() const
 {
-	return this->mLocalUserId;
+	return this->mLocalUserId.value();
 }
 
 crypto::RSAKey Client::localUserAuthKey() const
@@ -217,6 +273,11 @@ crypto::RSAKey Client::localUserAuthKey() const
 game::UserInfo Client::localUserInfo() const
 {
 	return this->userRegistry().loadInfo(this->localUserId());
+}
+
+void Client::setLocalUserNetId(ui32 netId)
+{
+	this->mLocalUserNetId = netId;
 }
 
 void Client::addConnectedUser(ui32 netId)

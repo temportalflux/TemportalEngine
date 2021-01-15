@@ -52,6 +52,7 @@ utility::Guid const& UserIdRegistry::createUser()
 utility::Guid const& UserIdRegistry::addId(utility::Guid const& id)
 {
 	assert(!this->mUserLimit || this->getUserCount() < this->mUserLimit);
+	this->mUserIds.push_back(id);
 	auto iter = this->mUserDirById.insert(std::make_pair(id, this->mDirectory / id.toString()));
 	return iter.first->first;
 }

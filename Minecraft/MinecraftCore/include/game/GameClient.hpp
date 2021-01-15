@@ -61,9 +61,10 @@ protected:
 	void removeConnectedUser(ui32 netId) override;
 
 private:
-	utility::Guid mLocalUserId;
-	std::optional<ui32> mLocalUserNetId;
+	std::optional<utility::Guid> mLocalUserId;
+	bool hasAccount() const;
 	game::UserInfo localUserInfo() const;
+	std::optional<ui32> mLocalUserNetId;
 	std::map<ui32, game::UserInfo> mConnectedUserInfo;
 
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
@@ -90,14 +91,16 @@ private:
 
 	void registerCommands();
 	void exec_setDPI(command::Signature const& cmd);
-	void exec_printUserList(command::Signature const& cmd);
-	void exec_printUserId(command::Signature const& cmd);
-	void exec_setUserName(command::Signature const& cmd);
-	void exec_printConnectedUsers(command::Signature const& cmd);
+	void exec_printAccountList(command::Signature const& cmd);
+	void exec_createAccount(command::Signature const& cmd);
+	void exec_setAccount(command::Signature const& cmd);
+	void exec_printAccount(command::Signature const& cmd);
+	void exec_setAccountName(command::Signature const& cmd);
 	void exec_joinServer(command::Signature const& cmd);
 	void exec_joinServerLocal(command::Signature const& cmd);
 	void exec_startHostingServer(command::Signature const& cmd);
 	void exec_stopHostingServer(command::Signature const& cmd);
+	void exec_printConnectedUsers(command::Signature const& cmd);
 
 	void onNetIdReceived(network::Interface *pInterface, ui32 netId);
 	void onClientAuthenticated(network::Interface *pInterface);
