@@ -11,5 +11,6 @@ cmake -G "Visual Studio 15 2017 Win64"
 "$msbuild" "Assimp.sln"
 
 mkdir -p "$binaries"
+cp "lib/Debug/assimp-vc141-mtd.lib" "$binaries/"
 cp "bin/Debug/assimp-vc141-mtd.pdb" "$binaries/"
 cp "bin/Debug/assimp-vc141-mtd.dll" "$binaries/"
