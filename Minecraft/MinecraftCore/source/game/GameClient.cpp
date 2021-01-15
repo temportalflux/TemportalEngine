@@ -12,6 +12,7 @@
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
+#include "game/GameServer.hpp"
 #include "game/GameWorldLogic.hpp"
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
@@ -43,6 +44,26 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 
 void Client::init()
 {
+	auto* networkInterface = Game::networkInterface();
+	networkInterface->onNetIdReceived.bind(std::bind(
+		&game::Client::onNetIdReceived, this,
+		std::placeholders::_1, std::placeholders::_2
+	));
+	networkInterface->OnDedicatedClientAuthenticated.bind(std::bind(
+		&game::Client::onDedicatedClientAuthenticated, this, std::placeholders::_1
+	));
+	networkInterface->onClientPeerStatusChanged.bind(std::bind(
+		&game::Client::onClientPeerStatusChanged, this,
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	));
+	networkInterface->OnDedicatedClientDisconnected.bind(std::bind(
+		&game::Client::onDedicatedClientDisconnected, this,
+		std::placeholders::_1, std::placeholders::_2
+	));
+	networkInterface->onNetworkStopped.bind(this->weak_from_this(), std::bind(
+		&Client::onNetworkStopped, this, std::placeholders::_1
+	));
+
 	if (!this->scanResourcePacks()) return;
 	if (!this->initializeGraphics()) return;
 	if (!this->createWindow()) return;
@@ -153,14 +174,6 @@ void Client::exec_setAccountName(command::Signature const& cmd)
 	}
 }
 
-void Client::exec_printConnectedUsers(command::Signature const& cmd)
-{
-	for (auto const& [netId, userId] : this->connectedUsers())
-	{
-		this->chat()->addToLog(this->getConnectedUserInfo(netId).name());
-	}
-}
-
 void Client::exec_joinServer(command::Signature const& cmd)
 {
 	if (!this->hasAccount())
@@ -201,33 +214,48 @@ void Client::exec_stopHostingServer(command::Signature const& cmd)
 	game::Game::Get()->server().reset();
 }
 
+void Client::exec_printConnectedUsers(command::Signature const& cmd)
+{
+	auto const& users = this->connectedUsers();
+	if (users.size() == 0)
+	{
+		this->chat()->addToLog("There are no connected users");
+		return;
+	}
+	for (auto const& [netId, userId] : users)
+	{
+		std::stringstream ss;
+		ss << netId << ". " << this->getConnectedUserInfo(netId).name().c_str();
+		this->chat()->addToLog(ss.str());
+	}
+}
 
 void Client::setupNetwork(network::Address const& serverAddress)
 {
-	auto& networkInterface = *Game::networkInterface();
-	// Dedicated clients need to set the local user net id when its received from the server
-	networkInterface.onNetIdReceived.bind(std::bind(
-		&game::Client::onNetIdReceived, this,
-		std::placeholders::_1, std::placeholders::_2
-	));
-	networkInterface.OnClientAuthenticated.bind(std::bind(
-		&game::Client::onClientAuthenticated, this, std::placeholders::_1
-	));
-	networkInterface.onClientPeerStatusChanged.bind(std::bind(
-		&game::Client::onClientPeerStatusChanged, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-	));
-	networkInterface.OnClientDisconnected.bind(std::bind(
-		&game::Client::OnClientDisconnected, this,
-		std::placeholders::_1, std::placeholders::_2
-	));
-	networkInterface.setType(network::EType::eClient).setAddress(serverAddress);
+	Game::networkInterface()->setType(network::EType::eClient).setAddress(serverAddress);
 }
 
 void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
 {
-	// Integrated ClientServer automatically initializes its local user
+	auto pServer = game::Game::Get()->server();
+	auto const& localUserId = this->localUserId();
+	auto const localUserInfo = this->localUserInfo();
+	
+	// Set our network id
 	this->setLocalUserNetId(netId);
+
+	// Initialize client data for myself as if I was a dedicated client
+	this->addConnectedUser(netId);
+	this->findConnectedUser(netId) = localUserId;
+	// Set our local info to the connected users
+	this->getConnectedUserInfo(netId).copyFrom(localUserInfo).writeToDisk();
+	
+	// Initialize server data for myself as if I was a dedicated server
+	pServer->addConnectedUser(netId);
+	pServer->findConnectedUser(netId) = localUserId;
+	// Save our local info to the server save data
+	pServer->initializeUser(localUserId, this->localUserAuthKey());
+	pServer->getUserInfo(localUserId).copyFrom(localUserInfo).writeToDisk();
 }
 
 void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
@@ -237,13 +265,13 @@ void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
 	network::packet::LoginWithAuthId::create()->setId(this->localUserId()).sendToServer();
 }
 
-void Client::onClientAuthenticated(network::Interface *pInteface)
+void Client::onDedicatedClientAuthenticated(network::Interface *pInteface)
 {
 	network::logger().log(LOG_INFO, "Network handshake complete");
 	network::packet::UpdateUserInfo::create()->setInfo(this->localUserInfo()).sendToServer();
 }
 
-void Client::OnClientDisconnected(network::Interface *pInteface, ui32 invalidNetId)
+void Client::onDedicatedClientDisconnected(network::Interface *pInteface, ui32 invalidNetId)
 {
 	network::logger().log(LOG_INFO, "Disconnected from network, killing network interface.");
 	Game::networkInterface()->stop();
@@ -253,6 +281,11 @@ void Client::onClientPeerStatusChanged(network::Interface *pInterface, ui32 netI
 {
 	if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
 	else this->removeConnectedUser(netId);
+}
+
+void Client::onNetworkStopped(network::Interface *pInterface)
+{
+	this->clearConnectedUsers();
 }
 
 bool Client::hasAccount() const

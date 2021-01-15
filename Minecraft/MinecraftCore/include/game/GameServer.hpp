@@ -29,9 +29,11 @@ private:
 	game::ServerSettings mServerSettings;
 	crypto::RSAKey mServerRSA;
 
-	void onClientDisconnected(network::Interface *pInterface, ui32 netId);
+	void onDedicatedClientAuthenticated(network::Interface *pInterface, ui32 netId);
+	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId);
 	void onNetworkConnnectionClosed(network::Interface *pInterface, ui32 connection, ui32 netId);
-	
+	void onNetworkStopped(network::Interface *pInterface);
+
 };
 
 NS_END

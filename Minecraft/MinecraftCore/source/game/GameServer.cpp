@@ -3,6 +3,7 @@
 #include "game/GameInstance.hpp"
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
+#include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 
 using namespace game;
 
@@ -21,17 +22,20 @@ Server::~Server()
 void Server::setupNetwork(utility::Flags<network::EType> flags)
 {
 	auto& networkInterface = *Game::networkInterface();
-	networkInterface.onConnectionEstablished.bind(std::bind(
-		&Server::onNetworkConnectionOpened, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	networkInterface.OnDedicatedClientAuthenticated.bind(std::bind(
+		&Server::onDedicatedClientAuthenticated, this,
+		std::placeholders::_1, std::placeholders::_2
 	));
-	networkInterface.OnClientDisconnected.bind(std::bind(
-		&game::Server::onClientDisconnected, this,
+	networkInterface.OnDedicatedClientDisconnected.bind(std::bind(
+		&game::Server::onDedicatedClientDisconnected, this,
 		std::placeholders::_1, std::placeholders::_2
 	));
 	networkInterface.onConnectionClosed.bind(std::bind(
 		&game::Server::onNetworkConnnectionClosed, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	));
+	networkInterface.onNetworkStopped.bind(this->weak_from_this(), std::bind(
+		&Server::onNetworkStopped, this, std::placeholders::_1
 	));
 
 	networkInterface
@@ -43,19 +47,6 @@ void Server::onNetworkConnectionOpened(network::Interface *pInterface, ui32 conn
 {
 	// both dedicated and integrated servers to create a user for the netId
 	this->addConnectedUser(netId);
-
-	// Tell the newly joined user about all the existing clients
-	for (auto const& anyNetId : pInterface->connectedClientNetIds())
-	{
-		if (anyNetId == netId) continue;
-		auto const& existingUser = this->findConnectedUser(anyNetId);
-		/* TODO
-		network::packet::SetName::create()
-			->setNetId(anyNetId)
-			.setName(existingUser.name)
-			.sendTo(netId);
-		//*/
-	}
 }
 
 void Server::kick(ui32 netId)
@@ -64,7 +55,22 @@ void Server::kick(ui32 netId)
 	pInterface->closeConnection(pInterface->getConnectionFor(netId));
 }
 
-void Server::onClientDisconnected(network::Interface *pInterface, ui32 netId)
+void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32 netId)
+{
+	// Tell the newly joined user about all the existing clients
+	for (auto const& anyNetId : pInterface->connectedClientNetIds())
+	{
+		if (anyNetId == netId) continue;
+		network::packet::UpdateUserInfo::create()
+			->setNetId(anyNetId)
+			.setInfo(this->userRegistry().loadInfo(
+				this->findConnectedUser(anyNetId)
+			))
+			.sendTo(netId);
+	}
+}
+
+void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId)
 {
 	assert(pInterface->type().includes(network::EType::eServer));
 	if (this->hasConnectedUser(netId))
@@ -84,6 +90,11 @@ void Server::onNetworkConnnectionClosed(network::Interface *pInterface, ui32 con
 {
 	assert(pInterface->type().includes(network::EType::eServer));
 	this->removeConnectedUser(netId);
+}
+
+void Server::onNetworkStopped(network::Interface *pInterface)
+{
+	this->clearConnectedUsers();
 }
 
 bool Server::hasSaveForUser(utility::Guid const& id) const

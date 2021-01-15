@@ -14,6 +14,7 @@ class UpdateUserInfo : public Packet
 public:
 	UpdateUserInfo();
 
+	UpdateUserInfo& setNetId(ui32 netId);
 	UpdateUserInfo& setInfo(game::UserInfo const& info);
 
 	void write(Buffer &archive) const override;

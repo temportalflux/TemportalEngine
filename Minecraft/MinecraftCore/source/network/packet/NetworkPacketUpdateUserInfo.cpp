@@ -17,6 +17,12 @@ UpdateUserInfo::UpdateUserInfo()
 {
 }
 
+UpdateUserInfo& UpdateUserInfo::setNetId(ui32 netId)
+{
+	this->mName = netId;
+	return *this;
+}
+
 UpdateUserInfo& UpdateUserInfo::setInfo(game::UserInfo const& info)
 {
 	this->mName = info.name();
@@ -40,28 +46,23 @@ void UpdateUserInfo::read(Buffer &archive)
 void UpdateUserInfo::process(Interface *pInterface)
 {
 	auto pGame = game::Game::Get();
+	network::logger().log(LOG_INFO, "Received alias %s for network-id %u", this->mName.c_str(), this->mNetId);
 	if (pInterface->type().includes(EType::eServer))
 	{
+		// NOTE: This value is also used in the client section if running an integrated client-server
 		this->mNetId = pInterface->getNetIdFor(this->connection());
-		network::logger().log(LOG_INFO, "Received alias %s for network-id %u", this->mName.c_str(), this->mNetId);
 
 		auto const& userId = pGame->server()->findConnectedUser(this->mNetId);
-		auto userInfo = pGame->server()->getUserInfo(userId);
-		std::string oldName = userInfo.name();
-		userInfo.setName(this->mName).writeToDisk();
+		pGame->server()->getUserInfo(userId).setName(this->mName).writeToDisk();
 		this->broadcast();
 
-		/* TODO
 		ChatMessage::broadcastServerMessage(
-			oldName.length() == 0
-			? utility::formatStr("%s has joined the server.", this->mData.name)
-			: utility::formatStr("%s is now named %s", oldName.c_str(), this->mData.name)
+			this->mName + " has joined the server."
 		);
-		//*/
 	}
-	else if (pInterface->type() == EType::eClient)
+	// For dedicated and integrated clients
+	if (pInterface->type().includes(EType::eClient))
 	{
-		network::logger().log(LOG_INFO, "Received alias %s for network-id %u", this->mName, this->mNetId);
 		auto& userInfo = pGame->client()->getConnectedUserInfo(this->mNetId);
 		userInfo.setName(this->mName);
 	}

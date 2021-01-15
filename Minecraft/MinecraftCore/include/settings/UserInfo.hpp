@@ -10,6 +10,12 @@ public:
 	UserInfo() : SavedData() {}
 	UserInfo(std::filesystem::path filePath) : SavedData(filePath) {}
 
+	UserInfo& copyFrom(UserInfo const& info)
+	{
+		this->mName = info.mName;
+		return *this;
+	}
+
 	UserInfo& setName(std::string const& name) { this->mName = name; return *this; }
 	std::string const& name() const { return this->mName; }
 

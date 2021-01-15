@@ -220,9 +220,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserInfo.hpp">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\SavedData.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -362,8 +366,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp">
       <Filter>utility</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\SavedData.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

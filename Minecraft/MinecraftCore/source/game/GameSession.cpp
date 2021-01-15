@@ -48,3 +48,7 @@ void Session::removeConnectedUser(ui32 netId)
 	this->mConnectedUsers.erase(iter);
 }
 
+void Session::clearConnectedUsers()
+{
+	this->mConnectedUsers.clear();
+}

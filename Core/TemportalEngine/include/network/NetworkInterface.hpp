@@ -26,11 +26,13 @@ public:
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionEstablished;
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionClosed;
 
-	ExecuteDelegate<void(Interface*)> OnClientAuthenticated;
-	ExecuteDelegate<void(Interface*, ui32 netId)> OnClientDisconnected;
+	ExecuteDelegate<void(Interface*, ui32 netId)> OnDedicatedClientAuthenticated;
+	ExecuteDelegate<void(Interface*, ui32 netId)> OnDedicatedClientDisconnected;
 
 	ExecuteDelegate<void(Interface*, ui32 netId)> onNetIdReceived;
 	ExecuteDelegate<void(Interface*, ui32 netId, EClientStatus status)> onClientPeerStatusChanged;
+
+	BroadcastDelegate<void(Interface*)> onNetworkStopped;
 
 	void start();
 	bool hasConnection() const;

@@ -103,9 +103,10 @@ private:
 	void exec_printConnectedUsers(command::Signature const& cmd);
 
 	void onNetIdReceived(network::Interface *pInterface, ui32 netId);
-	void onClientAuthenticated(network::Interface *pInterface);
+	void onDedicatedClientAuthenticated(network::Interface *pInterface);
 	void onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status);
-	void OnClientDisconnected(network::Interface *pInterface, ui32 invalidNetId);
+	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 invalidNetId);
+	void onNetworkStopped(network::Interface *pInterface);
 
 	bool initializeGraphics();
 

@@ -59,7 +59,7 @@ void ClientStatus::process(network::Interface *pInterface)
 		}
 		else if (this->mStatus == EClientStatus::eConnected)
 		{
-			pInterface->OnClientAuthenticated.execute(pInterface);
+			pInterface->OnDedicatedClientAuthenticated.execute(pInterface, this->mNetId);
 		}
 	}
 	// A new client has arrived

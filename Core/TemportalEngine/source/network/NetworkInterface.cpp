@@ -102,7 +102,6 @@ void Interface::start()
 			return;
 		}
 	}
-
 }
 
 void Interface::stop()
@@ -145,6 +144,7 @@ void Interface::stop()
 	}
 
 	this->mpInternal = nullptr;
+	this->onNetworkStopped.broadcast(this);
 }
 
 bool Interface::hasConnection() const
@@ -278,7 +278,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			);
 
 			if (bClosedByPeer)
-				this->OnClientDisconnected.execute(this, this->mClients.find(data->m_hConn)->second);
+				this->OnDedicatedClientDisconnected.execute(this, this->mClients.find(data->m_hConn)->second);
 			this->closeConnection(data->m_hConn);
 		}
 		else
@@ -334,7 +334,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 
 		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
 		this->mConnection = k_HSteamNetConnection_Invalid;
-		this->OnClientDisconnected.execute(this, 0);
+		this->OnDedicatedClientDisconnected.execute(this, 0);
 		break;
 	}
 
@@ -429,6 +429,7 @@ ui32 Interface::getConnectionFor(ui32 netId) const
 	return iter->second;
 }
 
+// Does not get executed for the net id of a client-on-top-of-server
 void Interface::markClientAuthenticated(ui32 netId)
 {
 	auto connectionId = this->getConnectionFor(netId);
@@ -443,6 +444,10 @@ void Interface::markClientAuthenticated(ui32 netId)
 		->setStatus(EClientStatus::eConnected)
 		.setIsSelf(false).setNetId(netId)
 		.broadcast({ connectionId });
+	if (this->type().includes(EType::eClient))
+	{
+		this->onClientPeerStatusChanged.execute(this, netId, EClientStatus::eConnected);
+	}
 
 	// Tell the client of the net ids of other already joined clients
 	for (auto const&[otherConnectionId, otherNetId] : this->mClients)
@@ -453,6 +458,8 @@ void Interface::markClientAuthenticated(ui32 netId)
 			.setIsSelf(false).setNetId(otherNetId)
 			.send(connectionId);
 	}
+
+	this->OnDedicatedClientAuthenticated.execute(this, netId);
 }
 
 ui32 Interface::closeConnection(ui32 connectionId)
@@ -471,6 +478,10 @@ ui32 Interface::closeConnection(ui32 connectionId)
 		->setStatus(EClientStatus::eDisconnected)
 		.setIsSelf(false).setNetId(netId)
 		.broadcast({ connectionId });
+	if (this->type().includes(EType::eClient))
+	{
+		this->onClientPeerStatusChanged.execute(this, netId, EClientStatus::eDisconnected);
+	}
 
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	pInterface->CloseConnection(connectionId, 0, nullptr, false);

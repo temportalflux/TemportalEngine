@@ -12,7 +12,7 @@ FORWARD_DEF(NS_NETWORK, class Interface);
 
 NS_GAME
 
-class Session
+class Session : public virtual_enable_shared_from_this<Session>
 {
 
 public:
@@ -26,12 +26,13 @@ public:
 
 	virtual void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId) {}
 
+	virtual void addConnectedUser(ui32 netId);
+	virtual void removeConnectedUser(ui32 netId);
+
 protected:
 	game::UserIdRegistry& userRegistry();
 	game::UserIdRegistry const& userRegistry() const;
-
-	virtual void addConnectedUser(ui32 netId);
-	virtual void removeConnectedUser(ui32 netId);
+	void clearConnectedUsers();
 
 private:
 	game::UserIdRegistry mUserRegistry;
