@@ -6,7 +6,8 @@ binaries="$PWD/Binaries/Build/Debug/x$PlatformArchitecture/Assimp"
 
 cd "Core/TemportalEngine/libs/assimp"
 
-cmake CMakeLists.txt
+rm -rf CMakeCache.txt
+cmake -G "Visual Studio 15 2017 Win64"
 "$msbuild" "Assimp.sln"
 
 mkdir -p "$binaries"
