@@ -60,6 +60,7 @@ void Font::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 
 void Font::initializeImage(graphics::CommandPool* transientPool)
 {
+	assert(this->mAtlasSize.x() > 0 && this->mAtlasSize.y() > 0);
 	this->mImage.setSize(math::Vector3UInt(this->mAtlasSize).z(1)).create();
 	this->mImage.transitionLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal, transientPool);
 	this->mImage.writeImage((void*)this->mAtlasPixels.data(), this->mAtlasPixels.size() * sizeof(ui8), transientPool);

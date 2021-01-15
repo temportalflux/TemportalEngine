@@ -47,11 +47,11 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 
 void Client::init()
 {
+	if (!this->scanResourcePacks()) return;
 	if (!this->initializeGraphics()) return;
 	if (!this->createWindow()) return;
-	if (!this->scanResourcePacks()) return;
 	this->createRenderers();
-	this->mpResourcePackManager->loadPack("Default", 0).loadPack("Temportal", 1).commitChanges();
+	this->mpResourcePackManager->loadPack("Default", 0).commitChanges();
 	this->mpSystemRenderEntities->createLocalPlayerDescriptor();
 	this->mpRenderer->createMutableUniforms();
 	this->mpRenderer->createRenderChain();
@@ -274,7 +274,7 @@ void Client::destroyWindow()
 bool Client::scanResourcePacks()
 {
 	this->mpResourcePackManager = std::make_shared<resource::PackManager>();
-	this->mpResourcePackManager->scanPacksIn(std::filesystem::absolute("../../resource-packs"));
+	this->mpResourcePackManager->scanPacksIn(std::filesystem::absolute("resource-packs"));
 
 	if (!this->mpResourcePackManager->hasPack("Default"))
 	{

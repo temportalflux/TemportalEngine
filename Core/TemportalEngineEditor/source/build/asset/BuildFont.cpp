@@ -50,6 +50,7 @@ std::vector<std::string> BuildFont::compile(logging::Logger &logger)
 		getline(stream, line);
 		assert(std::regex_search(line.c_str(), match, PATTERN_PAGE));
 		auto atlasPath = fntPath.parent_path() / match[1].str();
+		assert(std::filesystem::exists(atlasPath));
 		BuildTexture::loadImage(atlasPath, atlasSize, atlasPixels);
 		auto atlasSizeF = atlasSize.toFloat();
 

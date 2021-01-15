@@ -6,6 +6,11 @@ using namespace resource;
 
 void PackManager::scanPacksIn(std::filesystem::path const& directory)
 {
+	if (!std::filesystem::exists(directory))
+	{
+		std::filesystem::create_directories(directory);
+	}
+	if (std::filesystem::is_empty(directory)) return;
 	for (auto const& entry : std::filesystem::directory_iterator(directory))
 	{
 		this->mPacks.insert(std::make_pair(
@@ -15,7 +20,7 @@ void PackManager::scanPacksIn(std::filesystem::path const& directory)
 	}
 }
 
-Pack::Pack(std::filesystem::path const& path) : mRootPath(path), mTextures()
+Pack::Pack(std::filesystem::path const& path) : mRootPath(path), mTextures(TextureManager())
 {
 }
 
@@ -49,7 +54,9 @@ bool PackManager::hasPack(std::string const& packName) const
 
 PackManager& PackManager::loadPack(std::string const& packName, ui8 const& priority)
 {
-	this->mPacks.find(packName)->second.load();
+	auto iter = this->mPacks.find(packName);
+	assert(iter != this->mPacks.end());
+	iter->second.load();
 	auto iterFirstNotLessThan = std::lower_bound(
 		this->mPackPriority.cbegin(), this->mPackPriority.cend(),
 		priority, [](auto const& entry, ui8 const& pri) { return entry.first < pri; }
