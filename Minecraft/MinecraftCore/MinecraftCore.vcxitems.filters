@@ -61,6 +61,9 @@
     <Filter Include="network">
       <UniqueIdentifier>{dc362181-efd0-444d-89d9-01bc9bee9fcb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network\packet">
+      <UniqueIdentifier>{2fe9c01a-ac03-4125-891a-6468542096c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
@@ -184,29 +187,47 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\UserIdentity.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserSettings.hpp">
-      <Filter>settings</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ServerSettings.hpp">
       <Filter>settings</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\Settings.hpp">
-      <Filter>settings</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketSetName.hpp">
-      <Filter>network</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketChatMessage.hpp">
-      <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
       <Filter>game</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameWorldLogic.hpp">
       <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameUserIdRegistry.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChatMessage.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketRequestPublicKey.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameSession.hpp">
+      <Filter>game</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketAuthenticate.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\network\packet\NetworkPacketLoginWithAuthId.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\network\packet\NetworkPacketUpdateUserInfo.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Colors.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\include\settings\SavedData.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserInfo.hpp">
+      <Filter>settings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -320,20 +341,41 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\Settings.cpp">
-      <Filter>settings</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketChatMessage.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacketSetName.cpp">
-      <Filter>network</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp">
       <Filter>game</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameWorldLogic.cpp">
       <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameUserIdRegistry.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChatMessage.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketRequestPublicKey.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameSession.cpp">
+      <Filter>game</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketAuthenticate.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\network\packet\NetworkPacketLoginWithAuthId.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\network\packet\NetworkPacketUpdateUserInfo.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Minecraft\MinecraftCore\source\settings\SavedData.cpp">
+      <Filter>settings</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

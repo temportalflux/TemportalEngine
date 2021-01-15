@@ -15,20 +15,19 @@ public:
 
 	ChatMessage& setMessage(std::string const& msg);
 
+	void write(Buffer &archive) const override;
+	void read(Buffer &archive) override;
 	void process(Interface *pInterface) override;
 
 private:
-	struct : Packet::Data
-	{
-		bool bIsServerMessage;
-		// empty when sent from client.
-		// filled by server when broadcasting based on the connection id.
-		ui32 senderNetId;
-		// the chat message sent from the client.
-		char msg[128];
-	} mData;
+	bool mbIsServerMessage;
+	// empty when sent from client.
+	// filled by server when broadcasting based on the connection id.
+	ui32 mSenderNetId;
+	// the chat message sent from the client.
+	std::string mMsg;
 
-	void writeToLog() const;
+	void writeToLog(utility::Flags<EType> netType) const;
 	void writeToClientChat() const;
 
 };

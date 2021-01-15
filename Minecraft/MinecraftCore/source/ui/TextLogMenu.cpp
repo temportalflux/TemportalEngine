@@ -6,7 +6,7 @@
 #include "game/GameInstance.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
-#include "network/NetworkPacketChatMessage.hpp"
+#include "network/packet/NetworkPacketChatMessage.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 #include "utility/StringUtils.hpp"
@@ -128,7 +128,8 @@ void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string
 	std::optional<std::string> name = std::nullopt;
 	if (senderNetId)
 	{
-		name = game::Game::Get()->findConnectedUser(*senderNetId).name;
+		auto const& userInfo = game::Game::Get()->client()->getConnectedUserInfo(*senderNetId);
+		name = userInfo.name();
 	}
 	this->pushToLog({ name, message });
 }

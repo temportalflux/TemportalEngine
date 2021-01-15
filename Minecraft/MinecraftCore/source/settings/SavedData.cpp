@@ -1,16 +1,16 @@
-#include "settings/Settings.hpp"
+#include "settings/SavedData.hpp"
 
 #include "asset/Asset.hpp"
 #include <iostream>
 
 using namespace game;
 
-Settings::Settings(std::filesystem::path const& filePath)
+SavedData::SavedData(std::filesystem::path const& filePath)
 	: mFilePath(filePath)
 {
 }
 
-void Settings::writeToDisk()
+void SavedData::writeToDisk()
 {
 	std::filesystem::create_directories(this->mFilePath.parent_path());
 	std::ofstream os(this->mFilePath);
@@ -18,7 +18,7 @@ void Settings::writeToDisk()
 	this->save(archive);
 }
 
-void Settings::readFromDisk()
+void SavedData::readFromDisk()
 {
 	if (!std::filesystem::exists(this->mFilePath))
 	{

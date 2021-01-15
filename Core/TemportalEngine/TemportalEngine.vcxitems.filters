@@ -74,6 +74,9 @@
     <Filter Include="crypto">
       <UniqueIdentifier>{7201a659-13c6-4a62-8a5f-7dbcdea62734}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network\data">
+      <UniqueIdentifier>{2995737a-b300-44a7-ae78-97ee3659dba8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
@@ -368,9 +371,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkPacket.cpp">
       <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\source\network\packet\NetworkPacketClientStatus.cpp">
-      <Filter>network\packet</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\Crypto.cpp">
       <Filter>crypto</Filter>
     </ClCompile>
@@ -379,6 +379,18 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\AES.cpp">
       <Filter>crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\TimeUtils.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketClientStatus.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\data\NetworkDataPrimitives.cpp">
+      <Filter>network\data</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\data\NetworkDataBuffer.cpp">
+      <Filter>network\data</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -812,9 +824,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkPacketTypeRegistry.hpp">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\network\packet\NetworkPacketClientStatus.hpp">
-      <Filter>network\packet</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Common.hpp">
       <Filter>math</Filter>
     </ClInclude>
@@ -824,9 +833,19 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\RSA.hpp">
       <Filter>crypto</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\dyost\Desktop\TemportalEngine\Core\TemportalEngine\include\crypto\Crypto.hpp">
-      <Filter>crypto</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Singleton.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\TimeUtils.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\Crypto.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketClientStatus.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataBuffer.hpp">
+      <Filter>network\data</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataPrimitives.hpp">
+      <Filter>network\data</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

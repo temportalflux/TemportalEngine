@@ -7,13 +7,13 @@
 
 NS_GAME
 
-class Settings
+class SavedData
 {
 	friend class cereal::access;
 
 public:
-	Settings() = default;
-	Settings(std::filesystem::path const& filePath);
+	SavedData() = default;
+	SavedData(std::filesystem::path const& filePath);
 
 	void writeToDisk();
 	void readFromDisk();

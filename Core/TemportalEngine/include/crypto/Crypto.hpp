@@ -9,6 +9,7 @@ NS_CRYPTO
 /*
 	Using AES and RSA: https://www.precisely.com/blog/data-security/aes-vs-rsa-encryption-differences
 	Implementing with OpenSSL: https://shanetully.com/2012/06/openssl-rsa-aes-and-c/
+	https://unix.stackexchange.com/a/12265
 */
 
 class Crypto
@@ -19,8 +20,6 @@ public:
 	virtual ~Crypto();
 
 protected:
-
-private:
 	void* mpEncryptCtx;
 	void* mpDecryptCtx;
 

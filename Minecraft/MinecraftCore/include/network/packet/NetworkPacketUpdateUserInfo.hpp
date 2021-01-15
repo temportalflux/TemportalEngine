@@ -2,28 +2,30 @@
 
 #include "network/NetworkPacket.hpp"
 
+#include "settings/UserInfo.hpp"
+
 NS_NETWORK
 NS_PACKET
 
-class ClientStatus : public Packet
+class UpdateUserInfo : public Packet
 {
-	DECLARE_PACKET_TYPE(ClientStatus)
+	DECLARE_PACKET_TYPE(UpdateUserInfo)
 
 public:
-	ClientStatus();
+	UpdateUserInfo();
 
-	ClientStatus& setIsSelf(bool bIsSelf);
-	ClientStatus& setNetId(ui32 netId);
-	ClientStatus& setStatus(EClientStatus status);
+	UpdateUserInfo& setInfo(game::UserInfo const& info);
 
 	void write(Buffer &archive) const override;
 	void read(Buffer &archive) override;
 	void process(Interface *pInterface) override;
 
 private:
-	bool mbIsSelf;
+	
+	// empty when sent from clients
 	ui32 mNetId;
-	EClientStatus mStatus;
+
+	std::string mName;
 
 };
 

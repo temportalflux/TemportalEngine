@@ -2,6 +2,7 @@
 #include "game/GameInstance.hpp"
 #include "logging/Logger.hpp"
 #include "utility/StringUtils.hpp"
+#include "utility/TimeUtils.hpp"
 #include "Module.hpp"
 
 // Name Ides:
@@ -15,7 +16,11 @@ int main(int argc, char *argv[])
 	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
-	std::filesystem::path logFileName = std::string("logs/DemoGame_") + logging::LogSystem::getCurrentTimeString() + ".log";
+	std::stringstream ss;
+	ss << "logs/DemoGame_";
+	ss << utility::currentTimeStr().c_str();
+	ss << ".log";
+	std::filesystem::path logFileName = ss.str();
 	std::filesystem::create_directories(logFileName.parent_path());
 	engine::Engine::LOG_SYSTEM.open(logFileName.string().c_str());
 	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);

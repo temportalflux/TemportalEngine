@@ -14,6 +14,8 @@
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameWorldLogic.hpp"
+#include "network/packet/NetworkPacketLoginWithAuthId.hpp"
+#include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "render/EntityInstanceBuffer.hpp"
 #include "render/MinecraftRenderer.hpp"
 #include "render/ModelSimple.hpp"
@@ -34,17 +36,14 @@ using namespace game;
 
 static auto CLIENT_LOG = DeclareLog("GameClient");
 
-Client::Client()
+Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 {
-	auto registry = engine::Engine::Get()->commands();
-	registry->add(
-		command::Signature("setDPI")
-		.pushArgType<ui32>() // dots per inch
-		.bind([&](command::Signature const& cmd)
-		{
-			this->renderer()->setDPI(cmd.get<ui32>(0));
-		})
-	);
+	this->registerCommands();
+	this->userRegistry().setLimit(1);
+	this->userRegistry().scan("users");
+	this->mLocalUserId = this->userRegistry().getUserCount() > 0
+		? this->userRegistry().getId(0)
+		: this->userRegistry().createUser();
 }
 
 void Client::init()
@@ -65,6 +64,190 @@ void Client::uninit()
 	this->destroyRenderers();
 	this->mpResourcePackManager.reset();
 	this->destroyWindow();
+}
+
+void Client::registerCommands()
+{
+	auto registry = engine::Engine::Get()->commands();
+	registry->add(
+		command::Signature("setDPI")
+		.pushArgType<ui32>() // dots per inch
+		.bind([&](command::Signature const& cmd)
+		{
+			this->renderer()->setDPI(cmd.get<ui32>(0));
+		})
+	);
+	registry->add(
+		command::Signature("setName")
+		.pushArgType<std::string>()
+		.bind([&](command::Signature const& cmd)
+		{
+			auto name = cmd.get<std::string>(0);
+			auto userInfo = this->localUserInfo();
+			userInfo.setName(name);
+			userInfo.writeToDisk();
+			if (Game::networkInterface()->hasConnection())
+			{
+				network::packet::UpdateUserInfo::create()->setInfo(userInfo).sendToServer();
+			}
+		})
+	);
+	registry->add(
+		command::Signature("id")
+		.bind([&](command::Signature const& cmd)
+		{
+			auto userInfo = this->localUserInfo();
+			std::stringstream ss;
+			ss
+				<< "Id: " << this->localUserId().toString().c_str()
+				<< '\n'
+				<< "Name: " << userInfo.name().c_str()
+				;
+			this->chat()->addToLog(ss.str());
+		})
+	);
+	registry->add(
+		command::Signature("listUsers")
+		.bind([&](command::Signature const& cmd)
+		{
+			for (auto const&[netId, user] : this->connectedUsers())
+			{
+				// TODO this->chat()->addToLog(user.name);
+			}
+		})
+	);
+#pragma region Dedicated Servers
+	registry->add(
+		command::Signature("join")
+		.pushArgType<network::Address>()
+		.bind([&](command::Signature const& cmd)
+		{
+			this->setupNetwork(cmd.get<network::Address>(0));
+			Game::networkInterface()->start();
+		})
+	);
+	registry->add(
+		command::Signature("joinLocal")
+		.bind([&](command::Signature const& cmd)
+		{
+			auto localAddress = network::Address().setLocalTarget(ServerSettings().port());
+			this->setupNetwork(localAddress);
+			Game::networkInterface()->start();
+		})
+	);
+	registry->add(
+		command::Signature("leave")
+		.bind(std::bind(&network::Interface::stop, Game::networkInterface()))
+	);
+#pragma endregion
+#pragma region Integrated Servers / ClientOnTopOfServer
+	registry->add(
+		command::Signature("startHost")
+		.bind([&](command::Signature const& cmd)
+		{
+			game::Game::Get()->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
+			Game::networkInterface()->start();
+		})
+	);
+	registry->add(
+		command::Signature("stopHost")
+		.bind([&](command::Signature const& cmd)
+		{
+			game::Game::Get()->server().reset();
+		})
+	);
+#pragma endregion
+
+}
+
+void Client::setupNetwork(network::Address const& serverAddress)
+{
+	auto& networkInterface = *Game::networkInterface();
+	// Dedicated clients need to set the local user net id when its received from the server
+	networkInterface.onNetIdReceived.bind(std::bind(
+		&game::Client::onNetIdReceived, this,
+		std::placeholders::_1, std::placeholders::_2
+	));
+	networkInterface.OnClientAuthenticated.bind(std::bind(
+		&game::Client::onClientAuthenticated, this, std::placeholders::_1
+	));
+	networkInterface.onClientPeerStatusChanged.bind(std::bind(
+		&game::Client::onClientPeerStatusChanged, this,
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	));
+	networkInterface.OnClientDisconnected.bind(std::bind(
+		&game::Client::OnClientDisconnected, this,
+		std::placeholders::_1, std::placeholders::_2
+	));
+	networkInterface.setType(network::EType::eClient).setAddress(serverAddress);
+}
+
+void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
+{
+	// Integrated ClientServer automatically initializes its local user
+	this->setLocalUserNetId(netId);
+}
+
+void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
+{
+	this->setLocalUserNetId(netId);
+	this->addConnectedUser(netId);
+	network::packet::LoginWithAuthId::create()->setId(this->localUserId()).sendToServer();
+}
+
+void Client::onClientAuthenticated(network::Interface *pInteface)
+{
+	network::logger().log(LOG_INFO, "Network handshake complete");
+	network::packet::UpdateUserInfo::create()->setInfo(this->localUserInfo()).sendToServer();
+}
+
+void Client::OnClientDisconnected(network::Interface *pInteface, ui32 invalidNetId)
+{
+	network::logger().log(LOG_INFO, "Disconnected from network, killing network interface.");
+	Game::networkInterface()->stop();
+}
+
+void Client::onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status)
+{
+	if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
+	else this->removeConnectedUser(netId);
+}
+
+void Client::setLocalUserNetId(ui32 netId)
+{
+	this->mLocalUserNetId = netId;
+}
+
+utility::Guid const& Client::localUserId() const
+{
+	return this->mLocalUserId;
+}
+
+crypto::RSAKey Client::localUserAuthKey() const
+{
+	return this->userRegistry().loadKey(this->localUserId());
+}
+
+game::UserInfo Client::localUserInfo() const
+{
+	return this->userRegistry().loadInfo(this->localUserId());
+}
+
+void Client::addConnectedUser(ui32 netId)
+{
+	Session::addConnectedUser(netId);
+	this->mConnectedUserInfo.insert(std::make_pair(netId, game::UserInfo()));
+}
+
+void Client::removeConnectedUser(ui32 netId)
+{
+	Session::removeConnectedUser(netId);
+	this->mConnectedUserInfo.erase(this->mConnectedUserInfo.find(netId));
+}
+
+game::UserInfo& Client::getConnectedUserInfo(ui32 netId)
+{
+	return this->mConnectedUserInfo.find(netId)->second;
 }
 
 bool Client::initializeGraphics()

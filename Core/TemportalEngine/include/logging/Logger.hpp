@@ -75,7 +75,6 @@ public:
 
 	LogSystem();
 
-	static std::string getCurrentTimeString();
 	static std::string getCategoryShortString(ECategory cate);
 	
 	/**

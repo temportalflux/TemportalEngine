@@ -95,6 +95,7 @@ void Interface::start()
 	{
 		network::logger().log(LOG_INFO, "Connecting to server at %s", this->mAddress.toString(true).c_str());
 		this->mConnection = pInterface->ConnectByIPAddress(address, (ui32)options.size(), options.data());
+		network::logger().log(LOG_INFO, "Make connection %u", this->mConnection);
 		if (this->mConnection == k_HSteamNetConnection_Invalid)
 		{
 			network::logger().log(LOG_ERR, "Failed to create connection to %s", this->mAddress.toString(true).c_str());
@@ -117,6 +118,7 @@ void Interface::stop()
 		{
 			pInterface->CloseConnection(connection, 0, "Server Shutdown", true);
 		}
+		this->mConnections.clear();
 		this->mClients.clear();
 		this->mNetIdToConnection.clear();
 
@@ -134,6 +136,7 @@ void Interface::stop()
 	}
 	else if (this->mType.includes(EType::eClient))
 	{
+		network::logger().log(LOG_INFO, "Client is shutting down.");
 		if (this->mConnection != k_HSteamNetConnection_Invalid)
 		{
 			pInterface->CloseConnection(this->mConnection, 0, nullptr, false);
@@ -194,12 +197,20 @@ void Interface::pollIncomingMessages()
 	}
 	assert(numMsgs == 1 && pIncomingMsg);
 	
-	auto data = reinterpret_cast<packet::Packet::Data*>(pIncomingMsg->m_pData);
-	std::shared_ptr<packet::Packet> pPacket = this->packetTypes().create(data->packetTypeId);
-	assert(pIncomingMsg->m_cbSize == pPacket->dataSize());
-	pPacket->setSourceConnection(pIncomingMsg->m_conn);
-	memcpy_s(pPacket->data(), pPacket->dataSize(), pIncomingMsg->m_pData, pPacket->dataSize());
+	std::shared_ptr<packet::Packet> pPacket;
+	{
+		auto pPacketTypeId = reinterpret_cast<ui32*>(pIncomingMsg->m_pData);
+		pPacket = this->packetTypes().create(*pPacketTypeId);
+		pPacket->setSourceConnection(pIncomingMsg->m_conn);
+
+		auto buffer = network::Buffer(
+			this->type().includes(EType::eServer) ? EType::eClient : EType::eServer,
+			pIncomingMsg->m_pData, pIncomingMsg->m_cbSize
+		);
+		pPacket->read(buffer);
+	}
 	pIncomingMsg->Release();
+
 	this->mReceivedPackets.push_back(pPacket);
 }
 
@@ -240,23 +251,9 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 
 		// Tell the client its own net id
 		packet::ClientStatus::create()
-			->setStatus(EClientStatus::eConnected)
+			->setStatus(EClientStatus::eAuthenticating)
 			.setIsSelf(true).setNetId(netId)
 			.send(data->m_hConn);
-		// Tell all other clients that a client has joined
-		packet::ClientStatus::create()
-			->setStatus(EClientStatus::eConnected).
-			setIsSelf(false).setNetId(netId)
-			.broadcast({ data->m_hConn });
-		// Tell the client of the net ids of other already joined clients
-		for (auto const&[connection, clientNetId] : this->mClients)
-		{
-			if (clientNetId == netId) continue;
-			packet::ClientStatus::create()
-				->setStatus(EClientStatus::eConnected)
-				.setIsSelf(false).setNetId(clientNetId)
-				.send(data->m_hConn);
-		}
 		this->onConnectionEstablished.execute(this, data->m_hConn, netId);
 		break;
 	}
@@ -271,34 +268,24 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 		if (data->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
 		{
 			const char *disconnectionCause;
-			if (data->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
-			{
-				disconnectionCause = "problem detected locally";
-			}
-			else
-			{
-				disconnectionCause = "closed by peer";
-			}
-
+			bool bClosedByPeer = data->m_info.m_eState != k_ESteamNetworkingConnectionState_ProblemDetectedLocally;
+			if (!bClosedByPeer) disconnectionCause = "problem detected locally";
+			else disconnectionCause = "closed by peer";
 			network::logger().log(
 				LOG_INFO, "Connection %s %s, reason %d: %s",
 				data->m_info.m_szConnectionDescription, disconnectionCause,
 				data->m_info.m_eEndReason, data->m_info.m_szEndDebug
 			);
 
-			auto iterClient = this->mClients.find(data->m_hConn);
-			auto netId = iterClient->second;
-			this->mClients.erase(iterClient);
-			this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId));
-
-			this->onConnectionClosed.execute(this, data->m_hConn, netId);
-			packet::ClientStatus::create()
-				->setStatus(EClientStatus::eDisconnected)
-				.setIsSelf(false).setNetId(netId)
-				.broadcast({ data->m_hConn });
+			if (bClosedByPeer)
+				this->OnClientDisconnected.execute(this, this->mClients.find(data->m_hConn)->second);
+			this->closeConnection(data->m_hConn);
 		}
-		// Actually destroy the connection data in the API
-		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
+		else
+		{
+			// Actually destroy the connection data in the API
+			pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
+		}
 		break;
 	}
 
@@ -306,18 +293,12 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 	}
 }
 
-void Interface::addClient(ui32 connection, ui32 netId)
-{
-	this->mClients.insert(std::make_pair(connection, netId));
-	this->mNetIdToConnection.insert(std::make_pair(netId, connection));
-}
-
 void Interface::onClientConnectionStatusChanged(void* pInfo)
 {
 	assert(this->mType == EType::eClient);
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
 	auto data = (SteamNetConnectionStatusChangedCallback_t*)pInfo;
-	assert(data->m_hConn == this->mConnection || this->mConnection == k_HSteamNetConnection_Invalid);
+	this->mConnection = data->m_hConn;
 	switch (data->m_info.m_eState)
 	{
 	// NO-OP: the client destroyed its connection
@@ -353,6 +334,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 
 		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
 		this->mConnection = k_HSteamNetConnection_Invalid;
+		this->OnClientDisconnected.execute(this, 0);
 		break;
 	}
 
@@ -360,38 +342,64 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	}
 }
 
-void Interface::sendPackets(ui32 connection, std::vector<std::shared_ptr<packet::Packet>> const& packets)
+void Interface::sendPackets(
+	std::set<ui32> const& connections,
+	std::vector<std::shared_ptr<packet::Packet>> const& packets,
+	std::set<ui32> except
+)
 {
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
 
 	auto utils = SteamNetworkingUtils();
 	auto messages = std::vector<SteamNetworkingMessage_t*>();
-	for (auto pPacket : packets)
+
+	for (auto const& connection : connections)
 	{
-		auto message = utils->AllocateMessage(pPacket->dataSize());
-		message->m_conn = connection;
-		message->m_nFlags = ui32(pPacket->flags().data());
-		memcpy_s(message->m_pData, pPacket->dataSize(), pPacket->data(), pPacket->dataSize());
-		messages.push_back(message);
+		if (except.find(connection) != except.end()) continue;
+		for (auto pPacket : packets)
+		{
+			auto buffer = network::Buffer(this->type(), nullptr, 0);
+			pPacket->write(buffer);
+
+			auto message = utils->AllocateMessage((ui32)buffer.size());
+			assert(message->m_cbSize == buffer.size());
+			message->m_conn = connection;
+			message->m_nFlags = ui32(pPacket->flags().data());
+			{
+				auto buffer = network::Buffer(this->type(), message->m_pData, message->m_cbSize);
+				pPacket->write(buffer);
+			}
+			messages.push_back(message);
+		}
 	}
-	
+
 	// All messages ptrs are owned by the interface after this call (no need to free them).
 	// network::Packet objects are either discarded at then end of this stack,
 	// or soon after because of `shared_ptr`.
 	as<ISteamNetworkingSockets>(this->mpInternal)->SendMessages((ui32)messages.size(), messages.data(), nullptr);
 }
 
-void Interface::broadcastPackets(std::vector<std::shared_ptr<packet::Packet>> const& packets, std::set<ui32> except)
+std::set<ui32> Interface::connections() const
 {
-	OPTICK_EVENT();
-	assert(this->mpInternal != nullptr);
-	assert(this->type().includes(EType::eServer));
-	for (auto const& [connection, netId] : this->mClients)
+	return this->mConnections;
+}
+
+void Interface::addClient(ui32 connection, ui32 netId)
+{
+	this->mConnections.insert(connection);
+	this->mClients.insert(std::make_pair(connection, netId));
+	this->mNetIdToConnection.insert(std::make_pair(netId, connection));
+}
+
+std::set<ui32> Interface::connectedClientNetIds() const
+{
+	auto ids = std::set<ui32>();
+	for (auto const&[connection, netId] : this->mClients)
 	{
-		if (except.find(connection) != except.end()) continue;
-		this->sendPackets(connection, packets);
+		ids.insert(netId);
 	}
+	return ids;
 }
 
 ui32 Interface::nextNetworkId()
@@ -402,17 +410,7 @@ ui32 Interface::nextNetworkId()
 		this->mUnusedNetIds.erase(this->mUnusedNetIds.begin());
 		return id;
 	}
-	return (ui32)this->mClients.size();
-}
-
-std::set<ui32> Interface::connectedClientNetIds() const
-{
-	auto ids = std::set<ui32>();
-	for (auto const& [connection, netId] : this->mClients)
-	{
-		ids.insert(netId);
-	}
-	return ids;
+	return (ui32)this->mConnections.size();
 }
 
 ui32 Interface::getNetIdFor(ui32 connection) const
@@ -429,4 +427,53 @@ ui32 Interface::getConnectionFor(ui32 netId) const
 	auto iter = this->mNetIdToConnection.find(netId);
 	assert(iter != this->mNetIdToConnection.end());
 	return iter->second;
+}
+
+void Interface::markClientAuthenticated(ui32 netId)
+{
+	auto connectionId = this->getConnectionFor(netId);
+
+	packet::ClientStatus::create()
+		->setStatus(EClientStatus::eConnected)
+		.setIsSelf(true).setNetId(netId)
+		.send(connectionId);
+
+	// Tell all other clients that a client has joined
+	packet::ClientStatus::create()
+		->setStatus(EClientStatus::eConnected)
+		.setIsSelf(false).setNetId(netId)
+		.broadcast({ connectionId });
+
+	// Tell the client of the net ids of other already joined clients
+	for (auto const&[otherConnectionId, otherNetId] : this->mClients)
+	{
+		if (otherNetId == netId) continue;
+		packet::ClientStatus::create()
+			->setStatus(EClientStatus::eConnected)
+			.setIsSelf(false).setNetId(otherNetId)
+			.send(connectionId);
+	}
+}
+
+ui32 Interface::closeConnection(ui32 connectionId)
+{
+	assert(this->mType.includes(EType::eServer));
+
+	auto iterClient = this->mClients.find(connectionId);
+	auto netId = iterClient->second;
+	this->mClients.erase(iterClient);
+	this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId));
+	this->onConnectionClosed.execute(this, connectionId, netId);
+
+	this->mUnusedNetIds.insert(netId);
+	
+	packet::ClientStatus::create()
+		->setStatus(EClientStatus::eDisconnected)
+		.setIsSelf(false).setNetId(netId)
+		.broadcast({ connectionId });
+
+	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
+	pInterface->CloseConnection(connectionId, 0, nullptr, false);
+
+	return netId;
 }

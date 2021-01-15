@@ -38,19 +38,24 @@ utility::Flags<EPacketFlags> const& Packet::flags() const
 	return this->mFlags;
 }
 
-std::shared_ptr<Packet> Packet::finalize()
+void Packet::write(Buffer &archive) const
 {
-	this->assetDataPacketTypeId();
-	return this->shared_from_this();
+	network::write(archive, this->typeId());
+}
+
+void Packet::read(Buffer &archive)
+{
+	ui32 typeId;
+	network::read(archive, typeId);
+	assert(typeId == this->typeId());
 }
 
 void Packet::sendToServer()
 {
-	this->finalize();
 	auto& network = engine::Engine::Get()->networkInterface();
 	if (network.type() == EType::eClient)
 	{
-		network.sendPackets(network.connection(), { this->shared_from_this() });
+		network.sendPackets({ network.connection() }, { this->shared_from_this() });
 	}
 	else if (network.type().includes(EType::eServer))
 	{
@@ -67,7 +72,7 @@ void Packet::send(ui32 connection)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
 	assert(network.type().includes(EType::eServer));
-	network.sendPackets(connection, { this->finalize() });
+	network.sendPackets({ connection }, { this->shared_from_this() });
 }
 
 void Packet::sendTo(ui32 netId)
@@ -81,5 +86,5 @@ void Packet::broadcast(std::set<ui32> except)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
 	assert(network.type().includes(EType::eServer));
-	network.broadcastPackets({ this->finalize() }, except);
+	network.sendPackets(network.connections(), { this->shared_from_this() }, except);
 }

@@ -26,6 +26,9 @@ public:
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionEstablished;
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionClosed;
 
+	ExecuteDelegate<void(Interface*)> OnClientAuthenticated;
+	ExecuteDelegate<void(Interface*, ui32 netId)> OnClientDisconnected;
+
 	ExecuteDelegate<void(Interface*, ui32 netId)> onNetIdReceived;
 	ExecuteDelegate<void(Interface*, ui32 netId, EClientStatus status)> onClientPeerStatusChanged;
 
@@ -35,12 +38,19 @@ public:
 	void stop();
 
 	ui32 connection() const { return this->mConnection; }
-	void sendPackets(ui32 connection, std::vector<std::shared_ptr<packet::Packet>> const& packets);
-	void broadcastPackets(std::vector<std::shared_ptr<packet::Packet>> const& packets, std::set<ui32> except = {});
+	void sendPackets(
+		std::set<ui32> const& connections,
+		std::vector<std::shared_ptr<packet::Packet>> const& packets,
+		std::set<ui32> except = {}
+	);
 
+	std::set<ui32> connections() const;
 	std::set<ui32> connectedClientNetIds() const;
 	ui32 getNetIdFor(ui32 connection) const;
 	ui32 getConnectionFor(ui32 netId) const;
+	ui32 closeConnection(ui32 connectionId);
+
+	void markClientAuthenticated(ui32 netId);
 
 private:
 	PacketTypeRegistry mPacketRegistry;
@@ -57,6 +67,7 @@ private:
 	ui32 mConnection;
 	ui32 mServerPollGroup;
 
+	std::set<ui32> mConnections;
 	std::map<ui32 /*connectionId*/, ui32 /*netId*/> mClients;
 	std::map<ui32 /*netId*/, ui32 /*connectionId*/> mNetIdToConnection;
 	std::set<ui32> mUnusedNetIds;

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "CoreInclude.hpp"
+#include "game/GameSession.hpp"
+
+#include "game/GameUserIdRegistry.hpp"
 #include "input/Event.hpp"
 #include "ui/Core.hpp"
 
@@ -28,7 +30,7 @@ FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
 NS_GAME
 
-class Client
+class Client : public Session
 {
 
 public:
@@ -45,7 +47,25 @@ public:
 	void init();
 	void uninit();
 
+	void setupNetwork(network::Address const& serverAddress);
+	void onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
+
+	utility::Guid const& localUserId() const;
+	crypto::RSAKey localUserAuthKey() const;
+	void setLocalUserNetId(ui32 netId);
+
+	game::UserInfo& getConnectedUserInfo(ui32 netId);
+
+protected:
+	void addConnectedUser(ui32 netId) override;
+	void removeConnectedUser(ui32 netId) override;
+
 private:
+	utility::Guid mLocalUserId;
+	std::optional<ui32> mLocalUserNetId;
+	game::UserInfo localUserInfo() const;
+	std::map<ui32, game::UserInfo> mConnectedUserInfo;
+
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 
 	std::shared_ptr<Window> mpWindow;
@@ -67,6 +87,13 @@ private:
 	
 	std::shared_ptr<ui::DebugHUD> mpDebugHUD;
 	std::shared_ptr<ui::TextLogMenu> mpMenuTextLog;
+
+	void registerCommands();
+
+	void onNetIdReceived(network::Interface *pInterface, ui32 netId);
+	void onClientAuthenticated(network::Interface *pInterface);
+	void onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status);
+	void OnClientDisconnected(network::Interface *pInterface, ui32 invalidNetId);
 
 	bool initializeGraphics();
 

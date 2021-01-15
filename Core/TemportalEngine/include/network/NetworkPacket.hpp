@@ -2,22 +2,17 @@
 
 #include "network/NetworkCore.hpp"
 
-#include "utility/Flags.hpp"
+#include "network/data/NetworkDataBuffer.hpp"
+#include "network/data/NetworkDataPrimitives.hpp"
 
 #define DECLARE_PACKET_TYPE(ClassType) \
 public: \
 	static ui32 TypeId; \
 	static std::shared_ptr<ClassType> create(); \
-	network::packet::Packet::Data* data() override; \
-	ui32 dataSize() const override; \
-protected: \
-	void assetDataPacketTypeId() override;
-#define DEFINE_PACKET_TYPE(ClassType, DATA_PROPERTY_NAME) \
+	ui32 typeId() const override { return ClassType::TypeId; }
+#define DEFINE_PACKET_TYPE(ClassType) \
 	ui32 ClassType::TypeId = 0; \
-	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); } \
-	void ClassType::assetDataPacketTypeId() { this->data()->packetTypeId = ClassType::TypeId; } \
-	network::packet::Packet::Data* ClassType::data() { return dynamic_cast<network::packet::Packet::Data*>(&DATA_PROPERTY_NAME); } \
-	ui32 ClassType::dataSize() const { return sizeof(DATA_PROPERTY_NAME); }
+	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); }
 
 #define NS_PACKET namespace packet {
 
@@ -122,30 +117,25 @@ class Packet : public std::enable_shared_from_this<Packet>
 {
 
 public:
-	struct Data
-	{
-		ui32 packetTypeId;
-	};
-
+	// DEPRECATED
+	struct Data {};
+	
 	Packet(utility::Flags<EPacketFlags> flags = 0);
+	virtual ui32 typeId() const { assert(false); return 0; }
 
 	utility::Flags<EPacketFlags> const& flags() const;
-	std::shared_ptr<Packet> finalize();
+
+	virtual void write(Buffer &archive) const;
+	virtual void read(Buffer &archive);
 	
 	void sendToServer();
 	void send(ui32 connection);
 	void sendTo(ui32 netId);
 	void broadcast(std::set<ui32> except = {});
 
-	virtual Data* data() = 0;
-	virtual ui32 dataSize() const = 0;
-
 	void setSourceConnection(ui32 connection) { this->mConnection = connection; }
 	ui32 connection() const { return this->mConnection; }
 	virtual void process(Interface *pInterface) = 0;
-
-protected:
-	virtual void assetDataPacketTypeId() {}
 
 private:
 	utility::Flags<EPacketFlags> mFlags;

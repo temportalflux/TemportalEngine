@@ -13,19 +13,22 @@ using namespace ui;
 
 DebugHUD::DebugHUD()
 {
+	auto pClient = game::Game::Get()->client();
+	auto pFontOwner = pClient->uiFontOwner();
+
 	(*(this->mpAlphabet = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(30)
 		.setContent("Sphinx of Black Quartz, Judge my vow", true);
 
 	(*(this->mpPosition = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(15)
 		.setPosition({ 0, 40 })
 		.setContent("Position| X:<?,?,?.??> Y:<?,?,?.??> Z:<?,?,?.??>", true);
 
 	(*(this->mpFPS = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(20)
 		.setAnchor({ 1, 0 }).setPivot({ 1, 0 })
 		.setContent("FPS: ###", true);

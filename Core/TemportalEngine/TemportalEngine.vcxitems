@@ -90,6 +90,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryManager.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\Pool.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Module.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\data\NetworkDataBuffer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\data\NetworkDataPrimitives.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkAddress.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkCore.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\NetworkInterface.cpp" />
@@ -117,6 +119,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\TimeUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -233,6 +236,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\Pool.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Module.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataBuffer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataPrimitives.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkAddress.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkCore.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\NetworkInterface.hpp" />
@@ -277,6 +282,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\ImageUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\TimeUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />

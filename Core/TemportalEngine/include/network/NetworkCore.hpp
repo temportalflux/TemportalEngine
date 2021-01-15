@@ -14,7 +14,8 @@ enum class EType : ui8
 enum class EClientStatus : ui8
 {
 	eDisconnected = 0,
-	eConnected = 1,
+	eAuthenticating = 1,
+	eConnected = 2,
 };
 
 logging::Logger& logger();

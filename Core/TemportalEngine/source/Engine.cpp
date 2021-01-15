@@ -9,6 +9,7 @@
 #include "graphics/VulkanRenderer.hpp"
 #include "input/Queue.hpp"
 #include "memory/MemoryChunk.hpp"
+#include "utility/TimeUtils.hpp"
 
 //#include "network/client/ServiceClient.hpp"
 //#include "network/server/ServiceServer.hpp"
@@ -28,7 +29,7 @@ std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_va
 
 void Engine::startLogSystem(std::string const name)
 {
-	std::string logFileName = name + "_" + logging::LogSystem::getCurrentTimeString() + ".log";
+	std::string logFileName = name + "_" + utility::currentTimeStr() + ".log";
 	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
 }
 

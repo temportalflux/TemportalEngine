@@ -5,51 +5,75 @@
 using namespace network;
 using namespace network::packet;
 
-DEFINE_PACKET_TYPE(ClientStatus, mData)
+DEFINE_PACKET_TYPE(ClientStatus)
 
 ClientStatus::ClientStatus()
 	: Packet(EPacketFlags::eReliable)
-	, mData({})
 {
 }
 
 ClientStatus& ClientStatus::setIsSelf(bool bIsSelf)
 {
-	this->mData.bIsSelf = bIsSelf;
+	this->mbIsSelf = bIsSelf;
 	return *this;
 }
 
 ClientStatus& ClientStatus::setNetId(ui32 netId)
 {
-	this->mData.netId = netId;
+	this->mNetId = netId;
 	return *this;
 }
 
 ClientStatus& ClientStatus::setStatus(EClientStatus status)
 {
-	this->mData.status = status;
+	this->mStatus = status;
 	return *this;
+}
+
+void ClientStatus::write(Buffer &archive) const
+{
+	Packet::write(archive);
+	network::write(archive, this->mbIsSelf);
+	network::write(archive, this->mNetId);
+	archive.writeRaw(this->mStatus);
+}
+
+void ClientStatus::read(Buffer &archive)
+{
+	Packet::read(archive);
+	network::read(archive, this->mbIsSelf);
+	network::read(archive, this->mNetId);
+	archive.readRaw(this->mStatus);
 }
 
 void ClientStatus::process(network::Interface *pInterface)
 {
 	assert((EType)pInterface->type() == EType::eClient);
 	// Server has confirmed data for this client
-	if (this->mData.bIsSelf)
+	if (this->mbIsSelf)
 	{
-		assert(this->mData.status == EClientStatus::eConnected);
-		network::logger().log(LOG_INFO, "Received network id %i", this->mData.netId);
-		pInterface->onNetIdReceived.execute(pInterface, this->mData.netId);
+		if (this->mStatus == EClientStatus::eAuthenticating)
+		{
+			network::logger().log(LOG_INFO, "Received network id %i", this->mNetId);
+			pInterface->onNetIdReceived.execute(pInterface, this->mNetId);
+		}
+		else if (this->mStatus == EClientStatus::eConnected)
+		{
+			pInterface->OnClientAuthenticated.execute(pInterface);
+		}
 	}
 	// A new client has arrived
-	else if (this->mData.status == EClientStatus::eConnected)
+	else
 	{
-		network::logger().log(LOG_INFO, "A peer client has joined with the network id %i", this->mData.netId);
-		pInterface->onClientPeerStatusChanged.execute(pInterface, this->mData.netId, EClientStatus::eConnected);
-	}
-	else if (this->mData.status == EClientStatus::eDisconnected)
-	{
-		network::logger().log(LOG_INFO, "Network peer %i has disconnected", this->mData.netId);
-		pInterface->onClientPeerStatusChanged.execute(pInterface, this->mData.netId, EClientStatus::eDisconnected);
+		if (this->mStatus == EClientStatus::eConnected)
+		{
+			network::logger().log(LOG_INFO, "A peer client has joined with the network id %i", this->mNetId);
+			pInterface->onClientPeerStatusChanged.execute(pInterface, this->mNetId, EClientStatus::eConnected);
+		}
+		else if (this->mStatus == EClientStatus::eDisconnected)
+		{
+			network::logger().log(LOG_INFO, "Network peer %i has disconnected", this->mNetId);
+			pInterface->onClientPeerStatusChanged.execute(pInterface, this->mNetId, EClientStatus::eDisconnected);
+		}
 	}
 }

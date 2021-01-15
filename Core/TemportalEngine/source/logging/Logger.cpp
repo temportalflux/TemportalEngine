@@ -4,11 +4,11 @@
 #include <cassert>
 #include <fstream>
 #include <stdarg.h>
-#include <time.h>
 #include <array>
 
 // Engine ---------------------------------------------------------------------
 #include "math/compare.h"
+#include "utility/TimeUtils.hpp"
 
 // Namespaces -----------------------------------------------------------------
 using namespace logging;
@@ -38,23 +38,6 @@ void LogSystem::printLog(char const *const format, ...)
 	va_end(args);
 }
 
-std::string LogSystem::getCurrentTimeString()
-{
-	time_t currentTime = time(nullptr);
-	struct tm timeinfo;
-	localtime_s(&timeinfo, &currentTime);
-	// Y = ####
-	// m = ##
-	// d = ##
-	// H = ##
-	// M = ##
-	// S = ##
-	char timeStr[20];
-	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d-%H.%M.%S", &timeinfo);
-	return timeStr;
-}
-
-
 std::string LogSystem::getCategoryShortString(ECategory category)
 {
 	switch (category)
@@ -76,18 +59,13 @@ void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
 {
 	auto categoryStr = getCategoryShortString(category);
 
-	// TODO: Call getCurrentTimeString instead
-	time_t currentTime = time(nullptr);
-	struct tm timeinfo;
-	localtime_s(&timeinfo, &currentTime);
-	char timeStr[20];
-	strftime(timeStr, sizeof(timeStr), "%Y.%m.%d %H:%M:%S", &timeinfo);
+	auto const& timeStr = utility::currentTimeStr();
 
 	va_list args;
 	va_start(args, format);
 
 	mpLock->lock();
-	printLog("[%s][%s] %s> ", timeStr, categoryStr.c_str(), pLogger->mpTitle);
+	printLog("[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), pLogger->mpTitle);
 	printLog(format, args);
 	printLog("\n");
 	fflush(stdout);
