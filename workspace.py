@@ -136,7 +136,7 @@ if args[0] == 'setup':
 	runScript("gns-build.sh")
 	
 	print('Building assimp')
-	runScript("assimp-build.sh")
+	runScript("assimp-build.sh", [architecture])
 
 	print('Downloading ShaderC')
 	installShaderC()
