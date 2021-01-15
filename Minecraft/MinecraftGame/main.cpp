@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	std::filesystem::create_directories(logFileName.parent_path());
 	engine::Engine::LOG_SYSTEM.open(logFileName.string().c_str());
 	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);
-	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.c_str());
+	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.string().c_str());
 
 	auto modulesDir = std::filesystem::absolute("Modules");
 	if (std::filesystem::exists(modulesDir))

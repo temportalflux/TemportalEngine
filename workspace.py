@@ -103,21 +103,22 @@ def copyLibrariesTo(config, arch, package):
 					os.path.join(dst, dllName)
 				)
 
-def downloadShaderC():
+def downloadShaderC(shadercDir):
 	shadercZipUrl = getGoogleStorageUrl(shadercHtml)
 	shadercZipReq = requests.get(shadercZipUrl)
 	shadercZipName = 'shaderc.zip'
-	shadercDir = os.path.join(os.getcwd(), 'shaderc')
 	with open(shadercZipName, 'wb') as zipFile:
 		zipFile.write(shadercZipReq.content)
 	with zipfile.ZipFile(shadercZipName, 'r') as zip_ref:
 		zip_ref.extractall(shadercDir)
 	os.remove(shadercZipName)
-	return shadercDir
 
 def installShaderC():
 	sys.stdout.flush()
-	shadercDir = downloadShaderC()
+	shadercDir = os.path.join(os.getcwd(), 'shaderc')
+	if os.path.exists(shadercDir):
+		shutil.rmtree(shadercDir)
+	downloadShaderC(shadercDir)
 	shadercDst = os.path.join(os.getcwd(), 'Core/TemportalEngineEditor/libs/shaderc')
 	shadercDstInclude = os.path.join(shadercDst, 'include/shaderc')
 	shadercDstLib = os.path.join(shadercDst, 'lib/')
@@ -132,7 +133,6 @@ def installShaderC():
 		os.path.join(shadercDir, 'install/lib/shaderc_combined.lib'),
 		os.path.join(shadercDstLib, 'shaderc_combined.lib')
 	)
-	shutil.rmtree(shadercDir)
 
 config = 'Debug'
 architecture = '64'

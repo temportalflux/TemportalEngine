@@ -13,3 +13,4 @@ Core/TemportalEngineEditor/libs/shaderc
 *.blend
 Core/TemportalEngine/libs/GameNetworkingSockets-package
 Core/TemportalEngine/libs/OpenSSL
+shaderc
