@@ -58,7 +58,7 @@
   <ImportGroup Label="Shared">
     <Import Project="..\..\Core\TemportalEngine\libs\cereal.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngineEditor\libs\imgui.vcxitems" Label="Shared" />
-    <Import Project="..\CrystalSphinx\CrystalSphinx-Core.vcxitems" Label="Shared" />
+    <Import Project="..\CrystalSphinx-Core\CrystalSphinx-Core.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\Optick.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
