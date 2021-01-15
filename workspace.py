@@ -89,20 +89,6 @@ def run(cmd, shell=True, cwd=None, env=None):
 def runScript(name, args=[]):
 	run(['bash', scriptPath(name)] + args)
 
-def copyLibrariesTo(config, arch, package):
-	dst = bin(config, arch, package)
-	os.makedirs(dst, exist_ok=True)
-	for lib in libraries:
-		libBin = bin(config, arch, lib['name'])
-		if 'dlls' in lib:
-			for dllName in lib['dlls']:
-				dllName = dllName.format(architecture = arch)
-				print(f"Copying {dllName} to {package}")
-				shutil.copyfile(
-					os.path.join(libBin, dllName),
-					os.path.join(dst, dllName)
-				)
-
 def downloadShaderC(shadercDir):
 	shadercZipUrl = getGoogleStorageUrl(shadercHtml)
 	shadercZipReq = requests.get(shadercZipUrl)
@@ -141,22 +127,43 @@ if args[0] == 'setup':
 	print('Setting up workspace')
 	
 	print(f"Building PhysX checked x{architecture}")
-	runScript('physx-build.sh', ['checked', architecture])
+	#runScript('physx-build.sh', ['checked', architecture])
 
 	print('Setting up GameNetworkingSockets')
-	runScript("gns-setup.sh")
+	#runScript("gns-setup.sh")
 	
 	print('Building GameNetworkingSockets')
-	runScript("gns-build.sh")
+	#runScript("gns-build.sh")
 	
 	print('Building assimp')
 	runScript("assimp-build.sh")
 
 	print('Downloading ShaderC')
-	installShaderC()
+	#installShaderC()
 
 elif args[0] == 'updateLibs':
-	copyLibrariesTo(config, architecture, 'MinecraftGame')
-	copyLibrariesTo(config, architecture, 'MinecraftEditor')
+	moduleNames = [ 'MinecraftGame', 'MinecraftEditor' ]
 	for moduleName in workspaceCfg['modules']:
-		copyLibrariesTo(config, architecture, moduleName)
+		moduleNames.append(moduleName)
+	
+	print('Distributing library dlls to:')
+	moduleBins = []
+	for moduleName in moduleNames:
+		moduleBin = bin(config, architecture, moduleName)
+		print(f"- {moduleName}")
+		os.makedirs(moduleBin, exist_ok=True)
+		moduleBins.append(moduleBin)
+
+	print("Libraries:")
+	for lib in libraries:
+		if 'dlls' in lib:
+			libBin = bin(config, architecture, lib['name'])
+			print(f"- {lib['name']}")
+			for dllName in lib['dlls']:
+				dllName = dllName.format(architecture=architecture)
+				print(f"  - {dllName}")
+				for moduleBin in moduleBins:
+					shutil.copyfile(
+						os.path.join(libBin, dllName),
+						os.path.join(moduleBin, dllName)
+					)
