@@ -6,7 +6,7 @@ rm -rf "vcpkg"
 echo
 echo "-----Cloning vcpkg-----"
 echo
-git clone "git@github.com:microsoft/vcpkg.git" "$packageDir"
+git clone "git@github.com:microsoft/vcpkg.git" "vcpkg"
 
 echo
 echo "----Bootstrapping vcpkg-----"
