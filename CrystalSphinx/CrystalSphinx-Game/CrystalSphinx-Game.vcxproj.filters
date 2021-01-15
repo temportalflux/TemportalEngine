@@ -32,7 +32,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MinecraftGame.rc">
+    <ResourceCompile Include="CrystalSphinx-Game.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

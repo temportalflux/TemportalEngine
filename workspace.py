@@ -142,7 +142,7 @@ if args[0] == 'setup':
 	installShaderC()
 
 elif args[0] == 'updateLibs':
-	moduleNames = [ 'MinecraftGame', 'MinecraftEditor' ]
+	moduleNames = [ 'CrystalSphinx-Game', 'CrystalSphinx-Editor' ]
 	for moduleName in workspaceCfg['modules']:
 		moduleNames.append(moduleName)
 	

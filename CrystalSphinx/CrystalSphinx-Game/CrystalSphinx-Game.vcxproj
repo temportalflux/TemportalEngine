@@ -20,10 +20,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{3AD6343C-1563-4DE2-B16D-20031AE18E2B}</ProjectGuid>
-    <RootNamespace>MinecraftEditor</RootNamespace>
+    <ProjectGuid>{ABDE6299-5814-4811-91D4-5908CE699B57}</ProjectGuid>
+    <RootNamespace>CrystalSphinx-Game</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <ProjectName>MinecraftEditor</ProjectName>
+    <ProjectName>CrystalSphinx-Game</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -56,16 +56,12 @@
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
+    <Import Project="..\CrystalSphinx-Core\CrystalSphinx-Core.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\cereal.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngineEditor\libs\imgui.vcxitems" Label="Shared" />
-    <Import Project="..\MinecraftCore\MinecraftCore.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\Optick.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\TemportalEngine.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngineEditor\TemportalEngineEditor.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\vulkan.vcxitems" Label="Shared" />
     <Import Project="..\..\Core\TemportalEngine\libs\VulkanMemoryAllocator.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngineEditor\libs\imgui-node-editor.vcxitems" Label="Shared" />
-    <Import Project="..\..\Core\TemportalEngine\libs\GameNetworkingSockets.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -87,82 +83,108 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <RuntimeLibrary>
-    </RuntimeLibrary>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <RuntimeLibrary>
-    </RuntimeLibrary>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)Binaries\Intermediate\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
     <IncludePath>include;$(IncludePath)</IncludePath>
-    <SourcePath>source;$(SourcePath)</SourcePath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)assimp\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-    </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(bin)Assimp;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;shaderc_combined.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <SubSystem>Console</SubSystem>
-      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-    <PreLinkEvent>
-      <Command>
-      </Command>
-    </PreLinkEvent>
-    <PreBuildEvent>
-      <Command>
-      </Command>
-    </PreBuildEvent>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui_node_editor;$(EngineLibs)assimp\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(bin)Assimp;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;shaderc_combined.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
       <Command>
       </Command>
     </PreLinkEvent>
-    <PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <PostBuildEvent>
       <Command>
       </Command>
-    </PreBuildEvent>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -172,24 +194,39 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win32/;$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(PhysXBin);$(VULKAN_SDK)/Lib32/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win32\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
+      <Command>copy /Y "$(PhysXBin)PhysXCommon_$(PlatformArchitecture).dll" "$(OutputPath)"
+copy /Y "$(PhysXBin)PhysX_$(PlatformArchitecture).dll" "$(OutputPath)"
+copy /Y "$(PhysXBin)PhysXFoundation_$(PlatformArchitecture).dll" "$(OutputPath)"</Command>
     </PreLinkEvent>
-    <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -199,37 +236,51 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngineEditor\include;$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\include;$(SolutionDir)Core\TemportalEngineEditor\libs\imgui;$(SolutionDir)Core\TemportalEngine\libs\cereal\include;$(SolutionDir)Core\TemportalEngine\libs\glm;$(SolutionDir)Core\TemportalEngine\libs\vulkan\include;$(SolutionDir)Core\TemportalEngine\libs\Optick\include;$(SolutionDir)Core\TemportalEngine\libs\assimp\include;$(SolutionDir)Core\TemportalEngine\libs\stb;$(SolutionDir)Core\TemportalEngine\include;$(SolutionDir)Minecraft\MinecraftCore\include;$(SolutionDir)Core\TemportalEngineEditor\libs\shaderc\include\$(Configuration);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;WITH_EDITOR;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;_HAS_ITERATOR_DEBUGGING=0;_ITERATOR_DEBUG_LEVEL=0;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(SolutionDir)Core/TemportalEngineEditor/libs/shaderc/lib/$(Configuration)/;$(SolutionDir)Core/TemportalEngine/libs/assimp/lib/Debug/;$(SolutionDir)Core/TemportalEngineEditor/libs/freetype/release dll/win64/;$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>vulkan-1.lib;shaderc_combined.lib;freetype.lib;assimp-vc141-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(PhysXBin);$(VULKAN_SDK)/Lib/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>
+      </Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
     <PreLinkEvent>
-      <Command>copy /Y "$(SolutionDir)Core\TemportalEngineEditor\libs\freetype\release dll\win64\freetype.dll" $(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\freetype.dll"</Command>
+      <Command>copy /Y "$(PhysXBin)PhysXCommon_$(PlatformArchitecture).dll" "$(OutputPath)"
+copy /Y "$(PhysXBin)PhysX_$(PlatformArchitecture).dll" "$(OutputPath)"
+copy /Y "$(PhysXBin)PhysXFoundation_$(PlatformArchitecture).dll" "$(OutputPath)"</Command>
     </PreLinkEvent>
-    <PreBuildEvent>
-      <Command>copy /Y "$(SolutionDir)Core\TemportalEngine\libs\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\assimp-vc141-mtd.dll"</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="source\main.cpp" />
-  </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\GameEditor.hpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MinecraftEditor.rc" />
+    <ResourceCompile Include="CrystalSphinx-Game.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="icon.ico" />

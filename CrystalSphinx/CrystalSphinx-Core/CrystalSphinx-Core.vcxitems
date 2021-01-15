@@ -4,7 +4,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{d899098e-bbad-4b50-bc5c-ce68af938fe3}</ItemsProjectGuid>
-    <ItemsProjectName>MinecraftCore</ItemsProjectName>
+    <ItemsProjectName>CrystalSphinx-Core</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
