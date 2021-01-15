@@ -2,11 +2,16 @@
 
 #include "TemportalEnginePCH.hpp"
 
+#include "Engine.hpp"
 #include "utility/StringUtils.hpp"
 
 #include <typeinfo>
 #include <typeindex>
 #include <any>
+
+#define CMD_SIGNATURE(ID, CLASS_TYPE, INST, MEMBER_FUNC) command::Signature(ID).bind(std::bind(&CLASS_TYPE::MEMBER_FUNC, INST, std::placeholders::_1))
+#define CMD_SIGNATURE_0(ID, CLASS_TYPE, INST, MEMBER_FUNC) command::Signature(ID).bind(std::bind(&CLASS_TYPE::MEMBER_FUNC, INST))
+#define ADD_CMD(CMD) engine::Engine::Get()->commands()->add(CMD)
 
 NS_COMMAND
 
