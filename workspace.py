@@ -127,19 +127,19 @@ if args[0] == 'setup':
 	print('Setting up workspace')
 	
 	print(f"Building PhysX checked x{architecture}")
-	#runScript('physx-build.sh', ['checked', architecture])
+	runScript('physx-build.sh', ['checked', architecture])
 
 	print('Setting up GameNetworkingSockets')
-	#runScript("gns-setup.sh")
+	runScript("gns-setup.sh")
 	
 	print('Building GameNetworkingSockets')
-	#runScript("gns-build.sh")
+	runScript("gns-build.sh")
 	
 	print('Building assimp')
 	runScript("assimp-build.sh")
 
 	print('Downloading ShaderC')
-	#installShaderC()
+	installShaderC()
 
 elif args[0] == 'updateLibs':
 	moduleNames = [ 'MinecraftGame', 'MinecraftEditor' ]
