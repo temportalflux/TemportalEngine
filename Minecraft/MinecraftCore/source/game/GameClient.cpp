@@ -9,7 +9,6 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "asset/MinecraftAssetStatics.hpp"
-#include "command/CommandRegistry.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
@@ -68,97 +67,84 @@ void Client::uninit()
 
 void Client::registerCommands()
 {
-	auto registry = engine::Engine::Get()->commands();
-	registry->add(
-		command::Signature("setDPI")
-		.pushArgType<ui32>() // dots per inch
-		.bind([&](command::Signature const& cmd)
-		{
-			this->renderer()->setDPI(cmd.get<ui32>(0));
-		})
-	);
-	registry->add(
-		command::Signature("setName")
-		.pushArgType<std::string>()
-		.bind([&](command::Signature const& cmd)
-		{
-			auto name = cmd.get<std::string>(0);
-			auto userInfo = this->localUserInfo();
-			userInfo.setName(name);
-			userInfo.writeToDisk();
-			if (Game::networkInterface()->hasConnection())
-			{
-				network::packet::UpdateUserInfo::create()->setInfo(userInfo).sendToServer();
-			}
-		})
-	);
-	registry->add(
-		command::Signature("id")
-		.bind([&](command::Signature const& cmd)
-		{
-			auto userInfo = this->localUserInfo();
-			std::stringstream ss;
-			ss
-				<< "Id: " << this->localUserId().toString().c_str()
-				<< '\n'
-				<< "Name: " << userInfo.name().c_str()
-				;
-			this->chat()->addToLog(ss.str());
-		})
-	);
-	registry->add(
-		command::Signature("listUsers")
-		.bind([&](command::Signature const& cmd)
-		{
-			for (auto const&[netId, user] : this->connectedUsers())
-			{
-				// TODO this->chat()->addToLog(user.name);
-			}
-		})
-	);
-#pragma region Dedicated Servers
-	registry->add(
-		command::Signature("join")
-		.pushArgType<network::Address>()
-		.bind([&](command::Signature const& cmd)
-		{
-			this->setupNetwork(cmd.get<network::Address>(0));
-			Game::networkInterface()->start();
-		})
-	);
-	registry->add(
-		command::Signature("joinLocal")
-		.bind([&](command::Signature const& cmd)
-		{
-			auto localAddress = network::Address().setLocalTarget(ServerSettings().port());
-			this->setupNetwork(localAddress);
-			Game::networkInterface()->start();
-		})
-	);
-	registry->add(
-		command::Signature("leave")
-		.bind(std::bind(&network::Interface::stop, Game::networkInterface()))
-	);
-#pragma endregion
-#pragma region Integrated Servers / ClientOnTopOfServer
-	registry->add(
-		command::Signature("startHost")
-		.bind([&](command::Signature const& cmd)
-		{
-			game::Game::Get()->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
-			Game::networkInterface()->start();
-		})
-	);
-	registry->add(
-		command::Signature("stopHost")
-		.bind([&](command::Signature const& cmd)
-		{
-			game::Game::Get()->server().reset();
-		})
-	);
-#pragma endregion
-
+	ADD_CMD(CMD_SIGNATURE("setDPI", Client, this, exec_setDPI).pushArgType<ui32>());
+	ADD_CMD(CMD_SIGNATURE("setName", Client, this, exec_setUserName).pushArgType<std::string>());
+	ADD_CMD(CMD_SIGNATURE("id", Client, this, exec_printUserId));
+	ADD_CMD(CMD_SIGNATURE("listUsers", Client, this, exec_printConnectedUsers));
+	ADD_CMD(CMD_SIGNATURE("join", Client, this, exec_joinServer).pushArgType<network::Address>());
+	ADD_CMD(CMD_SIGNATURE("joinLocal", Client, this, exec_joinServerLocal));
+	ADD_CMD(CMD_SIGNATURE_0("leave", network::Interface, Game::networkInterface(), stop));
+	ADD_CMD(CMD_SIGNATURE("startHost", Client, this, exec_startHostingServer));
+	ADD_CMD(CMD_SIGNATURE("stopHost", Client, this, exec_stopHostingServer));
 }
+
+void Client::exec_setDPI(command::Signature const& cmd)
+{
+	this->renderer()->setDPI(cmd.get<ui32>(0));
+}
+
+void Client::exec_printUserList(command::Signature const& cmd)
+{
+	// TODO: print the list of user ids on the local user registry
+}
+
+void Client::exec_printUserId(command::Signature const& cmd)
+{
+	auto userInfo = this->localUserInfo();
+	std::stringstream ss;
+	ss
+		<< "Id: " << this->localUserId().toString().c_str()
+		<< '\n'
+		<< "Name: " << userInfo.name().c_str()
+		;
+	this->chat()->addToLog(ss.str());
+}
+
+void Client::exec_setUserName(command::Signature const& cmd)
+{
+	auto name = cmd.get<std::string>(0);
+	auto userInfo = this->localUserInfo();
+	userInfo.setName(name);
+	userInfo.writeToDisk();
+	if (Game::networkInterface()->hasConnection())
+	{
+		network::packet::UpdateUserInfo::create()->setInfo(userInfo).sendToServer();
+	}
+}
+
+void Client::exec_printConnectedUsers(command::Signature const& cmd)
+{
+	for (auto const& [netId, userId] : this->connectedUsers())
+	{
+		this->chat()->addToLog(this->getConnectedUserInfo(netId).name());
+	}
+}
+
+void Client::exec_joinServer(command::Signature const& cmd)
+{
+	this->setupNetwork(cmd.get<network::Address>(0));
+	Game::networkInterface()->start();
+}
+
+void Client::exec_joinServerLocal(command::Signature const& cmd)
+{
+	auto localAddress = network::Address().setLocalTarget(ServerSettings().port());
+	this->setupNetwork(localAddress);
+	Game::networkInterface()->start();
+}
+
+void Client::exec_startHostingServer(command::Signature const& cmd)
+{
+	game::Game::Get()->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
+	Game::networkInterface()->start();
+}
+
+void Client::exec_stopHostingServer(command::Signature const& cmd)
+{
+	// TODO: stop network interface???
+	game::Game::Get()->server().reset();
+}
+
 
 void Client::setupNetwork(network::Address const& serverAddress)
 {

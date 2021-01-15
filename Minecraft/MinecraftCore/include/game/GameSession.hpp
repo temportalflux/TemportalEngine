@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "game/GameUserIdRegistry.hpp"
+#include "command/CommandRegistry.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkAddress.hpp"
 #include "settings/UserInfo.hpp"

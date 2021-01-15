@@ -89,6 +89,15 @@ private:
 	std::shared_ptr<ui::TextLogMenu> mpMenuTextLog;
 
 	void registerCommands();
+	void exec_setDPI(command::Signature const& cmd);
+	void exec_printUserList(command::Signature const& cmd);
+	void exec_printUserId(command::Signature const& cmd);
+	void exec_setUserName(command::Signature const& cmd);
+	void exec_printConnectedUsers(command::Signature const& cmd);
+	void exec_joinServer(command::Signature const& cmd);
+	void exec_joinServerLocal(command::Signature const& cmd);
+	void exec_startHostingServer(command::Signature const& cmd);
+	void exec_stopHostingServer(command::Signature const& cmd);
 
 	void onNetIdReceived(network::Interface *pInterface, ui32 netId);
 	void onClientAuthenticated(network::Interface *pInterface);
