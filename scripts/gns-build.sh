@@ -1,15 +1,8 @@
 #!/bin/bash
 
-target=$1
-if [[ "$target" == "" ]]; then
-	echo "Missing required target binary."
-	exit 1
-fi
-
 packageDir="vcpkg"
 root="$PWD"
 
-echo "Building GameNetworkingSockets on x$architecture for $target"
 cd "GNS"
 
 function compileGNS()
@@ -28,20 +21,19 @@ function compileGNS()
 	echo
 	echo "Copying GameNetworkingSockets artifacts"
 
-	cp "$builtPackage/debug/bin/GameNetworkingSockets.dll" "$binaries/$target"
-	cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libcrypto-1_1-x$architecture.dll" "$binaries/$target"
-	cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libssl-1_1-x$architecture.dll" "$binaries/$target"
-	cp "$packageDir/packages/protobuf_$gnsArchitecture/debug/bin/libprotobufd.dll" "$binaries/$target"
-	
 	binaryDst="$binaries/GameNetworkingSockets"
 	mkdir -p "$binaryDst"
 	cp "$builtPackage/debug/bin/GameNetworkingSockets.pdb" "$binaryDst"
 	cp "$builtPackage/debug/lib/GameNetworkingSockets.lib" "$binaryDst"
+	cp "$builtPackage/debug/bin/GameNetworkingSockets.dll" "$binaryDst"
 
 	binaryDst="$binaries/OpenSSL"
 	mkdir -p "$binaryDst"
 	cp "$packageDir/packages/openssl_$gnsArchitecture/lib/libssl.lib" "$binaryDst"
 	cp "$packageDir/packages/openssl_$gnsArchitecture/lib/libcrypto.lib" "$binaryDst"
+	cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libcrypto-1_1-x$architecture.dll" "$binaryDst"
+	cp "$packageDir/packages/openssl_$gnsArchitecture/debug/bin/libssl-1_1-x$architecture.dll" "$binaryDst"
+	cp "$packageDir/packages/protobuf_$gnsArchitecture/debug/bin/libprotobufd.dll" "$binaryDst"
 
 }
 

@@ -2,7 +2,6 @@
 
 physxConfig=$1
 PlatformArchitecture=$2
-projectName=$3
 
 if [[ "$physxConfig" == "" ]]; then
 	echo "No PhysX Configuration. Suggested: \"checked\""
@@ -12,11 +11,7 @@ if [[ "$PlatformArchitecture" == "" ]]; then
 	echo "No platform architecture. Suggested: \"64\""
 	exit 1
 fi
-if [[ "$projectName" == "" ]]; then
-	echo "No Project Name"
-	exit 1
-fi
-echo "Building $physxConfig PhysX on x$PlatformArchitecture for $projectName"
+echo "Building $physxConfig PhysX on x$PlatformArchitecture"
 
 msbuild="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
 physxGitModule="Core/TemportalEngine/libs/PhysX"
@@ -61,11 +56,9 @@ do
 	cp "$physxBin/$libName.pdb" "$physxLibOut/"
 done
 
-projectOut="$binaries/$projectName"
-mkdir -p "$projectOut"
 for dllName in "${dlls[@]}"
 do
-	cp "$physxBin/$dllName" "$projectOut/$dllName"
+	cp "$physxBin/$dllName" "$physxLibOut/"
 done
 
 cd "$physxGitModule"
