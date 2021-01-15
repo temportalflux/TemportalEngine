@@ -20,6 +20,7 @@ public:
 
 	std::map<ui32, utility::Guid> const& connectedUsers() const;
 	bool hasConnectedUser(ui32 netId) const;
+	bool hasConnectedUser(utility::Guid const& id) const;
 	utility::Guid& findConnectedUser(ui32 netId);
 
 	virtual void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId) {}

@@ -235,14 +235,18 @@ game::UserInfo Client::localUserInfo() const
 
 void Client::addConnectedUser(ui32 netId)
 {
+	assert(!this->hasConnectedUser(netId));
 	Session::addConnectedUser(netId);
 	this->mConnectedUserInfo.insert(std::make_pair(netId, game::UserInfo()));
 }
 
 void Client::removeConnectedUser(ui32 netId)
 {
-	Session::removeConnectedUser(netId);
-	this->mConnectedUserInfo.erase(this->mConnectedUserInfo.find(netId));
+	if (this->hasConnectedUser(netId))
+	{
+		Session::removeConnectedUser(netId);
+		this->mConnectedUserInfo.erase(this->mConnectedUserInfo.find(netId));
+	}
 }
 
 game::UserInfo& Client::getConnectedUserInfo(ui32 netId)

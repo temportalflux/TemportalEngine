@@ -25,6 +25,15 @@ bool Session::hasConnectedUser(ui32 netId) const
 	return this->mConnectedUsers.find(netId) != this->mConnectedUsers.end();
 }
 
+bool Session::hasConnectedUser(utility::Guid const& id) const
+{
+	for (auto const& [netId, userId] : this->connectedUsers())
+	{
+		if (id == userId) return true;
+	}
+	return false;
+}
+
 utility::Guid& Session::findConnectedUser(ui32 netId)
 {
 	auto iter = this->mConnectedUsers.find(netId);

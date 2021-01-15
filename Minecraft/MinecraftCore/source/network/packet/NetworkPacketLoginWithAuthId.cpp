@@ -41,7 +41,17 @@ void LoginWithAuthId::process(Interface *pInterface)
 		auto pServer = game::Game::Get()->server();
 		auto const& netId = pInterface->getNetIdFor(this->connection());
 
-		network::logger().log(LOG_DEBUG, "Received user id %s", this->mId.toString().c_str());
+		network::logger().log(LOG_INFO, "Received user id %s from NetworkUser %u", this->mId.toString().c_str(), netId);
+
+		if (pServer->hasConnectedUser(this->mId))
+		{
+			network::logger().log(
+				LOG_INFO, "User with userId %s is already logged in. Kicking NetworkUser %u.",
+				this->mId.toString().c_str(), netId
+			);
+			pServer->kick(netId);
+			return;
+		}
 
 		// Store the user's id with this network id.
 		// If the user fails authentication,
