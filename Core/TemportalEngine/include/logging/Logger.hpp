@@ -32,8 +32,6 @@ enum class ELogLevel
 	COUNT
 };
 
-typedef ELogLevel ECategory;
-
 #define LOG_DEBUG logging::ELogLevel::LOGDEBUG
 #define LOG_INFO logging::ELogLevel::LOGINFO
 #define LOG_WARN logging::ELogLevel::LOGWARN
@@ -51,7 +49,7 @@ class TEMPORTALENGINE_API LogSystem
 {
 
 public:
-	typedef std::function<void(std::string time, ECategory category, std::string loggerName, std::string content)> Listener;
+	typedef std::function<void(std::string time, ELogLevel category, std::string loggerName, std::string content)> Listener;
 	typedef std::vector<Listener>::iterator ListenerHandle;
 
 	LogSystem();

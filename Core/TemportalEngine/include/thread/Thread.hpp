@@ -37,7 +37,7 @@ public:
 	logging::Logger& logger();
 
 	template <typename... TArgs>
-	void log(logging::ECategory category, logging::Message format, TArgs... args)
+	void log(logging::ELogLevel category, logging::Message format, TArgs... args)
 	{
 		this->mLogger.log(category, format, args...);
 	}

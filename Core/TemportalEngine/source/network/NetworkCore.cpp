@@ -32,22 +32,22 @@ logging::Logger& network::logger()
 
 void OutputDebugNetworkLog(ESteamNetworkingSocketsDebugOutputType type, char const* msg)
 {
-	logging::ECategory category = logging::ECategory::INVALID;
+	logging::ELogLevel category = logging::ELogLevel::INVALID;
 	bool bIsFatal = false;
 	switch (type)
 	{
 		case k_ESteamNetworkingSocketsDebugOutputType_Bug:
-			category = logging::ECategory::LOGERROR;
+			category = logging::ELogLevel::LOGERROR;
 			bIsFatal = true;
 			break;
 		case k_ESteamNetworkingSocketsDebugOutputType_Error:
-			category = logging::ECategory::LOGERROR;
+			category = logging::ELogLevel::LOGERROR;
 			break;
 		case k_ESteamNetworkingSocketsDebugOutputType_Warning:
-			category = logging::ECategory::LOGWARN;
+			category = logging::ELogLevel::LOGWARN;
 			break;
 		case k_ESteamNetworkingSocketsDebugOutputType_Important:
-			category = logging::ECategory::LOGINFO;
+			category = logging::ELogLevel::LOGINFO;
 			break;
 		default: return;
 	}

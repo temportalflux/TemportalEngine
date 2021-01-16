@@ -47,10 +47,10 @@ void Thread::start()
 
 void Thread::run()
 {
-	mLogger.log(logging::ECategory::LOGINFO, "Starting thread %s", mpName.c_str());
+	mLogger.log(LOG_INFO, "Starting thread %s", mpName.c_str());
 	if (this->mIsFunctorIterative) while (mFunctorDelegate());
 	else this->mFunctorDelegate();
-	mLogger.log(logging::ECategory::LOGINFO, "Stopping thread %s", mpName.c_str());
+	mLogger.log(LOG_INFO, "Stopping thread %s", mpName.c_str());
 	if (mOnCompleteDelegate.has_value())
 	{
 		(mOnCompleteDelegate.value())();

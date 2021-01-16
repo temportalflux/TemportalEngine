@@ -11,7 +11,7 @@ void ErrorCallback::invalidate() { mpLogger = nullptr; }
 void ErrorCallback::reportError(physx::PxErrorCode::Enum code, const char* message, const char* file, int line)
 {
 	assert(mpLogger != nullptr);
-	logging::ECategory category = LOG_ERR;
+	auto category = LOG_ERR;
 	if (code == physx::PxErrorCode::eDEBUG_INFO) category = LOG_INFO;
 	else if (code == physx::PxErrorCode::eDEBUG_WARNING || code == physx::PxErrorCode::ePERF_WARNING) category = LOG_WARN;
 	this->mpLogger->log(category, "%s (%s line:%i)", message, file, line);

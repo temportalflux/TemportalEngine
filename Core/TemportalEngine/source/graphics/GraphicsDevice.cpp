@@ -62,7 +62,7 @@ void GraphicsDevice::create(PhysicalDevicePreference prefs, LogicalDeviceInfo co
 	auto optPhysicalDevice = instance->pickPhysicalDevice(prefs, pSurface);
 	if (!optPhysicalDevice)
 	{
-		instance->getLog().log(logging::ECategory::LOGERROR, "Failed to find a suitable GPU/physical device.");
+		instance->getLog().log(LOG_ERR, "Failed to find a suitable GPU/physical device.");
 		return;
 	}
 	this->mPhysicalDevice = *optPhysicalDevice;

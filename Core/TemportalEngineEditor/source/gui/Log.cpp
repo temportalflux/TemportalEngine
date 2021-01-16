@@ -39,7 +39,7 @@ void Log::clear()
 	this->mLinesFiltered.clear();
 }
 
-void Log::add(std::string timestamp, logging::ECategory category, std::string logName, std::string content)
+void Log::add(std::string timestamp, logging::ELogLevel category, std::string logName, std::string content)
 {
 	std::string formatted = "[" + timestamp + "] [" + logging::LogSystem::getCategoryShortString(category) + "] " + logName + "> " + content;
 	this->mLines.push_back(formatted);

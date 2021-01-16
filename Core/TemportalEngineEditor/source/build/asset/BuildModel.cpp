@@ -20,7 +20,7 @@ class AssimpLogger : public Assimp::Logger
 public:
 	AssimpLogger(logging::Logger &logger, std::string const& prefix)
 		: Assimp::Logger(), mLogger(logger), mPrefix(prefix) {}
-	void log(logging::ECategory cate, char const* content)
+	void log(logging::ELogLevel cate, char const* content)
 	{
 		mLogger.log(cate, "%s %s", mPrefix.c_str(), content);
 	}

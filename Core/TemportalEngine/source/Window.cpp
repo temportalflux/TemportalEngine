@@ -36,7 +36,7 @@ Window::Window(
 	);
 	if (!this->isValid())
 	{
-		LogWindow.log(logging::ECategory::LOGERROR, "Failed to create window");
+		LogWindow.log(LOG_ERR, "Failed to create window");
 		return;
 	}
 	this->mId = SDL_GetWindowID(reinterpret_cast<SDL_Window*>(this->mpHandle));
@@ -121,7 +121,7 @@ void Window::destroy()
 	if (this->mpHandle != nullptr)
 	{
 		SDL_DestroyWindow((SDL_Window*)this->mpHandle);
-		LogWindow.log(logging::ECategory::LOGDEBUG, "Destroyed window. Errors? %s", SDL_GetError());
+		LogWindow.log(LOG_DEBUG, "Destroyed window. Errors? %s", SDL_GetError());
 		this->mpHandle = nullptr;
 	}
 }

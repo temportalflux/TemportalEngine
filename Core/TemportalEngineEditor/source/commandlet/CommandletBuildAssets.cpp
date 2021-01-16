@@ -16,7 +16,7 @@ static logging::Logger LOG = DeclareLog("Build");
 
 void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 {
-	LOG.log(logging::ECategory::LOGINFO, "Building Assets...");
+	LOG.log(LOG_INFO, "Building Assets...");
 
 	auto assetManager = asset::AssetManager::get();
 
@@ -24,21 +24,21 @@ void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 		auto iter = args.find("project");
 		if (iter == args.end() || !iter->second.has_value())
 		{
-			LOG.log(logging::ECategory::LOGERROR, "No project asset provided.");
+			LOG.log(LOG_ERR, "No project asset provided.");
 			return;
 		}
 		this->mPathProjectAsset = iter->second.value();
 	}
 	if (!std::filesystem::exists(this->mPathProjectAsset))
 	{
-		LOG.log(logging::ECategory::LOGERROR, "Project file asset path does not exist.");
+		LOG.log(LOG_ERR, "Project file asset path does not exist.");
 		return;
 	}
 	// TODO: get file extension from engine asset manager
 	if (!std::filesystem::is_regular_file(this->mPathProjectAsset)
 			|| this->mPathProjectAsset.extension() != assetManager->getAssetTypeMetadata(asset::Project::StaticType()).fileExtension)
 	{
-		LOG.log(logging::ECategory::LOGERROR, "Project file asset path does not exist.");
+		LOG.log(LOG_ERR, "Project file asset path does not exist.");
 		return;
 	}
 	
@@ -46,14 +46,14 @@ void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 		auto iter = args.find("outputDir");
 		if (iter == args.end() || !iter->second.has_value())
 		{
-			LOG.log(logging::ECategory::LOGERROR, "No output directory provided.");
+			LOG.log(LOG_ERR, "No output directory provided.");
 			return;
 		}
 		this->mPathOutputDir = iter->second.value();
 	}
 	if (std::filesystem::exists(this->mPathOutputDir) && !std::filesystem::is_directory(this->mPathOutputDir))
 	{
-		LOG.log(logging::ECategory::LOGERROR, "Output directory path is not a directory.");
+		LOG.log(LOG_ERR, "Output directory path is not a directory.");
 		return;
 	}
 
@@ -92,20 +92,20 @@ bool buildAsset(asset::AssetPtrStrong asset, std::filesystem::path outPath)
 
 void CommandletBuildAssets::run()
 {
-	LOG.log(logging::ECategory::LOGINFO, "Project: %s", this->mPathProjectAsset.string().c_str());
-	LOG.log(logging::ECategory::LOGINFO, "Output: %s", this->mPathOutputDir.string().c_str());
+	LOG.log(LOG_INFO, "Project: %s", this->mPathProjectAsset.string().c_str());
+	LOG.log(LOG_INFO, "Output: %s", this->mPathOutputDir.string().c_str());
 
 	auto assetManager = asset::AssetManager::get();
 	auto assetProj = asset::readFromDisk<asset::Project>(this->mPathProjectAsset, asset::EAssetSerialization::Json, false);
 	assert(assetProj != nullptr);
 
-	LOG.log(logging::ECategory::LOGINFO, "Loaded project %s", assetProj->getDisplayName().c_str());
+	LOG.log(LOG_INFO, "Loaded project %s", assetProj->getDisplayName().c_str());
 
 	auto assetDirSrc = assetProj->getAssetDirectory();
 	auto assetDirDest = asset::Project::getAssetDirectoryFor(this->mPathOutputDir);
 	std::filesystem::create_directory(assetDirDest);
 
-	LOG.log(logging::ECategory::LOGINFO, "Scanning for assets in %s", assetDirSrc.string().c_str());
+	LOG.log(LOG_INFO, "Scanning for assets in %s", assetDirSrc.string().c_str());
 	assetManager->scanAssetDirectory(assetDirSrc, asset::EAssetSerialization::Json);
 
 	// the project file is just a straight save to the non-assets director

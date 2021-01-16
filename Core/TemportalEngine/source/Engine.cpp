@@ -283,11 +283,6 @@ void Engine::start()
 	{
 		pWindow->startThread();
 	}
-
-	if (this->hasNetwork())
-	{
-		//this->mpNetworkService->startThread(this);
-	}
 }
 
 bool const Engine::isActive() const
@@ -317,9 +312,6 @@ void Engine::update(f32 deltaTime)
 
 void Engine::joinThreads()
 {
-	//if (this->hasNetwork())
-	//	this->mpNetworkService->joinThread();
-
 	for (auto[id, pWindow] : this->mWindowPtrs)
 	{
 		pWindow->joinThread();
@@ -370,37 +362,6 @@ void Engine::onRawEvent(void *pEvt)
 }
 
 #pragma endregion
-
-void Engine::createClient(char const *address, ui16 port)
-{
-	LogEngine(logging::ECategory::LOGINFO, "Initializing network client");
-	//auto client = this->alloc<network::ServiceClient>();
-	//client->initialize();
-	//client->connectToServer(address, port);
-	//this->mpNetworkService = client;
-}
-
-void Engine::createServer(ui16 const port, ui16 maxClients)
-{
-	LogEngine(logging::ECategory::LOGINFO, "Initializing network server");
-	//auto server = this->alloc<network::ServiceServer>();
-	//server->initialize(port, maxClients);
-	//this->mpNetworkService = server;
-}
-
-bool const Engine::hasNetwork() const
-{
-	return false;// this->mpNetworkService != nullptr;
-}
-
-/*
-std::optional<network::Service* const> Engine::getNetworkService() const
-{
-	if (this->hasNetwork())
-		return this->mpNetworkService;
-	return std::nullopt;
-}
-//*/
 
 void Engine::addTicker(std::weak_ptr<ITickable> tickable)
 {

@@ -27,7 +27,7 @@ public:
 	view::Manager& views();
 
 	template <typename... TArgs>
-	void log(logging::ECategory category, logging::Message format, TArgs... args)
+	void log(logging::ELogLevel category, logging::Message format, TArgs... args)
 	{
 		this->mLog.log(category, format, args...);
 	}

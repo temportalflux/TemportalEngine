@@ -39,7 +39,7 @@ private:
 	bool matchesFilter(std::string const &item, std::string const&filter) const;
 
 	void clear();
-	void add(std::string timestamp, logging::ECategory category, std::string logName, std::string content);
+	void add(std::string timestamp, logging::ELogLevel category, std::string logName, std::string content);
 
 	void updateFilter();
 

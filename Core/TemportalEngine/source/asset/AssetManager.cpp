@@ -86,7 +86,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 		this->addScannedAsset(assetPath, entry.path(), type);
 	}
 
-	LOG.log(logging::ECategory::LOGINFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
+	LOG.log(LOG_INFO, "Scanned %i files and found %i assets", totalFilesScanned, foundAssetCount);
 }
 
 void AssetManager::removeScannedAsset(AssetPath metadata, std::filesystem::path absolutePath)
@@ -200,7 +200,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 		auto assetMeta = this->getAssetMetadata(filePath);
 		if (!assetMeta.has_value())
 		{
-			LOG.log(logging::ECategory::LOGWARN, "Deleting asset %s which has not been scanned.", filePath.string().c_str());
+			LOG.log(LOG_WARN, "Deleting asset %s which has not been scanned.", filePath.string().c_str());
 		}
 		else
 		{

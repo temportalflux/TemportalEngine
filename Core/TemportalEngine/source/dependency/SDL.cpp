@@ -17,7 +17,7 @@ using namespace dependency;
 // Statics --------------------------------------------------------------------
 void glfwErrorCallback(int error, const char* description)
 {
-	LogSDL(logging::ECategory::LOGERROR, "%i - %s", error, description);
+	LogSDL(LOG_ERR, "%i - %s", error, description);
 }
 
 // SDL ------------------------------------------------------------------------
@@ -29,13 +29,13 @@ SDL::SDL() : Module()
 
 bool SDL::initialize()
 {
-	LogSDL(ECategory::LOGINFO, "Initializing");
+	LogSDL(LOG_INFO, "Initializing");
 
 	SDL_version version;
 
 	SDL_VERSION(&version);
 
-	LogSDL(ECategory::LOGINFO,
+	LogSDL(LOG_INFO,
 		"Compiled against %i.%i.%i",
 		version.major, version.minor, version.patch
 	);
@@ -53,32 +53,32 @@ bool SDL::initialize()
 	*/
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::VIDEO, %s", SDL_GetError());
+		LogSDL(LOG_ERR, "Failed to initialize SDL::VIDEO, %s", SDL_GetError());
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_AUDIO) != 0)
 	{
-		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::AUDIO, %s", SDL_GetError());
+		LogSDL(LOG_ERR, "Failed to initialize SDL::AUDIO, %s", SDL_GetError());
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_JOYSTICK) != 0)
 	{
-		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::JOYSTICK, %s", SDL_GetError());
+		LogSDL(LOG_ERR, "Failed to initialize SDL::JOYSTICK, %s", SDL_GetError());
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_HAPTIC) != 0)
 	{
-		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::HAPTIC, %s", SDL_GetError());
+		LogSDL(LOG_ERR, "Failed to initialize SDL::HAPTIC, %s", SDL_GetError());
 		return false;
 	}
 	if (SDL_Init(SDL_INIT_GAMECONTROLLER) != 0)
 	{
-		LogSDL(ECategory::LOGERROR, "Failed to initialize SDL::GAMECONTROLLER, %s", SDL_GetError());
+		LogSDL(LOG_ERR, "Failed to initialize SDL::GAMECONTROLLER, %s", SDL_GetError());
 		return false;
 	}
 
 	SDL_GetVersion(&version);
-	LogSDL(ECategory::LOGINFO,
+	LogSDL(LOG_INFO,
 		"Running against %i.%i.%i",
 		version.major, version.minor, version.patch
 	);
@@ -88,7 +88,7 @@ bool SDL::initialize()
 
 void SDL::terminate()
 {
-	LogSDL(ECategory::LOGINFO, "Terminating");
+	LogSDL(LOG_INFO, "Terminating");
 	SDL_Quit();
 	this->markAsInitialized(false);
 }

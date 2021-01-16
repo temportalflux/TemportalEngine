@@ -36,8 +36,8 @@ NS_ENGINE
 // TODO: Declare log should call a function on engine which lazily instantiates a logger and stores it by category name
 #define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
 #define LogEngine(cate, ...) DeclareLog("Engine").log(cate, __VA_ARGS__);
-#define LogEngineInfo(...) LogEngine(logging::ECategory::LOGINFO, __VA_ARGS__)
-#define LogEngineDebug(...) LogEngine(logging::ECategory::LOGDEBUG, __VA_ARGS__)
+#define LogEngineInfo(...) LogEngine(LOG_INFO, __VA_ARGS__)
+#define LogEngineDebug(...) LogEngine(LOG_DEBUG, __VA_ARGS__)
 
 class TEMPORTALENGINE_API Engine : public std::enable_shared_from_this<Engine>
 {
@@ -109,12 +109,6 @@ public:
 #pragma endregion
 
 	std::shared_ptr<command::Registry> commands();
-
-	void createServer(ui16 const port, ui16 maxClients);
-	void createClient(char const *address, ui16 port);
-	bool const hasNetwork() const;
-	//std::optional<network::Service* const> getNetworkService() const;
-
 	void addTicker(std::weak_ptr<ITickable> tickable);
 
 private:

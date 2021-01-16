@@ -123,7 +123,7 @@ void VulkanInstance::initialize()
 
 	auto appVersion = TE_GET_VERSION(mInfo.applicationVersion);
 	auto engineVersion = TE_GET_VERSION(mInfo.engineVersion);
-	getLog().log(logging::ECategory::LOGINFO,
+	getLog().log(LOG_INFO,
 		"Initializing Vulkan v%i.%i.%i with %s Application (v%i.%i.%i) on %s Engine (v%i.%i.%i)",
 		TE_GET_MAJOR_VERSION(mInfo.apiVersion), TE_GET_MINOR_VERSION(mInfo.apiVersion), TE_GET_PATCH_VERSION(mInfo.apiVersion),
 		mInfo.pApplicationName, appVersion.unpacked.major, appVersion.unpacked.minor, appVersion.unpacked.patch,
@@ -190,7 +190,7 @@ static VKAPI_ATTR ui32 VKAPI_CALL LogVulkanOutput(
 	auto vulkanInstance = reinterpret_cast<VulkanInstance*>(ptrToVulkanInstance);
 	if (severity >= severityThreashold)
 	{
-		vulkanInstance->getLog().log(logging::ECategory::LOGINFO, pCallbackData->pMessage);
+		vulkanInstance->getLog().log(LOG_INFO, pCallbackData->pMessage);
 	}
 	return VK_FALSE;
 }
