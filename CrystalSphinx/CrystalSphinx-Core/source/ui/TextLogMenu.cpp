@@ -163,7 +163,7 @@ void TextLogMenu::updateLogText()
 		if (iter->senderName)
 		{
 			std::stringstream ss;
-			ss << '<' << iter->senderName.value() << '>';
+			ss << iter->senderName.value() << ": ";
 			this->mpChatLog
 				->addSegment(ss.str())
 				.setSegmentColor({ 0, 1, 1, 1 });

@@ -11,6 +11,7 @@ Text::Text() : ui::Widget()
 	this->mUncommitted.thickness = 0.5f;
 	this->mUncommitted.edgeWidth = 0.1f;
 	this->mUncommitted.maxLength = 0;
+	this->mUncommitted.totalContentLength = 0;
 	this->mVertexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer, graphics::MemoryUsage::eGPUOnly);
 	this->mIndexBuffer.setUsage(vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndexBuffer, graphics::MemoryUsage::eGPUOnly);
 }
