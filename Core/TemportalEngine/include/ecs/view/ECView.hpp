@@ -2,7 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "FixedSortedArray.hpp"
+#include "dataStructures/FixedArray.hpp"
 #include "ecs/types.h"
 
 NS_ECS
@@ -49,7 +49,7 @@ private:
 	};
 
 	Identifier mId;
-	FixedSortedArray<ComponentSlot, SlotCapacity> mSlots;
+	FixedArray<ComponentSlot, SlotCapacity> mSlots;
 
 	std::shared_ptr<component::Component> lockComponent(ComponentTypeId const& typeId);
 

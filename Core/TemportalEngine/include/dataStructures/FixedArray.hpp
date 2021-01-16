@@ -4,7 +4,7 @@
 #include "dataStructures/ValueIterator.hpp"
 
 template <typename TValue, uSize Capacity>
-class FixedSortedArray
+class FixedArray
 {
 
 public:
@@ -14,7 +14,7 @@ public:
 
 	uSize size() const { return this->mSize; }
 
-	FixedSortedArray() : mSize(0)
+	FixedArray() : mSize(0)
 	{
 		memset(this->mValues, 0, sizeof(TValue) * capacity());
 	}

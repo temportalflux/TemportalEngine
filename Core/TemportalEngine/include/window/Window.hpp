@@ -3,13 +3,11 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "WindowFlags.hpp"
-#include "types/integer.h"
-#include "input/Event.hpp"
 #include "graphics/Surface.hpp"
+#include "input/Event.hpp"
 #include "thread/Thread.hpp"
-
-#include <vector>
+#include "types/integer.h"
+#include "window/WindowFlags.hpp"
 
 NS_INPUT
 class Queue;

@@ -1,17 +1,15 @@
-#include <Window.hpp>
-
-#include <functional>
-#include <SDL.h>
-#include <SDL_syswm.h>
-#include <SDL_vulkan.h>
+#include "window/Window.hpp"
 
 #include "Engine.hpp"
+#include "ExecutableInfo.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 #include "logging/Logger.hpp"
 
-#include "ExecutableInfo.hpp"
+#include <SDL.h>
+#include <SDL_syswm.h>
+#include <SDL_vulkan.h>
 
 auto LogWindow = DeclareLog("Window", LOG_INFO);
 

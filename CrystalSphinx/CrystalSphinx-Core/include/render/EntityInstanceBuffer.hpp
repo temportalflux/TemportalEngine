@@ -5,7 +5,7 @@
 #include "ecs/types.h"
 #include "graphics/Buffer.hpp"
 #include "math/Matrix.hpp"
-#include "FixedSortedArray.hpp"
+#include "dataStructures/FixedArray.hpp"
 #include "thread/MutexLock.hpp"
 #include "utility/DynamicHandle.hpp"
 
@@ -57,7 +57,7 @@ private:
 	thread::MutexLock mMutex;
 
 	std::array<EntityInstanceData, ECS_MAX_ENTITY_COUNT> mInstances;
-	FixedSortedArray<uIndex, ECS_MAX_ENTITY_COUNT> mUnusedInstanceIndices;
+	FixedArray<uIndex, ECS_MAX_ENTITY_COUNT> mUnusedInstanceIndices;
 	std::array<InstanceMeta, ECS_MAX_ENTITY_COUNT> mInstanceMetadata;
 	bool bHasAnyChanges;
 

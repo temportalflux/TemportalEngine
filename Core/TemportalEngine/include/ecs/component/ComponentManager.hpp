@@ -2,8 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "FixedSortedArray.hpp"
-#include "ObjectPool.hpp"
+#include "dataStructures/FixedArray.hpp"
+#include "dataStructures/ObjectPool.hpp"
 
 #include "ecs/types.h"
 #include "ecs/component/Component.hpp"
@@ -17,7 +17,7 @@ NS_COMPONENT
 class Manager
 {
 	template <typename TComponent>
-	using TAvailableIds = FixedSortedArray<Identifier, TComponent::MaxPoolSize>;
+	using TAvailableIds = FixedArray<Identifier, TComponent::MaxPoolSize>;
 	template <typename TComponent>
 	using TPool = ObjectPool<TComponent, TComponent::MaxPoolSize>;
 

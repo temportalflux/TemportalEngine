@@ -77,10 +77,12 @@
     <Filter Include="network\data">
       <UniqueIdentifier>{2995737a-b300-44a7-ae78-97ee3659dba8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="window">
+      <UniqueIdentifier>{59d0ac54-7c32-4879-aa35-0f1f780351c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\Engine.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\Window.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp">
       <Filter>dependency</Filter>
     </ClCompile>
@@ -219,7 +221,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\FontGlyph.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\DescriptorPool.cpp">
       <Filter>graphics</Filter>
     </ClCompile>
@@ -395,6 +396,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\cerealCore.cpp">
       <Filter>cereal</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.cpp">
+      <Filter>graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\window\Window.cpp">
+      <Filter>window</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -402,7 +409,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ExecutableInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Namespace.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\TemportalEnginePCH.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Window.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\dependency\SDL.hpp">
       <Filter>dependency</Filter>
     </ClInclude>
@@ -541,7 +547,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ImageView.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\WindowFlags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp">
       <Filter>asset</Filter>
     </ClInclude>
@@ -596,7 +601,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryChunk.hpp">
       <Filter>memory</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\IRender.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\AttributeBinding.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -610,10 +614,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ObjectPool.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedHashMap.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedCircularQueue.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\FixedSortedArray.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp">
       <Filter>ecs\component</Filter>
     </ClInclude>
@@ -650,7 +650,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontGlyph.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\DescriptorPool.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
@@ -836,7 +835,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\RSA.hpp">
       <Filter>crypto</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\Singleton.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\TimeUtils.hpp">
       <Filter>utility</Filter>
     </ClInclude>
@@ -849,11 +847,35 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataPrimitives.hpp">
       <Filter>network\data</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\include\cereal\cerealCore.hpp">
-      <Filter>cereal</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\Crypto.hpp">
       <Filter>crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\FixedCircularQueue.hpp">
+      <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\FixedHashMap.hpp">
+      <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\ObjectPool.hpp">
+      <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\Singleton.hpp">
+      <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\FontAtlas.hpp">
+      <Filter>graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\dataStructures\FixedArray.hpp">
+      <Filter>dataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\cerealCore.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\window\Window.hpp">
+      <Filter>window</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\window\WindowFlags.hpp">
+      <Filter>window</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

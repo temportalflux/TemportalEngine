@@ -2,8 +2,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "FixedSortedArray.hpp"
-#include "ObjectPool.hpp"
+#include "dataStructures/ObjectPool.hpp"
 
 #include "ecs/types.h"
 #include "ecs/entity/Entity.hpp"

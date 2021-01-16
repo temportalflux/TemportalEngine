@@ -2,8 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "FixedSortedArray.hpp"
-#include "ObjectPool.hpp"
+#include "dataStructures/FixedArray.hpp"
+#include "dataStructures/ObjectPool.hpp"
 
 #include "ecs/types.h"
 #include "ecs/view/ECView.hpp"
@@ -14,7 +14,7 @@ NS_VIEW
 
 class Manager
 {
-	typedef FixedSortedArray<Identifier, ECS_MAX_VIEW_COUNT> TAvailableIds;
+	typedef FixedArray<Identifier, ECS_MAX_VIEW_COUNT> TAvailableIds;
 	typedef ObjectPool<View, ECS_MAX_VIEW_COUNT> TPool;
 
 	struct TypeMetadata
@@ -83,7 +83,7 @@ private:
 		bool operator<(ViewRecord const& other) const;
 		bool operator>(ViewRecord const& other) const;
 	};
-	FixedSortedArray<ViewRecord, ECS_MAX_VIEW_COUNT> mAllocatedObjects;
+	FixedArray<ViewRecord, ECS_MAX_VIEW_COUNT> mAllocatedObjects;
 	
 	TypeMetadata& getTypeMetadata(ViewTypeId const& id) { return this->mRegisteredTypes[id]; }
 	ViewRecord& getRecord(uIndex const& idxRecord);

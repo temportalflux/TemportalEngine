@@ -2,7 +2,7 @@
 
 #include "CoreInclude.hpp"
 
-#include "Singleton.hpp"
+#include "dataStructures/Singleton.hpp"
 #include "logging/Logger.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkAddress.hpp"

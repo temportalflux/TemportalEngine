@@ -2,12 +2,12 @@
 
 #include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
-#include "Window.hpp"
 #include "ecs/entity/Entity.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 #include "utility/StringUtils.hpp"
+#include "window/Window.hpp"
 
 using namespace ui;
 

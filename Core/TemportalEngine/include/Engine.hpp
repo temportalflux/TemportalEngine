@@ -3,7 +3,7 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "WindowFlags.hpp"
+#include "window/WindowFlags.hpp"
 #include "dependency/SDL.hpp"
 #include "graphics/VulkanInstance.hpp"
 #include "Delegate.hpp"

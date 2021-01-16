@@ -1,7 +1,6 @@
 #include "game/GameClient.hpp"
 
 #include "Engine.hpp"
-#include "Window.hpp"
 #include "asset/Font.hpp"
 #include "asset/ModelAsset.hpp"
 #include "asset/RenderPassAsset.hpp"
@@ -31,6 +30,7 @@
 #include "ui/DebugHUD.hpp"
 #include "ui/TextLogMenu.hpp"
 #include "ui/UIWidgets.hpp"
+#include "window/Window.hpp"
 
 using namespace game;
 

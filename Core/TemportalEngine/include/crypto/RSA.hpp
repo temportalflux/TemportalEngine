@@ -1,7 +1,7 @@
 #pragma once
 
 #include "crypto/Crypto.hpp"
-#include "Singleton.hpp"
+#include "dataStructures/Singleton.hpp"
 #include "network/data/NetworkDataBuffer.hpp"
 
 NS_CRYPTO

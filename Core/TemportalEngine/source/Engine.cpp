@@ -1,7 +1,7 @@
 #include "Engine.hpp"
 
 #include "ITickable.hpp"
-#include "Window.hpp"
+#include "window/Window.hpp"
 #include "command/CommandRegistry.hpp"
 #include "crypto/AES.hpp"
 #include "crypto/RSA.hpp"

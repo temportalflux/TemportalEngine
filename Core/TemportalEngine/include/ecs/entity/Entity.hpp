@@ -2,7 +2,7 @@
 
 #include "ecs/types.h"
 
-#include "FixedSortedArray.hpp"
+#include "dataStructures/FixedArray.hpp"
 
 NS_ECS
 FORWARD_DEF(NS_COMPONENT, class Component);
@@ -48,7 +48,7 @@ public:
 
 private:
 
-	FixedSortedArray<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
+	FixedArray<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
 
 	Entity& addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp);
 	std::shared_ptr<component::Component> getComponent(ComponentTypeId const& typeId);
@@ -74,7 +74,7 @@ public:
 	}
 
 private:
-	FixedSortedArray<ViewEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
+	FixedArray<ViewEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
 
 	Entity& addView(ViewTypeId const& typeId, std::shared_ptr<view::View> pView);
 	std::shared_ptr<view::View> getView(ViewTypeId const& typeId);

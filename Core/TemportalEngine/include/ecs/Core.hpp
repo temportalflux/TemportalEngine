@@ -2,8 +2,6 @@
 
 #include "TemportalEnginePCH.hpp"
 
-#include "FixedSortedArray.hpp"
-#include "ObjectPool.hpp"
 #include "ecs/types.h"
 #include "ecs/entity/EntityManager.hpp"
 #include "ecs/component/ComponentManager.hpp"
