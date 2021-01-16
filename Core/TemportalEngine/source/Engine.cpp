@@ -27,10 +27,9 @@ std::shared_ptr<memory::MemoryChunk> Engine::spMainMemory = nullptr;
 
 std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
-void Engine::startLogSystem(std::string const name)
+void Engine::startLogSystem(std::filesystem::path archivePath)
 {
-	std::string logFileName = name + "_" + utility::currentTimeStr() + ".log";
-	engine::Engine::LOG_SYSTEM.open(logFileName.c_str());
+	engine::Engine::LOG_SYSTEM.open(archivePath);
 }
 
 void Engine::stopLogSystem()

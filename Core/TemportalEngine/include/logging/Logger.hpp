@@ -16,7 +16,7 @@ NS_LOGGING
 /**
 * Enumeration of different logging types to sort log output.
 */
-enum class TEMPORTALENGINE_API ECategory
+enum class ELogLevel
 {
 	INVALID = -1,
 
@@ -32,10 +32,12 @@ enum class TEMPORTALENGINE_API ECategory
 	COUNT
 };
 
-#define LOG_DEBUG logging::ECategory::LOGDEBUG
-#define LOG_INFO logging::ECategory::LOGINFO
-#define LOG_WARN logging::ECategory::LOGWARN
-#define LOG_ERR logging::ECategory::LOGERROR
+typedef ELogLevel ECategory;
+
+#define LOG_DEBUG logging::ELogLevel::LOGDEBUG
+#define LOG_INFO logging::ELogLevel::LOGINFO
+#define LOG_WARN logging::ELogLevel::LOGWARN
+#define LOG_ERR logging::ELogLevel::LOGERROR
 
 // Forward Declare ------------------------------------------------------------
 class Logger;
@@ -47,53 +49,52 @@ typedef char const * Message;
 */
 class TEMPORTALENGINE_API LogSystem
 {
+
 public:
 	typedef std::function<void(std::string time, ECategory category, std::string loggerName, std::string content)> Listener;
 	typedef std::vector<Listener>::iterator ListenerHandle;
 
+	LogSystem();
+
+	static std::string getCategoryShortString(ELogLevel cate);
+
+	ListenerHandle addListener(Listener value);
+	void removeListener(ListenerHandle &handle);
+
+	/**
+	 * Opens a file stream for writing.
+	 */
+	void open(std::filesystem::path archivePath);
+
+	/**
+	* Writes output to the output streams (file and console) using variadic data.
+	*/
+	void log(char const *title, ELogLevel category, Message format, ...);
+
+	/**
+	* Closes the active file stream.
+	*/
+	void close();
+
 private:
+
+	std::filesystem::path mActivePath;
+	std::filesystem::path mArchivePath;
+
+	std::vector<Listener> mListeners;
 	
 	/** The mutexer for knowing if a different thread is currently logging. */
 	thread::MutexLock mpLock[1];
 
-	/** The standard lib file stream */
-	void* mpFileStream;
-
-	std::vector<Listener> mListeners;
-
 	/**
 	* Writes to the active output streams using known array data.
 	*/
-	void printLog(char const *const format, char *args);
+	void printLog(void* pFileActive, void* pFileArchive, char const *const format, char *args);
 
 	/**
 	* Writes to the active output streams using unknown variadic data.
 	*/
-	void printLog(char const *const format, ...);
-
-public:
-
-	LogSystem();
-
-	static std::string getCategoryShortString(ECategory cate);
-	
-	/**
-	* Opens a file stream for writing.
-	*/
-	void open(char const *const filePath);
-	
-	/**
-	* Writes output to the output streams (file and console) using variadic data.
-	*/
-	void log(Logger *pLogger, ECategory category, Message format, ...);
-	
-	/**
-	* Closes the active file stream.
-	*/
-	bool close();
-
-	ListenerHandle addListener(Listener value);
-	void removeListener(ListenerHandle &handle);
+	void printLog(void* pFileActive, void* pFileArchive, char const *const format, ...);
 
 };
 
@@ -106,18 +107,6 @@ public:
 class TEMPORTALENGINE_API Logger
 {
 	friend class LogSystem;
-
-private:
-
-	/**
-	* The title of the logger to forward to the Log System per call to LogSystem::log.
-	*/
-	char mpTitle[LOGGER_MAX_TITLE_LENGTH];
-	
-	/**
-	* The log system to use to write output to.
-	*/
-	LogSystem *mpLogSystem;
 
 public:
 	/**
@@ -134,22 +123,24 @@ public:
 	* @param args Arguments to be included via the format parameter, using fprintf format.
 	*/
 	template <typename... TArgs>
-	void log(ECategory category, Message format, TArgs... args)
+	void log(ELogLevel category, Message format, TArgs... args)
 	{
-		mpLogSystem->log(this, category, format, args...);
+		mpLogSystem->log(this->mpTitle, category, format, args...);
 	}
 
-};
+private:
 
-/**
-* A raw wrapper for the Logger class which creates a logger on the fly and outputs it.
-* Not recommended for long term use, but useful in a one-off situtation.
-*/
-template <typename... TArgs>
-void log(char const *title, LogSystem *pLogSystem, ECategory category, Message format, TArgs... args)
-{
-	Logger(title, pLogSystem).log(category, format, args...);
-}
+	/**
+	* The title of the logger to forward to the Log System per call to LogSystem::log.
+	*/
+	char mpTitle[LOGGER_MAX_TITLE_LENGTH];
+
+	/**
+	* The log system to use to write output to.
+	*/
+	LogSystem *mpLogSystem;
+
+};
 
 NS_END
 

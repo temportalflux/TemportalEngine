@@ -17,77 +17,97 @@ using namespace logging;
 
 LogSystem::LogSystem()
 {
-	mpFileStream = nullptr;
 	*mpLock = thread::MutexLock();
 }
 
-void LogSystem::printLog(char const *const format, char * args)
+void LogSystem::printLog(void* pFileActive, void* pFileArchive, char const *const format, char * args)
 {
 	vfprintf(stdout, format, args);
-	if (mpFileStream != 0)
-	{
-		vfprintf((FILE*)mpFileStream, format, args);
-	}
+	if (pFileActive != 0) vfprintf((FILE*)pFileActive, format, args);
+	if (pFileArchive != 0) vfprintf((FILE*)pFileArchive, format, args);
 }
 
-void LogSystem::printLog(char const *const format, ...)
+void LogSystem::printLog(void* pFileActive, void* pFileArchive, char const *const format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	printLog(format, args);
+	printLog(pFileActive, pFileArchive, format, args);
 	va_end(args);
 }
 
-std::string LogSystem::getCategoryShortString(ECategory category)
+std::string LogSystem::getCategoryShortString(ELogLevel category)
 {
 	switch (category)
 	{
-	case ECategory::LOGINFO: return " INFO";
-	case ECategory::LOGWARN: return " WARN";
-	case ECategory::LOGERROR: return "ERROR";
-	case ECategory::LOGDEBUG: return "DEBUG";
+	case ELogLevel::LOGINFO: return " INFO";
+	case ELogLevel::LOGWARN: return " WARN";
+	case ELogLevel::LOGERROR: return "ERROR";
+	case ELogLevel::LOGDEBUG: return "DEBUG";
 	default: return "?????";
 	}
 }
 
-void LogSystem::open(char const * const filePath)
+void LogSystem::open(std::filesystem::path archivePath)
 {
-	fopen_s((FILE**)&mpFileStream, filePath, "w");
+	this->mActivePath = std::filesystem::current_path() / "active.log";
+	this->mArchivePath = archivePath;
+	if (std::filesystem::exists(this->mActivePath))
+		std::filesystem::remove(this->mActivePath);
+	std::filesystem::create_directories(this->mActivePath.parent_path());
+	std::filesystem::create_directories(this->mArchivePath.parent_path());
 }
 
-void LogSystem::log(Logger *pLogger, ECategory category, Message format, ...)
+void LogSystem::log(char const *title, ELogLevel category, Message format, ...)
 {
 	auto categoryStr = getCategoryShortString(category);
-
 	auto const& timeStr = utility::currentTimeStr();
-
-	va_list args;
-	va_start(args, format);
-
-	mpLock->lock();
-	printLog("[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), pLogger->mpTitle);
-	printLog(format, args);
-	printLog("\n");
-	fflush(stdout);
-	mpLock->unlock();
+	FILE *pActive, *pArchive;
 
 	std::array<char, 256> logContentData;
 	logContentData.fill('\0');
+
+	mpLock->lock();
+
+	// Files are opened per log call because windows doesn't have a way to flush files to disk until `fclose` is called
+	fopen_s((FILE**)&pActive, this->mActivePath.string().c_str(), "a");
+	fopen_s((FILE**)&pArchive, this->mArchivePath.string().c_str(), "a");
+	assert(pActive != 0 && pArchive != 0);
+
+	// Print the log info
+	printLog(
+		pActive, pArchive,
+		"[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), title
+	);
+	// And the log content
+	va_list args;
+	va_start(args, format);
+	printLog(pActive, pArchive, format, args);
 	vsnprintf(logContentData.data(), logContentData.size(), format, args);
-	std::string logContent(logContentData.begin(), std::find_if(logContentData.begin(), logContentData.end(), [](int c) { return c == '\0'; }));
-
 	va_end(args);
+	// Close out the line
+	printLog(pActive, pArchive, "\n");
+		
+	// Flush stdout and file descriptors
+	fflush(stdout);
+	fclose(pActive);
+	fclose(pArchive);
 
+	std::string logContent(logContentData.begin(), std::find_if(logContentData.begin(), logContentData.end(), [](int c) { return c == '\0'; }));
 	for (const auto& listener : this->mListeners)
 	{
-		listener(timeStr, category, pLogger->mpTitle, logContent);
+		listener(timeStr, category, title, logContent);
 	}
+
+	mpLock->unlock();
 }
 
-bool LogSystem::close()
+void LogSystem::close()
 {
-	assert(mpFileStream != 0);
-	return fclose((FILE*)mpFileStream) == 0;
+	this->log(
+		"Log", LOG_INFO,
+		"Closing log. File can be found at %s",
+		this->mArchivePath.string().c_str()
+	);
 }
 
 LogSystem::ListenerHandle LogSystem::addListener(Listener value)
@@ -105,7 +125,7 @@ void LogSystem::removeListener(ListenerHandle &handle)
 Logger::Logger(char const * title, LogSystem *pLogSystem)
 	: mpLogSystem(pLogSystem)
 {
-	strncpy_s(mpTitle, title, minimum(strlen(title), LOGGER_MAX_TITLE_LENGTH));
+	strncpy_s(mpTitle, title, math::min(strlen(title), (uSize)LOGGER_MAX_TITLE_LENGTH));
 }
 
 Logger::Logger() : Logger("", 0)

@@ -186,7 +186,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\DebugHUD.hpp">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
@@ -223,7 +222,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\UserInfo.hpp">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\SavedData.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
@@ -232,6 +230,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\saveData\SaveDataRegistry.hpp">
       <Filter>saveData</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\SavedData.hpp">
+      <Filter>settings</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -341,7 +345,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\DebugHUD.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -372,7 +375,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp">
       <Filter>utility</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\SavedData.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
@@ -381,6 +383,12 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\saveData\SaveDataRegistry.cpp">
       <Filter>saveData</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\SavedData.cpp">
+      <Filter>settings</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -3,12 +3,17 @@
 #include "asset/AssetManager.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "asset/Project.hpp"
+#include "utility/TimeUtils.hpp"
 
 int main(int argc, char *argv[])
 {
-	// Direct the engine as to where the log should be stored.
-	// Log file name will be formatted as "$(WorkingDir)<FileName>_<Timestamp>.log"
-	engine::Engine::startLogSystem("Editor");
+	std::stringstream ss;
+	ss << "logs/";
+	ss << utility::currentTimeStr().c_str();
+	ss << ".log";
+	std::filesystem::path logFileName = ss.str();
+
+	engine::Engine::startLogSystem(logFileName);
 	{
 		// Create the editor object which manages all the behind the scenes stuff.
 		auto editor = GameEditor(argc, argv);

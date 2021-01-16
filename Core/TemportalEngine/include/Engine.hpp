@@ -50,7 +50,7 @@ public:
 	static logging::LogSystem LOG_SYSTEM;
 	static std::vector<std::string> VulkanValidationLayers;
 
-	static void startLogSystem(std::string const name);
+	static void startLogSystem(std::filesystem::path archivePath);
 	static void stopLogSystem();
 
 #pragma region Singleton

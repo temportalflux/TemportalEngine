@@ -5,9 +5,6 @@
 #include "utility/TimeUtils.hpp"
 #include "Module.hpp"
 
-// Name Ides:
-// - Voxellium
-
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();
@@ -17,14 +14,13 @@ int main(int argc, char *argv[])
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
 	std::stringstream ss;
-	ss << "logs/CrystalSphinx_";
+	ss << "logs/";
 	ss << utility::currentTimeStr().c_str();
 	ss << ".log";
 	std::filesystem::path logFileName = ss.str();
-	std::filesystem::create_directories(logFileName.parent_path());
-	engine::Engine::LOG_SYSTEM.open(logFileName.string().c_str());
-	auto logMain = logging::Logger("main", &engine::Engine::LOG_SYSTEM);
-	logMain.log(logging::ECategory::LOGINFO, "Saving log to %s", logFileName.string().c_str());
+
+	engine::Engine::startLogSystem(logFileName);
+	auto logMain = DeclareLog("main");
 
 	auto modulesDir = std::filesystem::absolute("Modules");
 	if (std::filesystem::exists(modulesDir))
@@ -48,8 +44,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	game::Game::Destroy();
-	logMain.log(logging::ECategory::LOGINFO, "Closing log. File can be found at %s", logFileName.string().c_str());
-	engine::Engine::LOG_SYSTEM.close();
+	engine::Engine::stopLogSystem();
 	
 	return 0;
 }
