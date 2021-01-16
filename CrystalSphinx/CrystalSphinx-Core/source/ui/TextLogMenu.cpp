@@ -166,5 +166,5 @@ void TextLogMenu::updateLogText()
 		ss << iter->message;
 		++iter;
 	}
-	this->mpChatLog->setContent(ss.str(), true);
+	this->mpChatLog->setContent(ss.str());
 }

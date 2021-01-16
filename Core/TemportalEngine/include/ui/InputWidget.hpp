@@ -22,13 +22,15 @@ public:
 
 protected:
 	ui32 desiredCharacterCount() const override;
-	uSize contentLength() const override;
-	char charAt(uIndex i) const override;
+	Segment const& segmentAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const override;
+	char charAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const override;
+	bool incrementChar(uIndex &idxSegment, uIndex &idxSegmentChar, uIndex idxTotalChar) const override;
 
 private:
 	bool mbIsActive;
 	uIndex mCursorPos;
-	std::string mFieldContent;
+	Text::Segment mContentSegment;
+	Text::Segment mCursorSegment;
 
 	void onInput(input::Event const& evt) override;
 

@@ -19,19 +19,19 @@ DebugHUD::DebugHUD()
 	(*(this->mpAlphabet = std::make_shared<ui::Text>()))
 		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(30)
-		.setContent("Sphinx of Black Quartz, Judge my vow", true);
+		.setContent("Sphinx of Black Quartz, Judge my vow");
 
 	(*(this->mpPosition = std::make_shared<ui::Text>()))
 		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(15)
 		.setPosition({ 0, 40 })
-		.setContent("Position| X:<?,?,?.??> Y:<?,?,?.??> Z:<?,?,?.??>", true);
+		.setContent("Position| X:<?,?,?.??> Y:<?,?,?.??> Z:<?,?,?.??>");
 
 	(*(this->mpFPS = std::make_shared<ui::Text>()))
 		.setFontOwner(pFontOwner)
 		.setFont("unispace").setFontSize(20)
 		.setAnchor({ 1, 0 }).setPivot({ 1, 0 })
-		.setContent("FPS: ###", true);
+		.setContent("FPS: ###");
 
 	this->setIsVisible(true);
 }

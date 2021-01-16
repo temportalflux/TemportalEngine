@@ -81,6 +81,24 @@ Text& Text::setFontSize(ui16 fontSize)
 	return *this;
 }
 
+Text& Text::setThickness(f32 characterWidth)
+{
+	this->lock();
+	this->mUncommitted.thickness = characterWidth;
+	this->markDirty();
+	this->unlock();
+	return *this;
+}
+
+Text& Text::setEdgeWidth(f32 charEdgeWidth)
+{
+	this->lock();
+	this->mUncommitted.edgeWidth = charEdgeWidth;
+	this->markDirty();
+	this->unlock();
+	return *this;
+}
+
 Text& Text::setMaxContentLength(ui32 length)
 {
 	this->lock();
@@ -90,41 +108,54 @@ Text& Text::setMaxContentLength(ui32 length)
 	return *this;
 }
 
-Text& Text::setContent(std::string const& content, bool expandMaxLength)
+ui32 Text::maxContentLength() const { return this->mUncommitted.maxLength; }
+
+Text& Text::setContent(std::string const& content)
+{
+	this->startContent();
+	this->addSegment(content);
+	this->finishContent();
+	return *this;
+}
+
+Text& Text::startContent()
 {
 	this->lock();
-	this->mUncommitted.content = content;
-	if (expandMaxLength)
-	{
-		this->mUncommitted.maxLength = math::max(
-			this->mUncommitted.maxLength, (ui32)content.length()
-		);
-	}
+	this->mUncommitted.segments.clear();
+	this->mUncommitted.totalContentLength = 0;
+	return *this;
+}
+
+Text& Text::addSegment(std::string const& content)
+{
+	auto segment = Segment();
+	segment.content = content;
+	segment.color = math::Color(1);
+	this->mUncommitted.segments.push_back(segment);
+	this->mUncommitted.totalContentLength += (ui32)content.length();
+	return *this;
+}
+
+Text& Text::setSegmentColor(math::Color const& color)
+{
+	auto& segments = this->mUncommitted.segments;
+	assert(segments.size() > 0);
+	segments[segments.size() - 1].color = color;
+	return *this;
+}
+
+Text& Text::finishContent()
+{
+	this->mUncommitted.maxLength = math::max(
+		this->mUncommitted.maxLength, this->mUncommitted.totalContentLength
+	);
 	this->markDirty();
 	this->unlock();
 	return *this;
 }
 
-std::string& Text::uncommittedContent() { return this->mUncommitted.content; }
-
-Text& Text::operator=(std::string const& content) { return setContent(content); }
-
-Text& Text::setThickness(f32 characterWidth)
-{
-	this->lock();
-	this->mUncommitted.thickness = characterWidth;
-	this->markDirty();
-	this->unlock();
-	return *this;
-}
-Text& Text::setEdgeWidth(f32 charEdgeWidth)
-{
-	this->lock();
-	this->mUncommitted.edgeWidth = charEdgeWidth;
-	this->markDirty();
-	this->unlock();
-	return *this;
-}
+std::vector<Text::Segment>& Text::uncommittedSegments() { return this->mUncommitted.segments; }
+ui32& Text::uncommittedContentLength() { return this->mUncommitted.totalContentLength; }
 
 void Text::releaseGraphics()
 {
@@ -139,8 +170,8 @@ Text& Text::commit()
 
 	this->mVertices.clear();
 	this->mIndices.clear();
-	this->mVertices.reserve(this->mUncommitted.content.length() * 4);
-	this->mIndices.reserve(this->mUncommitted.content.length() * 6);
+	this->mVertices.reserve(this->mUncommitted.totalContentLength * 4);
+	this->mIndices.reserve(this->mUncommitted.totalContentLength * 6);
 
 	if (this->desiredCharacterCount() != this->mBufferCharacterCount)
 	{
@@ -182,7 +213,7 @@ Text& Text::commit()
 
 ui32 Text::desiredCharacterCount() const
 {
-	return math::max(this->mUncommitted.maxLength, (ui32)this->contentLength());
+	return math::max(this->mUncommitted.maxLength, this->mUncommitted.totalContentLength);
 }
 
 graphics::Font const* Text::getFont() const
@@ -191,16 +222,12 @@ graphics::Font const* Text::getFont() const
 }
 
 math::Vector2 Text::getSizeOnScreen() const
-{
-	// for debugging
-	auto const& content = this->mUncommitted.content;
-	
+{	
 	auto cursorPos = math::Vector2::ZERO;
 	auto generatedBounds = this->writeGlyphs(
 		math::Vector2::ZERO, cursorPos,
 		Widget::getSizeOnScreen(), nullptr
 	);
-
 	return generatedBounds;
 }
 
@@ -236,16 +263,6 @@ f32 Text::getFontHeight() const
 	return this->toScreenHeight(this->mUncommitted.fontSize);
 }
 
-uSize Text::contentLength() const
-{
-	return this->mUncommitted.content.length();
-}
-
-char Text::charAt(uIndex i) const
-{
-	return this->mUncommitted.content[i];
-}
-
 math::Vector2 Text::writeGlyphs(
 	math::Vector2 const& offset, math::Vector2 &cursorPos, math::Vector2 const& maxBounds,
 	TDrawGlyph drawer
@@ -254,18 +271,17 @@ math::Vector2 Text::writeGlyphs(
 	f32 fontHeight = this->getFontHeight();
 	f32 lineHeight = fontHeight + this->toScreenHeight(5);
 
-	auto const len = this->contentLength();
 	graphics::Font const& font = *this->getFont();
 	auto bounds = math::Vector2({ 0, lineHeight });
-	for (uIndex idxChar = 0; idxChar < len; ++idxChar)
+	
+	auto pushChar = [&](char c)
 	{
-		auto c = this->charAt(idxChar);
 		if (c == '\n' || c == '\r')
 		{
 			cursorPos.y() += lineHeight;
 			cursorPos.x() = 0;
 			bounds.y() += lineHeight;
-			continue;
+			return true;
 		}
 		if (!font.contains(c)) c = '?';
 
@@ -280,14 +296,49 @@ math::Vector2 Text::writeGlyphs(
 		}
 		if (maxBounds.y() > 0 && cursorPos.y() + glyphSize.y() > maxBounds.y())
 		{
-			break;
+			return false;
 		}
 		if (drawer) drawer(offset + cursorPos, glyph);
 		cursorPos.x() += glyph.advance * toFontSize.x();
 		bounds.x() = math::max(bounds.x(), cursorPos.x());
 		bounds.y() = math::max(bounds.y(), cursorPos.y());
+		return true;
+	};
+
+	uIndex idxSegment = 0;
+	uIndex idxSegmentChar = 0;
+	uIndex idxTotalChar = 0;
+	bool bHasFinished = this->mUncommitted.segments.size() == 0;
+	while (!bHasFinished)
+	{
+		Segment const& segment = this->segmentAt(idxSegment, idxSegmentChar, idxTotalChar);
+		auto c = this->charAt(idxSegment, idxSegmentChar, idxTotalChar);
+		if (!pushChar(c)) break;
+		bHasFinished = this->incrementChar(idxSegment, idxSegmentChar, idxTotalChar);
+		++idxTotalChar;
 	}
 	return bounds;
+}
+
+Text::Segment const& Text::segmentAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const
+{
+	return this->mUncommitted.segments[idxSegment];
+}
+
+char Text::charAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const
+{
+	return this->mUncommitted.segments[idxSegment].content[idxSegmentChar];
+}
+
+bool Text::incrementChar(uIndex &idxSegment, uIndex &idxSegmentChar, uIndex idxTotalChar) const
+{
+	auto const& segment = this->mUncommitted.segments[idxSegment];
+	if (++idxSegmentChar >= segment.content.length())
+	{
+		idxSegmentChar = 0;
+		++idxSegment;
+	}
+	return /*bHasFinished*/ idxSegment >= this->mUncommitted.segments.size();
 }
 
 math::Vector2 Text::glyphToFontSize(

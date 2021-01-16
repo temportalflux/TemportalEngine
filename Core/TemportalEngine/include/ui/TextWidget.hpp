@@ -40,13 +40,16 @@ public:
 
 	Text& setFont(std::string const& fontId);
 	Text& setFontSize(ui16 fontSize);
-	Text& setMaxContentLength(ui32 length);
-	ui32 maxContentLength() const { return this->mUncommitted.maxLength; }
-	Text& setContent(std::string const& content, bool isMaxLength = false);
-	Text& operator=(std::string const& content);
-	std::string const& string() const { return this->mUncommitted.content; }
 	Text& setThickness(f32 characterWidth);
 	Text& setEdgeWidth(f32 charEdgeWidth);
+	Text& setMaxContentLength(ui32 length);
+	ui32 maxContentLength() const;
+
+	Text& setContent(std::string const& content);
+	Text& startContent();
+	Text& addSegment(std::string const& content);
+	Text& setSegmentColor(math::Color const& color);
+	Text& finishContent();
 	
 	math::Vector2 getSizeOnScreen() const override;
 
@@ -57,6 +60,11 @@ public:
 protected:
 	using TDrawGlyph = std::function<void(math::Vector2 const& pos, graphics::Font::GlyphSprite const& glyph)>;
 
+	struct Segment
+	{
+		std::string content;
+		math::Color color;
+	};
 	struct Vertex
 	{
 		/**
@@ -74,13 +82,15 @@ protected:
 	std::vector<ui16> mIndices;
 	ui32 mCommittedIndexCount;
 
-	std::string& uncommittedContent();
+	std::vector<Segment>& uncommittedSegments();
+	ui32& uncommittedContentLength();
 	graphics::Font const* getFont() const;
 	math::Vector4 widthEdge() const;
 	ui16 pushVertex(Vertex const& v);
 	virtual ui32 desiredCharacterCount() const;
-	virtual uSize contentLength() const;
-	virtual char charAt(uIndex i) const;
+	virtual Segment const& segmentAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const;
+	virtual char charAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const;
+	virtual bool incrementChar(uIndex &idxSegment, uIndex &idxSegmentChar, uIndex idxTotalChar) const;
 
 private:
 
@@ -90,7 +100,8 @@ private:
 	{
 		std::string fontId;
 		ui16 fontSize; // in points
-		std::string content;
+		std::vector<Segment> segments;
+		ui32 totalContentLength;
 		f32 thickness;
 		f32 edgeWidth;
 		ui32 maxLength;

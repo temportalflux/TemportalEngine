@@ -41,9 +41,13 @@ void Input::setActive(bool bActive)
 
 void Input::clear()
 {
+	this->startContent();
 	this->mCursorPos = 0;
-	this->mFieldContent = "";
-	this->setContent(this->mFieldContent);
+	this->mContentSegment = { "", math::Color(1) };
+	this->mCursorSegment = { "", math::Color(1) };
+	this->uncommittedSegments() = { this->mContentSegment };
+	this->uncommittedContentLength() = (ui32)this->mContentSegment.content.length();
+	this->finishContent();
 }
 
 void Input::onInput(input::Event const& evt)
@@ -56,23 +60,25 @@ void Input::onInput(input::Event const& evt)
 		{
 			if (evt.inputKey.key == input::EKey::BACKSPACE)
 			{
-				if (this->mFieldContent.length() > 0 && this->mCursorPos > 0)
+				if (this->mContentSegment.content.length() > 0 && this->mCursorPos > 0)
 				{
 					this->lock();
-					this->mFieldContent.erase(this->mCursorPos - 1, 1);
+					this->mContentSegment.content.erase(this->mCursorPos - 1, 1);
 					this->mCursorPos--;
-					this->uncommittedContent() = this->mFieldContent;
+					this->uncommittedSegments() = { this->mContentSegment };
+					this->uncommittedContentLength() = (ui32)this->mContentSegment.content.length();
 					this->markDirty();
 					this->unlock();
 				}
 			}
 			if (evt.inputKey.key == input::EKey::SP_DELETE)
 			{
-				if (this->mCursorPos < this->mFieldContent.length())
+				if (this->mCursorPos < this->mContentSegment.content.length())
 				{
 					this->lock();
-					this->mFieldContent.erase(this->mCursorPos, 1);
-					this->uncommittedContent() = this->mFieldContent;
+					this->mContentSegment.content.erase(this->mCursorPos, 1);
+					this->uncommittedSegments() = { this->mContentSegment };
+					this->uncommittedContentLength() = (ui32)this->mContentSegment.content.length();
 					this->markDirty();
 					this->unlock();
 				}
@@ -89,7 +95,7 @@ void Input::onInput(input::Event const& evt)
 			}
 			if (evt.inputKey.key == input::EKey::RIGHT)
 			{
-				if (this->mCursorPos < this->mFieldContent.length())
+				if (this->mCursorPos < this->mContentSegment.content.length())
 				{
 					this->lock();
 					this->mCursorPos++;
@@ -97,18 +103,24 @@ void Input::onInput(input::Event const& evt)
 					this->unlock();
 				}
 			}
-			if (evt.inputKey.key == input::EKey::RETURN && this->mFieldContent.length() > 0)
+			if (evt.inputKey.key == input::EKey::RETURN && this->mContentSegment.content.length() > 0)
 			{
-				this->onConfirm.execute(this->mFieldContent);
+				this->onConfirm.execute(this->mContentSegment.content);
 			}
 		}
 	}
-	if (evt.type == input::EInputType::TEXT && this->mFieldContent.length() < this->maxContentLength())
+	if (
+		evt.type == input::EInputType::TEXT
+		&& this->mContentSegment.content.length() < this->maxContentLength())
 	{
 		this->lock();
-		this->mFieldContent.insert(this->mFieldContent.begin() + this->mCursorPos, evt.inputText.text[0]);
+		this->mContentSegment.content.insert(
+			this->mContentSegment.content.begin() + this->mCursorPos,
+			evt.inputText.text[0]
+		);
 		this->mCursorPos++;
-		this->uncommittedContent() = this->mFieldContent;
+		this->uncommittedSegments() = { this->mContentSegment };
+		this->uncommittedContentLength() = (ui32)this->mContentSegment.content.length();
 		this->markDirty();
 		this->unlock();
 	}
@@ -119,14 +131,29 @@ ui32 Input::desiredCharacterCount() const
 	return Text::desiredCharacterCount() + 1; // +1 for the cursor
 }
 
-uSize Input::contentLength() const
+Text::Segment const& Input::segmentAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const
 {
-	return Text::contentLength() + 1;
+	if (idxTotalChar == this->mCursorPos) return this->mCursorSegment;
+	else return Text::segmentAt(idxSegment, idxSegmentChar, idxTotalChar);
 }
 
-char Input::charAt(uIndex i) const
+char Input::charAt(uIndex idxSegment, uIndex idxSegmentChar, uIndex idxTotalChar) const
 {
-	if (i == this->mCursorPos) return '|';
-	else if (i < this->mCursorPos) return Text::charAt(i);
-	else return Text::charAt(i - 1);
+	if (idxTotalChar == this->mCursorPos) return '|';
+	return Text::charAt(
+		idxSegment, idxSegmentChar,
+		(
+			idxTotalChar < this->mCursorPos
+			? idxTotalChar
+			: idxTotalChar - 1
+		)
+	);
+}
+
+bool Input::incrementChar(uIndex &idxSegment, uIndex &idxSegmentChar, uIndex idxTotalChar) const
+{
+	// if the next position is our custom character, ensure the iteration does not finish
+	if (idxTotalChar + 1 == this->mCursorPos) return false;
+	// otherwise, the cursor is not up next, so default to Text
+	return Text::incrementChar(idxSegment, idxSegmentChar, idxTotalChar);
 }
