@@ -264,6 +264,7 @@ void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
 {
 	this->setLocalUserNetId(netId);
 	this->addConnectedUser(netId);
+	this->getConnectedUserInfo(netId).copyFrom(this->localUserInfo());
 	network::packet::LoginWithAuthId::create()->setId(this->localUserId()).sendToServer();
 }
 
