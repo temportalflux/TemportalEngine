@@ -6,7 +6,7 @@
 #include "logging/Logger.hpp"
 #include "math/transform.hpp"
 #include "memory/MemoryChunk.hpp"
-#include "render/MinecraftRenderer.hpp"
+#include "render/ImmediateRenderSystem.hpp"
 
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
@@ -71,7 +71,7 @@ math::Matrix4x4 perspective_RightHand_DepthZeroToOne(
 
 UpdateCameraPerspective::UpdateCameraPerspective(
 	std::shared_ptr<memory::MemoryChunk> uniformMemory,
-	std::shared_ptr<graphics::MinecraftRenderer> renderer
+	std::shared_ptr<graphics::ImmediateRenderSystem> renderer
 ) : System(view::PlayerCamera::TypeId), mpRenderer(renderer), mViewType(EViewType::eFirstPerson)
 {
 	// TODO: Use dedicated graphics memory

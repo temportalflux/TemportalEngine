@@ -16,7 +16,7 @@ FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
 FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
-FORWARD_DEF(NS_GRAPHICS, class MinecraftRenderer);
+FORWARD_DEF(NS_GRAPHICS, class ImmediateRenderSystem);
 FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
@@ -38,7 +38,7 @@ public:
 	Client();
 
 	std::shared_ptr<Window> getWindow();
-	std::shared_ptr<graphics::MinecraftRenderer> renderer();
+	std::shared_ptr<graphics::ImmediateRenderSystem> renderer();
 	std::shared_ptr<graphics::SkinnedModelManager> modelManager();
 	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances();
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry();
@@ -74,7 +74,7 @@ private:
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 
 	std::shared_ptr<Window> mpWindow;
-	std::shared_ptr<graphics::MinecraftRenderer> mpRenderer;
+	std::shared_ptr<graphics::ImmediateRenderSystem> mpRenderer;
 
 	std::shared_ptr<game::VoxelModelManager> mpVoxelModelManager;
 	std::shared_ptr<world::BlockInstanceBuffer> mpVoxelInstanceBuffer;

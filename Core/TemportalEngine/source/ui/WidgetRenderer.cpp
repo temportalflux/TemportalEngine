@@ -5,7 +5,7 @@
 #include "graphics/assetHelpers.hpp"
 #include "graphics/Command.hpp"
 #include "graphics/Pipeline.hpp"
-#include "render/MinecraftRenderer.hpp"
+#include "render/ImmediateRenderSystem.hpp"
 #include "ui/ImageWidget.hpp"
 #include "ui/TextWidget.hpp"
 

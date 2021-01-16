@@ -1,4 +1,4 @@
-#include "render/MinecraftRenderer.hpp"
+#include "render/ImmediateRenderSystem.hpp"
 
 #include "asset/RenderPassAsset.hpp"
 #include "graphics/Uniform.hpp"
@@ -6,11 +6,11 @@
 
 using namespace graphics;
 
-MinecraftRenderer::MinecraftRenderer() : VulkanRenderer()
+ImmediateRenderSystem::ImmediateRenderSystem() : VulkanRenderer()
 {
 }
 
-void MinecraftRenderer::initializeDevices()
+void ImmediateRenderSystem::initializeDevices()
 {
 	VulkanRenderer::initializeDevices();
 	this->initializeTransientCommandPool();
@@ -26,7 +26,7 @@ void MinecraftRenderer::initializeDevices()
 	this->mFrames.resize(this->getSwapChainImageViewCount());
 }
 
-void MinecraftRenderer::invalidate()
+void ImmediateRenderSystem::invalidate()
 {
 	this->destroyRenderChain();
 	this->mFrames.clear();
@@ -37,12 +37,12 @@ void MinecraftRenderer::invalidate()
 	VulkanRenderer::invalidate();
 }
 
-DescriptorPool& MinecraftRenderer::getDescriptorPool()
+DescriptorPool& ImmediateRenderSystem::getDescriptorPool()
 {
 	return this->mGlobalDescriptorPool;
 }
 
-void MinecraftRenderer::addGlobalMutableDescriptor(std::string const& layoutId, uSize const& bindingCount)
+void ImmediateRenderSystem::addGlobalMutableDescriptor(std::string const& layoutId, uSize const& bindingCount)
 {
 	auto gmd = GlobalMutableDescriptor {};
 	gmd.layout.setDevice(this->getDevice());
@@ -50,12 +50,12 @@ void MinecraftRenderer::addGlobalMutableDescriptor(std::string const& layoutId, 
 	this->mGlobalMutableDescriptors.insert(std::make_pair(layoutId, std::move(gmd)));
 }
 
-void MinecraftRenderer::addMutableUniform(std::string const& key, std::weak_ptr<Uniform> uniform)
+void ImmediateRenderSystem::addMutableUniform(std::string const& key, std::weak_ptr<Uniform> uniform)
 {
 	this->mpMutableUniforms.insert(std::pair(key, uniform));
 }
 
-void MinecraftRenderer::addMutableUniformToLayout(
+void ImmediateRenderSystem::addMutableUniformToLayout(
 	std::string const& layoutId, std::string const& uniformId,
 	uIndex const& bindingIndex,
 	graphics::DescriptorType const& type, graphics::ShaderStage const& stage
@@ -66,7 +66,7 @@ void MinecraftRenderer::addMutableUniformToLayout(
 	gmd.layout.setBinding(bindingIndex, uniformId, type, stage, 1);
 }
 
-void MinecraftRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
+void ImmediateRenderSystem::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 {
 	// TODO: Don't use default make_shared
 	this->mpRenderPass = std::make_shared<graphics::RenderPass>();
@@ -89,7 +89,7 @@ void MinecraftRenderer::setRenderPass(std::shared_ptr<asset::RenderPass> asset)
 	this->mpRenderPass->setPhaseDependencies(dependencies);
 }
 
-void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
+void ImmediateRenderSystem::addRenderer(graphics::IPipelineRenderer *renderer)
 {
 	renderer->setDevice(this->getDevice());
 	renderer->setRenderPass(this->mpRenderPass);
@@ -97,12 +97,12 @@ void MinecraftRenderer::addRenderer(graphics::IPipelineRenderer *renderer)
 	this->mpRenderers.push_back(renderer);
 }
 
-CommandPool& MinecraftRenderer::getTransientPool()
+CommandPool& ImmediateRenderSystem::getTransientPool()
 {
 	return this->mCommandPoolTransient;
 }
 
-void MinecraftRenderer::initializeTransientCommandPool()
+void ImmediateRenderSystem::initializeTransientCommandPool()
 {
 	auto device = this->getDevice();
 	this->mCommandPoolTransient.setDevice(device);
@@ -115,12 +115,12 @@ void MinecraftRenderer::initializeTransientCommandPool()
 		.create();
 }
 
-ui32 MinecraftRenderer::getSwapChainImageViewCount() const
+ui32 ImmediateRenderSystem::getSwapChainImageViewCount() const
 {
 	return this->mpGraphicsDevice->querySwapChainSupport().getImageViewCount();
 }
 
-void MinecraftRenderer::createMutableUniforms()
+void ImmediateRenderSystem::createMutableUniforms()
 {
 	this->createMutableUniformBuffers();
 	for (auto&[layoutId, gmd] : this->mGlobalMutableDescriptors)
@@ -140,12 +140,12 @@ void MinecraftRenderer::createMutableUniforms()
 	}
 }
 
-void MinecraftRenderer::finalizeInitialization()
+void ImmediateRenderSystem::finalizeInitialization()
 {
 	VulkanRenderer::finalizeInitialization();
 }
 
-std::unordered_map<std::string, graphics::DescriptorLayout const*> MinecraftRenderer::getGlobalDescriptorLayouts() const
+std::unordered_map<std::string, graphics::DescriptorLayout const*> ImmediateRenderSystem::getGlobalDescriptorLayouts() const
 {
 	auto layouts = std::unordered_map<std::string, graphics::DescriptorLayout const*>();
 	for (auto& entry : this->mGlobalMutableDescriptors)
@@ -155,20 +155,20 @@ std::unordered_map<std::string, graphics::DescriptorLayout const*> MinecraftRend
 	return layouts;
 }
 
-graphics::DescriptorSet const* MinecraftRenderer::getGlobalDescriptorSet(std::string const& layoutId, uIndex idxFrame) const
+graphics::DescriptorSet const* ImmediateRenderSystem::getGlobalDescriptorSet(std::string const& layoutId, uIndex idxFrame) const
 {
 	return &(this->mGlobalMutableDescriptors.find(layoutId)->second.sets[idxFrame]);
 }
 
-void MinecraftRenderer::setDPI(ui32 dotsPerInch)
+void ImmediateRenderSystem::setDPI(ui32 dotsPerInch)
 {
 	this->mDPI = dotsPerInch;
 	this->markRenderChainDirty();
 }
 
-ui32 MinecraftRenderer::dpi() const { return this->mDPI; }
+ui32 ImmediateRenderSystem::dpi() const { return this->mDPI; }
 
-void MinecraftRenderer::createRenderChain()
+void ImmediateRenderSystem::createRenderChain()
 {
 	OPTICK_EVENT();
 	this->createSwapChain();
@@ -197,7 +197,7 @@ void MinecraftRenderer::createRenderChain()
 	}
 }
 
-void MinecraftRenderer::destroyRenderChain()
+void ImmediateRenderSystem::destroyRenderChain()
 {
 	OPTICK_EVENT();
 	this->destroyFrames();
@@ -211,7 +211,7 @@ void MinecraftRenderer::destroyRenderChain()
 	this->destroySwapChain();
 }
 
-void MinecraftRenderer::createMutableUniformBuffers()
+void ImmediateRenderSystem::createMutableUniformBuffers()
 {
 	if (this->mpMutableUniforms.size() > 0)
 	{
@@ -240,7 +240,7 @@ void MinecraftRenderer::createMutableUniformBuffers()
 	}
 }
 
-void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution)
+void ImmediateRenderSystem::createDepthResources(math::Vector2UInt const &resolution)
 {
 	OPTICK_EVENT();
 	auto device = this->getDevice();
@@ -269,13 +269,13 @@ void MinecraftRenderer::createDepthResources(math::Vector2UInt const &resolution
 		.create();
 }
 
-void MinecraftRenderer::destroyDepthResources()
+void ImmediateRenderSystem::destroyDepthResources()
 {
 	this->mDepthView.invalidate();
 	this->mDepthImage.invalidate();
 }
 
-void MinecraftRenderer::createRenderPass()
+void ImmediateRenderSystem::createRenderPass()
 {
 	OPTICK_EVENT();
 	getRenderPass()
@@ -284,17 +284,17 @@ void MinecraftRenderer::createRenderPass()
 		.create();
 }
 
-RenderPass* MinecraftRenderer::getRenderPass()
+RenderPass* ImmediateRenderSystem::getRenderPass()
 {
 	return this->mpRenderPass.get();
 }
 
-void MinecraftRenderer::destroyRenderPass()
+void ImmediateRenderSystem::destroyRenderPass()
 {
 	this->mpRenderPass->invalidate();
 }
 
-void MinecraftRenderer::createFrames(uSize viewCount)
+void ImmediateRenderSystem::createFrames(uSize viewCount)
 {	
 	OPTICK_EVENT();
 	auto device = this->getDevice();
@@ -323,17 +323,17 @@ void MinecraftRenderer::createFrames(uSize viewCount)
 	}
 }
 
-uSize MinecraftRenderer::getNumberOfFrames() const
+uSize ImmediateRenderSystem::getNumberOfFrames() const
 {
 	return this->mFrames.size();
 }
 
-graphics::Frame* MinecraftRenderer::getFrameAt(uSize idx)
+graphics::Frame* ImmediateRenderSystem::getFrameAt(uSize idx)
 {
 	return &this->mFrames[idx].frame;
 }
 
-void MinecraftRenderer::destroyFrames()
+void ImmediateRenderSystem::destroyFrames()
 {
 	for (auto& frame : this->mFrames)
 	{
@@ -344,11 +344,11 @@ void MinecraftRenderer::destroyFrames()
 	}
 }
 
-void MinecraftRenderer::record(uIndex idxFrame)
+void ImmediateRenderSystem::record(uIndex idxFrame)
 {
 	OPTICK_EVENT();
 	IPipelineRenderer::TGetGlobalDescriptorSet getDescrSet = std::bind(
-		&MinecraftRenderer::getGlobalDescriptorSet, this,
+		&ImmediateRenderSystem::getGlobalDescriptorSet, this,
 		std::placeholders::_1, std::placeholders::_2
 	);
 
@@ -364,14 +364,14 @@ void MinecraftRenderer::record(uIndex idxFrame)
 	cmd.end();
 }
 
-void MinecraftRenderer::prepareRender(ui32 idxCurrentFrame)
+void ImmediateRenderSystem::prepareRender(ui32 idxCurrentFrame)
 {
 	OPTICK_EVENT();
 	this->record(idxCurrentFrame);
 	VulkanRenderer::prepareRender(idxCurrentFrame);
 }
 
-void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
+void ImmediateRenderSystem::render(graphics::Frame* currentFrame, ui32 idxCurrentImage)
 {
 	OPTICK_EVENT();
 	// Submit the command buffer to the graphics queue
@@ -379,7 +379,7 @@ void MinecraftRenderer::render(graphics::Frame* currentFrame, ui32 idxCurrentIma
 	currentFrame->submitBuffers(&this->getQueue(EQueueFamily::eGraphics), { &commandBuffer });
 }
 
-void MinecraftRenderer::onFramePresented(uIndex idxFrame)
+void ImmediateRenderSystem::onFramePresented(uIndex idxFrame)
 {
 	OPTICK_EVENT();
 	auto& buffers = this->mFrames[idxFrame].uniformBuffers;

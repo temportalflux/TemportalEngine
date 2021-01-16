@@ -87,9 +87,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\MinecraftRenderer.hpp">
-      <Filter>render</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp">
       <Filter>render</Filter>
     </ClInclude>
@@ -240,6 +237,9 @@
     <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\settings\JsonData.hpp">
       <Filter>settings</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\render\ImmediateRenderSystem.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -251,9 +251,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
       <Filter>world</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\MinecraftRenderer.cpp">
-      <Filter>render</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\LineRenderer.cpp">
       <Filter>render\line</Filter>
@@ -401,6 +398,9 @@
     </ClCompile>
     <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\settings\JsonData.cpp">
       <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\render\ImmediateRenderSystem.cpp">
+      <Filter>render</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

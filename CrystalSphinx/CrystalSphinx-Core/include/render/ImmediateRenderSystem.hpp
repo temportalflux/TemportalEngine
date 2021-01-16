@@ -14,11 +14,11 @@ FORWARD_DEF(NS_GRAPHICS, class Uniform)
 
 NS_GRAPHICS
 
-class MinecraftRenderer : public VulkanRenderer
+class ImmediateRenderSystem : public VulkanRenderer
 {
 
 public:
-	MinecraftRenderer();
+	ImmediateRenderSystem();
 
 	SimpleExecuteDelegate UpdateWorldGraphicsOnFramePresented;
 

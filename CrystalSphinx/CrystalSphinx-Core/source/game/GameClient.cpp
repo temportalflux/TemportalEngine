@@ -17,7 +17,7 @@
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "render/EntityInstanceBuffer.hpp"
-#include "render/MinecraftRenderer.hpp"
+#include "render/ImmediateRenderSystem.hpp"
 #include "render/ModelSimple.hpp"
 #include "render/TextureRegistry.hpp"
 #include "render/line/SimpleLineRenderer.hpp"
@@ -43,7 +43,7 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 	this->settings().readFromDisk();
 }
 
-std::shared_ptr<graphics::MinecraftRenderer> Client::renderer() { return this->mpRenderer; }
+std::shared_ptr<graphics::ImmediateRenderSystem> Client::renderer() { return this->mpRenderer; }
 std::shared_ptr<graphics::SkinnedModelManager> Client::modelManager() { return this->mpSkinnedModelManager; }
 std::shared_ptr<graphics::EntityInstanceBuffer> Client::entityInstances() { return this->mpEntityInstanceBuffer; }
 std::shared_ptr<graphics::TextureRegistry> Client::textureRegistry() { return this->mpTextureRegistry; }
@@ -474,7 +474,7 @@ void Client::createRenderers()
 
 void Client::createGameRenderer()
 {
-	this->mpRenderer = std::make_shared<graphics::MinecraftRenderer>();
+	this->mpRenderer = std::make_shared<graphics::ImmediateRenderSystem>();
 	this->mpRenderer->setDPI(this->settings().dpi());
 	engine::Engine::Get()->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
 	this->mpWindow->setRenderer(this->mpRenderer.get());
