@@ -7,8 +7,8 @@
     <element name="extArgs" optional="y"/>
     <sequential>
       <echo message="Running editor on ${cfg} ${platform}" />
-      <mkdir dir="output/MinecraftEditor" />
-      <exec dir="output/MinecraftEditor" executable="Binaries/Build/${cfg}/${platform}/MinecraftEditor/MinecraftEditor.exe">
+      <mkdir dir="output/CrystalSphinx-Editor" />
+      <exec dir="output/CrystalSphinx-Editor" executable="Binaries/Build/${cfg}/${platform}/CrystalSphinx-Editor/CrystalSphinx-Editor.exe">
         <arg line="memory-main=524288" />
         <arg line="memory-asset=65536" />
         <arg line="memory-misc=65536" />
@@ -21,8 +21,8 @@
     <element name="extArgs" optional="y"/>
     <sequential>
       <echo message="Running game on ${cfg} ${platform}" />
-      <mkdir dir="output/MinecraftGame" />
-      <exec dir="output/MinecraftGame" executable="Binaries/Build/${cfg}/${platform}/MinecraftGame/MinecraftGame.exe">
+      <mkdir dir="output/CrystalSphinx-Game" />
+      <exec dir="output/CrystalSphinx-Game" executable="Binaries/Build/${cfg}/${platform}/CrystalSphinx-Game/CrystalSphinx-Game.exe">
         <arg line="memory-main=524288" />
         <arg line="memory-asset=65536" />
         <arg line="memory-misc=65536" />
@@ -46,14 +46,14 @@
 		</run_editor>
 	</target>
 
-  <target name="game.client" description="Runs the Minecraft game executable.">
+  <target name="game.client" description="Runs the CrystalSphinx game executable.">
     <run_game>
       <extArgs>
       </extArgs>
     </run_game>
   </target>
 
-  <target name="game.server" description="Runs the Minecraft game executable.">
+  <target name="game.server" description="Runs the CrystalSphinx game executable.">
     <run_game>
       <extArgs>
         <arg line="server" />
@@ -61,13 +61,13 @@
     </run_game>
   </target>
 
-	<target name="build.demo" description="Builds the MinecraftCore assets">
+	<target name="build.demo" description="Builds the CrystalSphinx assets">
 		<run_editor>
 			<extArgs>
 				<arg line="noui" />
 				<arg line="cmdlet-buildAssets" />
-				<arg line="cmdlet-buildAssets-project=${user.dir}/Minecraft/MinecraftCore/Minecraft.te-project" />
-				<arg line="cmdlet-buildAssets-outputDir=${user.dir}/output/MinecraftGame/" />
+				<arg line="cmdlet-buildAssets-project=${user.dir}/CrystalSphinx/CrystalSphinx-Core/CrystalSphinx.te-project" />
+				<arg line="cmdlet-buildAssets-outputDir=${user.dir}/output/CrystalSphinx-Game/" />
 			</extArgs>
 		</run_editor>
 	</target>

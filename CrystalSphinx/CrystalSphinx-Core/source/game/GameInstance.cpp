@@ -168,7 +168,7 @@ void Game::openProject()
 	auto pEngine = engine::Engine::Get();
 	auto assetManager = pEngine->getAssetManager();
 	
-	auto projectPath = std::filesystem::absolute("Minecraft.te-project");
+	auto projectPath = std::filesystem::absolute("CrystalSphinx.te-project");
 	auto projectAssetPath = asset::AssetPath("project", projectPath, true);
 	assetManager->addScannedAsset(projectAssetPath, projectPath, asset::EAssetSerialization::Binary);
 	

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
 
 	std::stringstream ss;
-	ss << "logs/DemoGame_";
+	ss << "logs/CrystalSphinx_";
 	ss << utility::currentTimeStr().c_str();
 	ss << ".log";
 	std::filesystem::path logFileName = ss.str();

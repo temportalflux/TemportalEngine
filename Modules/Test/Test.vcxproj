@@ -102,7 +102,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -112,8 +112,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
-copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -122,7 +122,7 @@ copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(Proje
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)Minecraft\MinecraftCore\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -132,8 +132,8 @@ copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(Proje
       <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib32/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\"
-copy /Y "$(SolutionDir)Binaries\Build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)output\MinecraftGame\Modules\$(ProjectName)\$(ProjectName).dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
