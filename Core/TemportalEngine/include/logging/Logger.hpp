@@ -16,26 +16,51 @@ NS_LOGGING
 /**
 * Enumeration of different logging types to sort log output.
 */
-enum class ELogLevel
+enum class ELogLevel : ui8
 {
-	INVALID = -1,
 
-	/** Output which will not be ignored in a release executable. */
-	LOGDEBUG,
-	/** Important, but not critical or bug related. */
-	LOGINFO,
-	/** Likely a bug or unintended behavior. */
-	LOGWARN,
-	/** A game breaking bug and potentially game breaking (pun intended). */
-	LOGERROR,
+	/**
+	 * An expectation is not true, and this will result in game breaking crashes, bugs, or broken executions.
+	 */
+	eError,
 
-	COUNT
+	/**
+	 * A expectation is not true, but the resulting behavior is not game breaking.
+	 * Needs to be fixed, but wont cause crashes or other UX breaking bugs.
+	 */
+	eWarn,
+	
+	/**
+	 * Logs which don't spam the log file, and which are useful for the general user.
+	 */
+	eInfo,
+
+	/**
+	 * Information which should only be logged in debug builds (not in release builds).
+	 * Otherwise is equivalent to `eInfo`.
+	 */
+	eDebug,
+
+	/**
+	 * Logs which the general user won't need unless development has requested extra log information.
+	 * Generally these messages can cause log spam and aren't used for general day-to-day execution.
+	 */
+	eVerbose,
+
+	/**
+	 * Informational messages which absolutely spam the log and are not needed unless
+	 * debugging something that requires obscene amounts of log information.
+	 */
+	eVeryVerbose,
+
 };
 
-#define LOG_DEBUG logging::ELogLevel::LOGDEBUG
-#define LOG_INFO logging::ELogLevel::LOGINFO
-#define LOG_WARN logging::ELogLevel::LOGWARN
-#define LOG_ERR logging::ELogLevel::LOGERROR
+#define LOG_ERR logging::ELogLevel::eError
+#define LOG_WARN logging::ELogLevel::eWarn
+#define LOG_INFO logging::ELogLevel::eInfo
+#define LOG_DEBUG logging::ELogLevel::eDebug
+#define LOG_VERBOSE logging::ELogLevel::eVerbose
+#define LOG_VERY_VERBOSE logging::ELogLevel::eVeryVerbose
 
 // Forward Declare ------------------------------------------------------------
 class Logger;

@@ -39,10 +39,12 @@ std::string LogSystem::getCategoryShortString(ELogLevel category)
 {
 	switch (category)
 	{
-	case ELogLevel::LOGINFO: return " INFO";
-	case ELogLevel::LOGWARN: return " WARN";
-	case ELogLevel::LOGERROR: return "ERROR";
-	case ELogLevel::LOGDEBUG: return "DEBUG";
+	case ELogLevel::eError: return "ERROR";
+	case ELogLevel::eWarn: return "WARN ";
+	case ELogLevel::eInfo: return "INFO ";
+	case ELogLevel::eDebug: return "DEBUG";
+	case ELogLevel::eVerbose: return "INFO2";
+	case ELogLevel::eVeryVerbose: return "INFO3";
 	default: return "?????";
 	}
 }
