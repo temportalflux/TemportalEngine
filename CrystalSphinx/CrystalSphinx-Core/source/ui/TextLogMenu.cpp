@@ -151,20 +151,27 @@ void TextLogMenu::pushToLog(Message const& msg)
 
 void TextLogMenu::updateLogText()
 {
-	auto ss = std::stringstream();
+	this->mpChatLog->startContent();
 	auto iter = this->mRecentMessages.begin();
 	while (iter != this->mRecentMessages.end())
 	{
 		if (iter != this->mRecentMessages.begin())
 		{
-			ss << '\n';
+			this->mpChatLog->addSegment("\n");
 		}
+
 		if (iter->senderName)
 		{
+			std::stringstream ss;
 			ss << '<' << iter->senderName.value() << '>';
+			this->mpChatLog
+				->addSegment(ss.str())
+				.setSegmentColor({ 0, 1, 1, 1 });
 		}
-		ss << iter->message;
+
+		this->mpChatLog->addSegment(iter->message);
+
 		++iter;
 	}
-	this->mpChatLog->setContent(ss.str());
+	this->mpChatLog->finishContent();
 }
