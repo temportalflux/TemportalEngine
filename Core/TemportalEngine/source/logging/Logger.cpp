@@ -158,6 +158,9 @@ void LogSystem::log(std::string const& title, ELogLevel threshold, ELogLevel lev
 		threshold = this->mLevels.get(title);
 	}
 	if (ui8(level) > ui8(threshold)) return;
+	#if NDEBUG
+	if (level == LOG_DEBUG) return;
+	#endif
 
 	auto const categoryStr = LogSystem::getLevelString(level);
 	auto const& timeStr = utility::currentTimeStr();

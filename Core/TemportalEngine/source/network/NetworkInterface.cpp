@@ -87,6 +87,10 @@ void Interface::start()
 		if (this->type().includes(EType::eClient))
 		{
 			auto const netId = this->nextNetworkId();
+			network::logger().log(
+				LOG_VERBOSE, "Assigning same-app client (server connection %u) network-id %u",
+				this->mConnection, netId
+			);
 			this->addClient(this->mConnection, netId);
 			this->onConnectionEstablished.execute(this, this->mConnection, netId);
 		}
@@ -95,7 +99,7 @@ void Interface::start()
 	{
 		network::logger().log(LOG_INFO, "Connecting to server at %s", this->mAddress.toString(true).c_str());
 		this->mConnection = pInterface->ConnectByIPAddress(address, (ui32)options.size(), options.data());
-		network::logger().log(LOG_INFO, "Make connection %u", this->mConnection);
+		network::logger().log(LOG_DEBUG, "Make connection %u", this->mConnection);
 		if (this->mConnection == k_HSteamNetConnection_Invalid)
 		{
 			network::logger().log(LOG_ERR, "Failed to create connection to %s", this->mAddress.toString(true).c_str());
