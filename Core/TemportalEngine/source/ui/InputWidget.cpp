@@ -44,7 +44,7 @@ void Input::clear()
 	this->startContent();
 	this->mCursorPos = 0;
 	this->mContentSegment = { "", math::Color(1) };
-	this->mCursorSegment = { "", math::Color(1) };
+	this->mCursorSegment = { "", { 1, 0, 0, 1 } };
 	this->uncommittedSegments() = { this->mContentSegment };
 	this->uncommittedContentLength() = (ui32)this->mContentSegment.content.length();
 	this->finishContent();

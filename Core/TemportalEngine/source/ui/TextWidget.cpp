@@ -37,7 +37,9 @@ graphics::AttributeBinding Text::binding()
 	return graphics::AttributeBinding(graphics::AttributeBinding::Rate::eVertex)
 		.setStructType<Text::Vertex>()
 		.addAttribute({ 0, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(Text::Vertex, positionAndWidthEdge) })
-		.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(Text::Vertex, texCoord) });
+		.addAttribute({ 1, /*vec2*/ (ui32)vk::Format::eR32G32Sfloat, offsetof(Text::Vertex, texCoord) })
+		.addAttribute({ 2, /*vec4*/ (ui32)vk::Format::eR32G32B32A32Sfloat, offsetof(Text::Vertex, color) })
+		;
 }
 
 Text& Text::setFontOwner(std::weak_ptr<ui::FontOwner> fontOwner)
@@ -254,7 +256,10 @@ void Text::populateBufferData()
 	auto cursorPos = math::Vector2::ZERO;
 	this->writeGlyphs(
 		topLeft, cursorPos, Widget::getSizeOnScreen(),
-		std::bind(&Text::pushGlyph, this, std::placeholders::_1, std::placeholders::_2)
+		std::bind(
+			&Text::pushGlyph, this,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
 	);
 }
 
@@ -274,7 +279,7 @@ math::Vector2 Text::writeGlyphs(
 	graphics::Font const& font = *this->getFont();
 	auto bounds = math::Vector2({ 0, lineHeight });
 	
-	auto pushChar = [&](char c)
+	auto pushChar = [&](char c, Segment const& segment)
 	{
 		if (c == '\n' || c == '\r')
 		{
@@ -298,7 +303,7 @@ math::Vector2 Text::writeGlyphs(
 		{
 			return false;
 		}
-		if (drawer) drawer(offset + cursorPos, glyph);
+		if (drawer) drawer(offset + cursorPos, glyph, segment);
 		cursorPos.x() += glyph.advance * toFontSize.x();
 		bounds.x() = math::max(bounds.x(), cursorPos.x());
 		bounds.y() = math::max(bounds.y(), cursorPos.y());
@@ -313,7 +318,7 @@ math::Vector2 Text::writeGlyphs(
 	{
 		Segment const& segment = this->segmentAt(idxSegment, idxSegmentChar, idxTotalChar);
 		auto c = this->charAt(idxSegment, idxSegmentChar, idxTotalChar);
-		if (!pushChar(c)) break;
+		if (!pushChar(c, segment)) break;
 		bHasFinished = this->incrementChar(idxSegment, idxSegmentChar, idxTotalChar);
 		++idxTotalChar;
 	}
@@ -352,7 +357,8 @@ math::Vector2 Text::glyphToFontSize(
 
 void Text::pushGlyph(
 	math::Vector2 const& cursorPos,
-	graphics::Font::GlyphSprite const& glyph
+	graphics::Font::GlyphSprite const& glyph,
+	Segment const& segment
 )
 {
 	if (glyph.size.x() <= 0 || glyph.size.y() <= 0)
@@ -373,7 +379,8 @@ void Text::pushGlyph(
 			(
 				cursorPos + screenBearing + (screenSize * sizeMult)
 			).createSubvector<4>() + widthEdge,
-			glyph.atlasPos + (glyph.atlasSize * sizeMult)
+			glyph.atlasPos + (glyph.atlasSize * sizeMult),
+			segment.color
 		});
 	};
 

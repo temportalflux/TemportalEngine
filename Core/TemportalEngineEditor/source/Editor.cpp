@@ -1,7 +1,6 @@
 #include "Editor.hpp"
 
 #include "Engine.hpp"
-#include "Window.hpp"
 #include "asset/AssetManager.hpp"
 #include "asset/Font.hpp"
 #include "asset/ModelAsset.hpp"
@@ -25,8 +24,9 @@
 #include "gui/asset/EditorShader.hpp"
 #include "gui/asset/EditorTexture.hpp"
 #include "gui/asset/EditorTextureSampler.hpp"
-#include "utility/StringUtils.hpp"
 #include "gui/IGui.hpp"
+#include "utility/StringUtils.hpp"
+#include "window/Window.hpp"
 
 #include <backends/imgui_impl_sdl.h>
 #include <backends/imgui_impl_vulkan.h>

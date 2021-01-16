@@ -58,13 +58,18 @@ public:
 	void record(graphics::Command *command) override;
 
 protected:
-	using TDrawGlyph = std::function<void(math::Vector2 const& pos, graphics::Font::GlyphSprite const& glyph)>;
 
 	struct Segment
 	{
 		std::string content;
 		math::Color color;
 	};
+
+	using TDrawGlyph = std::function<void(
+		math::Vector2 const& pos, graphics::Font::GlyphSprite const& glyph,
+		Segment const& segment
+	)>;
+
 	struct Vertex
 	{
 		/**
@@ -76,6 +81,7 @@ protected:
 		 * The coordinate of the glyph vertex in the font atlas allocated for a given `RegisteredFont`.
 		 */
 		math::Vector2Padded texCoord;
+		math::Vector4 color;
 	};
 
 	std::vector<Vertex> mVertices;
@@ -127,7 +133,8 @@ private:
 	) const;
 	void pushGlyph(
 		math::Vector2 const& cursorPos,
-		graphics::Font::GlyphSprite const& glyph
+		graphics::Font::GlyphSprite const& glyph,
+		Segment const& segment
 	);
 	f32 toScreenHeight(i32 points) const;
 
