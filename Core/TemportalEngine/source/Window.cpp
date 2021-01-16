@@ -6,7 +6,6 @@
 #include <SDL_vulkan.h>
 
 #include "Engine.hpp"
-#include "command/CommandRegistry.hpp"
 #include "graphics/VulkanRenderer.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
@@ -41,7 +40,6 @@ Window::Window(
 	}
 	this->mId = SDL_GetWindowID(reinterpret_cast<SDL_Window*>(this->mpHandle));
 	input::stopTextInput();
-	this->registerCommands();
 }
 
 bool Window::hasFlag(WindowFlags flag) const
@@ -246,32 +244,4 @@ void Window::waitForCleanup()
 f32 Window::renderDurationMS() const
 {
 	return this->mDeltaMS;
-}
-
-void Window::registerCommands()
-{
-	auto registry = engine::Engine::Get()->commands();
-	
-	registry->add(
-		command::Signature("setRes")
-		.pushArgType<ui32>() // width
-		.pushArgType<ui32>() // height
-		.bind([&](command::Signature const& cmd)
-		{
-			this->setSize({
-				cmd.get<ui32>(0), cmd.get<ui32>(1)
-			});
-		})
-	);
-	
-	registry->add(
-		command::Signature("setResRatio")
-		.pushArgType<ui32>()
-		.bind([&](command::Signature const& cmd)
-		{
-			auto scalar = cmd.get<ui32>(0);
-			this->setSize(math::Vector2UInt({16, 9}) * scalar);
-		})
-	);
-
 }

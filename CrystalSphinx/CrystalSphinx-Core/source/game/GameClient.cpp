@@ -93,6 +93,11 @@ void Client::uninit()
 
 void Client::registerCommands()
 {
+	ADD_CMD(
+		CMD_SIGNATURE("setRes", Client, this, exec_setResolution)
+		.pushArgType<ui32>().pushArgType<ui32>()
+	);
+	ADD_CMD(CMD_SIGNATURE("setResRatio", Client, this, exec_setResolutionRatio).pushArgType<ui32>());
 	ADD_CMD(CMD_SIGNATURE("setDPI", Client, this, exec_setDPI).pushArgType<ui32>());
 	
 	ADD_CMD(CMD_SIGNATURE("listIds", Client, this, exec_printAccountList));
@@ -111,8 +116,23 @@ void Client::registerCommands()
 	ADD_CMD(CMD_SIGNATURE("listUsers", Client, this, exec_printConnectedUsers));
 }
 
+void Client::exec_setResolution(command::Signature const& cmd)
+{
+	math::Vector2UInt res = { cmd.get<ui32>(0), cmd.get<ui32>(1) };
+	this->settings().setResolution(res).writeToDisk();
+	this->getWindow()->setSize(res);
+}
+
+void Client::exec_setResolutionRatio(command::Signature const& cmd)
+{
+	math::Vector2UInt res = math::Vector2UInt({ 16, 9 }) * cmd.get<ui32>(0);
+	this->settings().setResolution(res).writeToDisk();
+	this->getWindow()->setSize(res);
+}
+
 void Client::exec_setDPI(command::Signature const& cmd)
 {
+	this->settings().setDPI(cmd.get<ui32>(0)).writeToDisk();
 	this->renderer()->setDPI(cmd.get<ui32>(0));
 }
 

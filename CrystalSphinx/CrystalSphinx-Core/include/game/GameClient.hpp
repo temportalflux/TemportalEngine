@@ -94,6 +94,8 @@ private:
 	std::shared_ptr<ui::TextLogMenu> mpMenuTextLog;
 
 	void registerCommands();
+	void exec_setResolution(command::Signature const& cmd);
+	void exec_setResolutionRatio(command::Signature const& cmd);
 	void exec_setDPI(command::Signature const& cmd);
 	void exec_printAccountList(command::Signature const& cmd);
 	void exec_createAccount(command::Signature const& cmd);

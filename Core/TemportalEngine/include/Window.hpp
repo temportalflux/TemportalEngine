@@ -100,10 +100,6 @@ public:
 
 	f32 renderDurationMS() const;
 
-private:
-
-	void registerCommands();
-
 };
 
 #endif //WINDOW_H
