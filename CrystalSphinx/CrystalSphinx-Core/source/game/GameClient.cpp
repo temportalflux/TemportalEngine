@@ -40,7 +40,16 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 {
 	this->registerCommands();
 	this->userRegistry().scan("users");
+	this->settings().readFromDisk();
 }
+
+std::shared_ptr<graphics::MinecraftRenderer> Client::renderer() { return this->mpRenderer; }
+std::shared_ptr<graphics::SkinnedModelManager> Client::modelManager() { return this->mpSkinnedModelManager; }
+std::shared_ptr<graphics::EntityInstanceBuffer> Client::entityInstances() { return this->mpEntityInstanceBuffer; }
+std::shared_ptr<graphics::TextureRegistry> Client::textureRegistry() { return this->mpTextureRegistry; }
+std::shared_ptr<ui::FontOwner> Client::uiFontOwner() { return this->mpUIRenderer; }
+std::shared_ptr<ui::TextLogMenu> Client::chat() { return this->mpMenuTextLog; }
+game::ClientSettings& Client::settings() { return this->mClientSettings; }
 
 void Client::init()
 {
@@ -345,8 +354,9 @@ bool Client::initializeGraphics()
 bool Client::createWindow()
 {
 	auto pEngine = engine::Engine::Get();
+	auto resolution = this->settings().resolution();
 	this->mpWindow = pEngine->createWindow(
-		1280, 720,
+		resolution.x(), resolution.y(),
 		pEngine->getProject()->getDisplayName(),
 		WindowFlags::RENDER_ON_THREAD
 	);
@@ -357,6 +367,7 @@ bool Client::createWindow()
 	return true;
 }
 
+// HERE
 std::shared_ptr<Window> Client::getWindow() { return this->mpWindow; }
 
 void Client::destroyWindow()
@@ -381,8 +392,6 @@ bool Client::scanResourcePacks()
 
 	return true;
 }
-
-std::shared_ptr<ui::FontOwner> Client::uiFontOwner() { return this->mpUIRenderer; }
 
 void Client::createRenderers()
 {
@@ -446,7 +455,7 @@ void Client::createRenderers()
 void Client::createGameRenderer()
 {
 	this->mpRenderer = std::make_shared<graphics::MinecraftRenderer>();
-	this->mpRenderer->setDPI(96);
+	this->mpRenderer->setDPI(this->settings().dpi());
 	engine::Engine::Get()->initializeRenderer(this->mpRenderer.get(), this->mpWindow);
 	this->mpWindow->setRenderer(this->mpRenderer.get());
 	this->mpRenderer->UpdateWorldGraphicsOnFramePresented.bind(

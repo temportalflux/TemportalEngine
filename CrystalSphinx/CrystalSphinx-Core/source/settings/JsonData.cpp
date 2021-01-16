@@ -1,16 +1,16 @@
-#include "settings/SavedData.hpp"
+#include "settings/JsonData.hpp"
 
 #include "asset/Asset.hpp"
 #include <iostream>
 
 using namespace game;
 
-SavedData::SavedData(std::filesystem::path const& filePath)
+JsonData::JsonData(std::filesystem::path const& filePath)
 	: mFilePath(filePath)
 {
 }
 
-void SavedData::writeToDisk()
+void JsonData::writeToDisk()
 {
 	std::filesystem::create_directories(this->mFilePath.parent_path());
 	std::ofstream os(this->mFilePath);
@@ -18,7 +18,7 @@ void SavedData::writeToDisk()
 	this->save(archive);
 }
 
-void SavedData::readFromDisk()
+void JsonData::readFromDisk()
 {
 	if (!std::filesystem::exists(this->mFilePath))
 	{

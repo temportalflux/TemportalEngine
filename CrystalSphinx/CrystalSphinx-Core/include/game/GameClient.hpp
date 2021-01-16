@@ -4,6 +4,7 @@
 
 #include "game/GameUserIdRegistry.hpp"
 #include "input/Event.hpp"
+#include "settings/ClientSettings.hpp"
 #include "ui/Core.hpp"
 
 class Window;
@@ -37,13 +38,14 @@ public:
 	Client();
 
 	std::shared_ptr<Window> getWindow();
-	std::shared_ptr<graphics::MinecraftRenderer> renderer() { return this->mpRenderer; }
-	std::shared_ptr<graphics::SkinnedModelManager> modelManager() { return this->mpSkinnedModelManager; }
-	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances() { return this->mpEntityInstanceBuffer; }
-	std::shared_ptr<graphics::TextureRegistry> textureRegistry() { return this->mpTextureRegistry; }
+	std::shared_ptr<graphics::MinecraftRenderer> renderer();
+	std::shared_ptr<graphics::SkinnedModelManager> modelManager();
+	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances();
+	std::shared_ptr<graphics::TextureRegistry> textureRegistry();
 	std::shared_ptr<ui::FontOwner> uiFontOwner();
-	std::shared_ptr<ui::TextLogMenu> chat() { return this->mpMenuTextLog; }
-	
+	std::shared_ptr<ui::TextLogMenu> chat();
+	game::ClientSettings& settings();
+
 	void init();
 	void uninit();
 
@@ -61,6 +63,8 @@ protected:
 	void removeConnectedUser(ui32 netId) override;
 
 private:
+	game::ClientSettings mClientSettings;
+
 	std::optional<utility::Guid> mLocalUserId;
 	bool hasAccount() const;
 	game::UserInfo localUserInfo() const;

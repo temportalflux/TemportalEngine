@@ -234,7 +234,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\SavedData.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ClientSettings.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\settings\JsonData.hpp">
       <Filter>settings</Filter>
     </ClInclude>
   </ItemGroup>
@@ -387,7 +390,16 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\SavedData.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\ClientSettings.cpp">
+      <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\ServerSettings.cpp">
+      <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\UserInfo.cpp">
+      <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\settings\JsonData.cpp">
       <Filter>settings</Filter>
     </ClCompile>
   </ItemGroup>

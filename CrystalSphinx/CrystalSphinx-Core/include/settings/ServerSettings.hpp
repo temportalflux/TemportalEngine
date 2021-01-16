@@ -1,24 +1,19 @@
 #pragma once
 
-#include "settings/SavedData.hpp"
+#include "settings/JsonData.hpp"
 
 NS_GAME
 
 class ServerSettings
-	: public SavedData
+	: public JsonData
 {
-	static constexpr char const* defaultSaveId() { return "default"; }
+	static constexpr char const* defaultSaveId();
 
 public:
-	ServerSettings()
-		: SavedData("serverSettings.json")
-		, mPort(25565)
-		, mSaveId(defaultSaveId())
-	{
-	}
+	ServerSettings();
 
-	ui16 port() const { return this->mPort; }
-	std::string const& saveId() const { return this->mSaveId; }
+	ui16 port() const;
+	std::string const& saveId() const;
 
 private:
 
@@ -27,18 +22,8 @@ private:
 
 protected:
 
-	void save(cereal::JSONOutputArchive &archive) const override
-	{
-		archive(cereal::make_nvp("port", this->mPort));
-		archive(cereal::make_nvp("saveId", this->mSaveId));
-	}
-
-	void load(cereal::JSONInputArchive &archive) override
-	{
-		archive(cereal::make_nvp("port", this->mPort));
-		archive(cereal::make_nvp("saveId", this->mSaveId));
-		if (this->mSaveId.length() == 0) this->mSaveId = defaultSaveId();
-	}
+	void save(cereal::JSONOutputArchive &archive) const override;
+	void load(cereal::JSONInputArchive &archive) override;
 
 };
 

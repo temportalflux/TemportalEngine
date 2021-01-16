@@ -2,18 +2,17 @@
 
 #include "CoreInclude.hpp"
 
-#include <cereal/access.hpp>
-#include <cereal/archives/json.hpp>
+#include "cereal/cerealCore.hpp"
 
 NS_GAME
 
-class SavedData
+class JsonData
 {
 	friend class cereal::access;
 
 public:
-	SavedData() = default;
-	SavedData(std::filesystem::path const& filePath);
+	JsonData() = default;
+	JsonData(std::filesystem::path const& filePath);
 
 	void writeToDisk();
 	void readFromDisk();
