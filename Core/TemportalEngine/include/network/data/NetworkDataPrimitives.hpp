@@ -42,4 +42,18 @@ void read(Buffer &buffer, std::string name, std::vector<T> &value)
 	buffer.setNamed(name, std::to_string(length * sizeof(T)) + " bytes");
 }
 
+template <typename T, uSize S>
+void write(Buffer &buffer, std::string name, math::Vector<T, S> value)
+{
+	buffer.setNamed(name, value.toString());
+	buffer.write(value.data(), S * sizeof(T));
+}
+
+template <typename T, uSize S>
+void read(Buffer &buffer, std::string name, math::Vector<T, S> &value)
+{
+	buffer.read(value.data(), S * sizeof(T));
+	buffer.setNamed(name, value.toString());
+}
+
 NS_END

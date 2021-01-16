@@ -27,6 +27,7 @@ private:
 	ui32 mNetId;
 
 	std::string mName;
+	math::Vector<ui8, 3> mColorOnConnectedServer;
 
 };
 

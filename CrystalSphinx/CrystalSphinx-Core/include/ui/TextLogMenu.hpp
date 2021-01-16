@@ -24,7 +24,7 @@ public:
 	void setIsVisible(bool bVisible);
 
 	void onMessageReceived(std::optional<ui32> senderNetId, std::string const& message);
-	void addToLog(std::string const& message);
+	void addToLog(std::string const& message, math::Color color = math::Color(1));
 
 private:
 	bool mbIsVisible;
@@ -35,7 +35,9 @@ private:
 	struct Message
 	{
 		std::optional<std::string> senderName;
+		math::Color senderColor;
 		std::string message;
+		math::Color messageColor;
 	};
 	ui8 mDisplayableMessageCount;
 	std::deque<Message> mRecentMessages;

@@ -30,6 +30,7 @@
 #include "ui/DebugHUD.hpp"
 #include "ui/TextLogMenu.hpp"
 #include "ui/UIWidgets.hpp"
+#include "utility/Colors.hpp"
 #include "window/Window.hpp"
 
 using namespace game;
@@ -256,8 +257,11 @@ void Client::exec_printConnectedUsers(command::Signature const& cmd)
 	for (auto const& [netId, userId] : users)
 	{
 		std::stringstream ss;
-		ss << netId << ". " << this->getConnectedUserInfo(netId).name().c_str();
-		this->chat()->addToLog(ss.str());
+		auto& userInfo = this->getConnectedUserInfo(netId);
+		ss << netId << ". " << userInfo.name().c_str();
+		math::Color color = userInfo.color().toFloat() / 255.0f;
+		color.w() = 1.0f;
+		this->chat()->addToLog(ss.str(), color);
 	}
 }
 
@@ -270,7 +274,8 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 {
 	auto pServer = game::Game::Get()->server();
 	auto const& localUserId = this->localUserId();
-	auto const localUserInfo = this->localUserInfo();
+	auto localUserInfo = this->localUserInfo();
+	localUserInfo.setColor(game::randColor());
 	
 	// Set our network id
 	this->setLocalUserNetId(netId);
@@ -279,7 +284,7 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 	this->addConnectedUser(netId);
 	this->findConnectedUser(netId) = localUserId;
 	// Set our local info to the connected users
-	this->getConnectedUserInfo(netId).copyFrom(localUserInfo).writeToDisk();
+	this->getConnectedUserInfo(netId).copyFrom(localUserInfo);
 	
 	// Initialize server data for myself as if I was a dedicated server
 	pServer->addConnectedUser(netId);

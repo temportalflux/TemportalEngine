@@ -11,6 +11,7 @@
 #include <string.h> // memset/memcpy
 #include <type_traits>
 #include <string>
+#include <sstream>
 
 // Engine ---------------------------------------------------------------------
 #include "math/VectorType.hpp"
@@ -689,6 +690,17 @@ public:
 		for (ui8 i = 0; i < VectorFormat::dimensions(); ++i)
 			vec[i] = utility::StringParser<TValue>::parse(args[i]);
 		return vec;
+	}
+
+	std::string toString() const
+	{
+		std::stringstream ss;
+		for (ui8 i = 0; i < VectorFormat::dimensions(); ++i)
+		{
+			if (i != 0) ss << ',';
+			ss << std::to_string(mValues[i]).c_str();
+		}
+		return ss.str();
 	}
 
 };

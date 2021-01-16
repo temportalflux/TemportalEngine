@@ -3,7 +3,7 @@
 #define rgb(r, g, b) math::Vector<ui8, 3>({ r, g, b })
 
 // Generated with http://phrogz.net/css/distinct-colors.html
-std::array<math::Vector<ui8, 3>, 721> game::COLORS = {
+std::array<math::Vector<ui8, 3>, 100> game::COLORS = {{
 	rgb(191,0,0), rgb(204,153,51), rgb(0,115,61), rgb(0,34,64), rgb(204,0,163),
 	rgb(89,0,0), rgb(127,96,32), rgb(0,64,34), rgb(45,116,179), rgb(140,35,119),
 	rgb(242,85,61), rgb(255,204,0), rgb(61,242,182), rgb(0,102,255), rgb(255,0,170),
@@ -24,4 +24,11 @@ std::array<math::Vector<ui8, 3>, 721> game::COLORS = {
 	rgb(178,116,45), rgb(22,89,22), rgb(48,143,191), rgb(48,16,64), rgb(89,58,22),
 	rgb(0,255,68), rgb(16,48,64), rgb(190,0,204), rgb(242,162,0), rgb(61,242,133),
 	rgb(0,122,230), rgb(95,0,102), rgb(64,43,0), rgb(41,166,91), rgb(0,82,153)
-};
+}};
+
+math::Vector<ui8, 3> game::randColor()
+{
+	srand((ui32)time(0));
+	auto idxColor = rand() % game::COLORS.size();
+	return game::COLORS[idxColor];
+}

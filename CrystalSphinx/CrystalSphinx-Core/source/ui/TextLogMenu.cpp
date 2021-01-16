@@ -126,17 +126,29 @@ void TextLogMenu::onInputConfirmed(std::string input)
 void TextLogMenu::onMessageReceived(std::optional<ui32> senderNetId, std::string const& message)
 {
 	std::optional<std::string> name = std::nullopt;
+	math::Color senderColor = math::Color(0.0f);
+	math::Color messageColor = math::Color(1);
 	if (senderNetId)
 	{
 		auto const& userInfo = game::Game::Get()->client()->getConnectedUserInfo(*senderNetId);
 		name = userInfo.name();
+		senderColor = userInfo.color().toFloat() / 255.0f;
+		senderColor.w() = 1.0f;
 	}
-	this->pushToLog({ name, message });
+	// If this was a server message, it should be a special color
+	else
+	{
+		senderColor = { 0.6f, 0.6f, 0.6f, 1.0f };
+	}
+	this->pushToLog({ name, senderColor, message, messageColor });
 }
 
-void TextLogMenu::addToLog(std::string const& message)
+void TextLogMenu::addToLog(std::string const& message, math::Color color)
 {
-	this->pushToLog({ std::nullopt, message });
+	this->pushToLog({
+		std::nullopt, math::Color(0.0f),
+		message, color
+	});
 }
 
 void TextLogMenu::pushToLog(Message const& msg)
@@ -166,10 +178,12 @@ void TextLogMenu::updateLogText()
 			ss << iter->senderName.value() << ": ";
 			this->mpChatLog
 				->addSegment(ss.str())
-				.setSegmentColor({ 0, 1, 1, 1 });
+				.setSegmentColor(iter->senderColor);
 		}
 
-		this->mpChatLog->addSegment(iter->message);
+		this->mpChatLog
+			->addSegment(iter->message)
+			.setSegmentColor(iter->messageColor);
 
 		++iter;
 	}

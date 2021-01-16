@@ -6,6 +6,7 @@
 #include "game/GameServer.hpp"
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
+#include "utility/Colors.hpp"
 
 using namespace network;
 using namespace network::packet;
@@ -26,6 +27,7 @@ UpdateUserInfo& UpdateUserInfo::setNetId(ui32 netId)
 UpdateUserInfo& UpdateUserInfo::setInfo(game::UserInfo const& info)
 {
 	this->mName = info.name();
+	this->mColorOnConnectedServer = info.color();
 	return *this;
 }
 
@@ -35,6 +37,7 @@ void UpdateUserInfo::write(Buffer &archive) const
 	if (archive.type().includes(EType::eServer))
 	{
 		network::write(archive, "netId", this->mNetId);
+		network::write(archive, "color", this->mColorOnConnectedServer);
 	}
 	network::write(archive, "name", this->mName);
 }
@@ -45,6 +48,7 @@ void UpdateUserInfo::read(Buffer &archive)
 	if (archive.type().includes(EType::eServer))
 	{
 		network::read(archive, "netId", this->mNetId);
+		network::read(archive, "color", this->mColorOnConnectedServer);
 	}
 	network::read(archive, "name", this->mName);
 }
@@ -56,13 +60,21 @@ void UpdateUserInfo::process(Interface *pInterface)
 	{
 		// NOTE: This value is also used in the client section if running an integrated client-server
 		this->mNetId = pInterface->getNetIdFor(this->connection());
+		
+		// NOTE: If this packet is ever received by the server
+		// AFTER the first time the user sends it on log in, their color will change every time
+		this->mColorOnConnectedServer = game::randColor();
 	}
-	network::logger().log(LOG_INFO, "Received alias %s for network-id %u", this->mName.c_str(), this->mNetId);
+	network::logger().log(LOG_INFO, "Received user info for network-id %u", this->mNetId);
 	if (pInterface->type().includes(EType::eServer))
 	{
 		auto const& userId = pGame->server()->findConnectedUser(this->mNetId);
-		pGame->server()->getUserInfo(userId).setName(this->mName).writeToDisk();
-		this->broadcast({ this->connection() });
+		pGame->server()
+			->getUserInfo(userId)
+			.setName(this->mName)
+			.setColor(this->mColorOnConnectedServer)
+			.writeToDisk();
+		this->broadcast();
 
 		ChatMessage::broadcastServerMessage(
 			this->mName + " has joined the server."
@@ -72,7 +84,8 @@ void UpdateUserInfo::process(Interface *pInterface)
 	if (pInterface->type().includes(EType::eClient))
 	{
 		assert(pGame->client()->hasConnectedUser(this->mNetId));
-		auto& userInfo = pGame->client()->getConnectedUserInfo(this->mNetId);
-		userInfo.setName(this->mName);
+		pGame->client()->getConnectedUserInfo(this->mNetId)
+			.setName(this->mName)
+			.setColor(this->mColorOnConnectedServer);
 	}
 }
