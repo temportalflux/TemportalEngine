@@ -44,6 +44,7 @@ logging::Logger GAME_LOG = DeclareLog("Game");
 std::shared_ptr<Game> Singleton<Game, int, char*[]>::gpInstance = nullptr;
 
 Game::Game(int argc, char *argv[])
+	: mSaveDataRegistry(std::filesystem::current_path() / "saves")
 {
 	uSize totalMem = 0;
 	auto args = utility::parseArguments(argc, argv);
@@ -61,6 +62,7 @@ Game::Game(int argc, char *argv[])
 	engine::Engine::Create(memoryChunkSizes);
 	this->initializeAssetTypes();
 
+	this->mSaveDataRegistry.scan();
 	this->registerCommands();
 
 	auto* networkInterface = Game::networkInterface();
@@ -187,6 +189,10 @@ void Game::init()
 		return;
 	}
 
+	if (this->mpServer)
+	{
+		this->mpServer->init();
+	}
 	if (this->mpClient)
 	{
 		this->mpClient->init();

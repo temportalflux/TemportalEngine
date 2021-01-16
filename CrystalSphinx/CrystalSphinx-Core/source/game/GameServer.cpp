@@ -11,12 +11,21 @@ Server::Server() : Session()
 {
 	this->serverRSA().generate();
 	this->mServerSettings.readFromDisk();
-	this->userRegistry().scan(this->mServerSettings.saveDirectory() / "users");
 }
 
 Server::~Server()
 {
 	Game::networkInterface()->setType(network::EType::eClient).stop();
+}
+
+void Server::init()
+{
+	auto& saveDataRegistry = Game::Get()->saveData();
+	auto saveId = this->mServerSettings.saveId();
+	auto& saveInstance = saveDataRegistry.has(saveId)
+		? saveDataRegistry.get(saveId)
+		: saveDataRegistry.create(saveId);
+	this->userRegistry().scan(saveInstance.userDirectory());
 }
 
 void Server::setupNetwork(utility::Flags<network::EType> flags)

@@ -18,11 +18,7 @@ public:
 	}
 
 	ui16 port() const { return this->mPort; }
-
-	std::filesystem::path saveDirectory() const
-	{
-		return std::filesystem::current_path() / "saves" / this->mSaveId;
-	}
+	std::string const& saveId() const { return this->mSaveId; }
 
 private:
 

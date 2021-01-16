@@ -6,6 +6,7 @@
 #include "logging/Logger.hpp"
 #include "network/NetworkCore.hpp"
 #include "network/NetworkAddress.hpp"
+#include "saveData/SaveDataRegistry.hpp"
 #include "settings/ServerSettings.hpp"
 #include "utility/Flags.hpp"
 #include "utility/Guid.hpp"
@@ -46,6 +47,7 @@ public:
 	std::shared_ptr<game::WorldLogic> worldLogic() { return this->mpWorldLogic; }
 	std::shared_ptr<game::Server> server() { return this->mpServer; }
 	std::shared_ptr<game::Client> client() { return this->mpClient; }
+	saveData::Registry& saveData() { return this->mSaveDataRegistry; }
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 
@@ -58,13 +60,13 @@ private:
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
 
+	saveData::Registry mSaveDataRegistry;
+
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 		
 	void registerCommands();
-
 	void initializeAssetTypes();
-
 	void registerECSTypes(ecs::Core *ecs);
 
 	void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);

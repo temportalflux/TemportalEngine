@@ -14,6 +14,8 @@ public:
 	Server();
 	~Server();
 
+	void init();
+
 	bool hasSaveForUser(utility::Guid const& id) const;
 	void initializeUser(utility::Guid const& id, crypto::RSAKey const& key);
 	crypto::RSAKey getUserPublicKey(utility::Guid const& id) const;

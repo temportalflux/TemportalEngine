@@ -64,6 +64,9 @@
     <Filter Include="network\packet">
       <UniqueIdentifier>{2fe9c01a-ac03-4125-891a-6468542096c4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="saveData">
+      <UniqueIdentifier>{aa8c1403-08f8-42dc-b755-4af56fa104a7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\BlockType.hpp">
@@ -227,6 +230,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\saveData\SaveDataRegistry.hpp">
+      <Filter>saveData</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -372,6 +378,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp">
       <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\saveData\SaveDataRegistry.cpp">
+      <Filter>saveData</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -204,7 +204,9 @@ void Client::exec_startHostingServer(command::Signature const& cmd)
 		this->chat()->addToLog("You have not selected an account.");
 		return;
 	}
-	game::Game::Get()->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
+	auto pGame = game::Game::Get();
+	pGame->setupNetworkServer({ network::EType::eServer, network::EType::eClient });
+	pGame->server()->init();
 	Game::networkInterface()->start();
 }
 

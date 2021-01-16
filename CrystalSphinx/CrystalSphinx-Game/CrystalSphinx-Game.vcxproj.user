@@ -5,7 +5,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerAttach>
     </LocalDebuggerAttach>
-    <LocalDebuggerCommandArguments>memory-asset=65536 memory-misc=65536 memory-main=524288</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-asset=65536 memory-misc=65536 memory-main=524288 server</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
@@ -19,7 +19,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerAttach>
     </LocalDebuggerAttach>
-    <LocalDebuggerCommandArguments>memory-asset=65536 memory-misc=65536 memory-main=524288</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>memory-asset=65536 memory-misc=65536 memory-main=524288 server</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)output\$(ProjectName)</LocalDebuggerWorkingDirectory>
