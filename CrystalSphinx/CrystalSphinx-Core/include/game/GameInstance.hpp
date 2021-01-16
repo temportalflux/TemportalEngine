@@ -44,10 +44,10 @@ public:
 	void run();
 
 	static network::Interface* networkInterface();
-	std::shared_ptr<game::WorldLogic> worldLogic() { return this->mpWorldLogic; }
-	std::shared_ptr<game::Server> server() { return this->mpServer; }
-	std::shared_ptr<game::Client> client() { return this->mpClient; }
-	saveData::Registry& saveData() { return this->mSaveDataRegistry; }
+	std::shared_ptr<game::WorldLogic> worldLogic();
+	std::shared_ptr<game::Server> server();
+	std::shared_ptr<game::Client> client();
+	saveData::Registry& saveData();
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 

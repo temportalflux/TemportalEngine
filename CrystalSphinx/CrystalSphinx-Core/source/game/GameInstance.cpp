@@ -107,6 +107,11 @@ network::Interface* Game::networkInterface()
 	return &engine::Engine::Get()->networkInterface();
 }
 
+std::shared_ptr<game::WorldLogic> Game::worldLogic() { return this->mpWorldLogic; }
+std::shared_ptr<game::Server> Game::server() { return this->mpServer; }
+std::shared_ptr<game::Client> Game::client() { return this->mpClient; }
+saveData::Registry& Game::saveData() { return this->mSaveDataRegistry; }
+
 void Game::setupNetworkServer(utility::Flags<network::EType> flags)
 {
 	this->mpServer = std::make_shared<game::Server>();
