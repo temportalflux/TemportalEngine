@@ -27,6 +27,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Shader.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\TextureSampler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\utils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\cerealCore.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\GraphicsFlags.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\command\CommandSignature.cpp" />
@@ -139,6 +140,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TextureSampler.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\TypedAssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\utils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\cerealCore.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\GraphicsFlags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\list.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\cereal\mathVector.hpp" />

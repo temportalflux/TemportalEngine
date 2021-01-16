@@ -2,6 +2,7 @@
 
 #include "crypto/Crypto.hpp"
 #include "Singleton.hpp"
+#include "network/data/NetworkDataBuffer.hpp"
 
 NS_CRYPTO
 
@@ -68,4 +69,9 @@ public:
 
 };
 
+NS_END
+
+NS_NETWORK
+void write(Buffer &buffer, std::string name, crypto::RSAKey::PublicData const& value);
+void read(Buffer &buffer, std::string name, crypto::RSAKey::PublicData &value);
 NS_END

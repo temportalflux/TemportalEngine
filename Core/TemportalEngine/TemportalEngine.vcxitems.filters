@@ -392,6 +392,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\data\NetworkDataBuffer.cpp">
       <Filter>network\data</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\cereal\cerealCore.cpp">
+      <Filter>cereal</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -837,7 +840,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\TimeUtils.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\Crypto.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketClientStatus.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
@@ -846,6 +848,12 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\data\NetworkDataPrimitives.hpp">
       <Filter>network\data</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\include\cereal\cerealCore.hpp">
+      <Filter>cereal</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\crypto\Crypto.hpp">
+      <Filter>crypto</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -10,7 +10,9 @@ NS_NETWORK
 class Buffer
 {
 public:
-	Buffer(utility::Flags<EType> sourceType, void* pData, uSize size);
+	using StringifiedData = std::vector<std::pair<std::string, std::string>>;
+
+	Buffer(utility::Flags<EType> sourceType, void* pData, uSize size, bool bPopulateStrings);
 
 	utility::Flags<EType> const& type() const;
 
@@ -29,6 +31,9 @@ public:
 		this->read(&data, sizeof(T));
 	}
 
+	void setNamed(std::string name, std::string value);
+	void stringify(std::stringstream &ss) const;
+
 	uSize capacity() const;
 	uSize size() const;
 
@@ -38,6 +43,8 @@ private:
 	void* mpTail;
 	uSize const mCapacity;
 	uSize mSize;
+	bool mbPopulateStrings;
+	StringifiedData mStringifiedData;
 };
 
 NS_END

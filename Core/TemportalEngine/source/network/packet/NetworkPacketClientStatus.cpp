@@ -30,20 +30,33 @@ ClientStatus& ClientStatus::setStatus(EClientStatus status)
 	return *this;
 }
 
+std::string to_string(EClientStatus status)
+{
+	switch (status)
+	{
+	case EClientStatus::eAuthenticating: return  "authenticating";
+	case EClientStatus::eConnected: return "connecting";
+	case EClientStatus::eDisconnected: return "disconnecting";
+	default: return "invalid";
+	}
+}
+
 void ClientStatus::write(Buffer &archive) const
 {
 	Packet::write(archive);
-	network::write(archive, this->mbIsSelf);
-	network::write(archive, this->mNetId);
+	network::write(archive, "isSelf", this->mbIsSelf);
+	network::write(archive, "netId", this->mNetId);
+	archive.setNamed("status", to_string(this->mStatus));
 	archive.writeRaw(this->mStatus);
 }
 
 void ClientStatus::read(Buffer &archive)
 {
 	Packet::read(archive);
-	network::read(archive, this->mbIsSelf);
-	network::read(archive, this->mNetId);
+	network::read(archive, "isSelf", this->mbIsSelf);
+	network::read(archive, "netId", this->mNetId);
 	archive.readRaw(this->mStatus);
+	archive.setNamed("status", to_string(this->mStatus));
 }
 
 void ClientStatus::process(network::Interface *pInterface)

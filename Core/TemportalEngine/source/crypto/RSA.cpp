@@ -254,3 +254,21 @@ void RSAKey::decrypt(std::vector<ui8> &data) const
 	}
 	data = outData;
 }
+
+std::string toPacketDebugString(crypto::RSAKey::PublicData const& value)
+{
+	// sprintf(hexstr+i*2, "%02x", array[i]);
+	return std::to_string(sizeof(value)) + " bytes";
+}
+
+void network::write(network::Buffer &buffer, std::string name, crypto::RSAKey::PublicData const& value)
+{
+	buffer.setNamed(name, toPacketDebugString(value));
+	buffer.writeRaw(value);
+}
+
+void network::read(network::Buffer &buffer, std::string name, crypto::RSAKey::PublicData &value)
+{
+	buffer.readRaw(value);
+	buffer.setNamed(name, toPacketDebugString(value));
+}

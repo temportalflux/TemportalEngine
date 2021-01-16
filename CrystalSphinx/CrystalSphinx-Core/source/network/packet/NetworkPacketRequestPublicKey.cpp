@@ -20,7 +20,7 @@ void RequestPublicKey::write(Buffer &archive) const
 	Packet::write(archive);
 	if (archive.type() == EType::eClient)
 	{
-		archive.writeRaw(this->mClientPublicKey);
+		network::write(archive, "clientPublicKey", this->mClientPublicKey);
 	}
 }
 
@@ -29,7 +29,7 @@ void RequestPublicKey::read(Buffer &archive)
 	Packet::read(archive);
 	if (archive.type() == EType::eClient)
 	{
-		archive.readRaw(this->mClientPublicKey);
+		network::read(archive, "clientPublicKey", this->mClientPublicKey);
 	}
 }
 

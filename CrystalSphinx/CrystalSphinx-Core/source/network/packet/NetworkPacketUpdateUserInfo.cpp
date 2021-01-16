@@ -32,15 +32,15 @@ UpdateUserInfo& UpdateUserInfo::setInfo(game::UserInfo const& info)
 void UpdateUserInfo::write(Buffer &archive) const
 {
 	Packet::write(archive);
-	network::write(archive, this->mNetId);
-	network::write(archive, this->mName);
+	network::write(archive, "netId", this->mNetId);
+	network::write(archive, "name", this->mName);
 }
 
 void UpdateUserInfo::read(Buffer &archive)
 {
 	Packet::read(archive);
-	network::read(archive, this->mNetId);
-	network::read(archive, this->mName);
+	network::read(archive, "netId", this->mNetId);
+	network::read(archive, "name", this->mName);
 }
 
 void UpdateUserInfo::process(Interface *pInterface)

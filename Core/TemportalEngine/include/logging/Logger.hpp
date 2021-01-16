@@ -112,11 +112,12 @@ public:
 	*/
 	void close();
 
+	bool isLevelEnabled(std::string title, ELogLevel threshold, ELogLevel level) const;
+
 private:
 
 	LevelConfig mLevels;
 
-	std::filesystem::path mActivePath;
 	std::filesystem::path mArchivePath;
 
 	std::vector<Listener> mListeners;
@@ -125,14 +126,14 @@ private:
 	thread::MutexLock mpLock[1];
 
 	/**
-	* Writes to the active output streams using known array data.
+	* Writes to the output streams using known array data.
 	*/
-	void printLog(void* pFileActive, void* pFileArchive, char const *const format, char *args);
+	void printLog(void* pFileArchive, char const *const format, char *args);
 
 	/**
-	* Writes to the active output streams using unknown variadic data.
+	* Writes to the output streams using unknown variadic data.
 	*/
-	void printLog(void* pFileActive, void* pFileArchive, char const *const format, ...);
+	void printLog(void* pFileArchive, char const *const format, ...);
 
 };
 
@@ -155,7 +156,7 @@ public:
 	/**
 	* Writes a log message using a given category to the output streams initialized by the LogSystem.
 	* @param category The category to output to.
-	* @param format String format as definied by fprintf (http://www.cplusplus.com/reference/cstdio/fprintf/).
+	* @param format String format as defined by fprintf (http://www.cplusplus.com/reference/cstdio/fprintf/).
 	* @param args Arguments to be included via the format parameter, using fprintf format.
 	*/
 	template <typename... TArgs>
@@ -163,6 +164,8 @@ public:
 	{
 		mpLogSystem->log(this->mTitle, this->mDefaultThreshold, level, format, args...);
 	}
+
+	bool isLevelEnabled(ELogLevel level) const;
 
 private:
 

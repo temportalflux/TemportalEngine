@@ -30,20 +30,20 @@ Authenticate& Authenticate::setServerPublicKey(crypto::RSAKey::PublicData const&
 void Authenticate::write(Buffer &archive) const
 {
 	Packet::write(archive);
-	network::write(archive, this->mToken);
+	network::write(archive, "token", this->mToken);
 	if (archive.type().includes(EType::eServer))
 	{
-		archive.writeRaw(this->mServerPublicKey);
+		network::write(archive, "serverPublicKey", this->mServerPublicKey);
 	}
 }
 
 void Authenticate::read(Buffer &archive)
 {
 	Packet::read(archive);
-	network::read(archive, this->mToken);
+	network::read(archive, "token", this->mToken);
 	if (archive.type().includes(EType::eServer))
 	{
-		archive.readRaw(this->mServerPublicKey);
+		network::read(archive, "serverPublicKey", this->mServerPublicKey);
 	}
 }
 

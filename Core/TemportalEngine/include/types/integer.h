@@ -10,10 +10,10 @@ typedef __int32				i32; // int, 32 bits, 4 bytes
 typedef __int64				i64; // long long, 64 bits, 8 bytes
 
 // unsigned integer types:
-typedef unsigned __int8		ui8;
-typedef unsigned __int16	ui16;
-typedef unsigned __int32	ui32;
-typedef unsigned __int64	ui64;
+typedef unsigned __int8		ui8;  // unsigned char, 8 bits, 1 byte
+typedef unsigned __int16	ui16; // unsigned short, 16 bits, 2 bytes
+typedef unsigned __int32	ui32; // unsigned int, 32 bits, 4 bytes
+typedef unsigned __int64	ui64; // unsigned long long, 64 bits, 8 bytes
 
 #ifdef __SIZEOF_INT128__
 // huge integers

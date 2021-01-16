@@ -2,10 +2,11 @@
 
 using namespace network;
 
-Buffer::Buffer(utility::Flags<EType> sourceType, void* pData, uSize size)
+Buffer::Buffer(utility::Flags<EType> sourceType, void* pData, uSize size, bool bPopulateStrings)
 	: mSourceType(sourceType)
 	, mpHead(pData), mpTail(pData)
 	, mCapacity(size), mSize(0)
+	, mbPopulateStrings(bPopulateStrings)
 {
 }
 
@@ -34,4 +35,25 @@ void Buffer::read(void* data, uSize size)
 		this->mpTail = (void*)(uSize(this->mpTail) + size);
 	}
 	this->mSize += size;
+}
+
+void Buffer::setNamed(std::string name, std::string value)
+{
+	if (this->mbPopulateStrings)
+	{
+		this->mStringifiedData.push_back(std::make_pair(
+			name, value
+		));
+	}
+}
+
+void Buffer::stringify(std::stringstream &ss) const
+{
+	for (auto const& entry : this->mStringifiedData)
+	{
+		ss << "- "
+			<< entry.first.c_str()
+			<< ": " << entry.second.c_str()
+			<< '\n';
+	}
 }

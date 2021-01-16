@@ -25,13 +25,13 @@ LoginWithAuthId& LoginWithAuthId::setId(utility::Guid const& id)
 void LoginWithAuthId::write(Buffer &archive) const
 {
 	Packet::write(archive);
-	network::write(archive, this->mId);
+	network::write(archive, "id", this->mId);
 }
 
 void LoginWithAuthId::read(Buffer &archive)
 {
 	Packet::read(archive);
-	network::read(archive, this->mId);
+	network::read(archive, "id", this->mId);
 }
 
 void LoginWithAuthId::process(Interface *pInterface)

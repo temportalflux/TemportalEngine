@@ -10,6 +10,7 @@
 // Engine ---------------------------------------------------------------------
 #include "math/compare.h"
 #include "utility/TimeUtils.hpp"
+#include "cereal/cerealCore.hpp"
 
 // Namespaces -----------------------------------------------------------------
 using namespace logging;
@@ -55,18 +56,13 @@ namespace cereal
 
 }
 
-cereal::JSONOutputArchive::Options JsonFormat = cereal::JSONOutputArchive::Options(
-	324,
-	cereal::JSONOutputArchive::Options::IndentChar::tab, 1
-);
-
 void initializeLevels(LevelConfig &cfg, std::filesystem::path cfgPath)
 {
 	std::filesystem::create_directories(cfgPath.parent_path());
 	if (!std::filesystem::exists(cfgPath))
 	{
 		std::ofstream os(cfgPath.string());
-		cereal::JSONOutputArchive archive(os, JsonFormat);
+		cereal::JSONOutputArchive archive(os, cereal::JsonFormat);
 		cfg.save(archive);
 	}
 	std::ifstream is(cfgPath.string());
@@ -107,18 +103,17 @@ LogSystem::LogSystem()
 	*mpLock = thread::MutexLock();
 }
 
-void LogSystem::printLog(void* pFileActive, void* pFileArchive, char const *const format, char * args)
+void LogSystem::printLog(void* pFileArchive, char const *const format, char * args)
 {
 	vfprintf(stdout, format, args);
-	if (pFileActive != 0) vfprintf((FILE*)pFileActive, format, args);
 	if (pFileArchive != 0) vfprintf((FILE*)pFileArchive, format, args);
 }
 
-void LogSystem::printLog(void* pFileActive, void* pFileArchive, char const *const format, ...)
+void LogSystem::printLog(void* pFileArchive, char const *const format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	printLog(pFileActive, pFileArchive, format, args);
+	printLog(pFileArchive, format, args);
 	va_end(args);
 }
 
@@ -143,28 +138,29 @@ void LogSystem::open(
 {
 	initializeLevels(this->mLevels, logLevelsConfigPath);
 
-	this->mActivePath = std::filesystem::current_path() / "active.log";
 	this->mArchivePath = archivePath;
-	if (std::filesystem::exists(this->mActivePath))
-		std::filesystem::remove(this->mActivePath);
-	std::filesystem::create_directories(this->mActivePath.parent_path());
 	std::filesystem::create_directories(this->mArchivePath.parent_path());
 }
 
-void LogSystem::log(std::string const& title, ELogLevel threshold, ELogLevel level, Message format, ...)
+bool LogSystem::isLevelEnabled(std::string title, ELogLevel threshold, ELogLevel level) const
 {
+	#if NDEBUG
+	if (level == LOG_DEBUG) return false;
+	#endif
 	if (this->mLevels.has(title))
 	{
 		threshold = this->mLevels.get(title);
 	}
-	if (ui8(level) > ui8(threshold)) return;
-	#if NDEBUG
-	if (level == LOG_DEBUG) return;
-	#endif
+	return ui8(level) <= ui8(threshold);
+}
+
+void LogSystem::log(std::string const& title, ELogLevel threshold, ELogLevel level, Message format, ...)
+{
+	if (!this->isLevelEnabled(title, threshold, level)) return;
 
 	auto const categoryStr = LogSystem::getLevelString(level);
 	auto const& timeStr = utility::currentTimeStr();
-	FILE *pActive, *pArchive;
+	FILE *pArchive;
 
 	std::array<char, 256> logContentData;
 	logContentData.fill('\0');
@@ -172,27 +168,25 @@ void LogSystem::log(std::string const& title, ELogLevel threshold, ELogLevel lev
 	mpLock->lock();
 
 	// Files are opened per log call because windows doesn't have a way to flush files to disk until `fclose` is called
-	fopen_s((FILE**)&pActive, this->mActivePath.string().c_str(), "a");
 	fopen_s((FILE**)&pArchive, this->mArchivePath.string().c_str(), "a");
-	assert(pActive != 0 && pArchive != 0);
+	assert(pArchive != 0);
 
 	// Print the log info
 	printLog(
-		pActive, pArchive,
+		pArchive,
 		"[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), title.c_str()
 	);
 	// And the log content
 	va_list args;
 	va_start(args, format);
-	printLog(pActive, pArchive, format, args);
+	printLog(pArchive, format, args);
 	vsnprintf(logContentData.data(), logContentData.size(), format, args);
 	va_end(args);
 	// Close out the line
-	printLog(pActive, pArchive, "\n");
+	printLog(pArchive, "\n");
 		
 	// Flush stdout and file descriptors
 	fflush(stdout);
-	fclose(pActive);
 	fclose(pArchive);
 
 	std::string logContent(logContentData.begin(), std::find_if(logContentData.begin(), logContentData.end(), [](int c) { return c == '\0'; }));
@@ -234,4 +228,9 @@ Logger::Logger(std::string title, ELogLevel defaultThreshold, LogSystem *pLogSys
 
 Logger::Logger() : Logger("", ELogLevel::eInfo, 0)
 {
+}
+
+bool Logger::isLevelEnabled(ELogLevel level) const
+{
+	return this->mpLogSystem->isLevelEnabled(this->mTitle, this->mDefaultThreshold, level);
 }

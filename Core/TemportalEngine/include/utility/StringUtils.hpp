@@ -71,6 +71,7 @@ namespace utility
 	struct StringParser
 	{
 		static T parse(std::string str);// { static_assert(false); }
+		static std::string to_string(T const& v);
 	};
 
 }

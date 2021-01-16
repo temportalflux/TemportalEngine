@@ -7,6 +7,8 @@
 #include "..\..\include\utility\Guid.hpp"
 #endif
 
+#include "utility/StringUtils.hpp"
+
 using namespace utility;
 
 #define GUID_STRING_LENGTH 36
@@ -84,6 +86,9 @@ Guid::operator std::string() const
 {
 	return this->toString();
 }
+
+template <> Guid utility::StringParser<Guid>::parse(std::string v) { return Guid::fromString(v); }
+template <> std::string utility::StringParser<Guid>::to_string(Guid const& v) { return v.toString(); }
 
 bool Guid::operator<(Guid const &other) const
 {

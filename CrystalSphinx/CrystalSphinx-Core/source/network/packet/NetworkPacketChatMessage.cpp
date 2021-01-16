@@ -40,17 +40,17 @@ ChatMessage& ChatMessage::setMessage(std::string const& msg)
 void ChatMessage::write(Buffer &archive) const
 {
 	Packet::write(archive);
-	network::write(archive, this->mbIsServerMessage);
-	network::write(archive, this->mSenderNetId);
-	network::write(archive, this->mMsg);
+	network::write(archive, "bFromServer", this->mbIsServerMessage);
+	network::write(archive, "senderNetId", this->mSenderNetId);
+	network::write(archive, "message", this->mMsg);
 }
 
 void ChatMessage::read(Buffer &archive)
 {
 	Packet::read(archive);
-	network::read(archive, this->mbIsServerMessage);
-	network::read(archive, this->mSenderNetId);
-	network::read(archive, this->mMsg);
+	network::read(archive, "bFromServer", this->mbIsServerMessage);
+	network::read(archive, "senderNetId", this->mSenderNetId);
+	network::read(archive, "message", this->mMsg);
 }
 
 void ChatMessage::process(network::Interface *pInterface)

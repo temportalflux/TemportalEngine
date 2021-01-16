@@ -41,7 +41,7 @@ public:
 
 	ui32 connection() const { return this->mConnection; }
 	void sendPackets(
-		std::set<ui32> const& connections,
+		std::set<ui32> connections,
 		std::vector<std::shared_ptr<packet::Packet>> const& packets,
 		std::set<ui32> except = {}
 	);
@@ -76,7 +76,12 @@ private:
 	ui32 nextNetworkId();
 	void addClient(ui32 connection, ui32 netId);
 
-	std::vector<std::shared_ptr<packet::Packet>> mReceivedPackets;
+	struct RecievedPacket
+	{
+		std::shared_ptr<packet::Packet> packet;
+		std::optional<std::string> debugLog;
+	};
+	std::vector<RecievedPacket> mReceivedPackets;
 	void pollIncomingMessages();
 	
 public:

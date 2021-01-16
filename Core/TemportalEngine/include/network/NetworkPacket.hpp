@@ -9,7 +9,8 @@
 public: \
 	static ui32 TypeId; \
 	static std::shared_ptr<ClassType> create(); \
-	ui32 typeId() const override { return ClassType::TypeId; }
+	ui32 typeId() const override { return ClassType::TypeId; } \
+	std::string typeDisplayName() const override { return #ClassType; }
 #define DEFINE_PACKET_TYPE(ClassType) \
 	ui32 ClassType::TypeId = 0; \
 	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); }
@@ -122,9 +123,11 @@ public:
 	
 	Packet(utility::Flags<EPacketFlags> flags = 0);
 	virtual ui32 typeId() const { assert(false); return 0; }
+	virtual std::string typeDisplayName() const { assert(false); return ""; }
 
 	utility::Flags<EPacketFlags> const& flags() const;
 
+	void appendDebugLogHeader(std::stringstream &ss) const;
 	virtual void write(Buffer &archive) const;
 	virtual void read(Buffer &archive);
 	

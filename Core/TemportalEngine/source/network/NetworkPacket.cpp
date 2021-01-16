@@ -38,15 +38,23 @@ utility::Flags<EPacketFlags> const& Packet::flags() const
 	return this->mFlags;
 }
 
+void Packet::appendDebugLogHeader(std::stringstream &ss) const
+{
+	ss
+		<< this->typeDisplayName().c_str()
+		<< " [" << this->flags().to_string().c_str() << ']'
+		<< '\n';
+}
+
 void Packet::write(Buffer &archive) const
 {
-	network::write(archive, this->typeId());
+	network::write(archive, "typeId", this->typeId());
 }
 
 void Packet::read(Buffer &archive)
 {
 	ui32 typeId;
-	network::read(archive, typeId);
+	network::read(archive, "typeId", typeId);
 	assert(typeId == this->typeId());
 }
 

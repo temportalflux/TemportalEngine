@@ -11,6 +11,8 @@
 
 using namespace network;
 
+#define PACKET_DATA_LOG_LEVEL LOG_VERBOSE
+
 SteamNetworkingConfigValue_t makeConfigCallback(ESteamNetworkingConfigValue key, network::Interface *pInterface, void (network::Interface::*f)(void*))
 {
 	std::function<void(void*)> callback = std::bind(f, pInterface, std::placeholders::_1);
@@ -167,7 +169,12 @@ void Interface::update(f32 deltaTime)
 	while (this->mReceivedPackets.size() > 0)
 	{
 		auto iter = this->mReceivedPackets.begin();
-		(*iter)->process(this);
+		auto const& received = *iter;
+		if (received.debugLog)
+		{
+			network::logger().log(PACKET_DATA_LOG_LEVEL, received.debugLog->c_str());
+		}
+		received.packet->process(this);
 		this->mReceivedPackets.erase(iter);
 	}
 	
@@ -201,21 +208,30 @@ void Interface::pollIncomingMessages()
 	}
 	assert(numMsgs == 1 && pIncomingMsg);
 	
-	std::shared_ptr<packet::Packet> pPacket;
+	RecievedPacket received = {};
 	{
 		auto pPacketTypeId = reinterpret_cast<ui32*>(pIncomingMsg->m_pData);
-		pPacket = this->packetTypes().create(*pPacketTypeId);
-		pPacket->setSourceConnection(pIncomingMsg->m_conn);
+		received.packet = this->packetTypes().create(*pPacketTypeId);
+		received.packet->setSourceConnection(pIncomingMsg->m_conn);
 
 		auto buffer = network::Buffer(
 			this->type().includes(EType::eServer) ? EType::eClient : EType::eServer,
-			pIncomingMsg->m_pData, pIncomingMsg->m_cbSize
+			pIncomingMsg->m_pData, pIncomingMsg->m_cbSize, true
 		);
-		pPacket->read(buffer);
+		received.packet->read(buffer);
+
+		if (network::logger().isLevelEnabled(PACKET_DATA_LOG_LEVEL))
+		{
+			std::stringstream debugLog;
+			debugLog << "Received Packet:\n";
+			received.packet->appendDebugLogHeader(debugLog);
+			buffer.stringify(debugLog);
+			received.debugLog = debugLog.str();
+		}
 	}
 	pIncomingMsg->Release();
 
-	this->mReceivedPackets.push_back(pPacket);
+	this->mReceivedPackets.push_back(std::move(received));
 }
 
 void Interface::onServerConnectionStatusChanged(void* pInfo)
@@ -347,7 +363,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 }
 
 void Interface::sendPackets(
-	std::set<ui32> const& connections,
+	std::set<ui32> connections,
 	std::vector<std::shared_ptr<packet::Packet>> const& packets,
 	std::set<ui32> except
 )
@@ -355,27 +371,62 @@ void Interface::sendPackets(
 	OPTICK_EVENT();
 	assert(this->mpInternal != nullptr);
 
+	for (auto iter = connections.begin(); iter != connections.end();)
+	{
+		if (except.find(*iter) != except.end()) iter = connections.erase(iter);
+		else ++iter;
+	}
+	if (connections.size() == 0) return;
+
 	auto utils = SteamNetworkingUtils();
 	auto messages = std::vector<SteamNetworkingMessage_t*>();
 
-	for (auto const& connection : connections)
-	{
-		if (except.find(connection) != except.end()) continue;
-		for (auto pPacket : packets)
-		{
-			auto buffer = network::Buffer(this->type(), nullptr, 0);
-			pPacket->write(buffer);
+	auto const bIsLogEnabled = network::logger().isLevelEnabled(PACKET_DATA_LOG_LEVEL);
+	std::stringstream debugLog;
 
+	if (bIsLogEnabled)
+	{
+		debugLog << "Sending Packets:\n";
+		for (auto const& connection : connections)
+		{
+			debugLog << "Connection(" << connection << ')';
+			debugLog << " / ";
+			debugLog << "NetId(";
+			auto iter = this->mClients.find(connection);
+			if (iter != this->mClients.end()) debugLog << iter->second;
+			else debugLog << "unknown";
+			debugLog << ')' << '\n';
+		}
+	}
+
+	for (auto pPacket : packets)
+	{
+		auto buffer = network::Buffer(this->type(), nullptr, 0, true);
+		pPacket->write(buffer);
+
+		if (bIsLogEnabled)
+		{
+			pPacket->appendDebugLogHeader(debugLog);
+			buffer.stringify(debugLog);
+		}
+
+		for (auto const& connection : connections)
+		{
 			auto message = utils->AllocateMessage((ui32)buffer.size());
 			assert(message->m_cbSize == buffer.size());
 			message->m_conn = connection;
 			message->m_nFlags = ui32(pPacket->flags().data());
 			{
-				auto buffer = network::Buffer(this->type(), message->m_pData, message->m_cbSize);
+				auto buffer = network::Buffer(this->type(), message->m_pData, message->m_cbSize, false);
 				pPacket->write(buffer);
 			}
 			messages.push_back(message);
 		}
+	}
+
+	if (bIsLogEnabled)
+	{
+		network::logger().log(PACKET_DATA_LOG_LEVEL, debugLog.str().c_str());
 	}
 
 	// All messages ptrs are owned by the interface after this call (no need to free them).

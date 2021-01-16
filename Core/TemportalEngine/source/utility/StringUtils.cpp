@@ -97,11 +97,32 @@ std::string utility::formatStr(std::string const format, ...)
 }
 
 template <> std::string utility::StringParser<std::string>::parse(std::string str) { return str; }
+template <> std::string utility::StringParser<std::string>::to_string(std::string const& v) { return v; }
+
+template <> bool utility::StringParser<bool>::parse(std::string v) { return v == "true"; }
+template <> std::string utility::StringParser<bool>::to_string(bool const& v) { return v ? "true" : "false"; }
+
+template <> i8 utility::StringParser<i8>::parse(std::string v) { return (i8)std::stoi(v); }
+template <> std::string utility::StringParser<i8>::to_string(i8 const& v) { return std::to_string((i32)v); }
+template <> ui8 utility::StringParser<ui8>::parse(std::string v) { return (ui8)std::stoi(v); }
+template <> std::string utility::StringParser<ui8>::to_string(ui8 const& v) { return std::to_string((ui32)v); }
+template <> i16 utility::StringParser<i16>::parse(std::string v) { return (i16)std::stoi(v); }
+template <> std::string utility::StringParser<i16>::to_string(i16 const& v) { return std::to_string((i32)v); }
+template <> ui16 utility::StringParser<ui16>::parse(std::string v) { return (ui16)std::stoi(v); }
+template <> std::string utility::StringParser<ui16>::to_string(ui16 const& v) { return std::to_string((ui32)v); }
+
 template <> i32 utility::StringParser<i32>::parse(std::string str) { return std::stoi(str); }
+template <> std::string utility::StringParser<i32>::to_string(i32 const& v) { return std::to_string(v); }
 // there is no dedicated string-to-int for regular 32-bit unsigned ints
 template <> ui32 utility::StringParser<ui32>::parse(std::string arg) { return (ui32)std::stoi(arg); }
+template <> std::string utility::StringParser<ui32>::to_string(ui32 const& v) { return std::to_string(v); }
 template <> i64 utility::StringParser<i64>::parse(std::string arg) { return std::stoll(arg); }
+template <> std::string utility::StringParser<i64>::to_string(i64 const& v) { return std::to_string(v); }
 template <> ui64 utility::StringParser<ui64>::parse(std::string arg) { return std::stoull(arg); }
+template <> std::string utility::StringParser<ui64>::to_string(ui64 const& v) { return std::to_string(v); }
 template <> f32 utility::StringParser<f32>::parse(std::string arg) { return std::stof(arg); }
+template <> std::string utility::StringParser<f32>::to_string(f32 const& v) { return std::to_string(v); }
 template <> f64 utility::StringParser<f64>::parse(std::string arg) { return std::stod(arg); }
-template <> f128 utility::StringParser< f128>::parse(std::string arg) { return std::stold(arg); }
+template <> std::string utility::StringParser<f64>::to_string(f64 const& v) { return std::to_string(v); }
+template <> f128 utility::StringParser<f128>::parse(std::string arg) { return std::stold(arg); }
+template <> std::string utility::StringParser<f128>::to_string(f128 const& v) { return std::to_string(v); }
