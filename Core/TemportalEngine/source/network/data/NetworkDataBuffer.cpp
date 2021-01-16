@@ -49,11 +49,11 @@ void Buffer::setNamed(std::string name, std::string value)
 
 void Buffer::stringify(std::stringstream &ss) const
 {
-	for (auto const& entry : this->mStringifiedData)
+	for (uIndex i = 0; i < this->mStringifiedData.size(); ++i)
 	{
+		if (i > 0) ss << '\n';
 		ss << "- "
-			<< entry.first.c_str()
-			<< ": " << entry.second.c_str()
-			<< '\n';
+			<< this->mStringifiedData[i].first.c_str()
+			<< ": " << this->mStringifiedData[i].second.c_str();
 	}
 }
