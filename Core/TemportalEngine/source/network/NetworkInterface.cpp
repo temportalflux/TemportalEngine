@@ -390,12 +390,16 @@ void Interface::sendPackets(
 		for (auto const& connection : connections)
 		{
 			debugLog << "Connection(" << connection << ')';
-			debugLog << " / ";
-			debugLog << "NetId(";
-			auto iter = this->mClients.find(connection);
-			if (iter != this->mClients.end()) debugLog << iter->second;
-			else debugLog << "unknown";
-			debugLog << ')' << '\n';
+			if (this->type().includes(EType::eServer))
+			{
+				debugLog << " / ";
+				debugLog << "NetId(";
+				auto iter = this->mClients.find(connection);
+				if (iter != this->mClients.end()) debugLog << iter->second;
+				else debugLog << "unknown";
+				debugLog << ')';
+			}
+			debugLog << '\n';
 		}
 	}
 
