@@ -5,6 +5,7 @@
 #include <fstream>
 #include <stdarg.h>
 #include <array>
+#include <cereal/types/map.hpp>
 
 // Engine ---------------------------------------------------------------------
 #include "math/compare.h"
@@ -12,6 +13,92 @@
 
 // Namespaces -----------------------------------------------------------------
 using namespace logging;
+
+bool LevelConfig::has(std::string id) const
+{
+	return this->levelByLogId.find(id) != this->levelByLogId.end();
+}
+
+logging::ELogLevel LevelConfig::get(std::string id) const
+{
+	if (this->has(id)) return this->levelByLogId.find(id)->second;
+	else return ELogLevel::eVeryVerbose;
+}
+
+namespace cereal
+{
+
+	std::string save_minimal(cereal::JSONOutputArchive const& archive, ELogLevel const &value)
+	{
+		switch (value)
+		{
+		case ELogLevel::eError: return "Error";
+		case ELogLevel::eWarn: return "Warning";
+		case ELogLevel::eDebug: return "Debug";
+		case ELogLevel::eInfo: return "Info";
+		case ELogLevel::eVerbose: return "Verbose";
+		case ELogLevel::eVeryVerbose: return "VeryVerbose";
+		default: return "invalid";
+		}
+	}
+
+	void load_minimal(cereal::JSONInputArchive const& archive, ELogLevel &value, std::string const& out)
+	{
+		if (out == "Error") value = LOG_ERR;
+		else if (out == "Warning") value = LOG_WARN;
+		else if (out == "Debug") value = LOG_DEBUG;
+		else if (out == "Info") value = LOG_INFO;
+		else if (out == "Verbose") value = LOG_VERBOSE;
+		else if (out == "VeryVerbose") value = LOG_VERY_VERBOSE;
+		else value = LOG_INFO;
+	}
+
+}
+
+cereal::JSONOutputArchive::Options JsonFormat = cereal::JSONOutputArchive::Options(
+	324,
+	cereal::JSONOutputArchive::Options::IndentChar::tab, 1
+);
+
+void initializeLevels(LevelConfig &cfg, std::filesystem::path cfgPath)
+{
+	std::filesystem::create_directories(cfgPath.parent_path());
+	if (!std::filesystem::exists(cfgPath))
+	{
+		std::ofstream os(cfgPath.string());
+		cereal::JSONOutputArchive archive(os, JsonFormat);
+		cfg.save(archive);
+	}
+	std::ifstream is(cfgPath.string());
+	cereal::JSONInputArchive archive(is);
+	cfg.load(archive);
+}
+
+void LevelConfig::save(cereal::JSONOutputArchive &archive) const
+{
+	archive.setNextName("levels");
+	archive.startNode();
+	for (auto const& [id, level] : this->levelByLogId)
+	{
+		archive(cereal::make_nvp(id.c_str(), level));
+	}
+	archive.finishNode();
+}
+
+void LevelConfig::load(cereal::JSONInputArchive &archive)
+{
+	archive.startNode();
+	char const* nodeName = nullptr;
+	while (nodeName = archive.getNodeName())
+	{
+		std::string levelStr;
+		archive.loadValue(levelStr);
+		ELogLevel level;
+		cereal::load_minimal(archive, level, levelStr);
+		this->levelByLogId.insert(std::make_pair(nodeName, level));
+	}
+	archive.finishNode();
+}
 
 // Log System -----------------------------------------------------------------
 
@@ -35,9 +122,9 @@ void LogSystem::printLog(void* pFileActive, void* pFileArchive, char const *cons
 	va_end(args);
 }
 
-std::string LogSystem::getCategoryShortString(ELogLevel category)
+std::string LogSystem::getLevelString(ELogLevel level)
 {
-	switch (category)
+	switch (level)
 	{
 	case ELogLevel::eError: return "ERROR";
 	case ELogLevel::eWarn: return "WARN ";
@@ -49,8 +136,13 @@ std::string LogSystem::getCategoryShortString(ELogLevel category)
 	}
 }
 
-void LogSystem::open(std::filesystem::path archivePath)
+void LogSystem::open(
+	std::filesystem::path archivePath,
+	std::filesystem::path logLevelsConfigPath
+)
 {
+	initializeLevels(this->mLevels, logLevelsConfigPath);
+
 	this->mActivePath = std::filesystem::current_path() / "active.log";
 	this->mArchivePath = archivePath;
 	if (std::filesystem::exists(this->mActivePath))
@@ -59,9 +151,15 @@ void LogSystem::open(std::filesystem::path archivePath)
 	std::filesystem::create_directories(this->mArchivePath.parent_path());
 }
 
-void LogSystem::log(char const *title, ELogLevel category, Message format, ...)
+void LogSystem::log(std::string const& title, ELogLevel threshold, ELogLevel level, Message format, ...)
 {
-	auto categoryStr = getCategoryShortString(category);
+	if (this->mLevels.has(title))
+	{
+		threshold = this->mLevels.get(title);
+	}
+	if (ui8(level) > ui8(threshold)) return;
+
+	auto const categoryStr = LogSystem::getLevelString(level);
 	auto const& timeStr = utility::currentTimeStr();
 	FILE *pActive, *pArchive;
 
@@ -78,7 +176,7 @@ void LogSystem::log(char const *title, ELogLevel category, Message format, ...)
 	// Print the log info
 	printLog(
 		pActive, pArchive,
-		"[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), title
+		"[%s][%s] %s> ", timeStr.c_str(), categoryStr.c_str(), title.c_str()
 	);
 	// And the log content
 	va_list args;
@@ -97,7 +195,7 @@ void LogSystem::log(char const *title, ELogLevel category, Message format, ...)
 	std::string logContent(logContentData.begin(), std::find_if(logContentData.begin(), logContentData.end(), [](int c) { return c == '\0'; }));
 	for (const auto& listener : this->mListeners)
 	{
-		listener(timeStr, category, title, logContent);
+		listener(timeStr, level, title, logContent);
 	}
 
 	mpLock->unlock();
@@ -106,7 +204,7 @@ void LogSystem::log(char const *title, ELogLevel category, Message format, ...)
 void LogSystem::close()
 {
 	this->log(
-		"Log", LOG_INFO,
+		"Log", LOG_INFO, LOG_INFO,
 		"Closing log. File can be found at %s",
 		this->mArchivePath.string().c_str()
 	);
@@ -124,12 +222,13 @@ void LogSystem::removeListener(ListenerHandle &handle)
 
 // Logger ---------------------------------------------------------------------
 
-Logger::Logger(char const * title, LogSystem *pLogSystem)
+Logger::Logger(std::string title, ELogLevel defaultThreshold, LogSystem *pLogSystem)
 	: mpLogSystem(pLogSystem)
+	, mTitle(title)
+	, mDefaultThreshold(defaultThreshold)
 {
-	strncpy_s(mpTitle, title, math::min(strlen(title), (uSize)LOGGER_MAX_TITLE_LENGTH));
 }
 
-Logger::Logger() : Logger("", 0)
+Logger::Logger() : Logger("", ELogLevel::eInfo, 0)
 {
 }

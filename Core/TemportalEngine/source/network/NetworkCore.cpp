@@ -8,7 +8,7 @@
 
 using namespace network;
 
-logging::Logger NETWORK_LOG = DeclareLog("Network");
+logging::Logger NETWORK_LOG = DeclareLog("Network", LOG_INFO);
 
 std::vector<EType> utility::EnumWrapper<EType>::ALL = {
 	EType::eClient,

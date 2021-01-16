@@ -19,7 +19,7 @@
 
 using namespace asset;
 
-static logging::Logger LOG = DeclareLog("AssetManager");
+static logging::Logger LOG = DeclareLog("AssetManager", LOG_INFO);
 
 template <typename TKey, typename TValue>
 void multimap_erase_if(std::unordered_multimap<TKey, TValue> &map, std::function<bool(TKey const& key, TValue const& value)> predicate)

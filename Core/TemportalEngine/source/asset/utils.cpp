@@ -24,7 +24,7 @@ std::shared_ptr<asset::Asset> readAssetFromDisk(std::filesystem::path filePath, 
 	if (!assetMetadata)
 	{
 		if (bShouldHaveBeenScanned)
-			DeclareLog("AssetManager").log(LOG_WARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
+			DeclareLog("AssetManager", LOG_INFO).log(LOG_WARN, "Reading asset %s which has not been scanned.", filePath.string().c_str());
 		auto asset = asset::AssetManager::makeAsset<Asset>();
 		asset->readFromDisk(filePath, type);
 		assetType = asset->getAssetType();

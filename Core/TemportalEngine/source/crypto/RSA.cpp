@@ -10,7 +10,7 @@
 
 using namespace crypto;
 
-logging::Logger RSA_LOG = DeclareLog("crypto:RSA");
+logging::Logger RSA_LOG = DeclareLog("crypto:RSA", LOG_INFO);
 
 std::shared_ptr<crypto::RSA> Singleton<crypto::RSA>::gpInstance = nullptr;
 

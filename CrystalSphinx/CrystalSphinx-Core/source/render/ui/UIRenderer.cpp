@@ -13,7 +13,7 @@
 
 using namespace graphics;
 
-static logging::Logger UIRenderLog = DeclareLog("UIRenderer");
+static logging::Logger UIRenderLog = DeclareLog("UIRenderer", LOG_INFO);
 
 UIRenderer::UIRenderer()
 {

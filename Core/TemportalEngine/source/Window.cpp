@@ -14,7 +14,7 @@
 
 #include "ExecutableInfo.hpp"
 
-auto LogWindow = DeclareLog("Window");
+auto LogWindow = DeclareLog("Window", LOG_INFO);
 
 Window::Window(
 	ui16 width, ui16 height, std::string title, WindowFlags flags

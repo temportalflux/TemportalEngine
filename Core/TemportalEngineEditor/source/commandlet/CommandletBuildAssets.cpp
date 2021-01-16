@@ -12,7 +12,7 @@
 
 using namespace editor;
 
-static logging::Logger LOG = DeclareLog("Build");
+static logging::Logger LOG = DeclareLog("Build", LOG_INFO);
 
 void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 {

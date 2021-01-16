@@ -12,7 +12,7 @@ Thread::Thread(std::string name, logging::LogSystem * pLogSystem)
 	: Thread()
 {
 	mpName = name;
-	mLogger = logging::Logger(mpName.c_str(), pLogSystem);
+	mLogger = logging::Logger(mpName.c_str(), LOG_INFO, pLogSystem);
 }
 
 Thread::~Thread()

@@ -17,7 +17,7 @@
 
 using namespace graphics;
 
-logging::Logger IMGUI_LOG = DeclareLog("ImGui");
+logging::Logger IMGUI_LOG = DeclareLog("ImGui", LOG_INFO);
 
 void ImGuiRenderer::renderImGui(const ImDrawList* parent_list, const ImDrawCmd* cmd)
 {

@@ -39,7 +39,7 @@
 
 using namespace game;
 
-logging::Logger GAME_LOG = DeclareLog("Game");
+logging::Logger GAME_LOG = DeclareLog("Game", LOG_INFO);
 
 std::shared_ptr<Game> Singleton<Game, int, char*[]>::gpInstance = nullptr;
 
@@ -176,7 +176,7 @@ void Game::openProject()
 	
 	auto project = asset::TypedAssetPath<asset::Project>(projectAssetPath).load(asset::EAssetSerialization::Binary);
 	pEngine->setProject(project);
-	this->mProjectLog = DeclareLog(project->getDisplayName().c_str());
+	this->mProjectLog = DeclareLog(project->getDisplayName().c_str(), LOG_INFO);
 
 	assetManager->scanAssetDirectory(project->getAssetDirectory(), asset::EAssetSerialization::Binary);
 }

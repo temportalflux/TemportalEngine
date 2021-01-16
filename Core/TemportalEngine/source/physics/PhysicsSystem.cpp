@@ -24,7 +24,7 @@ bool shouldRecordMemoryAllocsByDefault = true;
 
 physics::System::System()
 	: mVersion({ TE_PHYSX_VERSION })
-	, mLogger(DeclareLog("Physics"))
+	, mLogger(DeclareLog("Physics", LOG_INFO))
 	, mbRecordMemoryAllocations(shouldRecordMemoryAllocsByDefault)
 	, mUnitLength(1.0f), mObjectSpeed(9.806f)
 {

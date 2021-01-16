@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 	std::filesystem::path logFileName = ss.str();
 
 	engine::Engine::startLogSystem(logFileName);
-	auto logMain = DeclareLog("main");
+	auto logMain = DeclareLog("main", LOG_INFO);
 
 	auto modulesDir = std::filesystem::absolute("Modules");
 	if (std::filesystem::exists(modulesDir))

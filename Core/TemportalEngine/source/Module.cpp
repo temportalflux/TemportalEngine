@@ -7,7 +7,7 @@
 #include "Windows.h"
 #endif
 
-static logging::Logger MODULE_LOADER_LOG = DeclareLog("ModuleLoader");
+static logging::Logger MODULE_LOADER_LOG = DeclareLog("ModuleLoader", LOG_INFO);
 
 // Loading DLLs at runtime on windows:
 // https://docs.microsoft.com/en-us/windows/win32/dlls/using-run-time-dynamic-linking

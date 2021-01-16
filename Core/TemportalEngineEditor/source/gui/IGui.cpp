@@ -30,7 +30,7 @@ std::string IGui::getTitle() const
 
 logging::Logger* IGui::getLog() const
 {
-	static logging::Logger log = logging::Logger("Gui", &engine::Engine::LOG_SYSTEM);
+	static logging::Logger log = logging::Logger("Gui", LOG_INFO, &engine::Engine::LOG_SYSTEM);
 	return &log;
 }
 

@@ -9,7 +9,7 @@
 
 using namespace world;
 
-static logging::Logger ChunkLog = DeclareLog("ChunkLog");
+static logging::Logger ChunkLog = DeclareLog("ChunkLog", LOG_INFO);
 
 Chunk::Chunk(
 	std::weak_ptr<world::World> world, math::Vector3Int coordinate

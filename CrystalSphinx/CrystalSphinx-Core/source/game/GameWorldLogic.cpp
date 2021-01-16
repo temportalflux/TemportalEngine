@@ -29,7 +29,7 @@ void WorldLogic::init()
 
 void WorldLogic::createVoxelTypeRegistry()
 {
-	static auto Log = DeclareLog("VoxelTypeRegistry");
+	static auto Log = DeclareLog("VoxelTypeRegistry", LOG_INFO);
 
 	this->mpVoxelTypeRegistry = std::make_shared<game::VoxelTypeRegistry>();
 

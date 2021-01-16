@@ -9,6 +9,7 @@
 
 #include <string>
 #include <functional>
+#include <cereal/archives/json.hpp>
 
 // ----------------------------------------------------------------------------
 NS_LOGGING
@@ -29,17 +30,17 @@ enum class ELogLevel : ui8
 	 * Needs to be fixed, but wont cause crashes or other UX breaking bugs.
 	 */
 	eWarn,
-	
-	/**
-	 * Logs which don't spam the log file, and which are useful for the general user.
-	 */
-	eInfo,
 
 	/**
 	 * Information which should only be logged in debug builds (not in release builds).
 	 * Otherwise is equivalent to `eInfo`.
 	 */
 	eDebug,
+	
+	/**
+	 * Logs which don't spam the log file, and which are useful for the general user.
+	 */
+	eInfo,
 
 	/**
 	 * Logs which the general user won't need unless development has requested extra log information.
@@ -66,6 +67,15 @@ enum class ELogLevel : ui8
 class Logger;
 typedef char const * Message;
 
+struct LevelConfig
+{
+	std::map<std::string, logging::ELogLevel> levelByLogId;
+	bool has(std::string id) const;
+	logging::ELogLevel get(std::string id) const;
+	void save(cereal::JSONOutputArchive &archive) const;
+	void load(cereal::JSONInputArchive &archive);
+};
+
 /**
 * A thread-safe interface to actually write to files. Wrapped by Logger.
 * This is meant to be used to write to a single file.
@@ -79,7 +89,7 @@ public:
 
 	LogSystem();
 
-	static std::string getCategoryShortString(ELogLevel cate);
+	static std::string getLevelString(ELogLevel level);
 
 	ListenerHandle addListener(Listener value);
 	void removeListener(ListenerHandle &handle);
@@ -87,12 +97,15 @@ public:
 	/**
 	 * Opens a file stream for writing.
 	 */
-	void open(std::filesystem::path archivePath);
+	void open(
+		std::filesystem::path archivePath,
+		std::filesystem::path logLevelsConfigPath
+	);
 
 	/**
 	* Writes output to the output streams (file and console) using variadic data.
 	*/
-	void log(char const *title, ELogLevel category, Message format, ...);
+	void log(std::string const& title, ELogLevel threshold, ELogLevel category, Message format, ...);
 
 	/**
 	* Closes the active file stream.
@@ -100,6 +113,8 @@ public:
 	void close();
 
 private:
+
+	LevelConfig mLevels;
 
 	std::filesystem::path mActivePath;
 	std::filesystem::path mArchivePath;
@@ -121,8 +136,6 @@ private:
 
 };
 
-#define LOGGER_MAX_TITLE_LENGTH 255
-
 /**
 * Thread-safe wrapper class for writing output logs.
 * See http://www.cplusplus.com/reference/cstdio/vprintf/ for formatting.
@@ -136,7 +149,7 @@ public:
 	* @param title The title of the logger.
 	* @param pLogSystem The log system to write output to.
 	*/
-	Logger(char const * title, LogSystem *pLogSystem);
+	Logger(std::string title, ELogLevel defaultThreshold, LogSystem *pLogSystem);
 	Logger();
 
 	/**
@@ -146,9 +159,9 @@ public:
 	* @param args Arguments to be included via the format parameter, using fprintf format.
 	*/
 	template <typename... TArgs>
-	void log(ELogLevel category, Message format, TArgs... args)
+	void log(ELogLevel level, Message format, TArgs... args)
 	{
-		mpLogSystem->log(this->mpTitle, category, format, args...);
+		mpLogSystem->log(this->mTitle, this->mDefaultThreshold, level, format, args...);
 	}
 
 private:
@@ -156,7 +169,14 @@ private:
 	/**
 	* The title of the logger to forward to the Log System per call to LogSystem::log.
 	*/
-	char mpTitle[LOGGER_MAX_TITLE_LENGTH];
+	std::string mTitle;
+
+	/**
+	 * The default threshold for logs of this category.
+	 * Will prevent logs with a higher verbosity from printing.
+	 * Overridable by `LevelConfig`.
+	 */
+	ELogLevel mDefaultThreshold;
 
 	/**
 	* The log system to use to write output to.

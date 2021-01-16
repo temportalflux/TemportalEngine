@@ -27,9 +27,17 @@ std::shared_ptr<memory::MemoryChunk> Engine::spMainMemory = nullptr;
 
 std::vector<std::string> Engine::VulkanValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 
+std::filesystem::path Engine::configDirectory()
+{
+	return std::filesystem::current_path() / "config";
+}
+
 void Engine::startLogSystem(std::filesystem::path archivePath)
 {
-	engine::Engine::LOG_SYSTEM.open(archivePath);
+	engine::Engine::LOG_SYSTEM.open(
+		archivePath,
+		configDirectory() / "logLevels.json"
+	);
 }
 
 void Engine::stopLogSystem()
@@ -158,7 +166,7 @@ std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 
 void Engine::initializeECS()
 {
-	this->mECS.setLog(DeclareLog("ECS"));
+	this->mECS.setLog(DeclareLog("ECS", LOG_INFO));
 	this->ECSRegisterTypesEvent.execute(&this->mECS);
 	this->mECS.components().allocatePools();
 }

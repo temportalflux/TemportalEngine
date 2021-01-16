@@ -34,8 +34,8 @@ FORWARD_DEF(NS_GRAPHICS, class VulkanRenderer);
 NS_ENGINE
 
 // TODO: Declare log should call a function on engine which lazily instantiates a logger and stores it by category name
-#define DeclareLog(title) logging::Logger(title, &engine::Engine::LOG_SYSTEM)
-#define LogEngine(cate, ...) DeclareLog("Engine").log(cate, __VA_ARGS__);
+#define DeclareLog(title, defaultLevel) logging::Logger(title, defaultLevel, &engine::Engine::LOG_SYSTEM)
+#define LogEngine(cate, ...) DeclareLog("Engine", LOG_INFO).log(cate, __VA_ARGS__);
 #define LogEngineInfo(...) LogEngine(LOG_INFO, __VA_ARGS__)
 #define LogEngineDebug(...) LogEngine(LOG_DEBUG, __VA_ARGS__)
 
@@ -50,6 +50,7 @@ public:
 	static logging::LogSystem LOG_SYSTEM;
 	static std::vector<std::string> VulkanValidationLayers;
 
+	static std::filesystem::path configDirectory();
 	static void startLogSystem(std::filesystem::path archivePath);
 	static void stopLogSystem();
 

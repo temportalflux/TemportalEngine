@@ -13,7 +13,7 @@
 
 using namespace ui;
 
-logging::Logger TEXTLOGMENU_LOG = DeclareLog("TextLogMenu");
+logging::Logger TEXTLOGMENU_LOG = DeclareLog("TextLogMenu", LOG_INFO);
 
 TextLogMenu::TextLogMenu()
 {

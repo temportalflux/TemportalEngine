@@ -3,6 +3,6 @@
 
 MODULE_INIT()
 {
-	auto LOG = DeclareLog("TestModule");
+	auto LOG = DeclareLog("TestModule", LOG_INFO);
 	LOG.log(LOG_INFO, "Test module has initialized");
 }

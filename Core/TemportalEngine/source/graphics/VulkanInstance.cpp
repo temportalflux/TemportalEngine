@@ -32,7 +32,7 @@ void* VulkanInstance::get()
 VulkanInstance& VulkanInstance::createLogger(logging::LogSystem *logSys, bool bLogVulkanDebug)
 {
 	mUseVulkanDebugMessenger = bLogVulkanDebug;
-	mLogger = logging::Logger("Vulkan", logSys);
+	mLogger = logging::Logger("Vulkan", LOG_INFO, logSys);
 	return *this;
 }
 

@@ -16,7 +16,7 @@ PhysicsIntegration::PhysicsIntegration() : System(view::PhysicalDynamics::TypeId
 void PhysicsIntegration::update(f32 deltaTime, std::shared_ptr<view::View> view)
 {
 	OPTICK_EVENT();
-	static logging::Logger ControllerLog = DeclareLog("Physics");
+	static logging::Logger ControllerLog = DeclareLog("Physics", LOG_INFO);
 
 	auto transform = view->get<component::CoordinateTransform>();
 	auto body = view->get<component::PhysicsBody>();

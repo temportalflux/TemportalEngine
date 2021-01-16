@@ -8,7 +8,7 @@
 #include "logging/Logger.hpp"
 
 // Logging --------------------------------------------------------------------
-#define LogSDL(cate, ...) logging::Logger("SDL", &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
+#define LogSDL(cate, ...) logging::Logger("SDL", LOG_INFO, &engine::Engine::LOG_SYSTEM).log(cate, __VA_ARGS__);
 
 // Namespace ------------------------------------------------------------------
 using namespace logging;

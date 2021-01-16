@@ -15,7 +15,7 @@
 
 using namespace game;
 
-static logging::Logger VoxelModelLog = DeclareLog("VoxelModelManager");
+static logging::Logger VoxelModelLog = DeclareLog("VoxelModelManager", LOG_INFO);
 
 VoxelModelManager::VoxelModelManager(std::weak_ptr<graphics::GraphicsDevice> device, graphics::CommandPool* transientPool)
 	: mpDevice(device), mpTransientPool(transientPool)

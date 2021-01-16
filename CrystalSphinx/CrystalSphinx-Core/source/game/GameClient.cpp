@@ -34,7 +34,7 @@
 
 using namespace game;
 
-static auto CLIENT_LOG = DeclareLog("GameClient");
+static auto CLIENT_LOG = DeclareLog("GameClient", LOG_INFO);
 
 Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 {

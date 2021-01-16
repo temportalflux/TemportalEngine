@@ -19,7 +19,7 @@ MovePlayerByInput::MovePlayerByInput() : System(view::PlayerInputMovement::TypeI
 void MovePlayerByInput::update(f32 deltaTime, std::shared_ptr<view::View> view)
 {
 	OPTICK_EVENT();
-	static logging::Logger ControllerLog = DeclareLog("Controller");
+	static logging::Logger ControllerLog = DeclareLog("Controller", LOG_INFO);
 	
 	auto transform = view->get<component::CoordinateTransform>();
 	auto input = view->get<component::PlayerInput>();

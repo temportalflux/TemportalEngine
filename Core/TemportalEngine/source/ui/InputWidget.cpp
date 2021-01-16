@@ -7,7 +7,7 @@
 
 using namespace ui;
 
-logging::Logger UI_LOG = DeclareLog("UI");
+logging::Logger UI_LOG = DeclareLog("UI", LOG_INFO);
 
 Input::Input()
 	: ui::Text()

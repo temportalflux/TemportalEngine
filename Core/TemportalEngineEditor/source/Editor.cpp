@@ -207,7 +207,7 @@ void Editor::run()
 	if (!this->mbShouldRender)
 	{
 		// Running a headless command
-		DeclareLog("Editor").log(logging::ECategory::LOGINFO, "no u(i)");
+		DeclareLog("Editor", LOG_INFO).log(LOG_INFO, "no u(i)");
 
 		std::string cmdletPrefix("cmdlet-");
 		utility::ArgumentMap cmdlets = utility::getArgumentsWithPrefix(this->mArgs, cmdletPrefix);
@@ -393,10 +393,10 @@ void Editor::openAssetEditorAt(asset::AssetPath path)
 
 void Editor::openAssetEditor(asset::AssetPtrStrong asset)
 {
-	DeclareLog("Editor").log(LOG_DEBUG, "Opening Asset Editor for %s", asset->getFileName().c_str());
+	DeclareLog("Editor", LOG_INFO).log(LOG_DEBUG, "Opening Asset Editor for %s", asset->getFileName().c_str());
 	if (!this->hasRegisteredAssetEditor(asset->getAssetType()))
 	{
-		DeclareLog("Editor").log(LOG_DEBUG, "Cannot open editor, no editor registered for asset type %s", asset->getAssetType().c_str());
+		DeclareLog("Editor", LOG_INFO).log(LOG_DEBUG, "Cannot open editor, no editor registered for asset type %s", asset->getAssetType().c_str());
 		return;
 	}
 	auto const assetPathStr = asset->getPath().string();

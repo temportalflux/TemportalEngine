@@ -10,7 +10,7 @@
 using namespace network;
 using namespace network::packet;
 
-logging::Logger CHAT_LOG = DeclareLog("Chat");
+logging::Logger CHAT_LOG = DeclareLog("Chat", LOG_INFO);
 
 DEFINE_PACKET_TYPE(ChatMessage)
 
