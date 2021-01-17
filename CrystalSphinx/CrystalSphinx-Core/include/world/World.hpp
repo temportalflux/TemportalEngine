@@ -2,6 +2,8 @@
 
 #include "CoreInclude.hpp"
 
+#include "world/WorldSaveData.hpp"
+
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
@@ -23,6 +25,7 @@ class World
 public:
 	World();
 
+	world::SaveData& saveData();
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
 
 	void init(saveData::Instance* saveInstance);
@@ -31,6 +34,7 @@ public:
 
 private:
 	saveData::Instance* mpSaveInstance;
+	world::SaveData mSaveData;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	void createVoxelTypeRegistry();

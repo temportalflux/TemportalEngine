@@ -22,6 +22,9 @@ World::World() : mpSaveInstance(nullptr)
 void World::init(saveData::Instance *saveInstance)
 {
 	this->mpSaveInstance = saveInstance;
+	this->mSaveData = world::SaveData(this->mpSaveInstance->worldSave());
+	this->mSaveData.readFromDisk();
+
 	//this->createVoxelTypeRegistry();
 
 	this->mpPhysics = std::make_shared<physics::System>();
@@ -32,6 +35,16 @@ void World::init(saveData::Instance *saveInstance)
 
 	this->createWorld();
 }
+
+void World::uninit()
+{
+	this->destroyWorld();
+	this->mpSystemPhysicsIntegration.reset();
+	this->mpPhysics.reset();
+	this->mpVoxelTypeRegistry.reset();
+}
+
+world::SaveData& World::saveData() { return this->mSaveData; }
 
 std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 
@@ -47,14 +60,6 @@ void World::createVoxelTypeRegistry()
 	this->mpVoxelTypeRegistry->registerEntries(blockList);
 }
 
-void World::uninit()
-{
-	this->destroyWorld();
-	this->mpSystemPhysicsIntegration.reset();
-	this->mpPhysics.reset();
-	this->mpVoxelTypeRegistry.reset();
-}
-
 void World::createWorld()
 {
 	this->mpSceneOverworld = std::make_shared<physics::Scene>();
@@ -65,7 +70,7 @@ void World::createWorld()
 		this->mpPhysics, this->mpSceneOverworld
 	);
 
-	this->mpWorld = std::make_shared<world::Terrain>(ui32(time(0)));
+	this->mpWorld = std::make_shared<world::Terrain>(this->mSaveData.seed());
 	//if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
 	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
 

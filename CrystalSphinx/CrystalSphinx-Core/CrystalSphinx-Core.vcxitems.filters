@@ -228,13 +228,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ClientSettings.hpp">
       <Filter>settings</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\JsonData.hpp" />
     <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\world\WorldTerrain.hpp">
       <Filter>world</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp">
       <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldSaveData.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\JsonData.hpp">
+      <Filter>settings</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp">
+      <Filter>render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -386,12 +393,19 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\UserInfo.cpp">
       <Filter>settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ImmediateRenderSystem.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\JsonData.cpp" />
     <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\world\WorldTerrain.cpp">
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\JsonData.cpp">
+      <Filter>settings</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ImmediateRenderSystem.cpp">
+      <Filter>render</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldSaveData.cpp">
       <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>

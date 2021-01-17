@@ -13,6 +13,7 @@ public:
 
 	std::string const& name() const;
 	std::filesystem::path userDirectory() const;
+	std::filesystem::path worldSave() const;
 	std::filesystem::path chunkDirectory() const;
 
 	void save();
