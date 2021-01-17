@@ -67,7 +67,7 @@ public:
 	bool shouldStayLoaded() const;
 
 private:
-	std::weak_ptr<world::Terrain> mpWorld;
+	std::weak_ptr<world::Terrain> mpTerrain;
 	math::Vector3Int mCoordinate;
 	TCoordData mBlockMetadata;
 

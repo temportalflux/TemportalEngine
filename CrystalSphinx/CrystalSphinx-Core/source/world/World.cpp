@@ -15,33 +15,35 @@
 
 using namespace game;
 
+logging::Logger WORLD_LOG = DeclareLog("World", LOG_INFO);
+
 World::World() : mpSaveInstance(nullptr)
 {
 }
 
 void World::init(saveData::Instance *saveInstance)
 {
+	WORLD_LOG.log(LOG_INFO, "Initializing world save %s", saveInstance->name().c_str());
 	this->mpSaveInstance = saveInstance;
 	this->mSaveData = world::SaveData(this->mpSaveInstance->worldSave());
 	this->mSaveData.readFromDisk();
 
 	//this->createVoxelTypeRegistry();
 
-	this->mpPhysics = std::make_shared<physics::System>();
-	this->mpPhysics->init(true);
+	this->initializePhysics();
 
-	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
-	engine::Engine::Get()->addTicker(this->mpSystemPhysicsIntegration);
-
-	this->createWorld();
+	this->mOverworld.id = 0;
+	this->createDimension(&this->mOverworld);
 }
 
 void World::uninit()
 {
-	this->destroyWorld();
-	this->mpSystemPhysicsIntegration.reset();
-	this->mpPhysics.reset();
+	if (this->mpSaveInstance == nullptr) return;
+	WORLD_LOG.log(LOG_INFO, "Destroying world");
+	this->destroyDimension(&this->mOverworld);
+	this->uninitializePhysics();
 	this->mpVoxelTypeRegistry.reset();
+	this->mpSaveInstance = nullptr;
 }
 
 world::SaveData& World::saveData() { return this->mSaveData; }
@@ -50,63 +52,85 @@ std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return thi
 
 void World::createVoxelTypeRegistry()
 {
-	static auto Log = DeclareLog("VoxelTypeRegistry", LOG_INFO);
-
 	this->mpVoxelTypeRegistry = std::make_shared<game::VoxelTypeRegistry>();
 
-	Log.log(LOG_INFO, "Gathering block types...");
+	WORLD_LOG.log(LOG_INFO, "Gathering block types...");
 	auto blockList = engine::Engine::Get()->getAssetManager()->getAssetList<asset::BlockType>();
-	Log.log(LOG_INFO, "Found %i block types", blockList.size());
+	WORLD_LOG.log(LOG_INFO, "Found %i block types", blockList.size());
 	this->mpVoxelTypeRegistry->registerEntries(blockList);
 }
 
-void World::createWorld()
+void World::initializePhysics()
 {
-	this->mpSceneOverworld = std::make_shared<physics::Scene>();
-	this->mpSceneOverworld->setSystem(this->mpPhysics);
-	this->mpSceneOverworld->create();
-
-	this->mpChunkCollisionManager = std::make_shared<physics::ChunkCollisionManager>(
-		this->mpPhysics, this->mpSceneOverworld
-	);
-
-	this->mpWorld = std::make_shared<world::Terrain>(this->mSaveData.seed());
-	//if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
-	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
+	WORLD_LOG.log(LOG_INFO, "Initializing physics");
+	this->mpPhysics = std::make_shared<physics::System>();
+	this->mpPhysics->init(true);
 
 	this->mpPlayerPhysicsMaterial = std::make_shared<physics::Material>();
 	this->mpPlayerPhysicsMaterial->setSystem(this->mpPhysics);
 	this->mpPlayerPhysicsMaterial->create();
 
-	this->createScene();
+	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
+	engine::Engine::Get()->addTicker(this->mpSystemPhysicsIntegration);
+}
+
+void World::uninitializePhysics()
+{
+	WORLD_LOG.log(LOG_INFO, "Destroying physics");
+	this->mpSystemPhysicsIntegration.reset();
+	this->mpPlayerPhysicsMaterial.reset();
+	this->mpPhysics.reset();
+}
+
+void World::createDimension(Dimension *dim)
+{
+	WORLD_LOG.log(
+		LOG_INFO, "Creating dimension %s:%u",
+		this->mpSaveInstance->name().c_str(), dim->id
+	);
+	dim->mpScene = std::make_shared<physics::Scene>();
+	dim->mpScene->setSystem(this->mpPhysics);
+	dim->mpScene->create();
+
+	dim->mpChunkCollisionManager = std::make_shared<physics::ChunkCollisionManager>(
+		this->mpPhysics, dim->mpScene
+	);
+
+	dim->mpTerrain = std::make_shared<world::Terrain>(this->mSaveData.seed());
+	//if (this->mpVoxelInstanceBuffer) this->mpTerrain->addEventListener(this->mpVoxelInstanceBuffer);
+	dim->mpTerrain->addEventListener(dim->mpChunkCollisionManager);
+}
+
+void World::destroyDimension(Dimension *dim)
+{
+	WORLD_LOG.log(
+		LOG_INFO, "Destroying dimension %s:%u",
+		this->mpSaveInstance->name().c_str(), dim->id
+	);
+	dim->mpTerrain.reset();
+	dim->mpChunkCollisionManager.reset();
+	dim->mpScene.reset();
+}
+
+/*
+void World::createWorld()
+{
 	//this->createLocalPlayer();
 
 	// Specifically for clients which set player movement/camera information
-	/*
 	{
 		auto pEngine = engine::Engine::Get();
 		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
 		pEngine->addTicker(this->mpSystemMovePlayerByInput);
 	}
-	//*/
-
-}
-
-void World::destroyWorld()
-{
-	this->destroyScene();
-	this->mpPlayerPhysicsMaterial.reset();
-	this->mpChunkCollisionManager.reset();
-	this->mpSceneOverworld.reset();
-	this->mpWorld.reset();
 }
 
 void World::createScene()
 {
-	//this->mpWorld->loadChunk({ 0, 0, 0 });
-	//this->mpWorld->loadChunk({ 0, 0, -1 });
+	//this->mpTerrain->loadChunk({ 0, 0, 0 });
+	//this->mpTerrain->loadChunk({ 0, 0, -1 });
 	//for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
-	//	this->mpWorld->loadChunk({ x, 0, z });
+	//	this->mpTerrain->loadChunk({ x, 0, z });
 }
 
 void World::destroyScene()
@@ -114,8 +138,9 @@ void World::destroyScene()
 	//this->mpSystemMovePlayerByInput.reset();
 	//this->mpEntityLocalPlayer.reset();
 }
+//*/
 
 void World::update(f32 deltaTime)
 {
-	this->mpSceneOverworld->simulate(deltaTime);
+	this->mOverworld.mpScene->simulate(deltaTime);
 }

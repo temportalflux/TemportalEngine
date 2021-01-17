@@ -227,6 +227,11 @@ void Game::uninit()
 
 	//this->unbindInput();
 
+	if (this->mpWorld)
+	{
+		this->mpWorld->uninit();
+		this->mpWorld.reset();
+	}
 	if (this->mpClient)
 	{
 		this->mpClient->uninit();

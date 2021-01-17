@@ -40,18 +40,21 @@ private:
 	void createVoxelTypeRegistry();
 
 	std::shared_ptr<physics::System> mpPhysics;
-	std::shared_ptr<physics::Scene> mpSceneOverworld;
 	std::shared_ptr<physics::Material> mpPlayerPhysicsMaterial;
-	std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager; // for Overworld only
-
 	std::shared_ptr<ecs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
+	void initializePhysics();
+	void uninitializePhysics();
 
-	std::shared_ptr<world::Terrain> mpWorld;
-
-	void createScene();
-	void destroyScene();
-	void createWorld();
-	void destroyWorld();
+	struct Dimension
+	{
+		ui32 id;
+		std::shared_ptr<physics::Scene> mpScene;
+		std::shared_ptr<world::Terrain> mpTerrain;
+		std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager;
+	};
+	Dimension mOverworld;
+	void createDimension(Dimension *dim);
+	void destroyDimension(Dimension *dim);
 
 };
 

@@ -14,7 +14,7 @@ static logging::Logger ChunkLog = DeclareLog("ChunkLog", LOG_INFO);
 Chunk::Chunk(
 	std::weak_ptr<world::Terrain> world, math::Vector3Int coordinate
 )
-	: mpWorld(world)
+	: mpTerrain(world)
 	, mCoordinate(coordinate)
 {
 }
@@ -33,7 +33,7 @@ void Chunk::setBlockId(math::Vector3Int const local, std::optional<game::BlockId
 	{
 		metadata = BlockMetadata(*id);
 	}
-	//this->mpWorld.lock()->markCoordinateDirty(world::Coordinate(
+	//this->mpTerrain.lock()->markCoordinateDirty(world::Coordinate(
 	//	this->coordinate(), { (i32)local.x(), (i32)local.y(), (i32)local.z() }
 	//), oldMetadata, metadata);
 }
@@ -46,7 +46,7 @@ std::optional<game::BlockId> Chunk::getBlockId(math::Vector3Int const local) con
 
 void Chunk::generate()
 {
-	srand(this->mpWorld.lock()->getSeed());
+	srand(this->mpTerrain.lock()->getSeed());
 
 	// Only actually needed when re-generating the chunk so that no metadata from the previous gen is left over
 	FOR_CHUNK_SIZE(i32, x) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) this->mBlockMetadata[{ x, y, z }] = std::nullopt;
@@ -110,7 +110,7 @@ Chunk& Chunk::load()
 {
 	// TODO: Save and load from file
 	this->generate();
-	this->mpWorld.lock()->onLoadedChunk(*this);
+	this->mpTerrain.lock()->onLoadedChunk(*this);
 	return *this;
 }
 
