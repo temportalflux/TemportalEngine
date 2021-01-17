@@ -36,7 +36,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameSession.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameUserIdRegistry.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameWorldLogic.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketAuthenticate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp" />
@@ -70,6 +69,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Colors.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
@@ -95,7 +95,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameSession.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameUserIdRegistry.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameWorldLogic.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketAuthenticate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp" />
@@ -126,6 +125,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextLogMenu.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />

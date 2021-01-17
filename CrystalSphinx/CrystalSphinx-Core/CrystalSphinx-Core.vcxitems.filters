@@ -189,9 +189,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameWorldLogic.hpp">
-      <Filter>game</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameUserIdRegistry.hpp">
       <Filter>game</Filter>
     </ClInclude>
@@ -234,6 +231,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\JsonData.hpp" />
     <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\world\WorldTerrain.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp">
       <Filter>world</Filter>
     </ClInclude>
   </ItemGroup>
@@ -344,9 +344,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp">
       <Filter>game</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameWorldLogic.cpp">
-      <Filter>game</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameUserIdRegistry.cpp">
       <Filter>game</Filter>
     </ClCompile>
@@ -392,6 +389,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ImmediateRenderSystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\JsonData.cpp" />
     <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\world\WorldTerrain.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
       <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>

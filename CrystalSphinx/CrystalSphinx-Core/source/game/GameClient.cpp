@@ -12,7 +12,6 @@
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameServer.hpp"
-#include "game/GameWorldLogic.hpp"
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "render/EntityInstanceBuffer.hpp"
@@ -32,6 +31,7 @@
 #include "ui/UIWidgets.hpp"
 #include "utility/Colors.hpp"
 #include "window/Window.hpp"
+#include "world/World.hpp"
 
 using namespace game;
 

@@ -2,7 +2,7 @@
 
 #include "Engine.hpp"
 #include "game/GameInstance.hpp"
-#include "game/GameWorldLogic.hpp"
+#include "world/World.hpp"
 #include "world/WorldTerrain.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "registry/VoxelType.hpp"

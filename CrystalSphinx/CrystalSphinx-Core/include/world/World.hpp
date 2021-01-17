@@ -15,7 +15,7 @@ FORWARD_DEF(NS_WORLD, class Terrain);
 NS_GAME
 class VoxelTypeRegistry;
 
-class WorldLogic
+class World
 {
 
 public:

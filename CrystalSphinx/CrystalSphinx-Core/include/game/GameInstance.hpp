@@ -23,7 +23,7 @@ NS_END
 
 FORWARD_DEF(NS_GAME, class Client);
 FORWARD_DEF(NS_GAME, class Server);
-FORWARD_DEF(NS_GAME, class WorldLogic);
+FORWARD_DEF(NS_GAME, class World);
 FORWARD_DEF(NS_NETWORK, class Interface);
 
 NS_GAME
@@ -44,7 +44,7 @@ public:
 	void run();
 
 	static network::Interface* networkInterface();
-	std::shared_ptr<game::WorldLogic> worldLogic();
+	std::shared_ptr<game::World> worldLogic();
 	std::shared_ptr<game::Server> server();
 	std::shared_ptr<game::Client> client();
 	saveData::Registry& saveData();
@@ -56,7 +56,7 @@ public:
 private:
 	logging::Logger mProjectLog;
 
-	std::shared_ptr<game::WorldLogic> mpWorldLogic;
+	std::shared_ptr<game::World> mpWorldLogic;
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
 

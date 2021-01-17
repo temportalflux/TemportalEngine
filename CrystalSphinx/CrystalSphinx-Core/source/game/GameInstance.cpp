@@ -20,7 +20,6 @@
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "game/GameClient.hpp"
 #include "game/GameServer.hpp"
-#include "game/GameWorldLogic.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 #include "math/Vector.hpp"
@@ -34,6 +33,7 @@
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
+#include "world/World.hpp"
 
 #include <chrono>
 
@@ -107,7 +107,7 @@ network::Interface* Game::networkInterface()
 	return &engine::Engine::Get()->networkInterface();
 }
 
-std::shared_ptr<game::WorldLogic> Game::worldLogic() { return this->mpWorldLogic; }
+std::shared_ptr<game::World> Game::worldLogic() { return this->mpWorldLogic; }
 std::shared_ptr<game::Server> Game::server() { return this->mpServer; }
 std::shared_ptr<game::Client> Game::client() { return this->mpClient; }
 saveData::Registry& Game::saveData() { return this->mSaveDataRegistry; }

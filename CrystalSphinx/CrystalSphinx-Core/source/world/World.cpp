@@ -1,4 +1,4 @@
-#include "game/GameWorldLogic.hpp"
+#include "world/World.hpp"
 
 #include "Engine.hpp"
 #include "asset/BlockType.hpp"
@@ -14,7 +14,7 @@
 
 using namespace game;
 
-void WorldLogic::init()
+void World::init()
 {
 	this->createVoxelTypeRegistry();
 
@@ -27,7 +27,7 @@ void WorldLogic::init()
 	this->createWorld();
 }
 
-void WorldLogic::createVoxelTypeRegistry()
+void World::createVoxelTypeRegistry()
 {
 	static auto Log = DeclareLog("VoxelTypeRegistry", LOG_INFO);
 
@@ -39,7 +39,7 @@ void WorldLogic::createVoxelTypeRegistry()
 	this->mpVoxelTypeRegistry->registerEntries(blockList);
 }
 
-void WorldLogic::uninit()
+void World::uninit()
 {
 	this->destroyWorld();
 	this->mpSystemPhysicsIntegration.reset();
@@ -47,7 +47,7 @@ void WorldLogic::uninit()
 	this->mpVoxelTypeRegistry.reset();
 }
 
-void WorldLogic::createWorld()
+void World::createWorld()
 {
 	this->mpSceneOverworld = std::make_shared<physics::Scene>();
 	this->mpSceneOverworld->setSystem(this->mpPhysics);
@@ -79,7 +79,7 @@ void WorldLogic::createWorld()
 
 }
 
-void WorldLogic::destroyWorld()
+void World::destroyWorld()
 {
 	this->destroyScene();
 	this->mpPlayerPhysicsMaterial.reset();
@@ -88,7 +88,7 @@ void WorldLogic::destroyWorld()
 	this->mpWorld.reset();
 }
 
-void WorldLogic::createScene()
+void World::createScene()
 {
 	//this->mpWorld->loadChunk({ 0, 0, 0 });
 	//this->mpWorld->loadChunk({ 0, 0, -1 });
@@ -96,13 +96,13 @@ void WorldLogic::createScene()
 	//	this->mpWorld->loadChunk({ x, 0, z });
 }
 
-void WorldLogic::destroyScene()
+void World::destroyScene()
 {
 	//this->mpSystemMovePlayerByInput.reset();
 	//this->mpEntityLocalPlayer.reset();
 }
 
-void WorldLogic::update(f32 deltaTime)
+void World::update(f32 deltaTime)
 {
 	this->mpSceneOverworld->simulate(deltaTime);
 }
