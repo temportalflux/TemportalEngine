@@ -10,6 +10,7 @@ EntityManager::EntityManager()
 EntityManager::~EntityManager()
 {
 	// Must not have any more entities lying about
+	assert(this->mOwnedObjects.size() <= 0);
 	assert(this->mAllocatedObjects.size() <= 0);
 }
 
@@ -62,4 +63,12 @@ void EntityManager::release(Identifier const& id)
 	assert(iter != this->mOwnedObjects.end());
 	// May cause the shared_ptr to be deleted, calling `EntityManager#destroy`
 	iter->second.reset();
+}
+
+void EntityManager::releaseAll()
+{
+	for (auto& [id, ptr] : this->mOwnedObjects)
+	{
+		ptr.reset();
+	}
 }

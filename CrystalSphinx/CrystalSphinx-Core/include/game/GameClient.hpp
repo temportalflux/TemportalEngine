@@ -70,6 +70,7 @@ private:
 	game::UserInfo localUserInfo() const;
 	std::optional<ui32> mLocalUserNetId;
 	std::map<ui32, game::UserInfo> mConnectedUserInfo;
+	ecs::Identifier mLocalPlayerEntityId;
 
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 

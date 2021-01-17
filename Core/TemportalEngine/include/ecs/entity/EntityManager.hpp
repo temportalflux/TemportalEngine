@@ -38,6 +38,7 @@ public:
 	std::shared_ptr<Entity> create();
 	std::shared_ptr<Entity> get(Identifier const &id) const;
 	void release(Identifier const& id);
+	void releaseAll();
 
 private:
 	thread::MutexLock mMutex;

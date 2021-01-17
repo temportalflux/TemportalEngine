@@ -44,6 +44,8 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 	this->settings().readFromDisk();
 }
 
+
+std::shared_ptr<Window> Client::getWindow() { return this->mpWindow; }
 std::shared_ptr<graphics::ImmediateRenderSystem> Client::renderer() { return this->mpRenderer; }
 std::shared_ptr<graphics::SkinnedModelManager> Client::modelManager() { return this->mpSkinnedModelManager; }
 std::shared_ptr<graphics::EntityInstanceBuffer> Client::entityInstances() { return this->mpEntityInstanceBuffer; }
@@ -215,7 +217,9 @@ void Client::exec_openSave(command::Signature const& cmd)
 	{
 		saveData.create(saveName);
 	}
-	pGame->createWorld()->init(&saveData.get(saveName));
+	auto pWorld = pGame->createWorld();
+	pWorld->init(&saveData.get(saveName));
+	this->mLocalPlayerEntityId = pWorld->createPlayer();
 }
 
 void Client::exec_joinServer(command::Signature const& cmd)
@@ -307,7 +311,7 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 	pServer->initializeUser(localUserId, this->localUserAuthKey());
 	pServer->getUserInfo(localUserId).copyFrom(localUserInfo).writeToDisk();
 
-	// TODO: pServer->associatePlayer(netId, );
+	pServer->associatePlayer(netId, this->mLocalPlayerEntityId);
 }
 
 void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
@@ -407,9 +411,6 @@ bool Client::createWindow()
 	this->mpWindow->consumeCursor(true);
 	return true;
 }
-
-// HERE
-std::shared_ptr<Window> Client::getWindow() { return this->mpWindow; }
 
 void Client::destroyWindow()
 {
