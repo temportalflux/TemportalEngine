@@ -1,15 +1,20 @@
 #include "ecs/view/ECView.hpp"
 
+#include "ecs/Core.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
+
 using namespace ecs;
 using namespace ecs::view;
 
-void View::setComponentSlots(std::vector<ComponentTypeId> slotTypes)
+ecs::TypeId View::typeId() const { assert(false); return 0; }
+
+View::View(std::vector<ComponentTypeId> slotTypes)
 {
 	// Slot types cannot exceed slot capacity. If they do, `ECS_MAX_COMPONENT_VIEW_SLOTS` needs to change.
 	assert(slotTypes.size() <= View::SlotCapacity);
 	for (uIndex iSlot = 0; iSlot < math::min(View::SlotCapacity, slotTypes.size()); ++iSlot)
 	{
-		this->mSlots.push(ComponentSlot { slotTypes[iSlot], std::weak_ptr<component::Component>() });
+		this->mSlots.push(ComponentSlot { slotTypes[iSlot], 0, false });
 	}
 }
 
@@ -22,12 +27,12 @@ bool View::hasAllComponents() const
 {
 	for (auto const& slot : this->mSlots)
 	{
-		if (slot.component.expired()) return false;
+		if (!slot.bHasValue) return false;
 	}
 	return true;
 }
 
-void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr)
+void View::onComponentAdded(ComponentTypeId const& typeId, Identifier const& id)
 {
 	auto idxSlot = this->mSlots.search([typeId](ComponentSlot const& slot) -> ui8
 	{
@@ -35,21 +40,30 @@ void View::onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<compone
 		return typeId < slot.typeId ? -1 : (typeId > slot.typeId ? 1 : 0);
 	});
 	if (!idxSlot) return;
-	this->mSlots[*idxSlot].component = ptr;
+
+	auto& slot = this->mSlots[*idxSlot];
+	slot.objectId = id;
+	slot.bHasValue = true;
+
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ecs::Core::Get()->replicateUpdate(
+			ecs::EType::eView, this->typeId(), this->netId
+		)->pushLink(
+			ecs::EType::eComponent, slot.typeId,
+			ecs::Core::Get()->components().get(slot.typeId, slot.objectId)->netId
+		);
+	}
+
 }
 
-std::shared_ptr<component::Component> View::lockComponent(ComponentTypeId const& typeId)
+component::Component* View::get(ComponentTypeId const& typeId)
 {
 	for (auto& slot : this->mSlots)
 	{
-		if (slot.typeId == typeId)
+		if (slot.typeId == typeId && slot.bHasValue)
 		{
-			std::shared_ptr<component::Component> component = nullptr;
-			if (!slot.component.expired())
-			{
-				component = slot.component.lock();
-			}
-			return component;
+			return ecs::Core::Get()->components().get(slot.typeId, slot.objectId);	
 		}
 	}
 	return nullptr;

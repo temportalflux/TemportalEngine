@@ -11,18 +11,14 @@ FORWARD_DEF(NS_VIEW, class View);
 class Entity : public ecs::IEVCSObject
 {
 
-	template <typename TItemId, typename TItem>
 	struct ItemEntry
 	{
-		TItemId typeId;
-		std::shared_ptr<TItem> ptr;
-		bool operator<(ItemEntry<TItemId, TItem> const& other) const { return typeId < other.typeId; }
-		bool operator>(ItemEntry<TItemId, TItem> const& other) const { return typeId > other.typeId; }
+		ecs::TypeId typeId;
+		Identifier objectId;
+		bool operator<(ItemEntry const& other) const { return typeId < other.typeId; }
+		bool operator>(ItemEntry const& other) const { return typeId > other.typeId; }
 	};
 	
-	using ComponentEntry = ItemEntry<ComponentTypeId, component::Component>;
-	using ViewEntry = ItemEntry<ViewTypeId, view::View>;
-
 public:
 
 	~Entity();
@@ -39,25 +35,25 @@ public:
 public:
 
 	template <typename TComponent>
-	Entity& addComponent(std::shared_ptr<TComponent> pComp)
+	Entity& addComponent(TComponent* pComp)
 	{
 		return this->addComponent(TComponent::TypeId, pComp);
 	}
 
 	template <typename TComponent>
-	std::shared_ptr<TComponent> getComponent()
+	TComponent* getComponent()
 	{
-		return std::reinterpret_pointer_cast<TComponent>(
+		return reinterpret_cast<TComponent*>(
 			this->getComponent(TComponent::TypeId)
 		);
 	}
 
 private:
 
-	FixedArray<ComponentEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
+	FixedArray<ItemEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
 
-	Entity& addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp);
-	std::shared_ptr<component::Component> getComponent(ComponentTypeId const& typeId);
+	Entity& addComponent(ComponentTypeId const& typeId, component::Component* pComp);
+	component::Component* getComponent(ComponentTypeId const& typeId);
 
 #pragma endregion
 
@@ -66,24 +62,24 @@ private:
 public:
 
 	template <typename TView>
-	Entity& addView(std::shared_ptr<TView> pView)
+	Entity& addView(TView* pView)
 	{
 		return this->addView(TView::TypeId, pView);
 	}
 
 	template <typename TView>
-	std::shared_ptr<TView> getView()
+	TView* getView()
 	{
-		return std::reinterpret_pointer_cast<TView>(
+		return reinterpret_cast<TView*>(
 			this->getView(TView::TypeId)
 		);
 	}
 
 private:
-	FixedArray<ViewEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
+	FixedArray<ItemEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
 
-	Entity& addView(ViewTypeId const& typeId, std::shared_ptr<view::View> pView);
-	std::shared_ptr<view::View> getView(ViewTypeId const& typeId);
+	Entity& addView(ViewTypeId const& typeId, view::View* pView);
+	view::View* getView(ViewTypeId const& typeId);
 
 #pragma endregion
 

@@ -20,12 +20,12 @@ public:
 
 protected:
 	
-	virtual void update(f32 deltaTime, std::shared_ptr<view::View> view) = 0;
+	virtual void update(f32 deltaTime, view::View* view) = 0;
 
 	template <typename TView>
-	std::shared_ptr<TView> asView(std::shared_ptr<view::View> view)
+	TView* asView(view::View* view)
 	{
-		return std::reinterpret_pointer_cast<TView>(view);
+		return reinterpret_cast<TView*>(view);
 	}
 
 private:

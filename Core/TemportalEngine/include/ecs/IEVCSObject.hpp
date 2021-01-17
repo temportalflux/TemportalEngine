@@ -9,6 +9,7 @@ struct IEVCSObject
 public:
 	// The unique-id for an instance of a given component
 	Identifier id;
+	Identifier netId;
 };
 
 NS_END

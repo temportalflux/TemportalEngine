@@ -21,6 +21,7 @@ class Manager : public ecs::NetworkedManager
 		uSize size;
 		uSize objectCount;
 		std::string name;
+		std::function<void(Component*)> construct;
 	};
 
 public:
@@ -32,31 +33,32 @@ public:
 	{
 		TComponent::TypeId = this->mRegisteredTypeCount;
 		this->registerType(TComponent::TypeId, {
-			sizeof(TComponent),
-			TComponent::MaxPoolSize,
-			name
+			sizeof(TComponent), TComponent::MaxPoolSize,
+			name, &TComponent::construct
 		});
 		return TComponent::TypeId;
 	}
 
 	void allocatePools();
 
-	std::shared_ptr<Component> create(ComponentTypeId const& typeId);
-	std::shared_ptr<Component> get(ComponentTypeId const& typeId, Identifier const& id);
+	IEVCSObject* createObject(TypeId const& typeId) override;
+	Component* create(ComponentTypeId const& typeId);
+	Component* get(ComponentTypeId const& typeId, Identifier const& id);
+	void destroy(ComponentTypeId const& typeId, Identifier const& id);
 
 	template <typename TComponent>
-	std::shared_ptr<TComponent> create()
+	TComponent* create()
 	{
-		return std::reinterpret_pointer_cast<TComponent>(this->create(TComponent::TypeId));
+		return dynamic_cast<TComponent*>(this->create(TComponent::TypeId));
 	}
 
 	template <typename TComponent>
-	std::shared_ptr<TComponent> get(Identifier const &id)
+	TComponent* get(Identifier const &id)
 	{
-		return std::reinterpret_pointer_cast<TComponent>(this->get(TComponent::TypeId), id);
+		return dynamic_cast<TComponent*>(this->get(TComponent::TypeId, id));
 	}
 
-	std::shared_ptr<Component> getNetworked(ComponentTypeId const& typeId, Identifier const& netId);
+	Component* getNetworked(ComponentTypeId const& typeId, Identifier const& netId);
 
 private:
 	Core *mpCore;
@@ -72,10 +74,9 @@ private:
 	 */
 	void* mpPoolMemory;
 	ObjectPool mPoolByType[ECS_MAX_COMPONENT_TYPE_COUNT];
-	std::map<Identifier, std::weak_ptr<Component>> mAllocatedByType[ECS_MAX_COMPONENT_TYPE_COUNT];
+	std::map<Identifier, Component*> mAllocatedByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 
 	void registerType(ComponentTypeId const& id, TypeMetadata const& metadata);
-	void destroy(ComponentTypeId const& typeId, Component *pCreated);
 
 };
 

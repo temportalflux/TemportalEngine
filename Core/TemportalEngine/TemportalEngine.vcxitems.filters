@@ -414,6 +414,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryPool.cpp">
       <Filter>memory</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Component.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />

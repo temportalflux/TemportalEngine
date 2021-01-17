@@ -17,6 +17,8 @@ public:
 	EntityManager();
 	~EntityManager();
 
+	IEVCSObject* createObject(TypeId const& typeId) override;
+
 	/**
 	 * Allocates a new entity object.
 	 *

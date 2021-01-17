@@ -15,8 +15,6 @@ public: \
 	ui32 ClassType::TypeId = 0; \
 	std::shared_ptr<ClassType> ClassType::create() { return std::make_shared<ClassType>(); }
 
-#define NS_PACKET namespace packet {
-
 NS_NETWORK
 class Interface;
 

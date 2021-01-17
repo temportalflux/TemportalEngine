@@ -11,7 +11,7 @@ class RenderedMesh : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	static void initView(std::shared_ptr<View> pView);
+	RenderedMesh();
 };
 
 NS_END

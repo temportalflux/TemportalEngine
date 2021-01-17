@@ -13,7 +13,7 @@ public:
 		: memory::Pool(objectSize, capacity)
 	{}
 
-	void* create(uSize objectSize, uIndex &outId)
+	void* create(uIndex &outId)
 	{
 		this->mLock.lock();
 		outId = this->allocate();
@@ -32,7 +32,7 @@ public:
 	TObject* create(uIndex &outId, TArgs... args)
 	{
 		TObject* ptr = reinterpret_cast<TObject*>(
-			this->create(sizeof(TObject), outId)
+			this->create(outId)
 		);
 		new (ptr) TObject(args...);
 		return ptr;

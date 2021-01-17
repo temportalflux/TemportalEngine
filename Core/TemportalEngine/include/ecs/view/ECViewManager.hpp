@@ -18,7 +18,7 @@ class Manager : public ecs::NetworkedManager
 	{
 		uIndex mFirstAllocatedIdx;
 		uSize mCount;
-		std::function<void(std::shared_ptr<View>)> initView;
+		std::function<void(View* pView)> construct;
 	};
 
 public:
@@ -26,7 +26,7 @@ public:
 	{
 	public:
 		ViewIterator(Manager *manager, uIndex idxRecord) : mpManager(manager), mIdxRecord(idxRecord) {}
-		std::shared_ptr<View> operator*() { return this->mpManager->getRecord(mIdxRecord).ptr.lock(); }
+		View* operator*() { return this->mpManager->getRecord(mIdxRecord).ptr; }
 		void operator++() { this->mIdxRecord++; }
 		bool operator!=(ViewIterator const& other) { return this->mIdxRecord != other.mIdxRecord; }
 	private:
@@ -53,21 +53,24 @@ public:
 		assert(this->mRegisteredTypeCount < ECS_MAX_VIEW_TYPE_COUNT);
 		TView::TypeId = this->mRegisteredTypeCount++;
 		this->mRegisteredTypes[TView::TypeId] = TypeMetadata {
-			0, 0, &TView::initView
+			0, 0, &TView::construct
 		};
 	}
 
-	std::shared_ptr<View> create(ViewTypeId const& typeId);
+	IEVCSObject* createObject(TypeId const& typeId) override;
+	View* create(ViewTypeId const& typeId);
+	View* get(Identifier const& id);
+	void destroy(ViewTypeId const& typeId, Identifier const& id);
 
 	template <typename TView>
-	std::shared_ptr<TView> create()
+	TView* create()
 	{
-		return std::reinterpret_pointer_cast<TView>(this->createView(TView::TypeId));
+		return dynamic_cast<TView*>(this->create(TView::TypeId));
 	}
 
 	ViewIterable getAllOfType(ViewTypeId const &typeId);
 
-	std::shared_ptr<View> getNetworked(Identifier const& netId) const;
+	View* getNetworked(Identifier const& netId) const;
 
 private:
 	thread::MutexLock mMutex;
@@ -81,17 +84,15 @@ private:
 	{
 		ViewTypeId typeId;
 		Identifier objectId;
-		std::weak_ptr<View> ptr;
+		View* ptr;
 		bool operator<(ViewRecord const& other) const;
 		bool operator>(ViewRecord const& other) const;
 	};
 	FixedArray<ViewRecord, ECS_MAX_VIEW_COUNT> mAllocatedObjects;
-	FixedArray<std::weak_ptr<View>, ECS_MAX_VIEW_COUNT> mObjectsById;
+	FixedArray<View*, ECS_MAX_VIEW_COUNT> mObjectsById;
 	
 	TypeMetadata& getTypeMetadata(ViewTypeId const& id) { return this->mRegisteredTypes[id]; }
 	ViewRecord& getRecord(uIndex const& idxRecord);
-
-	void destroy(ViewTypeId const& typeId, View *pCreated);
 
 };
 

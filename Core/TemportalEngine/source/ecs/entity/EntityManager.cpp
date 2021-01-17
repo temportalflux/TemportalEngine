@@ -1,5 +1,8 @@
 #include "ecs/entity/EntityManager.hpp"
 
+#include "ecs/Core.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
+
 using namespace ecs;
 
 EntityManager::EntityManager()
@@ -16,6 +19,13 @@ EntityManager::~EntityManager()
 	assert(this->mAllocatedObjects.size() <= 0);
 }
 
+IEVCSObject* EntityManager::createObject(TypeId const& typeId)
+{
+	// ignores type id because its mostly for same-interface compatibility with views and components
+	// returns the underlying pointer because the manager owns the object
+	return this->create().get();
+}
+
 std::shared_ptr<Entity> EntityManager::create()
 {
 	this->mMutex.lock();
@@ -26,10 +36,19 @@ std::shared_ptr<Entity> EntityManager::create()
 		std::bind(&EntityManager::destroy, this, std::placeholders::_1)
 	);
 	shared->id = objectId;
+	shared->netId = 0;
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
-
 	this->mOwnedObjects.insert(std::make_pair(objectId, shared));
 	
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		shared->netId = this->nextNetworkId();
+		ecs::Core::Get()->replicateCreate()
+			->setObjectEcsType(ecs::EType::eEntity)
+			.setObjectNetId(shared->netId)
+			;
+	}
+
 	this->mMutex.unlock();
 	return shared;
 }
@@ -49,6 +68,14 @@ void EntityManager::destroy(Entity *pCreated)
 	auto allocatedIter = this->mAllocatedObjects.find(pCreated->id);
 	assert(allocatedIter != this->mAllocatedObjects.end());
 	this->mAllocatedObjects.erase(allocatedIter);
+
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ecs::Core::Get()->replicateDestroy()
+			->setObjectEcsType(ecs::EType::eEntity)
+			.setObjectNetId(pCreated->netId)
+			;
+	}
 
 	// Actually release the memory
 	this->mPool.destroy<Entity>(pCreated->id);

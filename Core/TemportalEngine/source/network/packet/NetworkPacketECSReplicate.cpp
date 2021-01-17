@@ -41,7 +41,7 @@ NS_END
 
 ECSReplicate::ECSReplicate()
 	: Packet(EPacketFlags::eReliable)
-	, mReplicationType(EReplicationType(-1))
+	, mReplicationType(EReplicationType::eInvalid)
 	, mObjectEcsType(ecs::EType::eSystem) // systems are not supported for replication
 	, mObjectTypeId(0), mObjectNetId(0)
 {
@@ -74,6 +74,14 @@ ECSReplicate& ECSReplicate::setObjectNetId(ecs::Identifier const& netId)
 	this->mObjectNetId = netId;
 	return *this;
 }
+
+ECSReplicate::EReplicationType const& ECSReplicate::replicationType() const
+{
+	return this->mReplicationType;
+}
+ecs::EType const& ECSReplicate::ecsType() const { return this->mObjectEcsType; }
+uIndex const& ECSReplicate::ecsTypeId() const { return this->mObjectTypeId; }
+ecs::Identifier const& ECSReplicate::objectNetId() const { return this->mObjectNetId; }
 
 ECSReplicate& ECSReplicate::pushLink(ecs::EType type, uIndex objectTypeId, ecs::Identifier netId)
 {
@@ -191,6 +199,17 @@ void ECSReplicate::read(Buffer &archive)
 	}
 }
 
+ecs::NetworkedManager* getObjectManager(ecs::Core &ecs, ecs::EType type)
+{
+	switch (type)
+	{
+	case ecs::EType::eEntity: return &ecs.entities();
+	case ecs::EType::eView: return &ecs.views();
+	case ecs::EType::eComponent: return &ecs.components();
+	default: return nullptr;
+	}
+}
+
 void ECSReplicate::process(network::Interface *pInterface)
 {
 	if (pInterface->type().includes(EType::eServer))
@@ -200,23 +219,16 @@ void ECSReplicate::process(network::Interface *pInterface)
 	else if (pInterface->type() == EType::eClient)
 	{
 		auto& ecs = engine::Engine::Get()->getECS();
+		auto* manager = getObjectManager(ecs, this->mObjectEcsType);
 		if (this->mReplicationType == EReplicationType::eCreate)
 		{
 			if (this->mObjectEcsType == ecs::EType::eEntity)
 			{
-				auto pEntity = ecs.entities().create();
-				ecs.entities().assignNetworkId(this->mObjectNetId, pEntity->id);
+				assert(this->mObjectTypeId == 0);
 			}
-			else if (this->mObjectEcsType == ecs::EType::eView)
-			{
-				auto pView = ecs.views().create(this->mObjectTypeId);
-				ecs.views().assignNetworkId(this->mObjectNetId, pView->id);
-			}
-			else if (this->mObjectEcsType == ecs::EType::eComponent)
-			{
-				auto pComponent = ecs.components().create(this->mObjectTypeId);
-				ecs.components().assignNetworkId(this->mObjectNetId, pComponent->id);
-			}
+			auto pObject = manager->createObject(this->mObjectTypeId);
+			manager->assignNetworkId(this->mObjectNetId, pObject->id);
+
 		}
 		else if (this->mReplicationType == EReplicationType::eDestroy)
 		{

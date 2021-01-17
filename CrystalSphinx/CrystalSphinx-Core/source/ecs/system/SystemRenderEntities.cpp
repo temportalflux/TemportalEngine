@@ -112,7 +112,7 @@ void RenderEntities::writeDescriptors(std::shared_ptr<graphics::GraphicsDevice> 
 {
 }
 
-void RenderEntities::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
+void RenderEntities::update(f32 deltaTime, view::View* view)
 {
 	OPTICK_EVENT();
 
@@ -144,7 +144,7 @@ void RenderEntities::record(graphics::Command *command, uIndex idxFrame, TGetGlo
 	}
 }
 
-void RenderEntities::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, std::shared_ptr<ecs::view::View> view)
+void RenderEntities::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, ecs::view::View* view)
 {
 	OPTICK_EVENT();
 

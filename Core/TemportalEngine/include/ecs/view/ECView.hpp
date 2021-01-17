@@ -8,8 +8,15 @@ NS_ECS
 FORWARD_DEF(NS_COMPONENT, class Component);
 NS_END
 
-#define DECLARE_ECS_VIEW_STATICS() public: static ViewTypeId TypeId;
-#define DEFINE_ECS_VIEW_STATICS(COMP_TYPE) ViewTypeId COMP_TYPE::TypeId = 0;
+#define DECLARE_ECS_VIEW_STATICS() \
+	public: \
+		static ViewTypeId TypeId; \
+		static void construct(ecs::view::View* ptr); \
+		ecs::TypeId typeId() const override;
+#define DEFINE_ECS_VIEW_STATICS(COMP_TYPE) \
+	ViewTypeId COMP_TYPE::TypeId = 0; \
+	void COMP_TYPE::construct(ecs::view::View* ptr) { new (ptr) COMP_TYPE(); } \
+	ecs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
 
 NS_ECS
 NS_VIEW
@@ -21,34 +28,32 @@ class View : public ecs::IEVCSObject
 
 public:
 	View() = default;
+	View(std::vector<ComponentTypeId> slotTypes);
 	~View();
 
-	void setComponentSlots(std::vector<ComponentTypeId> slotTypes);
-	
+	virtual ecs::TypeId typeId() const;	
 	bool hasAllComponents() const;
-
-	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr);
+	void onComponentAdded(ComponentTypeId const& typeId, Identifier const& id);
 
 	template <typename TComponent>
-	std::shared_ptr<TComponent> get()
+	TComponent* get()
 	{
-		return std::reinterpret_pointer_cast<TComponent>(
-			lockComponent(TComponent::TypeId)
-		);
+		return reinterpret_cast<TComponent*>(this->get(TComponent::TypeId));
 	}
 
 private:
 	struct ComponentSlot
 	{
-		ComponentTypeId typeId;
-		std::weak_ptr<component::Component> component;
+		ecs::TypeId typeId;
+		Identifier objectId;
+		bool bHasValue;
 		bool operator<(ComponentSlot const& other) const { return typeId < other.typeId; }
 		bool operator>(ComponentSlot const& other) const { return typeId > other.typeId; }
 	};
 
 	FixedArray<ComponentSlot, SlotCapacity> mSlots;
 
-	std::shared_ptr<component::Component> lockComponent(ComponentTypeId const& typeId);
+	component::Component* get(ComponentTypeId const& typeId);
 
 };
 

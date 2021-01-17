@@ -1,6 +1,7 @@
 #include "ecs/component/ComponentManager.hpp"
 
 #include "ecs/Core.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
 #include "logging/Logger.hpp"
 
 using namespace ecs;
@@ -61,37 +62,60 @@ void Manager::allocatePools()
 	}
 }
 
-std::shared_ptr<Component> Manager::create(ComponentTypeId const& typeId)
+IEVCSObject* Manager::createObject(TypeId const& typeId)
+{
+	return this->create(typeId);
+}
+
+Component* Manager::create(ComponentTypeId const& typeId)
 {
 	uIndex objectId;
-	auto ptr = std::shared_ptr<Component>(
-		reinterpret_cast<Component*>(
-			this->mPoolByType[typeId].create(sizeof(Component), objectId)
-		),
-		std::bind(&Manager::destroy, this, typeId, std::placeholders::_1)
+	auto ptr = reinterpret_cast<Component*>(
+		this->mPoolByType[typeId].create(objectId)
 	);
 	ptr->id = objectId;
+	this->mMetadataByType[typeId].construct(ptr);
 	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
+
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ptr->netId = this->nextNetworkId();
+		ecs::Core::Get()->replicateCreate()
+			->setObjectEcsType(ecs::EType::eComponent)
+			.setObjectTypeId(typeId)
+			.setObjectNetId(ptr->netId)
+			;
+	}
+
 	return ptr;
 }
 
-std::shared_ptr<Component> Manager::get(ComponentTypeId const& typeId, Identifier const& id)
+Component* Manager::get(ComponentTypeId const& typeId, Identifier const& id)
 {
-	auto weakIter = this->mAllocatedByType[typeId].find(id);
-	assert(weakIter != this->mAllocatedByType[typeId].end());
-	assert(!weakIter->second.expired());
-	return weakIter->second.lock();
+	auto iter = this->mAllocatedByType[typeId].find(id);
+	assert(iter != this->mAllocatedByType[typeId].end());
+	return iter->second;
 }
 
-std::shared_ptr<Component> Manager::getNetworked(ComponentTypeId const& typeId, Identifier const& netId)
+void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
+{
+	auto iter = this->mAllocatedByType[typeId].find(id);
+	assert(iter != this->mAllocatedByType[typeId].end());
+
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ecs::Core::Get()->replicateDestroy()
+			->setObjectEcsType(ecs::EType::eComponent)
+			.setObjectTypeId(typeId)
+			.setObjectNetId(iter->second->id)
+			;
+	}
+
+	this->mAllocatedByType[typeId].erase(iter);
+	this->mPoolByType[typeId].destroy(id);
+}
+
+Component* Manager::getNetworked(ComponentTypeId const& typeId, Identifier const& netId)
 {
 	return this->get(typeId, this->getNetworkedObjectId(netId));
-}
-
-void Manager::destroy(ComponentTypeId const& typeId, Component *pCreated)
-{
-	auto iter = this->mAllocatedByType[typeId].find(pCreated->id);
-	assert(iter != this->mAllocatedByType[typeId].end());
-	this->mAllocatedByType[typeId].erase(iter);
-	this->mPoolByType[typeId].destroy(pCreated->id);
 }

@@ -4,6 +4,7 @@
 #include "asset/BlockType.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
+#include "game/GameInstance.hpp"
 #include "physics/ChunkCollisionManager.hpp"
 #include "physics/PhysicsMaterial.hpp"
 #include "physics/PhysicsRigidBody.hpp"
@@ -116,7 +117,13 @@ void World::destroyDimension(Dimension *dim)
 ecs::Identifier World::createPlayer()
 {
 	auto& ecs = engine::Engine::Get()->getECS();
-	auto& components = ecs.components();
+
+	// Turning on replication if on a dedicated or integrated server.
+	// If replication is on, ecs will auto-generate packets.
+	if (game::Game::networkInterface()->type().includes(network::EType::eServer))
+	{
+		ecs.beginReplication();
+	}
 
 	// does not mark the entity to be killed, so the manager will own it.
 	// can look up the entity by id by using `EntityManager#get`.
@@ -125,12 +132,17 @@ ecs::Identifier World::createPlayer()
 	// Add Transform
 	{
 		// TODO: Load player location and rotation from save data
-		auto transform = components.create<ecs::component::CoordinateTransform>();
+		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
+		// TODO: each component needs to implement replication update
 		transform->setPosition(this->mOverworld.mpTerrain->makeSpawnLocation());
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
 	}
 
+	// End replication only does anything if `beginReplication` is called.
+	// If `beginReplication` is called, `endReplication` MUST be called.
+	// Will broadcast packets to all network connections.
+	ecs.endReplication();
 	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
 	return pEntity->id;
 }

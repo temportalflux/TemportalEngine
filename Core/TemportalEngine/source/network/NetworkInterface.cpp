@@ -4,6 +4,7 @@
 #include "network/NetworkCore.hpp"
 #include "network/NetworkPacket.hpp"
 #include "network/packet/NetworkPacketClientStatus.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
 #include "utility/Casting.hpp"
 
 #include <steam/steamnetworkingsockets.h>
@@ -25,6 +26,7 @@ Interface::Interface() : mpInternal(nullptr), mType(), mConnection(0)
 {
 	this->packetTypes()
 		.addType<network::packet::ClientStatus>()
+		.addType<network::packet::ECSReplicate>()
 		;
 }
 

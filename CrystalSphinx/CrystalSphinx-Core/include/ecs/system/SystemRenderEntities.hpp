@@ -34,12 +34,12 @@ public:
 	void createPipeline(math::Vector2UInt const& resolution) override;
 	
 	void record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet) override;
-	void recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, std::shared_ptr<ecs::view::View> view);
+	void recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, ecs::view::View* view);
 
 	void destroyRenderChain() override;
 	void destroy();
 
-	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
+	void update(f32 deltaTime, ecs::view::View* view) override;
 
 private:
 	std::shared_ptr<graphics::Pipeline> mpPipeline;

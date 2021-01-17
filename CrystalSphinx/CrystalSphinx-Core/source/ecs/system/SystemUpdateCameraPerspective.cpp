@@ -97,7 +97,7 @@ void UpdateCameraPerspective::onKeyInput(input::Event const & evt)
 	}
 }
 
-void UpdateCameraPerspective::update(f32 deltaTime, std::shared_ptr<ecs::view::View> view)
+void UpdateCameraPerspective::update(f32 deltaTime, view::View* view)
 {
 	OPTICK_EVENT();
 

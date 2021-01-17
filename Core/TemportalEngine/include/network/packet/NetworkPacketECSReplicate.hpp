@@ -4,6 +4,8 @@
 
 #include "ecs/types.h"
 
+#define ECS_REPL_FIELD(CLASS_TYPE, FIELD_NAME) offsetof(CLASS_TYPE, FIELD_NAME), &FIELD_NAME, sizeof(FIELD_NAME)
+
 NS_NETWORK
 NS_PACKET
 
@@ -12,8 +14,9 @@ class ECSReplicate : public Packet
 	DECLARE_PACKET_TYPE(ECSReplicate)
 
 public:
-	enum class EReplicationType : ui8
+	enum class EReplicationType : i8
 	{
+		eInvalid = -1,
 		eCreate,
 		eUpdate,
 		eDestroy,
@@ -25,10 +28,14 @@ public:
 	ECSReplicate& setObjectEcsType(ecs::EType type);
 	ECSReplicate& setObjectTypeId(uIndex typeId);
 	ECSReplicate& setObjectNetId(ecs::Identifier const& netId);
+	EReplicationType const& replicationType() const;
+	ecs::EType const& ecsType() const;
+	uIndex const& ecsTypeId() const;
+	ecs::Identifier const& objectNetId() const;
 
 	ECSReplicate& pushLink(ecs::EType type, uIndex objectTypeId, ecs::Identifier netId);
 	ECSReplicate& pushComponentField(uIndex byteOffset, void* data, uSize dataSize);
-
+	
 	void write(Buffer &archive) const override;
 	void read(Buffer &archive) override;
 	void process(Interface *pInterface) override;

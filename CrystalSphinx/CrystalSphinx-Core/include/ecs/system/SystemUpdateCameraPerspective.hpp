@@ -25,7 +25,7 @@ public:
 	);
 
 	void subscribeToQueue();
-	void update(f32 deltaTime, std::shared_ptr<ecs::view::View> view) override;
+	void update(f32 deltaTime, ecs::view::View* view) override;
 
 private:
 	std::shared_ptr<graphics::ImmediateRenderSystem> mpRenderer;

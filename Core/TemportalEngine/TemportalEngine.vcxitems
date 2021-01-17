@@ -36,6 +36,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\crypto\RSA.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\SDL.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Component.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp" />

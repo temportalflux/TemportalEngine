@@ -1,6 +1,8 @@
 #include "ecs/component/CoordinateTransform.hpp"
 
+#include "ecs/Core.hpp"
 #include "math/transform.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
 
 using namespace ecs;
 using namespace ecs::component;
@@ -21,6 +23,11 @@ math::Vector3 CoordinateTransform::localPosition() const { return this->mPositio
 CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &pos)
 {
 	this->mPosition = pos;
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		this->replicateUpdate()
+			->pushComponentField(ECS_REPL_FIELD(CoordinateTransform, mPosition));
+	}
 	return *this;
 }
 
@@ -60,6 +67,11 @@ math::Vector3 CoordinateTransform::down() const
 CoordinateTransform& CoordinateTransform::setOrientation(math::Quaternion const& orientation)
 {
 	this->mOrientation = orientation;
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		this->replicateUpdate()
+			->pushComponentField(ECS_REPL_FIELD(CoordinateTransform, mOrientation));
+	}
 	return *this;
 }
 

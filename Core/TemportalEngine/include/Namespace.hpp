@@ -24,6 +24,7 @@
 #define NS_LOGGING namespace logging {
 #define NS_PHYSICS namespace physics {
 #define NS_THREAD namespace thread {
+#define NS_PACKET namespace packet {
 #define NS_RENDER namespace render {
 #define NS_TASK namespace task {
 #define NS_TYPES namespace types {

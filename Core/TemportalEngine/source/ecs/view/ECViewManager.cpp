@@ -1,5 +1,8 @@
 #include "ecs/view/ECViewManager.hpp"
 
+#include "ecs/Core.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
+
 using namespace ecs;
 using namespace ecs::view;
 
@@ -22,22 +25,24 @@ Manager::Manager()
 {
 }
 
-std::shared_ptr<View> Manager::create(ViewTypeId const& typeId)
+IEVCSObject* Manager::createObject(TypeId const& typeId)
+{
+	return this->create(typeId);
+}
+
+View* Manager::create(ViewTypeId const& typeId)
 {
 	this->mMutex.lock();
 
 	auto& typeMeta = this->getTypeMetadata(typeId);
 	
 	uIndex objectId;
-	auto shared = std::shared_ptr<View>(
-		this->mPool.create<View>(objectId),
-		std::bind(&Manager::destroy, this, typeId, std::placeholders::_1)
-	);
-	shared->id = objectId;
-	typeMeta.initView(shared);
+	auto ptr = this->mPool.create<View>(objectId);
+	ptr->id = objectId;
+	typeMeta.construct(ptr);
 
-	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, std::weak_ptr(shared) });
-	this->mObjectsById[objectId] = shared;
+	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, ptr });
+	this->mObjectsById[objectId] = ptr;
 
 	if (typeMeta.mCount == 0) typeMeta.mFirstAllocatedIdx = idxRecord;
 	typeMeta.mCount++;
@@ -47,26 +52,43 @@ std::shared_ptr<View> Manager::create(ViewTypeId const& typeId)
 		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx++;
 	}
 
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ptr->netId = this->nextNetworkId();
+		ecs::Core::Get()->replicateCreate()
+			->setObjectEcsType(ecs::EType::eView)
+			.setObjectTypeId(typeId)
+			.setObjectNetId(ptr->netId)
+			;
+	}
+
 	this->mMutex.unlock();
-	return shared;
+	return ptr;
 }
 
-void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
+View* Manager::get(Identifier const& id)
+{
+	return this->mObjectsById[id];
+}
+
+void Manager::destroy(ViewTypeId const& typeId, Identifier const& id)
 {
 	this->mMutex.lock();
 
-	auto idxRecord = this->mAllocatedObjects.search([typeId, pCreated](ViewRecord const& record) -> i8
+	auto idxRecord = this->mAllocatedObjects.search([typeId, id](ViewRecord const& record) -> i8
 	{
 		// typeId <=> record.typeId
 		auto typeComp = typeId < record.typeId ? -1 : (typeId > record.typeId ? 1 : 0);
 		if (typeComp != 0) return typeComp;
 		// pCreated->mId <=> record.objectId
-		auto objComp = pCreated->id < record.objectId ? -1 : (pCreated->id > record.objectId ? 1 : 0);
+		auto objComp = id < record.objectId ? -1 : (id > record.objectId ? 1 : 0);
 		return objComp;
 	});
 	assert(idxRecord);
 	this->mAllocatedObjects.remove(*idxRecord);
-	this->mObjectsById[pCreated->id].reset();
+	
+	auto netId = this->mObjectsById[id]->netId;
+	this->mObjectsById[id] = nullptr;
 
 	auto& typeMeta = this->getTypeMetadata(typeId);
 	typeMeta.mCount--;
@@ -80,7 +102,16 @@ void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx--;
 	}
 
-	this->mPool.destroy<View>(pCreated->id);
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ecs::Core::Get()->replicateDestroy()
+			->setObjectEcsType(ecs::EType::eView)
+			.setObjectTypeId(typeId)
+			.setObjectNetId(netId)
+			;
+	}
+
+	this->mPool.destroy<View>(id);
 
 	this->mMutex.unlock();
 }
@@ -96,9 +127,7 @@ Manager::ViewRecord& Manager::getRecord(uIndex const& idxRecord)
 	return this->mAllocatedObjects[idxRecord];
 }
 
-std::shared_ptr<View> Manager::getNetworked(Identifier const& netId) const
+View* Manager::getNetworked(Identifier const& netId) const
 {
-	auto weak = this->mObjectsById[this->getNetworkedObjectId(netId)];
-	assert(!weak.expired());
-	return weak.lock();
+	return this->mObjectsById[this->getNetworkedObjectId(netId)];
 }
