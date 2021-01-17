@@ -7,9 +7,11 @@ using namespace ecs;
 using namespace ecs::view;
 
 DEFINE_ECS_VIEW_STATICS(PhysicalDynamics);
-PhysicalDynamics::PhysicalDynamics() : View({
-	ecs::component::CoordinateTransform::TypeId,
-	ecs::component::PhysicsBody::TypeId
-})
+
+void PhysicalDynamics::initView(std::shared_ptr<View> pView)
 {
+	pView->setComponentSlots({
+		ecs::component::CoordinateTransform::TypeId,
+		ecs::component::PhysicsBody::TypeId
+	});
 }

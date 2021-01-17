@@ -1,18 +1,15 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "ecs/ECSNetworkedManager.hpp"
 
 #include "dataStructures/ObjectPool.hpp"
-
-#include "ecs/types.h"
 #include "ecs/entity/Entity.hpp"
 #include "thread/MutexLock.hpp"
 
 NS_ECS
 
-class EntityManager
+class EntityManager : public ecs::NetworkedManager
 {
-	typedef ObjectPool<Entity, ECS_MAX_ENTITY_COUNT> TPool;
 	typedef std::unordered_map<Identifier, std::shared_ptr<Entity>> TOwnedObjectMap;
 	typedef std::unordered_map<Identifier, std::weak_ptr<Entity>> TAllocatedObjectMap;
 
@@ -40,13 +37,15 @@ public:
 	void release(Identifier const& id);
 	void releaseAll();
 
+	std::shared_ptr<Entity> getNetworked(Identifier const& netId) const;
+
 private:
 	thread::MutexLock mMutex;
 
-	TPool mPool;
+	ObjectPool mPool;
 	TOwnedObjectMap mOwnedObjects;
 	TAllocatedObjectMap mAllocatedObjects;
-
+	
 	void destroy(Entity *pCreated);
 
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/types.h"
+#include "ecs/IEVCSObject.hpp"
 
 #define DECLARE_ECS_COMPONENT_STATICS(POOL_SIZE) \
 	public: \
@@ -11,11 +11,8 @@
 NS_ECS
 NS_COMPONENT
 
-class Component
+class Component : public ecs::IEVCSObject
 {
-public:
-	// The unique-id for an instance of a given component
-	Identifier id;
 };
 
 NS_END

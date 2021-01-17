@@ -11,7 +11,7 @@ class PlayerCamera : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	PlayerCamera();
+	static void initView(std::shared_ptr<View> pView);
 };
 
 NS_END

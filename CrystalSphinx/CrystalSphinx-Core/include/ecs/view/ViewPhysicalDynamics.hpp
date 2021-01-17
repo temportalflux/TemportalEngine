@@ -11,7 +11,7 @@ class PhysicalDynamics : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	PhysicalDynamics();
+	static void initView(std::shared_ptr<View> pView);
 };
 
 NS_END

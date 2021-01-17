@@ -1,9 +1,8 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "ecs/IEVCSObject.hpp"
 
 #include "dataStructures/FixedArray.hpp"
-#include "ecs/types.h"
 
 NS_ECS
 FORWARD_DEF(NS_COMPONENT, class Component);
@@ -16,17 +15,16 @@ NS_ECS
 NS_VIEW
 class Manager;
 
-class View
+class View : public ecs::IEVCSObject
 {
-	friend class Manager;
 	static inline constexpr uSize SlotCapacity = ECS_MAX_COMPONENT_VIEW_SLOTS;
 
 public:
 	View() = default;
-	View(std::vector<ComponentTypeId> slotTypes);
 	~View();
+
+	void setComponentSlots(std::vector<ComponentTypeId> slotTypes);
 	
-	Identifier const& id() const;
 	bool hasAllComponents() const;
 
 	void onComponentAdded(ComponentTypeId const& typeId, std::weak_ptr<component::Component> const& ptr);
@@ -48,7 +46,6 @@ private:
 		bool operator>(ComponentSlot const& other) const { return typeId > other.typeId; }
 	};
 
-	Identifier mId;
 	FixedArray<ComponentSlot, SlotCapacity> mSlots;
 
 	std::shared_ptr<component::Component> lockComponent(ComponentTypeId const& typeId);

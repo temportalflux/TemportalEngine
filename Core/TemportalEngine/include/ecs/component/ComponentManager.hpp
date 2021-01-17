@@ -1,11 +1,9 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "ecs/ECSNetworkedManager.hpp"
 
 #include "dataStructures/FixedArray.hpp"
 #include "dataStructures/ObjectPool.hpp"
-
-#include "ecs/types.h"
 #include "ecs/component/Component.hpp"
 #include "thread/MutexLock.hpp"
 
@@ -14,21 +12,14 @@ FORWARD_DEF(NS_ECS, class Core);
 NS_ECS
 NS_COMPONENT
 
-class Manager
+class Manager : public ecs::NetworkedManager
 {
-	template <typename TComponent>
-	using TAvailableIds = FixedArray<Identifier, TComponent::MaxPoolSize>;
-	template <typename TComponent>
-	using TPool = ObjectPool<TComponent, TComponent::MaxPoolSize>;
 
 	struct TypeMetadata
 	{
 		// The sizeof a given component for the type
 		uSize size;
-		// the sizeof an object pool for a component type
-		uSize objectPoolSize;
-		uSize availableIdArraySize;
-
+		uSize objectCount;
 		std::string name;
 	};
 
@@ -42,8 +33,7 @@ public:
 		TComponent::TypeId = this->mRegisteredTypeCount;
 		this->registerType(TComponent::TypeId, {
 			sizeof(TComponent),
-			sizeof(TPool<TComponent>),
-			sizeof(TAvailableIds<TComponent>),
+			TComponent::MaxPoolSize,
 			name
 		});
 		return TComponent::TypeId;
@@ -51,36 +41,25 @@ public:
 
 	void allocatePools();
 
+	std::shared_ptr<Component> create(ComponentTypeId const& typeId);
+	std::shared_ptr<Component> get(ComponentTypeId const& typeId, Identifier const& id);
+
 	template <typename TComponent>
 	std::shared_ptr<TComponent> create()
 	{
-		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
-		if (pool == nullptr) return nullptr;
-
-		this->mMutex.lock();
-
-		uIndex objectId;
-		auto ptr = std::shared_ptr<TComponent>(
-			pool->create(objectId),
-			std::bind(&Manager::destroy<TComponent>, this, std::placeholders::_1)
-		);
-		ptr->id = objectId;
-
-		this->mMutex.unlock();
-		return ptr;
+		return std::reinterpret_pointer_cast<TComponent>(this->create(TComponent::TypeId));
 	}
 
 	template <typename TComponent>
-	TComponent* get(Identifier const &id)
+	std::shared_ptr<TComponent> get(Identifier const &id)
 	{
-		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
-		if (pool == nullptr) return nullptr;
-		return pool->lookup(id);
+		return std::reinterpret_pointer_cast<TComponent>(this->get(TComponent::TypeId), id);
 	}
+
+	std::shared_ptr<Component> getNetworked(ComponentTypeId const& typeId, Identifier const& netId);
 
 private:
 	Core *mpCore;
-	thread::MutexLock mMutex;
 
 	TypeMetadata mMetadataByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
@@ -92,40 +71,11 @@ private:
 	 * ahead of time, so dynamic memory management is not needed here.
 	 */
 	void* mpPoolMemory;
-	void* mpAvailableIdMemory;
-
-	void* mPoolByType[ECS_MAX_COMPONENT_TYPE_COUNT];
-	void* mAvailableIdsByType[ECS_MAX_COMPONENT_TYPE_COUNT];
+	ObjectPool mPoolByType[ECS_MAX_COMPONENT_TYPE_COUNT];
+	std::map<Identifier, std::weak_ptr<Component>> mAllocatedByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 
 	void registerType(ComponentTypeId const& id, TypeMetadata const& metadata);
-
-	template <typename TComponent>
-	TPool<TComponent>* lookupPool(ComponentTypeId const &type)
-	{
-		return reinterpret_cast<TPool<TComponent>*>(this->mPoolByType[type]);
-	}
-
-	template <typename TComponent>
-	Identifier dequeueOrCreateId(ComponentTypeId const& typeId, TPool<TComponent> *pool)
-	{
-		auto* unusedIds = reinterpret_cast<TAvailableIds<TComponent>*>(this->mAvailableIdsByType[typeId]);
-		return unusedIds->size() > 0 ? unusedIds->dequeue() : (Identifier)pool->size();
-	}
-
-	template <typename TComponent>
-	void destroy(TComponent *pCreated)
-	{
-		this->mMutex.lock();
-		
-		auto pool = this->lookupPool<TComponent>(TComponent::TypeId);
-		if (pool == nullptr) return;
-
-		auto* unusedIds = reinterpret_cast<TAvailableIds<TComponent>*>(this->mAvailableIdsByType[TComponent::TypeId]);
-		unusedIds->insert(pCreated->id);
-		pool->destroy(pCreated->id);
-		
-		this->mMutex.unlock();
-	}
+	void destroy(ComponentTypeId const& typeId, Component *pCreated);
 
 };
 

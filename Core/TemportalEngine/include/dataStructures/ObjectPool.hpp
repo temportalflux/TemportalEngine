@@ -1,46 +1,57 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
-
-#include "utility/Guid.hpp"
 #include "memory/MemoryPool.hpp"
+
 #include "thread/MutexLock.hpp"
 
-template <typename TObject, uSize Capacity>
-class ObjectPool
+class ObjectPool : public memory::Pool
 {
 
 public:
-	constexpr uSize capacity() const { return Capacity; }
+	ObjectPool() : memory::Pool() {}
+	ObjectPool(uSize objectSize, uSize capacity)
+		: memory::Pool(objectSize, capacity)
+	{}
 
-	uSize size() const { return this->mMemory.size(); }
-
-	ObjectPool() = default;
-
-	template <typename... TArgs>
-	TObject* create(uIndex &outId, TArgs... args)
+	void* create(uSize objectSize, uIndex &outId)
 	{
 		this->mLock.lock();
-		outId = this->mMemory.allocate(args...);
+		outId = this->allocate();
 		this->mLock.unlock();
-		return &this->mMemory[outId];
+		return this->at(outId);
 	}
-	
+
 	void destroy(uIndex const &id)
 	{
 		this->mLock.lock();
-		((TObject*)(&this->mMemory[id]))->~TObject();
-		this->mMemory.deallocate(id);
+		this->deallocate(id);
 		this->mLock.unlock();
 	}
 
+	template <typename TObject, typename... TArgs>
+	TObject* create(uIndex &outId, TArgs... args)
+	{
+		TObject* ptr = reinterpret_cast<TObject*>(
+			this->create(sizeof(TObject), outId)
+		);
+		new (ptr) TObject(args...);
+		return ptr;
+	}
+
+	template <typename TObject>
 	TObject* lookup(uIndex const &id)
 	{
-		return &this->mMemory[id];
+		return reinterpret_cast<TObject*>(this->at(id));
+	}
+	
+	template <typename TObject>
+	void destroy(uIndex const &id)
+	{
+		this->lookup<TObject>(id)->~TObject();
+		this->destroy(id);
 	}
 
 private:
 	thread::MutexLock mLock;
-	memory::MemoryPool<TObject, Capacity> mMemory;
 
 };

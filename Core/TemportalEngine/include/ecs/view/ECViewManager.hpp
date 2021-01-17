@@ -1,26 +1,24 @@
 #pragma once
 
-#include "TemportalEnginePCH.hpp"
+#include "ecs/ECSNetworkedManager.hpp"
 
 #include "dataStructures/FixedArray.hpp"
 #include "dataStructures/ObjectPool.hpp"
-
-#include "ecs/types.h"
 #include "ecs/view/ECView.hpp"
 #include "thread/MutexLock.hpp"
 
 NS_ECS
 NS_VIEW
 
-class Manager
+class Manager : public ecs::NetworkedManager
 {
 	typedef FixedArray<Identifier, ECS_MAX_VIEW_COUNT> TAvailableIds;
-	typedef ObjectPool<View, ECS_MAX_VIEW_COUNT> TPool;
 
 	struct TypeMetadata
 	{
 		uIndex mFirstAllocatedIdx;
 		uSize mCount;
+		std::function<void(std::shared_ptr<View>)> initView;
 	};
 
 public:
@@ -46,26 +44,30 @@ public:
 		uSize mCount;
 	};
 
+	Manager();
+
 	template <typename TView>
 	void registerType()
 	{
 		assert(sizeof(TView) == sizeof(View));
 		assert(this->mRegisteredTypeCount < ECS_MAX_VIEW_TYPE_COUNT);
 		TView::TypeId = this->mRegisteredTypeCount++;
-		this->mRegisteredTypes[TView::TypeId] = TypeMetadata{ 0, 0 };
+		this->mRegisteredTypes[TView::TypeId] = TypeMetadata {
+			0, 0, &TView::initView
+		};
 	}
+
+	std::shared_ptr<View> create(ViewTypeId const& typeId);
 
 	template <typename TView>
 	std::shared_ptr<TView> create()
 	{
-		// All views have the same memory size, they just have different type names according to what systems they support and what components they slot.
-		std::shared_ptr<TView> shared = std::reinterpret_pointer_cast<TView>(createView(TView::TypeId));
-		// They DO Need to be properly constructed though, so this makes sure that the view object is constructed using the default constructor of the desired type
-		new (shared.get()) TView();
-		return shared;
+		return std::reinterpret_pointer_cast<TView>(this->createView(TView::TypeId));
 	}
 
 	ViewIterable getAllOfType(ViewTypeId const &typeId);
+
+	std::shared_ptr<View> getNetworked(Identifier const& netId) const;
 
 private:
 	thread::MutexLock mMutex;
@@ -73,7 +75,7 @@ private:
 	TypeMetadata mRegisteredTypes[ECS_MAX_VIEW_TYPE_COUNT];
 	uSize mRegisteredTypeCount;
 
-	TPool mPool;
+	ObjectPool mPool;
 
 	struct ViewRecord
 	{
@@ -84,11 +86,11 @@ private:
 		bool operator>(ViewRecord const& other) const;
 	};
 	FixedArray<ViewRecord, ECS_MAX_VIEW_COUNT> mAllocatedObjects;
+	FixedArray<std::weak_ptr<View>, ECS_MAX_VIEW_COUNT> mObjectsById;
 	
 	TypeMetadata& getTypeMetadata(ViewTypeId const& id) { return this->mRegisteredTypes[id]; }
 	ViewRecord& getRecord(uIndex const& idxRecord);
 
-	std::shared_ptr<View> createView(ViewTypeId const& typeId);
 	void destroy(ViewTypeId const& typeId, View *pCreated);
 
 };

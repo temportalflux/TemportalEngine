@@ -19,8 +19,17 @@
 
 NS_ECS
 
-typedef uIndex ComponentTypeId;
-typedef uIndex ViewTypeId;
+typedef uIndex TypeId;
+typedef TypeId ComponentTypeId;
+typedef TypeId ViewTypeId;
 typedef uIndex Identifier;
+
+enum class EType : ui8
+{
+	eEntity = 0,
+	eView = 1,
+	eComponent = 2,
+	eSystem = 3,
+};
 
 NS_END

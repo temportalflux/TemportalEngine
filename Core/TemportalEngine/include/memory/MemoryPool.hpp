@@ -4,59 +4,36 @@
 
 NS_MEMORY
 
-template <typename TObject, uSize Capacity>
-class MemoryPool
+class Pool
 {
 
 public:
-	
-	constexpr uSize capacity() const { return Capacity; }
 
-	uSize size() const { return this->mSize; }
+	Pool();
+	Pool(uSize objectSize, uSize capacity);
+	virtual ~Pool();
 
-	uSize memSize() const { return capacity() * sizeof(TObject); }
+	Pool& init(uSize objectSize, uSize capacity);
 
-	MemoryPool()
-	{
-		this->mSize = 0;
-		memset(this->mValues, 0, memSize());
-		this->mEmptySlotCount = 0;
-		memset(this->mEmptySlots, 0, sizeof(mEmptySlots));
-	}
+	uSize capacity() const;
+	uSize size() const;
+	uSize objectSize() const;
+	uSize memSize() const;
 
-	template <typename... TArgs>
-	uIndex allocate(TArgs... args)
-	{
-		assert(size() < capacity());
-		uIndex idx = this->mSize;
-		if (this->mEmptySlotCount > 0)
-		{
-			idx = this->mEmptySlots[--this->mEmptySlotCount];
-		}
-		new (&this->mValues[idx]) TObject(args...);
-		this->mSize++;
-		return idx;
-	}
+	void allocateMemory();
+	void assignMemory(void* data);
 
-	void deallocate(uSize idx)
-	{
-		assert(this->mEmptySlotCount < capacity());
-		this->mEmptySlots[this->mEmptySlotCount++] = idx;
-		memset(this->mValues + idx, 0, sizeof(TObject));
-		this->mSize--;
-	}
+	uIndex allocate();
+	void* at(uIndex idx);
+	void deallocate(uIndex idx);
 
-	TObject& operator[](uSize idx)
-	{
-		return this->mValues[idx];
-	}
-
-private:	
-	TObject mValues[Capacity];
+private:
+	uSize mObjectSize;
+	uSize mCapacity;
+	bool mbOwnsMemory;
+	void* mpData;
 	uSize mSize;
-
-	uIndex mEmptySlots[Capacity];
-	uSize mEmptySlotCount;
+	std::set<uIndex> mEmptySlots;
 
 };
 

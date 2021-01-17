@@ -35,33 +35,63 @@ void Manager::registerType(ComponentTypeId const& id, TypeMetadata const& metada
 void Manager::allocatePools()
 {
 	uSize sumSizeOfAllPools = 0;
-	uSize sumSizeOfAllIdLists = 0;
 	for (uSize i = 0; i < this->mRegisteredTypeCount; ++i)
 	{
-		sumSizeOfAllPools += this->mMetadataByType[i].objectPoolSize;
-		sumSizeOfAllIdLists += this->mMetadataByType[i].availableIdArraySize;
+		auto const& metadata = this->mMetadataByType[i];
+		sumSizeOfAllPools += (metadata.size * metadata.objectCount);
 	}
 
 	this->mpCore->log(LOG_INFO, "Allocating %i bytes for ecs component pools", sumSizeOfAllPools);
-	this->mpCore->log(LOG_INFO, "Allocating %i bytes for ecs component id-tracking", sumSizeOfAllIdLists);
 
 	// this memory chunk should now have enough room for:
 	// 1) memory manager header
 	// 2) some number of object pools equivalent to the number of types registered
 	this->mpPoolMemory = malloc(sumSizeOfAllPools);
-	this->mpAvailableIdMemory = malloc(sumSizeOfAllIdLists);
-
 	// NOTE: Assumes each pool can be initialized by clearing its memory to 0
 	memset(this->mpPoolMemory, 0, sumSizeOfAllPools);
-	memset(this->mpAvailableIdMemory, 0, sumSizeOfAllIdLists);
 
 	uSize nextPoolPtrLoc = (uSize)this->mpPoolMemory;
-	uSize nextIdListPtrLoc = (uSize)this->mpAvailableIdMemory;
 	for (ComponentTypeId typeId = 0; typeId < this->mRegisteredTypeCount; ++typeId)
 	{
-		this->mPoolByType[typeId] = (void*)nextPoolPtrLoc;
-		nextPoolPtrLoc += this->mMetadataByType[typeId].objectPoolSize;
-		this->mAvailableIdsByType[typeId] = (void*)nextIdListPtrLoc;
-		nextIdListPtrLoc += this->mMetadataByType[typeId].availableIdArraySize;
+		auto const& metadata = this->mMetadataByType[typeId];
+		this->mPoolByType[typeId]
+			.init(metadata.size, metadata.objectCount)
+			.assignMemory((void*)nextPoolPtrLoc);
+		nextPoolPtrLoc += this->mPoolByType[typeId].memSize();
 	}
+}
+
+std::shared_ptr<Component> Manager::create(ComponentTypeId const& typeId)
+{
+	uIndex objectId;
+	auto ptr = std::shared_ptr<Component>(
+		reinterpret_cast<Component*>(
+			this->mPoolByType[typeId].create(sizeof(Component), objectId)
+		),
+		std::bind(&Manager::destroy, this, typeId, std::placeholders::_1)
+	);
+	ptr->id = objectId;
+	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
+	return ptr;
+}
+
+std::shared_ptr<Component> Manager::get(ComponentTypeId const& typeId, Identifier const& id)
+{
+	auto weakIter = this->mAllocatedByType[typeId].find(id);
+	assert(weakIter != this->mAllocatedByType[typeId].end());
+	assert(!weakIter->second.expired());
+	return weakIter->second.lock();
+}
+
+std::shared_ptr<Component> Manager::getNetworked(ComponentTypeId const& typeId, Identifier const& netId)
+{
+	return this->get(typeId, this->getNetworkedObjectId(netId));
+}
+
+void Manager::destroy(ComponentTypeId const& typeId, Component *pCreated)
+{
+	auto iter = this->mAllocatedByType[typeId].find(pCreated->id);
+	assert(iter != this->mAllocatedByType[typeId].end());
+	this->mAllocatedByType[typeId].erase(iter);
+	this->mPoolByType[typeId].destroy(pCreated->id);
 }

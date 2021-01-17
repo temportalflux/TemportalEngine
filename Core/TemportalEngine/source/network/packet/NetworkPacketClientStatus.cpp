@@ -34,9 +34,9 @@ std::string to_string(EClientStatus status)
 {
 	switch (status)
 	{
-	case EClientStatus::eAuthenticating: return  "authenticating";
-	case EClientStatus::eConnected: return "connecting";
-	case EClientStatus::eDisconnected: return "disconnecting";
+	case EClientStatus::eAuthenticating: return "authenticating";
+	case EClientStatus::eConnected: return "connected";
+	case EClientStatus::eDisconnected: return "disconnected";
 	default: return "invalid";
 	}
 }

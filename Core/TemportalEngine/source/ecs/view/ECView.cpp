@@ -3,7 +3,7 @@
 using namespace ecs;
 using namespace ecs::view;
 
-View::View(std::vector<ComponentTypeId> slotTypes)
+void View::setComponentSlots(std::vector<ComponentTypeId> slotTypes)
 {
 	// Slot types cannot exceed slot capacity. If they do, `ECS_MAX_COMPONENT_VIEW_SLOTS` needs to change.
 	assert(slotTypes.size() <= View::SlotCapacity);
@@ -17,8 +17,6 @@ View::~View()
 {
 	this->mSlots.clear();
 }
-
-Identifier const& View::id() const { return this->mId; }
 
 bool View::hasAllComponents() const
 {

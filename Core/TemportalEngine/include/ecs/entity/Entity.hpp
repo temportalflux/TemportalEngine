@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ecs/types.h"
+#include "ecs/IEVCSObject.hpp"
 
 #include "dataStructures/FixedArray.hpp"
 
@@ -8,7 +8,7 @@ NS_ECS
 FORWARD_DEF(NS_COMPONENT, class Component);
 FORWARD_DEF(NS_VIEW, class View);
 
-class Entity
+class Entity : public ecs::IEVCSObject
 {
 
 	template <typename TItemId, typename TItem>
@@ -24,7 +24,6 @@ class Entity
 	using ViewEntry = ItemEntry<ViewTypeId, view::View>;
 
 public:
-	Identifier id;
 
 	~Entity();
 

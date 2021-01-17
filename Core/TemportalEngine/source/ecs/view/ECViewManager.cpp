@@ -17,19 +17,28 @@ bool Manager::ViewRecord::operator>(Manager::ViewRecord const& other) const
 	return false;
 }
 
-std::shared_ptr<View> Manager::createView(ViewTypeId const& typeId)
+Manager::Manager()
+	: mPool(sizeof(View), ECS_MAX_VIEW_COUNT)
+{
+}
+
+std::shared_ptr<View> Manager::create(ViewTypeId const& typeId)
 {
 	this->mMutex.lock();
 
+	auto& typeMeta = this->getTypeMetadata(typeId);
+	
 	uIndex objectId;
 	auto shared = std::shared_ptr<View>(
-		this->mPool.create(objectId),
+		this->mPool.create<View>(objectId),
 		std::bind(&Manager::destroy, this, typeId, std::placeholders::_1)
 	);
-	shared->mId = objectId;
-	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, std::weak_ptr(shared) });
+	shared->id = objectId;
+	typeMeta.initView(shared);
 
-	auto& typeMeta = this->getTypeMetadata(typeId);
+	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, std::weak_ptr(shared) });
+	this->mObjectsById[objectId] = shared;
+
 	if (typeMeta.mCount == 0) typeMeta.mFirstAllocatedIdx = idxRecord;
 	typeMeta.mCount++;
 
@@ -52,11 +61,12 @@ void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 		auto typeComp = typeId < record.typeId ? -1 : (typeId > record.typeId ? 1 : 0);
 		if (typeComp != 0) return typeComp;
 		// pCreated->mId <=> record.objectId
-		auto objComp = pCreated->mId < record.objectId ? -1 : (pCreated->mId > record.objectId ? 1 : 0);
+		auto objComp = pCreated->id < record.objectId ? -1 : (pCreated->id > record.objectId ? 1 : 0);
 		return objComp;
 	});
 	assert(idxRecord);
 	this->mAllocatedObjects.remove(*idxRecord);
+	this->mObjectsById[pCreated->id].reset();
 
 	auto& typeMeta = this->getTypeMetadata(typeId);
 	typeMeta.mCount--;
@@ -70,7 +80,7 @@ void Manager::destroy(ViewTypeId const& typeId, View *pCreated)
 		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx--;
 	}
 
-	this->mPool.destroy(pCreated->mId);
+	this->mPool.destroy<View>(pCreated->id);
 
 	this->mMutex.unlock();
 }
@@ -84,4 +94,11 @@ Manager::ViewIterable Manager::getAllOfType(ViewTypeId const &typeId)
 Manager::ViewRecord& Manager::getRecord(uIndex const& idxRecord)
 {
 	return this->mAllocatedObjects[idxRecord];
+}
+
+std::shared_ptr<View> Manager::getNetworked(Identifier const& netId) const
+{
+	auto weak = this->mObjectsById[this->getNetworkedObjectId(netId)];
+	assert(!weak.expired());
+	return weak.lock();
 }

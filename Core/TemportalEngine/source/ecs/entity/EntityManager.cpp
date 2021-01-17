@@ -3,8 +3,10 @@
 using namespace ecs;
 
 EntityManager::EntityManager()
+	: mPool(sizeof(Entity), ECS_MAX_ENTITY_COUNT)
 {
-
+	// pools automatically free dynamic memory when they go out of scope
+	this->mPool.allocateMemory();
 }
 
 EntityManager::~EntityManager()
@@ -19,7 +21,10 @@ std::shared_ptr<Entity> EntityManager::create()
 	this->mMutex.lock();
 
 	uIndex objectId;
-	auto shared = std::shared_ptr<Entity>(this->mPool.create(objectId), std::bind(&EntityManager::destroy, this, std::placeholders::_1));
+	auto shared = std::shared_ptr<Entity>(
+		this->mPool.create<Entity>(objectId),
+		std::bind(&EntityManager::destroy, this, std::placeholders::_1)
+	);
 	shared->id = objectId;
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 
@@ -46,7 +51,7 @@ void EntityManager::destroy(Entity *pCreated)
 	this->mAllocatedObjects.erase(allocatedIter);
 
 	// Actually release the memory
-	this->mPool.destroy(pCreated->id);
+	this->mPool.destroy<Entity>(pCreated->id);
 
 	this->mMutex.unlock();
 }
@@ -55,6 +60,11 @@ std::shared_ptr<Entity> EntityManager::get(Identifier const &id) const
 {
 	auto iter = this->mAllocatedObjects.find(id);
 	return iter != this->mAllocatedObjects.end() ? iter->second.lock() : nullptr;
+}
+
+std::shared_ptr<Entity> EntityManager::getNetworked(Identifier const& netId) const
+{
+	return this->get(this->getNetworkedObjectId(netId));
 }
 
 void EntityManager::release(Identifier const& id)

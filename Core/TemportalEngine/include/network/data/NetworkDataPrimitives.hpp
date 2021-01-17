@@ -3,6 +3,7 @@
 #include "network/data/NetworkDataBuffer.hpp"
 
 #include "utility/Guid.hpp"
+#include "ecs/types.h"
 
 NS_NETWORK
 
@@ -22,6 +23,7 @@ DECLARE_BUFFER_OP(i64);
 DECLARE_BUFFER_OP(std::string);
 
 DECLARE_BUFFER_OP(utility::Guid);
+DECLARE_BUFFER_OP(ecs::EType);
 
 template <typename T>
 void write(Buffer &buffer, std::string name, std::vector<T> value)

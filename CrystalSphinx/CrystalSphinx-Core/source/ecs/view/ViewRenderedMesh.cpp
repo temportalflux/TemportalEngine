@@ -7,9 +7,11 @@ using namespace ecs;
 using namespace ecs::view;
 
 DEFINE_ECS_VIEW_STATICS(RenderedMesh);
-RenderedMesh::RenderedMesh() : View({
-	ecs::component::CoordinateTransform::TypeId,
-	ecs::component::RenderMesh::TypeId
-})
+
+void RenderedMesh::initView(std::shared_ptr<View> pView)
 {
+	pView->setComponentSlots({
+		ecs::component::CoordinateTransform::TypeId,
+		ecs::component::RenderMesh::TypeId
+	});
 }

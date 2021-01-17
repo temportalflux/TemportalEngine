@@ -11,7 +11,7 @@ class PlayerInputMovement : public View
 {
 	DECLARE_ECS_VIEW_STATICS()
 public:
-	PlayerInputMovement();
+	static void initView(std::shared_ptr<View> pView);
 };
 
 NS_END
