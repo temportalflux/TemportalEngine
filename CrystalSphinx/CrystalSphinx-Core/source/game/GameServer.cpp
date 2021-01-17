@@ -4,6 +4,7 @@
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
+#include "world/World.hpp"
 
 using namespace game;
 
@@ -26,6 +27,7 @@ void Server::init()
 		? saveDataRegistry.get(saveId)
 		: saveDataRegistry.create(saveId);
 	this->userRegistry().scan(saveInstance.userDirectory());
+	game::Game::Get()->createWorld()->init(&saveInstance);
 }
 
 void Server::setupNetwork(utility::Flags<network::EType> flags)

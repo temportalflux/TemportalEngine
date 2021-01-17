@@ -44,23 +44,25 @@ public:
 	void run();
 
 	static network::Interface* networkInterface();
-	std::shared_ptr<game::World> worldLogic();
 	std::shared_ptr<game::Server> server();
 	std::shared_ptr<game::Client> client();
 	saveData::Registry& saveData();
+	std::shared_ptr<game::World> world();
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 
 	void setupNetworkServer(utility::Flags<network::EType> flags);
 
+	std::shared_ptr<game::World> createWorld();
+	void destroyWorld();
+
 private:
 	logging::Logger mProjectLog;
 
-	std::shared_ptr<game::World> mpWorldLogic;
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
-
 	saveData::Registry mSaveDataRegistry;
+	std::shared_ptr<game::World> mpWorld;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;

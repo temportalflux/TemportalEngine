@@ -107,6 +107,8 @@ void Client::registerCommands()
 	ADD_CMD(CMD_SIGNATURE("printId", Client, this, exec_printAccount));
 	ADD_CMD(CMD_SIGNATURE("setName", Client, this, exec_setAccountName).pushArgType<std::string>());
 
+	ADD_CMD(CMD_SIGNATURE("openSave", Client, this, exec_openSave).pushArgType<std::string>());
+
 	ADD_CMD(CMD_SIGNATURE("join", Client, this, exec_joinServer).pushArgType<network::Address>());
 	ADD_CMD(CMD_SIGNATURE("joinLocal", Client, this, exec_joinServerLocal));
 	ADD_CMD(CMD_SIGNATURE_0("leave", network::Interface, Game::networkInterface(), stop));
@@ -202,6 +204,18 @@ void Client::exec_setAccountName(command::Signature const& cmd)
 	{
 		network::packet::UpdateUserInfo::create()->setInfo(userInfo).sendToServer();
 	}
+}
+
+void Client::exec_openSave(command::Signature const& cmd)
+{
+	auto pGame = game::Game::Get();
+	auto& saveData = pGame->saveData();
+	auto const saveName = cmd.get<std::string>(0);
+	if (!saveData.has(saveName))
+	{
+		saveData.create(saveName);
+	}
+	pGame->createWorld()->init(&saveData.get(saveName));
 }
 
 void Client::exec_joinServer(command::Signature const& cmd)
@@ -557,7 +571,7 @@ void Client::createVoxelGridRenderer()
 {
 	auto const totalBlockCount = blockCountForRenderDistance(6);
 
-	auto voxelTypes = game::Game::Get()->worldLogic()->voxelTypeRegistry();
+	auto voxelTypes = game::Game::Get()->world()->voxelTypeRegistry();
 	this->mpVoxelInstanceBuffer = std::make_shared<world::BlockInstanceBuffer>(
 		totalBlockCount, voxelTypes
 	);

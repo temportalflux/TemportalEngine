@@ -84,7 +84,6 @@ Game::Game(int argc, char *argv[])
 	}
 	else
 	{
-		//this->mpWorldLogic = std::make_shared<game::WorldLogic>();
 		this->mpClient = std::make_shared<game::Client>();
 	}
 }
@@ -107,10 +106,26 @@ network::Interface* Game::networkInterface()
 	return &engine::Engine::Get()->networkInterface();
 }
 
-std::shared_ptr<game::World> Game::worldLogic() { return this->mpWorldLogic; }
 std::shared_ptr<game::Server> Game::server() { return this->mpServer; }
 std::shared_ptr<game::Client> Game::client() { return this->mpClient; }
 saveData::Registry& Game::saveData() { return this->mSaveDataRegistry; }
+std::shared_ptr<game::World> Game::world() { return this->mpWorld; }
+
+std::shared_ptr<game::World> Game::createWorld()
+{
+	assert(!this->mpWorld);
+	this->mpWorld = std::make_shared<game::World>();
+	return this->mpWorld;
+}
+
+void Game::destroyWorld()
+{
+	if (this->mpWorld)
+	{
+		this->mpWorld->uninit();
+		this->mpWorld.reset();
+	}
+}
 
 void Game::setupNetworkServer(utility::Flags<network::EType> flags)
 {
@@ -194,18 +209,8 @@ void Game::init()
 		return;
 	}
 
-	if (this->mpServer)
-	{
-		this->mpServer->init();
-	}
-	if (this->mpClient)
-	{
-		this->mpClient->init();
-	}
-	if (this->mpWorldLogic)
-	{
-		this->mpWorldLogic->init();
-	}
+	if (this->mpServer) this->mpServer->init();
+	if (this->mpClient) this->mpClient->init();
 	
 	//this->bindInput();
 
@@ -222,11 +227,6 @@ void Game::uninit()
 
 	//this->unbindInput();
 
-	if (this->mpWorldLogic)
-	{
-		this->mpWorldLogic->uninit();
-		this->mpWorldLogic.reset();
-	}
 	if (this->mpClient)
 	{
 		this->mpClient->uninit();
@@ -350,7 +350,7 @@ void Game::update(f32 deltaTime)
 
 	//this->mpWorld->handleDirtyCoordinates();
 	engine::Engine::Get()->update(deltaTime);
-	//if (this->mpWorldLogic) this->mpWorldLogic->update(deltaTime);
+	if (this->mpWorld) this->mpWorld->update(deltaTime);
 }
 
 /*

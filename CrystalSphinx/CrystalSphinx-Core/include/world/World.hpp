@@ -12,6 +12,8 @@ FORWARD_DEF(NS_PHYSICS, class System);
 FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
 FORWARD_DEF(NS_WORLD, class Terrain);
 
+namespace saveData { class Instance; }
+
 NS_GAME
 class VoxelTypeRegistry;
 
@@ -19,13 +21,16 @@ class World
 {
 
 public:
-	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
+	World();
 
-	void init();
+	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
+
+	void init(saveData::Instance* saveInstance);
 	void uninit();
 	void update(f32 deltaTime);
 
 private:
+	saveData::Instance* mpSaveInstance;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	void createVoxelTypeRegistry();

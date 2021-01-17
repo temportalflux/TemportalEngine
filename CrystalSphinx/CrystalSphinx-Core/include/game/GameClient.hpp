@@ -102,6 +102,7 @@ private:
 	void exec_setAccount(command::Signature const& cmd);
 	void exec_printAccount(command::Signature const& cmd);
 	void exec_setAccountName(command::Signature const& cmd);
+	void exec_openSave(command::Signature const& cmd);
 	void exec_joinServer(command::Signature const& cmd);
 	void exec_joinServerLocal(command::Signature const& cmd);
 	void exec_startHostingServer(command::Signature const& cmd);

@@ -10,13 +10,19 @@
 #include "physics/PhysicsShape.hpp"
 #include "physics/PhysicsSystem.hpp"
 #include "registry/VoxelType.hpp"
+#include "saveData/SaveDataRegistry.hpp"
 #include "world/WorldTerrain.hpp"
 
 using namespace game;
 
-void World::init()
+World::World() : mpSaveInstance(nullptr)
 {
-	this->createVoxelTypeRegistry();
+}
+
+void World::init(saveData::Instance *saveInstance)
+{
+	this->mpSaveInstance = saveInstance;
+	//this->createVoxelTypeRegistry();
 
 	this->mpPhysics = std::make_shared<physics::System>();
 	this->mpPhysics->init(true);
@@ -26,6 +32,8 @@ void World::init()
 
 	this->createWorld();
 }
+
+std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 
 void World::createVoxelTypeRegistry()
 {
