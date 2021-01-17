@@ -1,5 +1,6 @@
 #include "ecs/entity/Entity.hpp"
 
+#include "Engine.hpp"
 #include "ecs/component/Component.hpp"
 #include "ecs/view/ECView.hpp"
 
@@ -9,6 +10,11 @@ Entity::~Entity()
 {
 	this->mViews.clear();
 	this->mComponents.clear();
+}
+
+void Entity::kill()
+{
+	engine::Engine::Get()->getECS().entities().release(this->id);
 }
 
 Entity& Entity::addComponent(ComponentTypeId const& typeId, std::shared_ptr<component::Component> pComp)

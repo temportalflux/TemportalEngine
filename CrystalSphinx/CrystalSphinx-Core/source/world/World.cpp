@@ -2,6 +2,7 @@
 
 #include "Engine.hpp"
 #include "asset/BlockType.hpp"
+#include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
 #include "physics/ChunkCollisionManager.hpp"
 #include "physics/PhysicsMaterial.hpp"
@@ -110,6 +111,34 @@ void World::destroyDimension(Dimension *dim)
 	dim->mpTerrain.reset();
 	dim->mpChunkCollisionManager.reset();
 	dim->mpScene.reset();
+}
+
+ecs::Identifier World::createPlayer()
+{
+	auto& ecs = engine::Engine::Get()->getECS();
+	auto& components = ecs.components();
+
+	// does not mark the entity to be killed, so the manager will own it.
+	// can look up the entity by id by using `EntityManager#get`.
+	auto pEntity = ecs.entities().create();
+
+	// Add Transform
+	{
+		// TODO: Load player location and rotation from save data
+		auto transform = components.create<ecs::component::CoordinateTransform>();
+		transform->setPosition(this->mOverworld.mpTerrain->makeSpawnLocation());
+		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
+		pEntity->addComponent(transform);
+	}
+
+	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
+	return pEntity->id;
+}
+
+void World::destroyPlayer(ecs::Identifier entityId)
+{
+	engine::Engine::Get()->getECS().entities().release(entityId);
+	WORLD_LOG.log(LOG_INFO, "Destroyed player entity %u", entityId);
 }
 
 /*

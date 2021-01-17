@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "world/WorldSaveData.hpp"
+#include "ecs/types.h"
 
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
@@ -31,6 +32,13 @@ public:
 	void init(saveData::Instance* saveInstance);
 	void uninit();
 	void update(f32 deltaTime);
+
+	/**
+	 * Creates a player entity (though doesn't include any rendering or POV components/views).
+	 * Returns the EVCS entity id.
+	 */
+	ecs::Identifier createPlayer();
+	void destroyPlayer(ecs::Identifier entityId);
 
 private:
 	saveData::Instance* mpSaveInstance;

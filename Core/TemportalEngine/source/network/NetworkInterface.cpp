@@ -86,6 +86,8 @@ void Interface::start()
 			return;
 		}
 
+		this->onNetworkStarted.broadcast(this);
+
 		if (this->type().includes(EType::eClient))
 		{
 			auto const netId = this->nextNetworkId();
@@ -97,7 +99,7 @@ void Interface::start()
 			this->onConnectionEstablished.execute(this, this->mConnection, netId);
 		}
 	}
-	else if (this->mType.includes(EType::eClient))
+	else if (this->mType == EType::eClient)
 	{
 		network::logger().log(LOG_INFO, "Connecting to server at %s", this->mAddress.toString(true).c_str());
 		this->mConnection = pInterface->ConnectByIPAddress(address, (ui32)options.size(), options.data());
@@ -107,6 +109,7 @@ void Interface::start()
 			network::logger().log(LOG_ERR, "Failed to create connection to %s", this->mAddress.toString(true).c_str());
 			return;
 		}
+		this->onNetworkStarted.broadcast(this);
 	}
 }
 

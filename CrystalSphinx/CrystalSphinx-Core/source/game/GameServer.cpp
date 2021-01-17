@@ -8,6 +8,8 @@
 
 using namespace game;
 
+logging::Logger SERVER_LOG = DeclareLog("Server", LOG_INFO);
+
 Server::Server() : Session()
 {
 	this->serverRSA().generate();
@@ -33,6 +35,9 @@ void Server::init()
 void Server::setupNetwork(utility::Flags<network::EType> flags)
 {
 	auto& networkInterface = *Game::networkInterface();
+	networkInterface.onNetworkStarted.bind(this->weak_from_this(), std::bind(
+		&Server::onNetworkStarted, this, std::placeholders::_1
+	));
 	networkInterface.OnDedicatedClientAuthenticated.bind(std::bind(
 		&Server::onDedicatedClientAuthenticated, this,
 		std::placeholders::_1, std::placeholders::_2
@@ -52,6 +57,11 @@ void Server::setupNetwork(utility::Flags<network::EType> flags)
 	networkInterface
 		.setType(flags)
 		.setAddress(network::Address().setPort(this->mServerSettings.port()));
+}
+
+void Server::onNetworkStarted(network::Interface *pInterface)
+{
+	assert(game::Game::Get()->world());
 }
 
 void Server::onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
@@ -79,6 +89,8 @@ void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32
 			))
 			.sendTo(netId);
 	}
+
+	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer());
 }
 
 void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId)
@@ -93,6 +105,7 @@ void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 
 			network::packet::ChatMessage::broadcastServerMessage(
 				utility::formatStr("%s has left the server.", userInfo.name().c_str())
 			);
+			this->destroyPlayer(netId);
 		}
 	}
 }
@@ -128,4 +141,19 @@ crypto::RSAKey Server::getUserPublicKey(utility::Guid const& id) const
 game::UserInfo Server::getUserInfo(utility::Guid const& id) const
 {
 	return this->userRegistry().loadInfo(id);
+}
+
+void Server::associatePlayer(ui32 netId, ecs::Identifier entityId)
+{
+	SERVER_LOG.log(LOG_INFO, "Linking network-id %u to player entity %u", netId, entityId);
+	this->mNetIdToPlayerEntityId.insert(std::make_pair(netId, entityId));
+}
+
+void Server::destroyPlayer(ui32 netId)
+{
+	auto iter = this->mNetIdToPlayerEntityId.find(netId);
+	assert(iter != this->mNetIdToPlayerEntityId.end());
+	SERVER_LOG.log(LOG_INFO, "Unlinking network-id %u from player entity %u", netId, iter->second);
+	game::Game::Get()->world()->destroyPlayer(iter->second);
+	this->mNetIdToPlayerEntityId.erase(iter);
 }

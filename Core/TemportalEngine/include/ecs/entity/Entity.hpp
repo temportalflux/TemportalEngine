@@ -28,6 +28,13 @@ public:
 
 	~Entity();
 
+	/**
+	 * Causes the entity to not be held onto by the entity manager.
+	 * When the shared_ptr of the entity has no more references, it will truely be removed/deleted.
+	 * If this is the only reference to the entity, this will happen immediately.
+	 */
+	void kill();
+
 #pragma region Components
 
 public:

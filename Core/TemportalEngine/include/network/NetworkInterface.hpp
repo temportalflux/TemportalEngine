@@ -23,6 +23,9 @@ public:
 	
 	Interface& setAddress(Address const& address);
 
+	BroadcastDelegate<void(Interface*)> onNetworkStarted;
+	BroadcastDelegate<void(Interface*)> onNetworkStopped;
+
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionEstablished;
 	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionClosed;
 
@@ -31,8 +34,6 @@ public:
 
 	ExecuteDelegate<void(Interface*, ui32 netId)> onNetIdReceived;
 	ExecuteDelegate<void(Interface*, ui32 netId, EClientStatus status)> onClientPeerStatusChanged;
-
-	BroadcastDelegate<void(Interface*)> onNetworkStopped;
 
 	void start();
 	bool hasConnection() const;

@@ -27,14 +27,20 @@ public:
 	void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId) override;
 	void kick(ui32 netId);
 
+	void associatePlayer(ui32 netId, ecs::Identifier entityId);
+
 private:
 	game::ServerSettings mServerSettings;
 	crypto::RSAKey mServerRSA;
 
+	void onNetworkStarted(network::Interface *pInterface);
 	void onDedicatedClientAuthenticated(network::Interface *pInterface, ui32 netId);
 	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId);
 	void onNetworkConnnectionClosed(network::Interface *pInterface, ui32 connection, ui32 netId);
 	void onNetworkStopped(network::Interface *pInterface);
+
+	std::map<ui32, ecs::Identifier> mNetIdToPlayerEntityId;
+	void destroyPlayer(ui32 netId);
 
 };
 

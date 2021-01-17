@@ -306,6 +306,8 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 	// Save our local info to the server save data
 	pServer->initializeUser(localUserId, this->localUserAuthKey());
 	pServer->getUserInfo(localUserId).copyFrom(localUserInfo).writeToDisk();
+
+	// TODO: pServer->associatePlayer(netId, );
 }
 
 void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
