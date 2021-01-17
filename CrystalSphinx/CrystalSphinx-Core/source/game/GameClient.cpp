@@ -261,7 +261,7 @@ void Client::exec_printConnectedUsers(command::Signature const& cmd)
 		ss << netId << ". " << userInfo.name().c_str();
 		math::Color color = userInfo.color().toFloat() / 255.0f;
 		color.w() = 1.0f;
-		this->chat()->addToLog(ss.str(), color);
+		this->chat()->addToLog(ss.str(), color); 
 	}
 }
 

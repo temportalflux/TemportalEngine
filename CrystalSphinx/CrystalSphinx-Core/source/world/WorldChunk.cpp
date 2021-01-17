@@ -3,7 +3,7 @@
 #include "Engine.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameWorldLogic.hpp"
-#include "world/World.hpp"
+#include "world/WorldTerrain.hpp"
 #include "world/WorldCoordinate.hpp"
 #include "registry/VoxelType.hpp"
 
@@ -12,7 +12,7 @@ using namespace world;
 static logging::Logger ChunkLog = DeclareLog("ChunkLog", LOG_INFO);
 
 Chunk::Chunk(
-	std::weak_ptr<world::World> world, math::Vector3Int coordinate
+	std::weak_ptr<world::Terrain> world, math::Vector3Int coordinate
 )
 	: mpWorld(world)
 	, mCoordinate(coordinate)

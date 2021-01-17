@@ -5,7 +5,7 @@
 #include "utility/CoordMap.hpp"
 #include "world/BlockMetadata.hpp"
 
-FORWARD_DEF(NS_WORLD, class World);
+FORWARD_DEF(NS_WORLD, class Terrain);
 
 NS_WORLD
 class Chunk;
@@ -47,7 +47,7 @@ class Chunk
 public:
 	typedef CoordMap<std::optional<BlockMetadata>, CHUNK_SIDE_LENGTH> TCoordData;
 
-	Chunk(std::weak_ptr<world::World> world, math::Vector3Int coordinate);
+	Chunk(std::weak_ptr<world::Terrain> world, math::Vector3Int coordinate);
 
 	math::Vector3Int const& coordinate() const;
 
@@ -67,7 +67,7 @@ public:
 	bool shouldStayLoaded() const;
 
 private:
-	std::weak_ptr<world::World> mpWorld;
+	std::weak_ptr<world::Terrain> mpWorld;
 	math::Vector3Int mCoordinate;
 	TCoordData mBlockMetadata;
 

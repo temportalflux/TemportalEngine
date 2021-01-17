@@ -1,15 +1,15 @@
-#include "world/World.hpp"
+#include "world/WorldTerrain.hpp"
 
 using namespace world;
 
-World::World(ui32 seed)
+Terrain::Terrain(ui32 seed)
 	: mSeed(seed)
 	, mSpawnChunkCoord(makeSpawnChunkCoord(seed))
 	, mSpawnAreaChunkRadius(2)
 {
 }
 
-World::~World()
+Terrain::~Terrain()
 {
 }
 
@@ -20,14 +20,14 @@ math::Vector2Int randInRange(math::Vector2Int const& rand, i32 range)
 	return (rand % (max - min)) + min;
 }
 
-math::Vector2Int World::makeSpawnChunkCoord(ui32 seed)
+math::Vector2Int Terrain::makeSpawnChunkCoord(ui32 seed)
 {
 	srand(seed);
 	static i32 SPAWN_AREA_CENTER_RANGE = 5;
 	return randInRange({ rand(), rand() }, SPAWN_AREA_CENTER_RANGE);
 }
 
-world::Coordinate World::makeSpawnLocation() const
+world::Coordinate Terrain::makeSpawnLocation() const
 {
 	srand((ui32)time(0));
 	auto chunkXZ = this->mSpawnChunkCoord + randInRange({ rand(), rand() }, (i32)this->mSpawnAreaChunkRadius);
@@ -41,14 +41,14 @@ world::Coordinate World::makeSpawnLocation() const
 	return world::Coordinate(chunk, block);
 }
 
-void World::addEventListener(std::shared_ptr<WorldEventListener> listener)
+void Terrain::addEventListener(std::shared_ptr<WorldEventListener> listener)
 {
 	this->OnLoadingChunk.bind(listener, listener->onLoadingChunkEvent());
 	this->OnUnloadingChunk.bind(listener, listener->onUnloadingChunkEvent());
 	this->OnVoxelsChanged.bind(listener, listener->onVoxelsChangedEvent());
 }
 
-Chunk* World::getOrLoadChunk(math::Vector3Int const& coordinate)
+Chunk* Terrain::getOrLoadChunk(math::Vector3Int const& coordinate)
 {
 	if (auto chunk = this->findChunk(coordinate))
 	{
@@ -60,7 +60,7 @@ Chunk* World::getOrLoadChunk(math::Vector3Int const& coordinate)
 	}
 }
 
-Chunk* World::findChunk(math::Vector3Int const& coordinate)
+Chunk* Terrain::findChunk(math::Vector3Int const& coordinate)
 {
 	for (auto& activeChunk : this->mActiveChunks)
 	{
@@ -72,7 +72,7 @@ Chunk* World::findChunk(math::Vector3Int const& coordinate)
 	return nullptr;
 }
 
-Chunk* World::loadChunk(math::Vector3Int const &coordinate)
+Chunk* Terrain::loadChunk(math::Vector3Int const &coordinate)
 {
 	this->OnLoadingChunk.broadcast(coordinate);
 	return &(this->mActiveChunks.insert(
@@ -81,7 +81,7 @@ Chunk* World::loadChunk(math::Vector3Int const &coordinate)
 	)->load());
 }
 
-void World::reloadChunk(math::Vector3Int const &coordinate)
+void Terrain::reloadChunk(math::Vector3Int const &coordinate)
 {
 	/*
 	this->unloadChunk(coordinate);
@@ -99,12 +99,12 @@ void World::reloadChunk(math::Vector3Int const &coordinate)
 	//*/
 }
 
-void World::unloadChunk(math::Vector3Int const &coordinate)
+void Terrain::unloadChunk(math::Vector3Int const &coordinate)
 {
 	this->unloadChunks({ coordinate });
 }
 
-void World::unloadChunks(std::vector<math::Vector3Int> coordinates)
+void Terrain::unloadChunks(std::vector<math::Vector3Int> coordinates)
 {
 	// Active Chunks is relatively small, so its fine to iterate
 	this->mActiveChunks.erase(std::remove_if(
@@ -124,7 +124,7 @@ void World::unloadChunks(std::vector<math::Vector3Int> coordinates)
 	// TODO: Move the active chunk to a "pending write to disk" operation list
 }
 
-void World::onLoadedChunk(Chunk &chunk)
+void Terrain::onLoadedChunk(Chunk &chunk)
 {
 	auto changes = std::vector<std::pair<world::Coordinate, std::optional<game::BlockId>>>();
 	for (auto iter = chunk.begin(); iter != chunk.end(); ++iter)
@@ -138,7 +138,7 @@ void World::onLoadedChunk(Chunk &chunk)
 	this->OnVoxelsChanged.broadcast(changes);
 }
 
-void World::markCoordinateDirty(
+void Terrain::markCoordinateDirty(
 	world::Coordinate const &global,
 	std::optional<BlockMetadata> const& prev,
 	std::optional<BlockMetadata> const& next
@@ -153,7 +153,7 @@ void World::markCoordinateDirty(
 	//this->OnBlockChanged.broadcast(global, prev, next);
 }
 
-void World::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, world::Coordinate const &dirtyNeighbor)
+void Terrain::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, world::Coordinate const &dirtyNeighbor)
 {
 	auto iter = this->findDirtyNeighborPair(global);
 	if (iter == this->mDirtyNeighborCoordinates.end())
@@ -170,7 +170,7 @@ void World::markCoordinateWithDirtyNeighbor(world::Coordinate const &global, wor
 	iter->second.push_back(dirtyNeighbor);
 }
 
-World::DirtyNeighborPairList::iterator World::findDirtyNeighborPair(world::Coordinate const &global)
+Terrain::DirtyNeighborPairList::iterator Terrain::findDirtyNeighborPair(world::Coordinate const &global)
 {
 	return std::find_if(
 		this->mDirtyNeighborCoordinates.begin(),
@@ -179,7 +179,7 @@ World::DirtyNeighborPairList::iterator World::findDirtyNeighborPair(world::Coord
 	);
 }
 
-void World::handleDirtyCoordinates()
+void Terrain::handleDirtyCoordinates()
 {
 	OPTICK_EVENT();
 	// TODO: actually do something here

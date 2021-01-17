@@ -10,7 +10,7 @@
 #include "physics/PhysicsShape.hpp"
 #include "physics/PhysicsSystem.hpp"
 #include "registry/VoxelType.hpp"
-#include "world/World.hpp"
+#include "world/WorldTerrain.hpp"
 
 using namespace game;
 
@@ -57,7 +57,7 @@ void WorldLogic::createWorld()
 		this->mpPhysics, this->mpSceneOverworld
 	);
 
-	this->mpWorld = std::make_shared<world::World>(ui32(time(0)));
+	this->mpWorld = std::make_shared<world::Terrain>(ui32(time(0)));
 	//if (this->mpVoxelInstanceBuffer) this->mpWorld->addEventListener(this->mpVoxelInstanceBuffer);
 	this->mpWorld->addEventListener(this->mpChunkCollisionManager);
 

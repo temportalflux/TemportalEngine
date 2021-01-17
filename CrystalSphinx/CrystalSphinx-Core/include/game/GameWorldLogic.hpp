@@ -10,7 +10,7 @@ FORWARD_DEF(NS_PHYSICS, class RigidBody);
 FORWARD_DEF(NS_PHYSICS, class Scene);
 FORWARD_DEF(NS_PHYSICS, class System);
 FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
-FORWARD_DEF(NS_WORLD, class World);
+FORWARD_DEF(NS_WORLD, class Terrain);
 
 NS_GAME
 class VoxelTypeRegistry;
@@ -37,7 +37,7 @@ private:
 
 	std::shared_ptr<ecs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
 
-	std::shared_ptr<world::World> mpWorld;
+	std::shared_ptr<world::Terrain> mpWorld;
 
 	void createScene();
 	void destroyScene();

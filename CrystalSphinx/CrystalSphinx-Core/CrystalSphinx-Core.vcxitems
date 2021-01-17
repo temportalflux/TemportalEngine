@@ -73,7 +73,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp" />
@@ -127,7 +127,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\UIWidgets.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp" />
   </ItemGroup>

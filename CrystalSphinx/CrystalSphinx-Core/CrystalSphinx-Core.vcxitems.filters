@@ -78,9 +78,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CoordMap.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\World.hpp">
-      <Filter>world</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\BlockMetadata.hpp">
       <Filter>world</Filter>
     </ClInclude>
@@ -236,15 +233,15 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\JsonData.hpp" />
+    <ClInclude Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\include\world\WorldTerrain.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
       <Filter>asset</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\StitchedTexture.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp">
-      <Filter>world</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp">
       <Filter>world</Filter>
     </ClCompile>
@@ -394,5 +391,8 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ImmediateRenderSystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\JsonData.cpp" />
+    <ClCompile Include="C:\Workspaces\TemportalEngine\CrystalSphinx\CrystalSphinx-Core\source\world\WorldTerrain.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

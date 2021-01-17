@@ -10,13 +10,13 @@
 
 NS_WORLD
 
-class World : public std::enable_shared_from_this<World>
+class Terrain : public std::enable_shared_from_this<Terrain>
 {
 	friend class Chunk;
 
 public:
-	World(ui32 seed);
-	~World();
+	Terrain(ui32 seed);
+	~Terrain();
 
 	ui32 getSeed() const { return this->mSeed; }
 
