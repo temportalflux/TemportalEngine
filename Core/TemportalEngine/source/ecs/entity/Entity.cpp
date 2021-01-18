@@ -51,25 +51,25 @@ void Entity::setOwner(std::optional<ui32> ownerNetId)
 
 void Entity::kill()
 {
-	ecs::Core::Get()->entities().release(this->id);
+	ecs::Core::Get()->entities().release(this->id());
 }
 
 Entity& Entity::addComponent(ComponentTypeId const& typeId, component::Component* pComp)
 {
 	pComp->setOwner(this->owner());
 
-	this->mComponents.insert(ItemEntry { typeId, pComp->id });
+	this->mComponents.insert(ItemEntry { typeId, pComp->id() });
 	for (auto const& slot : this->mViews)
 	{
-		getViewAt(slot.typeId, slot.objectId)->onComponentAdded(typeId, pComp->id);
+		getViewAt(slot.typeId, slot.objectId)->onComponentAdded(typeId, pComp->id());
 	}
 
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eEntity, 0, this->netId
+			ecs::EType::eEntity, 0, this->netId()
 		)->pushLink(
-			ecs::EType::eComponent, typeId, pComp->netId
+			ecs::EType::eComponent, typeId, pComp->netId()
 		);
 	}
 
@@ -92,7 +92,7 @@ Entity& Entity::addView(ViewTypeId const& typeId, view::View* pView)
 {
 	pView->setOwner(this->owner());
 
-	this->mViews.insert(ItemEntry { typeId, pView->id });
+	this->mViews.insert(ItemEntry { typeId, pView->id() });
 	for (auto const& entry : this->mComponents)
 	{
 		pView->onComponentAdded(entry.typeId, entry.objectId);
@@ -101,9 +101,9 @@ Entity& Entity::addView(ViewTypeId const& typeId, view::View* pView)
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eEntity, 0, this->netId
+			ecs::EType::eEntity, 0, this->netId()
 		)->pushLink(
-			ecs::EType::eView, typeId, pView->netId
+			ecs::EType::eView, typeId, pView->netId()
 		);
 	}
 

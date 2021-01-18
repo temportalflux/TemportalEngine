@@ -28,8 +28,11 @@ public:
 
 	world::SaveData& saveData();
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
+	std::shared_ptr<physics::Material> playerPhysicsMaterial();
+	std::shared_ptr<physics::Scene> dimensionScene(ui32 dimId);
 
-	void init(saveData::Instance* saveInstance);
+	void loadSave(saveData::Instance* saveInstance);
+	void init();
 	void uninit();
 	void update(f32 deltaTime);
 

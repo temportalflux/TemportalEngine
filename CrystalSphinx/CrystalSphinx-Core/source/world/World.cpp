@@ -23,13 +23,16 @@ World::World() : mpSaveInstance(nullptr)
 {
 }
 
-void World::init(saveData::Instance *saveInstance)
+void World::loadSave(saveData::Instance *saveInstance)
 {
 	WORLD_LOG.log(LOG_INFO, "Initializing world save %s", saveInstance->name().c_str());
 	this->mpSaveInstance = saveInstance;
 	this->mSaveData = world::SaveData(this->mpSaveInstance->worldSave());
 	this->mSaveData.readFromDisk();
+}
 
+void World::init()
+{
 	//this->createVoxelTypeRegistry();
 
 	this->initializePhysics();
@@ -51,6 +54,8 @@ void World::uninit()
 world::SaveData& World::saveData() { return this->mSaveData; }
 
 std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
+std::shared_ptr<physics::Material> World::playerPhysicsMaterial() { return this->mpPlayerPhysicsMaterial; }
+std::shared_ptr<physics::Scene> World::dimensionScene(ui32 dimId) { return this->mOverworld.mpScene; }
 
 void World::createVoxelTypeRegistry()
 {
@@ -139,13 +144,13 @@ ecs::Identifier World::createPlayer(ui32 clientNetId)
 		pEntity->addComponent(transform);
 	}
 
-	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
+	WORLD_LOG.log(LOG_INFO, "Created player entity id(%u)", pEntity->id());
 	
 	// End replication only does anything if `beginReplication` is called.
 	// If `beginReplication` is called, `endReplication` MUST be called.
 	// Will broadcast packets to all network connections.
 	ecs.endReplication();
-	return pEntity->id;
+	return pEntity->id();
 }
 
 void World::destroyPlayer(ecs::Identifier entityId)

@@ -8,6 +8,15 @@
 #include "asset/Texture.hpp"
 #include "asset/TextureSampler.hpp"
 #include "asset/MinecraftAssetStatics.hpp"
+#include "ecs/component/CoordinateTransform.hpp"
+#include "ecs/component/ComponentPlayerInput.hpp"
+#include "ecs/component/ComponentCameraPOV.hpp"
+#include "ecs/component/ComponentRenderMesh.hpp"
+#include "ecs/component/ComponentPhysicsController.hpp"
+#include "ecs/view/ViewPlayerInputMovement.hpp"
+#include "ecs/view/ViewPlayerCamera.hpp"
+#include "ecs/view/ViewRenderedMesh.hpp"
+#include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
 #include "game/GameInstance.hpp"
@@ -35,7 +44,7 @@
 
 using namespace game;
 
-static auto CLIENT_LOG = DeclareLog("GameClient", LOG_INFO);
+static auto CLIENT_LOG = DeclareLog("Client", LOG_INFO);
 
 Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 {
@@ -222,7 +231,8 @@ void Client::exec_openSave(command::Signature const& cmd)
 		saveData.create(saveName);
 	}
 	auto pWorld = pGame->createWorld();
-	pWorld->init(&saveData.get(saveName));
+	pWorld->loadSave(&saveData.get(saveName));
+	pWorld->init();
 	this->mLocalPlayerEntityId = pWorld->createPlayer(0);
 }
 
@@ -403,9 +413,98 @@ game::UserInfo& Client::getConnectedUserInfo(ui32 netId)
 
 void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject)
 {
-	if (ecsType == ecs::EType::eEntity && pObject->bHasOwner && pObject->ownerNetId == this->mLocalUserNetId)
+	if (ecsType == ecs::EType::eEntity && pObject->owner())
 	{
-		this->mLocalPlayerEntityId = pObject->id;
+		auto pEntity = ecs::Core::Get()->entities().get(pObject->id());
+		if (pObject->owner() == this->mLocalUserNetId)
+		{
+			this->mLocalPlayerEntityId = pObject->id();
+			this->addPlayerControlParts(pEntity);
+		}
+		this->addPlayerDisplayParts(pEntity);
+	}
+}
+
+void Client::addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity)
+{
+	CLIENT_LOG.log(
+		LOG_VERBOSE, "Adding player control components to id(%u)/net(%u), owned by net(%u)",
+		pEntity->id(), pEntity->netId(), *pEntity->owner()
+	);
+
+	auto* ecs = ecs::Core::Get();
+
+	auto* pTransform = pEntity->getComponent<ecs::component::CoordinateTransform>();
+
+	// enables `system::MovePlayerByInput`
+	// requires CoordinateTransform
+	// requires PlayerInput
+	// requires PhysicsController
+	pEntity->addView(ecs->views().create<ecs::view::PlayerInputMovement>());
+
+	// PlayerInput component
+	{
+		auto input = ecs->components().create<ecs::component::PlayerInput>();
+		input->subscribeToQueue();
+		pEntity->addComponent(input);
+	}
+
+	// TODO: This should be replicated
+	/*
+	{
+		auto pWorld = game::Game::Get()->world();
+		auto component = ecs->components().create<ecs::component::PhysicsController>();
+		auto extents = math::Vector3{ 0.4f, 0.9f, 0.4f };
+		component
+			->setIsAffectedByGravity(false)
+			.controller()
+			.setScene(pWorld->dimensionScene(0))
+			.setAsBox(extents)
+			.setCenterPosition(pTransform->position().toGlobal() + math::Vector<f64, 3>({ 0, extents.y(), 0 }))
+			.setMaterial(pWorld->playerPhysicsMaterial().get())
+			.create();
+		pEntity->addComponent(component);
+	}
+	//*/
+
+}
+
+void Client::addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity)
+{
+	CLIENT_LOG.log(
+		LOG_VERBOSE, "Adding player display components to id(%u)/net(%u), owned by net(%u)",
+		pEntity->id(), pEntity->netId(), *pEntity->owner()
+	);
+
+	auto* ecs = ecs::Core::Get();
+
+	// Camera PointOfView component
+	{
+		auto cameraPOV = ecs->components().create<ecs::component::CameraPOV>();
+		// TODO: Store in local user display settings
+		cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
+		pEntity->addComponent(cameraPOV);
+	}
+
+	// enables `system::UpdateCameraPerspective`
+	// requires CoordinateTransform
+	// requires CameraPOV
+	// requires RenderMesh
+	pEntity->addView(ecs->views().create<ecs::view::PlayerCamera>());
+
+	// enables `system::RenderEntities`
+	// requires CoordinateTransform
+	// requires RenderMesh
+	pEntity->addView(ecs->views().create<ecs::view::RenderedMesh>());
+
+	// RenderMesh component
+	{
+		auto mesh = ecs->components().create<ecs::component::RenderMesh>();
+		mesh->setModel(asset::TypedAssetPath<asset::Model>::Create(
+			"assets/models/DefaultHumanoid/DefaultHumanoid.te-asset"
+		));
+		mesh->setTextureId("model:DefaultHumanoid");
+		pEntity->addComponent(mesh);
 	}
 }
 

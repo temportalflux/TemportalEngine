@@ -48,6 +48,7 @@ private:
 	ObjectPool mPool;
 	TOwnedObjectMap mOwnedObjects;
 	TAllocatedObjectMap mAllocatedObjects;
+	bool mbHasStartedDeconstruction;
 	
 	void destroy(Entity *pCreated);
 

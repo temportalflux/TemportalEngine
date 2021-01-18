@@ -65,8 +65,6 @@ void Engine::Destroy()
 {
 	if (!Engine::spInstance) return;
 
-	Engine::spInstance->getECS().entities().releaseAll();
-
 	assert(Engine::spInstance.use_count() == 1);
 	Engine::spInstance = nullptr;
 	assert(!Engine::spInstance);

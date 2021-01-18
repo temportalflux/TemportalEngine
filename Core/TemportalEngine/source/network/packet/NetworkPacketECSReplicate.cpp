@@ -342,7 +342,7 @@ void ECSReplicate::process(network::Interface *pInterface)
 			ecs::Core::logger().log(
 				LOG_VERBOSE, "Created replicated %s %u with net-id(%u)",
 				ecs.fullTypeName(this->mObjectEcsType, this->mObjectTypeId).c_str(),
-				pObject->id, this->mObjectNetId
+				pObject->id(), pObject->netId()
 			);
 
 			if (this->hasLinks())
@@ -426,8 +426,9 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 				pEntity->addView(link.objectTypeId, pView);
 				ecs::Core::logger().log(
 					LOG_VERBOSE, "Linking entity %u (net-id:%u) to view (type:%u) %u (net-id:%u)",
-					pEntity->id, pEntity->netId,
-					ecs->views().typeName(link.objectTypeId).c_str(), pView->id, pView->netId
+					pEntity->id(), pEntity->netId(),
+					ecs->views().typeName(link.objectTypeId).c_str(),
+					pView->id(), pView->netId()
 				);
 			}
 			else if (link.ecsType == ecs::EType::eComponent)
@@ -437,8 +438,9 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 				pEntity->addComponent(link.objectTypeId, pComp);
 				ecs::Core::logger().log(
 					LOG_VERBOSE, "Linking entity %u (net-id:%u) to %s component %u (net-id:%u)",
-					pEntity->id, pEntity->netId,
-					ecs->components().typeName(link.objectTypeId).c_str(), pComp->id, pComp->netId
+					pEntity->id(), pEntity->netId(),
+					ecs->components().typeName(link.objectTypeId).c_str(),
+					pComp->id(), pComp->netId()
 				);
 			}
 			else
@@ -453,11 +455,11 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 			assert(pView != nullptr);
 			auto pComp = dynamic_cast<ecs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
 			assert(pComp != nullptr);
-			pView->onComponentAdded(link.objectTypeId, pComp->id);
+			pView->onComponentAdded(link.objectTypeId, pComp->id());
 			ecs::Core::logger().log(
 				LOG_VERBOSE, "Linking %s view %u (net-id:%u) to %s component %u (net-id:%u)",
-				ecs->views().typeName(link.objectTypeId).c_str(), pView->id, pView->netId,
-				ecs->components().typeName(link.objectTypeId).c_str(), pComp->id, pComp->netId
+				ecs->views().typeName(link.objectTypeId).c_str(), pView->id(), pView->netId(),
+				ecs->components().typeName(link.objectTypeId).c_str(), pComp->id(), pComp->netId()
 			);
 		}
 		else

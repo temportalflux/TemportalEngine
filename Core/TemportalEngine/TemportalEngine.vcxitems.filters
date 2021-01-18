@@ -402,15 +402,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\window\Window.cpp">
       <Filter>window</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\source\ecs\ecsTypes.cpp">
-      <Filter>ecs</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\source\ecs\ECSNetworkedManager.cpp">
-      <Filter>ecs</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\source\network\packet\NetworkPacketECSReplicate.cpp">
-      <Filter>network\packet</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryPool.cpp">
       <Filter>memory</Filter>
     </ClCompile>
@@ -420,6 +411,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\EVCSObject.cpp">
       <Filter>ecs</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ECSNetworkedManager.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -895,14 +889,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\window\WindowFlags.hpp">
       <Filter>window</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\include\ecs\ECSNetworkedManager.hpp">
-      <Filter>ecs</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\include\network\packet\NetworkPacketECSReplicate.hpp">
-      <Filter>network\packet</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\IEVCSObject.hpp">
       <Filter>ecs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketECSReplicate.hpp" />
   </ItemGroup>
 </Project>

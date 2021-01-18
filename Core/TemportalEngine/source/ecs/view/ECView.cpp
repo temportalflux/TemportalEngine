@@ -48,10 +48,10 @@ void View::onComponentAdded(ComponentTypeId const& typeId, Identifier const& id)
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eView, this->typeId(), this->netId
+			ecs::EType::eView, this->typeId(), this->netId()
 		)->pushLink(
 			ecs::EType::eComponent, slot.typeId,
-			ecs::Core::Get()->components().get(slot.typeId, slot.objectId)->netId
+			ecs::Core::Get()->components().get(slot.typeId, slot.objectId)->netId()
 		);
 	}
 

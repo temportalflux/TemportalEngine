@@ -117,6 +117,8 @@ private:
 	void onNetworkStopped(network::Interface *pInterface);
 
 	void onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject);
+	void addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity);
+	void addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity);
 
 	bool initializeGraphics();
 

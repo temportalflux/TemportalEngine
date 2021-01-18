@@ -29,7 +29,10 @@ void Server::init()
 		? saveDataRegistry.get(saveId)
 		: saveDataRegistry.create(saveId);
 	this->userRegistry().scan(saveInstance.userDirectory());
-	game::Game::Get()->createWorld()->init(&saveInstance);
+	
+	auto pWorld = game::Game::Get()->createWorld();
+	pWorld->loadSave(&saveInstance);
+	pWorld->init();
 }
 
 void Server::setupNetwork(utility::Flags<network::EType> flags)

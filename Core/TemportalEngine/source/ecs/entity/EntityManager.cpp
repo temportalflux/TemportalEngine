@@ -7,6 +7,7 @@ using namespace ecs;
 
 EntityManager::EntityManager()
 	: mPool(sizeof(Entity), ECS_MAX_ENTITY_COUNT)
+	, mbHasStartedDeconstruction(false)
 {
 	// pools automatically free dynamic memory when they go out of scope
 	this->mPool.allocateMemory();
@@ -14,9 +15,8 @@ EntityManager::EntityManager()
 
 EntityManager::~EntityManager()
 {
-	// Must not have any more entities lying about
-	assert(this->mOwnedObjects.size() <= 0);
-	assert(this->mAllocatedObjects.size() <= 0);
+	this->mbHasStartedDeconstruction = true;
+	this->mOwnedObjects.clear();
 }
 
 std::string EntityManager::typeName(TypeId const& typeId) const { return ""; }
@@ -26,8 +26,8 @@ IEVCSObject* EntityManager::createObject(TypeId const& typeId, Identifier const&
 	// ignores type id because its mostly for same-interface compatibility with views and components
 	// returns the underlying pointer because the manager owns the object
 	auto ptr = this->create().get();
-	this->assignNetworkId(netId, ptr->id);
-	ptr->netId = netId;
+	ptr->setNetId(netId);
+	this->assignNetworkId(netId, ptr->id());
 	return ptr;
 }
 
@@ -67,18 +67,18 @@ std::shared_ptr<Entity> EntityManager::create()
 		this->mPool.create<Entity>(objectId),
 		std::bind(&EntityManager::destroy, this, std::placeholders::_1)
 	);
-	shared->id = objectId;
-	shared->netId = 0;
+	shared->setId(objectId);
+	shared->setNetId(0);
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 	this->mOwnedObjects.insert(std::make_pair(objectId, shared));
 	
 	if (ecs::Core::Get()->shouldReplicate())
 	{
-		shared->netId = this->nextNetworkId();
-		this->assignNetworkId(shared->netId, shared->id);
+		shared->setNetId(this->nextNetworkId());
+		this->assignNetworkId(shared->netId(), shared->id());
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eEntity)
-			.setObjectNetId(shared->netId)
+			.setObjectNetId(shared->netId())
 			;
 	}
 
@@ -88,10 +88,14 @@ std::shared_ptr<Entity> EntityManager::create()
 
 void EntityManager::destroy(Entity *pCreated)
 {
+	// If the entity manager is deconstructing, then the memory pool will be automatically freed in its entirety.
+	if (this->mbHasStartedDeconstruction) return;
+
 	this->mMutex.lock();
 
-	auto id = pCreated->id;
-	auto netId = pCreated->netId;
+	auto id = pCreated->id();
+	bool bWasReplicated = pCreated->isReplicated();
+	auto netId = pCreated->netId();
 
 	auto ownedIter = this->mOwnedObjects.find(id);
 	assert(ownedIter != this->mOwnedObjects.end());
@@ -104,16 +108,16 @@ void EntityManager::destroy(Entity *pCreated)
 	// Second, we actually destroy the memory, causing components and views to also create their destroy packets.
 	// If this was reversed, destroy packets for views and components would be first.
 
-	if (this->hasNetworkId(netId))
+	if (bWasReplicated)
 	{
 		this->removeNetworkId(netId);
-	}
-	if (ecs::Core::Get()->shouldReplicate())
-	{
-		ecs::Core::Get()->replicateDestroy()
-			->setObjectEcsType(ecs::EType::eEntity)
-			.setObjectNetId(netId)
-			;
+		if (ecs::Core::Get()->shouldReplicate())
+		{
+			ecs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(ecs::EType::eEntity)
+				.setObjectNetId(netId)
+				;
+		}
 	}
 
 	// This is safe because `EntityManager#destroy` is only called when there are no more references.

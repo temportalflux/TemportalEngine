@@ -23,6 +23,8 @@ bool Manager::ViewRecord::operator>(Manager::ViewRecord const& other) const
 Manager::Manager()
 	: mPool(sizeof(View), ECS_MAX_VIEW_COUNT)
 {
+	// pools automatically free dynamic memory when they go out of scope
+	this->mPool.allocateMemory();
 }
 
 std::string Manager::typeName(TypeId const& typeId) const
@@ -33,8 +35,8 @@ std::string Manager::typeName(TypeId const& typeId) const
 IEVCSObject* Manager::createObject(TypeId const& typeId, Identifier const& netId)
 {
 	auto ptr = this->create(typeId);
-	this->assignNetworkId(netId, ptr->id);
-	ptr->netId = netId;
+	ptr->setNetId(netId);
+	this->assignNetworkId(netId, ptr->id());
 	return ptr;
 }
 
@@ -63,7 +65,7 @@ View* Manager::create(ViewTypeId const& typeId)
 	uIndex objectId;
 	auto ptr = reinterpret_cast<View*>(this->mPool.create(objectId));
 	typeMeta.construct(ptr);
-	ptr->id = objectId;
+	ptr->setId(objectId);
 
 	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, ptr });
 	this->mObjectsById[objectId] = ptr;
@@ -78,12 +80,12 @@ View* Manager::create(ViewTypeId const& typeId)
 
 	if (ecs::Core::Get()->shouldReplicate())
 	{
-		ptr->netId = this->nextNetworkId();
-		this->assignNetworkId(ptr->netId, objectId);
+		ptr->setNetId(this->nextNetworkId());
+		this->assignNetworkId(ptr->netId(), ptr->id());
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eView)
 			.setObjectTypeId(typeId)
-			.setObjectNetId(ptr->netId)
+			.setObjectNetId(ptr->netId())
 			;
 	}
 
@@ -112,7 +114,9 @@ void Manager::destroy(ViewTypeId const& typeId, Identifier const& id)
 	assert(idxRecord);
 	this->mAllocatedObjects.remove(*idxRecord);
 	
-	auto netId = this->mObjectsById[id]->netId;
+	auto* pObject = this->mObjectsById[id];
+	bool bWasReplicated = pObject->isReplicated();
+	auto netId = pObject->netId();
 	this->mObjectsById[id] = nullptr;
 
 	auto& typeMeta = this->getTypeMetadata(typeId);
@@ -129,19 +133,23 @@ void Manager::destroy(ViewTypeId const& typeId, Identifier const& id)
 
 	this->mPool.destroy<View>(id);
 
-	this->removeNetworkId(netId);
-	if (ecs::Core::Get()->shouldReplicate())
+	if (bWasReplicated)
 	{
-		ecs::Core::Get()->replicateDestroy()
-			->setObjectEcsType(ecs::EType::eView)
-			.setObjectTypeId(typeId)
-			.setObjectNetId(netId)
-			;
+		this->removeNetworkId(netId);
+		if (ecs::Core::Get()->shouldReplicate())
+		{
+			ecs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(ecs::EType::eView)
+				.setObjectTypeId(typeId)
+				.setObjectNetId(netId)
+				;
+		}
 	}
 
 	ecs::Core::logger().log(
-		LOG_VERBOSE, "Destroyed %s view %u with net-id(%u)",
-		this->typeName(typeId).c_str(), id, netId
+		LOG_VERBOSE, "Destroyed %s view id(%u). WasReplicated:%s net(%u)",
+		this->typeName(typeId).c_str(), id,
+		bWasReplicated ? "true" : "false", netId
 	);
 
 	this->mMutex.unlock();

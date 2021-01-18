@@ -41,8 +41,8 @@ std::string Manager::typeName(TypeId const& typeId) const
 IEVCSObject* Manager::createObject(TypeId const& typeId, Identifier const& netId)
 {
 	auto ptr = this->create(typeId);
-	this->assignNetworkId(netId, ptr->id);
-	ptr->netId = netId;
+	ptr->setNetId(netId);
+	this->assignNetworkId(netId, ptr->id());
 	return ptr;
 }
 
@@ -93,18 +93,18 @@ Component* Manager::create(ComponentTypeId const& typeId)
 	auto ptr = reinterpret_cast<Component*>(
 		this->mPoolByType[typeId].create(objectId)
 	);
-	ptr->id = objectId;
+	ptr->setId(objectId);
 	this->mMetadataByType[typeId].construct(ptr);
 	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
 
 	if (ecs::Core::Get()->shouldReplicate())
 	{
-		ptr->netId = this->nextNetworkId();
-		this->assignNetworkId(ptr->netId, objectId);
+		ptr->setNetId(this->nextNetworkId());
+		this->assignNetworkId(ptr->netId(), ptr->id());
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eComponent)
 			.setObjectTypeId(typeId)
-			.setObjectNetId(ptr->netId)
+			.setObjectNetId(ptr->netId())
 			;
 	}
 
@@ -123,19 +123,23 @@ void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
 	auto iter = this->mAllocatedByType[typeId].find(id);
 	assert(iter != this->mAllocatedByType[typeId].end());
 
-	auto netId = iter->second->netId;
+	bool bWasReplicated = iter->second->isReplicated();
+	auto netId = iter->second->netId();
 
 	this->mAllocatedByType[typeId].erase(iter);
 	this->mPoolByType[typeId].destroy(id);
 
-	this->removeNetworkId(netId);
-	if (ecs::Core::Get()->shouldReplicate())
+	if (bWasReplicated)
 	{
-		ecs::Core::Get()->replicateDestroy()
-			->setObjectEcsType(ecs::EType::eComponent)
-			.setObjectTypeId(typeId)
-			.setObjectNetId(netId)
-			;
+		this->removeNetworkId(netId);
+		if (ecs::Core::Get()->shouldReplicate())
+		{
+			ecs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(ecs::EType::eComponent)
+				.setObjectTypeId(typeId)
+				.setObjectNetId(netId)
+				;
+		}
 	}
 
 	ecs::Core::logger().log(
