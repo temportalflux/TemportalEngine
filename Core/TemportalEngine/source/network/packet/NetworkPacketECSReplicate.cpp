@@ -469,7 +469,14 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 
 void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
 {
-	// TODO:
+	for (auto const& field : this->mComponentFields)
+	{
+		uSize fieldSize = field.second.size() * sizeof(ui8);
+		uSize head = (uSize)pObject;
+		uSize fieldPtrStart = head + field.first;
+		void* fieldPtr = (void*)fieldPtrStart;
+		memcpy_s(fieldPtr, fieldSize, (void*)field.second.data(), fieldSize);
+	}
 }
 
 std::optional<ui32> ECSReplicate::owner() const
