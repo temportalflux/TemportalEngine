@@ -139,11 +139,12 @@ ecs::Identifier World::createPlayer()
 	}
 
 
+	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
+	
 	// End replication only does anything if `beginReplication` is called.
 	// If `beginReplication` is called, `endReplication` MUST be called.
 	// Will broadcast packets to all network connections.
 	ecs.endReplication();
-	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
 	return pEntity->id;
 }
 

@@ -61,9 +61,9 @@ View* Manager::create(ViewTypeId const& typeId)
 	auto& typeMeta = this->getTypeMetadata(typeId);
 	
 	uIndex objectId;
-	auto ptr = this->mPool.create<View>(objectId);
-	ptr->id = objectId;
+	auto ptr = reinterpret_cast<View*>(this->mPool.create(objectId));
 	typeMeta.construct(ptr);
+	ptr->id = objectId;
 
 	uIndex idxRecord = this->mAllocatedObjects.insert(ViewRecord { typeId, objectId, ptr });
 	this->mObjectsById[objectId] = ptr;

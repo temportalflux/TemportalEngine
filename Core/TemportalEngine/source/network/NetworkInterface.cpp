@@ -270,7 +270,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 		this->addClient(data->m_hConn, netId);
 
 		network::logger().log(
-			LOG_INFO, "Accepted connection request from %s. Assigned network-id $i.",
+			LOG_INFO, "Accepted connection request from %s. Assigned network-id %u.",
 			data->m_info.m_szConnectionDescription, netId
 		);
 

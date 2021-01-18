@@ -93,12 +93,21 @@ void EntityManager::destroy(Entity *pCreated)
 	auto id = pCreated->id;
 	auto netId = pCreated->netId;
 
+	auto ownedIter = this->mOwnedObjects.find(id);
+	assert(ownedIter != this->mOwnedObjects.end());
+	assert(!ownedIter->second); // ensure the ptr has already been released
+	auto allocatedIter = this->mAllocatedObjects.find(id);
+	assert(allocatedIter != this->mAllocatedObjects.end());
+
 	// The order of replication vs memory deletion matters here.
 	// First, we queue up the replication packet to tell receives the entity has been destroyed.
 	// Second, we actually destroy the memory, causing components and views to also create their destroy packets.
 	// If this was reversed, destroy packets for views and components would be first.
 
-	this->removeNetworkId(netId);
+	if (this->hasNetworkId(netId))
+	{
+		this->removeNetworkId(netId);
+	}
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateDestroy()
@@ -110,13 +119,9 @@ void EntityManager::destroy(Entity *pCreated)
 	// This is safe because `EntityManager#destroy` is only called when there are no more references.
 	// In order for that to be true, `mOwnedObjects[id]` must be invalid
 	// (the user has called `Entity#kill` or `EntityManager#release`).
-	auto ownedIter = this->mOwnedObjects.find(pCreated->id);
-	assert(ownedIter != this->mOwnedObjects.end());
 	this->mOwnedObjects.erase(ownedIter);
 
 	// Actually release all references (allocated object map is used for lookup by id)
-	auto allocatedIter = this->mAllocatedObjects.find(pCreated->id);
-	assert(allocatedIter != this->mAllocatedObjects.end());
 	this->mAllocatedObjects.erase(allocatedIter);
 
 	// Actually release the memory

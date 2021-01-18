@@ -70,7 +70,10 @@ uIndex Pool::allocate()
 
 void* Pool::at(uIndex idx)
 {
-	return (void*)((uSize)this->mpData + idx);
+	uIndex head = (uSize)this->mpData;
+	uIndex atIdx = head + idx * this->mObjectSize;
+	void* ptr = (void*)atIdx;
+	return ptr;
 }
 
 void Pool::deallocate(uIndex idx)
