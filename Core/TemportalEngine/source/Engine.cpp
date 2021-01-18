@@ -50,7 +50,7 @@ void Engine::stopLogSystem()
 Engine::EnginePtr Engine::Create(std::unordered_map<std::string, uSize> memoryChunkSizes)
 {
 	assert(Engine::spInstance == nullptr);
-	spMainMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "main", 1 << 16));
+	spMainMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "main", /*524288*/ 1 << 19));
 	Engine::spInstance = spMainMemory->make_shared<Engine>(spMainMemory, memoryChunkSizes);
 	Engine::spInstance->initializeInput();
 	return Engine::Get();
@@ -90,7 +90,7 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 	crypto::RSA::Create();
 	crypto::AES::Create();
 
-	this->mMiscMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "misc", 1 << 16));
+	this->mMiscMemory = memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "misc", /*65536*/ 1 << 16));
 
 	this->mpCommandRegistry = this->mpMainMemory->make_shared<command::Registry>();
 
@@ -102,7 +102,7 @@ Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_m
 	));
 
 	this->mpAssetManager = this->mpMainMemory->make_shared<asset::AssetManager>();
-	this->mpAssetManager->setAssetMemory(memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "asset", 1 << 16)));
+	this->mpAssetManager->setAssetMemory(memory::MemoryChunk::Create(GET_MEMORY_SIZE(memoryChunkSizes, "asset", /*65536*/ 1 << 16)));
 }
 
 Engine::~Engine()
