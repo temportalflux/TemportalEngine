@@ -179,10 +179,10 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
 	ecs->components().registerType<ecs::component::PhysicsController>("PhysicsController");
-	ecs->views().registerType<ecs::view::PlayerInputMovement>();
-	ecs->views().registerType<ecs::view::PlayerCamera>();
-	ecs->views().registerType<ecs::view::RenderedMesh>();
-	ecs->views().registerType<ecs::view::PhysicalDynamics>();
+	ecs->views().registerType<ecs::view::PlayerInputMovement>("PlayerInputMovement");
+	ecs->views().registerType<ecs::view::PlayerCamera>("PlayerCamera");
+	ecs->views().registerType<ecs::view::RenderedMesh>("RenderedMesh");
+	ecs->views().registerType<ecs::view::PhysicalDynamics>("PhysicalDynamics");
 }
 
 void Game::openProject()

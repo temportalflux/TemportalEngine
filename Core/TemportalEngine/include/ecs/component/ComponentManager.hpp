@@ -17,11 +17,11 @@ class Manager : public ecs::NetworkedManager
 
 	struct TypeMetadata
 	{
+		std::string name;
+		std::function<void(Component*)> construct;
 		// The sizeof a given component for the type
 		uSize size;
 		uSize objectCount;
-		std::string name;
-		std::function<void(Component*)> construct;
 	};
 
 public:
@@ -33,12 +33,13 @@ public:
 	{
 		TComponent::TypeId = this->mRegisteredTypeCount;
 		this->registerType(TComponent::TypeId, {
+			name, &TComponent::construct,
 			sizeof(TComponent), TComponent::MaxPoolSize,
-			name, &TComponent::construct
 		});
 		return TComponent::TypeId;
 	}
 
+	std::string typeName(TypeId const& typeId) const override;
 	void allocatePools();
 
 	IEVCSObject* createObject(TypeId const& typeId) override;

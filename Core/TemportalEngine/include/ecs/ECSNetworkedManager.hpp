@@ -13,6 +13,7 @@ public:
 	NetworkedManager();
 	virtual ~NetworkedManager();
 
+	virtual std::string typeName(TypeId const& typeId) const = 0;
 	virtual IEVCSObject* createObject(TypeId const& typeId) = 0;
 
 	void assignNetworkId(Identifier netId, Identifier objectId);

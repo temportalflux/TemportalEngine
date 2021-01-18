@@ -19,6 +19,8 @@ EntityManager::~EntityManager()
 	assert(this->mAllocatedObjects.size() <= 0);
 }
 
+std::string EntityManager::typeName(TypeId const& typeId) const { return ""; }
+
 IEVCSObject* EntityManager::createObject(TypeId const& typeId)
 {
 	// ignores type id because its mostly for same-interface compatibility with views and components

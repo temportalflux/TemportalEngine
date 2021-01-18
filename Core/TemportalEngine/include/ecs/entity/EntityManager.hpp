@@ -17,6 +17,7 @@ public:
 	EntityManager();
 	~EntityManager();
 
+	std::string typeName(TypeId const& typeId) const;
 	IEVCSObject* createObject(TypeId const& typeId) override;
 
 	/**

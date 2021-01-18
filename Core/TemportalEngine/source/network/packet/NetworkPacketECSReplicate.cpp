@@ -5,6 +5,8 @@
 #include "ecs/ECSNetworkedManager.hpp"
 #include "network/NetworkInterface.hpp"
 #include "utility/StringUtils.hpp"
+#include "ecs/entity/Entity.hpp"
+#include "ecs/view/ECView.hpp"
 
 using namespace network;
 using namespace network::packet;
@@ -38,6 +40,17 @@ void read(Buffer &buffer, std::string name, ECSReplicate::EReplicationType &valu
 }
 
 NS_END
+
+std::string ecsTypeName(ecs::EType type, ecs::TypeId typeId)
+{
+	switch (type)
+	{
+	case ecs::EType::eEntity: return ecs::Core::Get()->entities().typeName(typeId);
+	case ecs::EType::eView: return ecs::Core::Get()->views().typeName(typeId);
+	case ecs::EType::eComponent: return ecs::Core::Get()->components().typeName(typeId);
+	default: return "";
+	}
+}
 
 ECSReplicate::ECSReplicate()
 	: Packet(EPacketFlags::eReliable)
@@ -85,10 +98,19 @@ ecs::Identifier const& ECSReplicate::objectNetId() const { return this->mObjectN
 
 ECSReplicate& ECSReplicate::pushLink(ecs::EType type, uIndex objectTypeId, ecs::Identifier netId)
 {
+	// Function only allowed for entities or views
 	assert(
 		this->mObjectEcsType == ecs::EType::eEntity
 		|| this->mObjectEcsType == ecs::EType::eView
 	);
+	// link type must be a view or component for entities
+	assert(this->mObjectEcsType != ecs::EType::eEntity || (
+		type == ecs::EType::eView || type == ecs::EType::eComponent
+	));
+	// link type must be component for views
+	assert(this->mObjectEcsType != ecs::EType::eView || (
+		type == ecs::EType::eComponent
+	));
 	this->mObjectLinks.push_back({
 		type, objectTypeId, netId
 	});
@@ -108,6 +130,21 @@ ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uS
 	return *this;
 }
 
+bool ECSReplicate::hasTypeId() const
+{
+	return this->mObjectEcsType == ecs::EType::eView || this->mObjectEcsType == ecs::EType::eComponent;
+}
+
+bool ECSReplicate::hasLinks() const
+{
+	return this->mObjectEcsType == ecs::EType::eEntity || this->mObjectEcsType == ecs::EType::eView;
+}
+
+bool ECSReplicate::hasFields() const
+{
+	return this->mObjectEcsType == ecs::EType::eComponent;
+}
+
 void ECSReplicate::write(Buffer &archive) const
 {
 	// cannot replicate ecs systems
@@ -115,29 +152,24 @@ void ECSReplicate::write(Buffer &archive) const
 	Packet::write(archive);
 	
 	network::write(archive, "replicationType", this->mReplicationType);
-	network::write(archive, "objectType", this->mObjectEcsType);
+	network::write(archive, "ecsType", this->mObjectEcsType);
+
+	if (this->hasTypeId())
+	{
+		archive.setNamed("typeId", ecsTypeName(this->mObjectEcsType, this->mObjectTypeId));
+		archive.writeRaw(this->mObjectTypeId);
+	}
+
 	network::write(archive, "objectNetId", this->mObjectNetId);
 
-	switch (this->mObjectEcsType)
-	{
-	case ecs::EType::eEntity:
+	if (this->hasLinks())
 	{
 		this->writeLinks(archive);
-		break;
 	}
-	case ecs::EType::eView:
+
+	if (this->hasFields())
 	{
-		network::write(archive, "typeId", this->mObjectTypeId);
-		this->writeLinks(archive);
-		break;
-	}
-	case ecs::EType::eComponent:
-	{
-		network::write(archive, "typeId", this->mObjectTypeId);
 		this->writeFields(archive);
-		break;
-	}
-	default: break;
 	}
 }
 
@@ -146,29 +178,24 @@ void ECSReplicate::read(Buffer &archive)
 	Packet::read(archive);
 
 	network::read(archive, "replicationType", this->mReplicationType);
-	network::read(archive, "objectType", this->mObjectEcsType);
+	network::read(archive, "ecsType", this->mObjectEcsType);
+
+	if (this->hasTypeId())
+	{
+		archive.readRaw(this->mObjectTypeId);
+		archive.setNamed("typeId", ecsTypeName(this->mObjectEcsType, this->mObjectTypeId));
+	}
+
 	network::read(archive, "objectNetId", this->mObjectNetId);
 
-	switch (this->mObjectEcsType)
-	{
-	case ecs::EType::eEntity:
+	if (this->hasLinks())
 	{
 		this->readLinks(archive);
-		break;
 	}
-	case ecs::EType::eView:
+
+	if (this->hasFields())
 	{
-		network::read(archive, "typeId", this->mObjectTypeId);
-		this->readLinks(archive);
-		break;
-	}
-	case ecs::EType::eComponent:
-	{
-		network::read(archive, "typeId", this->mObjectTypeId);
 		this->readFields(archive);
-		break;
-	}
-	default: break;
 	}
 }
 
@@ -182,8 +209,10 @@ std::string ECSReplicate::toBufferString(std::vector<ObjectLink> const& links) c
 		auto const& link = this->mObjectLinks[i];
 		ss << '\n'
 			<< "  - "
+			<< ecsTypeName(link.ecsType, link.objectTypeId).c_str()
+			<< " "
 			<< utility::StringParser<ecs::EType>::to_string(link.ecsType).c_str()
-			<< ": TypeId(" << link.objectTypeId << ") ObjectNetId(" << link.netId << ")"
+			<< " net-id(" << link.netId << ")"
 			;
 	}
 	return ss.str();
@@ -289,6 +318,16 @@ void ECSReplicate::process(network::Interface *pInterface)
 			auto pObject = manager->createObject(this->mObjectTypeId);
 			manager->assignNetworkId(this->mObjectNetId, pObject->id);
 
+			auto subtypeName = manager->typeName(this->mObjectTypeId);
+			if (subtypeName.length() > 0) subtypeName += " ";
+			ecs::Core::logger().log(
+				LOG_VERBOSE, "Created replicated %s%s %u with network id %u",
+				subtypeName.c_str(),
+				utility::StringParser<ecs::EType>::to_string(this->mObjectEcsType).c_str(),
+				pObject->id, this->mObjectNetId
+			);
+
+			this->linkObject(manager, pObject);
 		}
 		else if (this->mReplicationType == EReplicationType::eDestroy)
 		{
@@ -317,6 +356,63 @@ void ECSReplicate::process(network::Interface *pInterface)
 			{
 
 			}
+		}
+		else
+		{
+			assert(false);
+		}
+	}
+}
+
+void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
+{
+	auto* ecs = ecs::Core::Get();
+	for (auto const& link : this->mObjectLinks)
+	{
+		if (this->mObjectEcsType == ecs::EType::eEntity)
+		{
+			auto pEntity = dynamic_cast<ecs::Entity*>(pObject);
+			assert(pEntity != nullptr);
+			if (link.ecsType == ecs::EType::eView)
+			{
+				auto pView = ecs->views().getNetworked(link.netId);
+				assert(pView != nullptr);
+				pEntity->addView(link.objectTypeId, pView);
+				ecs::Core::logger().log(
+					LOG_VERBOSE, "Linking entity %u (net-id:%u) to view (type:%u) %u (net-id:%u)",
+					pEntity->id, pEntity->netId,
+					ecs->views().typeName(link.objectTypeId).c_str(), pView->id, pView->netId
+				);
+			}
+			else if (link.ecsType == ecs::EType::eComponent)
+			{
+				auto pComp = ecs->components().getNetworked(link.objectTypeId, link.netId);
+				assert(pComp != nullptr);
+				pEntity->addComponent(link.objectTypeId, pComp);
+				ecs::Core::logger().log(
+					LOG_VERBOSE, "Linking entity %u (net-id:%u) to %s component %u (net-id:%u)",
+					pEntity->id, pEntity->netId,
+					ecs->components().typeName(link.objectTypeId).c_str(), pComp->id, pComp->netId
+				);
+			}
+			else
+			{
+				assert(false);
+			}
+		}
+		else if (this->mObjectEcsType == ecs::EType::eView)
+		{
+			assert(link.ecsType == ecs::EType::eComponent);
+			auto pView = dynamic_cast<ecs::view::View*>(pObject);
+			assert(pView != nullptr);
+			auto pComp = ecs->components().getNetworked(link.objectTypeId, link.netId);
+			assert(pComp != nullptr);
+			pView->onComponentAdded(link.objectTypeId, pComp->id);
+			ecs::Core::logger().log(
+				LOG_VERBOSE, "Linking %s view %u (net-id:%u) to %s component %u (net-id:%u)",
+				ecs->views().typeName(link.objectTypeId).c_str(), pView->id, pView->netId,
+				ecs->components().typeName(link.objectTypeId).c_str(), pComp->id, pComp->netId
+			);
 		}
 		else
 		{

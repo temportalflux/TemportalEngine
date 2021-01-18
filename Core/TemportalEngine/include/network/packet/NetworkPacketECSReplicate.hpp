@@ -6,6 +6,9 @@
 
 #define ECS_REPL_FIELD(CLASS_TYPE, FIELD_NAME) offsetof(CLASS_TYPE, FIELD_NAME), &FIELD_NAME, sizeof(FIELD_NAME)
 
+FORWARD_DEF(NS_ECS, class IEVCSObject);
+FORWARD_DEF(NS_ECS, class NetworkedManager);
+
 NS_NETWORK
 NS_PACKET
 
@@ -58,6 +61,7 @@ private:
 	 * Not serialized for entities.
 	 */
 	uIndex mObjectTypeId;
+	bool hasTypeId() const;
 
 	/**
 	 * The network identifier of the EVCS object.
@@ -70,7 +74,7 @@ private:
 	struct ObjectLink
 	{
 		ecs::EType ecsType;
-		uIndex objectTypeId;
+		ecs::TypeId objectTypeId;
 		ecs::Identifier netId;
 	};
 
@@ -80,6 +84,7 @@ private:
 	 * For views, these are components (so `ObjectLink#ecsType` must be `eComponent`).
 	 */
 	std::vector<ObjectLink> mObjectLinks;
+	bool hasLinks() const;
 	std::string toBufferString(std::vector<ObjectLink> const& links) const;
 	void writeLinks(Buffer &archive) const;
 	void readLinks(Buffer &archive);
@@ -87,9 +92,12 @@ private:
 	using ReplicatedData = std::vector<ui8>;
 	using ReplicatedField = std::pair<uIndex, ReplicatedData>;
 	std::vector<ReplicatedField> mComponentFields;
+	bool hasFields() const;
 	std::string toBufferString(std::vector<ReplicatedField> const& fields) const;
 	void writeFields(Buffer &archive) const;
 	void readFields(Buffer &archive);
+
+	void linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
 
 };
 

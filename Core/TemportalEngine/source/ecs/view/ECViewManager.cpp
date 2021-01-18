@@ -25,6 +25,11 @@ Manager::Manager()
 {
 }
 
+std::string Manager::typeName(TypeId const& typeId) const
+{
+	return this->mRegisteredTypes[typeId].name;
+}
+
 IEVCSObject* Manager::createObject(TypeId const& typeId)
 {
 	return this->create(typeId);

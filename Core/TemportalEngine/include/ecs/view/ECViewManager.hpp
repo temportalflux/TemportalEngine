@@ -16,9 +16,10 @@ class Manager : public ecs::NetworkedManager
 
 	struct TypeMetadata
 	{
+		std::string name;
+		std::function<void(View* pView)> construct;
 		uIndex mFirstAllocatedIdx;
 		uSize mCount;
-		std::function<void(View* pView)> construct;
 	};
 
 public:
@@ -47,15 +48,17 @@ public:
 	Manager();
 
 	template <typename TView>
-	void registerType()
+	void registerType(std::string const& name)
 	{
 		assert(sizeof(TView) == sizeof(View));
 		assert(this->mRegisteredTypeCount < ECS_MAX_VIEW_TYPE_COUNT);
 		TView::TypeId = this->mRegisteredTypeCount++;
 		this->mRegisteredTypes[TView::TypeId] = TypeMetadata {
-			0, 0, &TView::construct
+			name, &TView::construct, 0, 0
 		};
 	}
+
+	std::string typeName(TypeId const& typeId) const override;
 
 	IEVCSObject* createObject(TypeId const& typeId) override;
 	View* create(ViewTypeId const& typeId);

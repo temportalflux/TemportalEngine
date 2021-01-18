@@ -33,6 +33,11 @@ void Manager::registerType(ComponentTypeId const& id, TypeMetadata const& metada
 	);
 }
 
+std::string Manager::typeName(TypeId const& typeId) const
+{
+	return this->mMetadataByType[typeId].name;
+}
+
 void Manager::allocatePools()
 {
 	uSize sumSizeOfAllPools = 0;

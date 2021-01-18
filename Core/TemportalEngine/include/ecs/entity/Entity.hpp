@@ -33,6 +33,7 @@ public:
 #pragma region Components
 
 public:
+	Entity& addComponent(ComponentTypeId const& typeId, component::Component* pComp);
 
 	template <typename TComponent>
 	Entity& addComponent(TComponent* pComp)
@@ -52,7 +53,6 @@ private:
 
 	FixedArray<ItemEntry, ECS_ENTITY_MAX_COMPONENT_COUNT> mComponents;
 
-	Entity& addComponent(ComponentTypeId const& typeId, component::Component* pComp);
 	component::Component* getComponent(ComponentTypeId const& typeId);
 
 #pragma endregion
@@ -60,6 +60,7 @@ private:
 #pragma region Views
 
 public:
+	Entity& addView(ViewTypeId const& typeId, view::View* pView);
 
 	template <typename TView>
 	Entity& addView(TView* pView)
@@ -78,7 +79,6 @@ public:
 private:
 	FixedArray<ItemEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
 
-	Entity& addView(ViewTypeId const& typeId, view::View* pView);
 	view::View* getView(ViewTypeId const& typeId);
 
 #pragma endregion

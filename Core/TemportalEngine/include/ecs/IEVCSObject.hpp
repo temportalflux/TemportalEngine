@@ -4,9 +4,10 @@
 
 NS_ECS
 
-struct IEVCSObject
+class IEVCSObject
 {
 public:
+	virtual ~IEVCSObject() {}
 	// The unique-id for an instance of a given component
 	Identifier id;
 	Identifier netId;
