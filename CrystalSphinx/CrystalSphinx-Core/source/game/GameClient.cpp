@@ -41,7 +41,7 @@
 #include "utility/Colors.hpp"
 #include "window/Window.hpp"
 #include "world/World.hpp"
-#include "world/WorldSaveData.hpp"
+#include "world/WorldSaved.hpp"
 
 using namespace game;
 
@@ -234,11 +234,9 @@ void Client::exec_openSave(command::Signature const& cmd)
 		saveData.create(saveName);
 	}
 
-	this->initializeDedicatedSave(&saveData.get(saveName));
-	
-	auto pWorld = this->world();
+	auto pWorld = game::Game::Get()->createWorld<world::WorldSaved>(&saveData.get(saveName));
 	pWorld->init();
-	this->mLocalPlayerEntityId = pWorld->createPlayer(0);
+	this->mLocalPlayerEntityId = pWorld->createPlayer(0, pWorld->makeSpawnLocation());
 }
 
 void Client::exec_joinServer(command::Signature const& cmd)
@@ -276,10 +274,17 @@ void Client::exec_startHostingServer(command::Signature const& cmd)
 		this->chat()->addToLog("There is no world. Try opening a save.");
 		return;
 	}
+	auto pWorld = std::dynamic_pointer_cast<world::WorldSaved>(this->world());
+	if (!pWorld)
+	{
+		CLIENT_LOG.log(LOG_ERR, "Tried hosting a server, but the current world is not saved to disk.");
+		return;
+	}
+
 	auto pGame = game::Game::Get();
 	pGame->setupNetworkServer(
 		{ network::EType::eServer, network::EType::eClient },
-		this->dedicatedSave()
+		pWorld->getSaveInstance()
 	);
 	pGame->server()->init();
 	Game::networkInterface()->start();

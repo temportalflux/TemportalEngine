@@ -241,6 +241,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\saveData\ServerSettings.hpp">
       <Filter>saveData</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldReplicated.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldSaved.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -403,6 +409,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\saveData\ServerSettings.cpp">
       <Filter>saveData</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldSaved.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldReplicated.cpp">
+      <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

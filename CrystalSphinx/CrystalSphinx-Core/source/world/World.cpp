@@ -13,11 +13,10 @@
 #include "physics/PhysicsSystem.hpp"
 #include "registry/VoxelType.hpp"
 #include "saveData/SaveDataRegistry.hpp"
-#include "utility/Random.hpp"
 #include "world/WorldSaveData.hpp"
 #include "world/WorldTerrain.hpp"
 
-using namespace game;
+using namespace world;
 
 logging::Logger WORLD_LOG = DeclareLog("World", LOG_INFO);
 
@@ -25,9 +24,8 @@ World::World()
 {
 }
 
-void World::setSaveData(world::SaveData* pSaveData)
+World::~World()
 {
-	this->mpSaveData = pSaveData;
 }
 
 void World::init()
@@ -84,34 +82,6 @@ void World::uninitializePhysics()
 	this->mpPhysics.reset();
 }
 
-math::Vector2Int World::getSpawnChunkCoord(ui32 seed) const
-{
-	auto random = utility::Random(seed);
-	// returns a <x,z> within <[-2, 2], [-2, 2]>
-	// will be the same chunk for a given seed
-	return random.nextVInS<2>(2);
-}
-
-world::Coordinate World::makeSpawnLocation(ui32 seed) const
-{
-	// using time as seed - not deterministic
-	auto random = utility::Random((ui32)time(0));
-
-	// returns a <x,z> within <[-3, 3], [-3, 3]>
-	auto offset = random.nextVInS<2>(3);
-	auto chunkXZ = this->getSpawnChunkCoord(seed) + offset;
-	auto voxelXZ = random.nextVIn<2>(0, CHUNK_SIDE_LENGTH);
-
-	auto chunkPos = math::Vector3Int({ chunkXZ.x(), 0, chunkXZ.y() });
-	auto voxelPos = math::Vector3Int({ voxelXZ.x(), 0, voxelXZ.y() });
-
-	// TODO: raycast down to find y-coord of both chunk and block
-	chunkPos.y() = 0;
-	voxelPos.y() = 2;
-
-	return world::Coordinate(chunkPos, voxelPos);
-}
-
 void World::createDimension(Dimension *dim)
 {
 	WORLD_LOG.log(LOG_INFO, "Creating dimension %u", dim->id);
@@ -136,17 +106,8 @@ void World::destroyDimension(Dimension *dim)
 	dim->mpScene.reset();
 }
 
-ui32 World::seed() const
+ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& position)
 {
-	assert(this->mpSaveData != nullptr);
-	return this->mpSaveData->seed();
-}
-
-ecs::Identifier World::createPlayer(ui32 clientNetId)
-{
-	assert(this->mpSaveData != nullptr);
-	auto spawnPosition = this->makeSpawnLocation(this->seed());
-
 	auto& ecs = engine::Engine::Get()->getECS();
 
 	// Turning on replication if on a dedicated or integrated server.
@@ -165,7 +126,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId)
 	{
 		// TODO: Load player location and rotation from save data
 		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
-		transform->setPosition(spawnPosition);
+		transform->setPosition(position);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
 	}

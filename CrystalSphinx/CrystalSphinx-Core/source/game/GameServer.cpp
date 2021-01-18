@@ -4,7 +4,7 @@
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
-#include "world/World.hpp"
+#include "world/WorldSaved.hpp"
 
 using namespace game;
 
@@ -19,15 +19,11 @@ Server::~Server()
 {
 }
 
-void Server::loadFrom(saveData::Instance *saveInstance, bool bIsDedicated)
+void Server::loadFrom(saveData::Instance *saveInstance)
 {
 	this->mServerSettings = saveData::ServerSettings(saveInstance->root());
 	this->mServerSettings.readFromDisk();
 	this->userRegistry().scan(saveInstance->userDirectory());
-	if (bIsDedicated)
-	{
-		this->initializeDedicatedSave(saveInstance);
-	}
 }
 
 void Server::init()
@@ -92,9 +88,13 @@ void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32
 			.sendTo(netId);
 	}
 
+	auto pWorld = std::dynamic_pointer_cast<world::WorldSaved>(this->world());
+	assert(pWorld);
 	// Replicate initial world data
 
-	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(netId));
+	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(
+		netId, pWorld->makeSpawnLocation()
+	));
 }
 
 void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId)

@@ -11,7 +11,7 @@
 
 FORWARD_DEF(NS_NETWORK, class Interface);
 FORWARD_DEF(NS_SAVE_DATA, class Instance);
-FORWARD_DEF(NS_GAME, class World);
+FORWARD_DEF(NS_WORLD, class World);
 
 NS_GAME
 
@@ -22,9 +22,7 @@ public:
 	Session();
 	virtual ~Session();
 
-	void initializeDedicatedSave(saveData::Instance *saveInstance);
-	saveData::Instance* dedicatedSave();
-	std::shared_ptr<game::World> world() const;
+	std::shared_ptr<world::World> world() const;
 
 	std::map<ui32, utility::Guid> const& connectedUsers() const;
 	bool hasConnectedUser(ui32 netId) const;
@@ -42,8 +40,6 @@ protected:
 	void clearConnectedUsers();
 
 private:
-	saveData::Instance *mpSaveInstance;
-	world::SaveData mDedicatedWorldSave;
 	game::UserIdRegistry mUserRegistry;
 	std::map<ui32, utility::Guid> mConnectedUsers;
 

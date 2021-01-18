@@ -5,7 +5,7 @@
 
 using namespace game;
 
-Session::Session() : mpSaveInstance(nullptr)
+Session::Session()
 {
 }
 
@@ -13,16 +13,7 @@ Session::~Session()
 {
 }
 
-void Session::initializeDedicatedSave(saveData::Instance *saveInstance)
-{
-	this->mpSaveInstance = saveInstance;
-	this->mDedicatedWorldSave = world::SaveData(saveInstance->worldSave());
-	this->mDedicatedWorldSave.readFromDisk();
-	game::Game::Get()->createWorld()->setSaveData(&this->mDedicatedWorldSave);
-}
-
-saveData::Instance* Session::dedicatedSave() { return this->mpSaveInstance; }
-std::shared_ptr<game::World> Session::world() const { return game::Game::Get()->world(); }
+std::shared_ptr<world::World> Session::world() const { return game::Game::Get()->world(); }
 
 game::UserIdRegistry& Session::userRegistry() { return this->mUserRegistry; }
 game::UserIdRegistry const& Session::userRegistry() const { return this->mUserRegistry; }

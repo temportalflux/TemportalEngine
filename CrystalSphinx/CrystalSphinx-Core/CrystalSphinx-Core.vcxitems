@@ -73,6 +73,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldChunk.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldCoordinate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldReplicated.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldSaved.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldSaveData.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp" />
   </ItemGroup>
@@ -128,6 +130,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Colors.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\World.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldChunk.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldReplicated.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldSaved.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldSaveData.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldCoordinate.cpp" />

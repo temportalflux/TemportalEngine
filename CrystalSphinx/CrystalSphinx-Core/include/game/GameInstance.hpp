@@ -23,9 +23,9 @@ NS_END
 
 FORWARD_DEF(NS_GAME, class Client);
 FORWARD_DEF(NS_GAME, class Server);
-FORWARD_DEF(NS_GAME, class World);
 FORWARD_DEF(NS_NETWORK, class Interface);
 FORWARD_DEF(NS_SAVE_DATA, class Instance);
+FORWARD_DEF(NS_WORLD, class World);
 
 NS_GAME
 
@@ -48,7 +48,7 @@ public:
 	std::shared_ptr<game::Server> server();
 	std::shared_ptr<game::Client> client();
 	saveData::Registry& saveData();
-	std::shared_ptr<game::World> world();
+	std::shared_ptr<world::World> world();
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 
@@ -57,7 +57,14 @@ public:
 		saveData::Instance *saveInstance
 	);
 
-	std::shared_ptr<game::World> createWorld();
+	template <typename TWorld, typename... TArgs>
+	std::shared_ptr<TWorld> createWorld(TArgs... args)
+	{
+		assert(!this->mpWorld);
+		this->mpWorld = std::make_shared<TWorld>(args...);
+		return std::dynamic_pointer_cast<TWorld>(this->mpWorld);
+	}
+
 	void destroyWorld();
 
 private:
@@ -67,7 +74,7 @@ private:
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
 	saveData::Registry mSaveDataRegistry;
-	std::shared_ptr<game::World> mpWorld;
+	std::shared_ptr<world::World> mpWorld;
 
 	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
 	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;

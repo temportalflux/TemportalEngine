@@ -14,7 +14,7 @@ public:
 	Server();
 	~Server();
 
-	void loadFrom(saveData::Instance *saveInstance, bool bIsDedicated);
+	void loadFrom(saveData::Instance *saveInstance);
 	void init();
 
 	bool hasSaveForUser(utility::Guid const& id) const;
