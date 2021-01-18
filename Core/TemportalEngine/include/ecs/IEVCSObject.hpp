@@ -24,7 +24,8 @@ public:
 	// `0` if `bHasOwner` is false.
 	ui32 ownerNetId;
 
-	void setOwner(std::optional<ui32> ownerNetId);
+	virtual void setOwner(std::optional<ui32> ownerNetId);
+	std::optional<ui32> owner() const;
 
 };
 

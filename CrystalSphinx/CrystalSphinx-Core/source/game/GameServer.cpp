@@ -90,7 +90,7 @@ void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32
 			.sendTo(netId);
 	}
 
-	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer());
+	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(netId));
 }
 
 void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId)

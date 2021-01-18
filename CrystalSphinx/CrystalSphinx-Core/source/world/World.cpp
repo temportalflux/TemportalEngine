@@ -114,7 +114,7 @@ void World::destroyDimension(Dimension *dim)
 	dim->mpScene.reset();
 }
 
-ecs::Identifier World::createPlayer()
+ecs::Identifier World::createPlayer(ui32 clientNetId)
 {
 	auto& ecs = engine::Engine::Get()->getECS();
 
@@ -128,7 +128,7 @@ ecs::Identifier World::createPlayer()
 	// does not mark the entity to be killed, so the manager will own it.
 	// can look up the entity by id by using `EntityManager#get`.
 	auto pEntity = ecs.entities().create();
-	pEntity->setOwner(std::nullopt);
+	pEntity->setOwner(clientNetId);
 
 	// Add Transform
 	{

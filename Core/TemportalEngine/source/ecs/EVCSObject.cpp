@@ -30,3 +30,8 @@ void IEVCSObject::setOwner(std::optional<ui32> ownerNetId)
 
 	ecs->onOwnershipChanged.broadcast(this->objectType(), this->typeId(), this);
 }
+
+std::optional<ui32> IEVCSObject::owner() const
+{
+	return this->bHasOwner ? std::make_optional(this->ownerNetId) : std::nullopt;
+}

@@ -116,6 +116,8 @@ private:
 	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 invalidNetId);
 	void onNetworkStopped(network::Interface *pInterface);
 
+	void onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject);
+
 	bool initializeGraphics();
 
 	bool createWindow();

@@ -37,7 +37,7 @@ public:
 	 * Creates a player entity (though doesn't include any rendering or POV components/views).
 	 * Returns the EVCS entity id.
 	 */
-	ecs::Identifier createPlayer();
+	ecs::Identifier createPlayer(ui32 clientNetId);
 	void destroyPlayer(ecs::Identifier entityId);
 
 private:

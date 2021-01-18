@@ -44,7 +44,6 @@ Client::Client() : Session(), mLocalUserNetId(std::nullopt)
 	this->settings().readFromDisk();
 }
 
-
 std::shared_ptr<Window> Client::getWindow() { return this->mpWindow; }
 std::shared_ptr<graphics::ImmediateRenderSystem> Client::renderer() { return this->mpRenderer; }
 std::shared_ptr<graphics::SkinnedModelManager> Client::modelManager() { return this->mpSkinnedModelManager; }
@@ -74,6 +73,11 @@ void Client::init()
 	));
 	networkInterface->onNetworkStopped.bind(this->weak_from_this(), std::bind(
 		&Client::onNetworkStopped, this, std::placeholders::_1
+	));
+
+	ecs::Core::Get()->onOwnershipChanged.bind(this->weak_from_this(), std::bind(
+		&Client::onEVCSOwnershipChanged, this,
+		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
 
 	if (!this->scanResourcePacks()) return;
@@ -219,7 +223,7 @@ void Client::exec_openSave(command::Signature const& cmd)
 	}
 	auto pWorld = pGame->createWorld();
 	pWorld->init(&saveData.get(saveName));
-	this->mLocalPlayerEntityId = pWorld->createPlayer();
+	this->mLocalPlayerEntityId = pWorld->createPlayer(0);
 }
 
 void Client::exec_joinServer(command::Signature const& cmd)
@@ -311,6 +315,12 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 	pServer->initializeUser(localUserId, this->localUserAuthKey());
 	pServer->getUserInfo(localUserId).copyFrom(localUserInfo).writeToDisk();
 
+	// Initialize the already existing local entity with the correct owner netId.
+	// Does not need to replicate because this is an integrated server and
+	// this function executes before any dedicated clients are able to join.
+	auto* ecs = ecs::Core::Get();
+	auto pEntity = ecs->entities().get(this->mLocalPlayerEntityId);
+	pEntity->setOwner(netId);
 	pServer->associatePlayer(netId, this->mLocalPlayerEntityId);
 }
 
@@ -389,6 +399,14 @@ void Client::removeConnectedUser(ui32 netId)
 game::UserInfo& Client::getConnectedUserInfo(ui32 netId)
 {
 	return this->mConnectedUserInfo.find(netId)->second;
+}
+
+void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject)
+{
+	if (ecsType == ecs::EType::eEntity && pObject->bHasOwner && pObject->ownerNetId == this->mLocalUserNetId)
+	{
+		this->mLocalPlayerEntityId = pObject->id;
+	}
 }
 
 bool Client::initializeGraphics()

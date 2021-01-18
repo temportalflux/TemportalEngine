@@ -24,6 +24,7 @@ public:
 	~Entity();
 	ecs::EType objectType() const;
 	ecs::TypeId typeId() const;
+	void setOwner(std::optional<ui32> ownerNetId) override;
 
 	/**
 	 * Causes the entity to not be held onto by the entity manager.

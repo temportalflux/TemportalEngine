@@ -8,6 +8,16 @@
 
 using namespace ecs;
 
+view::View* getViewAt(ecs::TypeId typeId, ecs::Identifier id)
+{
+	return ecs::Core::Get()->views().get(id);
+}
+
+component::Component* getCompAt(ecs::TypeId typeId, ecs::Identifier id)
+{
+	return ecs::Core::Get()->components().get(typeId, id);
+}
+
 Entity::~Entity()
 {
 	auto* ecs = ecs::Core::Get();
@@ -26,6 +36,19 @@ Entity::~Entity()
 ecs::EType Entity::objectType() const { return EType::eEntity; }
 ecs::TypeId Entity::typeId() const { return 0; }
 
+void Entity::setOwner(std::optional<ui32> ownerNetId)
+{
+	for (auto const& slot : this->mViews)
+	{
+		getViewAt(slot.typeId, slot.objectId)->setOwner(ownerNetId);
+	}
+	for (auto const& slot : this->mComponents)
+	{
+		getCompAt(slot.typeId, slot.objectId)->setOwner(ownerNetId);
+	}
+	IEVCSObject::setOwner(ownerNetId);
+}
+
 void Entity::kill()
 {
 	ecs::Core::Get()->entities().release(this->id);
@@ -33,10 +56,12 @@ void Entity::kill()
 
 Entity& Entity::addComponent(ComponentTypeId const& typeId, component::Component* pComp)
 {
+	pComp->setOwner(this->owner());
+
 	this->mComponents.insert(ItemEntry { typeId, pComp->id });
-	for (auto const& entry : this->mViews)
+	for (auto const& slot : this->mViews)
 	{
-		ecs::Core::Get()->views().get(entry.objectId)->onComponentAdded(typeId, pComp->id);
+		getViewAt(slot.typeId, slot.objectId)->onComponentAdded(typeId, pComp->id);
 	}
 
 	if (ecs::Core::Get()->shouldReplicate())
@@ -58,11 +83,15 @@ component::Component* Entity::getComponent(ComponentTypeId const& typeId)
 		// typeId <=> entry.typeId
 		return typeId < entry.typeId ? -1 : (typeId > entry.typeId ? 1 : 0);
 	});
-	return idx ? ecs::Core::Get()->components().get(typeId, this->mComponents[*idx].objectId) : nullptr;
+	if (!idx) return nullptr;
+	auto& slot = this->mComponents[*idx];
+	return ecs::Core::Get()->components().get(typeId, slot.objectId);
 }
 
 Entity& Entity::addView(ViewTypeId const& typeId, view::View* pView)
 {
+	pView->setOwner(this->owner());
+
 	this->mViews.insert(ItemEntry { typeId, pView->id });
 	for (auto const& entry : this->mComponents)
 	{
@@ -88,6 +117,8 @@ view::View* Entity::getView(ViewTypeId const& typeId)
 		// typeId <=> entry.typeId
 		return typeId < entry.typeId ? -1 : (typeId > entry.typeId ? 1 : 0);
 	});
-	return idx ? ecs::Core::Get()->views().get(this->mViews[*idx].objectId) : nullptr;
+	if (!idx) return nullptr;
+	auto& slot = this->mViews[*idx];
+	return ecs::Core::Get()->views().get(slot.objectId);
 }
 
