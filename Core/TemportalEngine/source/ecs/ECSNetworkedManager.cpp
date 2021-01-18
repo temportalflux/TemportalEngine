@@ -15,6 +15,11 @@ void NetworkedManager::assignNetworkId(Identifier netId, Identifier objectId)
 	this->mNetIdToObjectId.insert(std::make_pair(netId, objectId));
 }
 
+bool NetworkedManager::hasNetworkId(Identifier const& netId) const
+{
+	return this->mNetIdToObjectId.find(netId) != this->mNetIdToObjectId.end();
+}
+
 Identifier NetworkedManager::getNetworkedObjectId(Identifier netId) const
 {
 	auto iter = this->mNetIdToObjectId.find(netId);

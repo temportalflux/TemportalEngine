@@ -533,9 +533,13 @@ ui32 Interface::closeConnection(ui32 connectionId)
 {
 	assert(this->mType.includes(EType::eServer));
 
+	auto iterConn = this->mConnections.find(connectionId);
+	this->mConnections.erase(iterConn);
+
 	auto iterClient = this->mClients.find(connectionId);
 	auto netId = iterClient->second;
 	this->mClients.erase(iterClient);
+	
 	this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId));
 	this->onConnectionClosed.execute(this, connectionId, netId);
 

@@ -47,7 +47,8 @@ public:
 	template <typename TObject>
 	void destroy(uIndex const &id)
 	{
-		this->lookup<TObject>(id)->~TObject();
+		auto pObject = this->lookup<TObject>(id);
+		pObject->~TObject();
 		this->destroy(id);
 	}
 

@@ -21,11 +21,41 @@ EntityManager::~EntityManager()
 
 std::string EntityManager::typeName(TypeId const& typeId) const { return ""; }
 
-IEVCSObject* EntityManager::createObject(TypeId const& typeId)
+IEVCSObject* EntityManager::createObject(TypeId const& typeId, Identifier const& netId)
 {
 	// ignores type id because its mostly for same-interface compatibility with views and components
 	// returns the underlying pointer because the manager owns the object
-	return this->create().get();
+	auto ptr = this->create().get();
+	this->assignNetworkId(netId, ptr->id);
+	ptr->netId = netId;
+	return ptr;
+}
+
+IEVCSObject* EntityManager::getObject(TypeId const& typeId, Identifier const& netId)
+{
+	return this->get(this->getNetworkedObjectId(netId)).get();
+}
+
+void EntityManager::destroyObject(TypeId const& typeId, Identifier const& netId)
+{
+	auto objectId = this->getNetworkedObjectId(netId);
+	std::string externalError = "The object will be removed from the network, but will still be alive due to external references.";
+	if (!this->mOwnedObjects[objectId])
+	{
+		std::string err = "Attempting to destroy entity by replication, but the object is not owned by the manager. ";
+		ecs::Core::logger().log(LOG_ERR, (err + externalError).c_str());
+		this->removeNetworkId(netId);
+		return;
+	}
+	if (!this->mOwnedObjects[objectId].unique())
+	{
+		std::string err = "Attempting to destroy entity by replication, but the object has %u external references. ";
+		ecs::Core::logger().log(
+			LOG_ERR, (err + externalError).c_str(),
+			this->mOwnedObjects[objectId].use_count()
+		);
+	}
+	this->release(objectId);
 }
 
 std::shared_ptr<Entity> EntityManager::create()
@@ -45,6 +75,7 @@ std::shared_ptr<Entity> EntityManager::create()
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		shared->netId = this->nextNetworkId();
+		this->assignNetworkId(shared->netId, shared->id);
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eEntity)
 			.setObjectNetId(shared->netId)
@@ -59,28 +90,42 @@ void EntityManager::destroy(Entity *pCreated)
 {
 	this->mMutex.lock();
 
+	auto id = pCreated->id;
+	auto netId = pCreated->netId;
+
+	// The order of replication vs memory deletion matters here.
+	// First, we queue up the replication packet to tell receives the entity has been destroyed.
+	// Second, we actually destroy the memory, causing components and views to also create their destroy packets.
+	// If this was reversed, destroy packets for views and components would be first.
+
+	this->removeNetworkId(netId);
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		ecs::Core::Get()->replicateDestroy()
+			->setObjectEcsType(ecs::EType::eEntity)
+			.setObjectNetId(netId)
+			;
+	}
+
 	// This is safe because `EntityManager#destroy` is only called when there are no more references.
 	// In order for that to be true, `mOwnedObjects[id]` must be invalid
 	// (the user has called `Entity#kill` or `EntityManager#release`).
 	auto ownedIter = this->mOwnedObjects.find(pCreated->id);
 	assert(ownedIter != this->mOwnedObjects.end());
 	this->mOwnedObjects.erase(ownedIter);
-	
+
 	// Actually release all references (allocated object map is used for lookup by id)
 	auto allocatedIter = this->mAllocatedObjects.find(pCreated->id);
 	assert(allocatedIter != this->mAllocatedObjects.end());
 	this->mAllocatedObjects.erase(allocatedIter);
 
-	if (ecs::Core::Get()->shouldReplicate())
-	{
-		ecs::Core::Get()->replicateDestroy()
-			->setObjectEcsType(ecs::EType::eEntity)
-			.setObjectNetId(pCreated->netId)
-			;
-	}
-
 	// Actually release the memory
-	this->mPool.destroy<Entity>(pCreated->id);
+	this->mPool.destroy<Entity>(id);
+
+	ecs::Core::logger().log(
+		LOG_VERBOSE, "Destroyed entity %u with net-id(%u)",
+		id, netId
+	);
 
 	this->mMutex.unlock();
 }
@@ -89,11 +134,6 @@ std::shared_ptr<Entity> EntityManager::get(Identifier const &id) const
 {
 	auto iter = this->mAllocatedObjects.find(id);
 	return iter != this->mAllocatedObjects.end() ? iter->second.lock() : nullptr;
-}
-
-std::shared_ptr<Entity> EntityManager::getNetworked(Identifier const& netId) const
-{
-	return this->get(this->getNetworkedObjectId(netId));
 }
 
 void EntityManager::release(Identifier const& id)

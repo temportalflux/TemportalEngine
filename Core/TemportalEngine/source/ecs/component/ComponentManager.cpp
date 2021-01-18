@@ -38,6 +38,26 @@ std::string Manager::typeName(TypeId const& typeId) const
 	return this->mMetadataByType[typeId].name;
 }
 
+IEVCSObject* Manager::createObject(TypeId const& typeId, Identifier const& netId)
+{
+	auto ptr = this->create(typeId);
+	this->assignNetworkId(netId, ptr->id);
+	ptr->netId = netId;
+	return ptr;
+}
+
+IEVCSObject* Manager::getObject(TypeId const& typeId, Identifier const& netId)
+{
+	return this->get(typeId, this->getNetworkedObjectId(netId));
+}
+
+void Manager::destroyObject(TypeId const& typeId, Identifier const& netId)
+{
+	auto objectId = this->getNetworkedObjectId(netId);
+	this->removeNetworkId(netId);
+	this->destroy(typeId, objectId);
+}
+
 void Manager::allocatePools()
 {
 	uSize sumSizeOfAllPools = 0;
@@ -67,11 +87,6 @@ void Manager::allocatePools()
 	}
 }
 
-IEVCSObject* Manager::createObject(TypeId const& typeId)
-{
-	return this->create(typeId);
-}
-
 Component* Manager::create(ComponentTypeId const& typeId)
 {
 	uIndex objectId;
@@ -85,6 +100,7 @@ Component* Manager::create(ComponentTypeId const& typeId)
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ptr->netId = this->nextNetworkId();
+		this->assignNetworkId(ptr->netId, objectId);
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eComponent)
 			.setObjectTypeId(typeId)
@@ -107,20 +123,23 @@ void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
 	auto iter = this->mAllocatedByType[typeId].find(id);
 	assert(iter != this->mAllocatedByType[typeId].end());
 
+	auto netId = iter->second->netId;
+
+	this->mAllocatedByType[typeId].erase(iter);
+	this->mPoolByType[typeId].destroy(id);
+
+	this->removeNetworkId(netId);
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateDestroy()
 			->setObjectEcsType(ecs::EType::eComponent)
 			.setObjectTypeId(typeId)
-			.setObjectNetId(iter->second->id)
+			.setObjectNetId(netId)
 			;
 	}
 
-	this->mAllocatedByType[typeId].erase(iter);
-	this->mPoolByType[typeId].destroy(id);
-}
-
-Component* Manager::getNetworked(ComponentTypeId const& typeId, Identifier const& netId)
-{
-	return this->get(typeId, this->getNetworkedObjectId(netId));
+	ecs::Core::logger().log(
+		LOG_VERBOSE, "Destroyed %s component %u with net-id(%u)",
+		this->typeName(typeId).c_str(), id, netId
+	);
 }

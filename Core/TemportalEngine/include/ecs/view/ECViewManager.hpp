@@ -59,8 +59,10 @@ public:
 	}
 
 	std::string typeName(TypeId const& typeId) const override;
+	IEVCSObject* createObject(TypeId const& typeId, Identifier const& netId) override;
+	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
+	void destroyObject(TypeId const& typeId, Identifier const& netId) override;
 
-	IEVCSObject* createObject(TypeId const& typeId) override;
 	View* create(ViewTypeId const& typeId);
 	View* get(Identifier const& id);
 	void destroy(ViewTypeId const& typeId, Identifier const& id);
@@ -72,8 +74,6 @@ public:
 	}
 
 	ViewIterable getAllOfType(ViewTypeId const &typeId);
-
-	View* getNetworked(Identifier const& netId) const;
 
 private:
 	thread::MutexLock mMutex;

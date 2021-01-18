@@ -98,6 +98,7 @@ private:
 	void readFields(Buffer &archive);
 
 	void linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
+	void fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
 
 };
 

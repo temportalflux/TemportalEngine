@@ -18,7 +18,9 @@ public:
 	~EntityManager();
 
 	std::string typeName(TypeId const& typeId) const;
-	IEVCSObject* createObject(TypeId const& typeId) override;
+	IEVCSObject* createObject(TypeId const& typeId, Identifier const& netId) override;
+	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
+	void destroyObject(TypeId const& typeId, Identifier const& netId) override;
 
 	/**
 	 * Allocates a new entity object.
@@ -39,8 +41,6 @@ public:
 	std::shared_ptr<Entity> get(Identifier const &id) const;
 	void release(Identifier const& id);
 	void releaseAll();
-
-	std::shared_ptr<Entity> getNetworked(Identifier const& netId) const;
 
 private:
 	thread::MutexLock mMutex;

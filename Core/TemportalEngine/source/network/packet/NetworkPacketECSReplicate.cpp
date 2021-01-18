@@ -315,9 +315,7 @@ void ECSReplicate::process(network::Interface *pInterface)
 			{
 				assert(this->mObjectTypeId == 0);
 			}
-			auto pObject = manager->createObject(this->mObjectTypeId);
-			manager->assignNetworkId(this->mObjectNetId, pObject->id);
-
+			auto pObject = manager->createObject(this->mObjectTypeId, this->mObjectNetId);
 			auto subtypeName = manager->typeName(this->mObjectTypeId);
 			if (subtypeName.length() > 0) subtypeName += " ";
 			ecs::Core::logger().log(
@@ -327,34 +325,54 @@ void ECSReplicate::process(network::Interface *pInterface)
 				pObject->id, this->mObjectNetId
 			);
 
-			this->linkObject(manager, pObject);
+			if (this->hasLinks())
+			{
+				this->linkObject(manager, pObject);
+			}
+			if (this->hasFields())
+			{
+				this->fillFields(manager, pObject);
+			}
 		}
 		else if (this->mReplicationType == EReplicationType::eDestroy)
 		{
-			if (this->mObjectEcsType == ecs::EType::eEntity)
-			{
-			}
-			else if (this->mObjectEcsType == ecs::EType::eView)
-			{
+			/*
+				This guard is here for situations like entities with views and components
+				being destroyed, causing the views and components to be destroyed too.
 
-			}
-			else if (this->mObjectEcsType == ecs::EType::eComponent)
+				`EntityManager#destroy` is organized such that entity destruction
+				replication happens first, followed by the destruction
+				packets of views and components.
+				
+				The entity destruction, however, will cause the manager to also destroy
+				the views and components of the local entity, so this guard is here to
+				ensure that the view and component destruction replication
+				doesn't try to destroy twice.
+			*/
+			if (manager->hasNetworkId(this->mObjectNetId))
 			{
-
+				manager->destroyObject(this->mObjectTypeId, this->mObjectNetId);
+			}
+			else
+			{
+				ecs::Core::logger().log(
+					LOG_VERBOSE, "Missing %s %s with net-id(%u), discarding destruction replication.",
+					manager->typeName(this->mObjectTypeId).c_str(),
+					utility::StringParser<ecs::EType>::to_string(this->mObjectEcsType).c_str(),
+					this->mObjectNetId
+				);
 			}
 		}
 		else if (this->mReplicationType == EReplicationType::eUpdate)
 		{
-			if (this->mObjectEcsType == ecs::EType::eEntity)
+			auto pObject = manager->getObject(this->mObjectTypeId, this->mObjectNetId);
+			if (this->hasLinks())
 			{
+				this->linkObject(manager, pObject);
 			}
-			else if (this->mObjectEcsType == ecs::EType::eView)
+			if (this->hasFields())
 			{
-
-			}
-			else if (this->mObjectEcsType == ecs::EType::eComponent)
-			{
-
+				this->fillFields(manager, pObject);
 			}
 		}
 		else
@@ -375,7 +393,7 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 			assert(pEntity != nullptr);
 			if (link.ecsType == ecs::EType::eView)
 			{
-				auto pView = ecs->views().getNetworked(link.netId);
+				auto pView = dynamic_cast<ecs::view::View*>(ecs->views().getObject(link.objectTypeId, link.netId));
 				assert(pView != nullptr);
 				pEntity->addView(link.objectTypeId, pView);
 				ecs::Core::logger().log(
@@ -386,7 +404,7 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 			}
 			else if (link.ecsType == ecs::EType::eComponent)
 			{
-				auto pComp = ecs->components().getNetworked(link.objectTypeId, link.netId);
+				auto pComp = dynamic_cast<ecs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
 				assert(pComp != nullptr);
 				pEntity->addComponent(link.objectTypeId, pComp);
 				ecs::Core::logger().log(
@@ -405,7 +423,7 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 			assert(link.ecsType == ecs::EType::eComponent);
 			auto pView = dynamic_cast<ecs::view::View*>(pObject);
 			assert(pView != nullptr);
-			auto pComp = ecs->components().getNetworked(link.objectTypeId, link.netId);
+			auto pComp = dynamic_cast<ecs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
 			assert(pComp != nullptr);
 			pView->onComponentAdded(link.objectTypeId, pComp->id);
 			ecs::Core::logger().log(
@@ -419,4 +437,9 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 			assert(false);
 		}
 	}
+}
+
+void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
+{
+
 }

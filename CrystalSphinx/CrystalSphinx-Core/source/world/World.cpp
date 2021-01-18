@@ -138,6 +138,7 @@ ecs::Identifier World::createPlayer()
 		pEntity->addComponent(transform);
 	}
 
+
 	// End replication only does anything if `beginReplication` is called.
 	// If `beginReplication` is called, `endReplication` MUST be called.
 	// Will broadcast packets to all network connections.
@@ -148,8 +149,13 @@ ecs::Identifier World::createPlayer()
 
 void World::destroyPlayer(ecs::Identifier entityId)
 {
-	engine::Engine::Get()->getECS().entities().release(entityId);
-	WORLD_LOG.log(LOG_INFO, "Destroyed player entity %u", entityId);
+	auto& ecs = engine::Engine::Get()->getECS();
+	if (game::Game::networkInterface()->type().includes(network::EType::eServer))
+	{
+		ecs.beginReplication();
+	}
+	ecs.entities().release(entityId);
+	ecs.endReplication();
 }
 
 /*

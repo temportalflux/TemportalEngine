@@ -39,10 +39,13 @@ public:
 		return TComponent::TypeId;
 	}
 
-	std::string typeName(TypeId const& typeId) const override;
 	void allocatePools();
 
-	IEVCSObject* createObject(TypeId const& typeId) override;
+	std::string typeName(TypeId const& typeId) const override;
+	IEVCSObject* createObject(TypeId const& typeId, Identifier const& netId) override;
+	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
+	void destroyObject(TypeId const& typeId, Identifier const& netId) override;
+	
 	Component* create(ComponentTypeId const& typeId);
 	Component* get(ComponentTypeId const& typeId, Identifier const& id);
 	void destroy(ComponentTypeId const& typeId, Identifier const& id);
@@ -58,8 +61,6 @@ public:
 	{
 		return dynamic_cast<TComponent*>(this->get(TComponent::TypeId, id));
 	}
-
-	Component* getNetworked(ComponentTypeId const& typeId, Identifier const& netId);
 
 private:
 	Core *mpCore;
