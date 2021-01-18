@@ -30,10 +30,8 @@ World::~World()
 
 void World::init()
 {
-	//this->createVoxelTypeRegistry();
-
+	this->createVoxelTypeRegistry();
 	this->initializePhysics();
-
 	this->mOverworld.id = 0;
 	this->createDimension(&this->mOverworld);
 }
