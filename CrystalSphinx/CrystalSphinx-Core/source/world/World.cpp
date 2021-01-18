@@ -40,10 +40,10 @@ void World::init()
 
 void World::uninit()
 {
-	WORLD_LOG.log(LOG_INFO, "Destroying world");
 	this->destroyDimension(&this->mOverworld);
 	this->uninitializePhysics();
 	this->mpVoxelTypeRegistry.reset();
+	ecs::Core::Get()->entities().releaseAll();
 }
 
 std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }

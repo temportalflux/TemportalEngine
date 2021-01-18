@@ -126,6 +126,7 @@ void Client::registerCommands()
 	ADD_CMD(CMD_SIGNATURE("setName", Client, this, exec_setAccountName).pushArgType<std::string>());
 
 	ADD_CMD(CMD_SIGNATURE("openSave", Client, this, exec_openSave).pushArgType<std::string>());
+	ADD_CMD(CMD_SIGNATURE("closeSave", Client, this, exec_closeSave));
 
 	ADD_CMD(CMD_SIGNATURE("join", Client, this, exec_joinServer).pushArgType<network::Address>());
 	ADD_CMD(CMD_SIGNATURE("joinLocal", Client, this, exec_joinServerLocal));
@@ -239,6 +240,12 @@ void Client::exec_openSave(command::Signature const& cmd)
 	this->mLocalPlayerEntityId = pWorld->createPlayer(0, pWorld->makeSpawnLocation());
 }
 
+void Client::exec_closeSave(command::Signature const& cmd)
+{
+	game::Game::Get()->destroyWorld();
+	this->mLocalPlayerEntityId = 0;
+}
+
 void Client::exec_joinServer(command::Signature const& cmd)
 {
 	if (!this->hasAccount())
@@ -293,7 +300,7 @@ void Client::exec_startHostingServer(command::Signature const& cmd)
 void Client::exec_stopHostingServer(command::Signature const& cmd)
 {
 	Game::networkInterface()->stop();
-	game::Game::Get()->server().reset();
+	game::Game::Get()->destroyServer();
 }
 
 void Client::exec_printConnectedUsers(command::Signature const& cmd)

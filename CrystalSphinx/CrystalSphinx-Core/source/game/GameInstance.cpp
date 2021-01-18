@@ -116,6 +116,14 @@ std::shared_ptr<game::Client> Game::client() { return this->mpClient; }
 saveData::Registry& Game::saveData() { return this->mSaveDataRegistry; }
 std::shared_ptr<world::World> Game::world() { return this->mpWorld; }
 
+void Game::destroyServer()
+{
+	if (this->mpServer)
+	{
+		this->mpServer.reset();
+	}
+}
+
 void Game::destroyWorld()
 {
 	if (this->mpWorld)

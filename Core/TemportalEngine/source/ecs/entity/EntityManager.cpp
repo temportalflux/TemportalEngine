@@ -68,7 +68,6 @@ std::shared_ptr<Entity> EntityManager::create()
 		std::bind(&EntityManager::destroy, this, std::placeholders::_1)
 	);
 	shared->setId(objectId);
-	shared->setNetId(0);
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 	this->mOwnedObjects.insert(std::make_pair(objectId, shared));
 	
@@ -155,8 +154,8 @@ void EntityManager::release(Identifier const& id)
 
 void EntityManager::releaseAll()
 {
-	for (auto& [id, ptr] : this->mOwnedObjects)
+	while (this->mOwnedObjects.size() > 0)
 	{
-		ptr.reset();
+		this->mOwnedObjects[0].reset();
 	}
 }

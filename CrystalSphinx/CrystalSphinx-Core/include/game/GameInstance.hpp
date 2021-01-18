@@ -46,9 +46,11 @@ public:
 
 	static network::Interface* networkInterface();
 	std::shared_ptr<game::Server> server();
+	void destroyServer();
 	std::shared_ptr<game::Client> client();
 	saveData::Registry& saveData();
 	std::shared_ptr<world::World> world();
+	void destroyWorld();
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 
@@ -64,8 +66,6 @@ public:
 		this->mpWorld = std::make_shared<TWorld>(args...);
 		return std::dynamic_pointer_cast<TWorld>(this->mpWorld);
 	}
-
-	void destroyWorld();
 
 private:
 	logging::Logger mProjectLog;
