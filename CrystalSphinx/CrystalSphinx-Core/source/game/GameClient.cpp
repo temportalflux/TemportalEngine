@@ -404,6 +404,7 @@ void Client::onDedicatedClientDisconnected(network::Interface *pInteface, ui32 i
 {
 	network::logger().log(LOG_INFO, "Disconnected from network, killing network interface.");
 	Game::networkInterface()->stop();
+	game::Game::Get()->destroyWorld();
 }
 
 void Client::onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status)
@@ -442,6 +443,12 @@ void Client::setLocalUserNetId(ui32 netId)
 	this->mLocalUserNetId = netId;
 }
 
+ui32 Client::localUserNetId() const
+{
+	assert(this->mLocalUserNetId);
+	return *this->mLocalUserNetId;
+}
+
 void Client::addConnectedUser(ui32 netId)
 {
 	assert(!this->hasConnectedUser(netId));
@@ -472,6 +479,7 @@ void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs:
 		{
 			this->mLocalPlayerEntityId = pObject->id();
 			this->addPlayerControlParts(pEntity);
+			this->world()->createPlayerController(this->localUserNetId(), pObject->id());
 		}
 		this->addPlayerDisplayParts(pEntity);
 	}

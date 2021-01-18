@@ -55,6 +55,7 @@ public:
 	void onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
 
 	utility::Guid const& localUserId() const;
+	ui32 localUserNetId() const;
 	crypto::RSAKey localUserAuthKey() const;
 	void setLocalUserNetId(ui32 netId);
 

@@ -158,6 +158,6 @@ void Server::destroyPlayer(ui32 netId)
 	auto iter = this->mNetIdToPlayerEntityId.find(netId);
 	assert(iter != this->mNetIdToPlayerEntityId.end());
 	SERVER_LOG.log(LOG_VERBOSE, "Unlinking network-id %u from player entity %u", netId, iter->second);
-	game::Game::Get()->world()->destroyPlayer(iter->second);
+	game::Game::Get()->world()->destroyPlayer(netId, iter->second);
 	this->mNetIdToPlayerEntityId.erase(iter);
 }

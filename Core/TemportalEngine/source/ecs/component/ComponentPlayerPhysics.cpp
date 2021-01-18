@@ -1,5 +1,10 @@
 #include "ecs/component/ComponentPlayerPhysics.hpp"
 
+#include "game/GameInstance.hpp"
+#include "game/GameClient.hpp"
+#include "world/World.hpp"
+#include "network/NetworkInterface.hpp"
+
 using namespace ecs;
 using namespace ecs::component;
 
@@ -31,6 +36,8 @@ PlayerPhysics& PlayerPhysics::setIsAffectedByGravity(bool bAffectedByGravity)
 }
 
 bool PlayerPhysics::isAffectedByGravity() const { return this->mbAffectedByGravity; }
+
+math::Vector3 const& PlayerPhysics::collisionExtents() const { return this->mCollisionExtents; }
 
 void PlayerPhysics::validate()
 {

@@ -128,7 +128,7 @@ ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uS
 		|| this->mReplicationType == EReplicationType::eUpdate
 	);
 	// Check fields currently being replicated.
-	// If the byteOffset + data size current exists, we dont need to push the field again.
+	// If the byteOffset + data size current exists, we don't need to push the field again.
 	for (auto iter = this->mComponentFields.crbegin(); iter != this->mComponentFields.crend(); ++iter)
 	{
 		if (iter->first == byteOffset && iter->second.size() * sizeof(ui8) == dataSize) return *this;
@@ -364,6 +364,8 @@ void ECSReplicate::process(network::Interface *pInterface)
 			{
 				pObject->setOwner(this->owner());
 			}
+
+			pObject->onReplicateCreate();
 		}
 		else if (this->mReplicationType == EReplicationType::eDestroy)
 		{
@@ -382,6 +384,10 @@ void ECSReplicate::process(network::Interface *pInterface)
 			*/
 			if (manager->hasNetworkId(this->mObjectNetId))
 			{
+				{
+					auto pObject = manager->getObject(this->mObjectTypeId, this->mObjectNetId);
+					pObject->onReplicateDestroy();
+				}
 				manager->destroyObject(this->mObjectTypeId, this->mObjectNetId);
 			}
 			else

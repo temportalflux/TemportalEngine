@@ -22,6 +22,8 @@ public:
 	std::optional<ui32> owner() const;
 
 	virtual void validate();
+	virtual void onReplicateCreate();
+	virtual void onReplicateDestroy();
 
 private:
 	// The unique-id for an instance of a given component

@@ -18,6 +18,8 @@ public:
 	PlayerPhysics& setIsAffectedByGravity(bool bAffectedByGravity);
 	bool isAffectedByGravity() const;
 
+	math::Vector3 const& collisionExtents() const;
+
 	void validate() override;
 
 private:

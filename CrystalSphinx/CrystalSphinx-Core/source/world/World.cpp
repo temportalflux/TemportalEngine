@@ -39,6 +39,8 @@ void World::init()
 
 void World::uninit()
 {
+	// Destroy any lingering physics::Controller objects
+	this->mPhysicsControllerByUserNetId.clear();
 	this->destroyDimension(&this->mOverworld);
 	this->uninitializePhysics();
 	this->mpVoxelTypeRegistry.reset();
@@ -107,6 +109,16 @@ void World::destroyDimension(Dimension *dim)
 	dim->mpScene.reset();
 }
 
+void World::addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
+{
+	this->mOverworld.mpTerrain->addEventListener(listener);
+}
+
+void World::removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
+{
+	this->mOverworld.mpTerrain->removeEventListener(listener);
+}
+
 ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& position)
 {
 	auto& ecs = engine::Engine::Get()->getECS();
@@ -138,6 +150,8 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 		pEntity->addComponent(physics);
 	}
 
+	this->createPlayerController(clientNetId, pEntity->id());
+
 	WORLD_LOG.log(LOG_INFO, "Created player entity id(%u)", pEntity->id());
 	
 	// End replication only does anything if `beginReplication` is called.
@@ -147,9 +161,10 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 	return pEntity->id();
 }
 
-void World::destroyPlayer(ecs::Identifier entityId)
+void World::destroyPlayer(ui32 userNetId, ecs::Identifier entityId)
 {
 	auto& ecs = engine::Engine::Get()->getECS();
+	this->destroyPlayerController(userNetId);
 	if (game::Game::networkInterface()->type().includes(network::EType::eServer))
 	{
 		ecs.beginReplication();
@@ -158,14 +173,33 @@ void World::destroyPlayer(ecs::Identifier entityId)
 	ecs.endReplication();
 }
 
-void World::addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
+void World::createPlayerController(ui32 userNetId, ecs::Identifier localEntityId)
 {
-	this->mOverworld.mpTerrain->addEventListener(listener);
+	WORLD_LOG.log(LOG_VERBOSE, "Creating physics controller for player net(%u)", userNetId);
+
+	auto& ecs = engine::Engine::Get()->getECS();
+	auto pEntity = ecs.entities().get(localEntityId);
+	auto* pTransform = pEntity->getComponent<ecs::component::CoordinateTransform>();
+	auto* pPhysics = pEntity->getComponent<ecs::component::PlayerPhysics>();
+
+	auto iter = this->mPhysicsControllerByUserNetId.insert(std::make_pair(
+		userNetId, std::move(physics::Controller())
+	));
+	auto const& extents = pPhysics->collisionExtents();
+	iter.first->second
+		.setScene(this->mOverworld.mpScene)
+		.setAsBox(extents)
+		.setCenterPosition(pTransform->position().toGlobal() + math::Vector<f64, 3>({ 0, extents.y(), 0 }))
+		.setMaterial(this->playerPhysicsMaterial().get())
+		.create();
 }
 
-void World::removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
+void World::destroyPlayerController(ui32 userNetId)
 {
-	this->mOverworld.mpTerrain->removeEventListener(listener);
+	WORLD_LOG.log(LOG_VERBOSE, "Destroying physics controller for player net(%u)", userNetId);
+	auto iter = this->mPhysicsControllerByUserNetId.find(userNetId);
+	assert(iter != this->mPhysicsControllerByUserNetId.end());	
+	this->mPhysicsControllerByUserNetId.erase(iter);
 }
 
 void World::update(f32 deltaTime)

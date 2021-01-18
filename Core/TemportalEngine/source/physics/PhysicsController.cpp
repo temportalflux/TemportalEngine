@@ -6,7 +6,7 @@
 
 using namespace physics;
 
-Controller::Controller()
+Controller::Controller() : mpInternal(nullptr)
 {
 	this->mDescription.up = math::V3_UP;
 }

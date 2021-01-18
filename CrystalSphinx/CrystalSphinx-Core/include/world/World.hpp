@@ -5,6 +5,7 @@
 #include "ecs/types.h"
 #include "world/Events.hpp"
 #include "world/WorldCoordinate.hpp"
+#include "physics/PhysicsController.hpp"
 
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
@@ -41,7 +42,10 @@ public:
 	 * Returns the EVCS entity id.
 	 */
 	ecs::Identifier createPlayer(ui32 clientNetId, world::Coordinate const& position);
-	void destroyPlayer(ecs::Identifier entityId);
+	void destroyPlayer(ui32 userNetId, ecs::Identifier entityId);
+
+	void createPlayerController(ui32 userNetId, ecs::Identifier localEntityId);
+	void destroyPlayerController(ui32 userNetId);
 
 protected:
 	struct Dimension
@@ -68,6 +72,8 @@ private:
 	Dimension mOverworld;
 	void createDimension(Dimension *dim);
 	void destroyDimension(Dimension *dim);
+
+	std::map<ui32, physics::Controller> mPhysicsControllerByUserNetId;
 
 };
 
