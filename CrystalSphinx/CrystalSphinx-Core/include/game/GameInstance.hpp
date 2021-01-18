@@ -7,7 +7,7 @@
 #include "network/NetworkCore.hpp"
 #include "network/NetworkAddress.hpp"
 #include "saveData/SaveDataRegistry.hpp"
-#include "settings/ServerSettings.hpp"
+#include "saveData/ServerSettings.hpp"
 #include "utility/Flags.hpp"
 #include "utility/Guid.hpp"
 
@@ -25,6 +25,7 @@ FORWARD_DEF(NS_GAME, class Client);
 FORWARD_DEF(NS_GAME, class Server);
 FORWARD_DEF(NS_GAME, class World);
 FORWARD_DEF(NS_NETWORK, class Interface);
+FORWARD_DEF(NS_SAVE_DATA, class Instance);
 
 NS_GAME
 
@@ -51,7 +52,10 @@ public:
 
 	//std::shared_ptr<ecs::Entity> localPlayer();
 
-	void setupNetworkServer(utility::Flags<network::EType> flags);
+	void setupNetworkServer(
+		utility::Flags<network::EType> flags,
+		saveData::Instance *saveInstance
+	);
 
 	std::shared_ptr<game::World> createWorld();
 	void destroyWorld();

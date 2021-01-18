@@ -24,6 +24,7 @@ FORWARD_DEF(NS_GRAPHICS, class TextureRegistry);
 FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
+FORWARD_DEF(NS_SAVE_DATA, class Instance);
 FORWARD_DEF(NS_UI, class FontOwner);
 FORWARD_DEF(NS_UI, class DebugHUD);
 FORWARD_DEF(NS_UI, class TextLogMenu);
@@ -64,6 +65,7 @@ protected:
 
 private:
 	game::ClientSettings mClientSettings;
+	saveData::Instance* mpSaveInstance;
 
 	std::optional<utility::Guid> mLocalUserId;
 	bool hasAccount() const;

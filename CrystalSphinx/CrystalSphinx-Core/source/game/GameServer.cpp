@@ -13,26 +13,21 @@ logging::Logger SERVER_LOG = DeclareLog("Server", LOG_INFO);
 Server::Server() : Session()
 {
 	this->serverRSA().generate();
-	this->mServerSettings.readFromDisk();
 }
 
 Server::~Server()
 {
-	Game::networkInterface()->setType(network::EType::eClient).stop();
+}
+
+void Server::setSave(saveData::Instance *saveInstance)
+{
+	this->mServerSettings = saveData::ServerSettings(saveInstance->root());
+	this->mServerSettings.readFromDisk();
+	this->userRegistry().scan(saveInstance->userDirectory());
 }
 
 void Server::init()
 {
-	auto& saveDataRegistry = Game::Get()->saveData();
-	auto saveId = this->mServerSettings.saveId();
-	auto& saveInstance = saveDataRegistry.has(saveId)
-		? saveDataRegistry.get(saveId)
-		: saveDataRegistry.create(saveId);
-	this->userRegistry().scan(saveInstance.userDirectory());
-	
-	auto pWorld = game::Game::Get()->createWorld();
-	pWorld->loadSave(&saveInstance);
-	pWorld->init();
 }
 
 void Server::setupNetwork(utility::Flags<network::EType> flags)

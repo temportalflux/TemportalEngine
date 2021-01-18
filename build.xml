@@ -56,7 +56,7 @@
   <target name="game.server" description="Runs the CrystalSphinx game executable.">
     <run_game>
       <extArgs>
-        <arg line="server" />
+        <arg line="server=default" />
       </extArgs>
     </run_game>
   </target>

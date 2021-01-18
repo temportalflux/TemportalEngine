@@ -2,8 +2,6 @@
 
 #include "CoreInclude.hpp"
 
-#define NS_SAVE_DATA namespace saveData {
-
 NS_SAVE_DATA
 
 class Instance
@@ -12,6 +10,7 @@ public:
 	Instance(std::string name, std::filesystem::path root);
 
 	std::string const& name() const;
+	std::filesystem::path root() const;
 	std::filesystem::path userDirectory() const;
 	std::filesystem::path worldSave() const;
 	std::filesystem::path chunkDirectory() const;

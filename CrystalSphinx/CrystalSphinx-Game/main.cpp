@@ -5,24 +5,6 @@
 #include "utility/TimeUtils.hpp"
 #include "Module.hpp"
 
-struct A
-{
-	ui32 id;
-	virtual char foo()
-	{
-		return 'a';
-	}
-};
-
-struct B : public A
-{
-	ui32 bProp;
-	char foo() override
-	{
-		return 'B';
-	}
-};
-
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();

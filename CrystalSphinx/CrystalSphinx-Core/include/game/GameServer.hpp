@@ -2,8 +2,10 @@
 
 #include "game/GameSession.hpp"
 
-#include "settings/ServerSettings.hpp"
+#include "saveData/ServerSettings.hpp"
 #include "utility/Flags.hpp"
+
+FORWARD_DEF(NS_SAVE_DATA, class Instance);
 
 NS_GAME
 
@@ -14,6 +16,7 @@ public:
 	Server();
 	~Server();
 
+	void setSave(saveData::Instance *saveInstance);
 	void init();
 
 	bool hasSaveForUser(utility::Guid const& id) const;
@@ -30,7 +33,8 @@ public:
 	void associatePlayer(ui32 netId, ecs::Identifier entityId);
 
 private:
-	game::ServerSettings mServerSettings;
+	saveData::Instance *mpSaveInstance;
+	saveData::ServerSettings mServerSettings;
 	crypto::RSAKey mServerRSA;
 
 	void onNetworkStarted(network::Interface *pInterface);

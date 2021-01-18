@@ -183,9 +183,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp">
       <Filter>game</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\settings\ServerSettings.hpp">
-      <Filter>settings</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp">
       <Filter>game</Filter>
     </ClInclude>
@@ -241,6 +238,9 @@
       <Filter>render</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\saveData\ServerSettings.hpp">
+      <Filter>saveData</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -385,9 +385,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\ClientSettings.cpp">
       <Filter>settings</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\ServerSettings.cpp">
-      <Filter>settings</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\settings\UserInfo.cpp">
       <Filter>settings</Filter>
     </ClCompile>
@@ -404,5 +401,8 @@
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\saveData\ServerSettings.cpp">
+      <Filter>saveData</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

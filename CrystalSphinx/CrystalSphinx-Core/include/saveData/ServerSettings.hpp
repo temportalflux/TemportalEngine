@@ -2,23 +2,21 @@
 
 #include "settings/JsonData.hpp"
 
-NS_GAME
+NS_SAVE_DATA
 
 class ServerSettings
-	: public JsonData
+	: public game::JsonData
 {
-	static constexpr char const* defaultSaveId();
 
 public:
 	ServerSettings();
+	ServerSettings(std::filesystem::path parentDir);
 
 	ui16 port() const;
-	std::string const& saveId() const;
 
 private:
 
 	ui16 mPort;
-	std::string mSaveId;
 
 protected:
 

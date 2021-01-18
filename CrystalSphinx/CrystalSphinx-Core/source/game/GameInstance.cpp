@@ -78,9 +78,18 @@ Game::Game(int argc, char *argv[])
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
 	
-	if (args.find("server") != args.end())
+	auto serverArg = args.find("server");
+	if (serverArg != args.end())
 	{
-		this->setupNetworkServer(network::EType::eServer);
+		assert(serverArg->second);
+		auto saveId = *serverArg->second;
+		if (!this->mSaveDataRegistry.has(saveId))
+		{
+			this->mSaveDataRegistry.create(saveId);
+		}
+		auto* saveInstance = &this->mSaveDataRegistry.get(saveId);
+		this->setupNetworkServer(network::EType::eServer, saveInstance);
+		this->createWorld()->loadSave(saveInstance);
 	}
 	else
 	{
@@ -127,9 +136,10 @@ void Game::destroyWorld()
 	}
 }
 
-void Game::setupNetworkServer(utility::Flags<network::EType> flags)
+void Game::setupNetworkServer(utility::Flags<network::EType> flags, saveData::Instance *saveInstance)
 {
 	this->mpServer = std::make_shared<game::Server>();
+	this->server()->setSave(saveInstance);
 	this->mpServer->setupNetwork(flags);
 }
 
@@ -210,6 +220,7 @@ void Game::init()
 	}
 
 	if (this->mpServer) this->mpServer->init();
+	if (this->mpWorld) this->mpWorld->init();
 	if (this->mpClient) this->mpClient->init();
 	
 	//this->bindInput();
