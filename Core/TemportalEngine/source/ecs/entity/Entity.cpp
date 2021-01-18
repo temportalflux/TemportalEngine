@@ -23,6 +23,9 @@ Entity::~Entity()
 	this->mComponents.clear();
 }
 
+ecs::EType Entity::objectType() const { return EType::eEntity; }
+ecs::TypeId Entity::typeId() const { return 0; }
+
 void Entity::kill()
 {
 	ecs::Core::Get()->entities().release(this->id);

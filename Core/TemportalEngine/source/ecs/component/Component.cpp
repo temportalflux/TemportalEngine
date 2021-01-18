@@ -5,7 +5,7 @@
 
 using namespace ecs::component;
 
-ecs::TypeId Component::typeId() const { assert(false); return 0; }
+ecs::EType Component::objectType() const { return EType::eComponent; }
 
 std::shared_ptr<network::packet::ECSReplicate> Component::replicateUpdate()
 {

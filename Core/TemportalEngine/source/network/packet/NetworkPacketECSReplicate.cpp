@@ -43,13 +43,7 @@ NS_END
 
 std::string ecsTypeName(ecs::EType type, ecs::TypeId typeId)
 {
-	switch (type)
-	{
-	case ecs::EType::eEntity: return ecs::Core::Get()->entities().typeName(typeId);
-	case ecs::EType::eView: return ecs::Core::Get()->views().typeName(typeId);
-	case ecs::EType::eComponent: return ecs::Core::Get()->components().typeName(typeId);
-	default: return "";
-	}
+	return ecs::Core::Get()->typeName(type, typeId);
 }
 
 ECSReplicate::ECSReplicate()
@@ -57,6 +51,7 @@ ECSReplicate::ECSReplicate()
 	, mReplicationType(EReplicationType::eInvalid)
 	, mObjectEcsType(ecs::EType::eSystem) // systems are not supported for replication
 	, mObjectTypeId(0), mObjectNetId(0)
+	, mbHasOwnership(false), mbHasOwner(false), mOwnerNetId(0)
 {
 }
 
@@ -85,6 +80,14 @@ ECSReplicate& ECSReplicate::setObjectTypeId(uIndex typeId)
 ECSReplicate& ECSReplicate::setObjectNetId(ecs::Identifier const& netId)
 {
 	this->mObjectNetId = netId;
+	return *this;
+}
+
+ECSReplicate& ECSReplicate::setOwner(std::optional<ui32> ownerNetId)
+{
+	this->mbHasOwnership = true;
+	this->mbHasOwner = ownerNetId.has_value();
+	if (ownerNetId) this->mOwnerNetId = ownerNetId.value();
 	return *this;
 }
 
@@ -162,6 +165,16 @@ void ECSReplicate::write(Buffer &archive) const
 
 	network::write(archive, "objectNetId", this->mObjectNetId);
 
+	network::write(archive, "hasOwnership", this->mbHasOwnership);
+	if (this->mbHasOwnership)
+	{
+		network::write(archive, "hasOwner", this->mbHasOwner);
+		if (this->mbHasOwner)
+		{
+			network::write(archive, "ownerNetId", this->mOwnerNetId);
+		}
+	}
+
 	if (this->hasLinks())
 	{
 		this->writeLinks(archive);
@@ -187,6 +200,16 @@ void ECSReplicate::read(Buffer &archive)
 	}
 
 	network::read(archive, "objectNetId", this->mObjectNetId);
+
+	network::read(archive, "hasOwnership", this->mbHasOwnership);
+	if (this->mbHasOwnership)
+	{
+		network::read(archive, "hasOwner", this->mbHasOwner);
+		if (this->mbHasOwner)
+		{
+			network::read(archive, "ownerNetId", this->mOwnerNetId);
+		}
+	}
 
 	if (this->hasLinks())
 	{
@@ -316,12 +339,9 @@ void ECSReplicate::process(network::Interface *pInterface)
 				assert(this->mObjectTypeId == 0);
 			}
 			auto pObject = manager->createObject(this->mObjectTypeId, this->mObjectNetId);
-			auto subtypeName = manager->typeName(this->mObjectTypeId);
-			if (subtypeName.length() > 0) subtypeName += " ";
 			ecs::Core::logger().log(
-				LOG_VERBOSE, "Created replicated %s%s %u with network id %u",
-				subtypeName.c_str(),
-				utility::StringParser<ecs::EType>::to_string(this->mObjectEcsType).c_str(),
+				LOG_VERBOSE, "Created replicated %s %u with net-id(%u)",
+				ecs.fullTypeName(this->mObjectEcsType, this->mObjectTypeId).c_str(),
 				pObject->id, this->mObjectNetId
 			);
 
@@ -332,6 +352,10 @@ void ECSReplicate::process(network::Interface *pInterface)
 			if (this->hasFields())
 			{
 				this->fillFields(manager, pObject);
+			}
+			if (this->mbHasOwnership)
+			{
+				pObject->setOwner(this->owner());
 			}
 		}
 		else if (this->mReplicationType == EReplicationType::eDestroy)
@@ -373,6 +397,10 @@ void ECSReplicate::process(network::Interface *pInterface)
 			if (this->hasFields())
 			{
 				this->fillFields(manager, pObject);
+			}
+			if (this->mbHasOwnership)
+			{
+				pObject->setOwner(this->owner());
 			}
 		}
 		else
@@ -441,5 +469,10 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 
 void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
 {
+	// TODO:
+}
 
+std::optional<ui32> ECSReplicate::owner() const
+{
+	return this->mbHasOwner ? std::make_optional(this->mOwnerNetId) : std::nullopt;
 }

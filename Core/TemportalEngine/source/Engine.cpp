@@ -81,7 +81,6 @@ void Engine::Destroy()
 Engine::Engine(std::shared_ptr<memory::MemoryChunk> mainMemory, std::unordered_map<std::string, uSize> memoryChunkSizes)
 	: mpMainMemory(mainMemory)
 	, mbShouldContinueRunning(false)
-	//, mpNetworkService(nullptr)
 {
 	LogEngineInfo("Creating Engine");
 	mEngineInfo.title = "TemportalEngine";

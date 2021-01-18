@@ -6,7 +6,7 @@
 using namespace ecs;
 using namespace ecs::view;
 
-ecs::TypeId View::typeId() const { assert(false); return 0; }
+ecs::EType View::objectType() const { return EType::eView; }
 
 View::View(std::vector<ComponentTypeId> slotTypes)
 {

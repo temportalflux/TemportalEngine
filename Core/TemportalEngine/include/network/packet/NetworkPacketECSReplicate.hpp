@@ -6,6 +6,7 @@
 
 #define ECS_REPL_FIELD(CLASS_TYPE, FIELD_NAME) offsetof(CLASS_TYPE, FIELD_NAME), &FIELD_NAME, sizeof(FIELD_NAME)
 
+FORWARD_DEF(NS_ECS, class Core);
 FORWARD_DEF(NS_ECS, class IEVCSObject);
 FORWARD_DEF(NS_ECS, class NetworkedManager);
 
@@ -31,6 +32,10 @@ public:
 	ECSReplicate& setObjectEcsType(ecs::EType type);
 	ECSReplicate& setObjectTypeId(uIndex typeId);
 	ECSReplicate& setObjectNetId(ecs::Identifier const& netId);
+	// Sets the owner for a given object.
+	// If not provided, ownership is not replicated.
+	// By default, objects are owned by the server.
+	ECSReplicate& setOwner(std::optional<ui32> ownerNetId);
 	EReplicationType const& replicationType() const;
 	ecs::EType const& ecsType() const;
 	uIndex const& ecsTypeId() const;
@@ -71,6 +76,10 @@ private:
 	 */
 	ecs::Identifier mObjectNetId;
 
+	bool mbHasOwnership;
+	bool mbHasOwner;
+	ui32 mOwnerNetId;
+
 	struct ObjectLink
 	{
 		ecs::EType ecsType;
@@ -99,6 +108,7 @@ private:
 
 	void linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
 	void fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
+	std::optional<ui32> owner() const;
 
 };
 

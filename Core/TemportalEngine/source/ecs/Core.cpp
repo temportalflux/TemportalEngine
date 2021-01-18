@@ -37,6 +37,24 @@ component::Manager& Core::components() { return this->mComponentManager; }
 
 view::Manager& Core::views() { return this->mViewManager; }
 
+std::string Core::typeName(ecs::EType type, ecs::TypeId typeId) const
+{
+	switch (type)
+	{
+	case ecs::EType::eEntity: return this->mEntityManager.typeName(typeId);
+	case ecs::EType::eView: return this->mViewManager.typeName(typeId);
+	case ecs::EType::eComponent: return this->mComponentManager.typeName(typeId);
+	default: return "unknown";
+	}
+}
+
+std::string Core::fullTypeName(ecs::EType type, ecs::TypeId typeId) const
+{
+	auto subtypeName = this->typeName(type, typeId);
+	if (subtypeName.length() > 0) subtypeName += " ";
+	return subtypeName + utility::StringParser<ecs::EType>::to_string(type);
+}
+
 void Core::beginReplication()
 {
 	assert(!this->mbIsReplicating);

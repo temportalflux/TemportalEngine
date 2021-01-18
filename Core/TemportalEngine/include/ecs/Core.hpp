@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TemportalEnginePCH.hpp"
+#include "Delegate.hpp"
 
 #include "ecs/types.h"
 #include "ecs/entity/EntityManager.hpp"
@@ -31,6 +32,11 @@ public:
 	EntityManager& entities();
 	component::Manager& components();
 	view::Manager& views();
+
+	std::string typeName(ecs::EType type, ecs::TypeId typeId) const;
+	std::string fullTypeName(ecs::EType type, ecs::TypeId typeId) const;
+
+	BroadcastDelegate<void(ecs::EType, ecs::TypeId, ecs::IEVCSObject*)> onOwnershipChanged;
 
 	template <typename... TArgs>
 	void log(logging::ELogLevel category, logging::Message format, TArgs... args)

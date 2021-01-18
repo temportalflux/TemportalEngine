@@ -128,6 +128,7 @@ ecs::Identifier World::createPlayer()
 	// does not mark the entity to be killed, so the manager will own it.
 	// can look up the entity by id by using `EntityManager#get`.
 	auto pEntity = ecs.entities().create();
+	pEntity->setOwner(std::nullopt);
 
 	// Add Transform
 	{
@@ -137,7 +138,6 @@ ecs::Identifier World::createPlayer()
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
 	}
-
 
 	WORLD_LOG.log(LOG_INFO, "Created player entity %u", pEntity->id);
 	

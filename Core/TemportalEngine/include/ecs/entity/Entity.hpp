@@ -22,6 +22,8 @@ class Entity : public ecs::IEVCSObject
 public:
 
 	~Entity();
+	ecs::EType objectType() const;
+	ecs::TypeId typeId() const;
 
 	/**
 	 * Causes the entity to not be held onto by the entity manager.

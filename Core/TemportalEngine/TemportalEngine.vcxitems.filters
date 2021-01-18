@@ -417,6 +417,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Component.cpp">
       <Filter>ecs\component</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\EVCSObject.cpp">
+      <Filter>ecs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />

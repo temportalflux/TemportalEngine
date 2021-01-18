@@ -31,7 +31,7 @@ public:
 	View(std::vector<ComponentTypeId> slotTypes);
 	~View();
 
-	virtual ecs::TypeId typeId() const;	
+	ecs::EType objectType() const;
 	bool hasAllComponents() const;
 	void onComponentAdded(ComponentTypeId const& typeId, Identifier const& id);
 
