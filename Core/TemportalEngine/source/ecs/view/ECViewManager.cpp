@@ -32,6 +32,8 @@ std::string Manager::typeName(TypeId const& typeId) const
 	return this->mRegisteredTypes[typeId].name;
 }
 
+uSize Manager::typeSize(TypeId const& typeId) const { return sizeof(View); }
+
 IEVCSObject* Manager::createObject(TypeId const& typeId, Identifier const& netId)
 {
 	auto ptr = this->create(typeId);

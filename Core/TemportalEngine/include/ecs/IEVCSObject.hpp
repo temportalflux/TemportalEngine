@@ -21,6 +21,8 @@ public:
 	virtual void setOwner(std::optional<ui32> ownerNetId);
 	std::optional<ui32> owner() const;
 
+	virtual void validate();
+
 private:
 	// The unique-id for an instance of a given component
 	Identifier mId;

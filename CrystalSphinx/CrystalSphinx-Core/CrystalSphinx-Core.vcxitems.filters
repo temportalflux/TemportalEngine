@@ -237,7 +237,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp">
       <Filter>render</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\saveData\ServerSettings.hpp">
       <Filter>saveData</Filter>
     </ClInclude>
@@ -245,6 +244,9 @@
       <Filter>world</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldSaved.hpp">
+      <Filter>world</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp">
       <Filter>world</Filter>
     </ClInclude>
   </ItemGroup>
@@ -406,7 +408,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldSaveData.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\saveData\ServerSettings.cpp">
       <Filter>saveData</Filter>
     </ClCompile>
@@ -414,6 +415,9 @@
       <Filter>world</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldReplicated.cpp">
+      <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp">
       <Filter>world</Filter>
     </ClCompile>
   </ItemGroup>

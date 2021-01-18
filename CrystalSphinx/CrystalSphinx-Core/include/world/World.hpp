@@ -3,6 +3,7 @@
 #include "CoreInclude.hpp"
 
 #include "ecs/types.h"
+#include "world/Events.hpp"
 #include "world/WorldCoordinate.hpp"
 
 NS_ECS
@@ -28,6 +29,8 @@ public:
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
 	std::shared_ptr<physics::Material> playerPhysicsMaterial();
 	std::shared_ptr<physics::Scene> dimensionScene(ui32 dimId);
+	void addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener);
+	void removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener);
 
 	void init();
 	void uninit();
@@ -40,6 +43,17 @@ public:
 	ecs::Identifier createPlayer(ui32 clientNetId, world::Coordinate const& position);
 	void destroyPlayer(ecs::Identifier entityId);
 
+protected:
+	struct Dimension
+	{
+		ui32 id;
+		std::shared_ptr<physics::Scene> mpScene;
+		std::shared_ptr<world::Terrain> mpTerrain;
+		std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager;
+	};
+
+	virtual void loadChunk(Dimension &dim, math::Vector3Int coord) {}
+
 private:
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
@@ -51,13 +65,6 @@ private:
 	void initializePhysics();
 	void uninitializePhysics();
 
-	struct Dimension
-	{
-		ui32 id;
-		std::shared_ptr<physics::Scene> mpScene;
-		std::shared_ptr<world::Terrain> mpTerrain;
-		std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager;
-	};
 	Dimension mOverworld;
 	void createDimension(Dimension *dim);
 	void destroyDimension(Dimension *dim);

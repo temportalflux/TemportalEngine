@@ -411,11 +411,20 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\EVCSObject.cpp">
       <Filter>ecs</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ECSNetworkedManager.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp">
       <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\source\ecs\component\ComponentPlayerPhysics.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp">
+      <Filter>network\packet</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ECSNetworkedManager.cpp">
+      <Filter>ecs</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp">
+      <Filter>ecs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -895,10 +904,17 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\IEVCSObject.hpp">
       <Filter>ecs</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketECSReplicate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Random.hpp">
       <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerPhysics.hpp">
+      <Filter>ecs\component</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketECSReplicate.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp">
+      <Filter>ecs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

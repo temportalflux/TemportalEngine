@@ -14,6 +14,7 @@ public:
 	virtual ~NetworkedManager();
 
 	virtual std::string typeName(TypeId const& typeId) const = 0;
+	virtual uSize typeSize(TypeId const& typeId) const = 0;
 	bool hasNetworkId(Identifier const& netId) const;
 	virtual IEVCSObject* createObject(TypeId const& typeId, Identifier const& netId) = 0;
 	virtual IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) = 0;

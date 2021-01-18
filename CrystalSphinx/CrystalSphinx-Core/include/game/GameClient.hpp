@@ -11,6 +11,7 @@ class Window;
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class RenderEntities);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
+FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
 NS_END
 FORWARD_DEF(NS_GAME, class VoxelModelManager);
 FORWARD_DEF(NS_GRAPHICS, class ChunkBoundaryRenderer);
@@ -90,6 +91,7 @@ private:
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
 	std::shared_ptr<ecs::system::RenderEntities> mpSystemRenderEntities;
 	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
+	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
 	
 	std::shared_ptr<ui::DebugHUD> mpDebugHUD;
@@ -108,6 +110,7 @@ private:
 	void exec_closeSave(command::Signature const& cmd);
 	void exec_joinServer(command::Signature const& cmd);
 	void exec_joinServerLocal(command::Signature const& cmd);
+	void exec_leaveServer(command::Signature const& cmd);
 	void exec_startHostingServer(command::Signature const& cmd);
 	void exec_stopHostingServer(command::Signature const& cmd);
 	void exec_printConnectedUsers(command::Signature const& cmd);

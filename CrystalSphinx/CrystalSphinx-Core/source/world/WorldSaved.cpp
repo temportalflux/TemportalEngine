@@ -50,3 +50,8 @@ world::Coordinate WorldSaved::makeSpawnLocation() const
 
 	return world::Coordinate(chunkPos, voxelPos);
 }
+
+void WorldSaved::loadChunk(Dimension &dim, math::Vector3Int coord)
+{
+	// TODO
+}

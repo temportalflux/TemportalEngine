@@ -20,6 +20,7 @@ EntityManager::~EntityManager()
 }
 
 std::string EntityManager::typeName(TypeId const& typeId) const { return ""; }
+uSize EntityManager::typeSize(TypeId const& typeId) const { return sizeof(Entity); }
 
 IEVCSObject* EntityManager::createObject(TypeId const& typeId, Identifier const& netId)
 {

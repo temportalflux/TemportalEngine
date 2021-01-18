@@ -59,6 +59,7 @@ public:
 	}
 
 	std::string typeName(TypeId const& typeId) const override;
+	uSize typeSize(TypeId const& typeId) const;
 	IEVCSObject* createObject(TypeId const& typeId, Identifier const& netId) override;
 	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
 	void destroyObject(TypeId const& typeId, Identifier const& netId) override;

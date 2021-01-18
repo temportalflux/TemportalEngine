@@ -13,6 +13,7 @@
 #include "ecs/component/ComponentRenderMesh.hpp"
 #include "ecs/component/ComponentPhysicsBody.hpp"
 #include "ecs/component/ComponentPhysicsController.hpp"
+#include "ecs/component/ComponentPlayerPhysics.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewRenderedMesh.hpp"
@@ -187,6 +188,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
 	ecs->components().registerType<ecs::component::PhysicsController>("PhysicsController");
+	ecs->components().registerType<ecs::component::PlayerPhysics>("PlayerPhysics");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>("PlayerInputMovement");
 	ecs->views().registerType<ecs::view::PlayerCamera>("PlayerCamera");
 	ecs->views().registerType<ecs::view::RenderedMesh>("RenderedMesh");

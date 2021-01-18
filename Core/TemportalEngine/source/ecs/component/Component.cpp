@@ -13,3 +13,5 @@ std::shared_ptr<network::packet::ECSReplicate> Component::replicateUpdate()
 		ecs::EType::eComponent, this->typeId(), this->netId()
 	);
 }
+
+std::vector<Component::Field> Component::allFields() const { return {}; }

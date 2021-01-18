@@ -12,6 +12,7 @@
 	ecs::TypeId COMP_TYPE::TypeId = 0; \
 	void COMP_TYPE::construct(ecs::component::Component* ptr) { new (ptr) COMP_TYPE(); } \
 	ecs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
+#define ECS_FIELD(COMP_TYPE, FIELD) std::make_pair(offsetof(COMP_TYPE, FIELD), sizeof(FIELD))
 
 NS_NETWORK
 FORWARD_DEF(NS_PACKET, class ECSReplicate);
@@ -25,6 +26,9 @@ class Component : public ecs::IEVCSObject
 public:
 	ecs::EType objectType() const;
 	std::shared_ptr<network::packet::ECSReplicate> replicateUpdate();
+
+	using Field = std::pair<uSize, uSize>;
+	virtual std::vector<Field> allFields() const;
 };
 
 NS_END

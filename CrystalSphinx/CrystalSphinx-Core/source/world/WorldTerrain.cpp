@@ -17,6 +17,13 @@ void Terrain::addEventListener(std::shared_ptr<WorldEventListener> listener)
 	this->OnVoxelsChanged.bind(listener, listener->onVoxelsChangedEvent());
 }
 
+void Terrain::removeEventListener(std::shared_ptr<WorldEventListener> listener)
+{
+	this->OnLoadingChunk.unbind(listener);
+	this->OnUnloadingChunk.unbind(listener);
+	this->OnVoxelsChanged.unbind(listener);
+}
+
 Chunk* Terrain::getOrLoadChunk(math::Vector3Int const& coordinate)
 {
 	if (auto chunk = this->findChunk(coordinate))

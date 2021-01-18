@@ -51,3 +51,7 @@ std::optional<ui32> IEVCSObject::owner() const
 {
 	return this->mbHasOwner ? std::make_optional(this->mOwnerNetId) : std::nullopt;
 }
+
+void IEVCSObject::validate()
+{
+}

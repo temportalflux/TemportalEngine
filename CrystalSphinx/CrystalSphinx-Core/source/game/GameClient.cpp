@@ -19,6 +19,7 @@
 #include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/system/SystemUpdateCameraPerspective.hpp"
 #include "ecs/system/SystemRenderEntities.hpp"
+#include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameServer.hpp"
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
@@ -42,6 +43,7 @@
 #include "window/Window.hpp"
 #include "world/World.hpp"
 #include "world/WorldSaved.hpp"
+#include "world/WorldReplicated.hpp"
 
 using namespace game;
 
@@ -101,11 +103,19 @@ void Client::init()
 	this->mpRenderer->createMutableUniforms();
 	this->mpRenderer->createRenderChain();
 	this->mpRenderer->finalizeInitialization();
+
+	// Specifically for clients which set player movement/camera information
+	{
+		auto pEngine = engine::Engine::Get();
+		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
+		pEngine->addTicker(this->mpSystemMovePlayerByInput);
+	}
 }
 
 void Client::uninit()
 {
 	this->destroyRenderers();
+	this->mpSystemMovePlayerByInput.reset();
 	this->mpResourcePackManager.reset();
 	this->destroyWindow();
 }
@@ -130,7 +140,7 @@ void Client::registerCommands()
 
 	ADD_CMD(CMD_SIGNATURE("join", Client, this, exec_joinServer).pushArgType<network::Address>());
 	ADD_CMD(CMD_SIGNATURE("joinLocal", Client, this, exec_joinServerLocal));
-	ADD_CMD(CMD_SIGNATURE_0("leave", network::Interface, Game::networkInterface(), stop));
+	ADD_CMD(CMD_SIGNATURE("leave", Client, this, exec_leaveServer));
 	
 	ADD_CMD(CMD_SIGNATURE("startHost", Client, this, exec_startHostingServer));
 	ADD_CMD(CMD_SIGNATURE("stopHost", Client, this, exec_stopHostingServer));
@@ -237,6 +247,7 @@ void Client::exec_openSave(command::Signature const& cmd)
 
 	auto pWorld = game::Game::Get()->createWorld<world::WorldSaved>(&saveData.get(saveName));
 	pWorld->init();
+	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
 	this->mLocalPlayerEntityId = pWorld->createPlayer(0, pWorld->makeSpawnLocation());
 }
 
@@ -253,6 +264,11 @@ void Client::exec_joinServer(command::Signature const& cmd)
 		this->chat()->addToLog("You have not selected an account.");
 		return;
 	}
+
+	auto pWorld = game::Game::Get()->createWorld<world::WorldReplicated>();
+	pWorld->init();
+	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
+
 	this->setupNetwork(cmd.get<network::Address>(0));
 	Game::networkInterface()->start();
 }
@@ -264,9 +280,20 @@ void Client::exec_joinServerLocal(command::Signature const& cmd)
 		this->chat()->addToLog("You have not selected an account.");
 		return;
 	}
+
+	auto pWorld = game::Game::Get()->createWorld<world::WorldReplicated>();
+	pWorld->init();
+	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
+
 	auto localAddress = network::Address().setLocalTarget(saveData::ServerSettings().port());
 	this->setupNetwork(localAddress);
 	Game::networkInterface()->start();
+}
+
+void Client::exec_leaveServer(command::Signature const& cmd)
+{
+	game::Game::Get()->destroyWorld();
+	Game::networkInterface()->stop();
 }
 
 void Client::exec_startHostingServer(command::Signature const& cmd)
@@ -474,10 +501,10 @@ void Client::addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity)
 		pEntity->addComponent(input);
 	}
 
+	auto pWorld = game::Game::Get()->world();
 	// TODO: This should be replicated
 	/*
 	{
-		auto pWorld = game::Game::Get()->world();
 		auto component = ecs->components().create<ecs::component::PhysicsController>();
 		auto extents = math::Vector3{ 0.4f, 0.9f, 0.4f };
 		component

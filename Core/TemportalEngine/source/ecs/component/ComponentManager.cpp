@@ -38,6 +38,8 @@ std::string Manager::typeName(TypeId const& typeId) const
 	return this->mMetadataByType[typeId].name;
 }
 
+uSize Manager::typeSize(TypeId const& typeId) const { return this->mMetadataByType[typeId].size; }
+
 IEVCSObject* Manager::createObject(TypeId const& typeId, Identifier const& netId)
 {
 	auto ptr = this->create(typeId);
@@ -101,11 +103,18 @@ Component* Manager::create(ComponentTypeId const& typeId)
 	{
 		ptr->setNetId(this->nextNetworkId());
 		this->assignNetworkId(ptr->netId(), ptr->id());
-		ecs::Core::Get()->replicateCreate()
-			->setObjectEcsType(ecs::EType::eComponent)
+		auto pCreate = ecs::Core::Get()->replicateCreate();
+		pCreate->setObjectEcsType(ecs::EType::eComponent)
 			.setObjectTypeId(typeId)
-			.setObjectNetId(ptr->netId())
-			;
+			.setObjectNetId(ptr->netId());
+		for (auto const& field : ptr->allFields())
+		{
+			pCreate->pushComponentField(
+				field.first,
+				(void*)(uSize(ptr) + field.first),
+				field.second
+			);
+		}
 	}
 
 	return ptr;

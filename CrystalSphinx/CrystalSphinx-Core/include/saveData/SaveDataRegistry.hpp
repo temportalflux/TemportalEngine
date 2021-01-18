@@ -13,7 +13,7 @@ public:
 	std::filesystem::path root() const;
 	std::filesystem::path userDirectory() const;
 	std::filesystem::path worldSave() const;
-	std::filesystem::path chunkDirectory() const;
+	std::filesystem::path dimensionDirectory() const;
 
 	void save();
 

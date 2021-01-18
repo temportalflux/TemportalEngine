@@ -12,14 +12,14 @@ std::string const& Instance::name() const { return this->mName; }
 std::filesystem::path Instance::root() const { return this->mRoot; }
 std::filesystem::path Instance::userDirectory() const { return this->mRoot / "users"; }
 std::filesystem::path Instance::worldSave() const { return this->mRoot / "world.json"; }
-std::filesystem::path Instance::chunkDirectory() const { return this->mRoot / "chunks"; }
+std::filesystem::path Instance::dimensionDirectory() const { return this->mRoot / "dimensions"; }
 
 void Instance::save()
 {
 	for (auto const& path : {
 		this->mRoot,
 		this->userDirectory(),
-		this->chunkDirectory()
+		this->dimensionDirectory()
 	})
 	{
 		if (!std::filesystem::exists(path))

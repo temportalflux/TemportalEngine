@@ -127,6 +127,13 @@ ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uS
 		this->mReplicationType == EReplicationType::eCreate
 		|| this->mReplicationType == EReplicationType::eUpdate
 	);
+	// Check fields currently being replicated.
+	// If the byteOffset + data size current exists, we dont need to push the field again.
+	for (auto iter = this->mComponentFields.crbegin(); iter != this->mComponentFields.crend(); ++iter)
+	{
+		if (iter->first == byteOffset && iter->second.size() * sizeof(ui8) == dataSize) return *this;
+	}
+	// Field not already found, add it to the list
 	auto repData = ReplicatedData(dataSize / sizeof(ui8));
 	memcpy_s(repData.data(), dataSize, data, dataSize);
 	this->mComponentFields.push_back(std::make_pair(byteOffset, repData));
@@ -478,6 +485,7 @@ void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 		uSize fieldPtrStart = head + field.first;
 		void* fieldPtr = (void*)fieldPtrStart;
 		memcpy_s(fieldPtr, fieldSize, (void*)field.second.data(), fieldSize);
+		pObject->validate();
 	}
 }
 

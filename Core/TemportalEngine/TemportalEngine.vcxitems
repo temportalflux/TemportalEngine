@@ -41,6 +41,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerPhysics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\Entity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\EntityManager.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsController.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerPhysics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp" />

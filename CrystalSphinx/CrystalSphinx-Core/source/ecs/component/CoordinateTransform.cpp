@@ -16,6 +16,15 @@ CoordinateTransform::CoordinateTransform()
 {
 }
 
+std::vector<Component::Field> CoordinateTransform::allFields() const
+{
+	return {
+		ECS_FIELD(CoordinateTransform, mPosition),
+		ECS_FIELD(CoordinateTransform, mOrientation),
+		ECS_FIELD(CoordinateTransform, mSize)
+	};
+}
+
 world::Coordinate const& CoordinateTransform::position() const { return this->mPosition; }
 world::Coordinate& CoordinateTransform::position() { return this->mPosition; }
 math::Vector3 CoordinateTransform::localPosition() const { return this->mPosition.local().toFloat() + this->mPosition.offset(); }

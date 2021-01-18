@@ -14,6 +14,7 @@ class CoordinateTransform : public Component
 
 public:
 	CoordinateTransform();
+	std::vector<Field> allFields() const;
 
 	world::Coordinate const& position() const;
 	world::Coordinate& position();

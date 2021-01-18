@@ -3,6 +3,7 @@
 #include "Engine.hpp"
 #include "asset/BlockType.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
+#include "ecs/component/ComponentPlayerPhysics.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
 #include "game/GameInstance.hpp"
 #include "physics/ChunkCollisionManager.hpp"
@@ -92,8 +93,10 @@ void World::createDimension(Dimension *dim)
 	);
 
 	dim->mpTerrain = std::make_shared<world::Terrain>();
-	//if (this->mpVoxelInstanceBuffer) this->mpTerrain->addEventListener(this->mpVoxelInstanceBuffer);
 	dim->mpTerrain->addEventListener(dim->mpChunkCollisionManager);
+
+	//this->mpTerrain->loadChunk({ 0, 0, 0 });
+	//this->mpTerrain->loadChunk({ 0, 0, -1 });
 }
 
 void World::destroyDimension(Dimension *dim)
@@ -129,6 +132,12 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 		pEntity->addComponent(transform);
 	}
 
+	// Add physics
+	{
+		auto physics = ecs.components().create<ecs::component::PlayerPhysics>();
+		pEntity->addComponent(physics);
+	}
+
 	WORLD_LOG.log(LOG_INFO, "Created player entity id(%u)", pEntity->id());
 	
 	// End replication only does anything if `beginReplication` is called.
@@ -149,33 +158,15 @@ void World::destroyPlayer(ecs::Identifier entityId)
 	ecs.endReplication();
 }
 
-/*
-void World::createWorld()
+void World::addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
 {
-	//this->createLocalPlayer();
-
-	// Specifically for clients which set player movement/camera information
-	{
-		auto pEngine = engine::Engine::Get();
-		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
-		pEngine->addTicker(this->mpSystemMovePlayerByInput);
-	}
+	this->mOverworld.mpTerrain->addEventListener(listener);
 }
 
-void World::createScene()
+void World::removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
 {
-	//this->mpTerrain->loadChunk({ 0, 0, 0 });
-	//this->mpTerrain->loadChunk({ 0, 0, -1 });
-	//for (i32 x = -1; x <= 1; ++x) for (i32 z = -1; z <= 1; ++z)
-	//	this->mpTerrain->loadChunk({ x, 0, z });
+	this->mOverworld.mpTerrain->removeEventListener(listener);
 }
-
-void World::destroyScene()
-{
-	//this->mpSystemMovePlayerByInput.reset();
-	//this->mpEntityLocalPlayer.reset();
-}
-//*/
 
 void World::update(f32 deltaTime)
 {
