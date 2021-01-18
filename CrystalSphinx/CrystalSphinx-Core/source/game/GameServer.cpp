@@ -145,7 +145,7 @@ game::UserInfo Server::getUserInfo(utility::Guid const& id) const
 
 void Server::associatePlayer(ui32 netId, ecs::Identifier entityId)
 {
-	SERVER_LOG.log(LOG_INFO, "Linking network-id %u to player entity %u", netId, entityId);
+	SERVER_LOG.log(LOG_VERBOSE, "Linking network-id %u to player entity %u", netId, entityId);
 	this->mNetIdToPlayerEntityId.insert(std::make_pair(netId, entityId));
 }
 
@@ -153,7 +153,7 @@ void Server::destroyPlayer(ui32 netId)
 {
 	auto iter = this->mNetIdToPlayerEntityId.find(netId);
 	assert(iter != this->mNetIdToPlayerEntityId.end());
-	SERVER_LOG.log(LOG_INFO, "Unlinking network-id %u from player entity %u", netId, iter->second);
+	SERVER_LOG.log(LOG_VERBOSE, "Unlinking network-id %u from player entity %u", netId, iter->second);
 	game::Game::Get()->world()->destroyPlayer(iter->second);
 	this->mNetIdToPlayerEntityId.erase(iter);
 }
