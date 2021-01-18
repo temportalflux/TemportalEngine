@@ -2,43 +2,12 @@
 
 using namespace world;
 
-Terrain::Terrain(ui32 seed)
-	: mSeed(seed)
-	, mSpawnChunkCoord(makeSpawnChunkCoord(seed))
-	, mSpawnAreaChunkRadius(2)
+Terrain::Terrain()
 {
 }
 
 Terrain::~Terrain()
 {
-}
-
-math::Vector2Int randInRange(math::Vector2Int const& rand, i32 range)
-{
-	auto const min = math::Vector2Int(-range);
-	auto const max = math::Vector2Int(range);
-	return (rand % (max - min)) + min;
-}
-
-math::Vector2Int Terrain::makeSpawnChunkCoord(ui32 seed)
-{
-	srand(seed);
-	static i32 SPAWN_AREA_CENTER_RANGE = 5;
-	return randInRange({ rand(), rand() }, SPAWN_AREA_CENTER_RANGE);
-}
-
-world::Coordinate Terrain::makeSpawnLocation() const
-{
-	srand((ui32)time(0));
-	auto chunkXZ = this->mSpawnChunkCoord + randInRange({ rand(), rand() }, (i32)this->mSpawnAreaChunkRadius);
-	auto chunk = math::Vector3Int({ chunkXZ.x(), 0,chunkXZ.y() });
-	auto block = math::Vector3Int({ rand() % CHUNK_SIDE_LENGTH, 0, rand() % CHUNK_SIDE_LENGTH });
-
-	// TODO: raycast down to find y-coord of both chunk and block
-	chunk.y() = 0;
-	block.y() = 2;
-
-	return world::Coordinate(chunk, block);
 }
 
 void Terrain::addEventListener(std::shared_ptr<WorldEventListener> listener)

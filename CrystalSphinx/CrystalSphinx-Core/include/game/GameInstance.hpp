@@ -63,6 +63,7 @@ public:
 private:
 	logging::Logger mProjectLog;
 
+	std::optional<std::string> mServerSaveId;
 	std::shared_ptr<game::Server> mpServer;
 	std::shared_ptr<game::Client> mpClient;
 	saveData::Registry mSaveDataRegistry;

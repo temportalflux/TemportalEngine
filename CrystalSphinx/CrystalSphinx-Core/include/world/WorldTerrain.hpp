@@ -15,12 +15,8 @@ class Terrain : public std::enable_shared_from_this<Terrain>
 	friend class Chunk;
 
 public:
-	Terrain(ui32 seed);
+	Terrain();
 	~Terrain();
-
-	ui32 getSeed() const { return this->mSeed; }
-
-	world::Coordinate makeSpawnLocation() const;
 
 	TOnChunkLoadingEvent OnLoadingChunk, OnUnloadingChunk;
 	TOnVoxelsChangedEvent OnVoxelsChanged;
@@ -40,12 +36,6 @@ public:
 	void handleDirtyCoordinates();
 
 private:
-	ui32 mSeed;
-
-	ui32 mSpawnAreaChunkRadius;
-	math::Vector2Int mSpawnChunkCoord;
-
-	static math::Vector2Int makeSpawnChunkCoord(ui32 seed);
 
 	Chunk* findChunk(math::Vector3Int const& coordinate);
 	void onLoadedChunk(Chunk &chunk);

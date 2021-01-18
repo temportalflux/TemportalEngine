@@ -19,11 +19,15 @@ Server::~Server()
 {
 }
 
-void Server::setSave(saveData::Instance *saveInstance)
+void Server::loadFrom(saveData::Instance *saveInstance, bool bIsDedicated)
 {
 	this->mServerSettings = saveData::ServerSettings(saveInstance->root());
 	this->mServerSettings.readFromDisk();
 	this->userRegistry().scan(saveInstance->userDirectory());
+	if (bIsDedicated)
+	{
+		this->initializeDedicatedSave(saveInstance);
+	}
 }
 
 void Server::init()
@@ -87,6 +91,8 @@ void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32
 			))
 			.sendTo(netId);
 	}
+
+	// Replicate initial world data
 
 	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(netId));
 }

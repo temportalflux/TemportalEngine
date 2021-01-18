@@ -414,6 +414,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ECSNetworkedManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -894,5 +897,8 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketECSReplicate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Random.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

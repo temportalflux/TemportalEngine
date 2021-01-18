@@ -65,7 +65,6 @@ protected:
 
 private:
 	game::ClientSettings mClientSettings;
-	saveData::Instance* mpSaveInstance;
 
 	std::optional<utility::Guid> mLocalUserId;
 	bool hasAccount() const;

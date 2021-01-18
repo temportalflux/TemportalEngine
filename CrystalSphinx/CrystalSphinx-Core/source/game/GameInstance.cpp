@@ -34,6 +34,7 @@
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
 #include "world/World.hpp"
+#include "world/WorldSaveData.hpp"
 
 #include <chrono>
 
@@ -78,18 +79,12 @@ Game::Game(int argc, char *argv[])
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
 	
+	this->mServerSaveId = std::nullopt;
 	auto serverArg = args.find("server");
 	if (serverArg != args.end())
 	{
 		assert(serverArg->second);
-		auto saveId = *serverArg->second;
-		if (!this->mSaveDataRegistry.has(saveId))
-		{
-			this->mSaveDataRegistry.create(saveId);
-		}
-		auto* saveInstance = &this->mSaveDataRegistry.get(saveId);
-		this->setupNetworkServer(network::EType::eServer, saveInstance);
-		this->createWorld()->loadSave(saveInstance);
+		this->mServerSaveId = *serverArg->second;
 	}
 	else
 	{
@@ -138,8 +133,9 @@ void Game::destroyWorld()
 
 void Game::setupNetworkServer(utility::Flags<network::EType> flags, saveData::Instance *saveInstance)
 {
+	auto const bIsDedicated = flags == network::EType::eServer;
 	this->mpServer = std::make_shared<game::Server>();
-	this->server()->setSave(saveInstance);
+	this->server()->loadFrom(saveInstance, bIsDedicated);
 	this->mpServer->setupNetwork(flags);
 }
 
@@ -219,6 +215,15 @@ void Game::init()
 		return;
 	}
 
+	if (this->mServerSaveId)
+	{
+		if (!this->mSaveDataRegistry.has(*this->mServerSaveId))
+		{
+			this->mSaveDataRegistry.create(*this->mServerSaveId);
+		}
+		auto* saveInstance = &this->mSaveDataRegistry.get(*this->mServerSaveId);
+		this->setupNetworkServer(network::EType::eServer, saveInstance);
+	}
 	if (this->mpServer) this->mpServer->init();
 	if (this->mpWorld) this->mpWorld->init();
 	if (this->mpClient) this->mpClient->init();

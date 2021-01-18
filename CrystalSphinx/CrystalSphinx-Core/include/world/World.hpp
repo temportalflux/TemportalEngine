@@ -2,8 +2,8 @@
 
 #include "CoreInclude.hpp"
 
-#include "world/WorldSaveData.hpp"
 #include "ecs/types.h"
+#include "world/WorldCoordinate.hpp"
 
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
@@ -14,8 +14,7 @@ FORWARD_DEF(NS_PHYSICS, class Scene);
 FORWARD_DEF(NS_PHYSICS, class System);
 FORWARD_DEF(NS_PHYSICS, class ChunkCollisionManager);
 FORWARD_DEF(NS_WORLD, class Terrain);
-
-namespace saveData { class Instance; }
+FORWARD_DEF(NS_WORLD, class SaveData);
 
 NS_GAME
 class VoxelTypeRegistry;
@@ -26,12 +25,11 @@ class World
 public:
 	World();
 
-	world::SaveData& saveData();
 	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
 	std::shared_ptr<physics::Material> playerPhysicsMaterial();
 	std::shared_ptr<physics::Scene> dimensionScene(ui32 dimId);
 
-	void loadSave(saveData::Instance* saveInstance);
+	void setSaveData(world::SaveData* pSaveData);
 	void init();
 	void uninit();
 	void update(f32 deltaTime);
@@ -44,8 +42,21 @@ public:
 	void destroyPlayer(ecs::Identifier entityId);
 
 private:
-	saveData::Instance* mpSaveInstance;
-	world::SaveData mSaveData;
+	// If this world owns the save data, this is non-null.
+	// Otherwise, the world is replicated from some server.
+	world::SaveData* mpSaveData;
+
+	ui32 seed() const;
+
+	/**
+	 * Uses deterministic random to return the chunk coordinate of spawn.
+	 */
+	math::Vector2Int getSpawnChunkCoord(ui32 seed) const;
+	/**
+	 * Returns a non-deterministic location
+	 * to spawn a player around the spawn chunk.
+	 */
+	world::Coordinate makeSpawnLocation(ui32 seed) const;
 
 	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
 	void createVoxelTypeRegistry();

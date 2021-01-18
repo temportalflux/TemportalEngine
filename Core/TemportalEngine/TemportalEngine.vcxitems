@@ -125,6 +125,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\WidgetRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\StringUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\TimeUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\window\Window.cpp" />
@@ -291,6 +292,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\ImageUtils.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Random.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\StringUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\TimeUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp" />

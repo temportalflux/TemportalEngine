@@ -13,22 +13,21 @@
 #include "physics/PhysicsSystem.hpp"
 #include "registry/VoxelType.hpp"
 #include "saveData/SaveDataRegistry.hpp"
+#include "utility/Random.hpp"
+#include "world/WorldSaveData.hpp"
 #include "world/WorldTerrain.hpp"
 
 using namespace game;
 
 logging::Logger WORLD_LOG = DeclareLog("World", LOG_INFO);
 
-World::World() : mpSaveInstance(nullptr)
+World::World()
 {
 }
 
-void World::loadSave(saveData::Instance *saveInstance)
+void World::setSaveData(world::SaveData* pSaveData)
 {
-	WORLD_LOG.log(LOG_INFO, "Initializing world save %s", saveInstance->name().c_str());
-	this->mpSaveInstance = saveInstance;
-	this->mSaveData = world::SaveData(this->mpSaveInstance->worldSave());
-	this->mSaveData.readFromDisk();
+	this->mpSaveData = pSaveData;
 }
 
 void World::init()
@@ -43,15 +42,11 @@ void World::init()
 
 void World::uninit()
 {
-	if (this->mpSaveInstance == nullptr) return;
 	WORLD_LOG.log(LOG_INFO, "Destroying world");
 	this->destroyDimension(&this->mOverworld);
 	this->uninitializePhysics();
 	this->mpVoxelTypeRegistry.reset();
-	this->mpSaveInstance = nullptr;
 }
-
-world::SaveData& World::saveData() { return this->mSaveData; }
 
 std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 std::shared_ptr<physics::Material> World::playerPhysicsMaterial() { return this->mpPlayerPhysicsMaterial; }
@@ -89,12 +84,37 @@ void World::uninitializePhysics()
 	this->mpPhysics.reset();
 }
 
+math::Vector2Int World::getSpawnChunkCoord(ui32 seed) const
+{
+	auto random = utility::Random(seed);
+	// returns a <x,z> within <[-2, 2], [-2, 2]>
+	// will be the same chunk for a given seed
+	return random.nextVInS<2>(2);
+}
+
+world::Coordinate World::makeSpawnLocation(ui32 seed) const
+{
+	// using time as seed - not deterministic
+	auto random = utility::Random((ui32)time(0));
+
+	// returns a <x,z> within <[-3, 3], [-3, 3]>
+	auto offset = random.nextVInS<2>(3);
+	auto chunkXZ = this->getSpawnChunkCoord(seed) + offset;
+	auto voxelXZ = random.nextVIn<2>(0, CHUNK_SIDE_LENGTH);
+
+	auto chunkPos = math::Vector3Int({ chunkXZ.x(), 0, chunkXZ.y() });
+	auto voxelPos = math::Vector3Int({ voxelXZ.x(), 0, voxelXZ.y() });
+
+	// TODO: raycast down to find y-coord of both chunk and block
+	chunkPos.y() = 0;
+	voxelPos.y() = 2;
+
+	return world::Coordinate(chunkPos, voxelPos);
+}
+
 void World::createDimension(Dimension *dim)
 {
-	WORLD_LOG.log(
-		LOG_INFO, "Creating dimension %s:%u",
-		this->mpSaveInstance->name().c_str(), dim->id
-	);
+	WORLD_LOG.log(LOG_INFO, "Creating dimension %u", dim->id);
 	dim->mpScene = std::make_shared<physics::Scene>();
 	dim->mpScene->setSystem(this->mpPhysics);
 	dim->mpScene->create();
@@ -103,24 +123,30 @@ void World::createDimension(Dimension *dim)
 		this->mpPhysics, dim->mpScene
 	);
 
-	dim->mpTerrain = std::make_shared<world::Terrain>(this->mSaveData.seed());
+	dim->mpTerrain = std::make_shared<world::Terrain>();
 	//if (this->mpVoxelInstanceBuffer) this->mpTerrain->addEventListener(this->mpVoxelInstanceBuffer);
 	dim->mpTerrain->addEventListener(dim->mpChunkCollisionManager);
 }
 
 void World::destroyDimension(Dimension *dim)
 {
-	WORLD_LOG.log(
-		LOG_INFO, "Destroying dimension %s:%u",
-		this->mpSaveInstance->name().c_str(), dim->id
-	);
+	WORLD_LOG.log(LOG_INFO, "Destroying dimension %u", dim->id);
 	dim->mpTerrain.reset();
 	dim->mpChunkCollisionManager.reset();
 	dim->mpScene.reset();
 }
 
+ui32 World::seed() const
+{
+	assert(this->mpSaveData != nullptr);
+	return this->mpSaveData->seed();
+}
+
 ecs::Identifier World::createPlayer(ui32 clientNetId)
 {
+	assert(this->mpSaveData != nullptr);
+	auto spawnPosition = this->makeSpawnLocation(this->seed());
+
 	auto& ecs = engine::Engine::Get()->getECS();
 
 	// Turning on replication if on a dedicated or integrated server.
@@ -139,7 +165,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId)
 	{
 		// TODO: Load player location and rotation from save data
 		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
-		transform->setPosition(this->mOverworld.mpTerrain->makeSpawnLocation());
+		transform->setPosition(spawnPosition);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
 	}

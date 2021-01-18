@@ -46,7 +46,8 @@ std::optional<game::BlockId> Chunk::getBlockId(math::Vector3Int const local) con
 
 void Chunk::generate()
 {
-	srand(this->mpTerrain.lock()->getSeed());
+	assert(false);
+	//srand(this->mpTerrain.lock()->getSeed());
 
 	// Only actually needed when re-generating the chunk so that no metadata from the previous gen is left over
 	FOR_CHUNK_SIZE(i32, x) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) this->mBlockMetadata[{ x, y, z }] = std::nullopt;

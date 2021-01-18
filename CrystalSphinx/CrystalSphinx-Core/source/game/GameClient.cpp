@@ -41,6 +41,7 @@
 #include "utility/Colors.hpp"
 #include "window/Window.hpp"
 #include "world/World.hpp"
+#include "world/WorldSaveData.hpp"
 
 using namespace game;
 
@@ -49,7 +50,6 @@ static auto CLIENT_LOG = DeclareLog("Client", LOG_INFO);
 Client::Client()
 	: Session()
 	, mLocalUserNetId(std::nullopt)
-	, mpSaveInstance(nullptr)
 {
 	this->registerCommands();
 	this->userRegistry().scan("users");
@@ -233,12 +233,11 @@ void Client::exec_openSave(command::Signature const& cmd)
 	{
 		saveData.create(saveName);
 	}
-	this->mpSaveInstance = &saveData.get(saveName);
 
-	auto pWorld = pGame->createWorld();
-	pWorld->loadSave(this->mpSaveInstance);
-	pWorld->init();
+	this->initializeDedicatedSave(&saveData.get(saveName));
 	
+	auto pWorld = this->world();
+	pWorld->init();
 	this->mLocalPlayerEntityId = pWorld->createPlayer(0);
 }
 
@@ -272,15 +271,15 @@ void Client::exec_startHostingServer(command::Signature const& cmd)
 		this->chat()->addToLog("You have not selected an account.");
 		return;
 	}
-	auto pGame = game::Game::Get();
-	if (!pGame->world() || this->mpSaveInstance == nullptr)
+	if (!this->world())
 	{
 		this->chat()->addToLog("There is no world. Try opening a save.");
 		return;
 	}
+	auto pGame = game::Game::Get();
 	pGame->setupNetworkServer(
 		{ network::EType::eServer, network::EType::eClient },
-		this->mpSaveInstance
+		this->dedicatedSave()
 	);
 	pGame->server()->init();
 	Game::networkInterface()->start();
