@@ -122,31 +122,19 @@ void ECSReplicate::write(Buffer &archive) const
 	{
 	case ecs::EType::eEntity:
 	{
-		network::write(archive, "links", this->mObjectLinks);
+		this->writeLinks(archive);
 		break;
 	}
 	case ecs::EType::eView:
 	{
 		network::write(archive, "typeId", this->mObjectTypeId);
-		network::write(archive, "links", this->mObjectLinks);
+		this->writeLinks(archive);
 		break;
 	}
 	case ecs::EType::eComponent:
 	{
 		network::write(archive, "typeId", this->mObjectTypeId);
-
-		uSize const fieldCount = this->mComponentFields.size();
-		network::write(archive, "fieldCount", fieldCount);
-		for (uIndex idxField = 0; idxField < fieldCount; ++idxField)
-		{
-			auto const& field = this->mComponentFields[idxField];
-			// write the byte offset of the field
-			archive.writeRaw(field.first);
-			// write the byte-count of the field data (the length of the byte vector)
-			archive.writeRaw(field.second.size());
-			// write the field data (the byte vector)
-			archive.write((void*)field.second.data(), field.second.size() * sizeof(ui8));
-		}
+		this->writeFields(archive);
 		break;
 	}
 	default: break;
@@ -165,38 +153,110 @@ void ECSReplicate::read(Buffer &archive)
 	{
 	case ecs::EType::eEntity:
 	{
-		network::read(archive, "links", this->mObjectLinks);
+		this->readLinks(archive);
 		break;
 	}
 	case ecs::EType::eView:
 	{
 		network::read(archive, "typeId", this->mObjectTypeId);
-		network::read(archive, "links", this->mObjectLinks);
+		this->readLinks(archive);
 		break;
 	}
 	case ecs::EType::eComponent:
 	{
 		network::read(archive, "typeId", this->mObjectTypeId);
-
-		uSize fieldCount = 0;
-		network::read(archive, "fieldCount", fieldCount);
-		this->mComponentFields.resize(fieldCount);
-		for (uIndex idxField = 0; idxField < fieldCount; ++idxField)
-		{
-			auto& field = this->mComponentFields[idxField];
-			// read the byte offset of the field
-			archive.readRaw(field.first);
-			// read the byte-count of the field data (the length of the byte vector)
-			uSize dataByteCount = 0;
-			archive.readRaw(dataByteCount);
-			field.second.resize(dataByteCount);
-			// read the field data (the byte vector)
-			archive.read((void*)field.second.data(), field.second.size() * sizeof(ui8));
-		}
+		this->readFields(archive);
 		break;
 	}
 	default: break;
 	}
+}
+
+std::string ECSReplicate::toBufferString(std::vector<ObjectLink> const& links) const
+{
+	uSize const length = this->mObjectLinks.size();
+	std::stringstream ss;
+	ss << length;
+	for (uIndex i = 0; i < length; ++i)
+	{
+		auto const& link = this->mObjectLinks[i];
+		ss << '\n'
+			<< "  - "
+			<< utility::StringParser<ecs::EType>::to_string(link.ecsType).c_str()
+			<< ": TypeId(" << link.objectTypeId << ") ObjectNetId(" << link.netId << ")"
+			;
+	}
+	return ss.str();
+}
+
+void ECSReplicate::writeLinks(Buffer &archive) const
+{
+	archive.setNamed("links", this->toBufferString(this->mObjectLinks));
+	uSize const length = this->mObjectLinks.size();
+	archive.writeRaw(length);
+	archive.write((void*)this->mObjectLinks.data(), length * sizeof(ObjectLink));
+}
+
+void ECSReplicate::readLinks(Buffer &archive)
+{
+	uSize length = 0;
+	archive.readRaw(length);
+	this->mObjectLinks.resize(length);
+	archive.read((void*)this->mObjectLinks.data(), length * sizeof(ObjectLink));
+	archive.setNamed("links", this->toBufferString(this->mObjectLinks));
+}
+
+std::string ECSReplicate::toBufferString(std::vector<ReplicatedField> const& fields) const
+{
+	uSize const length = this->mComponentFields.size();
+	std::stringstream ss;
+	ss << length << " fields";
+	for (uIndex i = 0; i < length; ++i)
+	{
+		auto const& field = this->mComponentFields[i];
+		ss << '\n'
+			<< "  - offset(" << field.first << ") "
+			<< (field.second.size() * sizeof(ui8)) << " bytes"
+			;
+	}
+	return ss.str();
+}
+
+void ECSReplicate::writeFields(Buffer &archive) const
+{
+	archive.setNamed("fields", this->toBufferString(this->mComponentFields));
+	uSize const fieldCount = this->mComponentFields.size();
+	archive.writeRaw(fieldCount);
+	for (uIndex idxField = 0; idxField < fieldCount; ++idxField)
+	{
+		auto const& field = this->mComponentFields[idxField];
+		// write the byte offset of the field
+		archive.writeRaw(field.first);
+		// write the byte-count of the field data (the length of the byte vector)
+		archive.writeRaw(field.second.size());
+		// write the field data (the byte vector)
+		archive.write((void*)field.second.data(), field.second.size() * sizeof(ui8));
+	}
+}
+
+void ECSReplicate::readFields(Buffer &archive)
+{
+	uSize fieldCount = 0;
+	archive.readRaw(fieldCount);
+	this->mComponentFields.resize(fieldCount);
+	for (uIndex idxField = 0; idxField < fieldCount; ++idxField)
+	{
+		auto& field = this->mComponentFields[idxField];
+		// read the byte offset of the field
+		archive.readRaw(field.first);
+		// read the byte-count of the field data (the length of the byte vector)
+		uSize dataByteCount = 0;
+		archive.readRaw(dataByteCount);
+		field.second.resize(dataByteCount);
+		// read the field data (the byte vector)
+		archive.read((void*)field.second.data(), field.second.size() * sizeof(ui8));
+	}
+	archive.setNamed("fields", this->toBufferString(this->mComponentFields));
 }
 
 ecs::NetworkedManager* getObjectManager(ecs::Core &ecs, ecs::EType type)

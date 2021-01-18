@@ -173,8 +173,8 @@ bool Game::initializeSystems()
 
 void Game::registerECSTypes(ecs::Core *ecs)
 {
-	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
+	ecs->components().registerType<ecs::component::PlayerInput>("PlayerInput");
 	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");

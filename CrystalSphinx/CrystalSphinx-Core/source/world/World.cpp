@@ -133,7 +133,6 @@ ecs::Identifier World::createPlayer()
 	{
 		// TODO: Load player location and rotation from save data
 		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
-		// TODO: each component needs to implement replication update
 		transform->setPosition(this->mOverworld.mpTerrain->makeSpawnLocation());
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);

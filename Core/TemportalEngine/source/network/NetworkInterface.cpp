@@ -408,8 +408,9 @@ void Interface::sendPackets(
 		}
 	}
 
-	for (auto pPacket : packets)
+	for (auto idxPacket = 0; idxPacket < packets.size(); ++idxPacket)
 	{
+		auto pPacket = packets[idxPacket];
 		auto buffer = network::Buffer(this->type(), nullptr, 0, true);
 		pPacket->write(buffer);
 
@@ -417,6 +418,8 @@ void Interface::sendPackets(
 		{
 			pPacket->appendDebugLogHeader(debugLog);
 			buffer.stringify(debugLog);
+			if (idxPacket < packets.size() - 1)
+				debugLog << '\n';
 		}
 
 		for (auto const& connection : connections)

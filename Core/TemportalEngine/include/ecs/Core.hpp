@@ -21,6 +21,7 @@ class Core
 public:
 
 	static Core* Get();
+	static logging::Logger& logger();
 
 	Core();
 	~Core();

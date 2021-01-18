@@ -80,10 +80,16 @@ private:
 	 * For views, these are components (so `ObjectLink#ecsType` must be `eComponent`).
 	 */
 	std::vector<ObjectLink> mObjectLinks;
+	std::string toBufferString(std::vector<ObjectLink> const& links) const;
+	void writeLinks(Buffer &archive) const;
+	void readLinks(Buffer &archive);
 
 	using ReplicatedData = std::vector<ui8>;
 	using ReplicatedField = std::pair<uIndex, ReplicatedData>;
 	std::vector<ReplicatedField> mComponentFields;
+	std::string toBufferString(std::vector<ReplicatedField> const& fields) const;
+	void writeFields(Buffer &archive) const;
+	void readFields(Buffer &archive);
 
 };
 

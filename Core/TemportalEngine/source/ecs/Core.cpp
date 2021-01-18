@@ -11,6 +11,11 @@ Core* Core::Get()
 	return &engine::Engine::Get()->getECS();
 }
 
+logging::Logger& Core::logger()
+{
+	return Core::Get()->mLog;
+}
+
 Core::Core()
 	: mComponentManager(this)
 {
