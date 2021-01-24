@@ -133,7 +133,6 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 	// does not mark the entity to be killed, so the manager will own it.
 	// can look up the entity by id by using `EntityManager#get`.
 	auto pEntity = ecs.entities().create();
-	pEntity->setOwner(clientNetId);
 
 	// Add Transform
 	{
@@ -150,6 +149,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 		pEntity->addComponent(physics);
 	}
 
+	pEntity->setOwner(clientNetId);
 	this->createPlayerController(clientNetId, pEntity->id());
 
 	WORLD_LOG.log(LOG_INFO, "Created player entity id(%u)", pEntity->id());

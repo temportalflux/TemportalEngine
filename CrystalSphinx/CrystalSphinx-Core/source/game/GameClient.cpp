@@ -509,24 +509,6 @@ void Client::addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity)
 		pEntity->addComponent(input);
 	}
 
-	auto pWorld = game::Game::Get()->world();
-	// TODO: This should be replicated
-	/*
-	{
-		auto component = ecs->components().create<ecs::component::PhysicsController>();
-		auto extents = math::Vector3{ 0.4f, 0.9f, 0.4f };
-		component
-			->setIsAffectedByGravity(false)
-			.controller()
-			.setScene(pWorld->dimensionScene(0))
-			.setAsBox(extents)
-			.setCenterPosition(pTransform->position().toGlobal() + math::Vector<f64, 3>({ 0, extents.y(), 0 }))
-			.setMaterial(pWorld->playerPhysicsMaterial().get())
-			.create();
-		pEntity->addComponent(component);
-	}
-	//*/
-
 }
 
 void Client::addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity)
