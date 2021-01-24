@@ -83,8 +83,6 @@ private:
 	void initializeAssetTypes();
 	void registerECSTypes(ecs::Core *ecs);
 
-	void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
-
 	//void createLocalPlayer();
 
 	//void bindInput();

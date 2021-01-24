@@ -59,7 +59,7 @@ void ChatMessage::process(network::Interface *pInterface)
 	{
 		this->mbIsServerMessage = false;
 		this->mSenderNetId = pInterface->getNetIdFor(this->connection());
-		this->broadcast();
+		this->broadcast({ this->connection() });
 	}
 	this->writeToLog(pInterface->type());
 }

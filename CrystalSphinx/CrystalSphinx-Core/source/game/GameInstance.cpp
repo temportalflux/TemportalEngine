@@ -30,7 +30,6 @@
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketAuthenticate.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
-#include "network/packet/NetworkPacketRequestPublicKey.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
@@ -71,15 +70,10 @@ Game::Game(int argc, char *argv[])
 	auto* networkInterface = Game::networkInterface();
 	networkInterface->packetTypes()
 		.addType<network::packet::LoginWithAuthId>()
-		.addType<network::packet::RequestPublicKey>()
 		.addType<network::packet::Authenticate>()
 		.addType<network::packet::UpdateUserInfo>()
 		.addType<network::packet::ChatMessage>()
 		;
-	networkInterface->onConnectionEstablished.bind(std::bind(
-		&Game::onNetworkConnectionOpened, this,
-		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-	));
 	
 	this->mServerSaveId = std::nullopt;
 	auto serverArg = args.find("server");
@@ -140,23 +134,6 @@ void Game::setupNetworkServer(utility::Flags<network::EType> flags, saveData::In
 	this->mpServer = std::make_shared<game::Server>();
 	this->server()->loadFrom(saveInstance);
 	this->mpServer->setupNetwork(flags);
-}
-
-void Game::onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
-{
-	if (pInterface->type().includes(network::EType::eServer))
-	{
-		if (connection == pInterface->connection() && pInterface->type().includes(network::EType::eClient))
-		{
-			this->client()->onLocalServerConnectionOpened(pInterface, connection, netId);
-		}
-		this->server()->onNetworkConnectionOpened(pInterface, connection, netId);
-	}
-	// this, a dedicated client, has joined a server. tell the server about our name
-	else if (pInterface->type() == network::EType::eClient)
-	{
-		this->client()->onNetworkConnectionOpened(pInterface, connection, netId);
-	}
 }
 
 std::shared_ptr<asset::AssetManager> Game::assetManager()

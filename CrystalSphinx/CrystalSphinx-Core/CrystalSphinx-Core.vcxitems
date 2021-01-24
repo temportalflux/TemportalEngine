@@ -40,7 +40,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketAuthenticate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChatMessage.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketRequestPublicKey.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
@@ -102,7 +101,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketAuthenticate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChatMessage.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketRequestPublicKey.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\ChunkCollisionManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp" />

@@ -74,7 +74,7 @@ void UpdateUserInfo::process(Interface *pInterface)
 			.setName(this->mName)
 			.setColor(this->mColorOnConnectedServer)
 			.writeToDisk();
-		this->broadcast();
+		this->broadcast({ this->connection() });
 
 		ChatMessage::broadcastServerMessage(
 			this->mName + " has joined the server."

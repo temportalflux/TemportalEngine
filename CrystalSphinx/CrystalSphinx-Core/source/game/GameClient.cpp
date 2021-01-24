@@ -70,18 +70,19 @@ game::ClientSettings& Client::settings() { return this->mClientSettings; }
 void Client::init()
 {
 	auto* networkInterface = Game::networkInterface();
-	networkInterface->onNetIdReceived.bind(std::bind(
-		&game::Client::onNetIdReceived, this,
+	networkInterface->onConnectionEstablished.bind(this->weak_from_this(), std::bind(
+		&game::Client::sendAuthenticationId, this,
 		std::placeholders::_1, std::placeholders::_2
 	));
-	networkInterface->OnDedicatedClientAuthenticated.bind(std::bind(
-		&game::Client::onDedicatedClientAuthenticated, this, std::placeholders::_1
+	networkInterface->OnClientAuthenticatedOnClient.bind(std::bind(
+		&game::Client::onClientAuthenticated, this,
+		std::placeholders::_1, std::placeholders::_2
 	));
 	networkInterface->onClientPeerStatusChanged.bind(std::bind(
 		&game::Client::onClientPeerStatusChanged, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
-	networkInterface->OnDedicatedClientDisconnected.bind(std::bind(
+	networkInterface->OnDedicatedClientDisconnected.bind(this->weak_from_this(), std::bind(
 		&game::Client::onDedicatedClientDisconnected, this,
 		std::placeholders::_1, std::placeholders::_2
 	));
@@ -386,31 +387,45 @@ void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 
 	pServer->associatePlayer(netId, this->mLocalPlayerEntityId);
 }
 
-void Client::onNetIdReceived(network::Interface *pInterface, ui32 netId)
+void Client::sendAuthenticationId(network::Interface *pNetwork, network::ConnectionId connectionId)
 {
+	// For integrated servers, this will be executed immediately in the same application
+	network::packet::LoginWithAuthId::create()
+		->setId(this->localUserId())
+		.setPublicKey(this->localUserAuthKey().publicData())
+		.sendToServer();
+}
+
+void Client::onClientAuthenticated(network::Interface *pInteface, network::Identifier netId)
+{
+	network::logger().log(LOG_INFO, "Network handshake complete");
+
 	this->setLocalUserNetId(netId);
 	this->addConnectedUser(netId);
 	this->getConnectedUserInfo(netId).copyFrom(this->localUserInfo());
-	network::packet::LoginWithAuthId::create()->setId(this->localUserId()).sendToServer();
-}
 
-void Client::onDedicatedClientAuthenticated(network::Interface *pInteface)
-{
-	network::logger().log(LOG_INFO, "Network handshake complete");
 	network::packet::UpdateUserInfo::create()->setInfo(this->localUserInfo()).sendToServer();
 }
 
-void Client::onDedicatedClientDisconnected(network::Interface *pInteface, ui32 invalidNetId)
+void Client::onDedicatedClientDisconnected(network::Interface *pInteface, network::Identifier invalidNetId)
 {
 	network::logger().log(LOG_INFO, "Disconnected from network, killing network interface.");
 	Game::networkInterface()->stop();
 	game::Game::Get()->destroyWorld();
 }
 
-void Client::onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status)
+void Client::onClientPeerStatusChanged(network::Interface *pInterface, network::Identifier netId, network::EClientStatus status)
 {
-	if (status == network::EClientStatus::eConnected) this->addConnectedUser(netId);
-	else this->removeConnectedUser(netId);
+	switch (status)
+	{
+		case network::EClientStatus::eConnected:
+			this->addConnectedUser(netId);
+			break;
+		case network::EClientStatus::eDisconnected:
+			this->removeConnectedUser(netId);
+			break;
+		default: assert(false); break;
+	}
 }
 
 void Client::onNetworkStopped(network::Interface *pInterface)
@@ -438,25 +453,25 @@ game::UserInfo Client::localUserInfo() const
 	return this->userRegistry().loadInfo(this->localUserId());
 }
 
-void Client::setLocalUserNetId(ui32 netId)
+void Client::setLocalUserNetId(network::Identifier netId)
 {
 	this->mLocalUserNetId = netId;
 }
 
-ui32 Client::localUserNetId() const
+network::Identifier Client::localUserNetId() const
 {
 	assert(this->mLocalUserNetId);
 	return *this->mLocalUserNetId;
 }
 
-void Client::addConnectedUser(ui32 netId)
+void Client::addConnectedUser(network::Identifier netId)
 {
 	assert(!this->hasConnectedUser(netId));
 	Session::addConnectedUser(netId);
 	this->mConnectedUserInfo.insert(std::make_pair(netId, game::UserInfo()));
 }
 
-void Client::removeConnectedUser(ui32 netId)
+void Client::removeConnectedUser(network::Identifier netId)
 {
 	if (this->hasConnectedUser(netId))
 	{
@@ -465,7 +480,7 @@ void Client::removeConnectedUser(ui32 netId)
 	}
 }
 
-game::UserInfo& Client::getConnectedUserInfo(ui32 netId)
+game::UserInfo& Client::getConnectedUserInfo(network::Identifier netId)
 {
 	return this->mConnectedUserInfo.find(netId)->second;
 }

@@ -3,7 +3,6 @@
 #include "game/GameInstance.hpp"
 #include "game/GameServer.hpp"
 #include "network/NetworkInterface.hpp"
-#include "network/packet/NetworkPacketRequestPublicKey.hpp"
 #include "network/packet/NetworkPacketAuthenticate.hpp"
 
 using namespace network;
@@ -22,16 +21,24 @@ LoginWithAuthId& LoginWithAuthId::setId(utility::Guid const& id)
 	return *this;
 }
 
+LoginWithAuthId& LoginWithAuthId::setPublicKey(crypto::RSAKey::PublicData const& publicKey)
+{
+	this->mClientPublicKey = publicKey;
+	return *this;
+}
+
 void LoginWithAuthId::write(Buffer &archive) const
 {
 	Packet::write(archive);
 	network::write(archive, "id", this->mId);
+	network::write(archive, "clientPublicKey", this->mClientPublicKey);
 }
 
 void LoginWithAuthId::read(Buffer &archive)
 {
 	Packet::read(archive);
 	network::read(archive, "id", this->mId);
+	network::read(archive, "clientPublicKey", this->mClientPublicKey);
 }
 
 void LoginWithAuthId::process(Interface *pInterface)
@@ -39,24 +46,25 @@ void LoginWithAuthId::process(Interface *pInterface)
 	if (pInterface->type().includes(EType::eServer))
 	{
 		auto pServer = game::Game::Get()->server();
-		auto const& netId = pInterface->getNetIdFor(this->connection());
+		//auto const& netId = pInterface->getNetIdFor(this->connection());
 
-		network::logger().log(LOG_INFO, "Received user id %s from NetworkUser %u", this->mId.toString().c_str(), netId);
+		network::logger().log(
+			LOG_INFO, "Received userId(%s) from connectionId(%u)",
+			this->mId.toString().c_str(), this->connection()
+		);
 
 		if (pServer->hasConnectedUser(this->mId))
 		{
 			network::logger().log(
-				LOG_INFO, "User with userId %s is already logged in. Kicking NetworkUser %u.",
-				this->mId.toString().c_str(), netId
+				LOG_INFO, "User with userId(%s) is already logged in. Kicking connectionId(%u).",
+				this->mId.toString().c_str(), this->connection()
 			);
-			pServer->kick(netId);
+			assert(!pInterface->type().includes(EType::eClient));
+			pInterface->closeConnection(this->connection());
 			return;
 		}
 
-		// Store the user's id with this network id.
-		// If the user fails authentication,
-		// they will be disconnected/kicked and the entry will be cleaned up
-		pServer->findConnectedUser(netId) = this->mId;
+		pServer->addPendingAuthentication(this->connection(), this->mId);
 
 		// If the user has previously logged in, authenticate their credentials
 		if (pServer->hasSaveForUser(this->mId))
@@ -66,7 +74,13 @@ void LoginWithAuthId::process(Interface *pInterface)
 		// If the user is new, then automatically authenticate them (first come first server)
 		else
 		{
-			RequestPublicKey::create()->send(this->connection());
+			// assumes that this assigns the connection a net id
+			pInterface->markClientAuthenticated(this->connection());
+
+			auto pServer = game::Game::Get()->server();
+			auto key = crypto::RSAKey();
+			crypto::RSAKey::fromPublicData(this->mClientPublicKey, key);
+			pServer->initializeUser(this->mId, key);
 		}
 	}
 }

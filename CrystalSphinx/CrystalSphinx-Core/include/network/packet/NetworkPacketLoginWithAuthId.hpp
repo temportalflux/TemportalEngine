@@ -2,6 +2,7 @@
 
 #include "network/NetworkPacket.hpp"
 
+#include "crypto/RSA.hpp"
 #include "utility/Guid.hpp"
 
 NS_NETWORK
@@ -18,6 +19,7 @@ public:
 	LoginWithAuthId();
 
 	LoginWithAuthId& setId(utility::Guid const& id);
+	LoginWithAuthId& setPublicKey(crypto::RSAKey::PublicData const& publicKey);
 
 	void write(Buffer &archive) const override;
 	void read(Buffer &archive) override;
@@ -25,6 +27,7 @@ public:
 
 private:
 	utility::Guid mId;
+	crypto::RSAKey::PublicData mClientPublicKey;
 
 };
 

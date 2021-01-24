@@ -34,7 +34,6 @@ std::string to_string(EClientStatus status)
 {
 	switch (status)
 	{
-	case EClientStatus::eAuthenticating: return "authenticating";
 	case EClientStatus::eConnected: return "connected";
 	case EClientStatus::eDisconnected: return "disconnected";
 	default: return "invalid";
@@ -61,18 +60,13 @@ void ClientStatus::read(Buffer &archive)
 
 void ClientStatus::process(network::Interface *pInterface)
 {
-	assert((EType)pInterface->type() == EType::eClient);
+	assert(pInterface->type().includes(EType::eClient));
 	// Server has confirmed data for this client
 	if (this->mbIsSelf)
 	{
-		if (this->mStatus == EClientStatus::eAuthenticating)
+		if (this->mStatus == EClientStatus::eConnected)
 		{
-			network::logger().log(LOG_INFO, "Received network id %i", this->mNetId);
-			pInterface->onNetIdReceived.execute(pInterface, this->mNetId);
-		}
-		else if (this->mStatus == EClientStatus::eConnected)
-		{
-			pInterface->OnDedicatedClientAuthenticated.execute(pInterface, this->mNetId);
+			pInterface->OnClientAuthenticatedOnClient.execute(pInterface, this->mNetId);
 		}
 	}
 	// A new client has arrived

@@ -35,22 +35,26 @@ void Server::setupNetwork(utility::Flags<network::EType> flags)
 	auto& networkInterface = *Game::networkInterface();
 	networkInterface.onNetworkStarted.bind(this->weak_from_this(), std::bind(
 		&Server::onNetworkStarted, this, std::placeholders::_1
-	));
-	networkInterface.OnDedicatedClientAuthenticated.bind(std::bind(
-		&Server::onDedicatedClientAuthenticated, this,
+	), 0);
+	networkInterface.onConnectionEstablished.bind(this->weak_from_this(), std::bind(
+		&Server::onClientConnected, this,
+		std::placeholders::_1, std::placeholders::_2
+	), 0);
+	networkInterface.OnClientAuthenticatedOnServer.bind(std::bind(
+		&Server::onClientAuthenticated, this,
 		std::placeholders::_1, std::placeholders::_2
 	));
-	networkInterface.OnDedicatedClientDisconnected.bind(std::bind(
+	networkInterface.OnDedicatedClientDisconnected.bind(this->weak_from_this(), std::bind(
 		&game::Server::onDedicatedClientDisconnected, this,
 		std::placeholders::_1, std::placeholders::_2
-	));
+	), 0);
 	networkInterface.onConnectionClosed.bind(std::bind(
 		&game::Server::onNetworkConnnectionClosed, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
 	networkInterface.onNetworkStopped.bind(this->weak_from_this(), std::bind(
 		&Server::onNetworkStopped, this, std::placeholders::_1
-	));
+	), 0);
 
 	networkInterface
 		.setType(flags)
@@ -62,20 +66,22 @@ void Server::onNetworkStarted(network::Interface *pInterface)
 	assert(game::Game::Get()->world());
 }
 
-void Server::onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
+void Server::onClientConnected(network::Interface *pInterface, network::ConnectionId connId)
 {
-	// both dedicated and integrated servers to create a user for the netId
-	this->addConnectedUser(netId);
 }
 
-void Server::kick(ui32 netId)
+void Server::kick(network::Identifier netId)
 {
 	auto* pInterface = Game::networkInterface();
 	pInterface->closeConnection(pInterface->getConnectionFor(netId));
 }
 
-void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32 netId)
+void Server::onClientAuthenticated(network::Interface *pInterface, network::Identifier netId)
 {
+	auto userId = this->removePendingAuthentication(pInterface->getConnectionFor(netId));
+	this->addConnectedUser(netId);
+	this->findConnectedUser(netId) = userId;
+
 	// Tell the newly joined user about all the existing clients
 	for (auto const& anyNetId : pInterface->connectedClientNetIds())
 	{
@@ -90,14 +96,14 @@ void Server::onDedicatedClientAuthenticated(network::Interface *pInterface, ui32
 
 	auto pWorld = std::dynamic_pointer_cast<world::WorldSaved>(this->world());
 	assert(pWorld);
-	// Replicate initial world data
+	// Replicate initial world data (both dedicated and integrated clients)
 
 	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(
 		netId, pWorld->makeSpawnLocation()
 	));
 }
 
-void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId)
+void Server::onDedicatedClientDisconnected(network::Interface *pInterface, network::Identifier netId)
 {
 	assert(pInterface->type().includes(network::EType::eServer));
 	if (this->hasConnectedUser(netId))
@@ -114,10 +120,13 @@ void Server::onDedicatedClientDisconnected(network::Interface *pInterface, ui32 
 	}
 }
 
-void Server::onNetworkConnnectionClosed(network::Interface *pInterface, ui32 connection, ui32 netId)
+void Server::onNetworkConnnectionClosed(
+	network::Interface *pInterface, network::ConnectionId connection,
+	std::optional<network::Identifier> netId
+)
 {
 	assert(pInterface->type().includes(network::EType::eServer));
-	this->removeConnectedUser(netId);
+	if (netId) this->removeConnectedUser(*netId);
 }
 
 void Server::onNetworkStopped(network::Interface *pInterface)
@@ -147,13 +156,27 @@ game::UserInfo Server::getUserInfo(utility::Guid const& id) const
 	return this->userRegistry().loadInfo(id);
 }
 
-void Server::associatePlayer(ui32 netId, ecs::Identifier entityId)
+void Server::addPendingAuthentication(network::ConnectionId connId, utility::Guid const& userId)
+{
+	this->mPendingAuthentications.insert(std::make_pair(connId, userId));
+}
+
+utility::Guid Server::removePendingAuthentication(network::ConnectionId connId)
+{
+	auto iter = this->mPendingAuthentications.find(connId);
+	assert(iter != this->mPendingAuthentications.end());
+	auto userId = iter->second;
+	this->mPendingAuthentications.erase(iter);
+	return userId;
+}
+
+void Server::associatePlayer(network::Identifier netId, ecs::Identifier entityId)
 {
 	SERVER_LOG.log(LOG_VERBOSE, "Linking network-id %u to player entity %u", netId, entityId);
 	this->mNetIdToPlayerEntityId.insert(std::make_pair(netId, entityId));
 }
 
-void Server::destroyPlayer(ui32 netId)
+void Server::destroyPlayer(network::Identifier netId)
 {
 	auto iter = this->mNetIdToPlayerEntityId.find(netId);
 	assert(iter != this->mNetIdToPlayerEntityId.end());

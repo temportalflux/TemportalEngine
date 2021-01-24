@@ -192,9 +192,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChatMessage.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketRequestPublicKey.hpp">
-      <Filter>network\packet</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameServer.hpp">
       <Filter>game</Filter>
     </ClInclude>
@@ -361,9 +358,6 @@
       <Filter>game</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChatMessage.cpp">
-      <Filter>network\packet</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketRequestPublicKey.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameServer.cpp">

@@ -92,13 +92,8 @@ void Interface::start()
 
 		if (this->type().includes(EType::eClient))
 		{
-			auto const netId = this->nextNetworkId();
-			network::logger().log(
-				LOG_VERBOSE, "Assigning same-app client (server connection %u) network-id %u",
-				this->mConnection, netId
-			);
-			this->addClient(this->mConnection, netId);
-			this->onConnectionEstablished.execute(this, this->mConnection, netId);
+			// Broadcast connection to itself (client on top of server)
+			this->onConnectionEstablished.broadcast(this, this->mConnection);
 		}
 	}
 	else if (this->mType == EType::eClient)
@@ -266,20 +261,12 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			return;
 		}
 
-		ui32 const netId = this->nextNetworkId();
-		this->addClient(data->m_hConn, netId);
-
 		network::logger().log(
-			LOG_INFO, "Accepted connection request from %s. Assigned network-id %u.",
-			data->m_info.m_szConnectionDescription, netId
+			LOG_INFO, "Accepted connection request from %s. Awaiting authentication.",
+			data->m_info.m_szConnectionDescription
 		);
 
-		// Tell the client its own net id
-		packet::ClientStatus::create()
-			->setStatus(EClientStatus::eAuthenticating)
-			.setIsSelf(true).setNetId(netId)
-			.send(data->m_hConn);
-		this->onConnectionEstablished.execute(this, data->m_hConn, netId);
+		this->onConnectionEstablished.broadcast(this, data->m_hConn);
 		break;
 	}
 
@@ -303,7 +290,7 @@ void Interface::onServerConnectionStatusChanged(void* pInfo)
 			);
 
 			if (bClosedByPeer)
-				this->OnDedicatedClientDisconnected.execute(this, this->mClients.find(data->m_hConn)->second);
+				this->OnDedicatedClientDisconnected.broadcast(this, this->mClients.find(data->m_hConn)->second);
 			this->closeConnection(data->m_hConn);
 		}
 		else
@@ -335,7 +322,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 	case k_ESteamNetworkingConnectionState_Connected:
 	{
 		network::logger().log(LOG_INFO, "Successfully connected to server.");
-		this->onConnectionEstablished.execute(this, data->m_hConn, 0);
+		this->onConnectionEstablished.broadcast(this, data->m_hConn);
 		break;
 	}
 
@@ -359,7 +346,7 @@ void Interface::onClientConnectionStatusChanged(void* pInfo)
 
 		pInterface->CloseConnection(data->m_hConn, 0, nullptr, false);
 		this->mConnection = k_HSteamNetConnection_Invalid;
-		this->OnDedicatedClientDisconnected.execute(this, 0);
+		this->OnDedicatedClientDisconnected.broadcast(this, 0);
 		break;
 	}
 
@@ -447,21 +434,21 @@ void Interface::sendPackets(
 	as<ISteamNetworkingSockets>(this->mpInternal)->SendMessages((ui32)messages.size(), messages.data(), nullptr);
 }
 
-std::set<ui32> Interface::connections() const
+std::set<ConnectionId> Interface::connections() const
 {
 	return this->mConnections;
 }
 
-void Interface::addClient(ui32 connection, ui32 netId)
+void Interface::addClient(ConnectionId connId, network::Identifier netId)
 {
-	this->mConnections.insert(connection);
-	this->mClients.insert(std::make_pair(connection, netId));
-	this->mNetIdToConnection.insert(std::make_pair(netId, connection));
+	this->mConnections.insert(connId);
+	this->mClients.insert(std::make_pair(connId, netId));
+	this->mNetIdToConnection.insert(std::make_pair(netId, connId));
 }
 
-std::set<ui32> Interface::connectedClientNetIds() const
+std::set<network::Identifier> Interface::connectedClientNetIds() const
 {
-	auto ids = std::set<ui32>();
+	auto ids = std::set<network::Identifier>();
 	for (auto const&[connection, netId] : this->mClients)
 	{
 		ids.insert(netId);
@@ -469,7 +456,7 @@ std::set<ui32> Interface::connectedClientNetIds() const
 	return ids;
 }
 
-ui32 Interface::nextNetworkId()
+network::Identifier Interface::nextNetworkId()
 {
 	if (this->mUnusedNetIds.size() > 0)
 	{
@@ -480,15 +467,15 @@ ui32 Interface::nextNetworkId()
 	return (ui32)this->mConnections.size();
 }
 
-ui32 Interface::getNetIdFor(ui32 connection) const
+network::Identifier Interface::getNetIdFor(ConnectionId connId) const
 {
 	assert(this->type().includes(EType::eServer));
-	auto iter = this->mClients.find(connection);
+	auto iter = this->mClients.find(connId);
 	assert(iter != this->mClients.end());
 	return iter->second;
 }
 
-ui32 Interface::getConnectionFor(ui32 netId) const
+ConnectionId Interface::getConnectionFor(network::Identifier netId) const
 {
 	assert(this->type().includes(EType::eServer));
 	auto iter = this->mNetIdToConnection.find(netId);
@@ -496,66 +483,78 @@ ui32 Interface::getConnectionFor(ui32 netId) const
 	return iter->second;
 }
 
-// Does not get executed for the net id of a client-on-top-of-server
-void Interface::markClientAuthenticated(ui32 netId)
+void Interface::markClientAuthenticated(ConnectionId connId)
 {
-	auto connectionId = this->getConnectionFor(netId);
+	auto const netId = this->nextNetworkId();
 
+	network::logger().log(
+		LOG_VERBOSE, "Assigning connectionId(%u) the netId(%u)",
+		connId, netId
+	);
+
+	this->addClient(connId, netId);
+
+	this->OnClientAuthenticatedOnServer.execute(this, netId);
+
+	// Tell the client its own net id
 	packet::ClientStatus::create()
 		->setStatus(EClientStatus::eConnected)
 		.setIsSelf(true).setNetId(netId)
-		.send(connectionId);
+		.send(connId);
 
 	// Tell all other clients that a client has joined
 	packet::ClientStatus::create()
 		->setStatus(EClientStatus::eConnected)
 		.setIsSelf(false).setNetId(netId)
-		.broadcast({ connectionId });
-	if (this->type().includes(EType::eClient))
-	{
-		this->onClientPeerStatusChanged.execute(this, netId, EClientStatus::eConnected);
-	}
+		.broadcast({ connId });
 
-	// Tell the client of the net ids of other already joined clients
-	for (auto const&[otherConnectionId, otherNetId] : this->mClients)
+	// Tell the newly connected client of the net ids of other already joined clients
+	for (auto const& [otherConnectionId, otherNetId] : this->mClients)
 	{
 		if (otherNetId == netId) continue;
 		packet::ClientStatus::create()
 			->setStatus(EClientStatus::eConnected)
 			.setIsSelf(false).setNetId(otherNetId)
-			.send(connectionId);
+			.send(connId);
 	}
-
-	this->OnDedicatedClientAuthenticated.execute(this, netId);
 }
 
-ui32 Interface::closeConnection(ui32 connectionId)
+void Interface::closeConnection(ConnectionId connId)
 {
 	assert(this->mType.includes(EType::eServer));
 
-	auto iterConn = this->mConnections.find(connectionId);
-	this->mConnections.erase(iterConn);
+	// Its possible for this function to run on a connection
+	// that has not authenticated (so there will be no netId or client data).
+	std::optional<network::Identifier> netId = std::nullopt;
 
-	auto iterClient = this->mClients.find(connectionId);
-	auto netId = iterClient->second;
-	this->mClients.erase(iterClient);
-	
-	this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId));
-	this->onConnectionClosed.execute(this, connectionId, netId);
+	auto iterConn = this->mConnections.find(connId);
+	if (iterConn != this->mConnections.end()) this->mConnections.erase(iterConn);
 
-	this->mUnusedNetIds.insert(netId);
-	
-	packet::ClientStatus::create()
-		->setStatus(EClientStatus::eDisconnected)
-		.setIsSelf(false).setNetId(netId)
-		.broadcast({ connectionId });
-	if (this->type().includes(EType::eClient))
+	auto iterClient = this->mClients.find(connId);
+	if (iterClient != this->mClients.end())
 	{
-		this->onClientPeerStatusChanged.execute(this, netId, EClientStatus::eDisconnected);
+		netId = iterClient->second;
+		this->mClients.erase(iterClient);
+	}
+	
+	// If the connection had been authenticated, then they have a net-id and we should clean up.
+	if (netId.has_value())
+	{
+		// Their net id is now unused
+		this->mUnusedNetIds.insert(netId.value());
+		// And we know they will have an entry in the net-id to connection map
+		this->mNetIdToConnection.erase(this->mNetIdToConnection.find(netId.value()));
+
+		// Tell all other clients that the user is disconnecting
+		packet::ClientStatus::create()
+			->setStatus(EClientStatus::eDisconnected)
+			.setIsSelf(false).setNetId(netId.value())
+			.broadcast({ connId });	
 	}
 
+	// Actually close the network connection
 	auto* pInterface = as<ISteamNetworkingSockets>(this->mpInternal);
-	pInterface->CloseConnection(connectionId, 0, nullptr, false);
+	pInterface->CloseConnection(connId, 0, nullptr, false);
 
-	return netId;
+	this->onConnectionClosed.execute(this, connId, netId);
 }

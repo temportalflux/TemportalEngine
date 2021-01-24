@@ -10,6 +10,8 @@
 NS_NETWORK
 namespace packet { class Packet; };
 
+using ConnectionId = ui32;
+
 class Interface
 {
 
@@ -26,56 +28,58 @@ public:
 	BroadcastDelegate<void(Interface*)> onNetworkStarted;
 	BroadcastDelegate<void(Interface*)> onNetworkStopped;
 
-	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionEstablished;
-	ExecuteDelegate<void(Interface*, ui32 connection, ui32 netId)> onConnectionClosed;
+	BroadcastDelegate<void(Interface*, ConnectionId connId)> onConnectionEstablished;
+	ExecuteDelegate<void(
+		Interface*, ConnectionId connId,
+		std::optional<network::Identifier> netId
+	)> onConnectionClosed;
 
-	ExecuteDelegate<void(Interface*, ui32 netId)> OnDedicatedClientAuthenticated;
-	ExecuteDelegate<void(Interface*, ui32 netId)> OnDedicatedClientDisconnected;
-
-	ExecuteDelegate<void(Interface*, ui32 netId)> onNetIdReceived;
-	ExecuteDelegate<void(Interface*, ui32 netId, EClientStatus status)> onClientPeerStatusChanged;
+	ExecuteDelegate<void(Interface*, network::Identifier netId)> OnClientAuthenticatedOnServer;
+	ExecuteDelegate<void(Interface*, network::Identifier netId)> OnClientAuthenticatedOnClient;
+	ExecuteDelegate<void(Interface*, network::Identifier netId, EClientStatus status)> onClientPeerStatusChanged;
+	BroadcastDelegate<void(Interface*, network::Identifier netId)> OnDedicatedClientDisconnected;
 
 	void start();
 	bool hasConnection() const;
 	void update(f32 deltaTime);
 	void stop();
 
-	ui32 connection() const { return this->mConnection; }
+	ConnectionId connection() const { return this->mConnection; }
 	void sendPackets(
-		std::set<ui32> connections,
+		std::set<ConnectionId> connections,
 		std::vector<std::shared_ptr<packet::Packet>> const& packets,
-		std::set<ui32> except = {}
+		std::set<ConnectionId> except = {}
 	);
 
-	std::set<ui32> connections() const;
-	std::set<ui32> connectedClientNetIds() const;
-	ui32 getNetIdFor(ui32 connection) const;
-	ui32 getConnectionFor(ui32 netId) const;
-	ui32 closeConnection(ui32 connectionId);
+	std::set<ConnectionId> connections() const;
+	std::set<network::Identifier> connectedClientNetIds() const;
+	network::Identifier getNetIdFor(ConnectionId connId) const;
+	ConnectionId getConnectionFor(network::Identifier netId) const;
+	void closeConnection(ConnectionId connId);
 
-	void markClientAuthenticated(ui32 netId);
+	void markClientAuthenticated(ConnectionId connId);
 
 private:
 	PacketTypeRegistry mPacketRegistry;
 
 	utility::Flags<network::EType> mType;
 	// For dedicated clients: the address and port of the server to connect to
-	// For dedicated or integrated servers: localhost + the port to listen on
+	// For dedicated or integrated servers: local-host + the port to listen on
 	Address mAddress;
 
 	void* /*ISteamNetworkingSockets*/ mpInternal;
 	
 	// For dedicated clients: the network connection to a server
 	// For dedicated or integrated servers: the listen socket
-	ui32 mConnection;
+	ConnectionId mConnection;
 	ui32 mServerPollGroup;
 
-	std::set<ui32> mConnections;
-	std::map<ui32 /*connectionId*/, ui32 /*netId*/> mClients;
-	std::map<ui32 /*netId*/, ui32 /*connectionId*/> mNetIdToConnection;
-	std::set<ui32> mUnusedNetIds;
-	ui32 nextNetworkId();
-	void addClient(ui32 connection, ui32 netId);
+	std::set<ConnectionId> mConnections;
+	std::map<ConnectionId, network::Identifier> mClients;
+	std::map<network::Identifier, ConnectionId> mNetIdToConnection;
+	std::set<network::Identifier> mUnusedNetIds;
+	network::Identifier nextNetworkId();
+	void addClient(ConnectionId connId, network::Identifier netId);
 
 	struct RecievedPacket
 	{

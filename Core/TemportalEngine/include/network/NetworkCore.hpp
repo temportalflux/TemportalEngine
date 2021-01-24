@@ -14,9 +14,10 @@ enum class EType : ui8
 enum class EClientStatus : ui8
 {
 	eDisconnected = 0,
-	eAuthenticating = 1,
-	eConnected = 2,
+	eConnected = 1,
 };
+
+using Identifier = ui32;
 
 logging::Logger& logger();
 std::optional<std::string> init();

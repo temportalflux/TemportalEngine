@@ -414,9 +414,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp">
       <Filter>utility</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Workspaces\TemportalEngine\Core\TemportalEngine\source\ecs\component\ComponentPlayerPhysics.cpp">
-      <Filter>ecs\component</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
@@ -426,6 +423,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp">
       <Filter>ecs</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerPhysics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />

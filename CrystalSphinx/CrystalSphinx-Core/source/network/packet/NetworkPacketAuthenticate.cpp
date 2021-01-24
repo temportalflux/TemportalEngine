@@ -52,6 +52,7 @@ void Authenticate::sendAuthToken(ui32 connection, utility::Guid const& userId)
 	auto pServer = game::Game::Get()->server();
 	auto userAuthKey = pServer->getUserPublicKey(userId);
 
+	// will immediately process for integrated clients
 	Authenticate::create()
 		->setToken(userAuthKey.encrypt(connection))
 		.setServerPublicKey(pServer->serverRSA().publicData())
@@ -60,7 +61,7 @@ void Authenticate::sendAuthToken(ui32 connection, utility::Guid const& userId)
 
 void Authenticate::process(Interface *pInterface)
 {
-	if (pInterface->type() == EType::eClient)
+	if (pInterface->type().includes(EType::eClient))
 	{
 		auto pClient = game::Game::Get()->client();
 		
@@ -75,27 +76,32 @@ void Authenticate::process(Interface *pInterface)
 		auto key = crypto::RSAKey();
 		crypto::RSAKey::fromPublicData(this->mServerPublicKey, key);
 		key.encrypt(this->mToken);
-		
-		// 3. Send back to server
-		this->sendToServer();
+
+		if (pInterface->type() == EType::eClient)
+		{
+			// 3. Send back to server
+			this->sendToServer();
+			return;
+		}
+		// otherwise this will also process the server portion below
 	}
-	else if (pInterface->type().includes(EType::eServer))
+	
+	if (pInterface->type().includes(EType::eServer))
 	{
 		auto pServer = game::Game::Get()->server();
 		auto const& serverPrivateKey = pServer->serverRSA();
 		auto const connectionId = this->connection();
-		auto const netId = pInterface->getNetIdFor(connectionId);
 		auto const token = serverPrivateKey.decrypt<ui32>(this->mToken);
 		if (token == connectionId)
 		{
 			// we have confirmed the user is who they say they are
-			network::logger().log(LOG_DEBUG, "Network-id %i successfully authenticated", netId);
-			pInterface->markClientAuthenticated(netId);
+			network::logger().log(LOG_DEBUG, "Successfully authenticated connecitonId(%u).", connectionId);
+			pInterface->markClientAuthenticated(connectionId);
 		}
 		else
 		{
-			network::logger().log(LOG_DEBUG, "Network-id %i failed authentication", netId);
-			pServer->kick(netId);
+			network::logger().log(LOG_DEBUG, "Failed to authenticate connecitonId(%u), closing connection.", connectionId);
+			pInterface->closeConnection(connectionId);
 		}
 	}
 }

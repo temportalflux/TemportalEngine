@@ -55,15 +55,15 @@ public:
 	void onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
 
 	utility::Guid const& localUserId() const;
-	ui32 localUserNetId() const;
 	crypto::RSAKey localUserAuthKey() const;
-	void setLocalUserNetId(ui32 netId);
+	network::Identifier localUserNetId() const;
+	void setLocalUserNetId(network::Identifier netId);
 
-	game::UserInfo& getConnectedUserInfo(ui32 netId);
+	game::UserInfo& getConnectedUserInfo(network::Identifier netId);
 
 protected:
-	void addConnectedUser(ui32 netId) override;
-	void removeConnectedUser(ui32 netId) override;
+	void addConnectedUser(network::Identifier netId) override;
+	void removeConnectedUser(network::Identifier netId) override;
 
 private:
 	game::ClientSettings mClientSettings;
@@ -116,10 +116,10 @@ private:
 	void exec_stopHostingServer(command::Signature const& cmd);
 	void exec_printConnectedUsers(command::Signature const& cmd);
 
-	void onNetIdReceived(network::Interface *pInterface, ui32 netId);
-	void onDedicatedClientAuthenticated(network::Interface *pInterface);
-	void onClientPeerStatusChanged(network::Interface *pInterface, ui32 netId, network::EClientStatus status);
-	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 invalidNetId);
+	void sendAuthenticationId(network::Interface *pNetwork, network::ConnectionId connectionId);
+	void onClientAuthenticated(network::Interface *pInterface, network::Identifier netId);
+	void onClientPeerStatusChanged(network::Interface *pInterface, network::Identifier netId, network::EClientStatus status);
+	void onDedicatedClientDisconnected(network::Interface *pInterface, network::Identifier invalidNetId);
 	void onNetworkStopped(network::Interface *pInterface);
 
 	void onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject);

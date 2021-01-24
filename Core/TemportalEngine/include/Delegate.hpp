@@ -44,16 +44,25 @@ class BroadcastDelegate
 	struct Pair
 	{
 		TKey key;
+		ui8 priority; // lower numbers go first
 		TBinding binding;
 	};
 
 public:
 	BroadcastDelegate() = default;
 	
-	void bind(TKey key, TBinding binding)
+	void bind(TKey key, TBinding binding, ui8 priority = 255)
 	{
 		assert(!this->hasBindingFor(key));
-		this->mBindings.push_back({ key, binding });
+		auto iter = std::lower_bound(
+			this->mBindings.begin(), this->mBindings.end(),
+			priority,
+			[](Pair const& binding, ui8 const& desiredPriority)
+			{
+				return binding.priority < desiredPriority;
+			}
+		);
+		this->mBindings.insert(iter, { key, priority, binding });
 	}
 
 	template <typename T>

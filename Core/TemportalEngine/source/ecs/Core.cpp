@@ -130,6 +130,7 @@ Core::ReplicationPacket Core::replicateUpdate(
 	if (packet == nullptr)
 	{
 		packet = replicate();
+		packet->setObjectEcsType(ecsType);
 		packet->setReplicationType(typeUpdate);
 		packet->setObjectTypeId(typeId);
 		packet->setObjectNetId(netId);

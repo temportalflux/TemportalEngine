@@ -25,23 +25,30 @@ public:
 	crypto::RSAKey& serverRSA() { return this->mServerRSA; }
 
 	void setupNetwork(utility::Flags<network::EType> flags);
-	void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId) override;
-	void kick(ui32 netId);
+	void kick(network::Identifier netId);
 
-	void associatePlayer(ui32 netId, ecs::Identifier entityId);
+	void addPendingAuthentication(network::ConnectionId connId, utility::Guid const& userId);
+	utility::Guid removePendingAuthentication(network::ConnectionId connId);
+	void associatePlayer(network::Identifier netId, ecs::Identifier entityId);
 
 private:
 	saveData::ServerSettings mServerSettings;
 	crypto::RSAKey mServerRSA;
 
 	void onNetworkStarted(network::Interface *pInterface);
-	void onDedicatedClientAuthenticated(network::Interface *pInterface, ui32 netId);
-	void onDedicatedClientDisconnected(network::Interface *pInterface, ui32 netId);
-	void onNetworkConnnectionClosed(network::Interface *pInterface, ui32 connection, ui32 netId);
+	void onClientConnected(network::Interface *pInterface, network::ConnectionId connId);
+	void onClientAuthenticated(network::Interface *pInterface, network::Identifier netId);
+	void onDedicatedClientDisconnected(network::Interface *pInterface, network::Identifier netId);
+	void onNetworkConnnectionClosed(
+		network::Interface *pInterface, network::ConnectionId connection,
+		std::optional<network::Identifier> netId
+	);
 	void onNetworkStopped(network::Interface *pInterface);
 
-	std::map<ui32, ecs::Identifier> mNetIdToPlayerEntityId;
-	void destroyPlayer(ui32 netId);
+	std::map<network::ConnectionId, utility::Guid> mPendingAuthentications;
+
+	std::map<network::Identifier, ecs::Identifier> mNetIdToPlayerEntityId;
+	void destroyPlayer(network::Identifier netId);
 
 };
 

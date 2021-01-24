@@ -25,14 +25,12 @@ public:
 	std::shared_ptr<world::World> world() const;
 
 	std::map<ui32, utility::Guid> const& connectedUsers() const;
-	bool hasConnectedUser(ui32 netId) const;
+	bool hasConnectedUser(network::Identifier netId) const;
 	bool hasConnectedUser(utility::Guid const& id) const;
-	utility::Guid& findConnectedUser(ui32 netId);
-
-	virtual void onNetworkConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId) {}
-
-	virtual void addConnectedUser(ui32 netId);
-	virtual void removeConnectedUser(ui32 netId);
+	utility::Guid& findConnectedUser(network::Identifier netId);
+	
+	virtual void addConnectedUser(network::Identifier netId);
+	virtual void removeConnectedUser(network::Identifier netId);
 
 protected:
 	game::UserIdRegistry& userRegistry();
@@ -41,7 +39,7 @@ protected:
 
 private:
 	game::UserIdRegistry mUserRegistry;
-	std::map<ui32, utility::Guid> mConnectedUsers;
+	std::map<network::Identifier, utility::Guid> mConnectedUsers;
 
 };
 

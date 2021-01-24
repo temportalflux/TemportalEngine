@@ -80,7 +80,16 @@ void Packet::send(ui32 connection)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
 	assert(network.type().includes(EType::eServer));
-	network.sendPackets({ connection }, { this->shared_from_this() });
+	if (connection != network.connection())
+	{
+		network.sendPackets({ connection }, { this->shared_from_this() });
+	}
+	else
+	{
+		// if the connection is is the server's connection, this is a client on top of server call
+		this->setSourceConnection(network.connection());
+		this->process(&network);
+	}
 }
 
 void Packet::sendTo(ui32 netId)
@@ -94,5 +103,14 @@ void Packet::broadcast(std::set<ui32> except)
 {
 	auto& network = engine::Engine::Get()->networkInterface();
 	assert(network.type().includes(EType::eServer));
+	auto const connId = network.connection();
+	if (
+		network.type().includes(EType::eClient)
+		&& /*local user net id is not in exceptions*/ except.find(connId) == except.end()
+	)
+	{
+		this->setSourceConnection(connId);
+		this->process(&network);
+	}
 	network.sendPackets(network.connections(), { this->shared_from_this() }, except);
 }

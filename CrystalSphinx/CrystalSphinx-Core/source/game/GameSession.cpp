@@ -20,12 +20,12 @@ game::UserIdRegistry const& Session::userRegistry() const { return this->mUserRe
 
 std::map<ui32, utility::Guid> const& Session::connectedUsers() const { return this->mConnectedUsers; }
 
-void Session::addConnectedUser(ui32 netId)
+void Session::addConnectedUser(network::Identifier netId)
 {
 	this->mConnectedUsers.insert(std::make_pair(netId, utility::Guid()));
 }
 
-bool Session::hasConnectedUser(ui32 netId) const
+bool Session::hasConnectedUser(network::Identifier netId) const
 {
 	return this->mConnectedUsers.find(netId) != this->mConnectedUsers.end();
 }
@@ -39,14 +39,14 @@ bool Session::hasConnectedUser(utility::Guid const& id) const
 	return false;
 }
 
-utility::Guid& Session::findConnectedUser(ui32 netId)
+utility::Guid& Session::findConnectedUser(network::Identifier netId)
 {
 	auto iter = this->mConnectedUsers.find(netId);
 	assert(iter != this->mConnectedUsers.end());
 	return iter->second;
 }
 
-void Session::removeConnectedUser(ui32 netId)
+void Session::removeConnectedUser(network::Identifier netId)
 {
 	auto iter = this->mConnectedUsers.find(netId);
 	assert(iter != this->mConnectedUsers.end());
