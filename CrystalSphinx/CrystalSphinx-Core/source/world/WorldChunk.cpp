@@ -2,6 +2,8 @@
 
 #include "Engine.hpp"
 #include "game/GameInstance.hpp"
+#include "game/GameServer.hpp"
+#include "game/GameClient.hpp"
 #include "world/World.hpp"
 #include "world/WorldTerrain.hpp"
 #include "world/WorldCoordinate.hpp"
@@ -46,13 +48,22 @@ std::optional<game::BlockId> Chunk::getBlockId(math::Vector3Int const local) con
 
 void Chunk::generate()
 {
-	assert(false);
 	//srand(this->mpTerrain.lock()->getSeed());
+	srand(0);
 
 	// Only actually needed when re-generating the chunk so that no metadata from the previous gen is left over
 	FOR_CHUNK_SIZE(i32, x) FOR_CHUNK_SIZE(i32, y) FOR_CHUNK_SIZE(i32, z) this->mBlockMetadata[{ x, y, z }] = std::nullopt;
 
-	auto typeRegistry = game::Game::Get()->world()->voxelTypeRegistry();
+	auto pGame = game::Game::Get();
+	std::shared_ptr<game::VoxelTypeRegistry> typeRegistry;
+	if (pGame->server())
+	{
+		typeRegistry = pGame->server()->voxelTypeRegistry();
+	}
+	else if (pGame->client())
+	{
+		typeRegistry = pGame->client()->voxelTypeRegistry();
+	}
 	auto allVoxelIdsSet = typeRegistry->getIds();
 
 	auto allVoxelIdOptions = std::vector<std::optional<game::BlockId>>();
@@ -111,7 +122,16 @@ Chunk& Chunk::load()
 {
 	// TODO: Save and load from file
 	this->generate();
-	this->mpTerrain.lock()->onLoadedChunk(*this);
+	this->mpTerrain.lock()->finishLoadingChunk(this);
+	return *this;
+}
+
+Chunk& Chunk::readFrom(std::vector<VoxelEntry> const& voxelList)
+{
+	for (auto const& entry : voxelList)
+	{
+		this->setBlockId(entry.first, entry.second);
+	}
 	return *this;
 }
 

@@ -95,30 +95,31 @@ void VoxelModelManager::onTexturesLoaded(resource::PackManager *packManager)
 			{
 				auto const texId = "voxel:" + shortId;
 				auto nextIter = packEntriesByTextureId.find(texId);
-				if (!prev)
-				{
-					prev = texId;
-					prevSize = packManager->getTextureData(nextIter->second).size;
-					continue;
-				}
-
-				auto prevIter = packEntriesByTextureId.find(*prev);
 				if (nextIter == packEntriesByTextureId.end())
 				{
 					// ERROR texture not found
-					VoxelModelLog.log(LOG_ERR, "Failed to find texture id '%s' for voxel '%s'", texId, voxelEntry.first);
+					VoxelModelLog.log(
+						LOG_ERR, "Failed to find texture id '%s' for voxel '%s'",
+						texId.c_str(), voxelEntry.first.to_string().c_str()
+					);
 					bCanPackVoxel = false;
 					continue;
 				}
 
 				auto nextSize = packManager->getTextureData(nextIter->second).size;
-				if (nextSize != *prevSize)
+				if (!prevSize)
+				{
+					prevSize = nextSize;
+				}
+				else if (nextSize != *prevSize)
 				{
 					// ERROR sizes dont match
 					VoxelModelLog.log(LOG_ERR, "Voxel '%s' textures '%s' and '%s' do not have the same size.", voxelEntry.first, *prev, texId);
 					bCanPackVoxel = false;
 					continue;
 				}
+
+				prev = texId;
 			}
 		}
 		if (!bCanPackVoxel) continue;

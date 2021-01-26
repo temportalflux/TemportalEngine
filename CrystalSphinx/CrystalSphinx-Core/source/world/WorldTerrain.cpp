@@ -24,6 +24,13 @@ void Terrain::removeEventListener(std::shared_ptr<WorldEventListener> listener)
 	this->OnVoxelsChanged.unbind(listener);
 }
 
+Chunk* Terrain::getChunk(math::Vector3Int const& coordinate)
+{
+	auto pChunk = this->findChunk(coordinate);
+	assert(pChunk != nullptr);
+	return pChunk;
+}
+
 Chunk* Terrain::getOrLoadChunk(math::Vector3Int const& coordinate)
 {
 	if (auto chunk = this->findChunk(coordinate))
@@ -50,11 +57,24 @@ Chunk* Terrain::findChunk(math::Vector3Int const& coordinate)
 
 Chunk* Terrain::loadChunk(math::Vector3Int const &coordinate)
 {
+	auto pChunk = this->startLoadingChunk(coordinate);
+	pChunk->load();
+	return pChunk;
+}
+
+Chunk* Terrain::startLoadingChunk(math::Vector3Int const& coordinate)
+{
 	this->OnLoadingChunk.broadcast(coordinate);
-	return &(this->mActiveChunks.insert(
+	auto iter = this->mActiveChunks.insert(
 		this->mActiveChunks.end(),
 		Chunk(this->weak_from_this(), coordinate)
-	)->load());
+	);
+	return &(*iter);
+}
+
+void Terrain::finishLoadingChunk(Chunk* pChunk)
+{
+	this->onLoadedChunk(*pChunk);
 }
 
 void Terrain::reloadChunk(math::Vector3Int const &coordinate)

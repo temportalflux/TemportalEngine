@@ -30,6 +30,7 @@
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketAuthenticate.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
+#include "network/packet/NetworkPacketChunkReplication.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
@@ -69,9 +70,14 @@ Game::Game(int argc, char *argv[])
 
 	auto* networkInterface = Game::networkInterface();
 	networkInterface->packetTypes()
+		// Authentication
 		.addType<network::packet::LoginWithAuthId>()
 		.addType<network::packet::Authenticate>()
+		// User Data
 		.addType<network::packet::UpdateUserInfo>()
+		// World Replication
+		.addType<network::packet::ChunkReplication>()
+		// Chat
 		.addType<network::packet::ChatMessage>()
 		;
 	

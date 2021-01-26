@@ -12,7 +12,6 @@
 #include "physics/PhysicsScene.hpp"
 #include "physics/PhysicsShape.hpp"
 #include "physics/PhysicsSystem.hpp"
-#include "registry/VoxelType.hpp"
 #include "saveData/SaveDataRegistry.hpp"
 #include "world/WorldSaveData.hpp"
 #include "world/WorldTerrain.hpp"
@@ -31,7 +30,6 @@ World::~World()
 
 void World::init()
 {
-	this->createVoxelTypeRegistry();
 	this->initializePhysics();
 	this->mOverworld.id = 0;
 	this->createDimension(&this->mOverworld);
@@ -43,23 +41,12 @@ void World::uninit()
 	this->mPhysicsControllerByUserNetId.clear();
 	this->destroyDimension(&this->mOverworld);
 	this->uninitializePhysics();
-	this->mpVoxelTypeRegistry.reset();
 	ecs::Core::Get()->entities().releaseAll();
 }
 
-std::shared_ptr<game::VoxelTypeRegistry> World::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 std::shared_ptr<physics::Material> World::playerPhysicsMaterial() { return this->mpPlayerPhysicsMaterial; }
-std::shared_ptr<physics::Scene> World::dimensionScene(ui32 dimId) { return this->mOverworld.mpScene; }
-
-void World::createVoxelTypeRegistry()
-{
-	this->mpVoxelTypeRegistry = std::make_shared<game::VoxelTypeRegistry>();
-
-	WORLD_LOG.log(LOG_INFO, "Gathering block types...");
-	auto blockList = engine::Engine::Get()->getAssetManager()->getAssetList<asset::BlockType>();
-	WORLD_LOG.log(LOG_INFO, "Found %i block types", blockList.size());
-	this->mpVoxelTypeRegistry->registerEntries(blockList);
-}
+std::shared_ptr<physics::Scene> World::dimensionScene(DimensionId dimId) { return this->dimension(dimId).mpScene; }
+std::shared_ptr<world::Terrain> World::terrain(DimensionId dimId) { return this->dimension(dimId).mpTerrain; }
 
 void World::initializePhysics()
 {
@@ -96,9 +83,11 @@ void World::createDimension(Dimension *dim)
 
 	dim->mpTerrain = std::make_shared<world::Terrain>();
 	dim->mpTerrain->addEventListener(dim->mpChunkCollisionManager);
+}
 
-	//this->mpTerrain->loadChunk({ 0, 0, 0 });
-	//this->mpTerrain->loadChunk({ 0, 0, -1 });
+World::Dimension& World::dimension(DimensionId const& dimId)
+{
+	return this->mOverworld;
 }
 
 void World::destroyDimension(Dimension *dim)
@@ -111,12 +100,12 @@ void World::destroyDimension(Dimension *dim)
 
 void World::addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
 {
-	this->mOverworld.mpTerrain->addEventListener(listener);
+	this->dimension(dimId).mpTerrain->addEventListener(listener);
 }
 
 void World::removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener)
 {
-	this->mOverworld.mpTerrain->removeEventListener(listener);
+	this->dimension(dimId).mpTerrain->removeEventListener(listener);
 }
 
 ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& position)
@@ -136,7 +125,6 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 
 	// Add Transform
 	{
-		// TODO: Load player location and rotation from save data
 		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
 		transform->setPosition(position);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)

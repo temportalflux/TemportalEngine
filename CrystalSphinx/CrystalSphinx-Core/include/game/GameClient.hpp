@@ -48,8 +48,9 @@ public:
 	std::shared_ptr<ui::TextLogMenu> chat();
 	game::ClientSettings& settings();
 
-	void init();
-	void uninit();
+	logging::Logger& logger() override;
+	void init() override;
+	void uninit() override;
 
 	void setupNetwork(network::Address const& serverAddress);
 	void onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);

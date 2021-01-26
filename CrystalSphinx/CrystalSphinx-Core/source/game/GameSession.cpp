@@ -1,7 +1,9 @@
 #include "game/GameSession.hpp"
 
+#include "asset/BlockType.hpp"
 #include "game/GameInstance.hpp"
 #include "world/World.hpp"
+#include "registry/VoxelType.hpp"
 
 using namespace game;
 
@@ -13,7 +15,28 @@ Session::~Session()
 {
 }
 
+std::shared_ptr<game::VoxelTypeRegistry> Session::voxelTypeRegistry() { return this->mpVoxelTypeRegistry; }
 std::shared_ptr<world::World> Session::world() const { return game::Game::Get()->world(); }
+
+void Session::init()
+{
+	this->createVoxelTypeRegistry();
+}
+
+void Session::uninit()
+{
+	this->mpVoxelTypeRegistry.reset();
+}
+
+void Session::createVoxelTypeRegistry()
+{
+	this->mpVoxelTypeRegistry = std::make_shared<game::VoxelTypeRegistry>();
+
+	this->logger().log(LOG_INFO, "Gathering block types...");
+	auto blockList = engine::Engine::Get()->getAssetManager()->getAssetList<asset::BlockType>();
+	this->logger().log(LOG_INFO, "Found %i block types", blockList.size());
+	this->mpVoxelTypeRegistry->registerEntries(blockList);
+}
 
 game::UserIdRegistry& Session::userRegistry() { return this->mUserRegistry; }
 game::UserIdRegistry const& Session::userRegistry() const { return this->mUserRegistry; }

@@ -246,6 +246,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\WorldTerrain.hpp">
       <Filter>world</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChunkReplication.hpp">
+      <Filter>network\packet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\BlockType.cpp">
@@ -413,6 +416,9 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldTerrain.cpp">
       <Filter>world</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChunkReplication.cpp">
+      <Filter>network\packet</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

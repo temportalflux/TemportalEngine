@@ -22,8 +22,8 @@ public:
 	 */
 	world::Coordinate makeSpawnLocation() const;
 
-protected:
-	void loadChunk(Dimension &dim, math::Vector3Int coord) override;
+	void init() override;
+	void loadChunk(DimensionId const& dimId, math::Vector3Int const& coord) override;
 
 private:
 	saveData::Instance* mpSaveInstance;

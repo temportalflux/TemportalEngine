@@ -39,6 +39,8 @@ private:
 	EChunkLoadTier mTier;
 };
 
+using VoxelEntry = std::pair<math::Vector3Int, game::BlockId>;
+
 /**
  * The structure representing a currently loaded chunk.
  */
@@ -62,6 +64,7 @@ public:
 	void generate();
 
 	Chunk& load();
+	Chunk& readFrom(std::vector<VoxelEntry> const& voxelList);
 	void createLoadHandle(EChunkLoadTier tier, ChunkHandle &out);
 	void releaseLoadHandle(EChunkLoadTier tier);
 	bool shouldStayLoaded() const;

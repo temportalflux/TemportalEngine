@@ -15,7 +15,7 @@ public:
 	~Server();
 
 	void loadFrom(saveData::Instance *saveInstance);
-	void init();
+	logging::Logger& logger() override;
 
 	bool hasSaveForUser(utility::Guid const& id) const;
 	void initializeUser(utility::Guid const& id, crypto::RSAKey const& key);

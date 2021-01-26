@@ -38,6 +38,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameUserIdRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketAuthenticate.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChunkReplication.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChatMessage.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp" />
@@ -99,6 +100,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameUserIdRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketAuthenticate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChunkReplication.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChatMessage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp" />

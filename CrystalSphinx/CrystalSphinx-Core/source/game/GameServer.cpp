@@ -3,6 +3,7 @@
 #include "game/GameInstance.hpp"
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
+#include "network/packet/NetworkPacketChunkReplication.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "world/WorldSaved.hpp"
 
@@ -26,8 +27,9 @@ void Server::loadFrom(saveData::Instance *saveInstance)
 	this->userRegistry().scan(saveInstance->userDirectory());
 }
 
-void Server::init()
+logging::Logger& Server::logger()
 {
+	return SERVER_LOG;
 }
 
 void Server::setupNetwork(utility::Flags<network::EType> flags)
@@ -78,7 +80,8 @@ void Server::kick(network::Identifier netId)
 
 void Server::onClientAuthenticated(network::Interface *pInterface, network::Identifier netId)
 {
-	auto userId = this->removePendingAuthentication(pInterface->getConnectionFor(netId));
+	auto const connId = pInterface->getConnectionFor(netId);
+	auto const userId = this->removePendingAuthentication(connId);
 	this->addConnectedUser(netId);
 	this->findConnectedUser(netId) = userId;
 
@@ -96,11 +99,17 @@ void Server::onClientAuthenticated(network::Interface *pInterface, network::Iden
 
 	auto pWorld = std::dynamic_pointer_cast<world::WorldSaved>(this->world());
 	assert(pWorld);
-	// Replicate initial world data (both dedicated and integrated clients)
+	
+	// TODO: Load player location and rotation from save data
+	auto const playerLocation = pWorld->makeSpawnLocation();
 
-	this->associatePlayer(netId, game::Game::Get()->world()->createPlayer(
-		netId, pWorld->makeSpawnLocation()
-	));
+	// Replicate initial world data (both dedicated and integrated clients)
+	network::packet::ChunkReplication::create()
+		->initializeDimension(0, { playerLocation.chunk() })
+		.send(connId);
+
+	auto const entityId = game::Game::Get()->world()->createPlayer(netId, playerLocation);
+	this->associatePlayer(netId, entityId);
 }
 
 void Server::onDedicatedClientDisconnected(network::Interface *pInterface, network::Identifier netId)

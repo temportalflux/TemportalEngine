@@ -10,7 +10,6 @@
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 NS_END
-FORWARD_DEF(NS_GAME, class VoxelTypeRegistry);
 FORWARD_DEF(NS_PHYSICS, class Material);
 FORWARD_DEF(NS_PHYSICS, class RigidBody);
 FORWARD_DEF(NS_PHYSICS, class Scene);
@@ -20,6 +19,8 @@ FORWARD_DEF(NS_WORLD, class Terrain);
 
 NS_WORLD
 
+using DimensionId = ui32;
+
 class World : public virtual_enable_shared_from_this<World>
 {
 
@@ -27,14 +28,14 @@ public:
 	World();
 	virtual ~World();
 
-	std::shared_ptr<game::VoxelTypeRegistry> voxelTypeRegistry();
 	std::shared_ptr<physics::Material> playerPhysicsMaterial();
-	std::shared_ptr<physics::Scene> dimensionScene(ui32 dimId);
+	std::shared_ptr<physics::Scene> dimensionScene(DimensionId dimId);
+	std::shared_ptr<world::Terrain> terrain(DimensionId dimId);
 	void addTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener);
 	void removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener);
 
-	void init();
-	void uninit();
+	virtual void init();
+	virtual void uninit();
 	void update(f32 deltaTime);
 
 	/**
@@ -47,6 +48,8 @@ public:
 	void createPlayerController(ui32 userNetId, ecs::Identifier localEntityId);
 	void destroyPlayerController(ui32 userNetId);
 
+	virtual void loadChunk(DimensionId const& dimId, math::Vector3Int const& coord) {}
+
 protected:
 	struct Dimension
 	{
@@ -55,13 +58,9 @@ protected:
 		std::shared_ptr<world::Terrain> mpTerrain;
 		std::shared_ptr<physics::ChunkCollisionManager> mpChunkCollisionManager;
 	};
-
-	virtual void loadChunk(Dimension &dim, math::Vector3Int coord) {}
+	Dimension& dimension(DimensionId const& dimId);
 
 private:
-
-	std::shared_ptr<game::VoxelTypeRegistry> mpVoxelTypeRegistry;
-	void createVoxelTypeRegistry();
 
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Material> mpPlayerPhysicsMaterial;

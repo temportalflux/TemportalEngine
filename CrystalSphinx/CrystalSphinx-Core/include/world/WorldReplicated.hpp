@@ -2,6 +2,10 @@
 
 #include "world/World.hpp"
 
+NS_NETWORK
+FORWARD_DEF(NS_PACKET, class ChunkReplication);
+NS_END
+
 NS_WORLD
 
 class WorldReplicated : public World
@@ -9,6 +13,8 @@ class WorldReplicated : public World
 
 public:
 	WorldReplicated();
+
+	void initializeDimension(network::packet::ChunkReplication *pPacket);
 
 };
 

@@ -5,11 +5,11 @@
 		"name": "grass"
 	},
   "textures": {
-    "right": "grass-side",
-    "left": "grass-side",
-    "front": "grass-side",
-    "back": "grass-side",
-    "up": "grass-top",
+    "right": "grass_side",
+    "left": "grass_side",
+    "front": "grass_side",
+    "back": "grass_side",
+    "up": "grass_top",
     "down": "dirt"
   }
 }

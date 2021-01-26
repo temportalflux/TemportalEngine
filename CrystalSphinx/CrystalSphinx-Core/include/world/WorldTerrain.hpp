@@ -23,8 +23,11 @@ public:
 	void addEventListener(std::shared_ptr<WorldEventListener> listener);
 	void removeEventListener(std::shared_ptr<WorldEventListener> listener);
 
+	Chunk* getChunk(math::Vector3Int const& coordinate);
 	Chunk* getOrLoadChunk(math::Vector3Int const& coordinate);
 	Chunk* loadChunk(math::Vector3Int const &coordinate);
+	Chunk* startLoadingChunk(math::Vector3Int const& coordinate);
+	void finishLoadingChunk(Chunk* pChunk);
 	void reloadChunk(math::Vector3Int const &coordinate);
 	void unloadChunk(math::Vector3Int const &coordinate);
 	void unloadChunks(std::vector<math::Vector3Int> coordinates);

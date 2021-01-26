@@ -67,8 +67,11 @@ std::shared_ptr<ui::FontOwner> Client::uiFontOwner() { return this->mpUIRenderer
 std::shared_ptr<ui::TextLogMenu> Client::chat() { return this->mpMenuTextLog; }
 game::ClientSettings& Client::settings() { return this->mClientSettings; }
 
+logging::Logger& Client::logger() { return CLIENT_LOG; }
+
 void Client::init()
 {
+	Session::init();
 	auto* networkInterface = Game::networkInterface();
 	networkInterface->onConnectionEstablished.bind(this->weak_from_this(), std::bind(
 		&game::Client::sendAuthenticationId, this,
@@ -119,6 +122,7 @@ void Client::uninit()
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpResourcePackManager.reset();
 	this->destroyWindow();
+	Session::uninit();
 }
 
 void Client::registerCommands()
@@ -249,6 +253,7 @@ void Client::exec_openSave(command::Signature const& cmd)
 	auto pWorld = game::Game::Get()->createWorld<world::WorldSaved>(&saveData.get(saveName));
 	pWorld->init();
 	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
+	// TODO: Load player location and rotation from save data
 	this->mLocalPlayerEntityId = pWorld->createPlayer(0, pWorld->makeSpawnLocation());
 }
 
@@ -614,7 +619,7 @@ void Client::createRenderers()
 	auto pEngine = engine::Engine::Get();
 
 	this->createGameRenderer();
-	//this->loadVoxelTypeTextures();
+	this->loadVoxelTypeTextures();
 
 	this->mpTextureRegistry = std::make_shared<graphics::TextureRegistry>(
 		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool(), &this->mpRenderer->getDescriptorPool()
@@ -711,13 +716,14 @@ void Client::loadVoxelTypeTextures()
 		this->mpRenderer->getDevice(), &this->mpRenderer->getTransientPool()
 	);
 	this->mpVoxelModelManager->setSampler(asset::TypedAssetPath<asset::TextureSampler>(asset::SAMPLER_NEAREST_NEIGHBOR));
-	//this->mpVoxelModelManager->loadRegistry(game::Game::Get()->worldLogic()->voxelTypeRegistry());
+	// TODO: world is not initialized
+	this->mpVoxelModelManager->loadRegistry(this->voxelTypeRegistry());
 	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpVoxelModelManager, this->mpVoxelModelManager->onTexturesLoadedEvent());
 }
 
 void Client::createPipelineRenderers()
 {
-	//this->createVoxelGridRenderer();
+	this->createVoxelGridRenderer();
 	this->createWorldAxesRenderer();
 	this->createChunkBoundaryRenderer();
 	this->createUIRenderer();
@@ -748,7 +754,7 @@ void Client::createVoxelGridRenderer()
 {
 	auto const totalBlockCount = blockCountForRenderDistance(6);
 
-	auto voxelTypes = game::Game::Get()->world()->voxelTypeRegistry();
+	auto voxelTypes = this->voxelTypeRegistry();
 	this->mpVoxelInstanceBuffer = std::make_shared<world::BlockInstanceBuffer>(
 		totalBlockCount, voxelTypes
 	);

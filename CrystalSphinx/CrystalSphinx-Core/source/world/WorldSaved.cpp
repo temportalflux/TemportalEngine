@@ -2,6 +2,7 @@
 
 #include "saveData/SaveDataRegistry.hpp"
 #include "utility/Random.hpp"
+#include "world/WorldTerrain.hpp"
 
 using namespace world;
 
@@ -33,6 +34,8 @@ math::Vector2Int WorldSaved::getSpawnChunkCoord() const
 
 world::Coordinate WorldSaved::makeSpawnLocation() const
 {
+	return world::Coordinate({0,0,0}, {8,2,8});
+
 	// using time as seed - not deterministic
 	auto random = utility::Random((ui32)time(0));
 
@@ -51,7 +54,16 @@ world::Coordinate WorldSaved::makeSpawnLocation() const
 	return world::Coordinate(chunkPos, voxelPos);
 }
 
-void WorldSaved::loadChunk(Dimension &dim, math::Vector3Int coord)
+void WorldSaved::init()
 {
-	// TODO
+	World::init();
+
+	// TODO: Use a dynamic ticket loading system
+	this->loadChunk(0, { 0, 0, 0 });
+}
+
+void WorldSaved::loadChunk(DimensionId const& dimId, math::Vector3Int const& coord)
+{
+	auto& dimension = this->dimension(dimId);
+	dimension.mpTerrain->loadChunk(coord);
 }
