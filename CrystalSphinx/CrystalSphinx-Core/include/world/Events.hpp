@@ -12,7 +12,7 @@ using TChangedVoxelsList = std::vector<std::pair<world::Coordinate, std::optiona
 using TOnVoxelsChangedEvent = BroadcastDelegate<void(TChangedVoxelsList const&)>;
 using TOnVoxelsChangedListener = std::function<void(TChangedVoxelsList const&)>;
 
-class WorldEventListener
+class WorldEventListener : public virtual_enable_shared_from_this<WorldEventListener>
 {
 
 public:

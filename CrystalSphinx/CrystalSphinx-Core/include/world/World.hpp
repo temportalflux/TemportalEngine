@@ -3,9 +3,10 @@
 #include "CoreInclude.hpp"
 
 #include "ecs/types.h"
+#include "network/NetworkCore.hpp"
+#include "physics/PhysicsController.hpp"
 #include "world/Events.hpp"
 #include "world/WorldCoordinate.hpp"
-#include "physics/PhysicsController.hpp"
 
 NS_ECS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
@@ -45,8 +46,9 @@ public:
 	ecs::Identifier createPlayer(ui32 clientNetId, world::Coordinate const& position);
 	void destroyPlayer(ui32 userNetId, ecs::Identifier entityId);
 
-	void createPlayerController(ui32 userNetId, ecs::Identifier localEntityId);
-	void destroyPlayerController(ui32 userNetId);
+	void createPlayerController(network::Identifier userNetId, ecs::Identifier localEntityId);
+	physics::Controller& getPhysicsController(network::Identifier userNetId);
+	void destroyPlayerController(network::Identifier userNetId);
 
 	virtual void loadChunk(DimensionId const& dimId, math::Vector3Int const& coord) {}
 

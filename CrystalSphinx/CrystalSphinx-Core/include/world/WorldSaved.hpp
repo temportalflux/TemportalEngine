@@ -22,7 +22,6 @@ public:
 	 */
 	world::Coordinate makeSpawnLocation() const;
 
-	void init() override;
 	void loadChunk(DimensionId const& dimId, math::Vector3Int const& coord) override;
 
 private:

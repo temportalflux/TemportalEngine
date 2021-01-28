@@ -54,14 +54,6 @@ world::Coordinate WorldSaved::makeSpawnLocation() const
 	return world::Coordinate(chunkPos, voxelPos);
 }
 
-void WorldSaved::init()
-{
-	World::init();
-
-	// TODO: Use a dynamic ticket loading system
-	this->loadChunk(0, { 0, 0, 0 });
-}
-
 void WorldSaved::loadChunk(DimensionId const& dimId, math::Vector3Int const& coord)
 {
 	auto& dimension = this->dimension(dimId);

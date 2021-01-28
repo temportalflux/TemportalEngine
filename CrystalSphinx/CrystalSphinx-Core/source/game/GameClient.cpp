@@ -9,10 +9,8 @@
 #include "asset/TextureSampler.hpp"
 #include "asset/MinecraftAssetStatics.hpp"
 #include "ecs/component/CoordinateTransform.hpp"
-#include "ecs/component/ComponentPlayerInput.hpp"
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
-#include "ecs/component/ComponentPhysicsController.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
 #include "ecs/view/ViewRenderedMesh.hpp"
@@ -113,6 +111,7 @@ void Client::init()
 		auto pEngine = engine::Engine::Get();
 		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
 		pEngine->addTicker(this->mpSystemMovePlayerByInput);
+		this->mpSystemMovePlayerByInput->subscribeToQueue();
 	}
 }
 
@@ -253,8 +252,12 @@ void Client::exec_openSave(command::Signature const& cmd)
 	auto pWorld = game::Game::Get()->createWorld<world::WorldSaved>(&saveData.get(saveName));
 	pWorld->init();
 	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
+	pWorld->loadChunk(0, { 0, 0, 0 });
 	// TODO: Load player location and rotation from save data
-	this->mLocalPlayerEntityId = pWorld->createPlayer(0, pWorld->makeSpawnLocation());
+	this->mLocalUserNetId = 0;
+	this->mLocalPlayerEntityId = pWorld->createPlayer(
+		this->mLocalUserNetId.value(), pWorld->makeSpawnLocation()
+	);
 }
 
 void Client::exec_closeSave(command::Signature const& cmd)
@@ -469,6 +472,11 @@ network::Identifier Client::localUserNetId() const
 	return *this->mLocalUserNetId;
 }
 
+ecs::Identifier Client::localUserEntityId() const
+{
+	return this->mLocalPlayerEntityId;
+}
+
 void Client::addConnectedUser(network::Identifier netId)
 {
 	assert(!this->hasConnectedUser(netId));
@@ -499,7 +507,10 @@ void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs:
 		{
 			this->mLocalPlayerEntityId = pObject->id();
 			this->addPlayerControlParts(pEntity);
-			this->world()->createPlayerController(this->localUserNetId(), pObject->id());
+			if (game::Game::networkInterface()->type() == network::EType::eClient)
+			{
+				this->world()->createPlayerController(this->localUserNetId(), pObject->id());
+			}
 		}
 		this->addPlayerDisplayParts(pEntity);
 	}
@@ -518,16 +529,8 @@ void Client::addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity)
 
 	// enables `system::MovePlayerByInput`
 	// requires CoordinateTransform
-	// requires PlayerInput
 	// requires PhysicsController
 	pEntity->addView(ecs->views().create<ecs::view::PlayerInputMovement>());
-
-	// PlayerInput component
-	{
-		auto input = ecs->components().create<ecs::component::PlayerInput>();
-		input->subscribeToQueue();
-		pEntity->addComponent(input);
-	}
 
 }
 

@@ -58,6 +58,7 @@ public:
 	utility::Guid const& localUserId() const;
 	crypto::RSAKey localUserAuthKey() const;
 	network::Identifier localUserNetId() const;
+	ecs::Identifier localUserEntityId() const;
 	void setLocalUserNetId(network::Identifier netId);
 
 	game::UserInfo& getConnectedUserInfo(network::Identifier netId);

@@ -63,18 +63,24 @@ void DebugHUD::tick(f32 deltaTime)
 	if (this->mOccurance != 0) return;
 
 	auto pGame = game::Game::Get();
-	
-	/*
-	auto const& transform = pGame->localPlayer()->getComponent<ecs::component::CoordinateTransform>();
-	auto const& pos = transform->position();
-	this->mpPosition->setContent(utility::formatStr(
-		"Position| X:<%i,%i,%.2f> Y:<%i,%i,%.2f> Z:<%i,%i,%.2f>",
-		pos.chunk().x(), pos.local().x(), pos.offset().x(),
-		pos.chunk().y(), pos.local().y(), pos.offset().y(),
-		pos.chunk().z(), pos.local().z(), pos.offset().z()
-	));
-	//*/
+	if (pGame->world())
+	{
+		auto ecs = ecs::Core::Get();
+		auto pEntity = ecs->entities().get(pGame->client()->localUserEntityId());
+		if (pEntity)
+		{
+			auto const* transform = pEntity->getComponent<ecs::component::CoordinateTransform>();
 
+			auto const& pos = transform->position();
+			this->mpPosition->setContent(utility::formatStr(
+				"Position| X:<%i,%i,%.2f> Y:<%i,%i,%.2f> Z:<%i,%i,%.2f>",
+				pos.chunk().x(), pos.local().x(), pos.offset().x(),
+				pos.chunk().y(), pos.local().y(), pos.offset().y(),
+				pos.chunk().z(), pos.local().z(), pos.offset().z()
+			));
+		}
+	}
+	
 	auto deltaMS = pGame->client()->getWindow()->renderDurationMS();
 	i32 fps = i32((1.0f / deltaMS) * 1000.0f);
 	this->mpFPS->setContent(utility::formatStr("FPS %i", fps));

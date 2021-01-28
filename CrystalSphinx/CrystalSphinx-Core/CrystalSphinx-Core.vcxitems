@@ -22,7 +22,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp" />
@@ -84,7 +83,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp" />

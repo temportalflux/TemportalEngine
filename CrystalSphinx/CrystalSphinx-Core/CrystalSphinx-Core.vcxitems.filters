@@ -102,9 +102,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp">
       <Filter>registry</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerInput.hpp">
-      <Filter>ecs\component</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp">
       <Filter>ecs\system</Filter>
     </ClInclude>
@@ -275,9 +272,6 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp">
       <Filter>ecs\view</Filter>
-    </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerInput.cpp">
-      <Filter>ecs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp">
       <Filter>ecs\component</Filter>

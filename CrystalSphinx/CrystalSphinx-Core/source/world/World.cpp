@@ -134,6 +134,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 	// Add physics
 	{
 		auto physics = ecs.components().create<ecs::component::PlayerPhysics>();
+		physics->setIsAffectedByGravity(false);
 		pEntity->addComponent(physics);
 	}
 
@@ -161,7 +162,7 @@ void World::destroyPlayer(ui32 userNetId, ecs::Identifier entityId)
 	ecs.endReplication();
 }
 
-void World::createPlayerController(ui32 userNetId, ecs::Identifier localEntityId)
+void World::createPlayerController(network::Identifier userNetId, ecs::Identifier localEntityId)
 {
 	WORLD_LOG.log(LOG_VERBOSE, "Creating physics controller for player net(%u)", userNetId);
 
@@ -182,7 +183,14 @@ void World::createPlayerController(ui32 userNetId, ecs::Identifier localEntityId
 		.create();
 }
 
-void World::destroyPlayerController(ui32 userNetId)
+physics::Controller& World::getPhysicsController(network::Identifier userNetId)
+{
+	auto iter = this->mPhysicsControllerByUserNetId.find(userNetId);
+	assert(iter != this->mPhysicsControllerByUserNetId.end());
+	return iter->second;
+}
+
+void World::destroyPlayerController(network::Identifier userNetId)
 {
 	WORLD_LOG.log(LOG_VERBOSE, "Destroying physics controller for player net(%u)", userNetId);
 	auto iter = this->mPhysicsControllerByUserNetId.find(userNetId);

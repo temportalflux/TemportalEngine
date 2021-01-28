@@ -330,9 +330,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\PhysicsController.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsController.cpp">
-      <Filter>ecs\component</Filter>
-    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\ImageWidget.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -423,7 +420,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp">
       <Filter>ecs</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerPhysics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerPhysics.cpp">
+      <Filter>ecs\component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -790,9 +789,6 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsController.hpp">
       <Filter>physics</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsController.hpp">
-      <Filter>ecs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IModel.hpp">
       <Filter>render</Filter>
