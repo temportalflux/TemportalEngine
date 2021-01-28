@@ -37,7 +37,6 @@ public:
 		std::optional<BlockMetadata> const& prev,
 		std::optional<BlockMetadata> const& next
 	);
-	void handleDirtyCoordinates();
 
 private:
 

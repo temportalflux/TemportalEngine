@@ -174,10 +174,3 @@ Terrain::DirtyNeighborPairList::iterator Terrain::findDirtyNeighborPair(world::C
 		[global](auto const& dirtyPair) { return dirtyPair.first == global; }
 	);
 }
-
-void Terrain::handleDirtyCoordinates()
-{
-	OPTICK_EVENT();
-	// TODO: actually do something here
-	this->mDirtyNeighborCoordinates.clear();
-}

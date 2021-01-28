@@ -147,6 +147,10 @@ private:
 
 	void updateWorldGraphics();
 
+	void bindInput();
+	void unbindInput();
+	void onInputKey(input::Event const& evt);
+
 };
 
 NS_END

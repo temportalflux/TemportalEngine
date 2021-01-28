@@ -52,8 +52,6 @@ public:
 	std::shared_ptr<world::World> world();
 	void destroyWorld();
 
-	//std::shared_ptr<ecs::Entity> localPlayer();
-
 	void setupNetworkServer(
 		utility::Flags<network::EType> flags,
 		saveData::Instance *saveInstance
@@ -82,12 +80,6 @@ private:
 	void registerCommands();
 	void initializeAssetTypes();
 	void registerECSTypes(ecs::Core *ecs);
-
-	//void createLocalPlayer();
-
-	//void bindInput();
-	//void unbindInput();
-	//void onInputKey(input::Event const& evt);
 
 	void update(f32 deltaTime);
 

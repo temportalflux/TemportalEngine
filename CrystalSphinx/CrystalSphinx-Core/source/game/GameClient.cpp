@@ -20,6 +20,8 @@
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameServer.hpp"
+#include "input/InputCore.hpp"
+#include "input/Queue.hpp"
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "render/EntityInstanceBuffer.hpp"
@@ -70,6 +72,7 @@ logging::Logger& Client::logger() { return CLIENT_LOG; }
 void Client::init()
 {
 	Session::init();
+
 	auto* networkInterface = Game::networkInterface();
 	networkInterface->onConnectionEstablished.bind(this->weak_from_this(), std::bind(
 		&game::Client::sendAuthenticationId, this,
@@ -113,10 +116,13 @@ void Client::init()
 		pEngine->addTicker(this->mpSystemMovePlayerByInput);
 		this->mpSystemMovePlayerByInput->subscribeToQueue();
 	}
+
+	this->bindInput();
 }
 
 void Client::uninit()
 {
+	this->unbindInput();
 	this->destroyRenderers();
 	this->mpSystemMovePlayerByInput.reset();
 	this->mpResourcePackManager.reset();
@@ -942,5 +948,52 @@ void Client::updateWorldGraphics()
 	if (this->mpEntityInstanceBuffer->hasChanges())
 	{
 		this->mpEntityInstanceBuffer->commitToBuffer(&this->mpRenderer->getTransientPool());
+	}
+}
+
+void Client::bindInput()
+{
+	auto pInput = engine::Engine::Get()->getInputQueue();
+	pInput->OnInputEvent.bind(
+		input::EInputType::KEY, this->weak_from_this(),
+		std::bind(&Client::onInputKey, this, std::placeholders::_1)
+	);
+}
+
+void Client::unbindInput()
+{
+	auto pInput = engine::Engine::Get()->getInputQueue();
+	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
+}
+
+void Client::onInputKey(input::Event const& evt)
+{
+	if (evt.inputKey.action != input::EAction::RELEASE) return;
+	if (input::isTextInputActive()) return;
+	if (evt.inputKey.key == input::EKey::NUM_1)
+	{
+		//this->mProjectLog.log(LOG_INFO, "Regenerate");
+		//this->mpWorld->reloadChunk({ 0, 0, 0 });
+	}
+	if (evt.inputKey.key == input::EKey::F6)
+	{
+		if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid))
+		{
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, false);
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eCube, false);
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid, false);
+		}
+		else if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eCube))
+		{
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid, true);
+		}
+		else if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eColumn))
+		{
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eCube, true);
+		}
+		else
+		{
+			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, true);
+		}
 	}
 }

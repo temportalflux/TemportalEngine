@@ -19,8 +19,6 @@
 #include "ecs/system/SystemMovePlayerByInput.hpp"
 #include "game/GameClient.hpp"
 #include "game/GameServer.hpp"
-#include "input/InputCore.hpp"
-#include "input/Queue.hpp"
 #include "math/Vector.hpp"
 #include "math/Matrix.hpp"
 #include "network/NetworkCore.hpp"
@@ -211,8 +209,6 @@ void Game::init()
 	if (this->mpServer) this->mpServer->init();
 	if (this->mpWorld) this->mpWorld->init();
 	if (this->mpClient) this->mpClient->init();
-	
-	//this->bindInput();
 
 	auto& netInterface = *Game::networkInterface();
 	if (netInterface.type().includes(network::EType::eServer))
@@ -224,8 +220,6 @@ void Game::init()
 void Game::uninit()
 {
 	Game::networkInterface()->stop();
-
-	//this->unbindInput();
 
 	if (this->mpWorld)
 	{
@@ -240,23 +234,6 @@ void Game::uninit()
 
 	network::uninit();
 }
-
-/*
-void Game::bindInput()
-{
-	auto pInput = engine::Engine::Get()->getInputQueue();
-	pInput->OnInputEvent.bind(
-		input::EInputType::KEY, this->weak_from_this(),
-		std::bind(&Game::onInputKey, this, std::placeholders::_1)
-	);
-}
-
-void Game::unbindInput()
-{
-	auto pInput = engine::Engine::Get()->getInputQueue();
-	pInput->OnInputEvent.unbind(input::EInputType::KEY, this->weak_from_this());
-}
-//*/
 
 void Game::run()
 {
@@ -279,42 +256,6 @@ void Game::run()
 void Game::update(f32 deltaTime)
 {
 	OPTICK_EVENT();
-
-	//this->mpWorld->handleDirtyCoordinates();
 	engine::Engine::Get()->update(deltaTime);
 	if (this->mpWorld) this->mpWorld->update(deltaTime);
 }
-
-/*
-void Game::onInputKey(input::Event const& evt)
-{
-	if (evt.inputKey.action != input::EAction::RELEASE) return;
-	if (input::isTextInputActive()) return;
-	if (evt.inputKey.key == input::EKey::NUM_1)
-	{
-		this->mProjectLog.log(LOG_INFO, "Regenerate");
-		this->mpWorld->reloadChunk({ 0, 0, 0 });
-	}
-	if (evt.inputKey.key == input::EKey::F6)
-	{
-		if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid))
-		{
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, false);
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eCube, false);
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid, false);
-		}
-		else if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eCube))
-		{
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eSideGrid, true);
-		}
-		else if (this->mpChunkBoundaryRenderer->isBoundaryEnabled(graphics::ChunkBoundaryType::eColumn))
-		{
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eCube, true);
-		}
-		else
-		{
-			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, true);
-		}
-	}
-}
-//*/
