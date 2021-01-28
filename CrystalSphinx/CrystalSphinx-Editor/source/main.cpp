@@ -3,10 +3,13 @@
 #include "asset/AssetManager.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "asset/Project.hpp"
+#include "utility/FileUtils.hpp"
 #include "utility/TimeUtils.hpp"
 
 int main(int argc, char *argv[])
 {
+	deleteOldestFiles(std::filesystem::current_path() / "logs", 10);
+
 	std::stringstream ss;
 	ss << "logs/";
 	ss << utility::currentTimeStr().c_str();

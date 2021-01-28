@@ -289,6 +289,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\FileUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Flags.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\ImageUtils.hpp" />

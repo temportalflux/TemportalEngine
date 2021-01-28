@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 #include "game/GameInstance.hpp"
 #include "logging/Logger.hpp"
+#include "utility/FileUtils.hpp"
 #include "utility/StringUtils.hpp"
 #include "utility/TimeUtils.hpp"
 #include "Module.hpp"
@@ -12,6 +13,8 @@ int main(int argc, char *argv[])
 
 	uSize totalMem = 0;
 	auto memoryChunkSizes = utility::parseArgumentInts(args, "memory-", totalMem);
+
+	deleteOldestFiles(std::filesystem::current_path() / "logs", 10);
 
 	std::stringstream ss;
 	ss << "logs/";

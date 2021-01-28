@@ -910,5 +910,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp">
       <Filter>ecs</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\FileUtils.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
