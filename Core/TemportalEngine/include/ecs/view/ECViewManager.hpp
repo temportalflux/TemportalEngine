@@ -64,14 +64,14 @@ public:
 	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
 	void destroyObject(TypeId const& typeId, Identifier const& netId) override;
 
-	View* create(ViewTypeId const& typeId);
+	View* create(ViewTypeId const& typeId, bool bForceCreateNetId = false);
 	View* get(Identifier const& id);
 	void destroy(ViewTypeId const& typeId, Identifier const& id);
 
 	template <typename TView>
-	TView* create()
+	TView* create(bool bForceCreateNetId = false)
 	{
-		return dynamic_cast<TView*>(this->create(TView::TypeId));
+		return dynamic_cast<TView*>(this->create(TView::TypeId, bForceCreateNetId));
 	}
 
 	ViewIterable getAllOfType(ViewTypeId const &typeId);

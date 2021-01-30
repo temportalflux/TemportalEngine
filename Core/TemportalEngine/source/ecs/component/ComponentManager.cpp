@@ -89,7 +89,7 @@ void Manager::allocatePools()
 	}
 }
 
-Component* Manager::create(ComponentTypeId const& typeId)
+Component* Manager::create(ComponentTypeId const& typeId, bool bForceCreateNetId)
 {
 	uIndex objectId;
 	auto ptr = reinterpret_cast<Component*>(
@@ -99,10 +99,14 @@ Component* Manager::create(ComponentTypeId const& typeId)
 	this->mMetadataByType[typeId].construct(ptr);
 	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
 
-	if (ecs::Core::Get()->shouldReplicate())
+	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	if (bForceCreateNetId || bReplicate)
 	{
 		ptr->setNetId(this->nextNetworkId());
 		this->assignNetworkId(ptr->netId(), ptr->id());
+	}
+	if (bReplicate)
+	{
 		auto pCreate = ecs::Core::Get()->replicateCreate();
 		pCreate->setObjectEcsType(ecs::EType::eComponent)
 			.setObjectTypeId(typeId)

@@ -16,7 +16,7 @@ public:
 	System(ViewTypeId const& viewTypeId);
 
 	ViewTypeId const& viewId() const;
-	void tick(f32 deltaTime) override;
+	virtual void tick(f32 deltaTime) override;
 
 protected:
 	

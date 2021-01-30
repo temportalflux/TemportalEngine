@@ -369,38 +369,6 @@ void Client::setupNetwork(network::Address const& serverAddress)
 	Game::networkInterface()->setType(network::EType::eClient).setAddress(serverAddress);
 }
 
-void Client::onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId)
-{
-	auto pServer = game::Game::Get()->server();
-	auto const& localUserId = this->localUserId();
-	auto localUserInfo = this->localUserInfo();
-	localUserInfo.setColor(game::randColor());
-	
-	// Set our network id
-	this->setLocalUserNetId(netId);
-
-	// Initialize client data for myself as if I was a dedicated client
-	this->addConnectedUser(netId);
-	this->findConnectedUser(netId) = localUserId;
-	// Set our local info to the connected users
-	this->getConnectedUserInfo(netId).copyFrom(localUserInfo);
-	
-	// Initialize server data for myself as if I was a dedicated server
-	pServer->addConnectedUser(netId);
-	pServer->findConnectedUser(netId) = localUserId;
-	// Save our local info to the server save data
-	pServer->initializeUser(localUserId, this->localUserAuthKey());
-	pServer->getUserInfo(localUserId).copyFrom(localUserInfo).writeToDisk();
-
-	// Initialize the already existing local entity with the correct owner netId.
-	// Does not need to replicate because this is an integrated server and
-	// this function executes before any dedicated clients are able to join.
-	auto* ecs = ecs::Core::Get();
-	auto pEntity = ecs->entities().get(this->mLocalPlayerEntityId);
-	pEntity->setOwner(netId);
-	pServer->associatePlayer(netId, this->mLocalPlayerEntityId);
-}
-
 void Client::sendAuthenticationId(network::Interface *pNetwork, network::ConnectionId connectionId)
 {
 	// For integrated servers, this will be executed immediately in the same application
@@ -412,7 +380,7 @@ void Client::sendAuthenticationId(network::Interface *pNetwork, network::Connect
 
 void Client::onClientAuthenticated(network::Interface *pInteface, network::Identifier netId)
 {
-	network::logger().log(LOG_INFO, "Network handshake complete");
+	network::logger().log(LOG_INFO, "Network handshake complete, received netId(%u)", netId);
 
 	this->setLocalUserNetId(netId);
 	this->addConnectedUser(netId);

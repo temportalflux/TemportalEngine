@@ -14,6 +14,7 @@
 #include "ecs/component/ComponentPlayerPhysics.hpp"
 #include "ecs/view/ViewPlayerInputMovement.hpp"
 #include "ecs/view/ViewPlayerCamera.hpp"
+#include "ecs/view/ViewPlayerPhysics.hpp"
 #include "ecs/view/ViewRenderedMesh.hpp"
 #include "ecs/view/ViewPhysicalDynamics.hpp"
 #include "ecs/system/SystemMovePlayerByInput.hpp"
@@ -27,6 +28,7 @@
 #include "network/packet/NetworkPacketAuthenticate.hpp"
 #include "network/packet/NetworkPacketChatMessage.hpp"
 #include "network/packet/NetworkPacketChunkReplication.hpp"
+#include "network/packet/NetworkPacketDisplacePlayer.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "utility/StringUtils.hpp"
 #include "ui/TextLogMenu.hpp"
@@ -73,6 +75,7 @@ Game::Game(int argc, char *argv[])
 		.addType<network::packet::UpdateUserInfo>()
 		// World Replication
 		.addType<network::packet::ChunkReplication>()
+		.addType<network::packet::DisplacePlayer>()
 		// Chat
 		.addType<network::packet::ChatMessage>()
 		;
@@ -166,6 +169,7 @@ void Game::registerECSTypes(ecs::Core *ecs)
 	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
 	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
 	ecs->components().registerType<ecs::component::PlayerPhysics>("PlayerPhysics");
+	ecs->views().registerType<ecs::view::PlayerPhysics>("PlayerPhysics");
 	ecs->views().registerType<ecs::view::PlayerInputMovement>("PlayerInputMovement");
 	ecs->views().registerType<ecs::view::PlayerCamera>("PlayerCamera");
 	ecs->views().registerType<ecs::view::RenderedMesh>("RenderedMesh");
@@ -207,7 +211,14 @@ void Game::init()
 		this->setupNetworkServer(network::EType::eServer, saveInstance);
 	}
 	if (this->mpServer) this->mpServer->init();
-	if (this->mpWorld) this->mpWorld->init();
+	if (this->mpWorld)
+	{
+		this->mpWorld->init();
+		if (this->mServerSaveId)
+		{
+			this->mpWorld->loadChunk(0, { 0, 0, 0 });
+		}
+	}
 	if (this->mpClient) this->mpClient->init();
 
 	auto& netInterface = *Game::networkInterface();

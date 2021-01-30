@@ -35,10 +35,9 @@ Coordinate Coordinate::fromGlobal(math::Vector<f64, 3> global)
 
 bool Coordinate::operator==(Coordinate const& other) const
 {
-	return
-		mChunkPosition == other.mChunkPosition
-		&& mBlockPosition == other.mBlockPosition
-		&& mBlockOffset == other.mBlockOffset;
+	if (mChunkPosition != other.mChunkPosition) return false;
+	if (mBlockPosition != other.mBlockPosition) return false;
+	return (mBlockOffset - other.mBlockOffset).magnitudeSq() <= math::epsilon();
 }
 
 bool Coordinate::operator!=(Coordinate const& other) const

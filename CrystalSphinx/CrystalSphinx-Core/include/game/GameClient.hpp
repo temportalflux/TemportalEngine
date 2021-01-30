@@ -53,7 +53,6 @@ public:
 	void uninit() override;
 
 	void setupNetwork(network::Address const& serverAddress);
-	void onLocalServerConnectionOpened(network::Interface *pInterface, ui32 connection, ui32 netId);
 
 	utility::Guid const& localUserId() const;
 	crypto::RSAKey localUserAuthKey() const;

@@ -58,7 +58,7 @@ void Manager::destroyObject(TypeId const& typeId, Identifier const& netId)
 	);
 }
 
-View* Manager::create(ViewTypeId const& typeId)
+View* Manager::create(ViewTypeId const& typeId, bool bForceCreateNetId)
 {
 	this->mMutex.lock();
 
@@ -80,10 +80,14 @@ View* Manager::create(ViewTypeId const& typeId)
 		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx++;
 	}
 
-	if (ecs::Core::Get()->shouldReplicate())
+	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	if (bForceCreateNetId || bReplicate)
 	{
 		ptr->setNetId(this->nextNetworkId());
 		this->assignNetworkId(ptr->netId(), ptr->id());
+	}
+	if (bReplicate)
+	{
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eView)
 			.setObjectTypeId(typeId)

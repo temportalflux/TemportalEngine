@@ -5,6 +5,8 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerPhysics.hpp"
 #include "ecs/system/SystemPhysicsIntegration.hpp"
+#include "ecs/system/SystemIntegratePlayerPhysics.hpp"
+#include "ecs/view/ViewPlayerPhysics.hpp"
 #include "game/GameInstance.hpp"
 #include "physics/ChunkCollisionManager.hpp"
 #include "physics/PhysicsMaterial.hpp"
@@ -60,11 +62,15 @@ void World::initializePhysics()
 
 	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
 	engine::Engine::Get()->addTicker(this->mpSystemPhysicsIntegration);
+	
+	this->mpSystemIntegratePlayerPhysics = std::make_shared<ecs::system::IntegratePlayerPhysics>();
+	engine::Engine::Get()->addTicker(this->mpSystemIntegratePlayerPhysics);
 }
 
 void World::uninitializePhysics()
 {
 	WORLD_LOG.log(LOG_INFO, "Destroying physics");
+	this->mpSystemIntegratePlayerPhysics.reset();
 	this->mpSystemPhysicsIntegration.reset();
 	this->mpPlayerPhysicsMaterial.reset();
 	this->mpPhysics.reset();
@@ -121,11 +127,11 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 
 	// does not mark the entity to be killed, so the manager will own it.
 	// can look up the entity by id by using `EntityManager#get`.
-	auto pEntity = ecs.entities().create();
+	auto pEntity = ecs.entities().create(true);
 
 	// Add Transform
 	{
-		auto transform = ecs.components().create<ecs::component::CoordinateTransform>();
+		auto transform = ecs.components().create<ecs::component::CoordinateTransform>(true);
 		transform->setPosition(position);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
@@ -133,9 +139,11 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 
 	// Add physics
 	{
-		auto physics = ecs.components().create<ecs::component::PlayerPhysics>();
+		auto physics = ecs.components().create<ecs::component::PlayerPhysics>(true);
 		physics->setIsAffectedByGravity(false);
 		pEntity->addComponent(physics);
+
+		pEntity->addView(ecs.views().create<ecs::view::PlayerPhysics>(true));
 	}
 
 	pEntity->setOwner(clientNetId);
@@ -181,6 +189,11 @@ void World::createPlayerController(network::Identifier userNetId, ecs::Identifie
 		.setCenterPosition(pTransform->position().toGlobal() + math::Vector<f64, 3>({ 0, extents.y(), 0 }))
 		.setMaterial(this->playerPhysicsMaterial().get())
 		.create();
+}
+
+bool World::hasPhysicsController(network::Identifier userNetId) const
+{
+	return this->mPhysicsControllerByUserNetId.find(userNetId) != this->mPhysicsControllerByUserNetId.end();
 }
 
 physics::Controller& World::getPhysicsController(network::Identifier userNetId)

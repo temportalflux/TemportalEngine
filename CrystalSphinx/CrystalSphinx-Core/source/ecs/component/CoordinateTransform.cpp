@@ -31,6 +31,7 @@ math::Vector3 CoordinateTransform::localPosition() const { return this->mPositio
 
 CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &pos)
 {
+	if (pos == this->mPosition) { return *this; }
 	this->mPosition = pos;
 	if (ecs::Core::Get()->shouldReplicate())
 	{

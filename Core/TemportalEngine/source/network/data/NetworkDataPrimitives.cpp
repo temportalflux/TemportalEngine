@@ -23,6 +23,7 @@ DEFINE_BUFFER_RAW(ui32);
 DEFINE_BUFFER_RAW(i32);
 DEFINE_BUFFER_RAW(ui64);
 DEFINE_BUFFER_RAW(i64);
+DEFINE_BUFFER_RAW(f32);
 
 void network::write(Buffer &buffer, std::string name, std::string value)
 {

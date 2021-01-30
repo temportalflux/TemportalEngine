@@ -494,8 +494,6 @@ void Interface::markClientAuthenticated(ConnectionId connId)
 
 	this->addClient(connId, netId);
 
-	this->OnClientAuthenticatedOnServer.execute(this, netId);
-
 	// Tell the client its own net id
 	packet::ClientStatus::create()
 		->setStatus(EClientStatus::eConnected)
@@ -517,6 +515,8 @@ void Interface::markClientAuthenticated(ConnectionId connId)
 			.setIsSelf(false).setNetId(otherNetId)
 			.send(connId);
 	}
+
+	this->OnClientAuthenticatedOnServer.execute(this, netId);
 }
 
 void Interface::closeConnection(ConnectionId connId)

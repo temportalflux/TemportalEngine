@@ -129,14 +129,26 @@ ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uS
 	);
 	// Check fields currently being replicated.
 	// If the byteOffset + data size current exists, we don't need to push the field again.
-	for (auto iter = this->mComponentFields.crbegin(); iter != this->mComponentFields.crend(); ++iter)
+	ReplicatedData* pData = nullptr;
+	for (auto iter = this->mComponentFields.rbegin(); iter != this->mComponentFields.rend(); ++iter)
 	{
-		if (iter->first == byteOffset && iter->second.size() * sizeof(ui8) == dataSize) return *this;
+		if (iter->first == byteOffset && iter->second.size() * sizeof(ui8) == dataSize)
+		{
+			pData = &(iter->second);
+			break;
+		}
 	}
 	// Field not already found, add it to the list
-	auto repData = ReplicatedData(dataSize / sizeof(ui8));
-	memcpy_s(repData.data(), dataSize, data, dataSize);
-	this->mComponentFields.push_back(std::make_pair(byteOffset, repData));
+	if (pData == nullptr)
+	{
+		auto iter = this->mComponentFields.insert(
+			this->mComponentFields.end(),
+			std::make_pair(byteOffset, ReplicatedData(dataSize / sizeof(ui8)))
+		);
+		pData = &(iter->second);
+	}
+	// Copy the changed data into the replicating fields
+	memcpy_s(pData->data(), dataSize, data, dataSize);
 	return *this;
 }
 
@@ -333,7 +345,21 @@ void ECSReplicate::process(network::Interface *pInterface)
 {
 	if (pInterface->type().includes(EType::eServer))
 	{
-
+		auto& ecs = engine::Engine::Get()->getECS();
+		auto* manager = getObjectManager(ecs, this->mObjectEcsType);
+		if (this->mReplicationType == EReplicationType::eUpdate)
+		{
+			auto pObject = manager->getObject(this->mObjectTypeId, this->mObjectNetId);
+			auto const bIsOwnedBySender = pObject->owner() == pInterface->getNetIdFor(this->connection());
+			if (bIsOwnedBySender)
+			{
+				if (this->hasFields())
+				{
+					this->fillFields(manager, pObject);
+				}
+				pObject->validate();
+			}
+		}
 	}
 	else if (pInterface->type() == EType::eClient)
 	{
@@ -347,7 +373,7 @@ void ECSReplicate::process(network::Interface *pInterface)
 			}
 			auto pObject = manager->createObject(this->mObjectTypeId, this->mObjectNetId);
 			ecs::Core::logger().log(
-				LOG_VERBOSE, "Created replicated %s %u with net-id(%u)",
+				LOG_VERBOSE, "Created replicated %s id(%u) with netId(%u)",
 				ecs.fullTypeName(this->mObjectEcsType, this->mObjectTypeId).c_str(),
 				pObject->id(), pObject->netId()
 			);

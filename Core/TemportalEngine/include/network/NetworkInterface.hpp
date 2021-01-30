@@ -40,6 +40,7 @@ public:
 	BroadcastDelegate<void(Interface*, network::Identifier netId)> OnDedicatedClientDisconnected;
 
 	void start();
+	bool isRunning() const { return this->mpInternal != nullptr; }
 	bool hasConnection() const;
 	void update(f32 deltaTime);
 	void stop();

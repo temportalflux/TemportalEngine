@@ -1,9 +1,11 @@
 #include "ecs/component/ComponentPlayerPhysics.hpp"
 
+#include "ecs/Core.hpp"
 #include "game/GameInstance.hpp"
 #include "game/GameClient.hpp"
 #include "world/World.hpp"
 #include "network/NetworkInterface.hpp"
+#include "network/packet/NetworkPacketECSReplicate.hpp"
 
 using namespace ecs;
 using namespace ecs::component;
@@ -32,6 +34,11 @@ PlayerPhysics::~PlayerPhysics()
 PlayerPhysics& PlayerPhysics::setIsAffectedByGravity(bool bAffectedByGravity)
 {
 	this->mbAffectedByGravity = bAffectedByGravity;
+	if (ecs::Core::Get()->shouldReplicate())
+	{
+		this->replicateUpdate()
+			->pushComponentField(ECS_REPL_FIELD(PlayerPhysics, mbAffectedByGravity));
+	}
 	return *this;
 }
 
@@ -41,5 +48,5 @@ math::Vector3 const& PlayerPhysics::collisionExtents() const { return this->mCol
 
 void PlayerPhysics::validate()
 {
-	// NOTE: can validate `mbIsAffectedByGravity` here
+	// TODO: Will need to validate `mbAffectedByGravity` on the game server based on permissions
 }

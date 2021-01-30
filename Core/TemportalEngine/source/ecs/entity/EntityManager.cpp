@@ -59,7 +59,7 @@ void EntityManager::destroyObject(TypeId const& typeId, Identifier const& netId)
 	this->release(objectId);
 }
 
-std::shared_ptr<Entity> EntityManager::create()
+std::shared_ptr<Entity> EntityManager::create(bool bForceCreateNetId)
 {
 	this->mMutex.lock();
 
@@ -72,10 +72,14 @@ std::shared_ptr<Entity> EntityManager::create()
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 	this->mOwnedObjects.insert(std::make_pair(objectId, shared));
 	
-	if (ecs::Core::Get()->shouldReplicate())
+	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	if (bForceCreateNetId || bReplicate)
 	{
 		shared->setNetId(this->nextNetworkId());
 		this->assignNetworkId(shared->netId(), shared->id());
+	}
+	if (bReplicate)
+	{
 		ecs::Core::Get()->replicateCreate()
 			->setObjectEcsType(ecs::EType::eEntity)
 			.setObjectNetId(shared->netId())

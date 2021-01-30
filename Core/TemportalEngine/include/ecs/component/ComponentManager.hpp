@@ -47,14 +47,14 @@ public:
 	IEVCSObject* getObject(TypeId const& typeId, Identifier const& netId) override;
 	void destroyObject(TypeId const& typeId, Identifier const& netId) override;
 	
-	Component* create(ComponentTypeId const& typeId);
+	Component* create(ComponentTypeId const& typeId, bool bForceCreateNetId = false);
 	Component* get(ComponentTypeId const& typeId, Identifier const& id);
 	void destroy(ComponentTypeId const& typeId, Identifier const& id);
 
 	template <typename TComponent>
-	TComponent* create()
+	TComponent* create(bool bForceCreateNetId=false)
 	{
-		return dynamic_cast<TComponent*>(this->create(TComponent::TypeId));
+		return dynamic_cast<TComponent*>(this->create(TComponent::TypeId, bForceCreateNetId));
 	}
 
 	template <typename TComponent>

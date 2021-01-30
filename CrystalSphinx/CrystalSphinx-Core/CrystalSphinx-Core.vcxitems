@@ -22,6 +22,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemIntegratePlayerPhysics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp" />
@@ -29,6 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerPhysics.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameInstance.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\game\GameClient.hpp" />
@@ -38,6 +40,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketAuthenticate.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChunkReplication.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketDisplacePlayer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketLoginWithAuthId.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChatMessage.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketUpdateUserInfo.hpp" />
@@ -83,6 +86,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemIntegratePlayerPhysics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp" />
@@ -90,6 +94,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerPhysics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameInstance.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\game\GameClient.cpp" />
@@ -99,6 +104,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketAuthenticate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChunkReplication.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketDisplacePlayer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketLoginWithAuthId.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChatMessage.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketUpdateUserInfo.cpp" />

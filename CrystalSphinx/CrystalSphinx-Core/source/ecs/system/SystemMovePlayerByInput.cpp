@@ -5,12 +5,13 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPlayerPhysics.hpp"
 #include "game/GameInstance.hpp"
+#include "game/GameClient.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 #include "logging/Logger.hpp"
+#include "network/packet/NetworkPacketDisplacePlayer.hpp"
 #include "physics/PhysicsScene.hpp"
 #include "physics/PhysicsController.hpp"
-#include "world/World.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
@@ -72,38 +73,45 @@ void MovePlayerByInput::update(f32 deltaTime, view::View* view)
 	OPTICK_EVENT();
 	static logging::Logger ControllerLog = DeclareLog("Controller", LOG_INFO);
 
-	auto pWorld = game::Game::Get()->world();
-	assert(pWorld);
-
 	auto transform = view->get<component::CoordinateTransform>();
 	auto physicsComp = view->get<component::PlayerPhysics>();
 	assert(transform && physicsComp);
 	assert(physicsComp->owner()); // assumes that transform and physics have the same owner
 
-	auto orientation = transform->orientation();
-
-	math::Vector3 displacement = math::Vector3::ZERO;
+	auto displacement = math::Vector3::ZERO;
 	for (auto mapping : this->mAxisMappings)
 	{
 		if (!mapping.bIsActive) continue;
 		if (!mapping.bIsGlobal)
 		{
-			mapping.direction = orientation.rotate(mapping.direction);
+			mapping.direction = transform->orientation().rotate(mapping.direction);
 			mapping.direction.y() = 0;
 			mapping.direction.normalize();
 		}
 		displacement += mapping.direction * this->mAxialMoveSpeed * deltaTime;
 	}
-
-	auto ownerNetId = physicsComp->owner().value();
-	auto& controller = pWorld->getPhysicsController(ownerNetId);
-	if (physicsComp->isAffectedByGravity())
+	if (displacement.magnitudeSq() > math::epsilon())
 	{
-		displacement += controller.scene()->gravity() * deltaTime;
+		auto* network = game::Game::networkInterface();
+		if (!network->type().includes(network::EType::eServer))
+		{
+			network::packet::DisplacePlayer::moveController(
+				game::Game::Get()->client()->localUserNetId(),
+				transform->netId(), displacement, deltaTime
+			);
+		}
+		if (network->isRunning())
+		{
+			auto packet = network::packet::DisplacePlayer::create();
+			packet->setTransformNetId(transform->netId()).move(displacement, deltaTime);
+			packet->sendToServer();
+		}
 	}
-	controller.move(displacement, deltaTime);
-	transform->position() = world::Coordinate::fromGlobal(controller.footPosition());
 
+	auto& ecs = engine::Engine::Get()->getECS();
+	ecs.beginReplication();
+
+	auto orientation = transform->orientation();
 	auto lookAxes = std::vector<InputAxis*>({ &this->mLookVertical, &this->mLookHorizontal });
 	for (auto* inputAxis : lookAxes)
 	{
@@ -131,4 +139,6 @@ void MovePlayerByInput::update(f32 deltaTime, view::View* view)
 	}
 
 	transform->setOrientation(orientation);
+
+	ecs.endReplication();
 }

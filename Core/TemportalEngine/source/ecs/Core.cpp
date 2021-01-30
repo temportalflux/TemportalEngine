@@ -59,7 +59,8 @@ void Core::beginReplication()
 {
 	assert(!this->mbIsReplicating);
 	assert(this->mReplicators.size() == 0);
-	this->mbIsReplicating = true;
+	auto& network = engine::Engine::Get()->networkInterface();
+	if (network.isRunning()) this->mbIsReplicating = true;
 }
 
 bool Core::shouldReplicate() const
@@ -153,8 +154,11 @@ void Core::endReplication()
 	if (this->mbIsReplicating)
 	{
 		this->mbIsReplicating = false;
-		auto& network = engine::Engine::Get()->networkInterface();
-		network.sendPackets(network.connections(), this->mReplicators);
-		this->mReplicators.clear();
+		if (this->mReplicators.size() > 0)
+		{
+			auto& network = engine::Engine::Get()->networkInterface();
+			network.sendPackets(network.connections(), this->mReplicators);
+			this->mReplicators.clear();
+		}
 	}
 }

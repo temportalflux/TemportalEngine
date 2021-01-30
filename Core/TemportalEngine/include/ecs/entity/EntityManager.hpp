@@ -38,7 +38,7 @@ public:
 	 * Even if the manager does not have ownership of the entity,
 	 * `EntityManager#get` can still be called to get an entity by its id.
 	 */
-	std::shared_ptr<Entity> create();
+	std::shared_ptr<Entity> create(bool bForceCreateNetId = false);
 	std::shared_ptr<Entity> get(Identifier const &id) const;
 	void release(Identifier const& id);
 	void releaseAll();

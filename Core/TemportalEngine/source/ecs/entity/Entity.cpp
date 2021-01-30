@@ -38,13 +38,13 @@ ecs::TypeId Entity::typeId() const { return 0; }
 
 void Entity::setOwner(std::optional<ui32> ownerNetId)
 {
-	for (auto const& slot : this->mViews)
-	{
-		getViewAt(slot.typeId, slot.objectId)->setOwner(ownerNetId);
-	}
 	for (auto const& slot : this->mComponents)
 	{
 		getCompAt(slot.typeId, slot.objectId)->setOwner(ownerNetId);
+	}
+	for (auto const& slot : this->mViews)
+	{
+		getViewAt(slot.typeId, slot.objectId)->setOwner(ownerNetId);
 	}
 	IEVCSObject::setOwner(ownerNetId);
 }
