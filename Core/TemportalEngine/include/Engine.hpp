@@ -8,7 +8,7 @@
 #include "graphics/VulkanInstance.hpp"
 #include "Delegate.hpp"
 
-#include "ecs/Core.hpp"
+#include "evcs/Core.hpp"
 #include "input/InputWatcher.hpp"
 #include "network/NetworkInterface.hpp"
 #include "thread/Thread.hpp"

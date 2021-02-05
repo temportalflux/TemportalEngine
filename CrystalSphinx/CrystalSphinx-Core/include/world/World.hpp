@@ -2,7 +2,7 @@
 
 #include "CoreInclude.hpp"
 
-#include "ecs/types.h"
+#include "evcs/types.h"
 #include "network/NetworkCore.hpp"
 #include "physics/PhysicsController.hpp"
 #include "world/Events.hpp"

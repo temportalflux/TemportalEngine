@@ -2,7 +2,7 @@
 
 #include "network/NetworkPacket.hpp"
 
-#include "ecs/types.h"
+#include "evcs/types.h"
 #include "world/WorldCoordinate.hpp"
 
 NS_NETWORK

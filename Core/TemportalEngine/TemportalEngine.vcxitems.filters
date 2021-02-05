@@ -254,28 +254,28 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\math\transform.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentTransform.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentTransform.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\EntityManager.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\entity\EntityManager.cpp">
       <Filter>evcs\entity</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\Core.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\Core.cpp">
       <Filter>evcs</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentManager.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentManager.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\entity\Entity.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\entity\Entity.cpp">
       <Filter>evcs\entity</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECView.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ECView.cpp">
       <Filter>evcs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ECViewManager.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ECViewManager.cpp">
       <Filter>evcs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\System.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\System.cpp">
       <Filter>evcs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\graphics\vma\VMA.cpp">
@@ -300,7 +300,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ModelSimple.cpp">
       <Filter>render</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPhysicsBody.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentPhysicsBody.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\dependency\DependencyModule.cpp">
@@ -402,10 +402,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\memory\MemoryPool.cpp">
       <Filter>memory</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\Component.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\Component.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\EVCSObject.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\EVCSObject.cpp">
       <Filter>evcs</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp">
@@ -414,13 +414,13 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketECSReplicate.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ECSNetworkedManager.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\ECSNetworkedManager.cpp">
       <Filter>evcs</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\ecsTypes.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\ecsTypes.cpp">
       <Filter>evcs</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentPlayerPhysics.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentPlayerPhysics.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
   </ItemGroup>
@@ -626,7 +626,7 @@
       <Filter>graphics</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ITickable.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\Core.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\Core.hpp">
       <Filter>evcs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\memory\MemoryPool.hpp">
@@ -635,10 +635,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Guid.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\Component.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\Component.hpp">
       <Filter>evcs\component</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\types.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\types.h">
       <Filter>evcs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\math\Matrix.hpp">
@@ -704,28 +704,28 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Version.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentTransform.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentTransform.hpp">
       <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\ShaderMetadata.hpp">
       <Filter>graphics</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\EntityManager.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\entity\EntityManager.hpp">
       <Filter>evcs\entity</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\entity\Entity.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\entity\Entity.hpp">
       <Filter>evcs\entity</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentManager.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentManager.hpp">
       <Filter>evcs\component</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECView.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ECView.hpp">
       <Filter>evcs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ECViewManager.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ECViewManager.hpp">
       <Filter>evcs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\System.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\System.hpp">
       <Filter>evcs\system</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\graphics\vma\VMA.hpp">
@@ -754,7 +754,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPhysicsBody.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentPhysicsBody.hpp">
       <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\PhysicsSystem.hpp">
@@ -895,19 +895,19 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\window\WindowFlags.hpp">
       <Filter>window</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\IEVCSObject.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\IEVCSObject.hpp">
       <Filter>evcs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Random.hpp">
       <Filter>utility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentPlayerPhysics.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentPlayerPhysics.hpp">
       <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketECSReplicate.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\ECSNetworkedManager.hpp">
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\ECSNetworkedManager.hpp">
       <Filter>evcs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\FileUtils.hpp">

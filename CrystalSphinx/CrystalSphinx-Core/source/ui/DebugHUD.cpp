@@ -2,8 +2,8 @@
 
 #include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
-#include "ecs/entity/Entity.hpp"
-#include "ecs/component/CoordinateTransform.hpp"
+#include "evcs/entity/Entity.hpp"
+#include "evcs/component/CoordinateTransform.hpp"
 #include "ui/UIWidgets.hpp"
 #include "ui/WidgetRenderer.hpp"
 #include "utility/StringUtils.hpp"

@@ -1,12 +1,12 @@
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
 #include "Engine.hpp"
-#include "ecs/Core.hpp"
-#include "ecs/ECSNetworkedManager.hpp"
+#include "evcs/Core.hpp"
+#include "evcs/ECSNetworkedManager.hpp"
 #include "network/NetworkInterface.hpp"
 #include "utility/StringUtils.hpp"
-#include "ecs/entity/Entity.hpp"
-#include "ecs/view/ECView.hpp"
+#include "evcs/entity/Entity.hpp"
+#include "evcs/view/ECView.hpp"
 
 using namespace network;
 using namespace network::packet;

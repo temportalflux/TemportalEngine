@@ -2,7 +2,7 @@
 
 #include "network/NetworkPacket.hpp"
 
-#include "ecs/types.h"
+#include "evcs/types.h"
 
 #define ECS_REPL_FIELD(CLASS_TYPE, FIELD_NAME) offsetof(CLASS_TYPE, FIELD_NAME), &FIELD_NAME, sizeof(FIELD_NAME)
 

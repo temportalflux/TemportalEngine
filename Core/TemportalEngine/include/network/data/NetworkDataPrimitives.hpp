@@ -3,7 +3,7 @@
 #include "network/data/NetworkDataBuffer.hpp"
 
 #include "utility/Guid.hpp"
-#include "ecs/types.h"
+#include "evcs/types.h"
 
 NS_NETWORK
 

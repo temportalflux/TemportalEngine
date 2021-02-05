@@ -22,19 +22,19 @@
     <Filter Include="render\ui">
       <UniqueIdentifier>{a4049840-49d3-43cd-b9f0-7a98474c0663}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ecs">
+    <Filter Include="evcs">
       <UniqueIdentifier>{d90ef6f5-65ab-4ed7-bb37-ec280663982e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ecs\component">
+    <Filter Include="evcs\component">
       <UniqueIdentifier>{e1f089d6-f492-4126-b78e-f509f43fa63c}</UniqueIdentifier>
     </Filter>
     <Filter Include="registry">
       <UniqueIdentifier>{7644110f-ecd6-4ee0-8fe8-f9ca6be130d3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ecs\system">
+    <Filter Include="evcs\system">
       <UniqueIdentifier>{f62ee253-e17e-4035-9b94-ef278b828ab1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ecs\view">
+    <Filter Include="evcs\view">
       <UniqueIdentifier>{8e7645bd-3022-46c5-987b-72ac32095bfe}</UniqueIdentifier>
     </Filter>
     <Filter Include="render\model">
@@ -96,20 +96,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp">
       <Filter>render\ui</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\CoordinateTransform.hpp">
-      <Filter>ecs\component</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\CoordinateTransform.hpp">
+      <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp">
       <Filter>registry</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemUpdateCameraPerspective.hpp">
-      <Filter>ecs\system</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\SystemUpdateCameraPerspective.hpp">
+      <Filter>evcs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerInputMovement.hpp">
-      <Filter>ecs\view</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ViewPlayerInputMovement.hpp">
+      <Filter>evcs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentCameraPOV.hpp">
-      <Filter>ecs\component</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentCameraPOV.hpp">
+      <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp">
       <Filter>render\line</Filter>
@@ -123,8 +123,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\MinecraftAssetStatics.hpp">
       <Filter>asset</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemMovePlayerByInput.hpp">
-      <Filter>ecs\system</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\SystemMovePlayerByInput.hpp">
+      <Filter>evcs\system</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\resource\ResourceManager.hpp">
       <Filter>resource</Filter>
@@ -135,20 +135,20 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\world\Events.hpp">
       <Filter>world</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemPhysicsIntegration.hpp">
-      <Filter>ecs\system</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\SystemPhysicsIntegration.hpp">
+      <Filter>evcs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerCamera.hpp">
-      <Filter>ecs\view</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ViewPlayerCamera.hpp">
+      <Filter>evcs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemRenderEntities.hpp">
-      <Filter>ecs\system</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\SystemRenderEntities.hpp">
+      <Filter>evcs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewRenderedMesh.hpp">
-      <Filter>ecs\view</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ViewRenderedMesh.hpp">
+      <Filter>evcs\view</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\component\ComponentRenderMesh.hpp">
-      <Filter>ecs\component</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\component\ComponentRenderMesh.hpp">
+      <Filter>evcs\component</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp">
       <Filter>physics</Filter>
@@ -162,8 +162,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelModelManager.hpp">
       <Filter>render\voxel</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPhysicalDynamics.hpp">
-      <Filter>ecs\view</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ViewPhysicalDynamics.hpp">
+      <Filter>evcs\view</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\model\ModelVoxel.hpp">
       <Filter>model</Filter>
@@ -246,11 +246,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketChunkReplication.hpp">
       <Filter>network\packet</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\system\SystemIntegratePlayerPhysics.hpp">
-      <Filter>ecs\system</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\system\SystemIntegratePlayerPhysics.hpp">
+      <Filter>evcs\system</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\ecs\view\ViewPlayerPhysics.hpp">
-      <Filter>ecs\view</Filter>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\evcs\view\ViewPlayerPhysics.hpp">
+      <Filter>evcs\view</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\network\packet\NetworkPacketDisplacePlayer.hpp">
       <Filter>network\packet</Filter>
@@ -273,20 +273,20 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp">
       <Filter>render\ui</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\CoordinateTransform.cpp">
-      <Filter>ecs\component</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\CoordinateTransform.cpp">
+      <Filter>evcs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\registry\VoxelType.cpp">
       <Filter>registry</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerInputMovement.cpp">
-      <Filter>ecs\view</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ViewPlayerInputMovement.cpp">
+      <Filter>evcs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentCameraPOV.cpp">
-      <Filter>ecs\component</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentCameraPOV.cpp">
+      <Filter>evcs\component</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemUpdateCameraPerspective.cpp">
-      <Filter>ecs\system</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\SystemUpdateCameraPerspective.cpp">
+      <Filter>evcs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\line\SimpleLineRenderer.cpp">
       <Filter>render\line</Filter>
@@ -303,26 +303,26 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\MinecraftAssetStatics.cpp">
       <Filter>asset</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemMovePlayerByInput.cpp">
-      <Filter>ecs\system</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\SystemMovePlayerByInput.cpp">
+      <Filter>evcs\system</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\resource\ResourceManager.cpp">
       <Filter>resource</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemPhysicsIntegration.cpp">
-      <Filter>ecs\system</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\SystemPhysicsIntegration.cpp">
+      <Filter>evcs\system</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerCamera.cpp">
-      <Filter>ecs\view</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ViewPlayerCamera.cpp">
+      <Filter>evcs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemRenderEntities.cpp">
-      <Filter>ecs\system</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\SystemRenderEntities.cpp">
+      <Filter>evcs\system</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewRenderedMesh.cpp">
-      <Filter>ecs\view</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ViewRenderedMesh.cpp">
+      <Filter>evcs\view</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\component\ComponentRenderMesh.cpp">
-      <Filter>ecs\component</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentRenderMesh.cpp">
+      <Filter>evcs\component</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\physics\ChunkCollisionManager.cpp">
       <Filter>physics</Filter>
@@ -339,8 +339,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\world\WorldEvents.cpp">
       <Filter>world</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPhysicalDynamics.cpp">
-      <Filter>ecs\view</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ViewPhysicalDynamics.cpp">
+      <Filter>evcs\view</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\model\ModelVoxel.cpp">
       <Filter>model</Filter>
@@ -423,11 +423,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketChunkReplication.cpp">
       <Filter>network\packet</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\system\SystemIntegratePlayerPhysics.cpp">
-      <Filter>ecs\system</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\system\SystemIntegratePlayerPhysics.cpp">
+      <Filter>evcs\system</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\ecs\view\ViewPlayerPhysics.cpp">
-      <Filter>ecs\view</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\view\ViewPlayerPhysics.cpp">
+      <Filter>evcs\view</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)source\network\packet\NetworkPacketDisplacePlayer.cpp">
       <Filter>network\packet</Filter>
