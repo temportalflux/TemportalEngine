@@ -126,6 +126,10 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 	// If replication is on, ecs will auto-generate packets.
 	if (game::Game::networkInterface()->type().includes(network::EType::eServer))
 	{
+		// TODO: Update replication list so that order of object modification doesnt matter.
+		// Right now, updating a component after it is assigned a view will result in the component
+		// not being created until after the view is created.
+		// The replicator list needs to re-sort itself based on what packets require what other packets.
 		ecs.beginReplication();
 	}
 
