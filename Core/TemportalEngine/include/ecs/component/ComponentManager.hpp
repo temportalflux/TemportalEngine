@@ -63,6 +63,10 @@ public:
 		return dynamic_cast<TComponent*>(this->get(TComponent::TypeId, id));
 	}
 
+	// Called by entities when components are added to them
+	void setComponentEntity(TypeId typeId, Identifier compId, Identifier entityId);
+	std::optional<Identifier> getComponentEntityId(TypeId typeId, Identifier compId);
+
 private:
 	Core *mpCore;
 
@@ -78,6 +82,7 @@ private:
 	void* mpPoolMemory;
 	ObjectPool mPoolByType[ECS_MAX_COMPONENT_TYPE_COUNT];
 	std::map<Identifier, Component*> mAllocatedByType[ECS_MAX_COMPONENT_TYPE_COUNT];
+	std::map<Identifier, Identifier> mOwnerEntityByAllocatedId[ECS_MAX_COMPONENT_TYPE_COUNT];
 
 	void registerType(ComponentTypeId const& id, TypeMetadata const& metadata);
 

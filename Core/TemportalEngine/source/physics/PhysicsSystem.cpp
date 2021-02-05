@@ -27,6 +27,7 @@ physics::System::System()
 	, mLogger(DeclareLog("Physics", LOG_INFO))
 	, mbRecordMemoryAllocations(shouldRecordMemoryAllocsByDefault)
 	, mUnitLength(1.0f), mObjectSpeed(9.806f)
+	, mpPhysxVisualDebugger(nullptr)
 {
 	gErrorCallback.init(&this->mLogger);
 	this->mLogger.log(LOG_INFO, "Initializing PhysX %s", this->mVersion.toString().c_str());

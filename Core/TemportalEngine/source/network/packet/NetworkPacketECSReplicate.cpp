@@ -441,6 +441,8 @@ void ECSReplicate::process(network::Interface *pInterface)
 			{
 				pObject->setOwner(this->owner());
 			}
+
+			pObject->onReplicateUpdate();
 		}
 		else
 		{
@@ -517,7 +519,6 @@ void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 		uSize fieldPtrStart = head + field.first;
 		void* fieldPtr = (void*)fieldPtrStart;
 		memcpy_s(fieldPtr, fieldSize, (void*)field.second.data(), fieldSize);
-		pObject->validate();
 	}
 }
 

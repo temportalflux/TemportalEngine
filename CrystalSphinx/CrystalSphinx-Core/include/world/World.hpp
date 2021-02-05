@@ -30,6 +30,8 @@ public:
 	World();
 	virtual ~World();
 
+	BroadcastDelegate<void(f32 const& deltaTime)> onSimulate;
+
 	std::shared_ptr<physics::Material> playerPhysicsMaterial();
 	std::shared_ptr<physics::Scene> dimensionScene(DimensionId dimId);
 	std::shared_ptr<world::Terrain> terrain(DimensionId dimId);
@@ -37,6 +39,7 @@ public:
 	void removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventListener> listener);
 
 	virtual void init();
+	virtual bool shouldConnectToPhysxDebugger() const { return true; }
 	virtual void uninit();
 	void update(f32 deltaTime);
 
@@ -53,6 +56,8 @@ public:
 	void destroyPlayerController(network::Identifier userNetId);
 
 	virtual void loadChunk(DimensionId const& dimId, math::Vector3Int const& coord) {}
+
+	f32 const& simulationFrequency() const;
 
 protected:
 	struct Dimension
@@ -78,6 +83,9 @@ private:
 	void destroyDimension(Dimension *dim);
 
 	std::map<ui32, physics::Controller> mPhysicsControllerByUserNetId;
+
+	f32 mSimulationFrequency;
+	f32 mTimeSinceLastSimulate;
 
 };
 

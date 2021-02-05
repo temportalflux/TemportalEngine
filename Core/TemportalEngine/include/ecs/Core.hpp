@@ -103,7 +103,7 @@ public:
 	 * `beginReplication` has not been called.
 	 * Broadcasts all queue packets to all connections, and clears the queue.
 	 */
-	void endReplication();
+	void endReplication(std::set<ui32> const& ignoredConnections = std::set<ui32>());
 
 private:
 	logging::Logger mLog;

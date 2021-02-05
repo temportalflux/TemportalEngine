@@ -63,6 +63,32 @@ private:
 #pragma region Views
 
 public:
+	using ViewArray = FixedArray<ItemEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT>;
+
+	class ViewIteratorEntry
+	{
+	public:
+		ViewIteratorEntry(Entity* entity, ViewArray::iterator iter);
+		ViewIteratorEntry(ViewIteratorEntry const& other);
+
+		view::View* operator*();
+		void operator++();
+		bool operator!=(ViewIteratorEntry const& other);
+
+	private:
+		Entity* mpEntity;
+		ViewArray::iterator mEntityIter;
+	};
+	class ViewIterator
+	{
+	public:
+		ViewIterator(Entity* entity);
+		ViewIteratorEntry begin();
+		ViewIteratorEntry end();
+	private:
+		Entity* mpEntity;
+	};
+
 	Entity& addView(ViewTypeId const& typeId, view::View* pView);
 
 	template <typename TView>
@@ -79,14 +105,14 @@ public:
 		);
 	}
 
+	ViewIterator views();
+
 private:
-	FixedArray<ItemEntry, ECS_MAX_VIEWS_PER_ENTITY_COUNT> mViews;
+	ViewArray mViews;
 
 	view::View* getView(ViewTypeId const& typeId);
 
 #pragma endregion
-
-
 
 };
 

@@ -149,7 +149,7 @@ Core::ReplicationPacket Core::replicateDestroy()
 	return packet;
 }
 
-void Core::endReplication()
+void Core::endReplication(std::set<network::ConnectionId> const& ignoredConnections)
 {
 	if (this->mbIsReplicating)
 	{
@@ -157,7 +157,7 @@ void Core::endReplication()
 		if (this->mReplicators.size() > 0)
 		{
 			auto& network = engine::Engine::Get()->networkInterface();
-			network.sendPackets(network.connections(), this->mReplicators);
+			network.sendPackets(network.connections(), this->mReplicators, ignoredConnections);
 			this->mReplicators.clear();
 		}
 	}

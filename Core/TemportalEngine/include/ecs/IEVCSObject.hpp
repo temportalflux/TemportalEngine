@@ -11,6 +11,10 @@ public:
 	virtual ecs::TypeId typeId() const;
 	virtual ~IEVCSObject() {}
 
+	template <typename T>
+	bool isA() const { return this->isType(T::TypeId); }
+	bool isType(TypeId const& typeId) const;
+
 	void setId(Identifier const& id);
 	Identifier const& id() const;
 
@@ -23,6 +27,7 @@ public:
 
 	virtual void validate();
 	virtual void onReplicateCreate();
+	virtual void onReplicateUpdate();
 	virtual void onReplicateDestroy();
 
 private:

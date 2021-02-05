@@ -64,6 +64,8 @@ Entity& Entity::addComponent(ComponentTypeId const& typeId, component::Component
 		getViewAt(slot.typeId, slot.objectId)->onComponentAdded(typeId, pComp->id());
 	}
 
+	ecs::Core::Get()->components().setComponentEntity(typeId, pComp->id(), this->id());
+
 	if (ecs::Core::Get()->shouldReplicate())
 	{
 		ecs::Core::Get()->replicateUpdate(
@@ -122,3 +124,48 @@ view::View* Entity::getView(ViewTypeId const& typeId)
 	return ecs::Core::Get()->views().get(slot.objectId);
 }
 
+Entity::ViewIterator::ViewIterator(Entity* entity)
+	: mpEntity(entity)
+{
+}
+
+Entity::ViewIteratorEntry Entity::ViewIterator::begin()
+{
+	return ViewIteratorEntry(this->mpEntity, this->mpEntity->mViews.begin());
+}
+
+Entity::ViewIteratorEntry Entity::ViewIterator::end()
+{
+	return ViewIteratorEntry(this->mpEntity, this->mpEntity->mViews.end());
+}
+
+Entity::ViewIteratorEntry::ViewIteratorEntry(Entity* entity, ViewArray::iterator iter)
+	: mpEntity(entity), mEntityIter(iter)
+{
+}
+
+Entity::ViewIteratorEntry::ViewIteratorEntry(ViewIteratorEntry const& other)
+	: mpEntity(other.mpEntity), mEntityIter(other.mEntityIter)
+{
+}
+
+view::View* Entity::ViewIteratorEntry::operator*()
+{
+	auto& slot = *(this->mEntityIter);
+	return ecs::Core::Get()->views().get(slot.objectId);
+}
+
+void Entity::ViewIteratorEntry::operator++()
+{
+	++this->mEntityIter;
+}
+
+bool Entity::ViewIteratorEntry::operator!=(ViewIteratorEntry const& other)
+{
+	return this->mEntityIter != other.mEntityIter;
+}
+
+Entity::ViewIterator Entity::views()
+{
+	return ViewIterator(this);
+}

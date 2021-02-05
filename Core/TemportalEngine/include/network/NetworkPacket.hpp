@@ -125,6 +125,8 @@ public:
 
 	utility::Flags<EPacketFlags> const& flags() const;
 
+	logging::Logger& logger() const;
+
 	void appendDebugLogHeader(std::stringstream &ss) const;
 	virtual void write(Buffer &archive) const;
 	virtual void read(Buffer &archive);

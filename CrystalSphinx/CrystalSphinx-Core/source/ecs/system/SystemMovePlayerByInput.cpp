@@ -9,9 +9,9 @@
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
 #include "logging/Logger.hpp"
-#include "network/packet/NetworkPacketDisplacePlayer.hpp"
 #include "physics/PhysicsScene.hpp"
 #include "physics/PhysicsController.hpp"
+#include "world/World.hpp"
 
 using namespace ecs;
 using namespace ecs::system;
@@ -78,6 +78,7 @@ void MovePlayerByInput::update(f32 deltaTime, view::View* view)
 	assert(transform && physicsComp);
 	assert(physicsComp->owner()); // assumes that transform and physics have the same owner
 
+	bool bHasMoved = false;
 	auto displacement = math::Vector3::ZERO;
 	for (auto mapping : this->mAxisMappings)
 	{
@@ -89,28 +90,18 @@ void MovePlayerByInput::update(f32 deltaTime, view::View* view)
 			mapping.direction.normalize();
 		}
 		displacement += mapping.direction * this->mAxialMoveSpeed * deltaTime;
+		bHasMoved = true;
 	}
-	if (displacement.magnitudeSq() > math::epsilon())
+	if (bHasMoved)
 	{
-		auto* network = game::Game::networkInterface();
-		if (!network->type().includes(network::EType::eServer))
-		{
-			network::packet::DisplacePlayer::moveController(
-				game::Game::Get()->client()->localUserNetId(),
-				transform->netId(), displacement, deltaTime
-			);
-		}
-		if (network->isRunning())
-		{
-			auto packet = network::packet::DisplacePlayer::create();
-			packet->setTransformNetId(transform->netId()).move(displacement, deltaTime);
-			packet->sendToServer();
-		}
+		auto pWorld = game::Game::Get()->world();
+		auto ownerNetId = physicsComp->owner().value();
+		auto& controller = pWorld->getPhysicsController(ownerNetId);
+		controller.move(displacement, deltaTime);
+		transform->setPosition(world::Coordinate::fromGlobal(controller.footPosition()));
 	}
 
-	auto& ecs = engine::Engine::Get()->getECS();
-	ecs.beginReplication();
-
+	bool bChangedOrientation = false;
 	auto orientation = transform->orientation();
 	auto lookAxes = std::vector<InputAxis*>({ &this->mLookVertical, &this->mLookHorizontal });
 	for (auto* inputAxis : lookAxes)
@@ -135,10 +126,15 @@ void MovePlayerByInput::update(f32 deltaTime, view::View* view)
 				orientation = math::Quaternion::concat(rotation, orientation);
 			}
 			inputAxis->delta = 0.0f;
+			bChangedOrientation = true;
 		}
 	}
+	if (bChangedOrientation)
+	{
+		auto& ecs = engine::Engine::Get()->getECS();
+		ecs.beginReplication();
+		transform->setOrientation(orientation);
+		ecs.endReplication();
+	}
 
-	transform->setOrientation(orientation);
-
-	ecs.endReplication();
 }

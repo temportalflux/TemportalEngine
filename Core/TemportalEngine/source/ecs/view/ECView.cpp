@@ -68,3 +68,19 @@ component::Component* View::get(ComponentTypeId const& typeId)
 	}
 	return nullptr;
 }
+
+bool View::includesComponent(TypeId const& componentTypeId, Identifier const& componentId) const
+{
+	for (auto& slot : this->mSlots)
+	{
+		if (slot.typeId == componentTypeId && slot.bHasValue && slot.objectId == componentId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void View::onComponentReplicationUpdate(ecs::component::Component* component)
+{
+}

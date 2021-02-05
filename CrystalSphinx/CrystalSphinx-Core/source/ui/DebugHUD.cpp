@@ -63,7 +63,7 @@ void DebugHUD::tick(f32 deltaTime)
 	if (this->mOccurance != 0) return;
 
 	auto pGame = game::Game::Get();
-	if (pGame->world())
+	if (pGame->world() && pGame->client()->hasLocalEntity())
 	{
 		auto ecs = ecs::Core::Get();
 		auto pEntity = ecs->entities().get(pGame->client()->localUserEntityId());

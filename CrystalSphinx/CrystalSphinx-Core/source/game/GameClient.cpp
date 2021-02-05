@@ -22,6 +22,7 @@
 #include "game/GameServer.hpp"
 #include "input/InputCore.hpp"
 #include "input/Queue.hpp"
+#include "network/packet/NetworkPacketDisplacePlayer.hpp"
 #include "network/packet/NetworkPacketLoginWithAuthId.hpp"
 #include "network/packet/NetworkPacketUpdateUserInfo.hpp"
 #include "render/EntityInstanceBuffer.hpp"
@@ -256,6 +257,7 @@ void Client::exec_openSave(command::Signature const& cmd)
 	}
 
 	auto pWorld = game::Game::Get()->createWorld<world::WorldSaved>(&saveData.get(saveName));
+	pWorld->onSimulate.bind(this->weak_from_this(), std::bind(&Client::onWorldSimulate, this, std::placeholders::_1));
 	pWorld->init();
 	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
 	pWorld->loadChunk(0, { 0, 0, 0 });
@@ -281,6 +283,7 @@ void Client::exec_joinServer(command::Signature const& cmd)
 	}
 
 	auto pWorld = game::Game::Get()->createWorld<world::WorldReplicated>();
+	pWorld->onSimulate.bind(this->weak_from_this(), std::bind(&Client::onWorldSimulate, this, std::placeholders::_1));
 	pWorld->init();
 	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
 
@@ -297,6 +300,7 @@ void Client::exec_joinServerLocal(command::Signature const& cmd)
 	}
 
 	auto pWorld = game::Game::Get()->createWorld<world::WorldReplicated>();
+	pWorld->onSimulate.bind(this->weak_from_this(), std::bind(&Client::onWorldSimulate, this, std::placeholders::_1));
 	pWorld->init();
 	pWorld->addTerrainEventListener(0, this->mpVoxelInstanceBuffer);
 
@@ -446,9 +450,14 @@ network::Identifier Client::localUserNetId() const
 	return *this->mLocalUserNetId;
 }
 
+bool Client::hasLocalEntity() const
+{
+	return this->mLocalPlayerEntityId.has_value();
+}
+
 ecs::Identifier Client::localUserEntityId() const
 {
-	return this->mLocalPlayerEntityId;
+	return this->mLocalPlayerEntityId.value();
 }
 
 void Client::addConnectedUser(network::Identifier netId)
@@ -962,6 +971,24 @@ void Client::onInputKey(input::Event const& evt)
 		else
 		{
 			this->mpChunkBoundaryRenderer->setIsBoundaryEnabled(graphics::ChunkBoundaryType::eColumn, true);
+		}
+	}
+}
+
+void Client::onWorldSimulate(f32 const& deltaTime)
+{
+	auto* network = game::Game::networkInterface();
+	if (this->mLocalPlayerEntityId && network->isRunning() && network->type() == network::EType::eClient)
+	{
+		auto* transform = ecs::Core::Get()->entities().get(
+			this->mLocalPlayerEntityId.value()
+		)->getComponent<ecs::component::CoordinateTransform>();
+		if ((this->mPrevLocalEntityPosition - transform->position()).toGlobal().magnitudeSq() > math::epsilon())
+		{
+			auto packet = network::packet::DisplacePlayer::create();
+			packet->setTransformNetId(transform->netId()).moveTo(transform->position());
+			packet->sendToServer();
+			this->mPrevLocalEntityPosition = transform->position();
 		}
 	}
 }

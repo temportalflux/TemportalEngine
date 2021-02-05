@@ -23,6 +23,7 @@ public:
 	
 	std::shared_ptr<physics::Scene> scene() const;
 	Controller& move(math::Vector3 const& displacement, f32 const& deltaTime);
+	Controller& setFootPosition(math::Vector<f64, 3> const& position);
 
 	math::Vector<f64, 3> position() const;
 	f32 halfHeight() const;

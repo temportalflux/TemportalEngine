@@ -80,6 +80,13 @@ Controller& Controller::move(math::Vector3 const& displacement, f32 const& delta
 	return *this;
 }
 
+Controller& Controller::setFootPosition(math::Vector<f64, 3> const& position)
+{
+	auto* pController = as<physx::PxController>(this->mpInternal);
+	pController->setFootPosition(physics::toPhysX(position));
+	return *this;
+}
+
 math::Vector<f64, 3> Controller::position() const
 {
 	auto* pController = as<physx::PxController>(this->mpInternal);

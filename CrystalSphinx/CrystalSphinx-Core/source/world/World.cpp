@@ -23,6 +23,8 @@ using namespace world;
 logging::Logger WORLD_LOG = DeclareLog("World", LOG_INFO);
 
 World::World()
+	: mSimulationFrequency(1.0f / 60.0f)
+	, mTimeSinceLastSimulate(0.0f)
 {
 }
 
@@ -54,17 +56,14 @@ void World::initializePhysics()
 {
 	WORLD_LOG.log(LOG_INFO, "Initializing physics");
 	this->mpPhysics = std::make_shared<physics::System>();
-	this->mpPhysics->init(true);
+	this->mpPhysics->init(this->shouldConnectToPhysxDebugger());
 
 	this->mpPlayerPhysicsMaterial = std::make_shared<physics::Material>();
 	this->mpPlayerPhysicsMaterial->setSystem(this->mpPhysics);
 	this->mpPlayerPhysicsMaterial->create();
 
-	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();
-	engine::Engine::Get()->addTicker(this->mpSystemPhysicsIntegration);
-	
+	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();	
 	this->mpSystemIntegratePlayerPhysics = std::make_shared<ecs::system::IntegratePlayerPhysics>();
-	engine::Engine::Get()->addTicker(this->mpSystemIntegratePlayerPhysics);
 }
 
 void World::uninitializePhysics()
@@ -74,6 +73,11 @@ void World::uninitializePhysics()
 	this->mpSystemPhysicsIntegration.reset();
 	this->mpPlayerPhysicsMaterial.reset();
 	this->mpPhysics.reset();
+}
+
+f32 const& World::simulationFrequency() const
+{
+	return this->mSimulationFrequency;
 }
 
 void World::createDimension(Dimension *dim)
@@ -213,5 +217,15 @@ void World::destroyPlayerController(network::Identifier userNetId)
 
 void World::update(f32 deltaTime)
 {
-	this->mOverworld.mpScene->simulate(deltaTime);
+	this->mTimeSinceLastSimulate += deltaTime;
+	if (this->mTimeSinceLastSimulate >= this->mSimulationFrequency)
+	{
+		this->mTimeSinceLastSimulate -= this->mSimulationFrequency;
+
+		this->mpSystemIntegratePlayerPhysics->tick(this->mSimulationFrequency);
+		this->mpSystemPhysicsIntegration->tick(this->mSimulationFrequency);
+		this->mOverworld.mpScene->simulate(this->mSimulationFrequency);
+
+		this->onSimulate.broadcast(deltaTime);
+	}
 }

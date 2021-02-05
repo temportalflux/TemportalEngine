@@ -41,6 +41,9 @@ public:
 		return reinterpret_cast<TComponent*>(this->get(TComponent::TypeId));
 	}
 
+	bool includesComponent(TypeId const& componentTypeId, Identifier const& componentId) const;
+	virtual void onComponentReplicationUpdate(ecs::component::Component* component);
+
 private:
 	struct ComponentSlot
 	{

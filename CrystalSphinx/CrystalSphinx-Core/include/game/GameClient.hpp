@@ -6,6 +6,7 @@
 #include "input/Event.hpp"
 #include "settings/ClientSettings.hpp"
 #include "ui/Core.hpp"
+#include "world/WorldCoordinate.hpp"
 
 class Window;
 NS_ECS
@@ -57,6 +58,7 @@ public:
 	utility::Guid const& localUserId() const;
 	crypto::RSAKey localUserAuthKey() const;
 	network::Identifier localUserNetId() const;
+	bool hasLocalEntity() const;
 	ecs::Identifier localUserEntityId() const;
 	void setLocalUserNetId(network::Identifier netId);
 
@@ -74,7 +76,8 @@ private:
 	game::UserInfo localUserInfo() const;
 	std::optional<ui32> mLocalUserNetId;
 	std::map<ui32, game::UserInfo> mConnectedUserInfo;
-	ecs::Identifier mLocalPlayerEntityId;
+	std::optional<ecs::Identifier> mLocalPlayerEntityId;
+	world::Coordinate mPrevLocalEntityPosition;
 
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
 
@@ -149,6 +152,8 @@ private:
 	void bindInput();
 	void unbindInput();
 	void onInputKey(input::Event const& evt);
+
+	void onWorldSimulate(f32 const& deltaTime);
 
 };
 

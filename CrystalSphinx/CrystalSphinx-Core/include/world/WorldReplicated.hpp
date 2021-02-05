@@ -14,6 +14,7 @@ class WorldReplicated : public World
 public:
 	WorldReplicated();
 
+	bool shouldConnectToPhysxDebugger() const override;
 	void initializeDimension(network::packet::ChunkReplication *pPacket);
 
 };

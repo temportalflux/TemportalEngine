@@ -11,6 +11,11 @@ WorldReplicated::WorldReplicated()
 {
 }
 
+bool WorldReplicated::shouldConnectToPhysxDebugger() const
+{
+	return false;
+}
+
 void WorldReplicated::initializeDimension(network::packet::ChunkReplication *pPacket)
 {
 	world::DimensionId const& dimId = pPacket->dimensionId();

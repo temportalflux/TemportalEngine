@@ -10,7 +10,6 @@ using namespace physics;
 
 Scene::Scene()
 	: mGravity(math::V3_UP * -9.806f)
-	, mSimulationFrequency(1.0f / 60.0f), mTimeSinceLastSimulate(0.0f)
 	, mpInternal(nullptr)
 {
 }
@@ -42,12 +41,6 @@ Scene& Scene::setGravity(math::Vector3 const& gravity)
 }
 
 math::Vector3 const& Scene::gravity() const { return this->mGravity; }
-
-Scene& Scene::setSimulationStep(f32 const& frequency)
-{
-	this->mSimulationFrequency = frequency;
-	return *this;
-}
 
 Scene& Scene::addActor(RigidBody *pBody)
 {
@@ -97,12 +90,7 @@ void Scene::getController(ui32 const& index, Controller &out) const
 void Scene::simulate(f32 const& deltaTime)
 {
 	assert(this->mpInternal);
-	this->mTimeSinceLastSimulate += deltaTime;
-	if (this->mTimeSinceLastSimulate >= this->mSimulationFrequency)
-	{
-		this->mTimeSinceLastSimulate -= this->mSimulationFrequency;
-		auto pScene = as<physx::PxScene>(this->mpInternal);
-		pScene->simulate(this->mSimulationFrequency);
-		pScene->fetchResults(true);
-	}
+	auto pScene = as<physx::PxScene>(this->mpInternal);
+	pScene->simulate(deltaTime);
+	pScene->fetchResults(true);
 }

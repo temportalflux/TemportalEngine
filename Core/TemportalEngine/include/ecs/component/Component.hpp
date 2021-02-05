@@ -29,6 +29,8 @@ public:
 
 	using Field = std::pair<uSize, uSize>;
 	virtual std::vector<Field> allFields() const;
+
+	virtual void onReplicateUpdate() override;
 };
 
 NS_END

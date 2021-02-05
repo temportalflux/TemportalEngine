@@ -139,6 +139,13 @@ void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
 	bool bWasReplicated = iter->second->isReplicated();
 	auto netId = iter->second->netId();
 
+	{
+		auto iterOwner = this->mOwnerEntityByAllocatedId[typeId].find(id);
+		if (iterOwner != this->mOwnerEntityByAllocatedId[typeId].end())
+		{
+			this->mOwnerEntityByAllocatedId[typeId].erase(iterOwner);
+		}
+	}
 	this->mAllocatedByType[typeId].erase(iter);
 	this->mPoolByType[typeId].destroy(id);
 
@@ -159,4 +166,19 @@ void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
 		LOG_VERBOSE, "Destroyed %s component %u with net-id(%u)",
 		this->typeName(typeId).c_str(), id, netId
 	);
+}
+
+void Manager::setComponentEntity(TypeId typeId, Identifier compId, Identifier entityId)
+{
+	this->mOwnerEntityByAllocatedId[typeId].insert(std::make_pair(compId, entityId));
+}
+
+std::optional<Identifier> Manager::getComponentEntityId(TypeId typeId, Identifier compId)
+{
+	auto iter = this->mOwnerEntityByAllocatedId[typeId].find(compId);
+	if (iter != this->mOwnerEntityByAllocatedId[typeId].end())
+	{
+		return iter->second;
+	}
+	return std::nullopt;
 }

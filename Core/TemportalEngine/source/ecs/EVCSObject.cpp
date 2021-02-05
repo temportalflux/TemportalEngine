@@ -7,6 +7,7 @@ using namespace ecs;
 
 ecs::EType IEVCSObject::objectType() const { assert(false); return EType::eSystem; }
 ecs::TypeId IEVCSObject::typeId() const { assert(false); return 0; }
+bool IEVCSObject::isType(TypeId const& typeId) const { return this->typeId() == typeId; }
 
 void IEVCSObject::setId(Identifier const& id) { this->mId = id; }
 Identifier const& IEVCSObject::id() const { return this->mId; }
@@ -54,4 +55,5 @@ std::optional<ui32> IEVCSObject::owner() const
 
 void IEVCSObject::validate() {}
 void IEVCSObject::onReplicateCreate() {}
+void IEVCSObject::onReplicateUpdate() {}
 void IEVCSObject::onReplicateDestroy() {}

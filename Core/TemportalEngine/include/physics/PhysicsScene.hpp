@@ -17,7 +17,6 @@ public:
 
 	Scene& setGravity(math::Vector3 const& gravity);
 	math::Vector3 const& gravity() const;
-	Scene& setSimulationStep(f32 const& frequency);
 
 	Scene& addActor(RigidBody *pBody);
 
@@ -31,9 +30,6 @@ private:
 	math::Vector3 mGravity;
 	
 	/*physx::PxScene*/ void* mpInternal;
-
-	f32 mSimulationFrequency;
-	f32 mTimeSinceLastSimulate;
 
 	/*physx::PxControllerManager*/ void* mpControllerManager;
 

@@ -38,6 +38,8 @@ utility::Flags<EPacketFlags> const& Packet::flags() const
 	return this->mFlags;
 }
 
+logging::Logger& Packet::logger() const { return network::logger(); }
+
 void Packet::appendDebugLogHeader(std::stringstream &ss) const
 {
 	ss

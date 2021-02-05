@@ -130,3 +130,24 @@ void Coordinate::adjustForChunkSize()
 	this->mBlockPosition += (this->mBlockOffset %= 1);
 	this->mChunkPosition += (this->mBlockPosition %= i32(ChunkSize()));
 }
+
+std::string Coordinate::toString() const
+{
+	return this->chunk().toString() + "|" + this->local().toString() + "|" + this->offset().toString();
+}
+
+void network::write(network::Buffer &buffer, std::string name, world::Coordinate value)
+{
+	buffer.setNamed(name, value.toString());
+	buffer.writeRaw(value.chunk());
+	buffer.writeRaw(value.local());
+	buffer.writeRaw(value.offset());
+}
+
+void network::read(network::Buffer &buffer, std::string name, world::Coordinate &value)
+{
+	buffer.readRaw(value.chunk());
+	buffer.readRaw(value.local());
+	buffer.readRaw(value.offset());
+	buffer.setNamed(name, value.toString());
+}

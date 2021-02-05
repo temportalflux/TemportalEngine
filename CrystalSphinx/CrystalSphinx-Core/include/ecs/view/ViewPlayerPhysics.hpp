@@ -12,6 +12,7 @@ class PlayerPhysics : public View
 	DECLARE_ECS_VIEW_STATICS()
 public:
 	PlayerPhysics();
+	void onComponentReplicationUpdate(ecs::component::Component* component) override;
 };
 
 NS_END

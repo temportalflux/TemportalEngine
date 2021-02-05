@@ -63,6 +63,10 @@ enum class ELogLevel : ui8
 #define LOG_VERBOSE logging::ELogLevel::eVerbose
 #define LOG_VERY_VERBOSE logging::ELogLevel::eVeryVerbose
 
+#ifndef NDEBUG
+#define LOG_DEBUG_ENABLED 1
+#endif
+
 // Forward Declare ------------------------------------------------------------
 class Logger;
 typedef char const * Message;

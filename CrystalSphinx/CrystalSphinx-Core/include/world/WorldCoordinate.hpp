@@ -17,6 +17,9 @@ public:
 	math::Vector3Int const& chunk() const { return this->mChunkPosition; }
 	math::Vector3Int const& local() const { return this->mBlockPosition; }
 	math::Vector3 const& offset() const { return this->mBlockOffset; }
+	math::Vector3Int& chunk() { return this->mChunkPosition; }
+	math::Vector3Int& local() { return this->mBlockPosition; }
+	math::Vector3& offset() { return this->mBlockOffset; }
 	
 	math::Vector<f64, 3> toGlobal() const;
 	static Coordinate fromGlobal(math::Vector<f64, 3> global);
@@ -39,6 +42,8 @@ public:
 	 */
 	bool operator<(Coordinate const& other) const;
 
+	std::string toString() const;
+
 private:
 	math::Vector3Int mChunkPosition;
 	math::Vector3Int mBlockPosition;
@@ -48,4 +53,11 @@ private:
 
 };
 
+NS_END
+
+#include "network/data/NetworkDataBuffer.hpp"
+
+NS_NETWORK
+void write(Buffer &buffer, std::string name, world::Coordinate value);
+void read(Buffer &buffer, std::string name, world::Coordinate &value);
 NS_END
