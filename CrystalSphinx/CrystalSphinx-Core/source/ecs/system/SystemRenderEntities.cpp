@@ -18,8 +18,8 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 RenderEntities::RenderEntities()
 	: System(view::RenderedMesh::TypeId)
@@ -144,7 +144,7 @@ void RenderEntities::record(graphics::Command *command, uIndex idxFrame, TGetGlo
 	}
 }
 
-void RenderEntities::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, ecs::view::View* view)
+void RenderEntities::recordView(graphics::Command *command, graphics::DescriptorSet const* cameraSet, evcs::view::View* view)
 {
 	OPTICK_EVENT();
 

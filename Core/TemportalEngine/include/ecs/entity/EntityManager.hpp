@@ -6,9 +6,9 @@
 #include "ecs/entity/Entity.hpp"
 #include "thread/MutexLock.hpp"
 
-NS_ECS
+NS_EVCS
 
-class EntityManager : public ecs::NetworkedManager
+class EntityManager : public evcs::NetworkedManager
 {
 	typedef std::unordered_map<Identifier, std::shared_ptr<Entity>> TOwnedObjectMap;
 	typedef std::unordered_map<Identifier, std::weak_ptr<Entity>> TAllocatedObjectMap;

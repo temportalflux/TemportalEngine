@@ -7,20 +7,21 @@
 #include "game/GameInstance.hpp"
 #include "world/World.hpp"
 
-using namespace ecs;
-using namespace ecs::view;
+using namespace evcs;
+using namespace evcs::component;
+using namespace evcs::view;
 
 DEFINE_ECS_VIEW_STATICS(view::PlayerPhysics);
 view::PlayerPhysics::PlayerPhysics() : View({
-	ecs::component::CoordinateTransform::TypeId,
-	ecs::component::PlayerPhysics::TypeId
+	CoordinateTransform::TypeId,
+	PlayerPhysics::TypeId
 })
 {
 }
 
-void view::PlayerPhysics::onComponentReplicationUpdate(ecs::component::Component* component)
+void view::PlayerPhysics::onComponentReplicationUpdate(Component* component)
 {
-	if (component->isA<ecs::component::CoordinateTransform>())
+	if (component->isA<CoordinateTransform>())
 	{
 		auto ownerNetId = this->owner();
 		if (!ownerNetId) return;
@@ -31,7 +32,7 @@ void view::PlayerPhysics::onComponentReplicationUpdate(ecs::component::Component
 		if (!pWorld->hasPhysicsController(*ownerNetId)) return;
 		auto& controller = pWorld->getPhysicsController(*ownerNetId);
 		
-		auto* pTransform = dynamic_cast<ecs::component::CoordinateTransform*>(component);
+		auto* pTransform = dynamic_cast<CoordinateTransform*>(component);
 		auto const transformPos = pTransform->position().toGlobal();
 		auto posDiff = controller.footPosition() - transformPos;
 		if (posDiff.magnitudeSq() > 0.001f)

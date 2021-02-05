@@ -2,7 +2,7 @@
 
 #include "ecs/component/Component.hpp"
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
 class PlayerPhysics : public Component

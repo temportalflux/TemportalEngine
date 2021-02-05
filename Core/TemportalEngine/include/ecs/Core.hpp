@@ -11,10 +11,10 @@
 
 NS_NETWORK
 FORWARD_DEF(NS_PACKET, class Packet);
-FORWARD_DEF(NS_PACKET, class ECSReplicate);
+FORWARD_DEF(NS_PACKET, class EVCSReplicate);
 NS_END
 
-NS_ECS
+NS_EVCS
 
 class Core
 {
@@ -33,10 +33,10 @@ public:
 	component::Manager& components();
 	view::Manager& views();
 
-	std::string typeName(ecs::EType type, ecs::TypeId typeId) const;
-	std::string fullTypeName(ecs::EType type, ecs::TypeId typeId) const;
+	std::string typeName(EType type, TypeId typeId) const;
+	std::string fullTypeName(EType type, TypeId typeId) const;
 
-	BroadcastDelegate<void(ecs::EType, ecs::TypeId, ecs::IEVCSObject*)> onOwnershipChanged;
+	BroadcastDelegate<void(EType, TypeId, IEVCSObject*)> onOwnershipChanged;
 
 	template <typename... TArgs>
 	void log(logging::ELogLevel category, logging::Message format, TArgs... args)
@@ -44,7 +44,7 @@ public:
 		this->mLog.log(category, format, args...);
 	}
 
-	using ReplicationPacket = std::shared_ptr<network::packet::ECSReplicate>;
+	using ReplicationPacket = std::shared_ptr<network::packet::EVCSReplicate>;
 	/**
 	 * Enables the auto-generation of replication packets.
 	 * If called, `endReplication` MUST be called as soon
@@ -83,12 +83,10 @@ public:
 	 * This is an optimization so that the fewest possible packets are sent.
 	 */
 	ReplicationPacket replicateUpdate(
-		ecs::EType ecsType,
-		ecs::TypeId typeId,
-		Identifier netId
+		EType ecsType, TypeId typeId, Identifier netId
 	);
 	/**
-	 * Creates an ecs replication packet to destroy an object.
+	 * Creates an evcs replication packet to destroy an object.
 	 * Uses `replicate` internally.
 	 * Used internally to ECS to create packets.
 	 */

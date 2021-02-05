@@ -5,7 +5,7 @@
 #include "math/Matrix.hpp"
 #include "world/WorldCoordinate.hpp"
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
 class CoordinateTransform : public Component

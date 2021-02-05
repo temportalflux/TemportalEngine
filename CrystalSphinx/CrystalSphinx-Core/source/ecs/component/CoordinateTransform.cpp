@@ -4,8 +4,8 @@
 #include "math/transform.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(CoordinateTransform)
 
@@ -33,7 +33,7 @@ CoordinateTransform& CoordinateTransform::setPosition(world::Coordinate const &p
 {
 	if (pos == this->mPosition) { return *this; }
 	this->mPosition = pos;
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
 		this->replicateUpdate()
 			->pushComponentField(ECS_REPL_FIELD(CoordinateTransform, mPosition));
@@ -77,7 +77,7 @@ math::Vector3 CoordinateTransform::down() const
 CoordinateTransform& CoordinateTransform::setOrientation(math::Quaternion const& orientation)
 {
 	this->mOrientation = orientation;
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
 		this->replicateUpdate()
 			->pushComponentField(ECS_REPL_FIELD(CoordinateTransform, mOrientation));

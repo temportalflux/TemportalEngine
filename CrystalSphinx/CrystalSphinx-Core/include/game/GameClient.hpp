@@ -9,7 +9,7 @@
 #include "world/WorldCoordinate.hpp"
 
 class Window;
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_SYSTEM, class RenderEntities);
 FORWARD_DEF(NS_SYSTEM, class UpdateCameraPerspective);
 FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
@@ -59,7 +59,7 @@ public:
 	crypto::RSAKey localUserAuthKey() const;
 	network::Identifier localUserNetId() const;
 	bool hasLocalEntity() const;
-	ecs::Identifier localUserEntityId() const;
+	evcs::Identifier localUserEntityId() const;
 	void setLocalUserNetId(network::Identifier netId);
 
 	game::UserInfo& getConnectedUserInfo(network::Identifier netId);
@@ -76,7 +76,7 @@ private:
 	game::UserInfo localUserInfo() const;
 	std::optional<ui32> mLocalUserNetId;
 	std::map<ui32, game::UserInfo> mConnectedUserInfo;
-	std::optional<ecs::Identifier> mLocalPlayerEntityId;
+	std::optional<evcs::Identifier> mLocalPlayerEntityId;
 	world::Coordinate mPrevLocalEntityPosition;
 
 	std::shared_ptr<resource::PackManager> mpResourcePackManager;
@@ -94,9 +94,9 @@ private:
 	
 	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
-	std::shared_ptr<ecs::system::RenderEntities> mpSystemRenderEntities;
-	std::shared_ptr<ecs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
-	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
+	std::shared_ptr<evcs::system::RenderEntities> mpSystemRenderEntities;
+	std::shared_ptr<evcs::system::UpdateCameraPerspective> mpSystemUpdateCameraPerspective;
+	std::shared_ptr<evcs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 	std::shared_ptr<graphics::TextureRegistry> mpTextureRegistry;
 	
 	std::shared_ptr<ui::DebugHUD> mpDebugHUD;
@@ -126,9 +126,9 @@ private:
 	void onDedicatedClientDisconnected(network::Interface *pInterface, network::Identifier invalidNetId);
 	void onNetworkStopped(network::Interface *pInterface);
 
-	void onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject);
-	void addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity);
-	void addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity);
+	void onEVCSOwnershipChanged(evcs::EType ecsType, evcs::TypeId typeId, evcs::IEVCSObject *pObject);
+	void addPlayerDisplayParts(std::shared_ptr<evcs::Entity> pEntity);
+	void addPlayerControlParts(std::shared_ptr<evcs::Entity> pEntity);
 
 	bool initializeGraphics();
 

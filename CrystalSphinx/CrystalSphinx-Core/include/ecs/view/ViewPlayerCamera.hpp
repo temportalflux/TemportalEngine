@@ -4,7 +4,7 @@
 
 #include "ecs/view/ECView.hpp"
 
-NS_ECS
+NS_EVCS
 NS_VIEW
 
 class PlayerCamera : public View

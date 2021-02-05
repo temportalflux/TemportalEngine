@@ -95,7 +95,7 @@ void Client::init()
 		&Client::onNetworkStopped, this, std::placeholders::_1
 	));
 
-	ecs::Core::Get()->onOwnershipChanged.bind(this->weak_from_this(), std::bind(
+	evcs::Core::Get()->onOwnershipChanged.bind(this->weak_from_this(), std::bind(
 		&Client::onEVCSOwnershipChanged, this,
 		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 	));
@@ -113,7 +113,7 @@ void Client::init()
 	// Specifically for clients which set player movement/camera information
 	{
 		auto pEngine = engine::Engine::Get();
-		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<ecs::system::MovePlayerByInput>();
+		this->mpSystemMovePlayerByInput = pEngine->getMainMemory()->make_shared<evcs::system::MovePlayerByInput>();
 		pEngine->addTicker(this->mpSystemMovePlayerByInput);
 		this->mpSystemMovePlayerByInput->subscribeToQueue();
 	}
@@ -455,7 +455,7 @@ bool Client::hasLocalEntity() const
 	return this->mLocalPlayerEntityId.has_value();
 }
 
-ecs::Identifier Client::localUserEntityId() const
+evcs::Identifier Client::localUserEntityId() const
 {
 	return this->mLocalPlayerEntityId.value();
 }
@@ -481,11 +481,11 @@ game::UserInfo& Client::getConnectedUserInfo(network::Identifier netId)
 	return this->mConnectedUserInfo.find(netId)->second;
 }
 
-void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs::IEVCSObject *pObject)
+void Client::onEVCSOwnershipChanged(evcs::EType ecsType, evcs::TypeId typeId, evcs::IEVCSObject *pObject)
 {
-	if (ecsType == ecs::EType::eEntity && pObject->owner())
+	if (ecsType == evcs::EType::eEntity && pObject->owner())
 	{
-		auto pEntity = ecs::Core::Get()->entities().get(pObject->id());
+		auto pEntity = evcs::Core::Get()->entities().get(pObject->id());
 		if (pObject->owner() == this->mLocalUserNetId)
 		{
 			this->mLocalPlayerEntityId = pObject->id();
@@ -499,36 +499,36 @@ void Client::onEVCSOwnershipChanged(ecs::EType ecsType, ecs::TypeId typeId, ecs:
 	}
 }
 
-void Client::addPlayerControlParts(std::shared_ptr<ecs::Entity> pEntity)
+void Client::addPlayerControlParts(std::shared_ptr<evcs::Entity> pEntity)
 {
 	CLIENT_LOG.log(
 		LOG_VERBOSE, "Adding player control components to id(%u)/net(%u), owned by net(%u)",
 		pEntity->id(), pEntity->netId(), *pEntity->owner()
 	);
 
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 
-	auto* pTransform = pEntity->getComponent<ecs::component::CoordinateTransform>();
+	auto* pTransform = pEntity->getComponent<evcs::component::CoordinateTransform>();
 
 	// enables `system::MovePlayerByInput`
 	// requires CoordinateTransform
 	// requires PhysicsController
-	pEntity->addView(ecs->views().create<ecs::view::PlayerInputMovement>());
+	pEntity->addView(ecs->views().create<evcs::view::PlayerInputMovement>());
 
 }
 
-void Client::addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity)
+void Client::addPlayerDisplayParts(std::shared_ptr<evcs::Entity> pEntity)
 {
 	CLIENT_LOG.log(
 		LOG_VERBOSE, "Adding player display components to id(%u)/net(%u), owned by net(%u)",
 		pEntity->id(), pEntity->netId(), *pEntity->owner()
 	);
 
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 
 	// Camera PointOfView component
 	{
-		auto cameraPOV = ecs->components().create<ecs::component::CameraPOV>();
+		auto cameraPOV = ecs->components().create<evcs::component::CameraPOV>();
 		// TODO: Store in local user display settings
 		cameraPOV->setFOV(27.0f); // 45.0f horizontal FOV
 		pEntity->addComponent(cameraPOV);
@@ -538,16 +538,16 @@ void Client::addPlayerDisplayParts(std::shared_ptr<ecs::Entity> pEntity)
 	// requires CoordinateTransform
 	// requires CameraPOV
 	// requires RenderMesh
-	pEntity->addView(ecs->views().create<ecs::view::PlayerCamera>());
+	pEntity->addView(ecs->views().create<evcs::view::PlayerCamera>());
 
 	// enables `system::RenderEntities`
 	// requires CoordinateTransform
 	// requires RenderMesh
-	pEntity->addView(ecs->views().create<ecs::view::RenderedMesh>());
+	pEntity->addView(ecs->views().create<evcs::view::RenderedMesh>());
 
 	// RenderMesh component
 	{
-		auto mesh = ecs->components().create<ecs::component::RenderMesh>();
+		auto mesh = ecs->components().create<evcs::component::RenderMesh>();
 		mesh->setModel(asset::TypedAssetPath<asset::Model>::Create(
 			"assets/models/DefaultHumanoid/DefaultHumanoid.te-asset"
 		));
@@ -629,7 +629,7 @@ void Client::createRenderers()
 	}
 	this->mpResourcePackManager->OnResourcesLoadedEvent.bind(this->mpTextureRegistry, this->mpTextureRegistry->onTexturesLoadedEvent());
 
-	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<ecs::system::UpdateCameraPerspective>(
+	this->mpSystemUpdateCameraPerspective = pEngine->getMainMemory()->make_shared<evcs::system::UpdateCameraPerspective>(
 		pEngine->getMiscMemory(), this->mpRenderer
 	);
 	this->mpSystemUpdateCameraPerspective->subscribeToQueue();
@@ -644,7 +644,7 @@ void Client::createRenderers()
 	this->mpEntityInstanceBuffer->setDevice(this->mpRenderer->getDevice());
 	this->mpEntityInstanceBuffer->create();
 
-	this->mpSystemRenderEntities = std::make_shared<ecs::system::RenderEntities>();
+	this->mpSystemRenderEntities = std::make_shared<evcs::system::RenderEntities>();
 	pEngine->addTicker(this->mpSystemRenderEntities);
 	this->mpSystemRenderEntities->setPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/entity/RenderEntityPipeline.te-asset"
@@ -980,9 +980,9 @@ void Client::onWorldSimulate(f32 const& deltaTime)
 	auto* network = game::Game::networkInterface();
 	if (this->mLocalPlayerEntityId && network->isRunning() && network->type() == network::EType::eClient)
 	{
-		auto* transform = ecs::Core::Get()->entities().get(
+		auto* transform = evcs::Core::Get()->entities().get(
 			this->mLocalPlayerEntityId.value()
-		)->getComponent<ecs::component::CoordinateTransform>();
+		)->getComponent<evcs::component::CoordinateTransform>();
 		if ((this->mPrevLocalEntityPosition - transform->position()).toGlobal().magnitudeSq() > math::epsilon())
 		{
 			auto packet = network::packet::DisplacePlayer::create();

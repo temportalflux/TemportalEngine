@@ -7,10 +7,10 @@
 #include "ecs/view/ECView.hpp"
 #include "thread/MutexLock.hpp"
 
-NS_ECS
+NS_EVCS
 NS_VIEW
 
-class Manager : public ecs::NetworkedManager
+class Manager : public evcs::NetworkedManager
 {
 	typedef FixedArray<Identifier, ECS_MAX_VIEW_COUNT> TAvailableIds;
 

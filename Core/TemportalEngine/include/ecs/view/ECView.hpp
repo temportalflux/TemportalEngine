@@ -4,25 +4,25 @@
 
 #include "dataStructures/FixedArray.hpp"
 
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_COMPONENT, class Component);
 NS_END
 
 #define DECLARE_ECS_VIEW_STATICS() \
 	public: \
 		static ViewTypeId TypeId; \
-		static void construct(ecs::view::View* ptr); \
-		ecs::TypeId typeId() const override;
+		static void construct(evcs::view::View* ptr); \
+		evcs::TypeId typeId() const override;
 #define DEFINE_ECS_VIEW_STATICS(COMP_TYPE) \
 	ViewTypeId COMP_TYPE::TypeId = 0; \
-	void COMP_TYPE::construct(ecs::view::View* ptr) { new (ptr) COMP_TYPE(); } \
-	ecs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
+	void COMP_TYPE::construct(evcs::view::View* ptr) { new (ptr) COMP_TYPE(); } \
+	evcs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
 
-NS_ECS
+NS_EVCS
 NS_VIEW
 class Manager;
 
-class View : public ecs::IEVCSObject
+class View : public evcs::IEVCSObject
 {
 	static inline constexpr uSize SlotCapacity = ECS_MAX_COMPONENT_VIEW_SLOTS;
 
@@ -31,7 +31,7 @@ public:
 	View(std::vector<ComponentTypeId> slotTypes);
 	~View();
 
-	ecs::EType objectType() const;
+	EType objectType() const;
 	bool hasAllComponents() const;
 	void onComponentAdded(ComponentTypeId const& typeId, Identifier const& id);
 
@@ -42,12 +42,12 @@ public:
 	}
 
 	bool includesComponent(TypeId const& componentTypeId, Identifier const& componentId) const;
-	virtual void onComponentReplicationUpdate(ecs::component::Component* component);
+	virtual void onComponentReplicationUpdate(evcs::component::Component* component);
 
 private:
 	struct ComponentSlot
 	{
-		ecs::TypeId typeId;
+		TypeId typeId;
 		Identifier objectId;
 		bool bHasValue;
 		bool operator<(ComponentSlot const& other) const { return typeId < other.typeId; }

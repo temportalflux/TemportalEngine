@@ -29,7 +29,7 @@ public:
 
 	void addPendingAuthentication(network::ConnectionId connId, utility::Guid const& userId);
 	utility::Guid removePendingAuthentication(network::ConnectionId connId);
-	void associatePlayer(network::Identifier netId, ecs::Identifier entityId);
+	void associatePlayer(network::Identifier netId, evcs::Identifier entityId);
 
 private:
 	saveData::ServerSettings mServerSettings;
@@ -47,7 +47,7 @@ private:
 
 	std::map<network::ConnectionId, utility::Guid> mPendingAuthentications;
 
-	std::map<network::Identifier, ecs::Identifier> mNetIdToPlayerEntityId;
+	std::map<network::Identifier, evcs::Identifier> mNetIdToPlayerEntityId;
 	void destroyPlayer(network::Identifier netId);
 
 };

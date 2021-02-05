@@ -4,7 +4,7 @@
 
 #include "ecs/view/ECView.hpp"
 
-NS_ECS
+NS_EVCS
 NS_VIEW
 
 class PlayerPhysics : public View
@@ -12,7 +12,7 @@ class PlayerPhysics : public View
 	DECLARE_ECS_VIEW_STATICS()
 public:
 	PlayerPhysics();
-	void onComponentReplicationUpdate(ecs::component::Component* component) override;
+	void onComponentReplicationUpdate(component::Component* component) override;
 };
 
 NS_END

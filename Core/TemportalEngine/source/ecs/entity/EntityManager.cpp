@@ -3,7 +3,7 @@
 #include "ecs/Core.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
+using namespace evcs;
 
 EntityManager::EntityManager()
 	: mPool(sizeof(Entity), ECS_MAX_ENTITY_COUNT)
@@ -44,14 +44,14 @@ void EntityManager::destroyObject(TypeId const& typeId, Identifier const& netId)
 	if (!this->mOwnedObjects[objectId])
 	{
 		std::string err = "Attempting to destroy entity by replication, but the object is not owned by the manager. ";
-		ecs::Core::logger().log(LOG_ERR, (err + externalError).c_str());
+		evcs::Core::logger().log(LOG_ERR, (err + externalError).c_str());
 		this->removeNetworkId(netId);
 		return;
 	}
 	if (!this->mOwnedObjects[objectId].unique())
 	{
 		std::string err = "Attempting to destroy entity by replication, but the object has %u external references. ";
-		ecs::Core::logger().log(
+		evcs::Core::logger().log(
 			LOG_ERR, (err + externalError).c_str(),
 			this->mOwnedObjects[objectId].use_count()
 		);
@@ -72,7 +72,7 @@ std::shared_ptr<Entity> EntityManager::create(bool bForceCreateNetId)
 	this->mAllocatedObjects.insert(std::make_pair(objectId, shared));
 	this->mOwnedObjects.insert(std::make_pair(objectId, shared));
 	
-	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	auto const bReplicate = evcs::Core::Get()->shouldReplicate();
 	if (bForceCreateNetId || bReplicate)
 	{
 		shared->setNetId(this->nextNetworkId());
@@ -80,8 +80,8 @@ std::shared_ptr<Entity> EntityManager::create(bool bForceCreateNetId)
 	}
 	if (bReplicate)
 	{
-		ecs::Core::Get()->replicateCreate()
-			->setObjectEcsType(ecs::EType::eEntity)
+		evcs::Core::Get()->replicateCreate()
+			->setObjectEcsType(evcs::EType::eEntity)
 			.setObjectNetId(shared->netId())
 			;
 	}
@@ -115,10 +115,10 @@ void EntityManager::destroy(Entity *pCreated)
 	if (bWasReplicated)
 	{
 		this->removeNetworkId(netId);
-		if (ecs::Core::Get()->shouldReplicate())
+		if (evcs::Core::Get()->shouldReplicate())
 		{
-			ecs::Core::Get()->replicateDestroy()
-				->setObjectEcsType(ecs::EType::eEntity)
+			evcs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(evcs::EType::eEntity)
 				.setObjectNetId(netId)
 				;
 		}
@@ -135,7 +135,7 @@ void EntityManager::destroy(Entity *pCreated)
 	// Actually release the memory
 	this->mPool.destroy<Entity>(id);
 
-	ecs::Core::logger().log(
+	evcs::Core::logger().log(
 		LOG_VERBOSE, "Destroyed entity %u with net-id(%u)",
 		id, netId
 	);

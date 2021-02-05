@@ -14,7 +14,7 @@
 class Controller;
 FORWARD_DEF(NS_ASSET, class AssetManager);
 
-NS_ECS
+NS_EVCS
 class Core;
 class Entity;
 FORWARD_DEF(NS_SYSTEM, class MovePlayerByInput);
@@ -74,12 +74,12 @@ private:
 	saveData::Registry mSaveDataRegistry;
 	std::shared_ptr<world::World> mpWorld;
 
-	std::shared_ptr<ecs::Entity> mpEntityLocalPlayer;
-	std::shared_ptr<ecs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
+	std::shared_ptr<evcs::Entity> mpEntityLocalPlayer;
+	std::shared_ptr<evcs::system::MovePlayerByInput> mpSystemMovePlayerByInput;
 		
 	void registerCommands();
 	void initializeAssetTypes();
-	void registerECSTypes(ecs::Core *ecs);
+	void registerECSTypes(evcs::Core *ecs);
 
 	void update(f32 deltaTime);
 

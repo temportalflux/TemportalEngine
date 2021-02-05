@@ -3,13 +3,14 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
 
-using namespace ecs;
-using namespace ecs::view;
+using namespace evcs;
+using namespace evcs::component;
+using namespace evcs::view;
 
 DEFINE_ECS_VIEW_STATICS(RenderedMesh);
 RenderedMesh::RenderedMesh() : View({
-	ecs::component::CoordinateTransform::TypeId,
-	ecs::component::RenderMesh::TypeId
+	CoordinateTransform::TypeId,
+	RenderMesh::TypeId
 })
 {
 }

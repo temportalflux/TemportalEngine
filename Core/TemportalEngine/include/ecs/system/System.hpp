@@ -4,7 +4,7 @@
 
 #include "ITickable.hpp"
 
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_VIEW, class View);
 
 NS_SYSTEM

@@ -85,8 +85,8 @@ public:
 #pragma endregion
 
 	void initializeECS();
-	ecs::Core& getECS();
-	ExecuteDelegate<void(ecs::Core* ecs)> ECSRegisterTypesEvent;
+	evcs::Core& getECS();
+	ExecuteDelegate<void(evcs::Core* ecs)> ECSRegisterTypesEvent;
 
 #pragma region Windows
 	std::shared_ptr<Window> createWindow(ui16 width, ui16 height, std::string title, WindowFlags flags = WindowFlags::RENDER_ON_THREAD);
@@ -128,7 +128,7 @@ private:
 
 	std::shared_ptr<asset::AssetManager> mpAssetManager;
 
-	ecs::Core mECS;
+	evcs::Core mECS;
 	
 #pragma region Windows
 	std::map<ui32, std::shared_ptr<Window>> mWindowPtrs;

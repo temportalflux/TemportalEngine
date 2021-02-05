@@ -45,7 +45,7 @@ void World::uninit()
 	this->mPhysicsControllerByUserNetId.clear();
 	this->destroyDimension(&this->mOverworld);
 	this->uninitializePhysics();
-	ecs::Core::Get()->entities().releaseAll();
+	evcs::Core::Get()->entities().releaseAll();
 }
 
 std::shared_ptr<physics::Material> World::playerPhysicsMaterial() { return this->mpPlayerPhysicsMaterial; }
@@ -62,8 +62,8 @@ void World::initializePhysics()
 	this->mpPlayerPhysicsMaterial->setSystem(this->mpPhysics);
 	this->mpPlayerPhysicsMaterial->create();
 
-	this->mpSystemPhysicsIntegration = std::make_shared<ecs::system::PhysicsIntegration>();	
-	this->mpSystemIntegratePlayerPhysics = std::make_shared<ecs::system::IntegratePlayerPhysics>();
+	this->mpSystemPhysicsIntegration = std::make_shared<evcs::system::PhysicsIntegration>();	
+	this->mpSystemIntegratePlayerPhysics = std::make_shared<evcs::system::IntegratePlayerPhysics>();
 }
 
 void World::uninitializePhysics()
@@ -118,7 +118,7 @@ void World::removeTerrainEventListener(ui32 dimId, std::shared_ptr<WorldEventLis
 	this->dimension(dimId).mpTerrain->removeEventListener(listener);
 }
 
-ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& position)
+evcs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& position)
 {
 	auto& ecs = engine::Engine::Get()->getECS();
 
@@ -139,7 +139,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 
 	// Add Transform
 	{
-		auto transform = ecs.components().create<ecs::component::CoordinateTransform>(true);
+		auto transform = ecs.components().create<evcs::component::CoordinateTransform>(true);
 		transform->setPosition(position);
 		transform->setOrientation(math::Vector3unitY, 0); // force the camera to face forward (-Z)
 		pEntity->addComponent(transform);
@@ -147,11 +147,11 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 
 	// Add physics
 	{
-		auto physics = ecs.components().create<ecs::component::PlayerPhysics>(true);
+		auto physics = ecs.components().create<evcs::component::PlayerPhysics>(true);
 		physics->setIsAffectedByGravity(false);
 		pEntity->addComponent(physics);
 
-		pEntity->addView(ecs.views().create<ecs::view::PlayerPhysics>(true));
+		pEntity->addView(ecs.views().create<evcs::view::PlayerPhysics>(true));
 	}
 
 	pEntity->setOwner(clientNetId);
@@ -166,7 +166,7 @@ ecs::Identifier World::createPlayer(ui32 clientNetId, world::Coordinate const& p
 	return pEntity->id();
 }
 
-void World::destroyPlayer(ui32 userNetId, ecs::Identifier entityId)
+void World::destroyPlayer(ui32 userNetId, evcs::Identifier entityId)
 {
 	auto& ecs = engine::Engine::Get()->getECS();
 	this->destroyPlayerController(userNetId);
@@ -178,14 +178,14 @@ void World::destroyPlayer(ui32 userNetId, ecs::Identifier entityId)
 	ecs.endReplication();
 }
 
-void World::createPlayerController(network::Identifier userNetId, ecs::Identifier localEntityId)
+void World::createPlayerController(network::Identifier userNetId, evcs::Identifier localEntityId)
 {
 	WORLD_LOG.log(LOG_VERBOSE, "Creating physics controller for player net(%u)", userNetId);
 
 	auto& ecs = engine::Engine::Get()->getECS();
 	auto pEntity = ecs.entities().get(localEntityId);
-	auto* pTransform = pEntity->getComponent<ecs::component::CoordinateTransform>();
-	auto* pPhysics = pEntity->getComponent<ecs::component::PlayerPhysics>();
+	auto* pTransform = pEntity->getComponent<evcs::component::CoordinateTransform>();
+	auto* pPhysics = pEntity->getComponent<evcs::component::PlayerPhysics>();
 
 	auto iter = this->mPhysicsControllerByUserNetId.insert(std::make_pair(
 		userNetId, std::move(physics::Controller())

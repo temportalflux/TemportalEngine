@@ -1,6 +1,6 @@
 #include "ecs/ECSNetworkedManager.hpp"
 
-using namespace ecs;
+using namespace evcs;
 
 NetworkedManager::NetworkedManager()
 {

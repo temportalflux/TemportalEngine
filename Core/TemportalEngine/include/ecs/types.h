@@ -17,7 +17,7 @@
 #define ECS_MAX_VIEWS_PER_ENTITY_COUNT 16
 #define ECS_MAX_VIEW_COUNT ECS_MAX_ENTITY_COUNT*ECS_MAX_VIEWS_PER_ENTITY_COUNT
 
-NS_ECS
+NS_EVCS
 
 typedef uIndex TypeId;
 typedef TypeId ComponentTypeId;

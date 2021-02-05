@@ -4,7 +4,7 @@
 
 #include "input/Event.hpp"
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
 class CameraPOV : public Component

@@ -43,4 +43,4 @@ void network::read(Buffer &buffer, std::string name, std::string &value)
 }
 
 DEFINE_BUFFER_RAW(utility::Guid);
-DEFINE_BUFFER_RAW(ecs::EType);
+DEFINE_BUFFER_RAW(evcs::EType);

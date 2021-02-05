@@ -15,7 +15,7 @@ class DisplacePlayer : public Packet
 public:
 	DisplacePlayer();
 
-	DisplacePlayer& setTransformNetId(ecs::Identifier const& objectNetId);
+	DisplacePlayer& setTransformNetId(evcs::Identifier const& objectNetId);
 	DisplacePlayer& moveTo(world::Coordinate const& position);
 
 	void write(Buffer &archive) const override;
@@ -23,7 +23,7 @@ public:
 	void process(Interface *pInterface) override;
 
 private:
-	ecs::Identifier mTransformObjectNetId;
+	evcs::Identifier mTransformObjectNetId;
 	world::Coordinate mPosition;
 
 };

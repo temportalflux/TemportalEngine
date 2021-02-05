@@ -6,16 +6,16 @@
 
 #define ECS_REPL_FIELD(CLASS_TYPE, FIELD_NAME) offsetof(CLASS_TYPE, FIELD_NAME), &FIELD_NAME, sizeof(FIELD_NAME)
 
-FORWARD_DEF(NS_ECS, class Core);
-FORWARD_DEF(NS_ECS, class IEVCSObject);
-FORWARD_DEF(NS_ECS, class NetworkedManager);
+FORWARD_DEF(NS_EVCS, class Core);
+FORWARD_DEF(NS_EVCS, class IEVCSObject);
+FORWARD_DEF(NS_EVCS, class NetworkedManager);
 
 NS_NETWORK
 NS_PACKET
 
-class ECSReplicate : public Packet
+class EVCSReplicate : public Packet
 {
-	DECLARE_PACKET_TYPE(ECSReplicate)
+	DECLARE_PACKET_TYPE(EVCSReplicate)
 
 public:
 	enum class EReplicationType : i8
@@ -26,23 +26,23 @@ public:
 		eDestroy,
 	};
 
-	ECSReplicate();
+	EVCSReplicate();
 
-	ECSReplicate& setReplicationType(EReplicationType type);
-	ECSReplicate& setObjectEcsType(ecs::EType type);
-	ECSReplicate& setObjectTypeId(uIndex typeId);
-	ECSReplicate& setObjectNetId(ecs::Identifier const& netId);
+	EVCSReplicate& setReplicationType(EReplicationType type);
+	EVCSReplicate& setObjectEcsType(evcs::EType type);
+	EVCSReplicate& setObjectTypeId(uIndex typeId);
+	EVCSReplicate& setObjectNetId(evcs::Identifier const& netId);
 	// Sets the owner for a given object.
 	// If not provided, ownership is not replicated.
 	// By default, objects are owned by the server.
-	ECSReplicate& setOwner(std::optional<ui32> ownerNetId);
+	EVCSReplicate& setOwner(std::optional<ui32> ownerNetId);
 	EReplicationType const& replicationType() const;
-	ecs::EType const& ecsType() const;
+	evcs::EType const& ecsType() const;
 	uIndex const& ecsTypeId() const;
-	ecs::Identifier const& objectNetId() const;
+	evcs::Identifier const& objectNetId() const;
 
-	ECSReplicate& pushLink(ecs::EType type, uIndex objectTypeId, ecs::Identifier netId);
-	ECSReplicate& pushComponentField(uIndex byteOffset, void* data, uSize dataSize);
+	EVCSReplicate& pushLink(evcs::EType type, uIndex objectTypeId, evcs::Identifier netId);
+	EVCSReplicate& pushComponentField(uIndex byteOffset, void* data, uSize dataSize);
 	
 	void write(Buffer &archive) const override;
 	void read(Buffer &archive) override;
@@ -59,7 +59,7 @@ private:
 	/**
 	 * The kind of EVCS object being replicated.
 	 */
-	ecs::EType mObjectEcsType;
+	evcs::EType mObjectEcsType;
 
 	/**
 	 * The `ViewTypeId` or `ComponentTypeId` for a view or component being created.
@@ -70,11 +70,11 @@ private:
 
 	/**
 	 * The network identifier of the EVCS object.
-	 * This is NOT the same as the ecs::Identifier in the receiver's instance,
+	 * This is NOT the same as the evcs::Identifier in the receiver's instance,
 	 * but rather the identifier the server has given the object
 	 * (which maps to the identifier in the EVCS engine instance).
 	 */
-	ecs::Identifier mObjectNetId;
+	evcs::Identifier mObjectNetId;
 
 	bool mbHasOwnership;
 	bool mbHasOwner;
@@ -82,9 +82,9 @@ private:
 
 	struct ObjectLink
 	{
-		ecs::EType ecsType;
-		ecs::TypeId objectTypeId;
-		ecs::Identifier netId;
+		evcs::EType ecsType;
+		evcs::TypeId objectTypeId;
+		evcs::Identifier netId;
 	};
 
 	/**
@@ -106,8 +106,8 @@ private:
 	void writeFields(Buffer &archive) const;
 	void readFields(Buffer &archive);
 
-	void linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
-	void fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject);
+	void linkObject(evcs::NetworkedManager* manager, evcs::IEVCSObject* pObject);
+	void fillFields(evcs::NetworkedManager* manager, evcs::IEVCSObject* pObject);
 	std::optional<ui32> owner() const;
 
 };

@@ -6,8 +6,8 @@
 #include "render/model/SkinnedModelManager.hpp"
 #include "render/EntityInstanceBuffer.hpp"
 
-using namespace ecs;
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(RenderMesh)
 

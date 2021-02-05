@@ -3,8 +3,8 @@
 #include "ecs/Core.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
-using namespace ecs::view;
+using namespace evcs;
+using namespace evcs::view;
 
 bool Manager::ViewRecord::operator<(Manager::ViewRecord const& other) const
 {
@@ -52,7 +52,7 @@ void Manager::destroyObject(TypeId const& typeId, Identifier const& netId)
 	auto objectId = this->getNetworkedObjectId(netId);
 	this->removeNetworkId(netId);
 	this->destroy(typeId, objectId);
-	ecs::Core::logger().log(
+	evcs::Core::logger().log(
 		LOG_VERBOSE, "Destroyed %s view %u net-id(%u)",
 		this->typeName(typeId).c_str(), objectId, netId
 	);
@@ -80,7 +80,7 @@ View* Manager::create(ViewTypeId const& typeId, bool bForceCreateNetId)
 		this->mRegisteredTypes[nextTypeId].mFirstAllocatedIdx++;
 	}
 
-	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	auto const bReplicate = evcs::Core::Get()->shouldReplicate();
 	if (bForceCreateNetId || bReplicate)
 	{
 		ptr->setNetId(this->nextNetworkId());
@@ -88,8 +88,8 @@ View* Manager::create(ViewTypeId const& typeId, bool bForceCreateNetId)
 	}
 	if (bReplicate)
 	{
-		ecs::Core::Get()->replicateCreate()
-			->setObjectEcsType(ecs::EType::eView)
+		evcs::Core::Get()->replicateCreate()
+			->setObjectEcsType(evcs::EType::eView)
 			.setObjectTypeId(typeId)
 			.setObjectNetId(ptr->netId())
 			;
@@ -142,17 +142,17 @@ void Manager::destroy(ViewTypeId const& typeId, Identifier const& id)
 	if (bWasReplicated)
 	{
 		this->removeNetworkId(netId);
-		if (ecs::Core::Get()->shouldReplicate())
+		if (evcs::Core::Get()->shouldReplicate())
 		{
-			ecs::Core::Get()->replicateDestroy()
-				->setObjectEcsType(ecs::EType::eView)
+			evcs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(evcs::EType::eView)
 				.setObjectTypeId(typeId)
 				.setObjectNetId(netId)
 				;
 		}
 	}
 
-	ecs::Core::logger().log(
+	evcs::Core::logger().log(
 		LOG_VERBOSE, "Destroyed %s view id(%u). WasReplicated:%s net(%u)",
 		this->typeName(typeId).c_str(), id,
 		bWasReplicated ? "true" : "false", netId

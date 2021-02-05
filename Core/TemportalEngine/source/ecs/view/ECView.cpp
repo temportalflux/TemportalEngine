@@ -3,10 +3,10 @@
 #include "ecs/Core.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
-using namespace ecs::view;
+using namespace evcs;
+using namespace evcs::view;
 
-ecs::EType View::objectType() const { return EType::eView; }
+EType View::objectType() const { return EType::eView; }
 
 View::View(std::vector<ComponentTypeId> slotTypes)
 {
@@ -45,13 +45,13 @@ void View::onComponentAdded(ComponentTypeId const& typeId, Identifier const& id)
 	slot.objectId = id;
 	slot.bHasValue = true;
 
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
-		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eView, this->typeId(), this->netId()
+		evcs::Core::Get()->replicateUpdate(
+			evcs::EType::eView, this->typeId(), this->netId()
 		)->pushLink(
-			ecs::EType::eComponent, slot.typeId,
-			ecs::Core::Get()->components().get(slot.typeId, slot.objectId)->netId()
+			evcs::EType::eComponent, slot.typeId,
+			evcs::Core::Get()->components().get(slot.typeId, slot.objectId)->netId()
 		);
 	}
 
@@ -63,7 +63,7 @@ component::Component* View::get(ComponentTypeId const& typeId)
 	{
 		if (slot.typeId == typeId && slot.bHasValue)
 		{
-			return ecs::Core::Get()->components().get(slot.typeId, slot.objectId);	
+			return evcs::Core::Get()->components().get(slot.typeId, slot.objectId);
 		}
 	}
 	return nullptr;
@@ -81,6 +81,6 @@ bool View::includesComponent(TypeId const& componentTypeId, Identifier const& co
 	return false;
 }
 
-void View::onComponentReplicationUpdate(ecs::component::Component* component)
+void View::onComponentReplicationUpdate(evcs::component::Component* component)
 {
 }

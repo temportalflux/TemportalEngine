@@ -16,7 +16,7 @@ DisplacePlayer::DisplacePlayer()
 {
 }
 
-DisplacePlayer& DisplacePlayer::setTransformNetId(ecs::Identifier const& objectNetId)
+DisplacePlayer& DisplacePlayer::setTransformNetId(evcs::Identifier const& objectNetId)
 {
 	this->mTransformObjectNetId = objectNetId;
 	return *this;
@@ -44,9 +44,9 @@ void DisplacePlayer::read(Buffer &archive)
 
 void DisplacePlayer::process(Interface *pInterface)
 {
-	auto* ecs = ecs::Core::Get();
-	auto* transform = dynamic_cast<ecs::component::CoordinateTransform*>(ecs->components().getObject(
-		ecs::component::CoordinateTransform::TypeId,
+	auto* ecs = evcs::Core::Get();
+	auto* transform = dynamic_cast<evcs::component::CoordinateTransform*>(ecs->components().getObject(
+		evcs::component::CoordinateTransform::TypeId,
 		this->mTransformObjectNetId
 	));
 

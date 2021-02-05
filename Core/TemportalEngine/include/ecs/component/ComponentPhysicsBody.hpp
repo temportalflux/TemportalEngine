@@ -4,7 +4,7 @@
 
 #include "math/Matrix.hpp"
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
 class PhysicsBody : public Component

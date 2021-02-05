@@ -179,7 +179,7 @@ utility::Guid Server::removePendingAuthentication(network::ConnectionId connId)
 	return userId;
 }
 
-void Server::associatePlayer(network::Identifier netId, ecs::Identifier entityId)
+void Server::associatePlayer(network::Identifier netId, evcs::Identifier entityId)
 {
 	SERVER_LOG.log(LOG_VERBOSE, "Linking network-id %u to player entity %u", netId, entityId);
 	this->mNetIdToPlayerEntityId.insert(std::make_pair(netId, entityId));

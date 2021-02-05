@@ -3,14 +3,14 @@
 #include "utility/StringUtils.hpp"
 
 template <>
-std::string utility::StringParser<ecs::EType>::to_string(ecs::EType const& v)
+std::string utility::StringParser<evcs::EType>::to_string(evcs::EType const& v)
 {
 	switch (v)
 	{
-	case ecs::EType::eEntity: return "entity";
-	case ecs::EType::eView: return "view";
-	case ecs::EType::eComponent: return "component";
-	case ecs::EType::eSystem: return "system";
+	case evcs::EType::eEntity: return "entity";
+	case evcs::EType::eView: return "view";
+	case evcs::EType::eComponent: return "component";
+	case evcs::EType::eSystem: return "system";
 	default: return "invalid";
 	}
 }

@@ -9,7 +9,7 @@
 
 #define NS_COMMAND namespace command {
 
-#define NS_ECS namespace ecs {
+#define NS_EVCS namespace evcs {
 #define NS_VIEW namespace view {
 #define NS_COMPONENT namespace component {
 #define NS_SYSTEM namespace system {

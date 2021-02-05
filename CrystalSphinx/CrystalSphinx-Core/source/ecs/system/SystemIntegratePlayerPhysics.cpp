@@ -11,8 +11,8 @@
 #include "game/GameInstance.hpp"
 #include "world/World.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 IntegratePlayerPhysics::IntegratePlayerPhysics() : System(view::PlayerPhysics::TypeId)
 {

@@ -162,18 +162,18 @@ bool Game::initializeSystems()
 	return true;
 }
 
-void Game::registerECSTypes(ecs::Core *ecs)
+void Game::registerECSTypes(evcs::Core *ecs)
 {
-	ecs->components().registerType<ecs::component::CoordinateTransform>("CoordinateTransform");
-	ecs->components().registerType<ecs::component::CameraPOV>("CameraPOV");
-	ecs->components().registerType<ecs::component::RenderMesh>("RenderMesh");
-	ecs->components().registerType<ecs::component::PhysicsBody>("PhysicsBody");
-	ecs->components().registerType<ecs::component::PlayerPhysics>("PlayerPhysics");
-	ecs->views().registerType<ecs::view::PlayerPhysics>("PlayerPhysics");
-	ecs->views().registerType<ecs::view::PlayerInputMovement>("PlayerInputMovement");
-	ecs->views().registerType<ecs::view::PlayerCamera>("PlayerCamera");
-	ecs->views().registerType<ecs::view::RenderedMesh>("RenderedMesh");
-	ecs->views().registerType<ecs::view::PhysicalDynamics>("PhysicalDynamics");
+	ecs->components().registerType<evcs::component::CoordinateTransform>("CoordinateTransform");
+	ecs->components().registerType<evcs::component::CameraPOV>("CameraPOV");
+	ecs->components().registerType<evcs::component::RenderMesh>("RenderMesh");
+	ecs->components().registerType<evcs::component::PhysicsBody>("PhysicsBody");
+	ecs->components().registerType<evcs::component::PlayerPhysics>("PlayerPhysics");
+	ecs->views().registerType<evcs::view::PlayerPhysics>("PlayerPhysics");
+	ecs->views().registerType<evcs::view::PlayerInputMovement>("PlayerInputMovement");
+	ecs->views().registerType<evcs::view::PlayerCamera>("PlayerCamera");
+	ecs->views().registerType<evcs::view::RenderedMesh>("RenderedMesh");
+	ecs->views().registerType<evcs::view::PhysicalDynamics>("PhysicalDynamics");
 }
 
 void Game::openProject()

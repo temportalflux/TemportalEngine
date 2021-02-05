@@ -4,7 +4,7 @@
 #include "ecs/types.h"
 #include "ecs/IEVCSObject.hpp"
 
-NS_ECS
+NS_EVCS
 
 class NetworkedManager
 {

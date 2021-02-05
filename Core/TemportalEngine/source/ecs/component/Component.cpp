@@ -3,14 +3,15 @@
 #include "ecs/Core.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
-ecs::EType Component::objectType() const { return EType::eComponent; }
+evcs::EType Component::objectType() const { return EType::eComponent; }
 
-std::shared_ptr<network::packet::ECSReplicate> Component::replicateUpdate()
+std::shared_ptr<network::packet::EVCSReplicate> Component::replicateUpdate()
 {
-	return ecs::Core::Get()->replicateUpdate(
-		ecs::EType::eComponent, this->typeId(), this->netId()
+	return Core::Get()->replicateUpdate(
+		EType::eComponent, this->typeId(), this->netId()
 	);
 }
 
@@ -18,7 +19,7 @@ std::vector<Component::Field> Component::allFields() const { return {}; }
 
 void Component::onReplicateUpdate()
 {
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 	auto ownerEntityId = ecs->components().getComponentEntityId(this->typeId(), this->id());
 	if (ownerEntityId)
 	{

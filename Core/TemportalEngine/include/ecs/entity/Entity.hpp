@@ -4,16 +4,16 @@
 
 #include "dataStructures/FixedArray.hpp"
 
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_COMPONENT, class Component);
 FORWARD_DEF(NS_VIEW, class View);
 
-class Entity : public ecs::IEVCSObject
+class Entity : public evcs::IEVCSObject
 {
 
 	struct ItemEntry
 	{
-		ecs::TypeId typeId;
+		TypeId typeId;
 		Identifier objectId;
 		bool operator<(ItemEntry const& other) const { return typeId < other.typeId; }
 		bool operator>(ItemEntry const& other) const { return typeId > other.typeId; }
@@ -22,8 +22,8 @@ class Entity : public ecs::IEVCSObject
 public:
 
 	~Entity();
-	ecs::EType objectType() const;
-	ecs::TypeId typeId() const;
+	EType objectType() const;
+	TypeId typeId() const;
 	void setOwner(std::optional<ui32> ownerNetId) override;
 
 	/**

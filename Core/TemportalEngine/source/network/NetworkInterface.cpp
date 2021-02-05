@@ -26,7 +26,7 @@ Interface::Interface() : mpInternal(nullptr), mType(), mConnection(0)
 {
 	this->packetTypes()
 		.addType<network::packet::ClientStatus>()
-		.addType<network::packet::ECSReplicate>()
+		.addType<network::packet::EVCSReplicate>()
 		;
 }
 

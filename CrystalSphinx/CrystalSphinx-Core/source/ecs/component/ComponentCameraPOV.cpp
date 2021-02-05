@@ -3,8 +3,8 @@
 #include "Engine.hpp"
 #include "input/Queue.hpp"
 
-using namespace ecs;
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(CameraPOV)
 

@@ -24,7 +24,7 @@ DECLARE_BUFFER_OP(f32);
 DECLARE_BUFFER_OP(std::string);
 
 DECLARE_BUFFER_OP(utility::Guid);
-DECLARE_BUFFER_OP(ecs::EType);
+DECLARE_BUFFER_OP(evcs::EType);
 
 template <typename T>
 void write(Buffer &buffer, std::string name, std::vector<T> value)

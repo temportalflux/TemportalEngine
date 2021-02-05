@@ -65,11 +65,11 @@ void DebugHUD::tick(f32 deltaTime)
 	auto pGame = game::Game::Get();
 	if (pGame->world() && pGame->client()->hasLocalEntity())
 	{
-		auto ecs = ecs::Core::Get();
+		auto ecs = evcs::Core::Get();
 		auto pEntity = ecs->entities().get(pGame->client()->localUserEntityId());
 		if (pEntity)
 		{
-			auto const* transform = pEntity->getComponent<ecs::component::CoordinateTransform>();
+			auto const* transform = pEntity->getComponent<evcs::component::CoordinateTransform>();
 
 			auto const& pos = transform->position();
 			this->mpPosition->setContent(utility::formatStr(

@@ -7,12 +7,12 @@
 #include "ecs/component/Component.hpp"
 #include "thread/MutexLock.hpp"
 
-FORWARD_DEF(NS_ECS, class Core);
+FORWARD_DEF(NS_EVCS, class Core);
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
-class Manager : public ecs::NetworkedManager
+class Manager : public evcs::NetworkedManager
 {
 
 	struct TypeMetadata

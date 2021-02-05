@@ -2,13 +2,13 @@
 
 #include "ecs/types.h"
 
-NS_ECS
+NS_EVCS
 
 class IEVCSObject
 {
 public:
-	virtual ecs::EType objectType() const;
-	virtual ecs::TypeId typeId() const;
+	virtual evcs::EType objectType() const;
+	virtual evcs::TypeId typeId() const;
 	virtual ~IEVCSObject() {}
 
 	template <typename T>

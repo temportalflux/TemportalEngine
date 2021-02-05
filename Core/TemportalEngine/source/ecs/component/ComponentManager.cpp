@@ -4,8 +4,8 @@
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 #include "logging/Logger.hpp"
 
-using namespace ecs;
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
 Manager::Manager(Core *pCore)
 	: mpCore(pCore)
@@ -98,7 +98,7 @@ Component* Manager::create(ComponentTypeId const& typeId, bool bForceCreateNetId
 	ptr->setId(objectId);
 	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
 
-	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
+	auto const bReplicate = evcs::Core::Get()->shouldReplicate();
 	if (bForceCreateNetId || bReplicate)
 	{
 		ptr->setNetId(this->nextNetworkId());
@@ -106,8 +106,8 @@ Component* Manager::create(ComponentTypeId const& typeId, bool bForceCreateNetId
 	}
 	if (bReplicate)
 	{
-		auto pCreate = ecs::Core::Get()->replicateCreate();
-		pCreate->setObjectEcsType(ecs::EType::eComponent)
+		auto pCreate = evcs::Core::Get()->replicateCreate();
+		pCreate->setObjectEcsType(EType::eComponent)
 			.setObjectTypeId(typeId)
 			.setObjectNetId(ptr->netId());
 		for (auto const& field : ptr->allFields())
@@ -151,17 +151,17 @@ void Manager::destroy(ComponentTypeId const& typeId, Identifier const& id)
 	if (bWasReplicated)
 	{
 		this->removeNetworkId(netId);
-		if (ecs::Core::Get()->shouldReplicate())
+		if (evcs::Core::Get()->shouldReplicate())
 		{
-			ecs::Core::Get()->replicateDestroy()
-				->setObjectEcsType(ecs::EType::eComponent)
+			evcs::Core::Get()->replicateDestroy()
+				->setObjectEcsType(EType::eComponent)
 				.setObjectTypeId(typeId)
 				.setObjectNetId(netId)
 				;
 		}
 	}
 
-	ecs::Core::logger().log(
+	evcs::Core::logger().log(
 		LOG_VERBOSE, "Destroyed %s component %u with net-id(%u)",
 		this->typeName(typeId).c_str(), id, netId
 	);

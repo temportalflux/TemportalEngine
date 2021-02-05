@@ -4,28 +4,28 @@
 
 #define DECLARE_ECS_COMPONENT_STATICS(POOL_SIZE) \
 	public: \
-		static ecs::TypeId TypeId; \
+		static evcs::TypeId TypeId; \
 		static inline constexpr uSize const MaxPoolSize = POOL_SIZE; \
-		static void construct(ecs::component::Component* ptr); \
-		ecs::TypeId typeId() const override;
+		static void construct(evcs::component::Component* ptr); \
+		evcs::TypeId typeId() const override;
 #define DEFINE_ECS_COMPONENT_STATICS(COMP_TYPE) \
-	ecs::TypeId COMP_TYPE::TypeId = 0; \
-	void COMP_TYPE::construct(ecs::component::Component* ptr) { new (ptr) COMP_TYPE(); } \
-	ecs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
+	evcs::TypeId COMP_TYPE::TypeId = 0; \
+	void COMP_TYPE::construct(evcs::component::Component* ptr) { new (ptr) COMP_TYPE(); } \
+	evcs::TypeId COMP_TYPE::typeId() const { return COMP_TYPE::TypeId; }
 #define ECS_FIELD(COMP_TYPE, FIELD) std::make_pair(offsetof(COMP_TYPE, FIELD), sizeof(FIELD))
 
 NS_NETWORK
-FORWARD_DEF(NS_PACKET, class ECSReplicate);
+FORWARD_DEF(NS_PACKET, class EVCSReplicate);
 NS_END
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
-class Component : public ecs::IEVCSObject
+class Component : public evcs::IEVCSObject
 {
 public:
-	ecs::EType objectType() const;
-	std::shared_ptr<network::packet::ECSReplicate> replicateUpdate();
+	EType objectType() const;
+	std::shared_ptr<network::packet::EVCSReplicate> replicateUpdate();
 
 	using Field = std::pair<uSize, uSize>;
 	virtual std::vector<Field> allFields() const;

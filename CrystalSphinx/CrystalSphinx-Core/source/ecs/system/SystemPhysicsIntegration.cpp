@@ -6,8 +6,8 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPhysicsBody.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 PhysicsIntegration::PhysicsIntegration() : System(view::PhysicalDynamics::TypeId)
 {

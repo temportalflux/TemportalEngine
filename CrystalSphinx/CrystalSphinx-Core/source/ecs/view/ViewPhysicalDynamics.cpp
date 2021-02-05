@@ -3,13 +3,14 @@
 #include "ecs/component/CoordinateTransform.hpp"
 #include "ecs/component/ComponentPhysicsBody.hpp"
 
-using namespace ecs;
-using namespace ecs::view;
+using namespace evcs;
+using namespace evcs::component;
+using namespace evcs::view;
 
 DEFINE_ECS_VIEW_STATICS(PhysicalDynamics);
 PhysicalDynamics::PhysicalDynamics() : View({
-	ecs::component::CoordinateTransform::TypeId,
-	ecs::component::PhysicsBody::TypeId
+	CoordinateTransform::TypeId,
+	PhysicsBody::TypeId
 })
 {
 }

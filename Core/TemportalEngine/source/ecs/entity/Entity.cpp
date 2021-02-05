@@ -6,21 +6,21 @@
 #include "ecs/view/ECView.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
+using namespace evcs;
 
-view::View* getViewAt(ecs::TypeId typeId, ecs::Identifier id)
+view::View* getViewAt(TypeId typeId, Identifier id)
 {
-	return ecs::Core::Get()->views().get(id);
+	return evcs::Core::Get()->views().get(id);
 }
 
-component::Component* getCompAt(ecs::TypeId typeId, ecs::Identifier id)
+component::Component* getCompAt(TypeId typeId, Identifier id)
 {
-	return ecs::Core::Get()->components().get(typeId, id);
+	return evcs::Core::Get()->components().get(typeId, id);
 }
 
 Entity::~Entity()
 {
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 	for (auto const& slot : this->mViews)
 	{
 		ecs->views().destroy(slot.typeId, slot.objectId);
@@ -33,8 +33,8 @@ Entity::~Entity()
 	this->mComponents.clear();
 }
 
-ecs::EType Entity::objectType() const { return EType::eEntity; }
-ecs::TypeId Entity::typeId() const { return 0; }
+EType Entity::objectType() const { return EType::eEntity; }
+TypeId Entity::typeId() const { return 0; }
 
 void Entity::setOwner(std::optional<ui32> ownerNetId)
 {
@@ -51,7 +51,7 @@ void Entity::setOwner(std::optional<ui32> ownerNetId)
 
 void Entity::kill()
 {
-	ecs::Core::Get()->entities().release(this->id());
+	evcs::Core::Get()->entities().release(this->id());
 }
 
 Entity& Entity::addComponent(ComponentTypeId const& typeId, component::Component* pComp)
@@ -64,14 +64,14 @@ Entity& Entity::addComponent(ComponentTypeId const& typeId, component::Component
 		getViewAt(slot.typeId, slot.objectId)->onComponentAdded(typeId, pComp->id());
 	}
 
-	ecs::Core::Get()->components().setComponentEntity(typeId, pComp->id(), this->id());
+	evcs::Core::Get()->components().setComponentEntity(typeId, pComp->id(), this->id());
 
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
-		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eEntity, 0, this->netId()
+		evcs::Core::Get()->replicateUpdate(
+			evcs::EType::eEntity, 0, this->netId()
 		)->pushLink(
-			ecs::EType::eComponent, typeId, pComp->netId()
+			evcs::EType::eComponent, typeId, pComp->netId()
 		);
 	}
 
@@ -87,7 +87,7 @@ component::Component* Entity::getComponent(ComponentTypeId const& typeId)
 	});
 	if (!idx) return nullptr;
 	auto& slot = this->mComponents[*idx];
-	return ecs::Core::Get()->components().get(typeId, slot.objectId);
+	return evcs::Core::Get()->components().get(typeId, slot.objectId);
 }
 
 Entity& Entity::addView(ViewTypeId const& typeId, view::View* pView)
@@ -100,12 +100,12 @@ Entity& Entity::addView(ViewTypeId const& typeId, view::View* pView)
 		pView->onComponentAdded(entry.typeId, entry.objectId);
 	}
 
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
-		ecs::Core::Get()->replicateUpdate(
-			ecs::EType::eEntity, 0, this->netId()
+		evcs::Core::Get()->replicateUpdate(
+			evcs::EType::eEntity, 0, this->netId()
 		)->pushLink(
-			ecs::EType::eView, typeId, pView->netId()
+			evcs::EType::eView, typeId, pView->netId()
 		);
 	}
 
@@ -121,7 +121,7 @@ view::View* Entity::getView(ViewTypeId const& typeId)
 	});
 	if (!idx) return nullptr;
 	auto& slot = this->mViews[*idx];
-	return ecs::Core::Get()->views().get(slot.objectId);
+	return evcs::Core::Get()->views().get(slot.objectId);
 }
 
 Entity::ViewIterator::ViewIterator(Entity* entity)
@@ -152,7 +152,7 @@ Entity::ViewIteratorEntry::ViewIteratorEntry(ViewIteratorEntry const& other)
 view::View* Entity::ViewIteratorEntry::operator*()
 {
 	auto& slot = *(this->mEntityIter);
-	return ecs::Core::Get()->views().get(slot.objectId);
+	return evcs::Core::Get()->views().get(slot.objectId);
 }
 
 void Entity::ViewIteratorEntry::operator++()

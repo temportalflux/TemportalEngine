@@ -3,10 +3,10 @@
 #include "ecs/Core.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
+using namespace evcs;
 
-ecs::EType IEVCSObject::objectType() const { assert(false); return EType::eSystem; }
-ecs::TypeId IEVCSObject::typeId() const { assert(false); return 0; }
+EType IEVCSObject::objectType() const { assert(false); return EType::eSystem; }
+TypeId IEVCSObject::typeId() const { assert(false); return 0; }
 bool IEVCSObject::isType(TypeId const& typeId) const { return this->typeId() == typeId; }
 
 void IEVCSObject::setId(Identifier const& id) { this->mId = id; }
@@ -30,9 +30,9 @@ void IEVCSObject::setOwner(std::optional<ui32> ownerNetId)
 	this->mbHasOwner = ownerNetId.has_value();
 	this->mOwnerNetId = ownerNetId ? *ownerNetId : 0;
 
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 
-	ecs::Core::logger().log(
+	evcs::Core::logger().log(
 		LOG_VERBOSE, "Setting owner of %s id(%u)/net(%u) to %s",
 		ecs->fullTypeName(this->objectType(), this->typeId()).c_str(),
 		this->id(), this->netId(),

@@ -13,8 +13,8 @@
 #include "ecs/component/ComponentCameraPOV.hpp"
 #include "ecs/component/ComponentRenderMesh.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 // UniformBufferObject (UBO) for turning world coordinates to clip space when rendering
 struct ChunkViewProj

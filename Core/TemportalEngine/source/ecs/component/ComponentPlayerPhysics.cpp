@@ -7,8 +7,8 @@
 #include "network/NetworkInterface.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
-using namespace ecs::component;
+using namespace evcs;
+using namespace evcs::component;
 
 DEFINE_ECS_COMPONENT_STATICS(PlayerPhysics)
 
@@ -34,7 +34,7 @@ PlayerPhysics::~PlayerPhysics()
 PlayerPhysics& PlayerPhysics::setIsAffectedByGravity(bool bAffectedByGravity)
 {
 	this->mbAffectedByGravity = bAffectedByGravity;
-	if (ecs::Core::Get()->shouldReplicate())
+	if (evcs::Core::Get()->shouldReplicate())
 	{
 		this->replicateUpdate()
 			->pushComponentField(ECS_REPL_FIELD(PlayerPhysics, mbAffectedByGravity));

@@ -4,7 +4,7 @@
 #include "network/NetworkCore.hpp"
 #include "network/packet/NetworkPacketECSReplicate.hpp"
 
-using namespace ecs;
+using namespace evcs;
 
 Core* Core::Get()
 {
@@ -37,22 +37,22 @@ component::Manager& Core::components() { return this->mComponentManager; }
 
 view::Manager& Core::views() { return this->mViewManager; }
 
-std::string Core::typeName(ecs::EType type, ecs::TypeId typeId) const
+std::string Core::typeName(EType type, TypeId typeId) const
 {
 	switch (type)
 	{
-	case ecs::EType::eEntity: return this->mEntityManager.typeName(typeId);
-	case ecs::EType::eView: return this->mViewManager.typeName(typeId);
-	case ecs::EType::eComponent: return this->mComponentManager.typeName(typeId);
+	case EType::eEntity: return this->mEntityManager.typeName(typeId);
+	case EType::eView: return this->mViewManager.typeName(typeId);
+	case EType::eComponent: return this->mComponentManager.typeName(typeId);
 	default: return "unknown";
 	}
 }
 
-std::string Core::fullTypeName(ecs::EType type, ecs::TypeId typeId) const
+std::string Core::fullTypeName(EType type, TypeId typeId) const
 {
 	auto subtypeName = this->typeName(type, typeId);
 	if (subtypeName.length() > 0) subtypeName += " ";
-	return subtypeName + utility::StringParser<ecs::EType>::to_string(type);
+	return subtypeName + utility::StringParser<EType>::to_string(type);
 }
 
 void Core::beginReplication()
@@ -71,7 +71,7 @@ bool Core::shouldReplicate() const
 Core::ReplicationPacket Core::replicate()
 {
 	assert(this->shouldReplicate());
-	auto replPacket = network::packet::ECSReplicate::create();
+	auto replPacket = network::packet::EVCSReplicate::create();
 	this->mReplicators.push_back(replPacket);
 	return replPacket;
 }
@@ -81,27 +81,25 @@ Core::ReplicationPacket Core::replicateCreate()
 	assert(this->shouldReplicate());
 	auto packet = replicate();
 	packet->setReplicationType(
-		network::packet::ECSReplicate::EReplicationType::eCreate
+		network::packet::EVCSReplicate::EReplicationType::eCreate
 	);
 	return packet;
 }
 
 Core::ReplicationPacket Core::replicateUpdate(
-	ecs::EType ecsType,
-	ecs::TypeId typeId, 
-	Identifier netId
+	EType ecsType, TypeId typeId, Identifier netId
 )
 {
 	assert(this->shouldReplicate());
-	auto const typeCreate = network::packet::ECSReplicate::EReplicationType::eCreate;
-	auto const typeUpdate = network::packet::ECSReplicate::EReplicationType::eUpdate;
+	auto const typeCreate = network::packet::EVCSReplicate::EReplicationType::eCreate;
+	auto const typeUpdate = network::packet::EVCSReplicate::EReplicationType::eUpdate;
 	ReplicationPacket packet = nullptr;
 
 	auto itPrevPacket = this->mReplicators.end();
 	while (itPrevPacket > this->mReplicators.begin())
 	{
 		itPrevPacket--;
-		auto prepRepl = std::reinterpret_pointer_cast<network::packet::ECSReplicate>(*itPrevPacket);
+		auto prepRepl = std::reinterpret_pointer_cast<network::packet::EVCSReplicate>(*itPrevPacket);
 		if (
 			prepRepl->replicationType() != typeCreate
 			&& prepRepl->replicationType() != typeUpdate)
@@ -144,7 +142,7 @@ Core::ReplicationPacket Core::replicateDestroy()
 	assert(this->shouldReplicate());
 	auto packet = replicate();
 	packet->setReplicationType(
-		network::packet::ECSReplicate::EReplicationType::eDestroy
+		network::packet::EVCSReplicate::EReplicationType::eDestroy
 	);
 	return packet;
 }

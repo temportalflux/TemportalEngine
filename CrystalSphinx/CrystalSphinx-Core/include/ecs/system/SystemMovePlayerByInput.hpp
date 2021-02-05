@@ -4,7 +4,7 @@
 
 #include "input/Event.hpp"
 
-NS_ECS
+NS_EVCS
 NS_SYSTEM
 
 class MovePlayerByInput : public System
@@ -15,7 +15,7 @@ public:
 
 	void subscribeToQueue();
 
-	void update(f32 deltaTime, ecs::view::View* view) override;
+	void update(f32 deltaTime, view::View* view) override;
 
 private:
 	struct InputMapping

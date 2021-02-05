@@ -13,8 +13,8 @@
 #include "physics/PhysicsController.hpp"
 #include "world/World.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 MovePlayerByInput::MovePlayerByInput() : System(view::PlayerInputMovement::TypeId)
 {

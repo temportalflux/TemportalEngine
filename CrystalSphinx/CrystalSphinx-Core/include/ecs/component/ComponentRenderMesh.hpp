@@ -12,7 +12,7 @@ FORWARD_DEF(NS_GRAPHICS, class EntityInstanceBuffer);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorSet);
 FORWARD_DEF(NS_ASSET, class Model);
 
-NS_ECS
+NS_EVCS
 NS_COMPONENT
 
 class RenderMesh : public Component

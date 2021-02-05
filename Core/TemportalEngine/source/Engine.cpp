@@ -170,7 +170,7 @@ void Engine::initializeECS()
 	this->mECS.components().allocatePools();
 }
 
-ecs::Core& Engine::getECS()
+evcs::Core& Engine::getECS()
 {
 	return this->mECS;
 }

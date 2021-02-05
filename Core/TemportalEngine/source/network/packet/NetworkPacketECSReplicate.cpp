@@ -11,79 +11,79 @@
 using namespace network;
 using namespace network::packet;
 
-DEFINE_PACKET_TYPE(ECSReplicate)
+DEFINE_PACKET_TYPE(EVCSReplicate)
 
 template <>
-std::string utility::StringParser<ECSReplicate::EReplicationType>::to_string(ECSReplicate::EReplicationType const& v)
+std::string utility::StringParser<EVCSReplicate::EReplicationType>::to_string(EVCSReplicate::EReplicationType const& v)
 {
 	switch (v)
 	{
-	case ECSReplicate::EReplicationType::eCreate: return "create";
-	case ECSReplicate::EReplicationType::eUpdate: return "update";
-	case ECSReplicate::EReplicationType::eDestroy: return "destroy";
+	case EVCSReplicate::EReplicationType::eCreate: return "create";
+	case EVCSReplicate::EReplicationType::eUpdate: return "update";
+	case EVCSReplicate::EReplicationType::eDestroy: return "destroy";
 	default: return "invalid";
 	}
 }
 
 NS_NETWORK
 
-void write(Buffer &buffer, std::string name, ECSReplicate::EReplicationType value)
+void write(Buffer &buffer, std::string name, EVCSReplicate::EReplicationType value)
 {
-	buffer.setNamed(name, utility::StringParser<ECSReplicate::EReplicationType>::to_string(value));
+	buffer.setNamed(name, utility::StringParser<EVCSReplicate::EReplicationType>::to_string(value));
 	buffer.writeRaw(value); \
 }
 
-void read(Buffer &buffer, std::string name, ECSReplicate::EReplicationType &value)
+void read(Buffer &buffer, std::string name, EVCSReplicate::EReplicationType &value)
 {
 	buffer.readRaw(value);
-	buffer.setNamed(name, utility::StringParser<ECSReplicate::EReplicationType>::to_string(value));
+	buffer.setNamed(name, utility::StringParser<EVCSReplicate::EReplicationType>::to_string(value));
 }
 
 NS_END
 
-std::string ecsTypeName(ecs::EType type, ecs::TypeId typeId)
+std::string ecsTypeName(evcs::EType type, evcs::TypeId typeId)
 {
-	return ecs::Core::Get()->typeName(type, typeId);
+	return evcs::Core::Get()->typeName(type, typeId);
 }
 
-ECSReplicate::ECSReplicate()
+EVCSReplicate::EVCSReplicate()
 	: Packet(EPacketFlags::eReliable)
 	, mReplicationType(EReplicationType::eInvalid)
-	, mObjectEcsType(ecs::EType::eSystem) // systems are not supported for replication
+	, mObjectEcsType(evcs::EType::eSystem) // systems are not supported for replication
 	, mObjectTypeId(0), mObjectNetId(0)
 	, mbHasOwnership(false), mbHasOwner(false), mOwnerNetId(0)
 {
 }
 
-ECSReplicate& ECSReplicate::setReplicationType(EReplicationType type)
+EVCSReplicate& EVCSReplicate::setReplicationType(EReplicationType type)
 {
 	this->mReplicationType = type;
 	return *this;
 }
 
-ECSReplicate& ECSReplicate::setObjectEcsType(ecs::EType type)
+EVCSReplicate& EVCSReplicate::setObjectEcsType(evcs::EType type)
 {
 	this->mObjectEcsType = type;
 	return *this;
 }
 
-ECSReplicate& ECSReplicate::setObjectTypeId(uIndex typeId)
+EVCSReplicate& EVCSReplicate::setObjectTypeId(uIndex typeId)
 {
 	assert(
-		this->mObjectEcsType == ecs::EType::eComponent
-		|| this->mObjectEcsType == ecs::EType::eView
+		this->mObjectEcsType == evcs::EType::eComponent
+		|| this->mObjectEcsType == evcs::EType::eView
 	);
 	this->mObjectTypeId = typeId;
 	return *this;
 }
 
-ECSReplicate& ECSReplicate::setObjectNetId(ecs::Identifier const& netId)
+EVCSReplicate& EVCSReplicate::setObjectNetId(evcs::Identifier const& netId)
 {
 	this->mObjectNetId = netId;
 	return *this;
 }
 
-ECSReplicate& ECSReplicate::setOwner(std::optional<ui32> ownerNetId)
+EVCSReplicate& EVCSReplicate::setOwner(std::optional<ui32> ownerNetId)
 {
 	this->mbHasOwnership = true;
 	this->mbHasOwner = ownerNetId.has_value();
@@ -91,28 +91,28 @@ ECSReplicate& ECSReplicate::setOwner(std::optional<ui32> ownerNetId)
 	return *this;
 }
 
-ECSReplicate::EReplicationType const& ECSReplicate::replicationType() const
+EVCSReplicate::EReplicationType const& EVCSReplicate::replicationType() const
 {
 	return this->mReplicationType;
 }
-ecs::EType const& ECSReplicate::ecsType() const { return this->mObjectEcsType; }
-uIndex const& ECSReplicate::ecsTypeId() const { return this->mObjectTypeId; }
-ecs::Identifier const& ECSReplicate::objectNetId() const { return this->mObjectNetId; }
+evcs::EType const& EVCSReplicate::ecsType() const { return this->mObjectEcsType; }
+uIndex const& EVCSReplicate::ecsTypeId() const { return this->mObjectTypeId; }
+evcs::Identifier const& EVCSReplicate::objectNetId() const { return this->mObjectNetId; }
 
-ECSReplicate& ECSReplicate::pushLink(ecs::EType type, uIndex objectTypeId, ecs::Identifier netId)
+EVCSReplicate& EVCSReplicate::pushLink(evcs::EType type, uIndex objectTypeId, evcs::Identifier netId)
 {
 	// Function only allowed for entities or views
 	assert(
-		this->mObjectEcsType == ecs::EType::eEntity
-		|| this->mObjectEcsType == ecs::EType::eView
+		this->mObjectEcsType == evcs::EType::eEntity
+		|| this->mObjectEcsType == evcs::EType::eView
 	);
 	// link type must be a view or component for entities
-	assert(this->mObjectEcsType != ecs::EType::eEntity || (
-		type == ecs::EType::eView || type == ecs::EType::eComponent
+	assert(this->mObjectEcsType != evcs::EType::eEntity || (
+		type == evcs::EType::eView || type == evcs::EType::eComponent
 	));
 	// link type must be component for views
-	assert(this->mObjectEcsType != ecs::EType::eView || (
-		type == ecs::EType::eComponent
+	assert(this->mObjectEcsType != evcs::EType::eView || (
+		type == evcs::EType::eComponent
 	));
 	this->mObjectLinks.push_back({
 		type, objectTypeId, netId
@@ -120,9 +120,9 @@ ECSReplicate& ECSReplicate::pushLink(ecs::EType type, uIndex objectTypeId, ecs::
 	return *this;
 }
 
-ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uSize dataSize)
+EVCSReplicate& EVCSReplicate::pushComponentField(uIndex byteOffset, void* data, uSize dataSize)
 {
-	assert(this->mObjectEcsType == ecs::EType::eComponent);
+	assert(this->mObjectEcsType == evcs::EType::eComponent);
 	assert(
 		this->mReplicationType == EReplicationType::eCreate
 		|| this->mReplicationType == EReplicationType::eUpdate
@@ -152,25 +152,25 @@ ECSReplicate& ECSReplicate::pushComponentField(uIndex byteOffset, void* data, uS
 	return *this;
 }
 
-bool ECSReplicate::hasTypeId() const
+bool EVCSReplicate::hasTypeId() const
 {
-	return this->mObjectEcsType == ecs::EType::eView || this->mObjectEcsType == ecs::EType::eComponent;
+	return this->mObjectEcsType == evcs::EType::eView || this->mObjectEcsType == evcs::EType::eComponent;
 }
 
-bool ECSReplicate::hasLinks() const
+bool EVCSReplicate::hasLinks() const
 {
-	return this->mObjectEcsType == ecs::EType::eEntity || this->mObjectEcsType == ecs::EType::eView;
+	return this->mObjectEcsType == evcs::EType::eEntity || this->mObjectEcsType == evcs::EType::eView;
 }
 
-bool ECSReplicate::hasFields() const
+bool EVCSReplicate::hasFields() const
 {
-	return this->mObjectEcsType == ecs::EType::eComponent;
+	return this->mObjectEcsType == evcs::EType::eComponent;
 }
 
-void ECSReplicate::write(Buffer &archive) const
+void EVCSReplicate::write(Buffer &archive) const
 {
 	// cannot replicate ecs systems
-	assert(this->mObjectEcsType != ecs::EType::eSystem);
+	assert(this->mObjectEcsType != evcs::EType::eSystem);
 	Packet::write(archive);
 	
 	network::write(archive, "replicationType", this->mReplicationType);
@@ -205,7 +205,7 @@ void ECSReplicate::write(Buffer &archive) const
 	}
 }
 
-void ECSReplicate::read(Buffer &archive)
+void EVCSReplicate::read(Buffer &archive)
 {
 	Packet::read(archive);
 
@@ -241,7 +241,7 @@ void ECSReplicate::read(Buffer &archive)
 	}
 }
 
-std::string ECSReplicate::toBufferString(std::vector<ObjectLink> const& links) const
+std::string EVCSReplicate::toBufferString(std::vector<ObjectLink> const& links) const
 {
 	uSize const length = this->mObjectLinks.size();
 	std::stringstream ss;
@@ -253,14 +253,14 @@ std::string ECSReplicate::toBufferString(std::vector<ObjectLink> const& links) c
 			<< "  - "
 			<< ecsTypeName(link.ecsType, link.objectTypeId).c_str()
 			<< " "
-			<< utility::StringParser<ecs::EType>::to_string(link.ecsType).c_str()
+			<< utility::StringParser<evcs::EType>::to_string(link.ecsType).c_str()
 			<< " net-id(" << link.netId << ")"
 			;
 	}
 	return ss.str();
 }
 
-void ECSReplicate::writeLinks(Buffer &archive) const
+void EVCSReplicate::writeLinks(Buffer &archive) const
 {
 	archive.setNamed("links", this->toBufferString(this->mObjectLinks));
 	uSize const length = this->mObjectLinks.size();
@@ -268,7 +268,7 @@ void ECSReplicate::writeLinks(Buffer &archive) const
 	archive.write((void*)this->mObjectLinks.data(), length * sizeof(ObjectLink));
 }
 
-void ECSReplicate::readLinks(Buffer &archive)
+void EVCSReplicate::readLinks(Buffer &archive)
 {
 	uSize length = 0;
 	archive.readRaw(length);
@@ -277,7 +277,7 @@ void ECSReplicate::readLinks(Buffer &archive)
 	archive.setNamed("links", this->toBufferString(this->mObjectLinks));
 }
 
-std::string ECSReplicate::toBufferString(std::vector<ReplicatedField> const& fields) const
+std::string EVCSReplicate::toBufferString(std::vector<ReplicatedField> const& fields) const
 {
 	uSize const length = this->mComponentFields.size();
 	std::stringstream ss;
@@ -293,7 +293,7 @@ std::string ECSReplicate::toBufferString(std::vector<ReplicatedField> const& fie
 	return ss.str();
 }
 
-void ECSReplicate::writeFields(Buffer &archive) const
+void EVCSReplicate::writeFields(Buffer &archive) const
 {
 	archive.setNamed("fields", this->toBufferString(this->mComponentFields));
 	uSize const fieldCount = this->mComponentFields.size();
@@ -310,7 +310,7 @@ void ECSReplicate::writeFields(Buffer &archive) const
 	}
 }
 
-void ECSReplicate::readFields(Buffer &archive)
+void EVCSReplicate::readFields(Buffer &archive)
 {
 	uSize fieldCount = 0;
 	archive.readRaw(fieldCount);
@@ -330,18 +330,18 @@ void ECSReplicate::readFields(Buffer &archive)
 	archive.setNamed("fields", this->toBufferString(this->mComponentFields));
 }
 
-ecs::NetworkedManager* getObjectManager(ecs::Core &ecs, ecs::EType type)
+evcs::NetworkedManager* getObjectManager(evcs::Core &ecs, evcs::EType type)
 {
 	switch (type)
 	{
-	case ecs::EType::eEntity: return &ecs.entities();
-	case ecs::EType::eView: return &ecs.views();
-	case ecs::EType::eComponent: return &ecs.components();
+	case evcs::EType::eEntity: return &ecs.entities();
+	case evcs::EType::eView: return &ecs.views();
+	case evcs::EType::eComponent: return &ecs.components();
 	default: return nullptr;
 	}
 }
 
-void ECSReplicate::process(network::Interface *pInterface)
+void EVCSReplicate::process(network::Interface *pInterface)
 {
 	if (pInterface->type().includes(EType::eServer))
 	{
@@ -367,12 +367,12 @@ void ECSReplicate::process(network::Interface *pInterface)
 		auto* manager = getObjectManager(ecs, this->mObjectEcsType);
 		if (this->mReplicationType == EReplicationType::eCreate)
 		{
-			if (this->mObjectEcsType == ecs::EType::eEntity)
+			if (this->mObjectEcsType == evcs::EType::eEntity)
 			{
 				assert(this->mObjectTypeId == 0);
 			}
 			auto pObject = manager->createObject(this->mObjectTypeId, this->mObjectNetId);
-			ecs::Core::logger().log(
+			evcs::Core::logger().log(
 				LOG_VERBOSE, "Created replicated %s id(%u) with netId(%u)",
 				ecs.fullTypeName(this->mObjectEcsType, this->mObjectTypeId).c_str(),
 				pObject->id(), pObject->netId()
@@ -418,10 +418,10 @@ void ECSReplicate::process(network::Interface *pInterface)
 			}
 			else
 			{
-				ecs::Core::logger().log(
+				evcs::Core::logger().log(
 					LOG_VERBOSE, "Missing %s %s with net-id(%u), discarding destruction replication.",
 					manager->typeName(this->mObjectTypeId).c_str(),
-					utility::StringParser<ecs::EType>::to_string(this->mObjectEcsType).c_str(),
+					utility::StringParser<evcs::EType>::to_string(this->mObjectEcsType).c_str(),
 					this->mObjectNetId
 				);
 			}
@@ -451,33 +451,33 @@ void ECSReplicate::process(network::Interface *pInterface)
 	}
 }
 
-void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
+void EVCSReplicate::linkObject(evcs::NetworkedManager* manager, evcs::IEVCSObject* pObject)
 {
-	auto* ecs = ecs::Core::Get();
+	auto* ecs = evcs::Core::Get();
 	for (auto const& link : this->mObjectLinks)
 	{
-		if (this->mObjectEcsType == ecs::EType::eEntity)
+		if (this->mObjectEcsType == evcs::EType::eEntity)
 		{
-			auto pEntity = dynamic_cast<ecs::Entity*>(pObject);
+			auto pEntity = dynamic_cast<evcs::Entity*>(pObject);
 			assert(pEntity != nullptr);
-			if (link.ecsType == ecs::EType::eView)
+			if (link.ecsType == evcs::EType::eView)
 			{
-				auto pView = dynamic_cast<ecs::view::View*>(ecs->views().getObject(link.objectTypeId, link.netId));
+				auto pView = dynamic_cast<evcs::view::View*>(ecs->views().getObject(link.objectTypeId, link.netId));
 				assert(pView != nullptr);
 				pEntity->addView(link.objectTypeId, pView);
-				ecs::Core::logger().log(
+				evcs::Core::logger().log(
 					LOG_VERBOSE, "Linking entity %u (net-id:%u) to view (type:%u) %u (net-id:%u)",
 					pEntity->id(), pEntity->netId(),
 					ecs->views().typeName(link.objectTypeId).c_str(),
 					pView->id(), pView->netId()
 				);
 			}
-			else if (link.ecsType == ecs::EType::eComponent)
+			else if (link.ecsType == evcs::EType::eComponent)
 			{
-				auto pComp = dynamic_cast<ecs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
+				auto pComp = dynamic_cast<evcs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
 				assert(pComp != nullptr);
 				pEntity->addComponent(link.objectTypeId, pComp);
-				ecs::Core::logger().log(
+				evcs::Core::logger().log(
 					LOG_VERBOSE, "Linking entity %u (net-id:%u) to %s component %u (net-id:%u)",
 					pEntity->id(), pEntity->netId(),
 					ecs->components().typeName(link.objectTypeId).c_str(),
@@ -489,15 +489,15 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 				assert(false);
 			}
 		}
-		else if (this->mObjectEcsType == ecs::EType::eView)
+		else if (this->mObjectEcsType == evcs::EType::eView)
 		{
-			assert(link.ecsType == ecs::EType::eComponent);
-			auto pView = dynamic_cast<ecs::view::View*>(pObject);
+			assert(link.ecsType == evcs::EType::eComponent);
+			auto pView = dynamic_cast<evcs::view::View*>(pObject);
 			assert(pView != nullptr);
-			auto pComp = dynamic_cast<ecs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
+			auto pComp = dynamic_cast<evcs::component::Component*>(ecs->components().getObject(link.objectTypeId, link.netId));
 			assert(pComp != nullptr);
 			pView->onComponentAdded(link.objectTypeId, pComp->id());
-			ecs::Core::logger().log(
+			evcs::Core::logger().log(
 				LOG_VERBOSE, "Linking %s view %u (net-id:%u) to %s component %u (net-id:%u)",
 				ecs->views().typeName(link.objectTypeId).c_str(), pView->id(), pView->netId(),
 				ecs->components().typeName(link.objectTypeId).c_str(), pComp->id(), pComp->netId()
@@ -510,7 +510,7 @@ void ECSReplicate::linkObject(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 	}
 }
 
-void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* pObject)
+void EVCSReplicate::fillFields(evcs::NetworkedManager* manager, evcs::IEVCSObject* pObject)
 {
 	for (auto const& field : this->mComponentFields)
 	{
@@ -522,7 +522,7 @@ void ECSReplicate::fillFields(ecs::NetworkedManager* manager, ecs::IEVCSObject* 
 	}
 }
 
-std::optional<ui32> ECSReplicate::owner() const
+std::optional<ui32> EVCSReplicate::owner() const
 {
 	return this->mbHasOwner ? std::make_optional(this->mOwnerNetId) : std::nullopt;
 }

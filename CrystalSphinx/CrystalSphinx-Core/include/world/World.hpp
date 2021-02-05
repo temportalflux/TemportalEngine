@@ -8,7 +8,7 @@
 #include "world/Events.hpp"
 #include "world/WorldCoordinate.hpp"
 
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_SYSTEM, class PhysicsIntegration);
 FORWARD_DEF(NS_SYSTEM, class IntegratePlayerPhysics);
 NS_END
@@ -47,10 +47,10 @@ public:
 	 * Creates a player entity (though doesn't include any rendering or POV components/views).
 	 * Returns the EVCS entity id.
 	 */
-	ecs::Identifier createPlayer(ui32 clientNetId, world::Coordinate const& position);
-	void destroyPlayer(ui32 userNetId, ecs::Identifier entityId);
+	evcs::Identifier createPlayer(ui32 clientNetId, world::Coordinate const& position);
+	void destroyPlayer(ui32 userNetId, evcs::Identifier entityId);
 
-	void createPlayerController(network::Identifier userNetId, ecs::Identifier localEntityId);
+	void createPlayerController(network::Identifier userNetId, evcs::Identifier localEntityId);
 	bool hasPhysicsController(network::Identifier userNetId) const;
 	physics::Controller& getPhysicsController(network::Identifier userNetId);
 	void destroyPlayerController(network::Identifier userNetId);
@@ -73,8 +73,8 @@ private:
 
 	std::shared_ptr<physics::System> mpPhysics;
 	std::shared_ptr<physics::Material> mpPlayerPhysicsMaterial;
-	std::shared_ptr<ecs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
-	std::shared_ptr<ecs::system::IntegratePlayerPhysics> mpSystemIntegratePlayerPhysics;
+	std::shared_ptr<evcs::system::PhysicsIntegration> mpSystemPhysicsIntegration;
+	std::shared_ptr<evcs::system::IntegratePlayerPhysics> mpSystemIntegratePlayerPhysics;
 	void initializePhysics();
 	void uninitializePhysics();
 

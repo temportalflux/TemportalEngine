@@ -3,8 +3,8 @@
 #include "Engine.hpp"
 #include "ecs/Core.hpp"
 
-using namespace ecs;
-using namespace ecs::system;
+using namespace evcs;
+using namespace evcs::system;
 
 System::System(ViewTypeId const& viewTypeId)
 	: mViewTypeId(viewTypeId)

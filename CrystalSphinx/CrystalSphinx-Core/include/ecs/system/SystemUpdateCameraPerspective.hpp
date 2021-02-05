@@ -10,7 +10,7 @@ FORWARD_DEF(NS_GRAPHICS, class ImmediateRenderSystem);
 FORWARD_DEF(NS_GRAPHICS, class Uniform);
 FORWARD_DEF(NS_MEMORY, class MemoryChunk);
 
-NS_ECS
+NS_EVCS
 FORWARD_DEF(NS_VIEW, class CameraPerspective);
 
 NS_SYSTEM
@@ -25,7 +25,7 @@ public:
 	);
 
 	void subscribeToQueue();
-	void update(f32 deltaTime, ecs::view::View* view) override;
+	void update(f32 deltaTime, view::View* view) override;
 
 private:
 	std::shared_ptr<graphics::ImmediateRenderSystem> mpRenderer;
