@@ -92,11 +92,10 @@ void Manager::allocatePools()
 Component* Manager::create(ComponentTypeId const& typeId, bool bForceCreateNetId)
 {
 	uIndex objectId;
-	auto ptr = reinterpret_cast<Component*>(
-		this->mPoolByType[typeId].create(objectId)
-	);
-	ptr->setId(objectId);
+	void* pCompMem = this->mPoolByType[typeId].create(objectId);
+	auto ptr = reinterpret_cast<Component*>(pCompMem);
 	this->mMetadataByType[typeId].construct(ptr);
+	ptr->setId(objectId);
 	this->mAllocatedByType[typeId].insert(std::make_pair(objectId, ptr));
 
 	auto const bReplicate = ecs::Core::Get()->shouldReplicate();
