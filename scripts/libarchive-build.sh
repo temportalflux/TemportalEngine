@@ -2,17 +2,17 @@
 
 # ~~~~~ ARGS ~~~~~
 
-PlatformArchitecture=$1
+PlatformArchitecture="64"
 configuration="Debug"
 
 # ~~~~~ CONFIG ~~~~~
 
-name="Assimp"
-dir="assimp"
-sln="$name.sln"
-dllPath="bin/$configuration/assimp-vc141-mtd.dll"
-pdbPath="bin/$configuration/assimp-vc141-mtd.pdb"
-libPath="lib/$configuration/assimp-vc141-mtd.lib"
+name="libarchive"
+dir="$name"
+sln="ALL_BUILD.vcxproj"
+dllPath="bin/$configuration/archive.dll"
+pdbPath="bin/$configuration/archive.pdb"
+libPath="libarchive/$configuration/archive.lib"
 
 # ~~~~~ GENERIC ~~~~~
 

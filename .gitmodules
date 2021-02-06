@@ -23,3 +23,6 @@
 [submodule "GNS"]
 	path = GNS
 	url = git@github.com:ValveSoftware/GameNetworkingSockets.git
+[submodule "Core/TemportalEngine/libs/libarchive"]
+	path = Core/TemportalEngine/libs/libarchive
+	url = git@github.com:libarchive/libarchive.git

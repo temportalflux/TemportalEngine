@@ -38,6 +38,10 @@ libraries = [
 	{
 		'name': 'Assimp',
 		'dlls': [ 'assimp-vc141-mtd.dll' ]
+	},
+	{
+		'name': 'libarchive',
+		'dlls': [ 'archive.dll' ]
 	}
 ]
 
@@ -140,6 +144,9 @@ if args[0] == 'setup':
 
 	print('Downloading ShaderC')
 	installShaderC()
+	
+	print('Building libarchive')
+	runScript("libarchive-build.sh", [])
 
 elif args[0] == 'updateLibs':
 	moduleNames = [ 'CrystalSphinx-Game', 'CrystalSphinx-Editor' ]
