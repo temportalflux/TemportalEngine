@@ -65,31 +65,6 @@ void CommandletBuildAssets::initialize(utility::ArgumentMap args)
 
 }
 
-bool buildAsset(asset::AssetPtrStrong asset, std::filesystem::path outPath)
-{
-	auto builder = Editor::EDITOR->createAssetBuilder(asset);
-	if (builder)
-	{
-		LOG.log(LOG_INFO, "Building: %s", asset->getPath().filename().string().c_str());
-
-		builder->setOutputPath(outPath);
-		auto errors = builder->compile(LOG);
-		if (errors.empty())
-		{
-			builder->save();
-		}
-		else
-		{
-			for (auto error : errors)
-			{
-				LOG.log(LOG_ERR, error.c_str());
-			}
-		}
-		return true;
-	}
-	return false;
-}
-
 void CommandletBuildAssets::run()
 {
 	LOG.log(LOG_INFO, "Project: %s", this->mPathProjectAsset.string().c_str());
