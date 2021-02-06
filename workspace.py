@@ -169,7 +169,7 @@ if isSetup() or isBuild():
 		print('Building libarchive')
 		runScript("libarchive-build.sh", [])
 
-elif args[0] == 'updateLibs':
+if isSetup() or isBuild() or args[0] == 'updateLibs':
 	moduleNames = [ 'CrystalSphinx-Game', 'CrystalSphinx-Editor' ]
 	for moduleName in workspaceCfg['modules']:
 		moduleNames.append(moduleName)
