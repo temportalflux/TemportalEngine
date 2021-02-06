@@ -80,20 +80,17 @@ void OutputArchive::setFormat(EArchiveFormat format)
 	}
 }
 
-LibArchive* OutputArchive::get()
-{
-	return this->mpInternal;
-}
-
 OutputArchive::Entry& OutputArchive::startEntry()
 {
 	assert(this->mpInternal != nullptr);
+	assert(!this->mPendingEntry.mbIsInProgress);
 	return this->mPendingEntry.start();
 }
 
 OutputArchive::Entry::Entry(OutputArchive* pArchive)
 	: mpArchive(pArchive)
 	, mpInternal(nullptr)
+	, mbIsInProgress(false)
 {
 }
 
@@ -112,6 +109,7 @@ OutputArchive::Entry& OutputArchive::Entry::start()
 	{
 		this->clear();
 	}
+	this->setType(EArchiveFileType::eRegular);
 	return *this;
 }
 
@@ -142,21 +140,23 @@ OutputArchive::Entry& OutputArchive::Entry::addPermission(EPermission perm)
 
 OutputArchive::Entry& OutputArchive::Entry::finishHeader()
 {
-	archive_write_header(this->mpArchive->get(), this->mpInternal);
+	archive_write_header(this->mpArchive->mpInternal, this->mpInternal);
+	this->mbIsInProgress = true;
 	return *this;
 }
 
 OutputArchive::Entry& OutputArchive::Entry::append(void* data, uSize const& size)
 {
 	assert(this->mSizeWritten + size <= (uSize)archive_entry_size(this->mpInternal));
-	archive_write_data(this->mpArchive->get(), data, size);
+	archive_write_data(this->mpArchive->mpInternal, data, size);
 	this->mSizeWritten += size;
 	return *this;
 }
 
 void OutputArchive::Entry::finish()
 {
-	archive_write_finish_entry(this->mpArchive->get());
+	assert(this->mSizeWritten == (uSize)archive_entry_size(this->mpInternal));
+	archive_write_finish_entry(this->mpArchive->mpInternal);
 	this->clear();
 }
 
@@ -165,6 +165,7 @@ void OutputArchive::Entry::clear()
 	archive_entry_clear(this->mpInternal);
 	this->mPermissionFlags = 0;
 	this->mSizeWritten = 0;
+	this->mbIsInProgress = false;
 }
 
 void OutputArchive::Entry::end()
@@ -246,6 +247,7 @@ void InputArchive::copyEntryTo(void* dst) const
 {
 	assert(this->mpInternal != nullptr);
 	assert(this->mpPendingEntry != nullptr);
+	assert(dst != nullptr);
 	archive_read_data(this->mpInternal, dst, this->entrySize());
 }
 
