@@ -154,6 +154,79 @@ void OutputArchiveEntry::end()
 	}
 }
 
+InputArchive::InputArchive()
+	: mpInternal(nullptr)
+	, mpPendingEntry(nullptr)
+{
+
+}
+
+InputArchive::~InputArchive()
+{
+	this->finish();
+}
+
+void InputArchive::start()
+{
+	assert(this->mpInternal == nullptr);
+	this->mpInternal = archive_read_new();
+	archive_read_support_filter_all(this->mpInternal);
+	archive_read_support_format_all(this->mpInternal);
+}
+
+void InputArchive::finish()
+{
+	if (this->mpInternal != nullptr)
+	{
+		archive_read_free(this->mpInternal);
+		this->mpInternal = nullptr;
+	}
+}
+
+bool InputArchive::open(std::filesystem::path const& path)
+{
+	assert(this->mpInternal != nullptr);
+	this->mPath = path;
+	return archive_read_open_filename(this->mpInternal, path.string().c_str(), 0) == ARCHIVE_OK;
+}
+
+void InputArchive::close()
+{
+	assert(this->mpInternal != nullptr);
+	archive_read_close(this->mpInternal);
+	this->mPath.clear();
+}
+
+bool InputArchive::nextEntry()
+{
+	assert(this->mpInternal != nullptr);
+	if (archive_read_next_header(this->mpInternal, &this->mpPendingEntry) == ARCHIVE_OK)
+	{
+		return true;
+	}
+	this->mpPendingEntry = nullptr;
+	return false;
+}
+
+std::string InputArchive::entryPath() const
+{
+	assert(this->mpPendingEntry != nullptr);
+	return archive_entry_pathname(this->mpPendingEntry);
+}
+
+uSize InputArchive::entrySize() const
+{
+	assert(this->mpPendingEntry != nullptr);
+	return archive_entry_size(this->mpPendingEntry);
+}
+
+void InputArchive::copyEntryTo(void* dst) const
+{
+	assert(this->mpInternal != nullptr);
+	assert(this->mpPendingEntry != nullptr);
+	archive_read_data(this->mpInternal, dst, this->entrySize());
+}
+
 void utility::archiveTestWrite()
 {
 	std::string file1Contents = "this is a test file in a zip/pak :)";
@@ -195,5 +268,17 @@ void utility::archiveTestWrite()
 
 void utility::archiveTestRead()
 {
-
+	utility::InputArchive archive;
+	archive.start();
+	if (archive.open("archive-test.pak"))
+	{
+		while (archive.nextEntry())
+		{
+			auto const path = archive.entryPath();
+			auto content = std::string(archive.entrySize(), '\0');
+			archive.copyEntryTo(content.data());
+		}
+		archive.close();
+	}
+	archive.finish();
 }

@@ -109,6 +109,31 @@ private:
 
 };
 
+class InputArchive
+{
+
+public:
+	InputArchive();
+	~InputArchive();
+
+	void start();
+	void finish();
+
+	bool open(std::filesystem::path const& path);
+	void close();
+
+	bool nextEntry();
+	std::string entryPath() const;
+	uSize entrySize() const;
+	void copyEntryTo(void* dst) const;
+
+private:
+	std::filesystem::path mPath;
+	Archive* mpInternal;
+	ArchiveEntry* mpPendingEntry;
+
+};
+
 void archiveTestWrite();
 void archiveTestRead();
 
