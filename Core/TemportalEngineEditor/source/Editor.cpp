@@ -117,26 +117,8 @@ std::shared_ptr<build::BuildAsset> Editor::createAssetBuilder(asset::AssetPtrStr
 
 void Editor::buildAllAssets()
 {
-	auto assetManager = asset::AssetManager::get();
-	auto scannedAssetList = assetManager->getAssetList();
-	auto assets = std::vector<asset::AssetPtrStrong>(scannedAssetList.size() + 1);
-	uIndex i = 0;
-	assets[i++] = this->getProject();
-	for (auto& assetPath : scannedAssetList)
-	{
-		assets[i++] = asset::readAssetFromDisk(
-			std::filesystem::absolute(this->getProject()->getAbsoluteDirectoryPath() / assetPath.pathStr()),
-			asset::EAssetSerialization::Json
-		);
-	}
-	std::filesystem::remove_all(this->getProject()->getAbsoluteDirectoryPath() / this->getOutputDirectory());
-	this->buildAssets(assets);
-}
-
-void Editor::buildAssets(std::vector<asset::AssetPtrStrong> assets)
-{
 	assert(!this->isBuildingAssets());
-	this->mBuildThread.start(assets);
+	this->mBuildThread.start();
 }
 
 bool Editor::isBuildingAssets() const

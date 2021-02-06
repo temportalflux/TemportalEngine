@@ -18,10 +18,12 @@
 #include <cassert>
 
 NS_ASSET
+class Archive;
 
 class Asset
 {
 	friend class cereal::access;
+	friend class asset::Archive;
 
 public:
 	static cereal::JSONOutputArchive::Options JsonFormat;

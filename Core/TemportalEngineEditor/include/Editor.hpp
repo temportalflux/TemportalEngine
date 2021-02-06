@@ -80,7 +80,6 @@ public:
 	 Downside is that you cannot build multiple assets in editor at the same time (because they all use th same build thread).
 	*/
 	void buildAllAssets();
-	void buildAssets(std::vector<asset::AssetPtrStrong> assets);
 	bool isBuildingAssets() const;
 	std::vector<build::BuildThread::BuildState> extractBuildState();
 

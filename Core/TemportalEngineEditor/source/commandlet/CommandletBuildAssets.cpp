@@ -108,62 +108,6 @@ void CommandletBuildAssets::run()
 	LOG.log(LOG_INFO, "Scanning for assets in %s", assetDirSrc.string().c_str());
 	assetManager->scanAssetDirectory(assetDirSrc, asset::EAssetSerialization::Json);
 
-	// the project file is just a straight save to the non-assets director
-	buildAsset(assetProj, this->mPathOutputDir / this->mPathProjectAsset.filename());
-
-	// Get a list of all pre-existing files (to delete any old ones)
-	std::set<std::filesystem::path> previouslyBuiltFiles;
-	{
-		auto destIter = std::filesystem::recursive_directory_iterator(assetDirDest);
-		auto files = std::vector<std::filesystem::directory_entry>(std::filesystem::begin(destIter), std::filesystem::end(destIter));
-		std::transform(
-			files.begin(), files.end(),
-			std::inserter(previouslyBuiltFiles, previouslyBuiltFiles.begin()),
-			[assetDirDest](auto entry) { return std::filesystem::relative(entry.path(), assetDirDest); }
-		);
-	}
-
-	for (const auto& entry : std::filesystem::recursive_directory_iterator(assetDirSrc))
-	{
-		auto pathSrc = entry.path();
-		auto pathRelative = std::filesystem::relative(pathSrc, assetDirSrc);
-		auto pathDest = assetDirDest / pathRelative;
-		if (std::filesystem::is_directory(pathSrc))
-		{
-			std::filesystem::create_directory(pathDest);
-			continue;
-		}
-		
-		auto asset = asset::readAssetFromDisk(pathSrc, asset::EAssetSerialization::Json);
-		if (asset != nullptr && buildAsset(asset, pathDest))
-		{
-			auto prevBuiltIter = previouslyBuiltFiles.find(pathRelative);
-			if (prevBuiltIter != previouslyBuiltFiles.end())
-			{
-				previouslyBuiltFiles.erase(prevBuiltIter);
-			}
-		}
-	}
-
-	// Delete all the files which were not built but had been there previously
-	for (auto iter = previouslyBuiltFiles.rbegin(); iter != previouslyBuiltFiles.rend(); ++iter)
-	{
-		auto unbuiltFile = *iter;
-		auto destPath = assetDirDest / unbuiltFile;
-		if (!std::filesystem::is_directory(destPath) && std::filesystem::is_empty(destPath))
-		{
-			std::filesystem::remove(destPath);
-			previouslyBuiltFiles.erase(unbuiltFile);
-		}
-	}
-	// then revisit for directories (for there may have been some files in the directories)
-	for (const auto& dir : previouslyBuiltFiles)
-	{
-		auto destPath = assetDirDest / dir;
-		if (std::filesystem::is_empty(destPath))
-		{
-			std::filesystem::remove(destPath);
-		}
-	}
-
+	auto builder = build::BuildThread();
+	builder.start();
 }

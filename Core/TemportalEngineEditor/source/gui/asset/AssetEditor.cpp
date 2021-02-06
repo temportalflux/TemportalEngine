@@ -103,7 +103,7 @@ void AssetEditor::compileAsset()
 	this->saveAsset();
 
 	this->mbIsBuildingAsset = true;
-	Editor::EDITOR->buildAssets({ this->mpAsset });
+	Editor::EDITOR->buildAllAssets();
 }
 
 void AssetEditor::onBuildFailure(std::vector<std::string> const &errors)

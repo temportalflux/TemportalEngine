@@ -5,6 +5,7 @@
 #include "thread/Thread.hpp"
 
 FORWARD_DEF(NS_ASSET, class Asset);
+FORWARD_DEF(NS_ASSET, class Archive);
 
 NS_BUILD
 
@@ -16,6 +17,7 @@ public:
 
 	struct BuildState
 	{
+		std::filesystem::path outputPath;
 		std::shared_ptr<asset::Asset> asset;
 		ErrorList errors;
 		bool wasSuccessful() const { return errors.empty(); }
@@ -24,11 +26,7 @@ public:
 	BuildThread();
 	~BuildThread();
 
-	/**
-	 * Builds all provided assets on a thread.
-	 */
-	void start(std::vector<std::shared_ptr<asset::Asset>> assets);
-
+	void start();
 	bool isBuilding() const;
 	std::vector<BuildState> extractState();
 
@@ -39,7 +37,6 @@ private:
 	std::vector<BuildState> mBuildStates;
 
 	bool executeBuild();
-	ErrorList buildAsset(std::shared_ptr<asset::Asset> asset);
 	void onBuildComplete();
 
 };

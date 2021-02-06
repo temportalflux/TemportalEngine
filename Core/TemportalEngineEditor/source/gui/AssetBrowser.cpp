@@ -87,7 +87,7 @@ void buildAsset(std::filesystem::path const &path)
 {
 	if (isAnAsset(path))
 	{
-		Editor::EDITOR->buildAssets({ asset::readAssetFromDisk(path, asset::EAssetSerialization::Json) });
+		Editor::EDITOR->buildAllAssets();
 	}
 }
 

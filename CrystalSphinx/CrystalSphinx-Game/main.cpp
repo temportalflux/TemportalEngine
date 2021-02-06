@@ -6,15 +6,9 @@
 #include "utility/TimeUtils.hpp"
 #include "Module.hpp"
 
-#include "utility/Archive.hpp"
-
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();
-	utility::archiveTestWrite();
-	utility::archiveTestRead();
-	return 0;
-
 	auto args = utility::parseArguments(argc, argv);
 
 	uSize totalMem = 0;

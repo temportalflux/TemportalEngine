@@ -91,6 +91,7 @@ OutputArchive::Entry::Entry(OutputArchive* pArchive)
 	: mpArchive(pArchive)
 	, mpInternal(nullptr)
 	, mbIsInProgress(false)
+	, mSizeWritten(0)
 {
 }
 
@@ -264,7 +265,6 @@ void utility::archiveTestWrite()
 	archive.open("archive-test.pak");
 
 	archive.startEntry()
-		.setType(utility::EArchiveFileType::eRegular)
 		.setPath("file1.txt")
 		.addPermission(utility::EPermission::eRead)
 		.addPermission(utility::EPermission::eReadNamedAttributes)
@@ -275,8 +275,7 @@ void utility::archiveTestWrite()
 		.finish();
 
 	archive.startEntry()
-		.setType(utility::EArchiveFileType::eRegular)
-		.setPath("file2.txt")
+		.setPath("folder/file2.txt")
 		.addPermission(utility::EPermission::eRead)
 		.addPermission(utility::EPermission::eReadNamedAttributes)
 		.addPermission(utility::EPermission::eReadAttributes)
