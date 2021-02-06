@@ -15,7 +15,7 @@ workspaceCfg = {
 libraries = [
 	{
 		'name': 'PhysX',
-		'dlls': [
+		'artifacts': [
 			"PhysXCommon_{architecture}.dll",
 			"PhysX_{architecture}.dll",
 			"PhysXFoundation_{architecture}.dll",
@@ -25,11 +25,11 @@ libraries = [
 	},
 	{
 		'name': 'GameNetworkingSockets',
-		'dlls': [ 'GameNetworkingSockets.dll' ]
+		'artifacts': [ 'GameNetworkingSockets.dll', 'GameNetworkingSockets.pdb' ]
 	},
 	{
 		'name': 'OpenSSL',
-		'dlls': [
+		'artifacts': [
 			'libssl-1_1-x{architecture}.dll',
 			'libcrypto-1_1-x{architecture}.dll',
 			'libprotobufd.dll',
@@ -37,11 +37,11 @@ libraries = [
 	},
 	{
 		'name': 'Assimp',
-		'dlls': [ 'assimp-vc141-mtd.dll' ]
+		'artifacts': [ 'assimp-vc141-mtd.dll', 'assimp-vc141-mtd.pdb' ]
 	},
 	{
 		'name': 'libarchive',
-		'dlls': [ 'archive.dll' ]
+		'artifacts': [ 'archive.dll', 'archive.pdb' ]
 	}
 ]
 
@@ -174,7 +174,7 @@ if isSetup() or isBuild() or args[0] == 'updateLibs':
 	for moduleName in workspaceCfg['modules']:
 		moduleNames.append(moduleName)
 	
-	print('Distributing library dlls to:')
+	print('Distributing library artifacts to:')
 	moduleBins = []
 	for moduleName in moduleNames:
 		moduleBin = bin(config, architecture, moduleName)
@@ -184,14 +184,14 @@ if isSetup() or isBuild() or args[0] == 'updateLibs':
 
 	print("Libraries:")
 	for lib in libraries:
-		if 'dlls' in lib:
+		if 'artifacts' in lib:
 			libBin = bin(config, architecture, lib['name'])
 			print(f"- {lib['name']}")
-			for dllName in lib['dlls']:
-				dllName = dllName.format(architecture=architecture)
-				print(f"  - {dllName}")
+			for artifactName in lib['artifacts']:
+				artifactName = artifactName.format(architecture=architecture)
+				print(f"  - {artifactName}")
 				for moduleBin in moduleBins:
 					shutil.copyfile(
-						os.path.join(libBin, dllName),
-						os.path.join(moduleBin, dllName)
+						os.path.join(libBin, artifactName),
+						os.path.join(moduleBin, artifactName)
 					)
