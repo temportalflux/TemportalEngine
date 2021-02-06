@@ -2,8 +2,8 @@
 
 #include "TemportalEnginePCH.hpp"
 
-using Archive = struct archive;
-using ArchiveEntry = struct archive_entry;
+using LibArchive = struct archive;
+using LibArchiveEntry = struct archive_entry;
 
 NS_UTILITY
 
@@ -53,74 +53,93 @@ enum class EPermission : ui16
 
 class OutputArchive;
 
-class OutputArchiveEntry
+class Archive
 {
-	friend class OutputArchive;
-
 public:
-	OutputArchiveEntry& setPath(std::filesystem::path const& path);
-	OutputArchiveEntry& setSize(ui64 const& size);
-	OutputArchiveEntry& setType(EArchiveFileType type);
-	OutputArchiveEntry& addPermission(EPermission perm);
-	OutputArchiveEntry& finishHeader();
+	Archive();
+	virtual ~Archive();
+	
+	virtual void start() = 0;
+	virtual void finish() = 0;
 
-	OutputArchiveEntry& append(void* data, uSize const& size);
+	virtual bool open(std::filesystem::path const& path);
+	virtual void close();
 
-	void finish();
+protected:
+	LibArchive* mpInternal;
 
 private:
-	OutputArchive* mpArchive;
-	ArchiveEntry* mpInternal;
-	ui16 mPermissionFlags;
-	uSize mSizeWritten;
-
-	OutputArchiveEntry(OutputArchive* pArchive);
-	~OutputArchiveEntry();
-	OutputArchiveEntry& start();
-	void clear();
-	void end();
+	std::filesystem::path mPath;
 
 };
 
-class OutputArchive
+class OutputArchive : public Archive
 {
 	friend class OutputArchiveEntry;
 
 public:
+
+	class Entry
+	{
+		friend class OutputArchive;
+
+	public:
+		Entry& setPath(std::filesystem::path const& path);
+		Entry& setSize(ui64 const& size);
+		Entry& setType(EArchiveFileType type);
+		Entry& addPermission(EPermission perm);
+		Entry& finishHeader();
+
+		Entry& append(void* data, uSize const& size);
+
+		void finish();
+
+	private:
+		OutputArchive* mpArchive;
+		LibArchiveEntry* mpInternal;
+		ui16 mPermissionFlags;
+		uSize mSizeWritten;
+
+		Entry(OutputArchive* pArchive);
+		~Entry();
+		Entry& start();
+		void clear();
+		void end();
+
+	};
+
 	OutputArchive();
 	~OutputArchive();
 
 	void setFormat(EArchiveFormat format);
 	
-	void start();
-	void finish();
+	void start() override;
+	void finish() override;
 
-	void open(std::filesystem::path const& path);
-	void close();
+	bool open(std::filesystem::path const& path) override;
+	void close() override;
 
-	OutputArchiveEntry& startEntry();
+	Entry& startEntry();
 
 private:
-	std::filesystem::path mPath;
-	Archive* mpInternal;
-	OutputArchiveEntry mPendingEntry;
+	Entry mPendingEntry;
 
-	Archive* get();
+	LibArchive* get();
 
 };
 
-class InputArchive
+class InputArchive : public Archive
 {
 
 public:
 	InputArchive();
 	~InputArchive();
 
-	void start();
-	void finish();
+	void start() override;
+	void finish() override;
 
-	bool open(std::filesystem::path const& path);
-	void close();
+	bool open(std::filesystem::path const& path) override;
+	void close() override;
 
 	bool nextEntry();
 	std::string entryPath() const;
@@ -128,9 +147,7 @@ public:
 	void copyEntryTo(void* dst) const;
 
 private:
-	std::filesystem::path mPath;
-	Archive* mpInternal;
-	ArchiveEntry* mpPendingEntry;
+	LibArchiveEntry* mpPendingEntry;
 
 };
 

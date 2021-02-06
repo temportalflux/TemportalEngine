@@ -5,8 +5,30 @@
 
 using namespace utility;
 
-OutputArchive::OutputArchive()
+Archive::Archive()
 	: mpInternal(nullptr)
+{
+
+}
+
+Archive::~Archive()
+{
+
+}
+
+bool Archive::open(std::filesystem::path const& path)
+{
+	this->mPath = path;
+	return true;
+}
+
+void Archive::close()
+{
+	this->mPath.clear();
+}
+
+OutputArchive::OutputArchive()
+	: Archive()
 	, mPendingEntry(this)
 {
 }
@@ -31,11 +53,11 @@ void OutputArchive::finish()
 	}
 }
 
-void OutputArchive::open(std::filesystem::path const& path)
+bool OutputArchive::open(std::filesystem::path const& path)
 {
 	assert(this->mpInternal != nullptr);
-	this->mPath = path;
-	archive_write_open_filename(this->mpInternal, path.string().c_str());
+	Archive::open(path);
+	return archive_write_open_filename(this->mpInternal, path.string().c_str()) == ARCHIVE_OK;
 }
 
 void OutputArchive::close()
@@ -43,7 +65,7 @@ void OutputArchive::close()
 	assert(this->mpInternal != nullptr);
 	this->mPendingEntry.end();
 	archive_write_close(this->mpInternal);
-	this->mPath.clear();
+	Archive::close();
 }
 
 void OutputArchive::setFormat(EArchiveFormat format)
@@ -58,29 +80,29 @@ void OutputArchive::setFormat(EArchiveFormat format)
 	}
 }
 
-Archive* OutputArchive::get()
+LibArchive* OutputArchive::get()
 {
 	return this->mpInternal;
 }
 
-OutputArchiveEntry& OutputArchive::startEntry()
+OutputArchive::Entry& OutputArchive::startEntry()
 {
 	assert(this->mpInternal != nullptr);
 	return this->mPendingEntry.start();
 }
 
-OutputArchiveEntry::OutputArchiveEntry(OutputArchive* pArchive)
+OutputArchive::Entry::Entry(OutputArchive* pArchive)
 	: mpArchive(pArchive)
 	, mpInternal(nullptr)
 {
 }
 
-OutputArchiveEntry::~OutputArchiveEntry()
+OutputArchive::Entry::~Entry()
 {
 	this->end();
 }
 
-OutputArchiveEntry& OutputArchiveEntry::start()
+OutputArchive::Entry& OutputArchive::Entry::start()
 {
 	if (this->mpInternal == nullptr)
 	{
@@ -93,38 +115,38 @@ OutputArchiveEntry& OutputArchiveEntry::start()
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::setPath(std::filesystem::path const& path)
+OutputArchive::Entry& OutputArchive::Entry::setPath(std::filesystem::path const& path)
 {
 	archive_entry_set_pathname_utf8(this->mpInternal, path.string().c_str());
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::setSize(ui64 const& size)
+OutputArchive::Entry& OutputArchive::Entry::setSize(ui64 const& size)
 {
 	archive_entry_set_size(this->mpInternal, (i64)size);
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::setType(EArchiveFileType type)
+OutputArchive::Entry& OutputArchive::Entry::setType(EArchiveFileType type)
 {
 	archive_entry_set_filetype(this->mpInternal, (ui16)type);
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::addPermission(EPermission perm)
+OutputArchive::Entry& OutputArchive::Entry::addPermission(EPermission perm)
 {
 	this->mPermissionFlags |= ui16(perm);
 	archive_entry_set_perm(this->mpInternal, this->mPermissionFlags);
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::finishHeader()
+OutputArchive::Entry& OutputArchive::Entry::finishHeader()
 {
 	archive_write_header(this->mpArchive->get(), this->mpInternal);
 	return *this;
 }
 
-OutputArchiveEntry& OutputArchiveEntry::append(void* data, uSize const& size)
+OutputArchive::Entry& OutputArchive::Entry::append(void* data, uSize const& size)
 {
 	assert(this->mSizeWritten + size <= (uSize)archive_entry_size(this->mpInternal));
 	archive_write_data(this->mpArchive->get(), data, size);
@@ -132,20 +154,20 @@ OutputArchiveEntry& OutputArchiveEntry::append(void* data, uSize const& size)
 	return *this;
 }
 
-void OutputArchiveEntry::finish()
+void OutputArchive::Entry::finish()
 {
 	archive_write_finish_entry(this->mpArchive->get());
 	this->clear();
 }
 
-void OutputArchiveEntry::clear()
+void OutputArchive::Entry::clear()
 {
 	archive_entry_clear(this->mpInternal);
 	this->mPermissionFlags = 0;
 	this->mSizeWritten = 0;
 }
 
-void OutputArchiveEntry::end()
+void OutputArchive::Entry::end()
 {
 	if (this->mpInternal != nullptr)
 	{
@@ -155,7 +177,7 @@ void OutputArchiveEntry::end()
 }
 
 InputArchive::InputArchive()
-	: mpInternal(nullptr)
+	: Archive()
 	, mpPendingEntry(nullptr)
 {
 
@@ -186,7 +208,7 @@ void InputArchive::finish()
 bool InputArchive::open(std::filesystem::path const& path)
 {
 	assert(this->mpInternal != nullptr);
-	this->mPath = path;
+	Archive::open(path);
 	return archive_read_open_filename(this->mpInternal, path.string().c_str(), 0) == ARCHIVE_OK;
 }
 
@@ -194,7 +216,7 @@ void InputArchive::close()
 {
 	assert(this->mpInternal != nullptr);
 	archive_read_close(this->mpInternal);
-	this->mPath.clear();
+	Archive::close();
 }
 
 bool InputArchive::nextEntry()
