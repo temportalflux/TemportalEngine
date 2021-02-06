@@ -53,16 +53,6 @@ void OutputArchive::setFormat(EArchiveFormat format)
 	{
 	case EArchiveFormat::e7Zip:
 		archive_write_set_format_7zip(this->mpInternal);
-		break;
-	}
-}
-
-void OutputArchive::setCompression(EArchiveCompression compression)
-{
-	assert(this->mpInternal != nullptr);
-	switch (compression)
-	{
-	case EArchiveCompression::eGZip:
 		archive_write_add_filter_none(this->mpInternal);
 		break;
 	}
@@ -164,7 +154,7 @@ void OutputArchiveEntry::end()
 	}
 }
 
-void archiveTestWrite()
+void utility::archiveTestWrite()
 {
 	std::string file1Contents = "this is a test file in a zip/pak :)";
 	std::string file2Contents = "this is a second file\nthat has 2 lines";
@@ -173,7 +163,6 @@ void archiveTestWrite()
 	archive.start();
 
 	archive.setFormat(utility::EArchiveFormat::e7Zip);
-	archive.setCompression(utility::EArchiveCompression::eGZip);
 
 	archive.open("archive-test.pak");
 
@@ -204,7 +193,7 @@ void archiveTestWrite()
 	archive.finish();
 }
 
-void archiveTestRead()
+void utility::archiveTestRead()
 {
 
 }

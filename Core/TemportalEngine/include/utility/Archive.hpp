@@ -12,11 +12,6 @@ enum class EArchiveFormat
 	e7Zip,
 };
 
-enum class EArchiveCompression
-{
-	eGZip,
-};
-
 // Mirrors `AE_IF<shortname>` in `libarchive/archive_entry.h`
 enum class EArchiveFileType : ui16
 {
@@ -96,7 +91,6 @@ public:
 	~OutputArchive();
 
 	void setFormat(EArchiveFormat format);
-	void setCompression(EArchiveCompression compression);
 	
 	void start();
 	void finish();

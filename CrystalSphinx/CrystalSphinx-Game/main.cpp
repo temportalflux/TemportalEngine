@@ -8,8 +8,6 @@
 
 #include "utility/Archive.hpp"
 
-
-
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();
