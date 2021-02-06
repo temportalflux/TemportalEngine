@@ -127,26 +127,47 @@ def installShaderC():
 config = 'Debug'
 architecture = '64'
 args = sys.argv[1:]
-if args[0] == 'setup':
-	print('Setting up workspace')
-	
-	print(f"Building PhysX checked x{architecture}")
-	runScript('physx-build.sh', ['checked', architecture])
 
-	print('Setting up GameNetworkingSockets')
-	runScript("gns-setup.sh")
-	
-	print('Building GameNetworkingSockets')
-	runScript("gns-build.sh")
-	
-	print('Building assimp')
-	runScript("assimp-build.sh", [architecture])
+def isSetup():
+	return args[0] == 'setup'
 
-	print('Downloading ShaderC')
-	installShaderC()
+def isBuild():
+	return args[0] == 'build'
+
+def shouldBuild(moduleName):
+	if isSetup():
+		return True
+	if isBuild():
+		return len(args) == 1 or args[1] == moduleName
+	return False
+
+if isSetup() or isBuild():
+	if isSetup():
+		print('Setting up workspace')
 	
-	print('Building libarchive')
-	runScript("libarchive-build.sh", [])
+	if shouldBuild('PhysX'):
+		print(f"Building PhysX checked x{architecture}")
+		runScript('physx-build.sh', ['checked', architecture])
+
+	if isSetup():
+		print('Setting up GameNetworkingSockets')
+		runScript("gns-setup.sh")
+	
+	if shouldBuild('GNS'):
+		print('Building GameNetworkingSockets')
+		runScript("gns-build.sh")
+	
+	if shouldBuild('assimp'):
+		print('Building assimp')
+		runScript("assimp-build.sh", [architecture])
+
+	if shouldBuild('shaderc'):
+		print('Downloading ShaderC')
+		installShaderC()
+	
+	if shouldBuild('libarchive'):
+		print('Building libarchive')
+		runScript("libarchive-build.sh", [])
 
 elif args[0] == 'updateLibs':
 	moduleNames = [ 'CrystalSphinx-Game', 'CrystalSphinx-Editor' ]
