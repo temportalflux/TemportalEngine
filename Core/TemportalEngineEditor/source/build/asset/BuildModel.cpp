@@ -99,7 +99,7 @@ std::vector<std::string> BuildModel::compile(logging::Logger &logger)
 			aiFace const& face = mesh->mFaces[iFace];
 			for (uIndex iFaceIndex = 0; iFaceIndex < face.mNumIndices; ++iFaceIndex)
 			{
-				ui32 const& index = face.mIndices[iFaceIndex];
+				ui32 const& index = face.mIndices[iFaceIndex] + preMeshVertexCount;
 				this->mCompiledIndices.push_back(index);
 			}
 		}
