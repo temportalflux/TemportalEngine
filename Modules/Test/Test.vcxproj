@@ -102,14 +102,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)libarchive;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib/</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;archive.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(Bin)libarchive;$(VULKAN_SDK)/Lib/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -122,14 +122,14 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Core\TemportalEngine\include;$(EngineLibs)vulkan\include;$(EngineLibs)cereal\include;$(EngineLibs)PhysX\pxshared\include;$(EngineLibs)PhysX\physx\include;$(SolutionDir)GNS\include;$(EngineLibs)OpenSSL\include;$(EngineLibs)Optick\include;$(EngineLibs)stb;$(EngineLibs)libarchive;$(SolutionDir)CrystalSphinx\CrystalSphinx-Core\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NOMINMAX;_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_CRT_SECURE_NO_WARNINGS;OPTICK_ENABLE_GPU_D3D12=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(VULKAN_SDK)/Lib32/</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;PhysXCommon_$(PlatformArchitecture).lib;PhysX_$(PlatformArchitecture).lib;PhysXFoundation_$(PlatformArchitecture).lib;PhysXPvdSDK_static_$(PlatformArchitecture).lib;PhysXExtensions_static_$(PlatformArchitecture).lib;PhysXCooking_$(PlatformArchitecture).lib;PhysXCharacterKinematic_static_$(PlatformArchitecture).lib;PhysXTask_static_$(PlatformArchitecture).lib;PhysXVehicle_static_$(PlatformArchitecture).lib;GameNetworkingSockets.lib;libssl.lib;libcrypto.lib;archive.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Core/TemportalEngine/libs/RakNet/lib/$(PlatformTarget)/$(PlatformToolset)/$(Configuration)/;$(Bin)PhysX;$(Bin)GameNetworkingSockets;$(Bin)OpenSSL;$(Bin)libarchive;$(VULKAN_SDK)/Lib32/</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
       <Command>

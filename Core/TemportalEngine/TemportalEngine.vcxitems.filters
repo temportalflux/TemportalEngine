@@ -423,6 +423,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\evcs\component\ComponentPlayerPhysics.cpp">
       <Filter>evcs\component</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Archive.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -911,6 +914,9 @@
       <Filter>evcs</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\FileUtils.hpp">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Archive.hpp">
       <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>

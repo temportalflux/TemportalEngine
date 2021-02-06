@@ -123,6 +123,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\TextWidget.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\Widget.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\ui\WidgetRenderer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Archive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Guid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\ImageUtils.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\utility\Random.cpp" />
@@ -286,6 +287,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\TextWidget.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\Widget.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\ui\WidgetRenderer.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Archive.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\Casting.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\CollectionUtils.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\utility\DynamicHandle.hpp" />
