@@ -3,6 +3,7 @@
 #include "asset/Asset.hpp"
 
 NS_ASSET
+class IArchiveLoadCallbacks;
 
 /**
  * Metadata information about a generic type of asset.
@@ -20,6 +21,10 @@ class TypeRegistry
 {
 
 public:
+	using OnAssetLoaded = std::function<void(std::string const& moduleName, std::shared_ptr<asset::Asset> pAsset)>;
+	using TypeLoadCallbackMap = std::unordered_multimap<AssetType, OnAssetLoaded>;
+	using TypeLoadCallbackIter = TypeLoadCallbackMap::const_iterator;
+	using TypeLoadCallbackRange = std::pair<TypeLoadCallbackIter, TypeLoadCallbackIter>;
 
 	template <typename TAsset>
 	void registerType()
@@ -27,6 +32,15 @@ public:
 		this->registerType(TAsset::StaticType(), ASSET_TYPE_METADATA(TAsset));
 	}
 	void registerType(AssetType type, TypeData metadata);
+
+	template <typename TAsset>
+	void addArchiveLoadCallback(OnAssetLoaded onLoad)
+	{
+		this->addArchiveLoadCallback(TAsset::StaticType(), onLoad);
+	}
+
+	void addArchiveLoadCallback(AssetType type, OnAssetLoaded onLoad);
+	TypeLoadCallbackRange getLoadCallbacks(AssetType type);
 
 	std::set<AssetType> getAssetTypes() const;
 	bool isValidAssetExtension(std::string extension) const;
@@ -50,6 +64,7 @@ private:
 	 */
 	std::unordered_map<AssetType, TypeData> mAssetTypeMap;
 
+	TypeLoadCallbackMap mArchiveLoadCallbacks;
 
 };
 

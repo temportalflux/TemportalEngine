@@ -16,6 +16,16 @@ void TypeRegistry::registerType(AssetType type, TypeData metadata)
 	}
 }
 
+void TypeRegistry::addArchiveLoadCallback(AssetType type, OnAssetLoaded callbacks)
+{
+	this->mArchiveLoadCallbacks.insert(std::make_pair(type, callbacks));
+}
+
+TypeRegistry::TypeLoadCallbackRange TypeRegistry::getLoadCallbacks(AssetType type)
+{
+	return this->mArchiveLoadCallbacks.equal_range(type);
+}
+
 std::set<AssetType> TypeRegistry::getAssetTypes() const
 {
 	return this->mAssetTypes;

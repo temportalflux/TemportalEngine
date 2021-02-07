@@ -67,6 +67,7 @@ public:
 	std::shared_ptr<input::Queue> getInputQueue() const;
 
 	std::shared_ptr<asset::AssetManager> getAssetManager();
+	void loadAssetArchive(std::filesystem::path const& archivePath);
 
 	bool hasProject() const;
 	void setProject(asset::ProjectPtrStrong project);

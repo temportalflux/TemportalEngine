@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 
 #include "ITickable.hpp"
+#include "asset/AssetArchive.hpp"
 #include "window/Window.hpp"
 #include "command/CommandRegistry.hpp"
 #include "crypto/AES.hpp"
@@ -10,9 +11,6 @@
 #include "input/Queue.hpp"
 #include "memory/MemoryChunk.hpp"
 #include "utility/TimeUtils.hpp"
-
-//#include "network/client/ServiceClient.hpp"
-//#include "network/server/ServiceServer.hpp"
 
 #include <string>
 
@@ -161,6 +159,23 @@ std::shared_ptr<input::Queue> Engine::getInputQueue() const
 std::shared_ptr<asset::AssetManager> Engine::getAssetManager()
 {
 	return mpAssetManager;
+}
+
+void Engine::loadAssetArchive(std::filesystem::path const& archivePath)
+{
+	auto archiveName = archivePath.stem().string();
+	auto archive = asset::Archive();
+	archive.startReading(archivePath);
+	while (auto pAsset = archive.readNextEntry())
+	{
+		auto callbackObjects = this->mpAssetManager->typeRegistry.getLoadCallbacks(pAsset->getAssetType());
+		for (auto iter = callbackObjects.first; iter != callbackObjects.second; ++iter)
+		{
+			auto onAssetLoaded = iter->second;
+			if (onAssetLoaded) onAssetLoaded(archiveName, pAsset);
+		}
+	}
+	archive.stop();
 }
 
 void Engine::initializeECS()
