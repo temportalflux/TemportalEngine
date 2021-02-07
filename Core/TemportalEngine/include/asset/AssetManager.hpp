@@ -3,31 +3,11 @@
 #include "TemportalEnginePCH.hpp"
 
 #include "asset/Asset.hpp"
+#include "asset/AssetTypeRegistry.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "memory/MemoryChunk.hpp"
 
-#include <filesystem>
-#include <fstream>
-#include <functional>
-#include <optional>
-#include <set>
-#include <string>
-#include <unordered_map>
-#include <map>
-
 NS_ASSET
-
-/**
- * Metadata information about a generic type of asset.
- */
-struct AssetTypeMetadata
-{
-	std::string DisplayName;
-	std::string fileExtension;
-	std::function<asset::AssetPtrStrong(std::filesystem::path filePath)> createNewAsset;
-	std::function<asset::AssetPtrStrong()> createEmptyAsset;
-	std::function<void(std::filesystem::path filePath)> onAssetDeleted;
-};
 
 class AssetManager
 {
@@ -47,6 +27,8 @@ public:
 		return AssetManager::get()->mpAssetMemory->make_shared<T>(args...);
 	}
 
+	asset::TypeRegistry typeRegistry;
+
 	/**
 	 * Registers all known asset types.
 	 * Should only ever be called once.
@@ -62,17 +44,6 @@ public:
 	void scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type);
 	void addScannedAsset(AssetPath metadata, std::filesystem::path absolutePath, EAssetSerialization type);
 
-	template <typename TAsset>
-	void registerType()
-	{
-		this->registerType(TAsset::StaticType(), ASSET_TYPE_METADATA(TAsset));
-	}
-	void registerType(AssetType type, AssetTypeMetadata metadata);
-	std::set<AssetType> getAssetTypes() const;
-	bool isValidAssetExtension(std::string extension) const;
-
-	AssetTypeMetadata getAssetTypeMetadata(AssetType type) const;
-	std::string getAssetTypeDisplayName(AssetType type) const;
 	std::optional<AssetPath> getAssetMetadata(std::filesystem::path filePath) const;
 	AssetPath* getAssetMetadataPtr(std::filesystem::path filePath);
 
@@ -106,22 +77,6 @@ public:
 
 private:
 	std::filesystem::path mActiveDirectory;
-
-	/**
-	 * A unique set of all known asset types.
-	 * New types can be registered with `registerType`.
-	 */
-	std::set<AssetType> mAssetTypes;
-	/**
-	 * A list of all asset extensions.
-	 * Populated when an asset type is registered via `registerType`.
-	 */
-	std::set<std::string> mAssetTypeExtensions;
-	/**
-	 * A mapping of a unique asset type to its metadata information.
-	 * Populated when an asset type is registered via `registerType`.
-	 */
-	std::unordered_map<AssetType, AssetTypeMetadata> mAssetTypeMap;
 
 	/**
 	 * A map of asset extension (see `AssetTypeMetadata::fileExtension`) to all known asset paths (see `mScannedAssetMetadataByPath`).

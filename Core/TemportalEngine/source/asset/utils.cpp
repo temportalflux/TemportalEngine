@@ -13,7 +13,7 @@ std::shared_ptr<asset::Asset> readAssetFromDisk(std::filesystem::path filePath, 
 	assert(std::filesystem::exists(filePath));
 	
 	auto assetManager = asset::AssetManager::get();
-	if (!assetManager->isValidAssetExtension(filePath.extension().string()))
+	if (!assetManager->typeRegistry.isValidAssetExtension(filePath.extension().string()))
 	{
 		return nullptr;
 	}
@@ -31,7 +31,7 @@ std::shared_ptr<asset::Asset> readAssetFromDisk(std::filesystem::path filePath, 
 	}
 
 	// Determine the functor for loading this asset type
-	auto asset = assetManager->getAssetTypeMetadata(assetType).createEmptyAsset();
+	auto asset = assetManager->typeRegistry.getTypeData(assetType).createEmptyAsset();
 	asset->readFromDisk(filePath, type);
 	return asset;
 }

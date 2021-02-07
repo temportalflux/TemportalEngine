@@ -48,14 +48,14 @@ std::shared_ptr<memory::MemoryChunk> AssetManager::getAssetMemory() const
 
 void AssetManager::queryAssetTypes()
 {
-	this->registerType<Font>();
-	this->registerType<Model>();
-	this->registerType<Pipeline>();
-	this->registerType<Project>();
-	this->registerType<RenderPass>();
-	this->registerType<Shader>();
-	this->registerType<Texture>();
-	this->registerType<TextureSampler>();
+	this->typeRegistry.registerType<Font>();
+	this->typeRegistry.registerType<Model>();
+	this->typeRegistry.registerType<Pipeline>();
+	this->typeRegistry.registerType<Project>();
+	this->typeRegistry.registerType<RenderPass>();
+	this->typeRegistry.registerType<Shader>();
+	this->typeRegistry.registerType<Texture>();
+	this->typeRegistry.registerType<TextureSampler>();
 }
 
 void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EAssetSerialization type)
@@ -71,7 +71,7 @@ void AssetManager::scanAssetDirectory(std::filesystem::path directory, asset::EA
 		totalFilesScanned++;
 
 		// Ignore all files whose extension is not known
-		if (!this->isValidAssetExtension(entry.path().extension().string())) continue;
+		if (!this->typeRegistry.isValidAssetExtension(entry.path().extension().string())) continue;
 
 		foundAssetCount++;
 
@@ -110,45 +110,9 @@ void AssetManager::addScannedAsset(AssetPath metadata, std::filesystem::path abs
 
 	// Read the assets in their actual type to determine any asset references
 	{
-		auto asset = this->getAssetTypeMetadata(metadata.type()).createEmptyAsset();
+		auto asset = this->typeRegistry.getTypeData(metadata.type()).createEmptyAsset();
 		asset->readFromDisk(absolutePath, type);
 		this->setAssetReferences(absolutePath, asset->getReferencedAssetPaths());
-	}
-}
-
-std::set<AssetType> AssetManager::getAssetTypes() const
-{
-	return this->mAssetTypes;
-}
-
-bool AssetManager::isValidAssetExtension(std::string extension) const
-{
-	return this->mAssetTypeExtensions.find(extension) != this->mAssetTypeExtensions.end();
-}
-
-AssetTypeMetadata AssetManager::getAssetTypeMetadata(AssetType type) const
-{
-	auto iter = this->mAssetTypeMap.find(type);
-	assert(iter != this->mAssetTypeMap.end());
-	return iter->second;
-}
-
-std::string AssetManager::getAssetTypeDisplayName(AssetType type) const
-{
-	return this->getAssetTypeMetadata(type).DisplayName;
-}
-
-void AssetManager::registerType(AssetType type, AssetTypeMetadata metadata)
-{
-	// Assumes that the type has not been registered before
-	assert(this->mAssetTypes.find(type) == this->mAssetTypes.end());
-	// Add type and metadata to mappings
-	this->mAssetTypes.insert(type);
-	this->mAssetTypeMap.insert(std::make_pair(type, metadata));
-	// Ensure that if the extension isn't already cataloged, it gets added to the set
-	if (!this->isValidAssetExtension(metadata.fileExtension))
-	{
-		this->mAssetTypeExtensions.insert(metadata.fileExtension);
 	}
 }
 
@@ -185,9 +149,7 @@ std::vector<AssetPath> AssetManager::getAssetList(AssetType type) const
 
 std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem::path filePath)
 {
-	auto typeMapEntry = this->mAssetTypeMap.find(type);
-	assert(typeMapEntry != this->mAssetTypeMap.end());
-	auto asset = typeMapEntry->second.createNewAsset(filePath);
+	auto asset = this->typeRegistry.getTypeData(type).createNewAsset(filePath);
 	asset->writeToDisk(filePath, EAssetSerialization::Json);
 	this->addScannedAsset({ type, filePath }, filePath, EAssetSerialization::Json);
 	return asset;
@@ -195,7 +157,7 @@ std::shared_ptr<Asset> AssetManager::createAsset(AssetType type, std::filesystem
 
 void AssetManager::deleteFile(std::filesystem::path filePath)
 {
-	if (this->isValidAssetExtension(filePath.extension().string()))
+	if (this->typeRegistry.isValidAssetExtension(filePath.extension().string()))
 	{
 		auto assetMeta = this->getAssetMetadata(filePath);
 		if (!assetMeta.has_value())
@@ -204,7 +166,7 @@ void AssetManager::deleteFile(std::filesystem::path filePath)
 		}
 		else
 		{
-			auto assetTypeMeta = this->getAssetTypeMetadata(assetMeta.value().type());
+			auto assetTypeMeta = this->typeRegistry.getTypeData(assetMeta.value().type());
 			assetTypeMeta.onAssetDeleted(filePath);
 		}
 	}
@@ -286,7 +248,7 @@ void AssetManager::moveAsset(AssetPath const& prev, AssetPath const& next)
 
 	// Load the asset so extra data can be moved and asset references can be updated
 	{
-		auto asset = this->getAssetTypeMetadata(prev.type()).createEmptyAsset();
+		auto asset = this->typeRegistry.getTypeData(prev.type()).createEmptyAsset();
 		asset->readFromDisk(oldAbsolutePath, EAssetSerialization::Json);
 		// move any extra data for things like shaders and textures, which store the actual content in a different file
 		asset->onPreMoveAsset(oldAbsolutePath, newAbsolutePath);

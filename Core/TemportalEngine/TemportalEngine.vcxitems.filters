@@ -429,6 +429,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetArchive.cpp">
       <Filter>asset</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetTypeRegistry.cpp">
+      <Filter>asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\Api.h" />
@@ -923,6 +926,9 @@
       <Filter>utility</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetArchive.hpp">
+      <Filter>asset</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetTypeRegistry.hpp">
       <Filter>asset</Filter>
     </ClInclude>
   </ItemGroup>

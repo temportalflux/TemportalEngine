@@ -74,7 +74,7 @@ std::shared_ptr<asset::Asset> Archive::readNextEntry()
 			assetType = assetBase->getAssetType();
 		}
 
-		asset = asset::AssetManager::get()->getAssetTypeMetadata(assetType).createEmptyAsset();
+		asset = asset::AssetManager::get()->typeRegistry.getTypeData(assetType).createEmptyAsset();
 
 		// Actually load the asset
 		{

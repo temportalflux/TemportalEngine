@@ -150,7 +150,7 @@ void Game::initializeAssetTypes()
 {
 	auto assetManager = Game::assetManager();
 	assetManager->queryAssetTypes();
-	assetManager->registerType<asset::BlockType>();
+	assetManager->typeRegistry.registerType<asset::BlockType>();
 }
 
 bool Game::initializeSystems()

@@ -19,6 +19,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetArchive.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetPath.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\AssetTypeRegistry.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\Font.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\ModelAsset.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\asset\PipelineAsset.cpp" />
@@ -137,6 +138,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\Asset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetArchive.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetHelper.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetTypeRegistry.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\ModelAsset.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetPath.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetManager.hpp" />
