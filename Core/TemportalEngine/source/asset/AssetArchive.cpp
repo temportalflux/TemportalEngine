@@ -80,6 +80,7 @@ std::shared_ptr<asset::Asset> Archive::readNextEntry()
 		{
 			auto is = std::stringstream(binaryData, std::stringstream::in | std::stringstream::binary);
 			cereal::PortableBinaryInputArchive cerealArchive(is);
+			asset->mFilePath = this->reader()->entryPath();
 			asset->decompile(cerealArchive, false);
 		}
 	}

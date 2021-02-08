@@ -6,6 +6,8 @@
 #include "utility/TimeUtils.hpp"
 #include "Module.hpp"
 
+void initializePackages();
+
 int main(int argc, char *argv[])
 {
 	OPTICK_EVENT();
@@ -25,29 +27,48 @@ int main(int argc, char *argv[])
 	engine::Engine::startLogSystem(logFileName);
 	auto logMain = DeclareLog("main", LOG_INFO);
 
-	auto modulesDir = std::filesystem::absolute("Modules");
-	if (std::filesystem::exists(modulesDir))
+	game::Game::Create(argc, argv);
+	initializePackages();
+
 	{
-		for (auto const& entry : std::filesystem::directory_iterator(modulesDir))
+		auto pGame = game::Game::Get();
+		if (!pGame->initializeSystems())
+		{
+			game::Game::Destroy();
+			engine::Engine::stopLogSystem();
+			return 0;
+		}
+
+		pGame->openProject();
+
+		pGame->init();
+		pGame->run();
+		pGame->uninit();
+	}
+
+	game::Game::Destroy();
+	engine::Engine::stopLogSystem();
+	
+	return 0;
+}
+
+void initializePackages()
+{
+	auto packagesDir = std::filesystem::absolute("packages");
+	if (std::filesystem::exists(packagesDir))
+	{
+		// Initialize all dll modules
+		for (auto const& entry : std::filesystem::directory_iterator(packagesDir))
 		{
 			if (!entry.is_directory()) continue;
 			auto dllPath = entry.path() / (entry.path().stem().string() + ".dll");
 			module_ext::loadModule(dllPath);
 		}
-	}
-
-	{
-		auto pGame = game::Game::Create(argc, argv);
-		if (pGame->initializeSystems())
+		// Initialize all pak assets
+		for (auto const& entry : std::filesystem::directory_iterator(packagesDir))
 		{
-			pGame->openProject();
-			pGame->init();
-			pGame->run();
-			pGame->uninit();
+			if (!entry.is_directory()) continue;
+			engine::Engine::Get()->loadAssetArchive(entry.path() / (entry.path().stem().string() + ".pak"));
 		}
 	}
-	game::Game::Destroy();
-	engine::Engine::stopLogSystem();
-	
-	return 0;
 }

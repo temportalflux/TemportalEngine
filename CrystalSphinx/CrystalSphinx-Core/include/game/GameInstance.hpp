@@ -12,6 +12,7 @@
 #include "utility/Guid.hpp"
 
 class Controller;
+FORWARD_DEF(NS_ASSET, class Asset);
 FORWARD_DEF(NS_ASSET, class AssetManager);
 
 NS_EVCS
@@ -80,6 +81,8 @@ private:
 	void registerCommands();
 	void initializeAssetTypes();
 	void registerECSTypes(evcs::Core *ecs);
+
+	void onBlockAssetLoaded(std::string const& moduleName, std::shared_ptr<asset::Asset> pAsset);
 
 	void update(f32 deltaTime);
 

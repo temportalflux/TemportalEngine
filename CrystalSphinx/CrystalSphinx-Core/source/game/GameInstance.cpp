@@ -151,6 +151,15 @@ void Game::initializeAssetTypes()
 	auto assetManager = Game::assetManager();
 	assetManager->queryAssetTypes();
 	assetManager->typeRegistry.registerType<asset::BlockType>();
+
+	assetManager->typeRegistry.addArchiveLoadCallback<asset::BlockType>(
+		std::bind(&Game::onBlockAssetLoaded, this, std::placeholders::_1, std::placeholders::_2)
+	);
+}
+
+void Game::onBlockAssetLoaded(std::string const& moduleName, std::shared_ptr<asset::Asset> pAsset)
+{
+	// TODO: load block asset types
 }
 
 bool Game::initializeSystems()
