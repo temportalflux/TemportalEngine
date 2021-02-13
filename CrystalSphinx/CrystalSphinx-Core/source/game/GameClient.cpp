@@ -32,14 +32,14 @@
 #include "render/line/SimpleLineRenderer.hpp"
 #include "render/line/ChunkBoundaryRenderer.hpp"
 #include "render/model/SkinnedModelManager.hpp"
-#include "render/ui/UIRenderer.hpp"
 #include "render/voxel/BlockInstanceMap.hpp"
 #include "render/voxel/VoxelGridRenderer.hpp"
 #include "render/voxel/VoxelModelManager.hpp"
 #include "resource/ResourceManager.hpp"
 #include "ui/DebugHUD.hpp"
-#include "ui/TextLogMenu.hpp"
 #include "ui/UIWidgets.hpp"
+#include "ui/TextLogMenu.hpp"
+#include "ui/WidgetRenderer.hpp"
 #include "utility/Colors.hpp"
 #include "window/Window.hpp"
 #include "world/World.hpp"
@@ -64,7 +64,7 @@ std::shared_ptr<graphics::ImmediateRenderSystem> Client::renderer() { return thi
 std::shared_ptr<graphics::SkinnedModelManager> Client::modelManager() { return this->mpSkinnedModelManager; }
 std::shared_ptr<graphics::EntityInstanceBuffer> Client::entityInstances() { return this->mpEntityInstanceBuffer; }
 std::shared_ptr<graphics::TextureRegistry> Client::textureRegistry() { return this->mpTextureRegistry; }
-std::shared_ptr<ui::FontOwner> Client::uiFontOwner() { return this->mpUIRenderer; }
+std::shared_ptr<ui::WidgetRenderer> Client::widgetRenderer() { return this->mpUIRenderer; }
 std::shared_ptr<ui::TextLogMenu> Client::chat() { return this->mpMenuTextLog; }
 game::ClientSettings& Client::settings() { return this->mClientSettings; }
 
@@ -859,7 +859,7 @@ void Client::createChunkBoundaryRenderer()
 
 void Client::createUIRenderer()
 {
-	this->mpUIRenderer = std::make_shared<graphics::UIRenderer>();
+	this->mpUIRenderer = std::make_shared<ui::WidgetRenderer>();
 	this->mpUIRenderer->setTextPipeline(asset::TypedAssetPath<asset::Pipeline>::Create(
 		"assets/render/ui/UIPipeline.te-asset"
 	));

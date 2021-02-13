@@ -931,5 +931,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\asset\AssetTypeRegistry.hpp">
       <Filter>asset</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp">
+      <Filter>render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

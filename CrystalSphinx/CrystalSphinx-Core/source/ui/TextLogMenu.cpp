@@ -25,7 +25,7 @@ TextLogMenu::TextLogMenu()
 		;
 
 	(*(this->mpInputText = std::make_shared<ui::Input>()))
-		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->widgetRenderer())
 		.setParent(this->mpInputBarBkgd)
 		.setAnchor({ 0, 0.5 }).setPivot({ 0, 0.5 })
 		.setFont("unispace").setFontSize(20)
@@ -41,7 +41,7 @@ TextLogMenu::TextLogMenu()
 
 	this->mDisplayableMessageCount = 10;
 	(*(this->mpChatLog = std::make_shared<ui::Text>()))
-		.setFontOwner(game::Game::Get()->client()->uiFontOwner())
+		.setFontOwner(game::Game::Get()->client()->widgetRenderer())
 		.setParent(this->mpLogBkgd)
 		.setParentFlag(Widget::EParentFlags::eVisibility, false)
 		.setFillWidth(true)

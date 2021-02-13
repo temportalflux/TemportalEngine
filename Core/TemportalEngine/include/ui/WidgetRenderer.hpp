@@ -1,5 +1,6 @@
 #pragma once
 
+#include "render/IPipelineRenderer.hpp"
 #include "asset/TypedAssetPath.hpp"
 #include "asset/PipelineAsset.hpp"
 #include "graphics/Descriptor.hpp"
@@ -9,6 +10,7 @@
 #include "ui/Core.hpp"
 #include "ui/Resolution.hpp"
 
+FORWARD_DEF(NS_ASSET, class Font);
 FORWARD_DEF(NS_GRAPHICS, class Command);
 FORWARD_DEF(NS_GRAPHICS, class CommandPool);
 FORWARD_DEF(NS_GRAPHICS, class DescriptorPool);
@@ -19,13 +21,9 @@ NS_UI
 class Image;
 class Widget;
 
-class FontOwner
-{
-public:
-	virtual graphics::Font const& getFont(std::string const& fontId) const = 0;
-};
-
-class WidgetRenderer : public std::enable_shared_from_this<WidgetRenderer>
+class WidgetRenderer
+	: public std::enable_shared_from_this<WidgetRenderer>
+	, public graphics::IPipelineRenderer
 {
 
 public:
@@ -36,9 +34,11 @@ public:
 
 	WidgetRenderer& setImagePipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
 	WidgetRenderer& setTextPipeline(asset::TypedAssetPath<asset::Pipeline> const& path);
+	WidgetRenderer& addFont(std::string fontId, std::shared_ptr<asset::Font> asset);
 
-	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device);
-	void initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool);
+	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
+	void setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass) override;
+	void initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool) override;
 
 	void add(std::weak_ptr<ui::Widget> widget);
 	void changeZLayer(std::weak_ptr<ui::Widget> widget, ui32 newZ);
@@ -49,13 +49,17 @@ public:
 	std::shared_ptr<graphics::Pipeline>& textPipeline() { return this->mTextPipeline; }
 	graphics::DescriptorLayout& textDescriptorLayout() { return this->mTextDescriptorLayout; }
 	graphics::ImageSampler& textSampler() { return this->mTextSampler; }
+	graphics::Font const& getFont(std::string const& fontId) const;
 
-	void createPipeline(math::Vector2UInt const& resolution);
-	void record(graphics::Command *command);
+	void createPipeline(math::Vector2UInt const& resolution) override;
+	void record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet) override;
 
 	void setAnyWidgetIsDirty();
 	bool hasChanges() const;
 	void commitWidgets();
+
+	void destroyRenderChain() override;
+	void destroyRenderDevices();
 
 private:
 	std::weak_ptr<graphics::GraphicsDevice> mpDevice;
@@ -70,6 +74,10 @@ private:
 	std::shared_ptr<graphics::Pipeline> mTextPipeline;
 	graphics::DescriptorLayout mTextDescriptorLayout;
 	graphics::ImageSampler mTextSampler;
+
+	// A map of all fonts, their typefaces, and font sizes, including their atlases for each combination
+	std::map<std::string, uIndex> mFontIds;
+	std::vector<graphics::Font> mFonts;
 
 	struct Layer
 	{

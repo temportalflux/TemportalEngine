@@ -43,7 +43,7 @@ graphics::AttributeBinding Text::binding()
 		;
 }
 
-Text& Text::setFontOwner(std::weak_ptr<ui::FontOwner> fontOwner)
+Text& Text::setFontOwner(std::weak_ptr<ui::WidgetRenderer> fontOwner)
 {
 	this->mpFontOwner = fontOwner;
 	return *this;

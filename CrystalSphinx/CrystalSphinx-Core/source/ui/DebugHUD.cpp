@@ -14,7 +14,7 @@ using namespace ui;
 DebugHUD::DebugHUD()
 {
 	auto pClient = game::Game::Get()->client();
-	auto pFontOwner = pClient->uiFontOwner();
+	auto pFontOwner = pClient->widgetRenderer();
 
 	(*(this->mpAlphabet = std::make_shared<ui::Text>()))
 		.setFontOwner(pFontOwner)

@@ -7,9 +7,9 @@
 #include "graphics/FontAtlas.hpp"
 
 FORWARD_DEF(NS_GRAPHICS, class Font);
+FORWARD_DEF(NS_GRAPHICS, class WidgetRenderer);
 
 NS_UI
-class FontOwner;
 
 class Text : public ui::Widget
 {
@@ -24,7 +24,7 @@ public:
 
 	static graphics::AttributeBinding binding();
 
-	Text& setFontOwner(std::weak_ptr<ui::FontOwner> fontOwner);
+	Text& setFontOwner(std::weak_ptr<ui::WidgetRenderer> fontOwner);
 
 	void setDevice(std::weak_ptr<graphics::GraphicsDevice> device) override;
 
@@ -100,7 +100,7 @@ protected:
 
 private:
 
-	std::weak_ptr<ui::FontOwner> mpFontOwner;
+	std::weak_ptr<ui::WidgetRenderer> mpFontOwner;
 
 	struct Configuration
 	{

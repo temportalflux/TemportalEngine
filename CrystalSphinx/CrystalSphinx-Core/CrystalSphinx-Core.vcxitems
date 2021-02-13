@@ -47,14 +47,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)include\physics\ChunkCollisionManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\registry\VoxelType.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\EntityInstanceBuffer.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\IPipelineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\ChunkBoundaryRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\LineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\line\SimpleLineRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ImmediateRenderSystem.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\model\SkinnedModelManager.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\TextureRegistry.hpp" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)include\render\ui\UIRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\BlockInstanceMap.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelGridRenderer.hpp" />
     <ClInclude Include="$(MSBuildThisFileDirectory)include\render\voxel\VoxelModelManager.hpp" />
@@ -117,7 +115,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ImmediateRenderSystem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\model\SkinnedModelManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\TextureRegistry.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)source\render\ui\UIRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\BlockInstanceMap.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelGridRenderer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)source\render\voxel\VoxelModelManager.cpp" />

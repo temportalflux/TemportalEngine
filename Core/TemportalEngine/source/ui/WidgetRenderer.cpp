@@ -1,5 +1,6 @@
 #include "ui/WidgetRenderer.hpp"
 
+#include "asset/Font.hpp"
 #include "game/GameClient.hpp"
 #include "game/GameInstance.hpp"
 #include "graphics/assetHelpers.hpp"
@@ -13,12 +14,35 @@ ui::WidgetRenderer::WidgetRenderer()
 	: mResolution({})
 	, mbAnyWidgetHasChanges(false)
 {
-
+	this->textSampler()
+		.setFilter(graphics::FilterMode::Enum::Linear, graphics::FilterMode::Enum::Linear)
+		.setAddressMode({
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge
+										})
+		.setAnistropy(std::nullopt)
+		.setBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
+		.setNormalizeCoordinates(true)
+		.setCompare(std::nullopt)
+		.setMipLOD(graphics::SamplerLODMode::Enum::Nearest, 0, { 0, 0 });
+	this->imageSampler()
+		.setFilter(graphics::FilterMode::Enum::Nearest, graphics::FilterMode::Enum::Nearest)
+		.setAddressMode({
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge,
+			graphics::SamplerAddressMode::Enum::ClampToEdge
+										})
+		.setAnistropy(16.0f)
+		.setBorderColor(graphics::BorderColor::Enum::BlackOpaqueInt)
+		.setNormalizeCoordinates(true)
+		.setCompare(std::nullopt)
+		.setMipLOD(graphics::SamplerLODMode::Enum::Linear, 0, { 0, 0 });
 }
 
 ui::WidgetRenderer::~WidgetRenderer()
 {
-
+	destroyRenderDevices();
 }
 
 ui::WidgetRenderer::LayerFindResult ui::WidgetRenderer::findLayer(ui32 z)
@@ -102,6 +126,35 @@ ui::WidgetRenderer& ui::WidgetRenderer::setTextPipeline(asset::TypedAssetPath<as
 	return *this;
 }
 
+ui::WidgetRenderer& ui::WidgetRenderer::addFont(std::string fontId, std::shared_ptr<asset::Font> asset)
+{
+	OPTICK_EVENT();
+	auto font = graphics::Font();
+	font.setSampler(&this->textSampler());
+	auto glyphs = std::vector<asset::Font::Glyph>();
+	asset->getSDF(font.atlasSize(), font.atlasPixels(), glyphs);
+
+	for (auto const& glyph : glyphs)
+	{
+		font.addGlyph(glyph.asciiId, std::move(graphics::Font::GlyphSprite{
+			glyph.atlasPos, glyph.atlasSize,
+			glyph.pointBasis, glyph.size, glyph.bearing, glyph.advance
+		}));
+	}
+
+	uIndex idx = this->mFonts.size();
+	this->mFonts.push_back(std::move(font));
+	this->mFontIds.insert(std::make_pair(fontId, idx));
+	return *this;
+}
+
+graphics::Font const& ui::WidgetRenderer::getFont(std::string const& fontId) const
+{
+	auto fontIter = this->mFontIds.find(fontId);
+	assert(fontIter != this->mFontIds.end());
+	return this->mFonts[fontIter->second];
+}
+
 void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> device)
 {
 	this->mpDevice = device;
@@ -115,6 +168,11 @@ void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> devic
 	this->textPipeline()->setDevice(device);
 	this->textDescriptorLayout().setDevice(device).create();
 
+	for (auto& font : this->mFonts)
+	{
+		font.setDevice(device);
+	}
+
 	for (auto const& layer : this->mLayers)
 	{
 		for (auto const& widget : layer.widgets)
@@ -124,10 +182,22 @@ void ui::WidgetRenderer::setDevice(std::weak_ptr<graphics::GraphicsDevice> devic
 	}
 }
 
+void ui::WidgetRenderer::setRenderPass(std::shared_ptr<graphics::RenderPass> renderPass)
+{
+	this->imagePipeline()->setRenderPass(renderPass);
+	this->textPipeline()->setRenderPass(renderPass);
+}
+
 void ui::WidgetRenderer::initializeData(graphics::CommandPool *pool, graphics::DescriptorPool *descriptorPool)
 {
 	this->mpTransientPool = pool;
 	this->mpDescriptorPool = descriptorPool;
+
+	for (auto& font : this->mFonts)
+	{
+		this->textDescriptorLayout().createSet(descriptorPool, font.descriptorSet());
+		font.initializeImage(pool);
+	}
 
 	for (auto const& layer : this->mLayers)
 	{
@@ -191,7 +261,7 @@ void ui::WidgetRenderer::commitWidget(std::shared_ptr<ui::Widget> widget)
 	}
 }
 
-void ui::WidgetRenderer::record(graphics::Command *command)
+void ui::WidgetRenderer::record(graphics::Command *command, uIndex idxFrame, TGetGlobalDescriptorSet getGlobalDescriptorSet)
 {
 	OPTICK_EVENT()
 	for (auto it = this->mLayers.begin(); it != this->mLayers.end(); ++it)
@@ -218,4 +288,22 @@ void ui::WidgetRenderer::record(graphics::Command *command)
 			));
 		}
 	}
+}
+
+void ui::WidgetRenderer::destroyRenderChain()
+{
+	this->imagePipeline()->invalidate();
+	this->textPipeline()->invalidate();
+}
+
+void ui::WidgetRenderer::destroyRenderDevices()
+{
+	this->imageSampler().destroy();
+	this->imageDescriptorLayout().invalidate();
+
+	this->textSampler().destroy();
+	this->textDescriptorLayout().invalidate();
+
+	this->mFontIds.clear();
+	this->mFonts.clear();
 }

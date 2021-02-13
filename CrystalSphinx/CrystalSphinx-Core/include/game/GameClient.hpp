@@ -23,13 +23,13 @@ FORWARD_DEF(NS_GRAPHICS, class RenderedString);
 FORWARD_DEF(NS_GRAPHICS, class SimpleLineRenderer);
 FORWARD_DEF(NS_GRAPHICS, class SkinnedModelManager);
 FORWARD_DEF(NS_GRAPHICS, class TextureRegistry);
-FORWARD_DEF(NS_GRAPHICS, class UIRenderer);
 FORWARD_DEF(NS_GRAPHICS, class VoxelGridRenderer);
 FORWARD_DEF(NS_RESOURCE, class PackManager);
 FORWARD_DEF(NS_SAVE_DATA, class Instance);
 FORWARD_DEF(NS_UI, class FontOwner);
 FORWARD_DEF(NS_UI, class DebugHUD);
 FORWARD_DEF(NS_UI, class TextLogMenu);
+FORWARD_DEF(NS_UI, class WidgetRenderer);
 FORWARD_DEF(NS_WORLD, class BlockInstanceBuffer);
 
 NS_GAME
@@ -45,7 +45,7 @@ public:
 	std::shared_ptr<graphics::SkinnedModelManager> modelManager();
 	std::shared_ptr<graphics::EntityInstanceBuffer> entityInstances();
 	std::shared_ptr<graphics::TextureRegistry> textureRegistry();
-	std::shared_ptr<ui::FontOwner> uiFontOwner();
+	std::shared_ptr<ui::WidgetRenderer> widgetRenderer();
 	std::shared_ptr<ui::TextLogMenu> chat();
 	game::ClientSettings& settings();
 
@@ -90,7 +90,7 @@ private:
 	std::shared_ptr<graphics::VoxelGridRenderer> mpVoxelGridRenderer;
 	std::shared_ptr<graphics::SimpleLineRenderer> mpWorldAxesRenderer;
 	std::shared_ptr<graphics::ChunkBoundaryRenderer> mpChunkBoundaryRenderer;
-	std::shared_ptr<graphics::UIRenderer> mpUIRenderer;
+	std::shared_ptr<ui::WidgetRenderer> mpUIRenderer;
 	
 	std::shared_ptr<graphics::SkinnedModelManager> mpSkinnedModelManager;
 	std::shared_ptr<graphics::EntityInstanceBuffer> mpEntityInstanceBuffer;
