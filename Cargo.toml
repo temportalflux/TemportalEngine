@@ -9,10 +9,13 @@ build = "build.rs"
 
 [dependencies]
 temportal-math = { path = "../temportal-math" }
-sdl2 = "0.34"
-ash = "0.32.1"
+temportal-graphics = { path = "../temportal-graphics" }
 egui = "0.11.0"
 physx = "0.11.0"
+
+[dependencies.sdl2]
+version = "0.34"
+features = ["raw-window-handle"]
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
