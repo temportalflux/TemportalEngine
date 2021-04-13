@@ -9,7 +9,7 @@ fn workspace_path_str() -> String {
 fn dependency_path(module: &String, arch: &str) -> PathBuf {
 	let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 	PathBuf::from(format!(
-		"{}/../dependencies/{}/x{}",
+		"{}/../externs/{}/x{}",
 		manifest_dir, module, arch
 	))
 }
