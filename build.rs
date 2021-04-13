@@ -1,17 +1,10 @@
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
+use extern_reader;
 
 fn workspace_path_str() -> String {
 	format!("{}/..", env::var("CARGO_MANIFEST_DIR").unwrap())
-}
-
-fn dependency_path(module: &String, arch: &str) -> PathBuf {
-	let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-	PathBuf::from(format!(
-		"{}/../externs/{}/x{}",
-		manifest_dir, module, arch
-	))
 }
 
 fn is_on_any_platform(platforms: Vec<&str>) -> bool {
@@ -38,10 +31,15 @@ fn main() -> Result<(), Box<dyn Error>> {
 		"32"
 	};
 
-	let dependencies = [String::from("sdl2")];
+	let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+	let mut ext_reader = extern_reader::ExternReader::new();
+	ext_reader.set_root(Some(format!("{}/../", manifest_dir)));
+	let externs = ext_reader.get_externs()?;
 
-	for dep in dependencies.iter() {
-		let dep_path = dependency_path(&dep, architecture);
+	for external in externs {
+		let mut dep_path = ext_reader.extern_dir();
+		dep_path.push(&external.alias);
+		dep_path.push(format!("x{}", architecture));
 		println!("cargo:rustc-link-search=all={}", dep_path.display());
 		copy_dlls_from_dependency(&dep_path)?;
 	}
@@ -50,6 +48,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn copy_dlls_from_dependency(dep_path: &PathBuf) -> Result<(), Box<dyn Error>> {
+	println!("Copying dlls from {:?}", dep_path);
 	for entry in std::fs::read_dir(dep_path)? {
 		let entry_path = entry.expect("Invalid fs entry").path();
 		if let Some(file_name) = entry_path.file_name() {
