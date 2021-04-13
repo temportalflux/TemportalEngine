@@ -1,7 +1,7 @@
+use extern_reader;
 use std::env;
 use std::error::Error;
 use std::path::PathBuf;
-use extern_reader;
 
 fn workspace_path_str() -> String {
 	format!("{}/..", env::var("CARGO_MANIFEST_DIR").unwrap())
