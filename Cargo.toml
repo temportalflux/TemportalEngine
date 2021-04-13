@@ -12,6 +12,7 @@ temportal-math = { path = "../temportal-math" }
 sdl2 = "0.34"
 ash = "0.32.1"
 egui = "0.11.0"
+physx = "0.11.0"
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
