@@ -1,13 +1,16 @@
 extern crate sdl2;
 
-//use sdl2::event::Event;
-//use sdl2::keyboard::Keycode;
-//use sdl2::pixels::Color;
-use std::error::Error;
-//use std::time::Duration;
 use structopt::StructOpt;
-use temportal_graphics;
-use temportal_math::*;
+use temportal_graphics::{
+	self, device::physical, instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode,
+	QueueFlags,
+};
+
+#[path = "display/lib.rs"]
+pub mod display;
+
+#[path = "world/lib.rs"]
+pub mod world;
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -19,44 +22,6 @@ struct Opt {
 pub fn should_enable_validation() -> bool {
 	Opt::from_args().validation_layers
 }
-
-// Y-Up Right-Handed is +X, +Y, -Z
-pub fn global_right() -> Vector<f64, 3> {
-	Vector::new([1.0, 0.0, 0.0])
-}
-pub fn global_up() -> Vector<f64, 3> {
-	Vector::new([0.0, 1.0, 0.0])
-}
-pub fn global_forward() -> Vector<f64, 3> {
-	Vector::new([0.0, 0.0, -1.0])
-}
-
-struct EngineDisplay {
-	sdl: sdl2::Sdl,
-}
-
-impl EngineDisplay {
-	pub fn video_subsystem(&self) -> sdl2::VideoSubsystem {
-		self.sdl.video().unwrap()
-	}
-}
-
-struct Window {
-	window: sdl2::video::Window,
-}
-
-impl Window {
-	pub fn new(display: &EngineDisplay, title: &str, width: u32, height: u32) -> Window {
-		let mut builder = display.video_subsystem().window(title, width, height);
-		let window = builder.position_centered().vulkan().build().unwrap();
-		Window { window }
-	}
-}
-
-use temportal_graphics::{
-	device::physical, instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode,
-	QueueFlags,
-};
 
 fn vulkan_device_constraints() -> Vec<physical::Constraint> {
 	use physical::Constraint::*;
@@ -84,12 +49,9 @@ fn vulkan_device_constraints() -> Vec<physical::Constraint> {
 	]
 }
 
-pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
-	let display = EngineDisplay {
-		sdl: sdl2::init().unwrap(),
-	};
-
-	let window = Window::new(&display, "Demo1", 800, 600);
+pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+	let display = display::EngineDisplay::new();
+	let window = display::Window::new(&display, "Demo1", 800, 600);
 
 	let ctx = Context::new()?;
 	let app_info = AppInfo::new(&ctx)
@@ -97,10 +59,10 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 		.application("Demo1", utility::make_version(0, 1, 0));
 	let instance = instance::Info::new()
 		.app_info(app_info.clone())
-		.set_window(&window.window)
+		.set_window(&window)
 		.set_use_validation(should_enable_validation())
 		.create_object(&ctx)?;
-	let surface = instance.create_surface(&window.window);
+	let surface = instance.create_surface(&window);
 
 	let constraints = vulkan_device_constraints();
 	let physical_device = match instance.find_physical_device(&constraints, &surface) {
@@ -117,6 +79,11 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 	Ok(())
 }
+
+//use sdl2::event::Event;
+//use sdl2::keyboard::Keycode;
+//use sdl2::pixels::Color;
+//use std::time::Duration;
 
 // let mut canvas = window.window.into_canvas().build().unwrap();
 
