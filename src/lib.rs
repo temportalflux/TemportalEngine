@@ -99,7 +99,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		frame_count, permitted_frame_count
 	);
 
-	let _swapchain = swapchain::Info::new()
+	let swapchain = swapchain::Info::new()
 		.set_image_count(frame_count)
 		.set_image_format(Format::B8G8R8A8_SRGB)
 		.set_image_color_space(ColorSpace::SRGB_NONLINEAR_KHR)
@@ -112,6 +112,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.set_present_mode(physical_device.selected_present_mode)
 		.set_is_clipped(true)
 		.create_object(&logical_device, &surface);
+	let frame_images = swapchain.get_images(&logical_device);
+	println!("Found {} frame images", frame_images.len());
 
 	Ok(())
 }
