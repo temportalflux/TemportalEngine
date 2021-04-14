@@ -41,6 +41,32 @@ impl Window {
 	}
 }
 
+fn vulkan_device_constraints() -> Vec<temportal_graphics::PhysicalDeviceConstraint> {
+	use temportal_graphics::PhysicalDeviceConstraint::*;
+	use temportal_graphics::*;
+	vec![
+		HasQueueFamily(QueueFlags::GRAPHICS, /*requires_surface*/ true),
+		HasSurfaceFormats(SurfaceConstraints {
+			formats: vec![Format::B8G8R8A8_SRGB],
+			color_spaces: vec![ColorSpace::SRGB_NONLINEAR_KHR],
+		}),
+		PrioritizedSet(
+			vec![
+				CanPresentWith(PresentMode::MAILBOX_KHR, Some(1)),
+				CanPresentWith(PresentMode::FIFO_KHR, None),
+			],
+			false,
+		),
+		PrioritizedSet(
+			vec![
+				IsDeviceType(PhysicalDeviceKind::DISCRETE_GPU, Some(100)),
+				IsDeviceType(PhysicalDeviceKind::INTEGRATED_GPU, Some(0)),
+			],
+			false,
+		),
+	]
+}
+
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 	let display = EngineDisplay {
 		sdl: sdl2::init().unwrap(),
@@ -53,30 +79,43 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 		.engine("TemportalEngine", temportal_graphics::version!(0, 1, 0))
 		.application("Demo1", temportal_graphics::version!(0, 1, 0));
 	let instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
-	let _surface = instance.create_surface(&window.window);
+	let surface = instance.create_surface(&window.window);
 
-	// let mut canvas = window.window.into_canvas().build().unwrap();
-
-	// canvas.set_draw_color(Color::RGB(50, 0, 50));
-	// canvas.clear();
-	// canvas.present();
-
-	// // Game loop
-	// let mut event_pump = display.sdl.event_pump().unwrap();
-	// 'gameloop: loop {
-	// 	for event in event_pump.poll_iter() {
-	// 		match event {
-	// 			Event::Quit { .. } => break 'gameloop,
-	// 			Event::KeyDown {
-	// 				keycode: Some(Keycode::Escape),
-	// 				..
-	// 			} => break 'gameloop,
-	// 			_ => {}
-	// 		}
-	// 	}
-	// 	canvas.present();
-	// 	::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-	// }
+	let constraints = vulkan_device_constraints();
+	let physical_device = match instance.find_physical_device(&constraints, &surface) {
+		Ok(device) => device,
+		Err(failed_constraint) => match failed_constraint {
+			None => panic!("Failed to find any rendering device (do you not have anyu GPUs?)"),
+			Some(constraint) => panic!(
+				"Failed to find physical device, failed on constraint {:?}",
+				constraint
+			),
+		},
+	};
+	println!("Found physical device {}", physical_device);
 
 	Ok(())
 }
+
+// let mut canvas = window.window.into_canvas().build().unwrap();
+
+// canvas.set_draw_color(Color::RGB(50, 0, 50));
+// canvas.clear();
+// canvas.present();
+
+// // Game loop
+// let mut event_pump = display.sdl.event_pump().unwrap();
+// 'gameloop: loop {
+// 	for event in event_pump.poll_iter() {
+// 		match event {
+// 			Event::Quit { .. } => break 'gameloop,
+// 			Event::KeyDown {
+// 				keycode: Some(Keycode::Escape),
+// 				..
+// 			} => break 'gameloop,
+// 			_ => {}
+// 		}
+// 	}
+// 	canvas.present();
+// 	::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+// }
