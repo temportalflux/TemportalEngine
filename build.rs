@@ -3,8 +3,11 @@ use std::env;
 use std::error::Error;
 use std::path::PathBuf;
 
-fn workspace_path_str() -> String {
-	format!("{}/..", env::var("CARGO_MANIFEST_DIR").unwrap())
+fn path_to_runtime_dir() -> String {
+	format!(
+		"{}/../target/debug",
+		env::var("CARGO_MANIFEST_DIR").unwrap()
+	)
 }
 
 fn is_on_any_platform(platforms: Vec<&str>) -> bool {
@@ -54,7 +57,7 @@ fn copy_dlls_from_dependency(dep_path: &PathBuf) -> Result<(), Box<dyn Error>> {
 		if let Some(file_name) = entry_path.file_name() {
 			let file_name = file_name.to_str().unwrap();
 			if file_name.ends_with(".dll") {
-				let mut dll_path = PathBuf::from(workspace_path_str());
+				let mut dll_path = PathBuf::from(path_to_runtime_dir());
 				dll_path.push(file_name);
 				if let Err(msg) = std::fs::copy(&entry_path, dll_path.as_path()) {
 					panic!("Failed to copy {:?} to root. {}", entry_path.as_path(), msg);

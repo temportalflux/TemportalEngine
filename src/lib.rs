@@ -5,8 +5,8 @@ extern crate sdl2;
 //use sdl2::pixels::Color;
 use std::error::Error;
 //use std::time::Duration;
-use temportal_math::*;
 use temportal_graphics;
+use temportal_math::*;
 
 // Y-Up Right-Handed is +X, +Y, -Z
 pub fn global_right() -> Vector<f64, 3> {
@@ -48,13 +48,12 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 	let window = Window::new(&display, "Demo1", 800, 600);
 
-	let app_info = temportal_graphics::AppInfo::new()
+	let ctx = temportal_graphics::Context::new()?;
+	let app_info = temportal_graphics::AppInfo::new(&ctx)
 		.engine("TemportalEngine", temportal_graphics::version!(0, 1, 0))
 		.application("Demo1", temportal_graphics::version!(0, 1, 0));
-	println!("Initializing {}", app_info.description());
-	let extensions = window.window.vulkan_instance_extensions()?;
-	let instance = temportal_graphics::create_instance(&app_info, extensions)?;
-	let surface = instance.create_surface(&window.window);
+	let _instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
+	//let surface = instance.create_surface(&window.window);
 
 	// let mut canvas = window.window.into_canvas().build().unwrap();
 
