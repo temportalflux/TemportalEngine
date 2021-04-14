@@ -3,8 +3,9 @@ extern crate sdl2;
 use structopt::StructOpt;
 use temportal_graphics::{
 	self,
-	device::{logical, physical},
-	instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode, QueueFlags,
+	device::{logical, physical, swapchain},
+	instance, utility, AppInfo, ColorSpace, CompositeAlpha, Context, Format, ImageUsageFlags,
+	PresentMode, QueueFlags, SharingMode,
 };
 
 #[path = "display/lib.rs"]
@@ -78,7 +79,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	};
 	println!("Found physical device {}", physical_device);
 
-	let _logical_device = logical::Info::new()
+	let logical_device = logical::Info::new()
 		.add_extension("VK_KHR_swapchain")
 		.set_validation_enabled(should_enable_validation())
 		.add_queue(logical::DeviceQueue {
@@ -88,9 +89,29 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 			priorities: vec![1.0],
 		})
 		.create_object(&instance, &physical_device);
-	let permitted_frame_count = physical_device.image_count_range();	
-	let frame_count = std::cmp::min(std::cmp::max(3, permitted_frame_count.start), permitted_frame_count.end);
-	println!("Will use {} frames, {:?}", frame_count, permitted_frame_count);
+	let permitted_frame_count = physical_device.image_count_range();
+	let frame_count = std::cmp::min(
+		std::cmp::max(3, permitted_frame_count.start),
+		permitted_frame_count.end,
+	);
+	println!(
+		"Will use {} frames, {:?}",
+		frame_count, permitted_frame_count
+	);
+
+	let _swapchain = swapchain::Info::new()
+		.set_image_count(frame_count)
+		.set_image_format(Format::B8G8R8A8_SRGB)
+		.set_image_color_space(ColorSpace::SRGB_NONLINEAR_KHR)
+		.set_image_extent(physical_device.image_extent())
+		.set_image_array_layer_count(1)
+		.set_image_usage(ImageUsageFlags::COLOR_ATTACHMENT)
+		.set_image_sharing_mode(SharingMode::EXCLUSIVE)
+		.set_pre_transform(physical_device.current_transform())
+		.set_composite_alpha(CompositeAlpha::OPAQUE_KHR)
+		.set_present_mode(physical_device.selected_present_mode)
+		.set_is_clipped(true)
+		.create_object(&logical_device, &surface);
 
 	Ok(())
 }
