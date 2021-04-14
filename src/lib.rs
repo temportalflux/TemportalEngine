@@ -50,6 +50,7 @@ fn vulkan_device_constraints() -> Vec<temportal_graphics::PhysicalDeviceConstrai
 			formats: vec![Format::B8G8R8A8_SRGB],
 			color_spaces: vec![ColorSpace::SRGB_NONLINEAR_KHR],
 		}),
+		HasExtension(String::from("VK_KHR_swapchain")),
 		PrioritizedSet(
 			vec![
 				CanPresentWith(PresentMode::MAILBOX_KHR, Some(1)),
