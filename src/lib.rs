@@ -41,12 +41,15 @@ impl Window {
 	}
 }
 
-fn vulkan_device_constraints() -> Vec<temportal_graphics::PhysicalDeviceConstraint> {
-	use temportal_graphics::PhysicalDeviceConstraint::*;
-	use temportal_graphics::*;
+use temportal_graphics::{
+	context::Context, device::physical, AppInfo, ColorSpace, Format, PresentMode, QueueFlags,
+};
+
+fn vulkan_device_constraints() -> Vec<physical::Constraint> {
+	use physical::Constraint::*;
 	vec![
 		HasQueueFamily(QueueFlags::GRAPHICS, /*requires_surface*/ true),
-		HasSurfaceFormats(SurfaceConstraints {
+		HasSurfaceFormats(physical::SurfaceConstraint {
 			formats: vec![Format::B8G8R8A8_SRGB],
 			color_spaces: vec![ColorSpace::SRGB_NONLINEAR_KHR],
 		}),
@@ -60,8 +63,8 @@ fn vulkan_device_constraints() -> Vec<temportal_graphics::PhysicalDeviceConstrai
 		),
 		PrioritizedSet(
 			vec![
-				IsDeviceType(PhysicalDeviceKind::DISCRETE_GPU, Some(100)),
-				IsDeviceType(PhysicalDeviceKind::INTEGRATED_GPU, Some(0)),
+				IsDeviceType(physical::Kind::DISCRETE_GPU, Some(100)),
+				IsDeviceType(physical::Kind::INTEGRATED_GPU, Some(0)),
 			],
 			false,
 		),
@@ -75,8 +78,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 	let window = Window::new(&display, "Demo1", 800, 600);
 
-	let ctx = temportal_graphics::Context::new()?;
-	let app_info = temportal_graphics::AppInfo::new(&ctx)
+	let ctx = Context::new()?;
+	let app_info = AppInfo::new(&ctx)
 		.engine("TemportalEngine", temportal_graphics::version!(0, 1, 0))
 		.application("Demo1", temportal_graphics::version!(0, 1, 0));
 	let instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
