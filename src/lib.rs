@@ -7,6 +7,18 @@ use std::error::Error;
 //use std::time::Duration;
 use temportal_graphics;
 use temportal_math::*;
+use structopt::StructOpt;
+
+#[derive(Debug, StructOpt)]
+struct Opt {
+	/// Use validation layers
+	#[structopt(short, long)]
+	validation_layers: bool,
+}
+
+pub fn should_enable_validation() -> bool {
+	Opt::from_args().validation_layers
+}
 
 // Y-Up Right-Handed is +X, +Y, -Z
 pub fn global_right() -> Vector<f64, 3> {
@@ -85,7 +97,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 	let instance = instance::Info::new()
 		.app_info(app_info.clone())
 		.set_window(&window.window)
-		.set_use_validation(temportal_graphics::should_enable_validation())
+		.set_use_validation(should_enable_validation())
 		.create_object(&ctx)?;
 	let surface = instance.create_surface(&window.window);
 
