@@ -52,8 +52,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 	let app_info = temportal_graphics::AppInfo::new(&ctx)
 		.engine("TemportalEngine", temportal_graphics::version!(0, 1, 0))
 		.application("Demo1", temportal_graphics::version!(0, 1, 0));
-	let _instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
-	//let surface = instance.create_surface(&window.window);
+	let instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
+	let _surface = instance.create_surface(&window.window);
 
 	// let mut canvas = window.window.into_canvas().build().unwrap();
 
