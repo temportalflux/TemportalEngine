@@ -88,6 +88,9 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 			priorities: vec![1.0],
 		})
 		.create_object(&instance, &physical_device);
+	let permitted_frame_count = physical_device.image_count_range();	
+	let frame_count = std::cmp::min(std::cmp::max(3, permitted_frame_count.start), permitted_frame_count.end);
+	println!("Will use {} frames, {:?}", frame_count, permitted_frame_count);
 
 	Ok(())
 }
