@@ -42,7 +42,7 @@ impl Window {
 }
 
 use temportal_graphics::{
-	context::Context, device::physical, AppInfo, ColorSpace, Format, PresentMode, QueueFlags,
+	device::physical, instance, utility, AppInfo, Context, ColorSpace, Format, PresentMode, QueueFlags
 };
 
 fn vulkan_device_constraints() -> Vec<physical::Constraint> {
@@ -80,9 +80,13 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
 	let ctx = Context::new()?;
 	let app_info = AppInfo::new(&ctx)
-		.engine("TemportalEngine", temportal_graphics::version!(0, 1, 0))
-		.application("Demo1", temportal_graphics::version!(0, 1, 0));
-	let instance = temportal_graphics::create_instance(&ctx, &app_info, &window.window)?;
+		.engine("TemportalEngine", utility::make_version(0, 1, 0))
+		.application("Demo1", utility::make_version(0, 1, 0));
+	let instance = instance::Info::new()
+		.app_info(app_info.clone())
+		.set_window(&window.window)
+		.set_use_validation(temportal_graphics::should_enable_validation())
+		.create_object(&ctx)?;
 	let surface = instance.create_surface(&window.window);
 
 	let constraints = vulkan_device_constraints();
