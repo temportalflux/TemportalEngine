@@ -2,8 +2,9 @@ extern crate sdl2;
 
 use structopt::StructOpt;
 use temportal_graphics::{
-	self, device::physical, instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode,
-	QueueFlags,
+	self,
+	device::{logical, physical},
+	instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode, QueueFlags,
 };
 
 #[path = "display/lib.rs"]
@@ -76,6 +77,17 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		},
 	};
 	println!("Found physical device {}", physical_device);
+
+	let _logical_device = logical::Info::new()
+		.add_extension("VK_KHR_swapchain")
+		.set_validation_enabled(should_enable_validation())
+		.add_queue(logical::DeviceQueue {
+			queue_family_index: physical_device
+				.get_queue_index(QueueFlags::GRAPHICS, true)
+				.unwrap(),
+			priorities: vec![1.0],
+		})
+		.create_object(&instance, &physical_device);
 
 	Ok(())
 }
