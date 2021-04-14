@@ -5,9 +5,9 @@ extern crate sdl2;
 //use sdl2::pixels::Color;
 use std::error::Error;
 //use std::time::Duration;
+use structopt::StructOpt;
 use temportal_graphics;
 use temportal_math::*;
-use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -54,7 +54,8 @@ impl Window {
 }
 
 use temportal_graphics::{
-	device::physical, instance, utility, AppInfo, Context, ColorSpace, Format, PresentMode, QueueFlags
+	device::physical, instance, utility, AppInfo, ColorSpace, Context, Format, PresentMode,
+	QueueFlags,
 };
 
 fn vulkan_device_constraints() -> Vec<physical::Constraint> {
