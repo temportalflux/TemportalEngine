@@ -29,10 +29,7 @@ fn vulkan_device_constraints() -> Vec<physical::Constraint> {
 	use physical::Constraint::*;
 	vec![
 		HasQueueFamily(QueueFlags::GRAPHICS, /*requires_surface*/ true),
-		HasSurfaceFormats(physical::SurfaceConstraint {
-			formats: vec![Format::B8G8R8A8_SRGB],
-			color_spaces: vec![ColorSpace::SRGB_NONLINEAR_KHR],
-		}),
+		HasSurfaceFormats(Format::B8G8R8A8_SRGB, ColorSpace::SRGB_NONLINEAR_KHR),
 		HasExtension(String::from("VK_KHR_swapchain")),
 		PrioritizedSet(
 			vec![
