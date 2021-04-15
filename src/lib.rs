@@ -6,8 +6,8 @@ use temportal_graphics::{
 	self,
 	device::{logical, physical, swapchain},
 	flags::{
-		self, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags, ImageViewType,
-		PresentMode, QueueFlags, SharingMode,
+		self, ColorComponent, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags,
+		ImageViewType, PresentMode, QueueFlags, SharingMode,
 	},
 	image, instance, pipeline, shader,
 	structs::ImageSubresourceRange,
@@ -160,10 +160,23 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		},
 	)?;
 
-	let _shader_stages = vec![
-		pipeline::ShaderStage::new(&vert_shader),
-		pipeline::ShaderStage::new(&frag_shader),
-	];
+	let _pipeline = pipeline::Info::new()
+		.add_shader(&vert_shader)
+		.add_shader(&frag_shader)
+		.set_viewport_state(
+			pipeline::ViewportState::new()
+				.add_viewport(utility::Viewport::new().set_size(physical_device.image_extent()))
+				.add_scissor(utility::Scissor::new().set_size(physical_device.image_extent())),
+		)
+		.set_rasterization_state(pipeline::RasterizationState::new())
+		.set_color_blending(pipeline::ColorBlendState::new().add_attachment(
+			pipeline::ColorBlendAttachment {
+				color_flags: ColorComponent::R
+					| ColorComponent::G | ColorComponent::B
+					| ColorComponent::A,
+			},
+		))
+		.create_object(&logical_device);
 
 	Ok(())
 }
