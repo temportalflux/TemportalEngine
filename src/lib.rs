@@ -142,6 +142,10 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 				.create_object(&logical_device, &image)
 		})
 		.collect::<Vec<_>>();
+	
+	let triangle_vert = include_bytes!("triangle.vert.spirv");
+	let triangle_frag = include_bytes!("triangle.frag.spirv");
+	println!("Shader bins| vert: {} bytes, frag: {} bytes", triangle_vert.len(), triangle_frag.len());
 
 	Ok(())
 }

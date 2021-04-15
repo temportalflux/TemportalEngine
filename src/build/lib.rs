@@ -45,15 +45,32 @@ fn get_output_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
 }
 
 fn open_or_create(path: &std::path::PathBuf) -> Result<std::fs::File, Box<dyn std::error::Error>> {
-	std::fs::create_dir_all(&path.parent().unwrap())?;
-	match std::fs::File::open(&path) {
+	use std::fs::*;
+	use std::io::ErrorKind::*;
+	match OpenOptions::new().write(true).open(&path) {
 		Ok(file) => Ok(file),
 		Err(err) => match err.kind() {
-			std::io::ErrorKind::NotFound => match std::fs::File::create(&path) {
+			NotFound => match File::create(&path) {
 				Ok(file) => Ok(file),
-				Err(err) => Err(Box::new(err)),
+				Err(err) => match err.kind() {
+					PermissionDenied => {
+						println!("Failed to create, access denied.");
+						Err(Box::new(err))
+					},
+					_ => {
+						println!("misc create err");
+						Err(Box::new(err))
+					},
+				},
 			},
-			_ => Err(Box::new(err)),
+			PermissionDenied => {
+				println!("Failed to open, access denied.");
+				Err(Box::new(err))
+			},
+			_ => {
+				println!("misc open err");
+				Err(Box::new(err))
+			},
 		},
 	}
 }
@@ -77,8 +94,19 @@ fn compile_into_spirv(
 		Some(&options),
 	)?;
 
-	let mut file = open_or_create(&outpath)?;
-	file.write_all(binary.as_binary_u8())?;
+	match open_or_create(&outpath) {
+		Ok(mut file) => match file.write_all(binary.as_binary_u8()) {
+			Ok(_) => {
+				println!("Saved {}.spirv to disk", shader.name);
+			}
+			Err(err) => {
+				println!("Failed to write {}.spriv to disk. Error: {}", shader.name, err);
+			}
+		},
+		Err(err) => {
+			println!("Encountered error opening/creating {}.spirv: {}", shader.name, err);
+		}
+	}
 
 	Ok(())
 }
