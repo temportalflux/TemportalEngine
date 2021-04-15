@@ -11,7 +11,7 @@ use temportal_graphics::{
 	},
 	image, instance,
 	structs::ImageSubresourceRange,
-	utility, AppInfo, Context,
+	utility, AppInfo, Context, Shader
 };
 
 #[path = "build/lib.rs"]
@@ -146,6 +146,9 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let triangle_vert = include_bytes!("triangle.vert.spirv");
 	let triangle_frag = include_bytes!("triangle.frag.spirv");
 	println!("Shader bins| vert: {} bytes, frag: {} bytes", triangle_vert.len(), triangle_frag.len());
+
+	let vert_shader = Shader::create(&logical_device, triangle_vert)?;
+	let frag_shader = Shader::create(&logical_device, triangle_frag)?;
 
 	Ok(())
 }
