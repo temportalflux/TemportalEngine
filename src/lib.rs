@@ -5,9 +5,12 @@ use temportal_graphics::{
 	self,
 	device::{logical, physical, swapchain},
 	flags::{
-		ColorSpace, CompositeAlpha, Format, ImageUsageFlags, PresentMode, QueueFlags, SharingMode,
+		ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags, ImageViewType,
+		PresentMode, QueueFlags, SharingMode,
 	},
-	instance, utility, AppInfo, Context,
+	image, instance,
+	structs::ImageSubresourceRange,
+	utility, AppInfo, Context,
 };
 
 #[path = "display/lib.rs"]
@@ -113,6 +116,23 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.create_object(&logical_device, &surface);
 	let frame_images = swapchain.get_images(&logical_device);
 	println!("Found {} frame images", frame_images.len());
+
+	let _frame_image_views = frame_images
+		.iter()
+		.map(|image| {
+			image::ViewInfo::new()
+				.set_view_type(ImageViewType::_2D)
+				.set_format(Format::B8G8R8A8_SRGB)
+				.set_subresource_range(ImageSubresourceRange {
+					aspect_mask: ImageAspect::COLOR,
+					base_mip_level: 0,
+					level_count: 1,
+					base_array_layer: 0,
+					layer_count: 1,
+				})
+				.create_object(&logical_device, &image)
+		})
+		.collect::<Vec<_>>();
 
 	Ok(())
 }
