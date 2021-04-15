@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate shaderc;
 
 use structopt::StructOpt;
 use temportal_graphics::{
@@ -13,6 +14,9 @@ use temportal_graphics::{
 	utility, AppInfo, Context,
 };
 
+#[path = "build/lib.rs"]
+pub mod build;
+
 #[path = "display/lib.rs"]
 pub mod display;
 
@@ -24,10 +28,8 @@ struct Opt {
 	/// Use validation layers
 	#[structopt(short, long)]
 	validation_layers: bool,
-}
-
-pub fn should_enable_validation() -> bool {
-	Opt::from_args().validation_layers
+	#[structopt(short, long)]
+	build: bool,
 }
 
 fn vulkan_device_constraints() -> Vec<physical::Constraint> {
@@ -54,6 +56,13 @@ fn vulkan_device_constraints() -> Vec<physical::Constraint> {
 }
 
 pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+	let flags = Opt::from_args();
+	if flags.build {
+		return build::run();
+	}
+
+	let validation_enabled = flags.validation_layers;
+
 	let display = display::EngineDisplay::new();
 	let window = display::Window::new(&display, "Demo1", 800, 600);
 
@@ -64,7 +73,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let instance = instance::Info::new()
 		.set_app_info(app_info.clone())
 		.set_window(&window)
-		.set_use_validation(should_enable_validation())
+		.set_use_validation(validation_enabled)
 		.create_object(&ctx)?;
 	let surface = instance.create_surface(&window);
 
@@ -83,7 +92,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 
 	let logical_device = logical::Info::new()
 		.add_extension("VK_KHR_swapchain")
-		.set_validation_enabled(should_enable_validation())
+		.set_validation_enabled(validation_enabled)
 		.add_queue(logical::DeviceQueue {
 			queue_family_index: physical_device
 				.get_queue_index(QueueFlags::GRAPHICS, true)
