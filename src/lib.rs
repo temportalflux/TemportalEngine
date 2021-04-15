@@ -57,7 +57,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.engine("TemportalEngine", utility::make_version(0, 1, 0))
 		.application("Demo1", utility::make_version(0, 1, 0));
 	let instance = instance::Info::new()
-		.app_info(app_info.clone())
+		.set_app_info(app_info.clone())
 		.set_window(&window)
 		.set_use_validation(should_enable_validation())
 		.create_object(&ctx)?;
