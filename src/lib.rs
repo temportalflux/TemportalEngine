@@ -4,8 +4,10 @@ use structopt::StructOpt;
 use temportal_graphics::{
 	self,
 	device::{logical, physical, swapchain},
-	instance, utility, AppInfo, ColorSpace, CompositeAlpha, Context, Format, ImageUsageFlags,
-	PresentMode, QueueFlags, SharingMode,
+	flags::{
+		ColorSpace, CompositeAlpha, Format, ImageUsageFlags, PresentMode, QueueFlags, SharingMode,
+	},
+	instance, utility, AppInfo, Context,
 };
 
 #[path = "display/lib.rs"]
