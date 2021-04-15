@@ -56,21 +56,21 @@ fn open_or_create(path: &std::path::PathBuf) -> Result<std::fs::File, Box<dyn st
 					PermissionDenied => {
 						println!("Failed to create, access denied.");
 						Err(Box::new(err))
-					},
+					}
 					_ => {
 						println!("misc create err");
 						Err(Box::new(err))
-					},
+					}
 				},
 			},
 			PermissionDenied => {
 				println!("Failed to open, access denied.");
 				Err(Box::new(err))
-			},
+			}
 			_ => {
 				println!("misc open err");
 				Err(Box::new(err))
-			},
+			}
 		},
 	}
 }
@@ -80,7 +80,6 @@ fn compile_into_spirv(
 	compiler: &mut shaderc::Compiler,
 	options: &shaderc::CompileOptions,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	
 	let mut outpath = get_output_dir()?;
 	outpath.push(format!("{}.spirv", shader.name));
 
@@ -100,11 +99,17 @@ fn compile_into_spirv(
 				println!("Saved {}.spirv to disk", shader.name);
 			}
 			Err(err) => {
-				println!("Failed to write {}.spriv to disk. Error: {}", shader.name, err);
+				println!(
+					"Failed to write {}.spriv to disk. Error: {}",
+					shader.name, err
+				);
 			}
 		},
 		Err(err) => {
-			println!("Encountered error opening/creating {}.spirv: {}", shader.name, err);
+			println!(
+				"Encountered error opening/creating {}.spirv: {}",
+				shader.name, err
+			);
 		}
 	}
 

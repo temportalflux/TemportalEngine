@@ -6,12 +6,12 @@ use temportal_graphics::{
 	self,
 	device::{logical, physical, swapchain},
 	flags::{
-		ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags, ImageViewType,
+		self, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags, ImageViewType,
 		PresentMode, QueueFlags, SharingMode,
 	},
-	image, instance,
+	image, instance, pipeline, shader,
 	structs::ImageSubresourceRange,
-	utility, AppInfo, Context, Shader
+	utility, AppInfo, Context,
 };
 
 #[path = "build/lib.rs"]
@@ -142,13 +142,28 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 				.create_object(&logical_device, &image)
 		})
 		.collect::<Vec<_>>();
-	
-	let triangle_vert = include_bytes!("triangle.vert.spirv");
-	let triangle_frag = include_bytes!("triangle.frag.spirv");
-	println!("Shader bins| vert: {} bytes, frag: {} bytes", triangle_vert.len(), triangle_frag.len());
 
-	let vert_shader = Shader::create(&logical_device, triangle_vert)?;
-	let frag_shader = Shader::create(&logical_device, triangle_frag)?;
+	let vert_shader = shader::Module::create(
+		&logical_device,
+		shader::Info {
+			kind: flags::ShaderStageKind::VERTEX,
+			entry_point: String::from("main"),
+			bytes: include_bytes!("triangle.vert.spirv").to_vec(),
+		},
+	)?;
+	let frag_shader = shader::Module::create(
+		&logical_device,
+		shader::Info {
+			kind: flags::ShaderStageKind::FRAGMENT,
+			entry_point: String::from("main"),
+			bytes: include_bytes!("triangle.frag.spirv").to_vec(),
+		},
+	)?;
+
+	let _shader_stages = vec![
+		pipeline::ShaderStage::new(&vert_shader),
+		pipeline::ShaderStage::new(&frag_shader),
+	];
 
 	Ok(())
 }
