@@ -122,8 +122,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.set_composite_alpha(CompositeAlpha::OPAQUE_KHR)
 		.set_present_mode(physical_device.selected_present_mode)
 		.set_is_clipped(true)
-		.create_object(&logical_device, &surface);
-	let frame_images = swapchain.get_images(&logical_device);
+		.create_object(&logical_device, &surface)?;
+	let frame_images = swapchain.get_images(&logical_device)?;
 	println!("Found {} frame images", frame_images.len());
 
 	let _frame_image_views = frame_images
@@ -176,7 +176,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 					| ColorComponent::A,
 			},
 		))
-		.create_object(&logical_device);
+		.create_object(&logical_device)?;
 
 	Ok(())
 }
