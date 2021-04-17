@@ -3,7 +3,7 @@ extern crate shaderc;
 
 use structopt::StructOpt;
 use temportal_graphics::{
-	self,
+	self, command,
 	device::{logical, physical, swapchain},
 	flags::{
 		self, ColorComponent, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags,
@@ -126,9 +126,9 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let frame_images = swapchain.get_images(&logical_device)?;
 	println!("Found {} frame images", frame_images.len());
 
-	let _frame_image_views = frame_images
-		.iter()
-		.map(|image| {
+	let mut frame_image_views: Vec<image::View> = Vec::new();
+	for image in frame_images.iter() {
+		frame_image_views.push(
 			image::ViewInfo::new()
 				.set_view_type(ImageViewType::_2D)
 				.set_format(Format::B8G8R8A8_SRGB)
@@ -139,9 +139,9 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 					base_array_layer: 0,
 					layer_count: 1,
 				})
-				.create_object(&logical_device, &image)
-		})
-		.collect::<Vec<_>>();
+				.create_object(&logical_device, &image)?,
+		);
+	}
 
 	let vert_shader = shader::Module::create(
 		&logical_device,
@@ -208,6 +208,15 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 			},
 		))
 		.create_object(&logical_device, &render_pass)?;
+
+	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
+	for image_view in frame_image_views.iter() {
+		framebuffers.push(
+			command::framebuffer::Info::default()
+				.set_extent(physical_device.image_extent())
+				.create_object(&image_view, &render_pass, &logical_device)?,
+		);
+	}
 
 	Ok(())
 }
