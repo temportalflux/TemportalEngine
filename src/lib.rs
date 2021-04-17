@@ -13,6 +13,7 @@ use temportal_graphics::{
 	structs::ImageSubresourceRange,
 	utility, AppInfo, Context,
 };
+use temportal_math::Vector;
 
 #[path = "build/lib.rs"]
 pub mod build;
@@ -90,13 +91,14 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	};
 	println!("Found physical device {}", physical_device);
 
+	let grahics_queue_idx = physical_device
+		.get_queue_index(QueueFlags::GRAPHICS, true)
+		.unwrap();
 	let logical_device = logical::Info::default()
 		.add_extension("VK_KHR_swapchain")
 		.set_validation_enabled(validation_enabled)
 		.add_queue(logical::DeviceQueue {
-			queue_family_index: physical_device
-				.get_queue_index(QueueFlags::GRAPHICS, true)
-				.unwrap(),
+			queue_family_index: grahics_queue_idx,
 			priorities: vec![1.0],
 		})
 		.create_object(&instance, &physical_device);
@@ -104,10 +106,6 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let frame_count = std::cmp::min(
 		std::cmp::max(3, permitted_frame_count.start),
 		permitted_frame_count.end,
-	);
-	println!(
-		"Will use {} frames, {:?}",
-		frame_count, permitted_frame_count
 	);
 
 	let swapchain = swapchain::Info::default()
@@ -124,7 +122,6 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.set_is_clipped(true)
 		.create_object(&logical_device, &surface)?;
 	let frame_images = swapchain.get_images(&logical_device)?;
-	println!("Found {} frame images", frame_images.len());
 
 	let mut frame_image_views: Vec<image::View> = Vec::new();
 	for image in frame_images.iter() {
@@ -191,7 +188,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		rp_info.create_object(&logical_device)?
 	};
 
-	let _pipeline = pipeline::Info::default()
+	let pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
 		.set_viewport_state(
@@ -217,6 +214,39 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 				.create_object(&image_view, &render_pass, &logical_device)?,
 		);
 	}
+
+	let cmd_pool = command::Pool::create(&logical_device, grahics_queue_idx)?;
+	let cmd_buffers = logical_device.allocate_command_buffers(&cmd_pool, framebuffers.len())?;
+
+	// END: Initialization
+
+	// START: Recording Cmd Buffers
+
+	let record_instruction = renderpass::RecordInstruction::default()
+		.set_extent(physical_device.image_extent())
+		.clear_with(renderpass::ClearValue::Color(Vector::new([
+			0.0, 0.0, 0.0, 1.0,
+		])));
+	for (cmd_buffer, frame_buffer) in cmd_buffers.iter().zip(framebuffers.iter()) {
+		cmd_buffer.begin(&logical_device)?;
+		cmd_buffer.start_render_pass(
+			&logical_device,
+			&frame_buffer,
+			&render_pass,
+			record_instruction.clone(),
+		);
+		cmd_buffer.bind_pipeline(
+			&logical_device,
+			&pipeline,
+			flags::PipelineBindPoint::GRAPHICS,
+		);
+		//cmd_buffer.draw(&logical_device, 3, 0, 1, 0, 0);
+		logical_device.draw(&cmd_buffer, 3);
+		cmd_buffer.stop_render_pass(&logical_device);
+		cmd_buffer.end(&logical_device)?;
+	}
+
+	// END: Recording Cmd Buffers
 
 	Ok(())
 }
