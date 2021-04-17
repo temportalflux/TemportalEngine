@@ -70,7 +70,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let app_info = AppInfo::new(&ctx)
 		.engine("TemportalEngine", utility::make_version(0, 1, 0))
 		.application("Demo1", utility::make_version(0, 1, 0));
-	let instance = instance::Info::new()
+	let instance = instance::Info::default()
 		.set_app_info(app_info.clone())
 		.set_window(&window)
 		.set_use_validation(validation_enabled)
@@ -90,7 +90,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	};
 	println!("Found physical device {}", physical_device);
 
-	let logical_device = logical::Info::new()
+	let logical_device = logical::Info::default()
 		.add_extension("VK_KHR_swapchain")
 		.set_validation_enabled(validation_enabled)
 		.add_queue(logical::DeviceQueue {
@@ -110,7 +110,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		frame_count, permitted_frame_count
 	);
 
-	let swapchain = swapchain::Info::new()
+	let swapchain = swapchain::Info::default()
 		.set_image_count(frame_count)
 		.set_image_format(Format::B8G8R8A8_SRGB)
 		.set_image_color_space(ColorSpace::SRGB_NONLINEAR_KHR)
@@ -162,7 +162,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 
 	let render_pass = {
 		let mut rp_info = renderpass::Info::default();
-		
+
 		let frame_attachment_index = rp_info.attach(
 			renderpass::Attachment::default()
 				.set_format(Format::B8G8R8A8_SRGB)
@@ -191,16 +191,16 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		rp_info.create_object(&logical_device)?
 	};
 
-	let _pipeline = pipeline::Info::new()
+	let _pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
 		.set_viewport_state(
-			pipeline::ViewportState::new()
-				.add_viewport(utility::Viewport::new().set_size(physical_device.image_extent()))
-				.add_scissor(utility::Scissor::new().set_size(physical_device.image_extent())),
+			pipeline::ViewportState::default()
+				.add_viewport(utility::Viewport::default().set_size(physical_device.image_extent()))
+				.add_scissor(utility::Scissor::default().set_size(physical_device.image_extent())),
 		)
-		.set_rasterization_state(pipeline::RasterizationState::new())
-		.set_color_blending(pipeline::ColorBlendState::new().add_attachment(
+		.set_rasterization_state(pipeline::RasterizationState::default())
+		.set_color_blending(pipeline::ColorBlendState::default().add_attachment(
 			pipeline::ColorBlendAttachment {
 				color_flags: ColorComponent::R
 					| ColorComponent::G | ColorComponent::B
