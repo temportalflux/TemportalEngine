@@ -9,7 +9,7 @@ use temportal_graphics::{
 		self, ColorComponent, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags,
 		ImageViewType, PresentMode, QueueFlags, SharingMode,
 	},
-	image, instance, pipeline, shader,
+	image, instance, pipeline, renderpass, shader,
 	structs::ImageSubresourceRange,
 	utility, AppInfo, Context,
 };
@@ -160,6 +160,37 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		},
 	)?;
 
+	let render_pass = {
+		let mut rp_info = renderpass::Info::default();
+		
+		let frame_attachment_index = rp_info.attach(
+			renderpass::Attachment::default()
+				.set_format(Format::B8G8R8A8_SRGB)
+				.set_sample_count(flags::SampleCount::_1)
+				.set_general_ops(renderpass::AttachmentOps {
+					load: flags::AttachmentLoadOp::CLEAR,
+					store: flags::AttachmentStoreOp::STORE,
+				})
+				.set_final_layout(flags::ImageLayout::PRESENT_SRC_KHR),
+		);
+
+		let main_pass_index =
+			rp_info.add_subpass(renderpass::Subpass::default().add_attachment_ref(
+				frame_attachment_index,
+				flags::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
+			));
+
+		rp_info.add_dependency(
+			renderpass::Dependency::new(None)
+				.set_stage(flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT),
+			renderpass::Dependency::new(Some(main_pass_index))
+				.set_stage(flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT)
+				.set_access(flags::Access::COLOR_ATTACHMENT_WRITE),
+		);
+
+		rp_info.create_object(&logical_device)?
+	};
+
 	let _pipeline = pipeline::Info::new()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
@@ -176,7 +207,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 					| ColorComponent::A,
 			},
 		))
-		.create_object(&logical_device)?;
+		.create_object(&logical_device, &render_pass)?;
 
 	Ok(())
 }
