@@ -5,20 +5,29 @@ struct Shader {
 	name: String,
 	source: String,
 	kind: shaderc::ShaderKind,
+	entry_point: String,
 }
 
 pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 	println!("Building assets...");
 
 	let mut compiler = shaderc::Compiler::new().unwrap();
-	let options = shaderc::CompileOptions::new().unwrap();
+	let mut options = shaderc::CompileOptions::new().unwrap();
 	//options.add_macro_definition("EP", Some("main"));
+	options.set_generate_debug_info();
+	options.set_target_env(
+		shaderc::TargetEnv::Vulkan,
+		shaderc::EnvVersion::Vulkan1_2 as u32,
+	);
+	options.set_target_spirv(shaderc::SpirvVersion::V1_5);
+	options.set_source_language(shaderc::SourceLanguage::GLSL);
 
 	compile_into_spirv(
 		Shader {
 			name: String::from("triangle.vert"),
 			source: String::from(include_str!("../triangle.vert")),
 			kind: shaderc::ShaderKind::Vertex,
+			entry_point: String::from("main"),
 		},
 		&mut compiler,
 		&options,
@@ -29,6 +38,7 @@ pub fn run() -> Result<(), Box<dyn std::error::Error>> {
 			name: String::from("triangle.frag"),
 			source: String::from(include_str!("../triangle.frag")),
 			kind: shaderc::ShaderKind::Fragment,
+			entry_point: String::from("main"),
 		},
 		&mut compiler,
 		&options,
@@ -88,8 +98,8 @@ fn compile_into_spirv(
 	let binary = compiler.compile_into_spirv(
 		shader.source.as_str(),
 		shader.kind,
-		"shader.glsl",
-		"main",
+		shader.name.as_str(),
+		shader.entry_point.as_str(),
 		Some(&options),
 	)?;
 
