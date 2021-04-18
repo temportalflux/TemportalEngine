@@ -15,9 +15,38 @@ use temportal_graphics::{
 	},
 	image, instance, pipeline, renderpass, shader,
 	structs::ImageSubresourceRange,
-	utility, AppInfo, Context,
+	AppInfo, Context,
 };
 use temportal_math::Vector;
+
+pub mod utility {
+	pub use temportal_graphics::utility::make_version;
+}
+
+#[derive(Debug, StructOpt)]
+struct Opt {
+	/// Use validation layers
+	#[structopt(short, long)]
+	validation_layers: bool,
+	#[structopt(short, long)]
+	build: bool,
+}
+
+pub struct Engine {
+	run_build_commandlet: bool,
+	pub build_assets_callback: Option<build::BuildAssetsCallback>,
+
+	vulkan_validation_enabled: bool,
+	graphics_context: Context,
+	app_info: AppInfo,
+}
+
+impl Engine {
+	pub fn set_application(mut self, name: &str, version: u32) -> Self {
+		self.app_info.set_application_info(name, version);
+		self
+	}
+}
 
 #[path = "build/lib.rs"]
 pub mod build;
@@ -28,13 +57,20 @@ pub mod display;
 #[path = "world/lib.rs"]
 pub mod world;
 
-#[derive(Debug, StructOpt)]
-struct Opt {
-	/// Use validation layers
-	#[structopt(short, long)]
-	validation_layers: bool,
-	#[structopt(short, long)]
-	build: bool,
+pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
+	let flags = Opt::from_args();
+	let graphics_context = Context::new()?;
+	let app_info =
+		AppInfo::new(&graphics_context).engine("TemportalEngine", utility::make_version(0, 1, 0));
+	let engine = Engine {
+		run_build_commandlet: flags.build,
+		build_assets_callback: None,
+
+		vulkan_validation_enabled: flags.validation_layers,
+		graphics_context,
+		app_info,
+	};
+	Ok(engine)
 }
 
 fn vulkan_device_constraints() -> Vec<physical::Constraint> {
@@ -60,27 +96,29 @@ fn vulkan_device_constraints() -> Vec<physical::Constraint> {
 	]
 }
 
-pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
-	let flags = Opt::from_args();
-	if flags.build {
-		return build::run();
+pub fn run(
+	engine: &Engine,
+	vert_shader: Vec<u8>,
+	frag_shader: Vec<u8>,
+) -> Result<(), Box<dyn std::error::Error>> {
+	if engine.run_build_commandlet {
+		match engine.build_assets_callback {
+			Some(callback) => return build::run(callback),
+			None => panic!("No valid assets callback provided"),
+		}
 	}
 
-	let validation_enabled = flags.validation_layers;
+	let validation_enabled = engine.vulkan_validation_enabled;
 
 	let display = display::EngineDisplay::new();
-	let window = display::Window::new(&display, "Demo1", 800, 600);
+	let window = display::Window::new(&display, engine.app_info.app_name(), 800, 600);
 
-	let ctx = Context::new()?;
-	let app_info = AppInfo::new(&ctx)
-		.engine("TemportalEngine", utility::make_version(0, 1, 0))
-		.application("Demo1", utility::make_version(0, 1, 0));
 	let instance = std::rc::Rc::new(
 		instance::Info::default()
-			.set_app_info(app_info.clone())
+			.set_app_info(engine.app_info.clone())
 			.set_window(&window)
 			.set_use_validation(validation_enabled)
-			.create_object(&ctx)?,
+			.create_object(&engine.graphics_context)?,
 	);
 	let surface = instance::Instance::create_surface(instance.clone(), &window)?;
 
@@ -153,7 +191,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		shader::Info {
 			kind: flags::ShaderStageKind::VERTEX,
 			entry_point: String::from("main"),
-			bytes: include_bytes!("triangle.vert.spirv").to_vec(),
+			bytes: vert_shader,
 		},
 	)?;
 	let frag_shader = shader::Module::create(
@@ -161,7 +199,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		shader::Info {
 			kind: flags::ShaderStageKind::FRAGMENT,
 			entry_point: String::from("main"),
-			bytes: include_bytes!("triangle.frag.spirv").to_vec(),
+			bytes: frag_shader,
 		},
 	)?;
 
@@ -202,8 +240,14 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.add_shader(&frag_shader)
 		.set_viewport_state(
 			pipeline::ViewportState::default()
-				.add_viewport(utility::Viewport::default().set_size(physical_device.image_extent()))
-				.add_scissor(utility::Scissor::default().set_size(physical_device.image_extent())),
+				.add_viewport(
+					temportal_graphics::utility::Viewport::default()
+						.set_size(physical_device.image_extent()),
+				)
+				.add_scissor(
+					temportal_graphics::utility::Scissor::default()
+						.set_size(physical_device.image_extent()),
+				),
 		)
 		.set_rasterization_state(pipeline::RasterizationState::default())
 		.set_color_blending(pipeline::ColorBlendState::default().add_attachment(

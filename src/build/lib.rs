@@ -1,55 +1,55 @@
 use shaderc;
 use std::{self, io::Write};
 
-struct Shader {
-	name: String,
-	source: String,
-	kind: shaderc::ShaderKind,
-	entry_point: String,
+pub use shaderc::ShaderKind;
+
+pub struct BuildContext {
+	pub shader: BuildContextShader,
 }
 
-pub fn run() -> Result<(), Box<dyn std::error::Error>> {
+pub struct BuildContextShader {
+	compiler: shaderc::Compiler,
+}
+
+pub type BuildAssetsCallback = fn(ctx: &mut BuildContext) -> Result<(), Box<dyn std::error::Error>>;
+
+impl BuildContextShader {
+	pub fn make_options<'a>(&self) -> shaderc::CompileOptions<'a> {
+		let mut options = shaderc::CompileOptions::new().unwrap();
+		//options.add_macro_definition("EP", Some("main"));
+		options.set_generate_debug_info();
+		options.set_target_env(
+			shaderc::TargetEnv::Vulkan,
+			shaderc::EnvVersion::Vulkan1_2 as u32,
+		);
+		options.set_target_spirv(shaderc::SpirvVersion::V1_5);
+		options.set_source_language(shaderc::SourceLanguage::GLSL);
+		options
+	}
+}
+
+pub struct Shader {
+	pub name: String,
+	pub source: String,
+	pub kind: shaderc::ShaderKind,
+	pub entry_point: String,
+}
+
+pub fn run(build_assets_callback: BuildAssetsCallback) -> Result<(), Box<dyn std::error::Error>> {
 	println!("Building assets...");
 
-	let mut compiler = shaderc::Compiler::new().unwrap();
-	let mut options = shaderc::CompileOptions::new().unwrap();
-	//options.add_macro_definition("EP", Some("main"));
-	options.set_generate_debug_info();
-	options.set_target_env(
-		shaderc::TargetEnv::Vulkan,
-		shaderc::EnvVersion::Vulkan1_2 as u32,
-	);
-	options.set_target_spirv(shaderc::SpirvVersion::V1_5);
-	options.set_source_language(shaderc::SourceLanguage::GLSL);
-
-	compile_into_spirv(
-		Shader {
-			name: String::from("triangle.vert"),
-			source: String::from(include_str!("../triangle.vert")),
-			kind: shaderc::ShaderKind::Vertex,
-			entry_point: String::from("main"),
+	let mut context = BuildContext {
+		shader: BuildContextShader {
+			compiler: shaderc::Compiler::new().unwrap(),
 		},
-		&mut compiler,
-		&options,
-	)?;
+	};
 
-	compile_into_spirv(
-		Shader {
-			name: String::from("triangle.frag"),
-			source: String::from(include_str!("../triangle.frag")),
-			kind: shaderc::ShaderKind::Fragment,
-			entry_point: String::from("main"),
-		},
-		&mut compiler,
-		&options,
-	)?;
-
-	Ok(())
+	build_assets_callback(&mut context)
 }
 
-fn get_output_dir() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
+pub fn get_output_dir(module: &str) -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
 	let mut workspace_path = std::env::current_dir()?;
-	workspace_path.push("temportal-engine");
+	workspace_path.push(module);
 	workspace_path.push("src");
 	Ok(workspace_path)
 }
@@ -85,43 +85,46 @@ fn open_or_create(path: &std::path::PathBuf) -> Result<std::fs::File, Box<dyn st
 	}
 }
 
-fn compile_into_spirv(
-	shader: Shader,
-	compiler: &mut shaderc::Compiler,
-	options: &shaderc::CompileOptions,
-) -> Result<(), Box<dyn std::error::Error>> {
-	let mut outpath = get_output_dir()?;
-	outpath.push(format!("{}.spirv", shader.name));
+impl BuildContextShader {
+	pub fn compile_into_spirv(
+		&mut self,
+		options: &shaderc::CompileOptions,
+		path_to_output: &std::path::PathBuf,
+		shader: Shader,
+	) -> Result<(), Box<dyn std::error::Error>> {
+		let mut outpath = path_to_output.clone();
+		outpath.push(format!("{}.spirv", shader.name));
 
-	println!("Compiling {} into {:?}", shader.name, outpath);
+		println!("Compiling {} into {:?}", shader.name, outpath);
 
-	let binary = compiler.compile_into_spirv(
-		shader.source.as_str(),
-		shader.kind,
-		shader.name.as_str(),
-		shader.entry_point.as_str(),
-		Some(&options),
-	)?;
+		let binary = self.compiler.compile_into_spirv(
+			shader.source.as_str(),
+			shader.kind,
+			shader.name.as_str(),
+			shader.entry_point.as_str(),
+			Some(&options),
+		)?;
 
-	match open_or_create(&outpath) {
-		Ok(mut file) => match file.write_all(binary.as_binary_u8()) {
-			Ok(_) => {
-				println!("Saved {}.spirv to disk", shader.name);
-			}
+		match open_or_create(&outpath) {
+			Ok(mut file) => match file.write_all(binary.as_binary_u8()) {
+				Ok(_) => {
+					println!("Saved {}.spirv to disk", shader.name);
+				}
+				Err(err) => {
+					println!(
+						"Failed to write {}.spriv to disk. Error: {}",
+						shader.name, err
+					);
+				}
+			},
 			Err(err) => {
 				println!(
-					"Failed to write {}.spriv to disk. Error: {}",
+					"Encountered error opening/creating {}.spirv: {}",
 					shader.name, err
 				);
 			}
-		},
-		Err(err) => {
-			println!(
-				"Encountered error opening/creating {}.spirv: {}",
-				shader.name, err
-			);
 		}
-	}
 
-	Ok(())
+		Ok(())
+	}
 }
