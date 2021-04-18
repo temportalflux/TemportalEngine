@@ -17,4 +17,8 @@ impl EngineDisplay {
 	pub fn video_subsystem(&self) -> sdl2::VideoSubsystem {
 		self.sdl.video().unwrap()
 	}
+
+	pub fn event_pump(&self) -> sdl2::EventPump {
+		self.sdl.event_pump().unwrap()
+	}
 }

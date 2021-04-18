@@ -1,6 +1,10 @@
 extern crate sdl2;
 extern crate shaderc;
 
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use std::time::Duration;
+
 use structopt::StructOpt;
 use temportal_graphics::{
 	self, command,
@@ -248,33 +252,82 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 
 	// END: Recording Cmd Buffers
 
+	let frames_in_flight = 2;
+	let graphics_queue = logical_device.get_queue(grahics_queue_idx as u32);
+	let img_available_semaphores = logical_device.create_semaphores(frames_in_flight)?;
+	let render_finished_semaphores = logical_device.create_semaphores(frames_in_flight)?;
+	let in_flight_fences =
+		logical_device.create_fences(frames_in_flight, flags::FenceState::SIGNALED)?;
+	let mut images_in_flight: Vec<Option<&command::Fence>> =
+		frame_images.iter().map(|_| None).collect::<Vec<_>>();
+	let mut frame = 0;
+
+	// Game loop
+	let mut event_pump = display.event_pump();
+	'gameloop: loop {
+		for event in event_pump.poll_iter() {
+			match event {
+				Event::Quit { .. } => break 'gameloop,
+				Event::KeyDown {
+					keycode: Some(Keycode::Escape),
+					..
+				} => break 'gameloop,
+				_ => {}
+			}
+		}
+
+		// START: Render
+
+		// Wait for the previous frame/image to no longer be displayed
+		logical_device.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
+		// Get the index of the next image to display
+		let next_image_idx = logical_device.acquire_next_image(
+			&swapchain,
+			u64::MAX,
+			Some(&img_available_semaphores[frame]),
+			None,
+		)?;
+		// Ensure that the image for the next index is not being written to or displayed
+		{
+			let img_in_flight = &images_in_flight[next_image_idx];
+			if img_in_flight.is_some() {
+				logical_device.wait_for(img_in_flight.unwrap(), true, u64::MAX)?;
+			}
+		}
+		// Denote that the image that is in-flight is the fence for the this frame
+		images_in_flight[next_image_idx] = Some(&in_flight_fences[frame]);
+
+		// Mark the image as not having been signaled (it is now being used)
+		logical_device.reset_fences(&[&in_flight_fences[frame]])?;
+
+		logical_device.submit(
+			&graphics_queue,
+			vec![command::SubmitInfo::default()
+				// tell the gpu to wait until the image is available
+				.wait_for(
+					&img_available_semaphores[frame],
+					flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT,
+				)
+				// denote which command buffer is being executed
+				.add_buffer(&cmd_buffers[next_image_idx])
+				// tell the gpu to signal a semaphore when the image is available again
+				.signal_when_complete(&render_finished_semaphores[frame])],
+			Some(&in_flight_fences[frame]),
+		)?;
+
+		logical_device.present(
+			&graphics_queue,
+			command::PresentInfo::default()
+				.wait_for(&render_finished_semaphores[frame])
+				.add_swapchain(&swapchain)
+				.add_image_index(next_image_idx as u32),
+		)?;
+
+		frame = (frame + 1) % frames_in_flight;
+		// END: RENDER
+
+		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+	}
+
 	Ok(())
 }
-
-//use sdl2::event::Event;
-//use sdl2::keyboard::Keycode;
-//use sdl2::pixels::Color;
-//use std::time::Duration;
-
-// let mut canvas = window.window.into_canvas().build().unwrap();
-
-// canvas.set_draw_color(Color::RGB(50, 0, 50));
-// canvas.clear();
-// canvas.present();
-
-// // Game loop
-// let mut event_pump = display.sdl.event_pump().unwrap();
-// 'gameloop: loop {
-// 	for event in event_pump.poll_iter() {
-// 		match event {
-// 			Event::Quit { .. } => break 'gameloop,
-// 			Event::KeyDown {
-// 				keycode: Some(Keycode::Escape),
-// 				..
-// 			} => break 'gameloop,
-// 			_ => {}
-// 		}
-// 	}
-// 	canvas.present();
-// 	::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-// }
