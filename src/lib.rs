@@ -39,6 +39,14 @@ pub struct Engine {
 	vulkan_validation_enabled: bool,
 	graphics_context: Context,
 	app_info: AppInfo,
+
+	pub assets: EngineAssets,
+}
+
+pub struct EngineAssets {
+	pub types: asset::TypeRegistry,
+	pub library: asset::Library,
+	pub loader: asset::Loader,
 }
 
 impl Engine {
@@ -48,28 +56,45 @@ impl Engine {
 	}
 }
 
+#[path = "asset/lib.rs"]
+pub mod asset;
+
 #[path = "build/lib.rs"]
 pub mod build;
 
 #[path = "display/lib.rs"]
 pub mod display;
 
+#[path = "graphics/lib.rs"]
+pub mod graphics;
+
 #[path = "world/lib.rs"]
 pub mod world;
 
 pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
+	use asset::Asset;
+
 	let flags = Opt::from_args();
 	let graphics_context = Context::new()?;
 	let app_info =
 		AppInfo::new(&graphics_context).engine("TemportalEngine", utility::make_version(0, 1, 0));
-	let engine = Engine {
+	let mut engine = Engine {
 		run_build_commandlet: flags.build,
 		build_assets_callback: None,
 
 		vulkan_validation_enabled: flags.validation_layers,
 		graphics_context,
 		app_info,
+
+		assets: EngineAssets {
+			types: asset::TypeRegistry::new(),
+			library: asset::Library::new(),
+			loader: asset::Loader::new(),
+		},
 	};
+
+	engine.assets.types.register(graphics::Shader::type_data());
+
 	Ok(engine)
 }
 
