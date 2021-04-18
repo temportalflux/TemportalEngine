@@ -225,7 +225,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	}
 
 	let cmd_pool = command::Pool::create(logical_device.clone(), grahics_queue_idx)?;
-	let cmd_buffers = logical_device.allocate_command_buffers(&cmd_pool, framebuffers.len())?;
+	let cmd_buffers = cmd_pool.allocate_buffers(framebuffers.len())?;
 
 	// END: Initialization
 
@@ -237,28 +237,20 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 			0.0, 0.0, 0.0, 1.0,
 		])));
 	for (cmd_buffer, frame_buffer) in cmd_buffers.iter().zip(framebuffers.iter()) {
-		cmd_buffer.begin(&logical_device)?;
-		cmd_buffer.start_render_pass(
-			&logical_device,
-			&frame_buffer,
-			&render_pass,
-			record_instruction.clone(),
-		);
-		cmd_buffer.bind_pipeline(
-			&logical_device,
-			&pipeline,
-			flags::PipelineBindPoint::GRAPHICS,
-		);
-		//cmd_buffer.draw(&logical_device, 3, 0, 1, 0, 0);
+		cmd_buffer.begin()?;
+		cmd_buffer.start_render_pass(&frame_buffer, &render_pass, record_instruction.clone());
+		cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
+		//cmd_buffer.draw(3, 0, 1, 0, 0);
 		logical_device.draw(&cmd_buffer, 3);
-		cmd_buffer.stop_render_pass(&logical_device);
-		cmd_buffer.end(&logical_device)?;
+		cmd_buffer.stop_render_pass();
+		cmd_buffer.end()?;
 	}
 
 	// END: Recording Cmd Buffers
 
 	let frames_in_flight = 2;
-	let graphics_queue = logical_device.get_queue(grahics_queue_idx as u32);
+	let graphics_queue =
+		logical::Device::get_queue(logical_device.clone(), grahics_queue_idx as u32);
 	let img_available_semaphores =
 		logical::Device::create_semaphores(&logical_device, frames_in_flight)?;
 	let render_finished_semaphores =
@@ -291,12 +283,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		// Wait for the previous frame/image to no longer be displayed
 		logical_device.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
 		// Get the index of the next image to display
-		let next_image_idx = logical_device.acquire_next_image(
-			&swapchain,
-			u64::MAX,
-			Some(&img_available_semaphores[frame]),
-			None,
-		)?;
+		let next_image_idx =
+			swapchain.acquire_next_image(u64::MAX, Some(&img_available_semaphores[frame]), None)?;
 		// Ensure that the image for the next index is not being written to or displayed
 		{
 			let img_in_flight = &images_in_flight[next_image_idx];
@@ -310,8 +298,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		// Mark the image as not having been signaled (it is now being used)
 		logical_device.reset_fences(&[&in_flight_fences[frame]])?;
 
-		logical_device.submit(
-			&graphics_queue,
+		graphics_queue.submit(
 			vec![command::SubmitInfo::default()
 				// tell the gpu to wait until the image is available
 				.wait_for(
@@ -325,8 +312,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 			Some(&in_flight_fences[frame]),
 		)?;
 
-		logical_device.present(
-			&graphics_queue,
+		graphics_queue.present(
 			command::PresentInfo::default()
 				.wait_for(&render_finished_semaphores[frame])
 				.add_swapchain(&swapchain)
