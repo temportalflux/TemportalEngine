@@ -75,12 +75,14 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let app_info = AppInfo::new(&ctx)
 		.engine("TemportalEngine", utility::make_version(0, 1, 0))
 		.application("Demo1", utility::make_version(0, 1, 0));
-	let instance = instance::Info::default()
-		.set_app_info(app_info.clone())
-		.set_window(&window)
-		.set_use_validation(validation_enabled)
-		.create_object(&ctx)?;
-	let surface = instance.create_surface(&window);
+	let instance = std::rc::Rc::new(
+		instance::Info::default()
+			.set_app_info(app_info.clone())
+			.set_window(&window)
+			.set_use_validation(validation_enabled)
+			.create_object(&ctx)?,
+	);
+	let surface = instance::Instance::create_surface(instance.clone(), &window)?;
 
 	let constraints = vulkan_device_constraints();
 	let physical_device = match instance.find_physical_device(&constraints, &surface) {
@@ -98,14 +100,16 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 	let grahics_queue_idx = physical_device
 		.get_queue_index(QueueFlags::GRAPHICS, true)
 		.unwrap();
-	let logical_device = logical::Info::default()
-		.add_extension("VK_KHR_swapchain")
-		.set_validation_enabled(validation_enabled)
-		.add_queue(logical::DeviceQueue {
-			queue_family_index: grahics_queue_idx,
-			priorities: vec![1.0],
-		})
-		.create_object(&instance, &physical_device);
+	let logical_device = std::rc::Rc::new(
+		logical::Info::default()
+			.add_extension("VK_KHR_swapchain")
+			.set_validation_enabled(validation_enabled)
+			.add_queue(logical::DeviceQueue {
+				queue_family_index: grahics_queue_idx,
+				priorities: vec![1.0],
+			})
+			.create_object(&instance, &physical_device),
+	);
 	let permitted_frame_count = physical_device.image_count_range();
 	let frame_count = std::cmp::min(
 		std::cmp::max(3, permitted_frame_count.start),
@@ -124,8 +128,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		.set_composite_alpha(CompositeAlpha::OPAQUE_KHR)
 		.set_present_mode(physical_device.selected_present_mode)
 		.set_is_clipped(true)
-		.create_object(&logical_device, &surface)?;
-	let frame_images = swapchain.get_images(&logical_device)?;
+		.create_object(logical_device.clone(), &surface)?;
+	let frame_images = swapchain.get_images()?;
 
 	let mut frame_image_views: Vec<image::View> = Vec::new();
 	for image in frame_images.iter() {
@@ -140,12 +144,12 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 					base_array_layer: 0,
 					layer_count: 1,
 				})
-				.create_object(&logical_device, &image)?,
+				.create_object(logical_device.clone(), &image)?,
 		);
 	}
 
 	let vert_shader = shader::Module::create(
-		&logical_device,
+		logical_device.clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::VERTEX,
 			entry_point: String::from("main"),
@@ -153,7 +157,7 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 		},
 	)?;
 	let frag_shader = shader::Module::create(
-		&logical_device,
+		logical_device.clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::FRAGMENT,
 			entry_point: String::from("main"),
@@ -189,9 +193,10 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 				.set_access(flags::Access::COLOR_ATTACHMENT_WRITE),
 		);
 
-		rp_info.create_object(&logical_device)?
+		rp_info.create_object(logical_device.clone())?
 	};
 
+	let pipeline_layout = pipeline::Layout::create(logical_device.clone())?;
 	let pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
@@ -208,18 +213,18 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 					| ColorComponent::A,
 			},
 		))
-		.create_object(&logical_device, &render_pass)?;
+		.create_object(logical_device.clone(), &pipeline_layout, &render_pass)?;
 
 	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
 	for image_view in frame_image_views.iter() {
 		framebuffers.push(
 			command::framebuffer::Info::default()
 				.set_extent(physical_device.image_extent())
-				.create_object(&image_view, &render_pass, &logical_device)?,
+				.create_object(&image_view, &render_pass, logical_device.clone())?,
 		);
 	}
 
-	let cmd_pool = command::Pool::create(&logical_device, grahics_queue_idx)?;
+	let cmd_pool = command::Pool::create(logical_device.clone(), grahics_queue_idx)?;
 	let cmd_buffers = logical_device.allocate_command_buffers(&cmd_pool, framebuffers.len())?;
 
 	// END: Initialization
@@ -254,10 +259,15 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 
 	let frames_in_flight = 2;
 	let graphics_queue = logical_device.get_queue(grahics_queue_idx as u32);
-	let img_available_semaphores = logical_device.create_semaphores(frames_in_flight)?;
-	let render_finished_semaphores = logical_device.create_semaphores(frames_in_flight)?;
-	let in_flight_fences =
-		logical_device.create_fences(frames_in_flight, flags::FenceState::SIGNALED)?;
+	let img_available_semaphores =
+		logical::Device::create_semaphores(&logical_device, frames_in_flight)?;
+	let render_finished_semaphores =
+		logical::Device::create_semaphores(&logical_device, frames_in_flight)?;
+	let in_flight_fences = logical::Device::create_fences(
+		&logical_device,
+		frames_in_flight,
+		flags::FenceState::SIGNALED,
+	)?;
 	let mut images_in_flight: Vec<Option<&command::Fence>> =
 		frame_images.iter().map(|_| None).collect::<Vec<_>>();
 	let mut frame = 0;
@@ -328,6 +338,8 @@ pub fn run(_args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
 
 		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
 	}
+
+	logical_device.wait_until_idle()?;
 
 	Ok(())
 }
