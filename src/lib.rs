@@ -3,25 +3,40 @@ extern crate shaderc;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use std::rc::Rc;
 use std::time::Duration;
 
 use structopt::StructOpt;
 use temportal_graphics::{
 	self, command,
-	device::{logical, physical, swapchain},
+	device::{logical, swapchain},
 	flags::{
 		self, ColorComponent, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags,
-		ImageViewType, PresentMode, QueueFlags, SharingMode,
+		ImageViewType, SharingMode,
 	},
-	image, instance, pipeline, renderpass, shader,
+	image, pipeline, renderpass, shader,
 	structs::ImageSubresourceRange,
 	AppInfo, Context,
 };
 use temportal_math::Vector;
 
-pub mod utility {
-	pub use temportal_graphics::utility::make_version;
-}
+#[path = "asset/lib.rs"]
+pub mod asset;
+
+#[path = "build/lib.rs"]
+pub mod build;
+
+#[path = "display/lib.rs"]
+pub mod display;
+
+#[path = "graphics/lib.rs"]
+pub mod graphics;
+
+#[path = "world/lib.rs"]
+pub mod world;
+
+#[path = "utility/lib.rs"]
+pub mod utility;
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -54,22 +69,26 @@ impl Engine {
 		self.app_info.set_application_info(name, version);
 		self
 	}
+
+	pub fn app_info(&self) -> &AppInfo {
+		&self.app_info
+	}
+
+	pub fn create_display_manager(engine: &Rc<Self>) -> utility::Result<display::Manager> {
+		display::Manager::new(engine.clone())
+	}
+
+	pub fn is_build_instance(&self) -> bool {
+		self.run_build_commandlet
+	}
+
+	pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
+		match self.build_assets_callback {
+			Some(callback) => return build::run(callback),
+			None => panic!("No valid assets callback provided"),
+		}
+	}
 }
-
-#[path = "asset/lib.rs"]
-pub mod asset;
-
-#[path = "build/lib.rs"]
-pub mod build;
-
-#[path = "display/lib.rs"]
-pub mod display;
-
-#[path = "graphics/lib.rs"]
-pub mod graphics;
-
-#[path = "world/lib.rs"]
-pub mod world;
 
 pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
 	use asset::Asset;
@@ -98,82 +117,13 @@ pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
 	Ok(engine)
 }
 
-fn vulkan_device_constraints() -> Vec<physical::Constraint> {
-	use physical::Constraint::*;
-	vec![
-		HasQueueFamily(QueueFlags::GRAPHICS, /*requires_surface*/ true),
-		HasSurfaceFormats(Format::B8G8R8A8_SRGB, ColorSpace::SRGB_NONLINEAR_KHR),
-		HasExtension(String::from("VK_KHR_swapchain")),
-		PrioritizedSet(
-			vec![
-				CanPresentWith(PresentMode::MAILBOX_KHR, Some(1)),
-				CanPresentWith(PresentMode::FIFO_KHR, None),
-			],
-			false,
-		),
-		PrioritizedSet(
-			vec![
-				IsDeviceType(physical::Kind::DISCRETE_GPU, Some(100)),
-				IsDeviceType(physical::Kind::INTEGRATED_GPU, Some(0)),
-			],
-			false,
-		),
-	]
-}
-
 pub fn run(
-	engine: &Engine,
+	display: &display::Manager,
+	window: &display::Window,
 	vert_shader: Vec<u8>,
 	frag_shader: Vec<u8>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	if engine.run_build_commandlet {
-		match engine.build_assets_callback {
-			Some(callback) => return build::run(callback),
-			None => panic!("No valid assets callback provided"),
-		}
-	}
-
-	let validation_enabled = engine.vulkan_validation_enabled;
-
-	let display = display::EngineDisplay::new();
-	let window = display::Window::new(&display, engine.app_info.app_name(), 800, 600);
-
-	let instance = std::rc::Rc::new(
-		instance::Info::default()
-			.set_app_info(engine.app_info.clone())
-			.set_window(&window)
-			.set_use_validation(validation_enabled)
-			.create_object(&engine.graphics_context)?,
-	);
-	let surface = instance::Instance::create_surface(instance.clone(), &window)?;
-
-	let constraints = vulkan_device_constraints();
-	let physical_device = match instance.find_physical_device(&constraints, &surface) {
-		Ok(device) => device,
-		Err(failed_constraint) => match failed_constraint {
-			None => panic!("Failed to find any rendering device (do you not have anyu GPUs?)"),
-			Some(constraint) => panic!(
-				"Failed to find physical device, failed on constraint {:?}",
-				constraint
-			),
-		},
-	};
-	println!("Found physical device {}", physical_device);
-
-	let grahics_queue_idx = physical_device
-		.get_queue_index(QueueFlags::GRAPHICS, true)
-		.unwrap();
-	let logical_device = std::rc::Rc::new(
-		logical::Info::default()
-			.add_extension("VK_KHR_swapchain")
-			.set_validation_enabled(validation_enabled)
-			.add_queue(logical::DeviceQueue {
-				queue_family_index: grahics_queue_idx,
-				priorities: vec![1.0],
-			})
-			.create_object(&instance, &physical_device),
-	);
-	let permitted_frame_count = physical_device.image_count_range();
+	let permitted_frame_count = window.physical().image_count_range();
 	let frame_count = std::cmp::min(
 		std::cmp::max(3, permitted_frame_count.start),
 		permitted_frame_count.end,
@@ -183,15 +133,15 @@ pub fn run(
 		.set_image_count(frame_count)
 		.set_image_format(Format::B8G8R8A8_SRGB)
 		.set_image_color_space(ColorSpace::SRGB_NONLINEAR_KHR)
-		.set_image_extent(physical_device.image_extent())
+		.set_image_extent(window.physical().image_extent())
 		.set_image_array_layer_count(1)
 		.set_image_usage(ImageUsageFlags::COLOR_ATTACHMENT)
 		.set_image_sharing_mode(SharingMode::EXCLUSIVE)
-		.set_pre_transform(physical_device.current_transform())
+		.set_pre_transform(window.physical().current_transform())
 		.set_composite_alpha(CompositeAlpha::OPAQUE_KHR)
-		.set_present_mode(physical_device.selected_present_mode)
+		.set_present_mode(window.physical().selected_present_mode)
 		.set_is_clipped(true)
-		.create_object(logical_device.clone(), &surface)?;
+		.create_object(window.logical().clone(), &window.surface())?;
 	let frame_images = swapchain.get_images()?;
 
 	let mut frame_image_views: Vec<image::View> = Vec::new();
@@ -207,12 +157,12 @@ pub fn run(
 					base_array_layer: 0,
 					layer_count: 1,
 				})
-				.create_object(logical_device.clone(), &image)?,
+				.create_object(window.logical().clone(), &image)?,
 		);
 	}
 
 	let vert_shader = shader::Module::create(
-		logical_device.clone(),
+		window.logical().clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::VERTEX,
 			entry_point: String::from("main"),
@@ -220,7 +170,7 @@ pub fn run(
 		},
 	)?;
 	let frag_shader = shader::Module::create(
-		logical_device.clone(),
+		window.logical().clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::FRAGMENT,
 			entry_point: String::from("main"),
@@ -256,10 +206,10 @@ pub fn run(
 				.set_access(flags::Access::COLOR_ATTACHMENT_WRITE),
 		);
 
-		rp_info.create_object(logical_device.clone())?
+		rp_info.create_object(window.logical().clone())?
 	};
 
-	let pipeline_layout = pipeline::Layout::create(logical_device.clone())?;
+	let pipeline_layout = pipeline::Layout::create(window.logical().clone())?;
 	let pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
@@ -267,11 +217,11 @@ pub fn run(
 			pipeline::ViewportState::default()
 				.add_viewport(
 					temportal_graphics::utility::Viewport::default()
-						.set_size(physical_device.image_extent()),
+						.set_size(window.physical().image_extent()),
 				)
 				.add_scissor(
 					temportal_graphics::utility::Scissor::default()
-						.set_size(physical_device.image_extent()),
+						.set_size(window.physical().image_extent()),
 				),
 		)
 		.set_rasterization_state(pipeline::RasterizationState::default())
@@ -282,18 +232,18 @@ pub fn run(
 					| ColorComponent::A,
 			},
 		))
-		.create_object(logical_device.clone(), &pipeline_layout, &render_pass)?;
+		.create_object(window.logical().clone(), &pipeline_layout, &render_pass)?;
 
 	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
 	for image_view in frame_image_views.iter() {
 		framebuffers.push(
 			command::framebuffer::Info::default()
-				.set_extent(physical_device.image_extent())
-				.create_object(&image_view, &render_pass, logical_device.clone())?,
+				.set_extent(window.physical().image_extent())
+				.create_object(&image_view, &render_pass, window.logical().clone())?,
 		);
 	}
 
-	let cmd_pool = command::Pool::create(logical_device.clone(), grahics_queue_idx)?;
+	let cmd_pool = command::Pool::create(window.logical().clone(), window.graphics_queue_index())?;
 	let cmd_buffers = cmd_pool.allocate_buffers(framebuffers.len())?;
 
 	// END: Initialization
@@ -301,7 +251,7 @@ pub fn run(
 	// START: Recording Cmd Buffers
 
 	let record_instruction = renderpass::RecordInstruction::default()
-		.set_extent(physical_device.image_extent())
+		.set_extent(window.physical().image_extent())
 		.clear_with(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
@@ -310,7 +260,7 @@ pub fn run(
 		cmd_buffer.start_render_pass(&frame_buffer, &render_pass, record_instruction.clone());
 		cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
 		//cmd_buffer.draw(3, 0, 1, 0, 0);
-		logical_device.draw(&cmd_buffer, 3);
+		window.logical().draw(&cmd_buffer, 3);
 		cmd_buffer.stop_render_pass();
 		cmd_buffer.end()?;
 	}
@@ -319,13 +269,13 @@ pub fn run(
 
 	let frames_in_flight = 2;
 	let graphics_queue =
-		logical::Device::get_queue(logical_device.clone(), grahics_queue_idx as u32);
+		logical::Device::get_queue(window.logical().clone(), window.graphics_queue_index());
 	let img_available_semaphores =
-		logical::Device::create_semaphores(&logical_device, frames_in_flight)?;
+		logical::Device::create_semaphores(&window.logical(), frames_in_flight)?;
 	let render_finished_semaphores =
-		logical::Device::create_semaphores(&logical_device, frames_in_flight)?;
+		logical::Device::create_semaphores(&window.logical(), frames_in_flight)?;
 	let in_flight_fences = logical::Device::create_fences(
-		&logical_device,
+		&window.logical(),
 		frames_in_flight,
 		flags::FenceState::SIGNALED,
 	)?;
@@ -334,7 +284,7 @@ pub fn run(
 	let mut frame = 0;
 
 	// Game loop
-	let mut event_pump = display.event_pump();
+	let mut event_pump = display.event_pump()?;
 	'gameloop: loop {
 		for event in event_pump.poll_iter() {
 			match event {
@@ -350,7 +300,9 @@ pub fn run(
 		// START: Render
 
 		// Wait for the previous frame/image to no longer be displayed
-		logical_device.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
+		window
+			.logical()
+			.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
 		// Get the index of the next image to display
 		let next_image_idx =
 			swapchain.acquire_next_image(u64::MAX, Some(&img_available_semaphores[frame]), None)?;
@@ -358,14 +310,16 @@ pub fn run(
 		{
 			let img_in_flight = &images_in_flight[next_image_idx];
 			if img_in_flight.is_some() {
-				logical_device.wait_for(img_in_flight.unwrap(), true, u64::MAX)?;
+				window
+					.logical()
+					.wait_for(img_in_flight.unwrap(), true, u64::MAX)?;
 			}
 		}
 		// Denote that the image that is in-flight is the fence for the this frame
 		images_in_flight[next_image_idx] = Some(&in_flight_fences[frame]);
 
 		// Mark the image as not having been signaled (it is now being used)
-		logical_device.reset_fences(&[&in_flight_fences[frame]])?;
+		window.logical().reset_fences(&[&in_flight_fences[frame]])?;
 
 		graphics_queue.submit(
 			vec![command::SubmitInfo::default()
@@ -394,7 +348,7 @@ pub fn run(
 		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
 	}
 
-	logical_device.wait_until_idle()?;
+	window.logical().wait_until_idle()?;
 
 	Ok(())
 }
