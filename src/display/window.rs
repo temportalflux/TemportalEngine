@@ -2,14 +2,25 @@ use crate::{utility, Engine};
 use sdl2;
 use std::rc::Rc;
 use temportal_graphics::{
+	command,
 	device::{logical, physical, swapchain},
 	flags, image, instance, structs, Surface,
 };
 
 pub struct Window {
+	current_frame: usize,
+	images_in_flight: Vec<Option</*in_flight_fence index*/ usize>>,
+	in_flight_fences: Vec<command::Fence>,
+	render_finished_semaphores: Vec<command::Semaphore>,
+	img_available_semaphores: Vec<command::Semaphore>,
+	graphics_queue: Option<logical::Queue>,
+
+	command_buffers: Vec<command::Buffer>,
+	command_pool: Option<command::Pool>,
+
 	frame_image_views: Vec<image::View>,
 	frame_images: Vec<image::Image>,
-	frame_count: u32,
+	frame_count: usize,
 	swapchain: Option<swapchain::Swapchain>,
 	logical_device: Option<Rc<logical::Device>>,
 	graphics_queue_index: Option<usize>,
@@ -49,6 +60,14 @@ impl Window {
 			frame_count: 0,
 			frame_images: Vec::new(),
 			frame_image_views: Vec::new(),
+			command_pool: None,
+			command_buffers: Vec::new(),
+			graphics_queue: None,
+			img_available_semaphores: Vec::new(),
+			render_finished_semaphores: Vec::new(),
+			in_flight_fences: Vec::new(),
+			images_in_flight: Vec::new(),
+			current_frame: 0,
 		})
 	}
 
@@ -77,8 +96,8 @@ impl Window {
 
 		let permitted_frame_count = self.physical().image_count_range();
 		self.frame_count = std::cmp::min(
-			std::cmp::max(3, permitted_frame_count.start),
-			permitted_frame_count.end,
+			std::cmp::max(3, permitted_frame_count.start as usize),
+			permitted_frame_count.end as usize,
 		);
 
 		Ok(())
@@ -107,6 +126,24 @@ impl Window {
 				})
 				.create_object(&self.vulkan, &self.physical()),
 		)?));
+		self.graphics_queue = Some(logical::Device::get_queue(
+			self.logical(),
+			self.graphics_queue_index(),
+		));
+
+		assert!(self.frame_count > 0);
+
+		self.command_pool = Some(utility::as_graphics_error(command::Pool::create(
+			&self.logical(),
+			self.graphics_queue_index(),
+		))?);
+		self.command_buffers = utility::as_graphics_error(
+			self.command_pool
+				.as_ref()
+				.unwrap()
+				.allocate_buffers(self.frame_count),
+		)?;
+
 		Ok(())
 	}
 
@@ -118,15 +155,23 @@ impl Window {
 		self.graphics_queue_index.unwrap()
 	}
 
-	pub fn create_swapchain(&mut self) -> utility::Result<()> {
+	pub fn command_buffers(&self) -> &Vec<command::Buffer> {
+		&self.command_buffers
+	}
+
+	pub fn create_render_chain(&mut self) -> utility::Result<()> {
 		assert!(self.frame_count > 0);
 
 		self.frame_image_views.clear();
 		self.frame_images.clear();
+		self.img_available_semaphores.clear();
+		self.render_finished_semaphores.clear();
+		self.in_flight_fences.clear();
+		self.images_in_flight.clear();
 
 		self.swapchain = Some(utility::as_graphics_error(
 			swapchain::Info::default()
-				.set_image_count(self.frame_count)
+				.set_image_count(self.frame_count as u32)
 				.set_image_format(flags::Format::B8G8R8A8_SRGB)
 				.set_image_color_space(flags::ColorSpace::SRGB_NONLINEAR_KHR)
 				.set_image_extent(self.physical().image_extent())
@@ -159,6 +204,20 @@ impl Window {
 			)?);
 		}
 
+		self.img_available_semaphores = utility::as_graphics_error(
+			logical::Device::create_semaphores(&self.logical(), self.max_frames_in_flight()),
+		)?;
+		self.render_finished_semaphores = utility::as_graphics_error(
+			logical::Device::create_semaphores(&self.logical(), self.max_frames_in_flight()),
+		)?;
+		self.in_flight_fences = utility::as_graphics_error(logical::Device::create_fences(
+			&self.logical(),
+			self.max_frames_in_flight(),
+			flags::FenceState::SIGNALED,
+		))?;
+		self.current_frame = 0;
+		self.images_in_flight = self.frame_views().iter().map(|_| None).collect::<Vec<_>>();
+
 		Ok(())
 	}
 
@@ -168,6 +227,70 @@ impl Window {
 
 	pub fn frame_views(&self) -> &Vec<image::View> {
 		&self.frame_image_views
+	}
+
+	fn max_frames_in_flight(&self) -> usize {
+		std::cmp::max(self.frame_count - 1, 1)
+	}
+
+	pub fn render_frame(&mut self) -> utility::Result<()> {
+		// Wait for the previous frame/image to no longer be displayed
+		utility::as_graphics_error(self.logical().wait_for(
+			&self.in_flight_fences[self.current_frame],
+			true,
+			u64::MAX,
+		))?;
+		// Get the index of the next image to display
+		let next_image_idx = utility::as_graphics_error(self.swapchain().acquire_next_image(
+			u64::MAX,
+			Some(&self.img_available_semaphores[self.current_frame]),
+			None,
+		))?;
+		// Ensure that the image for the next index is not being written to or displayed
+		{
+			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
+			if fence_index_for_img_in_flight.is_some() {
+				utility::as_graphics_error(self.logical().wait_for(
+					&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()],
+					true,
+					u64::MAX,
+				))?;
+			}
+		}
+		// Denote that the image that is in-flight is the fence for the this frame
+		self.images_in_flight[next_image_idx] = Some(self.current_frame);
+
+		// Mark the image as not having been signaled (it is now being used)
+		utility::as_graphics_error(
+			self.logical()
+				.reset_fences(&[&self.in_flight_fences[self.current_frame]]),
+		)?;
+
+		utility::as_graphics_error(self.graphics_queue.as_ref().unwrap().submit(
+			vec![command::SubmitInfo::default()
+				// tell the gpu to wait until the image is available
+				.wait_for(
+					&self.img_available_semaphores[self.current_frame],
+					flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT,
+				)
+				// denote which command buffer is being executed
+				.add_buffer(&self.command_buffers[next_image_idx])
+				// tell the gpu to signal a semaphore when the image is available again
+				.signal_when_complete(&self.render_finished_semaphores[self.current_frame])],
+			Some(&self.in_flight_fences[self.current_frame]),
+		))?;
+
+		utility::as_graphics_error(
+			self.graphics_queue.as_ref().unwrap().present(
+				command::PresentInfo::default()
+					.wait_for(&self.render_finished_semaphores[self.current_frame])
+					.add_swapchain(&self.swapchain())
+					.add_image_index(next_image_idx as u32),
+			),
+		)?;
+
+		self.current_frame = (self.current_frame + 1) % self.max_frames_in_flight();
+		Ok(())
 	}
 }
 

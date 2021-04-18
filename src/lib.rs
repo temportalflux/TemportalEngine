@@ -9,7 +9,6 @@ use std::time::Duration;
 use structopt::StructOpt;
 use temportal_graphics::{
 	self, command,
-	device::logical,
 	flags::{self, ColorComponent, Format},
 	pipeline, renderpass, shader, AppInfo, Context,
 };
@@ -114,7 +113,7 @@ pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
 
 pub fn run(
 	display: &display::Manager,
-	window: &display::Window,
+	window: &mut display::Window,
 	vert_shader: Vec<u8>,
 	frag_shader: Vec<u8>,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -200,9 +199,6 @@ pub fn run(
 		);
 	}
 
-	let cmd_pool = command::Pool::create(window.logical().clone(), window.graphics_queue_index())?;
-	let cmd_buffers = cmd_pool.allocate_buffers(framebuffers.len())?;
-
 	// END: Initialization
 
 	// START: Recording Cmd Buffers
@@ -212,7 +208,7 @@ pub fn run(
 		.clear_with(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
-	for (cmd_buffer, frame_buffer) in cmd_buffers.iter().zip(framebuffers.iter()) {
+	for (cmd_buffer, frame_buffer) in window.command_buffers().iter().zip(framebuffers.iter()) {
 		cmd_buffer.begin()?;
 		cmd_buffer.start_render_pass(&frame_buffer, &render_pass, record_instruction.clone());
 		cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
@@ -223,25 +219,6 @@ pub fn run(
 	}
 
 	// END: Recording Cmd Buffers
-
-	let frames_in_flight = 2;
-	let graphics_queue =
-		logical::Device::get_queue(window.logical().clone(), window.graphics_queue_index());
-	let img_available_semaphores =
-		logical::Device::create_semaphores(&window.logical(), frames_in_flight)?;
-	let render_finished_semaphores =
-		logical::Device::create_semaphores(&window.logical(), frames_in_flight)?;
-	let in_flight_fences = logical::Device::create_fences(
-		&window.logical(),
-		frames_in_flight,
-		flags::FenceState::SIGNALED,
-	)?;
-	let mut images_in_flight: Vec<Option<&command::Fence>> = window
-		.frame_views()
-		.iter()
-		.map(|_| None)
-		.collect::<Vec<_>>();
-	let mut frame = 0;
 
 	// Game loop
 	let mut event_pump = display.event_pump()?;
@@ -264,54 +241,7 @@ pub fn run(
 		}
 
 		// START: Render
-
-		// Wait for the previous frame/image to no longer be displayed
-		window
-			.logical()
-			.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
-		// Get the index of the next image to display
-		let next_image_idx = window.swapchain().acquire_next_image(
-			u64::MAX,
-			Some(&img_available_semaphores[frame]),
-			None,
-		)?;
-		// Ensure that the image for the next index is not being written to or displayed
-		{
-			let img_in_flight = &images_in_flight[next_image_idx];
-			if img_in_flight.is_some() {
-				window
-					.logical()
-					.wait_for(img_in_flight.unwrap(), true, u64::MAX)?;
-			}
-		}
-		// Denote that the image that is in-flight is the fence for the this frame
-		images_in_flight[next_image_idx] = Some(&in_flight_fences[frame]);
-
-		// Mark the image as not having been signaled (it is now being used)
-		window.logical().reset_fences(&[&in_flight_fences[frame]])?;
-
-		graphics_queue.submit(
-			vec![command::SubmitInfo::default()
-				// tell the gpu to wait until the image is available
-				.wait_for(
-					&img_available_semaphores[frame],
-					flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT,
-				)
-				// denote which command buffer is being executed
-				.add_buffer(&cmd_buffers[next_image_idx])
-				// tell the gpu to signal a semaphore when the image is available again
-				.signal_when_complete(&render_finished_semaphores[frame])],
-			Some(&in_flight_fences[frame]),
-		)?;
-
-		graphics_queue.present(
-			command::PresentInfo::default()
-				.wait_for(&render_finished_semaphores[frame])
-				.add_swapchain(&window.swapchain())
-				.add_image_index(next_image_idx as u32),
-		)?;
-
-		frame = (frame + 1) % frames_in_flight;
+		window.render_frame()?;
 		// END: RENDER
 
 		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
