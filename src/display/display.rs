@@ -18,7 +18,8 @@ impl Manager {
 
 	pub fn create_window(&self, title: &str, width: u32, height: u32) -> utility::Result<Window> {
 		let mut builder = self.video_subsystem()?.window(title, width, height);
-		let sdl_window = utility::as_window_error(builder.position_centered().vulkan().build())?;
+		let sdl_window =
+			utility::as_window_error(builder.position_centered().vulkan().resizable().build())?;
 		Window::new(&self.engine, sdl_window)
 	}
 

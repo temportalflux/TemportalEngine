@@ -9,14 +9,9 @@ use std::time::Duration;
 use structopt::StructOpt;
 use temportal_graphics::{
 	self, command,
-	device::{logical, swapchain},
-	flags::{
-		self, ColorComponent, ColorSpace, CompositeAlpha, Format, ImageAspect, ImageUsageFlags,
-		ImageViewType, SharingMode,
-	},
-	image, pipeline, renderpass, shader,
-	structs::ImageSubresourceRange,
-	AppInfo, Context,
+	device::logical,
+	flags::{self, ColorComponent, Format},
+	pipeline, renderpass, shader, AppInfo, Context,
 };
 use temportal_math::Vector;
 
@@ -123,44 +118,6 @@ pub fn run(
 	vert_shader: Vec<u8>,
 	frag_shader: Vec<u8>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	let permitted_frame_count = window.physical().image_count_range();
-	let frame_count = std::cmp::min(
-		std::cmp::max(3, permitted_frame_count.start),
-		permitted_frame_count.end,
-	);
-
-	let swapchain = swapchain::Info::default()
-		.set_image_count(frame_count)
-		.set_image_format(Format::B8G8R8A8_SRGB)
-		.set_image_color_space(ColorSpace::SRGB_NONLINEAR_KHR)
-		.set_image_extent(window.physical().image_extent())
-		.set_image_array_layer_count(1)
-		.set_image_usage(ImageUsageFlags::COLOR_ATTACHMENT)
-		.set_image_sharing_mode(SharingMode::EXCLUSIVE)
-		.set_pre_transform(window.physical().current_transform())
-		.set_composite_alpha(CompositeAlpha::OPAQUE_KHR)
-		.set_present_mode(window.physical().selected_present_mode)
-		.set_is_clipped(true)
-		.create_object(window.logical().clone(), &window.surface())?;
-	let frame_images = swapchain.get_images()?;
-
-	let mut frame_image_views: Vec<image::View> = Vec::new();
-	for image in frame_images.iter() {
-		frame_image_views.push(
-			image::ViewInfo::new()
-				.set_view_type(ImageViewType::_2D)
-				.set_format(Format::B8G8R8A8_SRGB)
-				.set_subresource_range(ImageSubresourceRange {
-					aspect_mask: ImageAspect::COLOR,
-					base_mip_level: 0,
-					level_count: 1,
-					base_array_layer: 0,
-					layer_count: 1,
-				})
-				.create_object(window.logical().clone(), &image)?,
-		);
-	}
-
 	let vert_shader = shader::Module::create(
 		window.logical().clone(),
 		shader::Info {
@@ -235,7 +192,7 @@ pub fn run(
 		.create_object(window.logical().clone(), &pipeline_layout, &render_pass)?;
 
 	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
-	for image_view in frame_image_views.iter() {
+	for image_view in window.frame_views().iter() {
 		framebuffers.push(
 			command::framebuffer::Info::default()
 				.set_extent(window.physical().image_extent())
@@ -279,8 +236,11 @@ pub fn run(
 		frames_in_flight,
 		flags::FenceState::SIGNALED,
 	)?;
-	let mut images_in_flight: Vec<Option<&command::Fence>> =
-		frame_images.iter().map(|_| None).collect::<Vec<_>>();
+	let mut images_in_flight: Vec<Option<&command::Fence>> = window
+		.frame_views()
+		.iter()
+		.map(|_| None)
+		.collect::<Vec<_>>();
 	let mut frame = 0;
 
 	// Game loop
@@ -293,6 +253,12 @@ pub fn run(
 					keycode: Some(Keycode::Escape),
 					..
 				} => break 'gameloop,
+				Event::Window {
+					win_event: sdl2::event::WindowEvent::Resized(w, h),
+					..
+				} => {
+					println!("Resized window to {}x{}", w, h);
+				}
 				_ => {}
 			}
 		}
@@ -304,8 +270,11 @@ pub fn run(
 			.logical()
 			.wait_for(&in_flight_fences[frame], true, u64::MAX)?;
 		// Get the index of the next image to display
-		let next_image_idx =
-			swapchain.acquire_next_image(u64::MAX, Some(&img_available_semaphores[frame]), None)?;
+		let next_image_idx = window.swapchain().acquire_next_image(
+			u64::MAX,
+			Some(&img_available_semaphores[frame]),
+			None,
+		)?;
 		// Ensure that the image for the next index is not being written to or displayed
 		{
 			let img_in_flight = &images_in_flight[next_image_idx];
@@ -338,7 +307,7 @@ pub fn run(
 		graphics_queue.present(
 			command::PresentInfo::default()
 				.wait_for(&render_finished_semaphores[frame])
-				.add_swapchain(&swapchain)
+				.add_swapchain(&window.swapchain())
 				.add_image_index(next_image_idx as u32),
 		)?;
 
