@@ -19,6 +19,9 @@ pub struct Window {
 	command_buffers: Vec<command::Buffer>,
 	command_pool: Option<command::Pool>,
 
+	frame_buffers: Vec<command::framebuffer::Framebuffer>,
+	render_pass: Option<renderpass::Pass>,
+
 	frame_image_views: Vec<image::View>,
 	frame_images: Vec<image::Image>,
 	frame_count: usize,
@@ -65,6 +68,8 @@ impl Window {
 			frame_count: 0,
 			frame_images: Vec::new(),
 			frame_image_views: Vec::new(),
+			render_pass: None,
+			frame_buffers: Vec::new(),
 			command_pool: None,
 			command_buffers: Vec::new(),
 			render_pass_instruction: renderpass::RecordInstruction::default(),
@@ -198,6 +203,17 @@ impl Window {
 		self.graphics_queue_index.unwrap()
 	}
 
+	pub fn create_render_pass(&mut self, info: renderpass::Info) -> utility::Result<()> {
+		self.render_pass = Some(utility::as_graphics_error(
+			info.create_object(&self.logical()),
+		)?);
+		Ok(())
+	}
+
+	pub fn render_pass(&self) -> &renderpass::Pass {
+		&self.render_pass.as_ref().unwrap()
+	}
+
 	pub fn command_buffers(&self) -> &Vec<command::Buffer> {
 		&self.command_buffers
 	}
@@ -250,6 +266,15 @@ impl Window {
 			)?);
 		}
 
+		self.frame_buffers.clear();
+		for image_view in self.frame_image_views.iter() {
+			let buffer_result = command::framebuffer::Info::default()
+				.set_extent(self.physical().image_extent())
+				.create_object(&image_view, &self.render_pass(), &self.logical());
+			let buffer = utility::as_graphics_error(buffer_result)?;
+			self.frame_buffers.push(buffer);
+		}
+
 		self.img_available_semaphores = utility::as_graphics_error(
 			logical::Device::create_semaphores(&self.logical(), self.max_frames_in_flight()),
 		)?;
@@ -277,6 +302,10 @@ impl Window {
 
 	fn max_frames_in_flight(&self) -> usize {
 		std::cmp::max(self.frame_count - 1, 1)
+	}
+
+	pub fn frame_buffers(&self) -> &Vec<command::framebuffer::Framebuffer> {
+		&self.frame_buffers
 	}
 
 	pub fn add_clear_value(&mut self, clear: renderpass::ClearValue) {

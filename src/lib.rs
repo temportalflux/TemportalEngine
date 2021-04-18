@@ -8,8 +8,8 @@ use std::{cell::RefCell, rc::Rc};
 
 use structopt::StructOpt;
 use temportal_graphics::{
-	self, command,
-	flags::{self, ColorComponent, Format},
+	self,
+	flags::{self, ColorComponent},
 	pipeline, renderpass, shader, AppInfo, Context,
 };
 use temportal_math::Vector;
@@ -155,37 +155,6 @@ pub fn run(
 		},
 	)?;
 
-	let render_pass = {
-		let mut rp_info = renderpass::Info::default();
-
-		let frame_attachment_index = rp_info.attach(
-			renderpass::Attachment::default()
-				.set_format(Format::B8G8R8A8_SRGB)
-				.set_sample_count(flags::SampleCount::_1)
-				.set_general_ops(renderpass::AttachmentOps {
-					load: flags::AttachmentLoadOp::CLEAR,
-					store: flags::AttachmentStoreOp::STORE,
-				})
-				.set_final_layout(flags::ImageLayout::PRESENT_SRC_KHR),
-		);
-
-		let main_pass_index =
-			rp_info.add_subpass(renderpass::Subpass::default().add_attachment_ref(
-				frame_attachment_index,
-				flags::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-			));
-
-		rp_info.add_dependency(
-			renderpass::Dependency::new(None)
-				.set_stage(flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT),
-			renderpass::Dependency::new(Some(main_pass_index))
-				.set_stage(flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT)
-				.set_access(flags::Access::COLOR_ATTACHMENT_WRITE),
-		);
-
-		rp_info.create_object(window.borrow().logical().clone())?
-	};
-
 	let pipeline_layout = pipeline::Layout::create(window.borrow().logical().clone())?;
 	let pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
@@ -212,17 +181,8 @@ pub fn run(
 		.create_object(
 			window.borrow().logical().clone(),
 			&pipeline_layout,
-			&render_pass,
+			&window.borrow().render_pass(),
 		)?;
-
-	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
-	for image_view in window.borrow().frame_views().iter() {
-		framebuffers.push(
-			command::framebuffer::Info::default()
-				.set_extent(window.borrow().physical().image_extent())
-				.create_object(&image_view, &render_pass, window.borrow().logical().clone())?,
-		);
-	}
 
 	// END: Initialization
 
@@ -233,13 +193,15 @@ pub fn run(
 		window_ref.add_clear_value(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
-		for (cmd_buffer, frame_buffer) in
-			window_ref.command_buffers().iter().zip(framebuffers.iter())
+		for (cmd_buffer, frame_buffer) in window_ref
+			.command_buffers()
+			.iter()
+			.zip(window_ref.frame_buffers().iter())
 		{
 			cmd_buffer.begin()?;
 			cmd_buffer.start_render_pass(
 				&frame_buffer,
-				&render_pass,
+				&window_ref.render_pass(),
 				window_ref.record_instruction().clone(),
 			);
 			cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
