@@ -228,24 +228,26 @@ pub fn run(
 
 	// START: Recording Cmd Buffers
 
-	let record_instruction = renderpass::RecordInstruction::default()
-		.set_extent(window.borrow().physical().image_extent())
-		.clear_with(renderpass::ClearValue::Color(Vector::new([
+	{
+		let mut window_ref = window.borrow_mut();
+		window_ref.add_clear_value(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
-	for (cmd_buffer, frame_buffer) in window
-		.borrow()
-		.command_buffers()
-		.iter()
-		.zip(framebuffers.iter())
-	{
-		cmd_buffer.begin()?;
-		cmd_buffer.start_render_pass(&frame_buffer, &render_pass, record_instruction.clone());
-		cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
-		//cmd_buffer.draw(3, 0, 1, 0, 0);
-		window.borrow().logical().draw(&cmd_buffer, 3);
-		cmd_buffer.stop_render_pass();
-		cmd_buffer.end()?;
+		for (cmd_buffer, frame_buffer) in
+			window_ref.command_buffers().iter().zip(framebuffers.iter())
+		{
+			cmd_buffer.begin()?;
+			cmd_buffer.start_render_pass(
+				&frame_buffer,
+				&render_pass,
+				window_ref.record_instruction().clone(),
+			);
+			cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
+			//cmd_buffer.draw(3, 0, 1, 0, 0);
+			window_ref.logical().draw(&cmd_buffer, 3);
+			cmd_buffer.stop_render_pass();
+			cmd_buffer.end()?;
+		}
 	}
 
 	// END: Recording Cmd Buffers

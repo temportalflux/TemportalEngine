@@ -4,7 +4,7 @@ use std::{cell::RefCell, rc::Rc};
 use temportal_graphics::{
 	command,
 	device::{logical, physical, swapchain},
-	flags, image, instance, structs, Surface,
+	flags, image, instance, renderpass, structs, Surface,
 };
 
 pub struct Window {
@@ -15,6 +15,7 @@ pub struct Window {
 	img_available_semaphores: Vec<command::Semaphore>,
 	graphics_queue: Option<logical::Queue>,
 
+	render_pass_instruction: renderpass::RecordInstruction,
 	command_buffers: Vec<command::Buffer>,
 	command_pool: Option<command::Pool>,
 
@@ -66,6 +67,7 @@ impl Window {
 			frame_image_views: Vec::new(),
 			command_pool: None,
 			command_buffers: Vec::new(),
+			render_pass_instruction: renderpass::RecordInstruction::default(),
 			graphics_queue: None,
 			img_available_semaphores: Vec::new(),
 			render_finished_semaphores: Vec::new(),
@@ -210,6 +212,9 @@ impl Window {
 		self.in_flight_fences.clear();
 		self.images_in_flight.clear();
 
+		self.render_pass_instruction
+			.set_extent(self.physical().image_extent());
+
 		self.swapchain = Some(utility::as_graphics_error(
 			swapchain::Info::default()
 				.set_image_count(self.frame_count as u32)
@@ -273,6 +278,16 @@ impl Window {
 	fn max_frames_in_flight(&self) -> usize {
 		std::cmp::max(self.frame_count - 1, 1)
 	}
+
+	pub fn add_clear_value(&mut self, clear: renderpass::ClearValue) {
+		self.render_pass_instruction.add_clear_value(clear);
+	}
+
+	pub fn record_instruction(&self) -> &renderpass::RecordInstruction {
+		&self.render_pass_instruction
+	}
+
+	pub fn record_commands(&mut self) {}
 
 	pub fn render_frame(&mut self) -> utility::Result<()> {
 		// Wait for the previous frame/image to no longer be displayed
