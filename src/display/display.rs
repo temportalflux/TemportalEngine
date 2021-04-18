@@ -53,19 +53,14 @@ impl Manager {
 	}
 
 	pub fn poll_all_events(&mut self) -> utility::Result<()> {
-		let mut invalid_listener_indices: Vec<usize> = Vec::new();
 		for event in self.event_pump()?.poll_iter() {
-			for i in 0..self.event_listeners.len() {
-				match self.event_listeners[i].upgrade() {
-					Some(listener) => listener.borrow_mut().on_event(&event),
-					None => invalid_listener_indices.push(i),
-				}
-			}
-			// Remove all invalid listeners (weak pointers pointing at nothing),
-			// starting with those at the end of the listener list.
-			while let Some(index) = invalid_listener_indices.pop() {
-				self.event_listeners.swap_remove(index);
-			}
+			utility::for_each_valid_or_discard(
+				&mut self.event_listeners,
+				|listener| -> utility::Result<()> {
+					listener.borrow_mut().on_event(&event);
+					Ok(())
+				},
+			)?;
 		}
 		Ok(())
 	}

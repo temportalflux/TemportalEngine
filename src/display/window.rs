@@ -1,6 +1,9 @@
-use crate::{display, utility, Engine};
+use crate::{display, graphics, utility, Engine};
 use sdl2;
-use std::{cell::RefCell, rc::Rc};
+use std::{
+	cell::RefCell,
+	rc::{Rc, Weak},
+};
 use temportal_graphics::{
 	command,
 	device::{logical, physical, swapchain},
@@ -14,6 +17,9 @@ pub struct Window {
 	render_finished_semaphores: Vec<command::Semaphore>,
 	img_available_semaphores: Vec<command::Semaphore>,
 	graphics_queue: Option<logical::Queue>,
+
+	command_recorders: Vec<Weak<RefCell<dyn graphics::CommandRecorder>>>,
+	render_chain_elements: Vec<Weak<RefCell<dyn graphics::RenderChainElement>>>,
 
 	render_pass_instruction: renderpass::RecordInstruction,
 	command_buffers: Vec<command::Buffer>,
@@ -73,6 +79,8 @@ impl Window {
 			command_pool: None,
 			command_buffers: Vec::new(),
 			render_pass_instruction: renderpass::RecordInstruction::default(),
+			command_recorders: Vec::new(),
+			render_chain_elements: Vec::new(),
 			graphics_queue: None,
 			img_available_semaphores: Vec::new(),
 			render_finished_semaphores: Vec::new(),
@@ -84,6 +92,17 @@ impl Window {
 
 	fn id(&self) -> u32 {
 		self.internal.internal.id()
+	}
+
+	pub fn add_render_chain_element(
+		&mut self,
+		element: Weak<RefCell<dyn graphics::RenderChainElement>>,
+	) {
+		self.render_chain_elements.push(element);
+	}
+
+	pub fn add_command_recorder(&mut self, recorder: Weak<RefCell<dyn graphics::CommandRecorder>>) {
+		self.command_recorders.push(recorder);
 	}
 }
 
@@ -289,6 +308,10 @@ impl Window {
 		self.current_frame = 0;
 		self.images_in_flight = self.frame_views().iter().map(|_| None).collect::<Vec<_>>();
 
+		utility::for_each_valid_or_discard(&mut self.render_chain_elements, |element| {
+			element.borrow_mut().on_render_chain_constructed()
+		})?;
+
 		Ok(())
 	}
 
@@ -316,7 +339,11 @@ impl Window {
 		&self.render_pass_instruction
 	}
 
-	pub fn record_commands(&mut self) {}
+	pub fn record_commands(&mut self) -> utility::Result<()> {
+		utility::for_each_valid_or_discard(&mut self.command_recorders, |recorder| {
+			recorder.borrow_mut().record_to_buffer()
+		})
+	}
 
 	pub fn render_frame(&mut self) -> utility::Result<()> {
 		// Wait for the previous frame/image to no longer be displayed
