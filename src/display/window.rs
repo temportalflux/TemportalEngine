@@ -1,6 +1,6 @@
-use crate::{utility, Engine};
+use crate::{display, utility, Engine};
 use sdl2;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 use temportal_graphics::{
 	command,
 	device::{logical, physical, swapchain},
@@ -30,20 +30,24 @@ pub struct Window {
 	// This is at the bottom to ensure that rust deallocates it last
 	vulkan: Rc<instance::Instance>,
 	internal: WinWrapper,
-	engine: Rc<Engine>,
+	engine: Rc<RefCell<Engine>>,
 }
 
 impl Window {
-	pub fn new(engine: &Rc<Engine>, sdl_window: sdl2::video::Window) -> utility::Result<Window> {
+	pub fn new(
+		engine: &Rc<RefCell<Engine>>,
+		sdl_window: sdl2::video::Window,
+	) -> utility::Result<Window> {
 		let internal = WinWrapper {
 			internal: sdl_window,
 		};
+		let eng = engine.borrow();
 		let instance = utility::as_graphics_error(
 			instance::Info::default()
-				.set_app_info(engine.app_info.clone())
+				.set_app_info(eng.app_info.clone())
 				.set_window(&internal)
-				.set_use_validation(engine.vulkan_validation_enabled)
-				.create_object(&engine.graphics_context),
+				.set_use_validation(eng.vulkan_validation_enabled)
+				.create_object(&eng.graphics_context),
 		)?;
 		let vulkan = std::rc::Rc::new(instance);
 		let surface =
@@ -71,6 +75,43 @@ impl Window {
 		})
 	}
 
+	fn id(&self) -> u32 {
+		self.internal.internal.id()
+	}
+}
+
+struct WinWrapper {
+	internal: sdl2::video::Window,
+}
+
+unsafe impl raw_window_handle::HasRawWindowHandle for WinWrapper {
+	fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
+		self.internal.raw_window_handle()
+	}
+}
+
+unsafe impl raw_window_handle::HasRawWindowHandle for Window {
+	fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
+		self.internal.raw_window_handle()
+	}
+}
+
+impl display::EventListener for Window {
+	fn on_event(&mut self, event: &sdl2::event::Event) {
+		match event {
+			sdl2::event::Event::Window {
+				window_id,
+				win_event: sdl2::event::WindowEvent::Resized(w, h),
+				..
+			} if *window_id == self.id() => {
+				println!("Resized window {} to {}x{}", self.id(), w, h);
+			}
+			_ => {}
+		}
+	}
+}
+
+impl Window {
 	pub fn find_physical_device(
 		&mut self,
 		constraints: &mut Vec<physical::Constraint>,
@@ -119,7 +160,7 @@ impl Window {
 		self.logical_device = Some(std::rc::Rc::new(utility::as_graphics_error(
 			logical::Info::default()
 				.add_extension("VK_KHR_swapchain")
-				.set_validation_enabled(self.engine.vulkan_validation_enabled)
+				.set_validation_enabled(self.engine.borrow().vulkan_validation_enabled)
 				.add_queue(logical::DeviceQueue {
 					queue_family_index: queue_idx,
 					priorities: vec![1.0],
@@ -291,21 +332,5 @@ impl Window {
 
 		self.current_frame = (self.current_frame + 1) % self.max_frames_in_flight();
 		Ok(())
-	}
-}
-
-struct WinWrapper {
-	internal: sdl2::video::Window,
-}
-
-unsafe impl raw_window_handle::HasRawWindowHandle for WinWrapper {
-	fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
-		self.internal.raw_window_handle()
-	}
-}
-
-unsafe impl raw_window_handle::HasRawWindowHandle for Window {
-	fn raw_window_handle(&self) -> raw_window_handle::RawWindowHandle {
-		self.internal.raw_window_handle()
 	}
 }

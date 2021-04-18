@@ -3,8 +3,8 @@ extern crate shaderc;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use std::rc::Rc;
 use std::time::Duration;
+use std::{cell::RefCell, rc::Rc};
 
 use structopt::StructOpt;
 use temportal_graphics::{
@@ -50,6 +50,8 @@ pub struct Engine {
 	app_info: AppInfo,
 
 	pub assets: EngineAssets,
+
+	quit_has_been_triggered: bool,
 }
 
 pub struct EngineAssets {
@@ -59,6 +61,35 @@ pub struct EngineAssets {
 }
 
 impl Engine {
+	pub fn new() -> Result<Engine, Box<dyn std::error::Error>> {
+		use asset::Asset;
+
+		let flags = Opt::from_args();
+		let graphics_context = Context::new()?;
+		let app_info = AppInfo::new(&graphics_context)
+			.engine("TemportalEngine", utility::make_version(0, 1, 0));
+		let mut engine = Engine {
+			run_build_commandlet: flags.build,
+			build_assets_callback: None,
+
+			vulkan_validation_enabled: flags.validation_layers,
+			graphics_context,
+			app_info,
+
+			assets: EngineAssets {
+				types: asset::TypeRegistry::new(),
+				library: asset::Library::new(),
+				loader: asset::Loader::new(),
+			},
+
+			quit_has_been_triggered: false,
+		};
+
+		engine.assets.types.register(graphics::Shader::type_data());
+
+		Ok(engine)
+	}
+
 	pub fn set_application(mut self, name: &str, version: u32) -> Self {
 		self.app_info.set_application_info(name, version);
 		self
@@ -68,8 +99,11 @@ impl Engine {
 		&self.app_info
 	}
 
-	pub fn create_display_manager(engine: &Rc<Self>) -> utility::Result<display::Manager> {
-		display::Manager::new(engine.clone())
+	pub fn create_display_manager(engine: &Rc<RefCell<Self>>) -> utility::Result<display::Manager> {
+		let mut manager = display::Manager::new(engine.clone())?;
+		let weak_engine = Rc::downgrade(engine);
+		manager.add_event_listener(weak_engine);
+		Ok(manager)
 	}
 
 	pub fn is_build_instance(&self) -> bool {
@@ -84,41 +118,28 @@ impl Engine {
 	}
 }
 
-pub fn init() -> Result<Engine, Box<dyn std::error::Error>> {
-	use asset::Asset;
-
-	let flags = Opt::from_args();
-	let graphics_context = Context::new()?;
-	let app_info =
-		AppInfo::new(&graphics_context).engine("TemportalEngine", utility::make_version(0, 1, 0));
-	let mut engine = Engine {
-		run_build_commandlet: flags.build,
-		build_assets_callback: None,
-
-		vulkan_validation_enabled: flags.validation_layers,
-		graphics_context,
-		app_info,
-
-		assets: EngineAssets {
-			types: asset::TypeRegistry::new(),
-			library: asset::Library::new(),
-			loader: asset::Loader::new(),
-		},
-	};
-
-	engine.assets.types.register(graphics::Shader::type_data());
-
-	Ok(engine)
+impl display::EventListener for Engine {
+	fn on_event(&mut self, event: &sdl2::event::Event) {
+		match event {
+			Event::Quit { .. } => self.quit_has_been_triggered = true,
+			Event::KeyDown {
+				keycode: Some(Keycode::Escape),
+				..
+			} => self.quit_has_been_triggered = true,
+			_ => {}
+		}
+	}
 }
 
 pub fn run(
-	display: &display::Manager,
-	window: &mut display::Window,
+	engine: &Rc<RefCell<Engine>>,
+	display: &mut display::Manager,
+	window: &mut Rc<RefCell<display::Window>>,
 	vert_shader: Vec<u8>,
 	frag_shader: Vec<u8>,
 ) -> Result<(), Box<dyn std::error::Error>> {
 	let vert_shader = shader::Module::create(
-		window.logical().clone(),
+		window.borrow().logical().clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::VERTEX,
 			entry_point: String::from("main"),
@@ -126,7 +147,7 @@ pub fn run(
 		},
 	)?;
 	let frag_shader = shader::Module::create(
-		window.logical().clone(),
+		window.borrow().logical().clone(),
 		shader::Info {
 			kind: flags::ShaderStageKind::FRAGMENT,
 			entry_point: String::from("main"),
@@ -162,10 +183,10 @@ pub fn run(
 				.set_access(flags::Access::COLOR_ATTACHMENT_WRITE),
 		);
 
-		rp_info.create_object(window.logical().clone())?
+		rp_info.create_object(window.borrow().logical().clone())?
 	};
 
-	let pipeline_layout = pipeline::Layout::create(window.logical().clone())?;
+	let pipeline_layout = pipeline::Layout::create(window.borrow().logical().clone())?;
 	let pipeline = pipeline::Info::default()
 		.add_shader(&vert_shader)
 		.add_shader(&frag_shader)
@@ -173,11 +194,11 @@ pub fn run(
 			pipeline::ViewportState::default()
 				.add_viewport(
 					temportal_graphics::utility::Viewport::default()
-						.set_size(window.physical().image_extent()),
+						.set_size(window.borrow().physical().image_extent()),
 				)
 				.add_scissor(
 					temportal_graphics::utility::Scissor::default()
-						.set_size(window.physical().image_extent()),
+						.set_size(window.borrow().physical().image_extent()),
 				),
 		)
 		.set_rasterization_state(pipeline::RasterizationState::default())
@@ -188,14 +209,18 @@ pub fn run(
 					| ColorComponent::A,
 			},
 		))
-		.create_object(window.logical().clone(), &pipeline_layout, &render_pass)?;
+		.create_object(
+			window.borrow().logical().clone(),
+			&pipeline_layout,
+			&render_pass,
+		)?;
 
 	let mut framebuffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
-	for image_view in window.frame_views().iter() {
+	for image_view in window.borrow().frame_views().iter() {
 		framebuffers.push(
 			command::framebuffer::Info::default()
-				.set_extent(window.physical().image_extent())
-				.create_object(&image_view, &render_pass, window.logical().clone())?,
+				.set_extent(window.borrow().physical().image_extent())
+				.create_object(&image_view, &render_pass, window.borrow().logical().clone())?,
 		);
 	}
 
@@ -204,16 +229,21 @@ pub fn run(
 	// START: Recording Cmd Buffers
 
 	let record_instruction = renderpass::RecordInstruction::default()
-		.set_extent(window.physical().image_extent())
+		.set_extent(window.borrow().physical().image_extent())
 		.clear_with(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
-	for (cmd_buffer, frame_buffer) in window.command_buffers().iter().zip(framebuffers.iter()) {
+	for (cmd_buffer, frame_buffer) in window
+		.borrow()
+		.command_buffers()
+		.iter()
+		.zip(framebuffers.iter())
+	{
 		cmd_buffer.begin()?;
 		cmd_buffer.start_render_pass(&frame_buffer, &render_pass, record_instruction.clone());
 		cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
 		//cmd_buffer.draw(3, 0, 1, 0, 0);
-		window.logical().draw(&cmd_buffer, 3);
+		window.borrow().logical().draw(&cmd_buffer, 3);
 		cmd_buffer.stop_render_pass();
 		cmd_buffer.end()?;
 	}
@@ -221,33 +251,13 @@ pub fn run(
 	// END: Recording Cmd Buffers
 
 	// Game loop
-	let mut event_pump = display.event_pump()?;
-	'gameloop: loop {
-		for event in event_pump.poll_iter() {
-			match event {
-				Event::Quit { .. } => break 'gameloop,
-				Event::KeyDown {
-					keycode: Some(Keycode::Escape),
-					..
-				} => break 'gameloop,
-				Event::Window {
-					win_event: sdl2::event::WindowEvent::Resized(w, h),
-					..
-				} => {
-					println!("Resized window to {}x{}", w, h);
-				}
-				_ => {}
-			}
-		}
-
-		// START: Render
-		window.render_frame()?;
-		// END: RENDER
-
+	while !engine.borrow().quit_has_been_triggered {
+		display.poll_all_events()?;
+		window.borrow_mut().render_frame()?;
 		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
 	}
 
-	window.logical().wait_until_idle()?;
+	window.borrow().logical().wait_until_idle()?;
 
 	Ok(())
 }
