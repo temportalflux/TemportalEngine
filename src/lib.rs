@@ -25,8 +25,6 @@ pub struct Engine {
 	app_info: AppInfo,
 
 	pub assets: EngineAssets,
-
-	quit_has_been_triggered: bool,
 }
 
 pub struct EngineAssets {
@@ -50,8 +48,6 @@ impl Engine {
 				library: asset::Library::new(),
 				loader: asset::Loader::new(),
 			},
-
-			quit_has_been_triggered: false,
 		};
 
 		engine.assets.types.register::<graphics::Shader>();
@@ -67,36 +63,10 @@ impl Engine {
 		&self.app_info
 	}
 
-	pub fn create_display_manager(engine: &Rc<RefCell<Self>>) -> utility::Result<Rc<RefCell<display::Manager>>> {
-		let mut manager = display::Manager::new(engine.clone())?;
-		let weak_engine = Rc::downgrade(engine);
-		manager.add_event_listener(weak_engine);
-		Ok(Rc::new(RefCell::new(manager)))
+	pub fn create_display_manager(
+		engine: &Rc<RefCell<Self>>,
+	) -> utility::Result<Rc<RefCell<display::Manager>>> {
+		Ok(Rc::new(RefCell::new(display::Manager::new(engine.clone())?)))
 	}
 
-	pub fn should_quit(&self) -> bool {
-		self.quit_has_been_triggered
-	}
-}
-
-impl display::EventListener for Engine {
-	fn on_event(&mut self, event: &sdl2::event::Event) -> bool {
-		use sdl2::event::Event;
-		use sdl2::keyboard::Keycode;
-		match event {
-			Event::Quit { .. } => {
-				self.quit_has_been_triggered = true;
-				return true;
-			}
-			Event::KeyDown {
-				keycode: Some(Keycode::Escape),
-				..
-			} => {
-				self.quit_has_been_triggered = true;
-				return true;
-			}
-			_ => {}
-		}
-		false
-	}
 }

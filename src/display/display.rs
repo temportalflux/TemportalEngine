@@ -8,6 +8,8 @@ pub struct Manager {
 	engine: Rc<RefCell<Engine>>,
 	sdl: sdl2::Sdl,
 	event_listeners: Vec<Weak<RefCell<dyn display::EventListener>>>,
+
+	quit_has_been_triggered: bool,
 }
 
 impl Manager {
@@ -17,6 +19,7 @@ impl Manager {
 			engine,
 			sdl,
 			event_listeners: Vec::new(),
+			quit_has_been_triggered: false,
 		})
 	}
 
@@ -56,6 +59,15 @@ impl Manager {
 		for event in self.event_pump()?.poll_iter() {
 			self.event_listeners
 				.retain(|listener| listener.strong_count() > 0);
+			
+			match event {
+				sdl2::event::Event::Quit { .. } => {
+					self.quit_has_been_triggered = true;
+					continue;
+				}
+				_ => {}
+			}
+
 			for element in self.event_listeners.iter() {
 				if element.upgrade().unwrap().borrow_mut().on_event(&event) {
 					break; // event consumed, stop iterating over listeners and go to next event
@@ -64,4 +76,9 @@ impl Manager {
 		}
 		Ok(())
 	}
+
+	pub fn should_quit(&self) -> bool {
+		self.quit_has_been_triggered
+	}
+
 }
