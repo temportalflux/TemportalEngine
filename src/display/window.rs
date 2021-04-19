@@ -318,7 +318,7 @@ impl Window {
 		self.images_in_flight = self.frame_views().iter().map(|_| None).collect::<Vec<_>>();
 
 		self.render_chain_elements
-			.retain(|element| element.upgrade().is_some());
+			.retain(|element| element.strong_count() > 0);
 		for element in self.render_chain_elements.iter() {
 			element
 				.upgrade()
@@ -369,7 +369,7 @@ impl Window {
 		);
 
 		self.command_recorders
-			.retain(|recorder| recorder.upgrade().is_some());
+			.retain(|recorder| recorder.strong_count() > 0);
 		for recorder in self.command_recorders.iter() {
 			recorder
 				.upgrade()

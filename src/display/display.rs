@@ -55,7 +55,7 @@ impl Manager {
 	pub fn poll_all_events(&mut self) -> utility::Result<()> {
 		for event in self.event_pump()?.poll_iter() {
 			self.event_listeners
-				.retain(|listener| listener.upgrade().is_some());
+				.retain(|listener| listener.strong_count() > 0);
 			for element in self.event_listeners.iter() {
 				if element.upgrade().unwrap().borrow_mut().on_event(&event) {
 					break; // event consumed, stop iterating over listeners and go to next event
