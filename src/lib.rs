@@ -1,14 +1,10 @@
 extern crate sdl2;
 extern crate shaderc;
 
-use sdl2::event::Event;
-use sdl2::keyboard::Keycode;
-use std::time::Duration;
 use std::{cell::RefCell, rc::Rc};
 
 use structopt::StructOpt;
-use temportal_graphics::{self, renderpass, AppInfo, Context};
-use temportal_math::Vector;
+use temportal_graphics::{self, AppInfo, Context};
 
 #[path = "asset/lib.rs"]
 pub mod asset;
@@ -112,41 +108,30 @@ impl Engine {
 			None => panic!("No valid assets callback provided"),
 		}
 	}
+
+	pub fn should_quit(&self) -> bool {
+		self.quit_has_been_triggered
+	}
 }
 
 impl display::EventListener for Engine {
-	fn on_event(&mut self, event: &sdl2::event::Event) {
+	fn on_event(&mut self, event: &sdl2::event::Event) -> bool {
+		use sdl2::event::Event;
+		use sdl2::keyboard::Keycode;
 		match event {
-			Event::Quit { .. } => self.quit_has_been_triggered = true,
+			Event::Quit { .. } => {
+				self.quit_has_been_triggered = true;
+				return true;
+			}
 			Event::KeyDown {
 				keycode: Some(Keycode::Escape),
 				..
-			} => self.quit_has_been_triggered = true,
+			} => {
+				self.quit_has_been_triggered = true;
+				return true;
+			}
 			_ => {}
 		}
+		false
 	}
-}
-
-pub fn run(
-	engine: &Rc<RefCell<Engine>>,
-	display: &mut display::Manager,
-	window: &mut Rc<RefCell<display::Window>>,
-) -> Result<(), Box<dyn std::error::Error>> {
-	window
-		.borrow_mut()
-		.add_clear_value(renderpass::ClearValue::Color(Vector::new([
-			0.0, 0.0, 0.0, 1.0,
-		])));
-	window.borrow_mut().mark_commands_dirty();
-
-	// Game loop
-	while !engine.borrow().quit_has_been_triggered {
-		display.poll_all_events()?;
-		window.borrow_mut().render_frame()?;
-		::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
-	}
-
-	window.borrow().logical().wait_until_idle()?;
-
-	Ok(())
 }

@@ -57,7 +57,9 @@ impl Manager {
 			self.event_listeners
 				.retain(|listener| listener.upgrade().is_some());
 			for element in self.event_listeners.iter() {
-				element.upgrade().unwrap().borrow_mut().on_event(&event);
+				if element.upgrade().unwrap().borrow_mut().on_event(&event) {
+					break; // event consumed, stop iterating over listeners and go to next event
+				}
 			}
 		}
 		Ok(())

@@ -131,7 +131,7 @@ unsafe impl raw_window_handle::HasRawWindowHandle for Window {
 }
 
 impl display::EventListener for Window {
-	fn on_event(&mut self, event: &sdl2::event::Event) {
+	fn on_event(&mut self, event: &sdl2::event::Event) -> bool {
 		match event {
 			sdl2::event::Event::Window {
 				window_id,
@@ -142,6 +142,7 @@ impl display::EventListener for Window {
 			}
 			_ => {}
 		}
+		false
 	}
 }
 
@@ -384,7 +385,6 @@ impl Window {
 	}
 
 	pub fn render_frame(&mut self) -> utility::Result<()> {
-
 		// Wait for the previous frame/image to no longer be displayed
 		utility::as_graphics_error(self.logical().wait_for(
 			&self.in_flight_fences[self.current_frame],
@@ -409,7 +409,7 @@ impl Window {
 				))?;
 			}
 		}
-		
+
 		if self.frame_command_buffer_requires_recording[next_image_idx] {
 			self.record_commands(next_image_idx)?;
 			self.frame_command_buffer_requires_recording[next_image_idx] = false;
