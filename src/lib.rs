@@ -7,11 +7,7 @@ use std::time::Duration;
 use std::{cell::RefCell, rc::Rc};
 
 use structopt::StructOpt;
-use temportal_graphics::{
-	self,
-	flags::{self, ColorComponent},
-	pipeline, renderpass, shader, AppInfo, Context,
-};
+use temportal_graphics::{self, renderpass, AppInfo, Context};
 use temportal_math::Vector;
 
 #[path = "asset/lib.rs"]
@@ -135,84 +131,13 @@ pub fn run(
 	engine: &Rc<RefCell<Engine>>,
 	display: &mut display::Manager,
 	window: &mut Rc<RefCell<display::Window>>,
-	vert_shader: Vec<u8>,
-	frag_shader: Vec<u8>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	let vert_shader = shader::Module::create(
-		window.borrow().logical().clone(),
-		shader::Info {
-			kind: flags::ShaderStageKind::VERTEX,
-			entry_point: String::from("main"),
-			bytes: vert_shader,
-		},
-	)?;
-	let frag_shader = shader::Module::create(
-		window.borrow().logical().clone(),
-		shader::Info {
-			kind: flags::ShaderStageKind::FRAGMENT,
-			entry_point: String::from("main"),
-			bytes: frag_shader,
-		},
-	)?;
-
-	let pipeline_layout = pipeline::Layout::create(window.borrow().logical().clone())?;
-	let pipeline = pipeline::Info::default()
-		.add_shader(&vert_shader)
-		.add_shader(&frag_shader)
-		.set_viewport_state(
-			pipeline::ViewportState::default()
-				.add_viewport(
-					temportal_graphics::utility::Viewport::default()
-						.set_size(window.borrow().physical().image_extent()),
-				)
-				.add_scissor(
-					temportal_graphics::utility::Scissor::default()
-						.set_size(window.borrow().physical().image_extent()),
-				),
-		)
-		.set_rasterization_state(pipeline::RasterizationState::default())
-		.set_color_blending(pipeline::ColorBlendState::default().add_attachment(
-			pipeline::ColorBlendAttachment {
-				color_flags: ColorComponent::R
-					| ColorComponent::G | ColorComponent::B
-					| ColorComponent::A,
-			},
-		))
-		.create_object(
-			window.borrow().logical().clone(),
-			&pipeline_layout,
-			&window.borrow().render_pass(),
-		)?;
-
-	// END: Initialization
-
-	// START: Recording Cmd Buffers
-
-	{
-		let mut window_ref = window.borrow_mut();
-		window_ref.add_clear_value(renderpass::ClearValue::Color(Vector::new([
+	window
+		.borrow_mut()
+		.add_clear_value(renderpass::ClearValue::Color(Vector::new([
 			0.0, 0.0, 0.0, 1.0,
 		])));
-		for (cmd_buffer, frame_buffer) in window_ref
-			.command_buffers()
-			.iter()
-			.zip(window_ref.frame_buffers().iter())
-		{
-			cmd_buffer.begin()?;
-			cmd_buffer.start_render_pass(
-				&frame_buffer,
-				&window_ref.render_pass(),
-				window_ref.record_instruction().clone(),
-			);
-			cmd_buffer.bind_pipeline(&pipeline, flags::PipelineBindPoint::GRAPHICS);
-			//cmd_buffer.draw(3, 0, 1, 0, 0);
-			window_ref.logical().draw(&cmd_buffer, 3);
-			cmd_buffer.stop_render_pass();
-			cmd_buffer.end()?;
-		}
-	}
-
-	// END: Recording Cmd Buffers
+	window.borrow_mut().mark_commands_dirty();
 
 	// Game loop
 	while !engine.borrow().quit_has_been_triggered {

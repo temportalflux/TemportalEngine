@@ -54,13 +54,11 @@ impl Manager {
 
 	pub fn poll_all_events(&mut self) -> utility::Result<()> {
 		for event in self.event_pump()?.poll_iter() {
-			utility::for_each_valid_or_discard(
-				&mut self.event_listeners,
-				|listener| -> utility::Result<()> {
-					listener.borrow_mut().on_event(&event);
-					Ok(())
-				},
-			)?;
+			self.event_listeners
+				.retain(|listener| listener.upgrade().is_some());
+			for element in self.event_listeners.iter() {
+				element.upgrade().unwrap().borrow_mut().on_event(&event);
+			}
 		}
 		Ok(())
 	}

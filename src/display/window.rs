@@ -16,6 +16,7 @@ pub struct Window {
 	in_flight_fences: Vec<command::Fence>,
 	render_finished_semaphores: Vec<command::Semaphore>,
 	img_available_semaphores: Vec<command::Semaphore>,
+	frame_command_buffer_requires_recording: Vec<bool>,
 	graphics_queue: Option<logical::Queue>,
 
 	command_recorders: Vec<Weak<RefCell<dyn graphics::CommandRecorder>>>,
@@ -76,6 +77,7 @@ impl Window {
 			frame_image_views: Vec::new(),
 			render_pass: None,
 			frame_buffers: Vec::new(),
+			frame_command_buffer_requires_recording: Vec::new(),
 			command_pool: None,
 			command_buffers: Vec::new(),
 			render_pass_instruction: renderpass::RecordInstruction::default(),
@@ -96,13 +98,19 @@ impl Window {
 
 	pub fn add_render_chain_element(
 		&mut self,
-		element: Weak<RefCell<dyn graphics::RenderChainElement>>,
-	) {
-		self.render_chain_elements.push(element);
+		element: Rc<RefCell<dyn graphics::RenderChainElement>>,
+	) -> utility::Result<()> {
+		element.borrow_mut().initialize_with(&self)?;
+		self.render_chain_elements.push(Rc::downgrade(&element));
+		Ok(())
 	}
 
-	pub fn add_command_recorder(&mut self, recorder: Weak<RefCell<dyn graphics::CommandRecorder>>) {
-		self.command_recorders.push(recorder);
+	pub fn add_command_recorder(
+		&mut self,
+		recorder: Rc<RefCell<dyn graphics::CommandRecorder>>,
+	) -> utility::Result<()> {
+		self.command_recorders.push(Rc::downgrade(&recorder));
+		Ok(())
 	}
 }
 
@@ -308,9 +316,17 @@ impl Window {
 		self.current_frame = 0;
 		self.images_in_flight = self.frame_views().iter().map(|_| None).collect::<Vec<_>>();
 
-		utility::for_each_valid_or_discard(&mut self.render_chain_elements, |element| {
-			element.borrow_mut().on_render_chain_constructed()
-		})?;
+		self.render_chain_elements
+			.retain(|element| element.upgrade().is_some());
+		for element in self.render_chain_elements.iter() {
+			element
+				.upgrade()
+				.unwrap()
+				.borrow_mut()
+				.on_render_chain_constructed(self)?;
+		}
+
+		self.mark_commands_dirty();
 
 		Ok(())
 	}
@@ -339,13 +355,36 @@ impl Window {
 		&self.render_pass_instruction
 	}
 
-	pub fn record_commands(&mut self) -> utility::Result<()> {
-		utility::for_each_valid_or_discard(&mut self.command_recorders, |recorder| {
-			recorder.borrow_mut().record_to_buffer()
-		})
+	pub fn mark_commands_dirty(&mut self) {
+		self.frame_command_buffer_requires_recording = vec![true; self.command_buffers.len()];
+	}
+
+	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
+		utility::as_graphics_error(self.command_buffers[buffer_index].begin())?;
+		self.command_buffers[buffer_index].start_render_pass(
+			&self.frame_buffers[buffer_index],
+			&self.render_pass(),
+			self.record_instruction().clone(),
+		);
+
+		self.command_recorders
+			.retain(|recorder| recorder.upgrade().is_some());
+		for recorder in self.command_recorders.iter() {
+			recorder
+				.upgrade()
+				.unwrap()
+				.borrow_mut()
+				.record_to_buffer(&mut self.command_buffers[buffer_index])?;
+		}
+
+		self.command_buffers[buffer_index].stop_render_pass();
+		utility::as_graphics_error(self.command_buffers[buffer_index].end())?;
+
+		Ok(())
 	}
 
 	pub fn render_frame(&mut self) -> utility::Result<()> {
+
 		// Wait for the previous frame/image to no longer be displayed
 		utility::as_graphics_error(self.logical().wait_for(
 			&self.in_flight_fences[self.current_frame],
@@ -358,6 +397,7 @@ impl Window {
 			Some(&self.img_available_semaphores[self.current_frame]),
 			None,
 		))?;
+
 		// Ensure that the image for the next index is not being written to or displayed
 		{
 			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
@@ -369,6 +409,12 @@ impl Window {
 				))?;
 			}
 		}
+		
+		if self.frame_command_buffer_requires_recording[next_image_idx] {
+			self.record_commands(next_image_idx)?;
+			self.frame_command_buffer_requires_recording[next_image_idx] = false;
+		}
+
 		// Denote that the image that is in-flight is the fence for the this frame
 		self.images_in_flight[next_image_idx] = Some(self.current_frame);
 
