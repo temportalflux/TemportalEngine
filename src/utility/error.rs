@@ -8,6 +8,7 @@ pub enum Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+pub type AnyError = Box<dyn std::error::Error>;
 
 impl std::fmt::Display for Error {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

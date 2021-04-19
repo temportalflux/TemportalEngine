@@ -1,16 +1,11 @@
 extern crate sdl2;
-extern crate shaderc;
 
 use std::{cell::RefCell, rc::Rc};
 
-use structopt::StructOpt;
 use temportal_graphics::{self, AppInfo, Context};
 
 #[path = "asset/lib.rs"]
 pub mod asset;
-
-#[path = "build/lib.rs"]
-pub mod build;
 
 #[path = "display/lib.rs"]
 pub mod display;
@@ -24,19 +19,7 @@ pub mod world;
 #[path = "utility/lib.rs"]
 pub mod utility;
 
-#[derive(Debug, StructOpt)]
-struct Opt {
-	/// Use validation layers
-	#[structopt(short, long)]
-	validation_layers: bool,
-	#[structopt(short, long)]
-	build: bool,
-}
-
 pub struct Engine {
-	run_build_commandlet: bool,
-	pub build_assets_callback: Option<build::BuildAssetsCallback>,
-
 	vulkan_validation_enabled: bool,
 	graphics_context: Context,
 	app_info: AppInfo,
@@ -53,18 +36,12 @@ pub struct EngineAssets {
 }
 
 impl Engine {
-	pub fn new() -> Result<Engine, Box<dyn std::error::Error>> {
-		use asset::Asset;
-
-		let flags = Opt::from_args();
+	pub fn new() -> Result<Rc<RefCell<Engine>>, Box<dyn std::error::Error>> {
 		let graphics_context = Context::new()?;
 		let app_info = AppInfo::new(&graphics_context)
 			.engine("TemportalEngine", utility::make_version(0, 1, 0));
 		let mut engine = Engine {
-			run_build_commandlet: flags.build,
-			build_assets_callback: None,
-
-			vulkan_validation_enabled: flags.validation_layers,
+			vulkan_validation_enabled: cfg!(debug_assertions),
 			graphics_context,
 			app_info,
 
@@ -77,36 +54,24 @@ impl Engine {
 			quit_has_been_triggered: false,
 		};
 
-		engine.assets.types.register(graphics::Shader::type_data());
+		engine.assets.types.register::<graphics::Shader>();
 
-		Ok(engine)
+		Ok(Rc::new(RefCell::new(engine)))
 	}
 
-	pub fn set_application(mut self, name: &str, version: u32) -> Self {
+	pub fn set_application(&mut self, name: &str, version: u32) {
 		self.app_info.set_application_info(name, version);
-		self
 	}
 
 	pub fn app_info(&self) -> &AppInfo {
 		&self.app_info
 	}
 
-	pub fn create_display_manager(engine: &Rc<RefCell<Self>>) -> utility::Result<display::Manager> {
+	pub fn create_display_manager(engine: &Rc<RefCell<Self>>) -> utility::Result<Rc<RefCell<display::Manager>>> {
 		let mut manager = display::Manager::new(engine.clone())?;
 		let weak_engine = Rc::downgrade(engine);
 		manager.add_event_listener(weak_engine);
-		Ok(manager)
-	}
-
-	pub fn is_build_instance(&self) -> bool {
-		self.run_build_commandlet
-	}
-
-	pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-		match self.build_assets_callback {
-			Some(callback) => return build::run(callback),
-			None => panic!("No valid assets callback provided"),
-		}
+		Ok(Rc::new(RefCell::new(manager)))
 	}
 
 	pub fn should_quit(&self) -> bool {
