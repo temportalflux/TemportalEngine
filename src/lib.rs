@@ -66,7 +66,8 @@ impl Engine {
 	pub fn create_display_manager(
 		engine: &Rc<RefCell<Self>>,
 	) -> utility::Result<Rc<RefCell<display::Manager>>> {
-		Ok(Rc::new(RefCell::new(display::Manager::new(engine.clone())?)))
+		Ok(Rc::new(RefCell::new(display::Manager::new(
+			engine.clone(),
+		)?)))
 	}
-
 }

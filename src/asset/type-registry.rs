@@ -4,7 +4,7 @@ use std::collections::HashMap;
 /// Runtime listings of the kinds of assets that exist.
 /// Each asset type corresponds one-to-one with an implementation of the [`Asset`](crate::asset::Asset) trait.
 pub struct TypeRegistry {
-	types: HashMap<asset::TypeName, Box<dyn asset::TypeMetadata>>,
+	types: HashMap<asset::TypeId, Box<dyn asset::TypeMetadata>>,
 }
 
 impl TypeRegistry {

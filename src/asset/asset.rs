@@ -1,9 +1,17 @@
-pub type AssetResult = Result<Box<dyn Asset>, Box<dyn std::error::Error>>;
+use crate::utility;
 
-pub type TypeName = &'static str;
+pub type AssetBox = Box<dyn Asset>;
+pub type AssetResult = Result<AssetBox, utility::AnyError>;
+
+pub type TypeId = &'static str;
 pub trait TypeMetadata {
-	fn name(&self) -> TypeName;
+	fn name(&self) -> TypeId;
 	fn read(&self, path: &std::path::Path, json_str: &str) -> AssetResult;
+	fn compile(
+		&self,
+		json_path: &std::path::Path,
+		asset: &AssetBox,
+	) -> Result<Vec<u8>, utility::AnyError>;
 }
 
 pub trait Asset: std::fmt::Debug + crate::utility::AToAny {
@@ -12,7 +20,7 @@ pub trait Asset: std::fmt::Debug + crate::utility::AToAny {
 		Self: Sized;
 }
 
-pub fn as_asset<T>(asset: &Box<dyn Asset>) -> &T
+pub fn as_asset<T>(asset: &AssetBox) -> &T
 where
 	T: Asset,
 {

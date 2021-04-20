@@ -59,7 +59,7 @@ impl Manager {
 		for event in self.event_pump()?.poll_iter() {
 			self.event_listeners
 				.retain(|listener| listener.strong_count() > 0);
-			
+
 			match event {
 				sdl2::event::Event::Quit { .. } => {
 					self.quit_has_been_triggered = true;
@@ -80,5 +80,4 @@ impl Manager {
 	pub fn should_quit(&self) -> bool {
 		self.quit_has_been_triggered
 	}
-
 }
