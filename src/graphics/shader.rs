@@ -9,6 +9,8 @@ use temportal_graphics::flags::ShaderKind;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Shader {
+	asset_type: String,
+
 	kind: ShaderKind,
 
 	/// The bytes of the shader data.
@@ -24,6 +26,10 @@ impl asset::Asset for Shader {
 }
 
 impl Shader {
+	pub fn contents(&self) -> &Vec<u8> {
+		&self.contents.as_ref().unwrap()
+	}
+
 	pub fn set_contents(&mut self, contents: Vec<u8>) {
 		self.contents = Some(contents);
 	}
@@ -86,5 +92,10 @@ impl TypeMetadata for ShaderMetadata {
 
 		let bytes = rmp_serde::to_vec(&shader_out)?;
 		Ok(bytes)
+	}
+
+	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
+		let shader: Shader = rmp_serde::from_read_ref(&bin)?;
+		Ok(Box::new(shader))
 	}
 }

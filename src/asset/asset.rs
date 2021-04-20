@@ -12,6 +12,7 @@ pub trait TypeMetadata {
 		json_path: &std::path::Path,
 		asset: &AssetBox,
 	) -> Result<Vec<u8>, utility::AnyError>;
+	fn decompile(&self, bin: &Vec<u8>) -> AssetResult;
 }
 
 pub trait Asset: std::fmt::Debug + crate::utility::AToAny {
