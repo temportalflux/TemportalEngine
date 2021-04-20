@@ -1,6 +1,4 @@
-use crate::{
-	asset::{self, AssetResult, TypeMetadata},
-};
+use crate::asset::{self, AssetResult, TypeMetadata};
 use serde::{Deserialize, Serialize};
 use temportal_graphics::flags::ShaderKind;
 
