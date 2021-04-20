@@ -6,12 +6,6 @@ pub type AssetResult = Result<AssetBox, utility::AnyError>;
 pub type TypeId = &'static str;
 pub trait TypeMetadata {
 	fn name(&self) -> TypeId;
-	fn read(&self, path: &std::path::Path, json_str: &str) -> AssetResult;
-	fn compile(
-		&self,
-		json_path: &std::path::Path,
-		asset: &AssetBox,
-	) -> Result<Vec<u8>, utility::AnyError>;
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult;
 }
 
