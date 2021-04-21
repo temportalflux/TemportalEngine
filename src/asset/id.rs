@@ -1,2 +1,45 @@
 /// A unique identifier given to each instance of a class which implements [`Asset`](crate::asset::Asset).
-pub struct Id {}
+#[derive(Debug, Hash, Clone)]
+pub struct Id {
+	module_name: String,
+	asset_path: std::path::PathBuf,
+}
+
+impl Id {
+	pub fn new(module_name: &str, asset_path: &str) -> Id {
+		Id {
+			module_name: module_name.to_string(),
+			asset_path: std::path::PathBuf::from(asset_path),
+		}
+	}
+}
+
+impl PartialEq for Id {
+	fn eq(&self, other: &Self) -> bool {
+		self.module_name == other.module_name && self.asset_path == other.asset_path
+	}
+}
+
+impl std::cmp::Eq for Id {}
+
+#[derive(Debug, Clone)]
+pub struct Location {
+	pak_path: std::path::PathBuf,
+	pak_index: usize,
+}
+
+impl Location {
+	pub fn from_pak(pak_path: &std::path::Path, index: usize) -> Location {
+		Location {
+			pak_path: pak_path.to_path_buf(),
+			pak_index: index,
+		}
+	}
+
+	pub fn pak(&self) -> &std::path::Path {
+		&self.pak_path
+	}
+
+	pub fn index(&self) -> usize { self.pak_index }
+
+}

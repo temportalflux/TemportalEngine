@@ -16,6 +16,7 @@ raw-window-handle = "0.3.3"
 serde = { version = "1.0", features = ["derive"] }
 rmp = "0.8.10"
 rmp-serde = "0.15.4"
+zip = "0.5.12"
 
 [dependencies.sdl2]
 version = "0.34"
