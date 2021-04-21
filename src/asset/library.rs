@@ -44,7 +44,11 @@ impl Library {
 			);
 		}
 
-		println!("Scanned {} assets in {:?}", pak_data.asset_paths.len(), path.file_name().unwrap());
+		println!(
+			"Scanned {} assets in {:?}",
+			pak_data.asset_paths.len(),
+			path.file_name().unwrap()
+		);
 		self.paks.insert(module_name, pak_data);
 
 		Ok(())
@@ -53,5 +57,4 @@ impl Library {
 	pub fn find_location(&self, id: &asset::Id) -> Option<asset::Location> {
 		self.asset_locations.get(&id).map(|ref_loc| ref_loc.clone())
 	}
-
 }

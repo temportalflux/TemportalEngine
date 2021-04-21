@@ -40,6 +40,7 @@ impl Location {
 		&self.pak_path
 	}
 
-	pub fn index(&self) -> usize { self.pak_index }
-
+	pub fn index(&self) -> usize {
+		self.pak_index
+	}
 }
