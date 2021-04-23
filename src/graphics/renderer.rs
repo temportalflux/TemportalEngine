@@ -50,10 +50,13 @@ pub struct RenderChain {
 	graphics_queue: logical::Queue,
 	logical: Weak<logical::Device>,
 	physical: Weak<physical::Device>,
+
+	window_id: u32,
 }
 
 impl RenderChain {
 	pub fn new(
+		window_id: u32,
 		physical: &Rc<physical::Device>,
 		logical: &Rc<logical::Device>,
 		graphics_queue: logical::Queue,
@@ -98,6 +101,7 @@ impl RenderChain {
 		let frame_command_buffer_requires_recording = vec![true; frame_count];
 
 		Ok(RenderChain {
+			window_id,
 			physical: Rc::downgrade(physical),
 			logical: Rc::downgrade(logical),
 			graphics_queue,
@@ -393,5 +397,21 @@ impl RenderChain {
 		self.current_frame =
 			(self.current_frame + 1) % RenderChain::max_frames_in_flight(self.frame_count);
 		Ok(())
+	}
+}
+
+impl crate::display::EventListener for RenderChain {
+	fn on_event(&mut self, event: &sdl2::event::Event) -> bool {
+		match event {
+			sdl2::event::Event::Window {
+				window_id,
+				win_event: sdl2::event::WindowEvent::Resized(w, h),
+				..
+			} if *window_id == self.window_id => {
+				log::debug!("Resized window {} to {}x{}", self.window_id, w, h);
+			}
+			_ => {}
+		}
+		false
 	}
 }
