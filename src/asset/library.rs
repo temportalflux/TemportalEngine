@@ -44,7 +44,8 @@ impl Library {
 			);
 		}
 
-		println!(
+		log::info!(
+			target: asset::LOG,
 			"Scanned {} assets in {:?}",
 			pak_data.asset_paths.len(),
 			path.file_name().unwrap()

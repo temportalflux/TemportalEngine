@@ -19,8 +19,14 @@ impl TypeRegistry {
 		T: asset::Asset,
 	{
 		let metadata = T::metadata();
-		assert!(!self.types.contains_key(metadata.name()));
-		self.types.insert(metadata.name(), metadata);
+		if !self.types.contains_key(metadata.name()) {
+			log::info!(target: asset::LOG, "Registring asset type \"{}\"", metadata.name());
+			self.types.insert(metadata.name(), metadata);
+		}
+		else
+		{
+			log::error!(target: asset::LOG, "Encountered duplicate asset type \"{}\"", metadata.name());
+		}
 	}
 
 	pub fn get(&self, type_id: &str) -> Option<&Box<dyn asset::TypeMetadata>> {

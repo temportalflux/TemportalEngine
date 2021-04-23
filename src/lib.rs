@@ -1,3 +1,4 @@
+extern crate log;
 extern crate sdl2;
 
 use std::{cell::RefCell, rc::Rc};
@@ -19,6 +20,8 @@ pub mod world;
 #[path = "utility/lib.rs"]
 pub mod utility;
 
+pub mod logging;
+
 pub struct Engine {
 	vulkan_validation_enabled: bool,
 	graphics_context: Context,
@@ -38,6 +41,7 @@ impl Engine {
 		let graphics_context = Context::new()?;
 		let app_info = AppInfo::new(&graphics_context)
 			.engine("TemportalEngine", utility::make_version(0, 1, 0));
+		log::info!(target: app_info.engine_name(), "Initializing engine v{}", app_info.engine_version());
 		let mut engine = Engine {
 			vulkan_validation_enabled: cfg!(debug_assertions),
 			graphics_context,

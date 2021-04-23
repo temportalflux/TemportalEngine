@@ -4,6 +4,8 @@ use std::{
 	rc::{Rc, Weak},
 };
 
+pub static LOG: &'static str = "display";
+
 pub struct Manager {
 	engine: Rc<RefCell<Engine>>,
 	sdl: sdl2::Sdl,
@@ -33,6 +35,7 @@ impl Manager {
 		width: u32,
 		height: u32,
 	) -> utility::Result<Rc<RefCell<display::Window>>> {
+		log::info!(target: LOG, "Creating window \"{}\" ({}x{})", title, width, height);
 		let mut builder = self.video_subsystem()?.window(title, width, height);
 		let sdl_window =
 			utility::as_window_error(builder.position_centered().vulkan().resizable().build())?;

@@ -138,7 +138,7 @@ impl display::EventListener for Window {
 				win_event: sdl2::event::WindowEvent::Resized(w, h),
 				..
 			} if *window_id == self.id() => {
-				println!("Resized window {} to {}x{}", self.id(), w, h);
+				log::debug!("Resized window {} to {}x{}", self.id(), w, h);
 			}
 			_ => {}
 		}
@@ -168,7 +168,7 @@ impl Window {
 				),
 			},
 		};
-		println!("Found physical device {}", self.physical());
+		log::info!(target: display::LOG, "Window {} found physical device {}", self.internal.internal.title(), self.physical());
 
 		let permitted_frame_count = self.physical().image_count_range();
 		self.frame_count = std::cmp::min(
