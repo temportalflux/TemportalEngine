@@ -231,6 +231,7 @@ impl Window {
 		self.graphics_queue_index.unwrap()
 	}
 
+	// TODO: Reconstruct during `create_render_chain`
 	pub fn create_render_pass(&mut self, info: renderpass::Info) -> utility::Result<()> {
 		self.render_pass = Some(utility::as_graphics_error(
 			info.create_object(&self.logical()),
