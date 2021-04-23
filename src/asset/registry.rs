@@ -20,12 +20,18 @@ impl TypeRegistry {
 	{
 		let metadata = T::metadata();
 		if !self.types.contains_key(metadata.name()) {
-			log::info!(target: asset::LOG, "Registring asset type \"{}\"", metadata.name());
+			log::info!(
+				target: asset::LOG,
+				"Registring asset type \"{}\"",
+				metadata.name()
+			);
 			self.types.insert(metadata.name(), metadata);
-		}
-		else
-		{
-			log::error!(target: asset::LOG, "Encountered duplicate asset type \"{}\"", metadata.name());
+		} else {
+			log::error!(
+				target: asset::LOG,
+				"Encountered duplicate asset type \"{}\"",
+				metadata.name()
+			);
 		}
 	}
 

@@ -1,4 +1,3 @@
-
 pub static LOG: &'static str = "assets";
 
 mod asset;
