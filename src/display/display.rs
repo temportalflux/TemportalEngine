@@ -25,16 +25,20 @@ impl Manager {
 		})
 	}
 
+	pub fn engine(&self) -> &Rc<RefCell<Engine>> {
+		&self.engine
+	}
+
 	pub fn video_subsystem(&self) -> utility::Result<sdl2::VideoSubsystem> {
 		utility::as_sdl_error(self.sdl.video())
 	}
 
-	pub fn create_window(
+	pub fn create_sdl_window(
 		&mut self,
 		title: &str,
 		width: u32,
 		height: u32,
-	) -> utility::Result<Rc<RefCell<display::Window>>> {
+	) -> utility::Result<sdl2::video::Window> {
 		log::info!(
 			target: LOG,
 			"Creating window \"{}\" ({}x{})",
@@ -43,15 +47,7 @@ impl Manager {
 			height
 		);
 		let mut builder = self.video_subsystem()?.window(title, width, height);
-		let sdl_window =
-			utility::as_window_error(builder.position_centered().vulkan().resizable().build())?;
-		let window = Rc::new(RefCell::new(display::Window::new(
-			&self.engine,
-			sdl_window,
-		)?));
-		let weak_ref = Rc::downgrade(&window);
-		self.add_event_listener(weak_ref);
-		Ok(window)
+		utility::as_window_error(builder.position_centered().vulkan().resizable().build())
 	}
 
 	pub fn event_pump(&self) -> utility::Result<sdl2::EventPump> {

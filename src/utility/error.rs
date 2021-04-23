@@ -1,9 +1,10 @@
-use temportal_graphics::utility;
+use temportal_graphics::{utility, device::physical};
 
 #[derive(Debug)]
 pub enum Error {
 	Sdl(String),
 	SdlWindow(sdl2::video::WindowBuildError),
+	FailedToFindPhysicalDevice(Option<physical::Constraint>),
 	Graphics(utility::Error),
 }
 
@@ -15,6 +16,12 @@ impl std::fmt::Display for Error {
 		match *self {
 			Error::Sdl(ref msg) => write!(f, "Encountered SDL2 error: {}", msg),
 			Error::SdlWindow(ref e) => e.fmt(f),
+			Error::FailedToFindPhysicalDevice(ref constraint) => {
+				match constraint {
+					Some(constraint) => write!(f, "Failed to find physical device due to constraint {:?}", constraint),
+					None => write!(f, "Failed to find any physical devices, do you have a GPU?"),
+				}
+			},
 			Error::Graphics(ref graphics_error) => graphics_error.fmt(f),
 		}
 	}
