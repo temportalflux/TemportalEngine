@@ -199,8 +199,6 @@ impl RenderChain {
 		self.frame_images.clear();
 		self.command_buffers.clear();
 
-		std::mem::drop(&self.command_pool);
-
 		self.render_chain_elements
 			.retain(|element| element.strong_count() > 0);
 		for element in self.render_chain_elements.iter() {
