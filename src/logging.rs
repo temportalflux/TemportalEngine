@@ -1,5 +1,5 @@
-pub use log::Level;
 use crate::utility::VoidResult;
+pub use log::Level;
 
 pub fn init(pkg_name: &str) -> VoidResult {
 	use simplelog::*;

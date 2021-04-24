@@ -1,4 +1,8 @@
-use crate::{display, utility::{self, VoidResult}, Engine};
+use crate::{
+	display,
+	utility::{self, VoidResult},
+	Engine,
+};
 use std::{
 	cell::RefCell,
 	rc::{Rc, Weak},

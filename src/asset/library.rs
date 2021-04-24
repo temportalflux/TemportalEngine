@@ -28,7 +28,11 @@ impl Library {
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
-			log::warn!(target: asset::LOG, "No such asset pak-age found, skipping {}", path.to_str().unwrap());
+			log::warn!(
+				target: asset::LOG,
+				"No such asset pak-age found, skipping {}",
+				path.to_str().unwrap()
+			);
 			return Ok(());
 		}
 

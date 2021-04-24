@@ -63,6 +63,7 @@ impl Engine {
 		};
 
 		engine.assets.types.register::<graphics::Shader>();
+		engine.assets.types.register::<graphics::Font>();
 
 		Ok(Rc::new(RefCell::new(engine)))
 	}
