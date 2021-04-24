@@ -1,4 +1,4 @@
-use crate::{asset, utility};
+use crate::{asset, utility::VoidResult};
 use std::{collections::HashMap, fs};
 use zip;
 
@@ -24,7 +24,7 @@ impl Library {
 		}
 	}
 
-	pub fn scan_pak(&mut self, path: &std::path::Path) -> Result<(), utility::AnyError> {
+	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {

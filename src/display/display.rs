@@ -1,4 +1,4 @@
-use crate::{display, utility, Engine};
+use crate::{display, utility::{self, VoidResult}, Engine};
 use std::{
 	cell::RefCell,
 	rc::{Rc, Weak},
@@ -60,7 +60,7 @@ impl Manager {
 		self.event_listeners.push(listener);
 	}
 
-	pub fn poll_all_events(&mut self) -> utility::Result<()> {
+	pub fn poll_all_events(&mut self) -> VoidResult {
 		for event in self.event_pump()?.poll_iter() {
 			self.event_listeners
 				.retain(|listener| listener.strong_count() > 0);

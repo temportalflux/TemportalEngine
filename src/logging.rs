@@ -1,6 +1,7 @@
 pub use log::Level;
+use crate::utility::VoidResult;
 
-pub fn init(pkg_name: &str) -> Result<(), crate::utility::AnyError> {
+pub fn init(pkg_name: &str) -> VoidResult {
 	use simplelog::*;
 	let mut log_path = std::env::current_dir()?.to_path_buf();
 	log_path.push(format!("{}.log", pkg_name));
