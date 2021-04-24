@@ -2,7 +2,6 @@ use crate::{display, graphics, utility, Engine};
 use sdl2;
 use std::{cell::RefCell, rc::Rc};
 use temportal_graphics::{
-	command,
 	device::{logical, physical},
 	flags, instance, renderpass, Surface,
 };
@@ -26,7 +25,6 @@ impl Default for WindowBuilder {
 }
 
 impl WindowBuilder {
-	
 	pub fn title(mut self, title: &str) -> Self {
 		self.title = title.to_string();
 		self
@@ -48,14 +46,12 @@ impl WindowBuilder {
 		Ok(Rc::new(RefCell::new(display::Window::new(
 			&display.engine(),
 			sdl_window,
-			self.constraints
+			self.constraints,
 		)?)))
 	}
-
 }
 
 pub struct Window {
-	command_pool: command::Pool,
 	logical_device: Rc<logical::Device>,
 	graphics_queue_index: usize,
 	physical_device: Rc<physical::Device>,
@@ -70,7 +66,7 @@ impl Window {
 	pub fn new(
 		engine: &Rc<RefCell<Engine>>,
 		sdl_window: sdl2::video::Window,
-		constraints: Vec<physical::Constraint>
+		constraints: Vec<physical::Constraint>,
 	) -> utility::Result<Window> {
 		let internal = WinWrapper {
 			internal: sdl_window,
@@ -84,18 +80,25 @@ impl Window {
 				.create_object(&eng.graphics_context),
 		)?;
 		let vulkan = std::rc::Rc::new(instance);
-		let surface =
-			utility::as_graphics_error(instance::Instance::create_surface(&vulkan, &internal))?;
+		let surface = Rc::new(utility::as_graphics_error(
+			instance::Instance::create_surface(&vulkan, &internal),
+		)?);
 
-		let physical_device = Rc::new(Window::find_physical_device(&vulkan, &surface, constraints)?);
+		let physical_device = Rc::new(Window::find_physical_device(
+			&vulkan,
+			&surface,
+			constraints,
+		)?);
 		log::info!(
 			target: display::LOG,
 			"Window \"{}\" found physical device {}",
 			internal.internal.title(),
 			physical_device
 		);
-		
-		let graphics_queue_index = physical_device.get_queue_index(flags::QueueFlags::GRAPHICS, true).unwrap();
+
+		let graphics_queue_index = physical_device
+			.get_queue_index(flags::QueueFlags::GRAPHICS, true)
+			.unwrap();
 		let logical_device = std::rc::Rc::new(utility::as_graphics_error(
 			logical::Info::default()
 				.add_extension("VK_KHR_swapchain")
@@ -107,47 +110,47 @@ impl Window {
 				.create_object(&vulkan, &physical_device),
 		)?);
 
-		let command_pool = utility::as_graphics_error(command::Pool::create(
-			&logical_device, graphics_queue_index,
-		))?;
-
 		Ok(Window {
 			internal,
 			_vulkan: vulkan,
-			surface: Rc::new(surface),
+			surface,
 			physical_device,
 			logical_device,
 			graphics_queue_index,
-			command_pool,
 		})
 	}
 
 	fn id(&self) -> u32 {
 		self.internal.internal.id()
 	}
-	
+
 	fn find_physical_device(
-		vulkan: &instance::Instance,
-		surface: &Surface,
-		constraints: Vec<physical::Constraint>
+		vulkan: &Rc<instance::Instance>,
+		surface: &Rc<Surface>,
+		constraints: Vec<physical::Constraint>,
 	) -> utility::Result<physical::Device> {
 		let mut constraints = constraints.clone();
 		constraints.push(physical::Constraint::HasQueueFamily(
 			flags::QueueFlags::GRAPHICS,
 			/*requires_surface*/ true,
 		));
-		match vulkan.find_physical_device(&constraints, &surface) {
+		match instance::Instance::find_physical_device(&vulkan, &constraints, &surface) {
 			Ok(device) => Ok(device),
-			Err(failed_constraint) => Err(utility::Error::FailedToFindPhysicalDevice(failed_constraint))
+			Err(failed_constraint) => Err(utility::Error::FailedToFindPhysicalDevice(
+				failed_constraint,
+			)),
 		}
 	}
-	
+
 	pub fn create_render_chain(
 		&self,
 		display: &mut display::Manager,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<Rc<RefCell<graphics::RenderChain>>> {
-		let permitted_frame_count = self.physical_device.image_count_range();
+		let permitted_frame_count = self
+			.physical_device
+			.query_surface_support()
+			.image_count_range();
 		let frame_count = std::cmp::min(
 			std::cmp::max(3, permitted_frame_count.start as usize),
 			permitted_frame_count.end as usize,
@@ -164,7 +167,6 @@ impl Window {
 			&self.surface,
 			frame_count,
 			render_pass_info,
-			&self.command_pool,
 		)?;
 		let render_chain = Rc::new(RefCell::new(render_chain_raw));
 		let render_chain_weak = Rc::downgrade(&render_chain);
@@ -172,7 +174,6 @@ impl Window {
 
 		Ok(render_chain)
 	}
-
 }
 
 struct WinWrapper {

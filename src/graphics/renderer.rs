@@ -13,7 +13,12 @@ use temportal_graphics::{
 /// (i.e. something which contains a pipeline, and is therefore reliant on the resolution of the window).
 pub trait RenderChainElement {
 	fn initialize_with(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
-	fn on_render_chain_constructed(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
+	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
+	fn on_render_chain_constructed(
+		&mut self,
+		render_chain: &RenderChain,
+		resolution: structs::Extent2D,
+	) -> utility::Result<()>;
 }
 
 /// An object which records commands to one or more command buffers,
@@ -39,10 +44,12 @@ pub struct RenderChain {
 	swapchain: swapchain::Swapchain,
 	swapchain_info: swapchain::Info,
 	render_pass: renderpass::Pass,
-	render_pass_info: renderpass::Info,
-
-	render_pass_instruction: renderpass::RecordInstruction,
 	command_buffers: Vec<command::Buffer>,
+	command_pool: command::Pool,
+
+	is_dirty: bool,
+	render_pass_info: renderpass::Info,
+	render_pass_instruction: renderpass::RecordInstruction,
 
 	frame_count: usize,
 
@@ -63,7 +70,6 @@ impl RenderChain {
 		surface: &Rc<Surface>,
 		frame_count: usize,
 		render_pass_info: renderpass::Info,
-		command_pool: &command::Pool,
 	) -> utility::Result<RenderChain> {
 		let mut swapchain_info = swapchain::Info::default()
 			.set_image_count(frame_count as u32)
@@ -74,24 +80,32 @@ impl RenderChain {
 			.set_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
 			.set_composite_alpha(flags::CompositeAlpha::OPAQUE_KHR)
 			.set_is_clipped(true);
+		let mut render_pass_instruction = renderpass::RecordInstruction::default();
+
+		let resolution = physical.query_surface_support().image_extent();
+		swapchain_info.fill_from_physical(&physical);
+		render_pass_instruction.set_extent(resolution);
+
+		let command_pool =
+			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
 
 		let command_buffers =
 			utility::as_graphics_error(command_pool.allocate_buffers(frame_count))?;
 
-		let swapchain =
-			RenderChain::create_swapchain(&mut swapchain_info, physical, logical, surface, None)?;
+		let swapchain = RenderChain::create_swapchain(&swapchain_info, logical, surface, None)?;
 		let frame_images = utility::as_graphics_error(swapchain.get_images())?;
 		let frame_image_views = RenderChain::create_image_views(logical, &frame_images)?;
 		let render_pass = utility::as_graphics_error(render_pass_info.create_object(&logical))?;
 		let frame_buffers = RenderChain::create_frame_buffers(
 			&frame_image_views,
-			*swapchain_info.image_extent(),
+			resolution,
 			&render_pass,
 			logical,
 		)?;
 
 		let max_frames_in_flight = RenderChain::max_frames_in_flight(frame_count);
-		let img_available_semaphores = RenderChain::create_semaphores(logical, max_frames_in_flight)?;
+		let img_available_semaphores =
+			RenderChain::create_semaphores(logical, max_frames_in_flight)?;
 		let render_finished_semaphores =
 			RenderChain::create_semaphores(logical, max_frames_in_flight)?;
 		let in_flight_fences = RenderChain::create_fences(logical, max_frames_in_flight)?;
@@ -108,10 +122,12 @@ impl RenderChain {
 			surface: Rc::downgrade(surface),
 			frame_count,
 
+			command_pool,
 			command_buffers,
-			render_pass_instruction: renderpass::RecordInstruction::default()
-				.with_extent(*swapchain_info.image_extent()),
+			render_pass_instruction,
 			render_pass_info,
+			is_dirty: false,
+
 			render_pass,
 			swapchain_info,
 			swapchain,
@@ -158,7 +174,7 @@ impl RenderChain {
 		{
 			let mut element_mut = element.borrow_mut();
 			element_mut.initialize_with(&self)?;
-			element_mut.on_render_chain_constructed(&self)?;
+			element_mut.on_render_chain_constructed(&self, *self.swapchain_info.image_extent())?;
 		}
 		self.render_chain_elements.push(Rc::downgrade(&element));
 		Ok(())
@@ -172,11 +188,7 @@ impl RenderChain {
 		Ok(())
 	}
 
-	pub fn construct_render_chain(&mut self) -> utility::Result<()> {
-		let physical = self.physical.upgrade().unwrap();
-		let logical = self.logical.upgrade().unwrap();
-		let surface = self.surface.upgrade().unwrap();
-
+	pub fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> utility::Result<()> {
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
 		self.render_finished_semaphores.clear();
@@ -185,23 +197,48 @@ impl RenderChain {
 		self.frame_buffers.clear();
 		self.frame_image_views.clear();
 		self.frame_images.clear();
+		self.command_buffers.clear();
+
+		std::mem::drop(&self.command_pool);
+
+		self.render_chain_elements
+			.retain(|element| element.strong_count() > 0);
+		for element in self.render_chain_elements.iter() {
+			element
+				.upgrade()
+				.unwrap()
+				.borrow_mut()
+				.destroy_render_chain(self)?;
+		}
+
+		self.is_dirty = false;
+		let physical = self.physical.upgrade().unwrap();
+		let logical = self.logical.upgrade().unwrap();
+		let surface = self.surface.upgrade().unwrap();
+
+		self.swapchain_info.fill_from_physical(&physical);
+		self.render_pass_instruction.set_extent(resolution);
+
+		self.command_pool = utility::as_graphics_error(command::Pool::create(
+			&logical,
+			self.graphics_queue.index(),
+		))?;
+		self.command_buffers =
+			utility::as_graphics_error(self.command_pool.allocate_buffers(self.frame_count))?;
 
 		self.render_pass =
 			utility::as_graphics_error(self.render_pass_info.create_object(&logical))?;
 		self.swapchain = RenderChain::create_swapchain(
-			&mut self.swapchain_info,
-			&physical,
+			&self.swapchain_info,
 			&logical,
 			&surface,
 			Some(&self.swapchain),
 		)?;
-		self.render_pass_instruction
-			.set_extent(*self.swapchain_info.image_extent());
 		self.frame_images = utility::as_graphics_error(self.swapchain.get_images())?;
 		self.frame_image_views = RenderChain::create_image_views(&logical, &self.frame_images)?;
 		self.frame_buffers = RenderChain::create_frame_buffers(
 			&self.frame_image_views,
-			*self.swapchain_info.image_extent(),
+			resolution,
 			&self.render_pass,
 			&logical,
 		)?;
@@ -220,14 +257,12 @@ impl RenderChain {
 
 		self.mark_commands_dirty();
 
-		self.render_chain_elements
-			.retain(|element| element.strong_count() > 0);
 		for element in self.render_chain_elements.iter() {
 			element
 				.upgrade()
 				.unwrap()
 				.borrow_mut()
-				.on_render_chain_constructed(self)?;
+				.on_render_chain_constructed(self, resolution)?;
 		}
 
 		Ok(())
@@ -238,13 +273,11 @@ impl RenderChain {
 	}
 
 	fn create_swapchain(
-		info: &mut swapchain::Info,
-		physical: &physical::Device,
+		info: &swapchain::Info,
 		logical: &Rc<logical::Device>,
 		surface: &Surface,
 		old_swapchain: Option<&swapchain::Swapchain>,
 	) -> utility::Result<swapchain::Swapchain> {
-		info.fill_from_physical(physical);
 		utility::as_graphics_error(info.create_object(logical, surface, old_swapchain))
 	}
 
@@ -333,18 +366,42 @@ impl RenderChain {
 	pub fn render_frame(&mut self) -> utility::Result<()> {
 		let logical = self.logical.upgrade().unwrap();
 
+		if self.is_dirty {
+			utility::as_graphics_error(logical.wait_until_idle())?;
+			let resolution = self
+				.physical
+				.upgrade()
+				.unwrap()
+				.query_surface_support()
+				.image_extent();
+			if resolution.width > 0 && resolution.height > 0 {
+				self.construct_render_chain(resolution)?;
+			}
+		}
+
 		// Wait for the previous frame/image to no longer be displayed
 		utility::as_graphics_error(logical.wait_for(
 			&self.in_flight_fences[self.current_frame],
 			true,
 			u64::MAX,
 		))?;
+
 		// Get the index of the next image to display
-		let next_image_idx = utility::as_graphics_error(self.swapchain.acquire_next_image(
+		let acquisition_result = self.swapchain.acquire_next_image(
 			u64::MAX,
 			Some(&self.img_available_semaphores[self.current_frame]),
 			None,
-		))?;
+		);
+		let next_image_idx = match acquisition_result {
+			Ok(img) => img,
+			Err(e) => match e {
+				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
+					self.is_dirty = true;
+					return Ok(());
+				}
+				_ => return Err(utility::Error::Graphics(e)),
+			},
+		};
 
 		// Ensure that the image for the next index is not being written to or displayed
 		{
@@ -385,14 +442,22 @@ impl RenderChain {
 			Some(&self.in_flight_fences[self.current_frame]),
 		))?;
 
-		utility::as_graphics_error(
-			self.graphics_queue.present(
-				command::PresentInfo::default()
-					.wait_for(&self.render_finished_semaphores[self.current_frame])
-					.add_swapchain(&self.swapchain)
-					.add_image_index(next_image_idx as u32),
-			),
-		)?;
+		let present_result = self.graphics_queue.present(
+			command::PresentInfo::default()
+				.wait_for(&self.render_finished_semaphores[self.current_frame])
+				.add_swapchain(&self.swapchain)
+				.add_image_index(next_image_idx as u32),
+		);
+		match present_result {
+			Ok(_) => {}
+			Err(e) => match e {
+				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
+					self.is_dirty = true;
+					return Ok(());
+				}
+				_ => return Err(utility::Error::Graphics(e)),
+			},
+		}
 
 		self.current_frame =
 			(self.current_frame + 1) % RenderChain::max_frames_in_flight(self.frame_count);
