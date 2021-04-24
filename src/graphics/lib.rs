@@ -1,7 +1,8 @@
-#[path = "shader.rs"]
-mod shader;
-pub use shader::*;
+pub use temportal_graphics::*;
 
-#[path = "renderer.rs"]
+#[path = "shader.rs"]
+mod shader_engine;
+pub use shader_engine::*;
+
 mod renderer;
 pub use renderer::*;

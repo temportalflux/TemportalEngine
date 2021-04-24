@@ -2,7 +2,6 @@ extern crate log;
 extern crate sdl2;
 
 use std::{cell::RefCell, rc::Rc};
-
 use temportal_graphics::{self, AppInfo, Context};
 
 #[path = "asset/lib.rs"]
@@ -13,6 +12,8 @@ pub mod display;
 
 #[path = "graphics/lib.rs"]
 pub mod graphics;
+
+pub use temportal_math as math;
 
 #[path = "world/lib.rs"]
 pub mod world;
