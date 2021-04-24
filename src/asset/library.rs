@@ -27,6 +27,11 @@ impl Library {
 	pub fn scan_pak(&mut self, path: &std::path::Path) -> Result<(), utility::AnyError> {
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
+		if !path.exists() {
+			log::warn!(target: asset::LOG, "No such asset pak-age found, skipping {}", path.to_str().unwrap());
+			return Ok(());
+		}
+
 		let mut pak_data = PakData {
 			location: path.to_path_buf(),
 			asset_paths: Vec::new(),

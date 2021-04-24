@@ -2,7 +2,6 @@ extern crate log;
 extern crate sdl2;
 
 use std::{cell::RefCell, rc::Rc};
-use temportal_graphics::{self, AppInfo, Context};
 
 #[path = "asset/lib.rs"]
 pub mod asset;
@@ -12,6 +11,7 @@ pub mod display;
 
 #[path = "graphics/lib.rs"]
 pub mod graphics;
+use graphics::{AppInfo, Context};
 
 pub use temportal_math as math;
 
@@ -20,6 +20,7 @@ pub mod world;
 
 #[path = "utility/lib.rs"]
 pub mod utility;
+use utility::AnyError;
 
 pub mod logging;
 
@@ -37,8 +38,14 @@ pub struct EngineAssets {
 	pub loader: asset::Loader,
 }
 
+impl std::fmt::Debug for Engine {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(f, "{:?}", self.app_info())
+	}
+}
+
 impl Engine {
-	pub fn new() -> Result<Rc<RefCell<Engine>>, Box<dyn std::error::Error>> {
+	pub fn new() -> Result<Rc<RefCell<Engine>>, AnyError> {
 		let graphics_context = Context::new()?;
 		let app_info = AppInfo::new(&graphics_context)
 			.engine("TemportalEngine", utility::make_version(0, 1, 0));
