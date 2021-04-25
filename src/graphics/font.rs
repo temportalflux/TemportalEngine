@@ -1,12 +1,34 @@
-use crate::{asset::{self, AssetResult, TypeMetadata}, math::Vector};
+use crate::{
+	asset::{self, AssetResult, TypeMetadata},
+	math::Vector,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Font {
 	asset_type: String,
+	sdf: Option<SDF>,
 }
 
-//#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
+pub struct SDF {
+	pub size: Vector<usize, 2>,
+	pub binary: Vec<Vec<u8>>,
+	pub glyphs: Vec<Glyph>,
+}
+
+impl std::fmt::Debug for SDF {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(
+			f,
+			"SDL {{ size:{:?}, glyphs:{:?}, binary:(omitted) }}",
+			self.size,
+			self.glyphs.len()
+		)
+	}
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Glyph {
 	pub ascii_code: usize,
 	// The position of the glyph in the atlas texture.
@@ -30,7 +52,15 @@ impl asset::Asset for Font {
 	}
 }
 
-impl Font {}
+impl Font {
+	pub fn set_sdf(&mut self, sdf: SDF) {
+		self.sdf = Some(sdf);
+	}
+
+	pub fn glyphs(&self) -> &Vec<Glyph> {
+		&self.sdf.as_ref().unwrap().glyphs
+	}
+}
 
 pub struct FontMetadata {}
 

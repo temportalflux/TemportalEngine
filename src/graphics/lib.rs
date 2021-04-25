@@ -1,7 +1,6 @@
 pub use temportal_graphics::*;
 
-mod font;
-pub use font::*;
+pub mod font;
 
 #[path = "shader.rs"]
 mod shader_engine;
