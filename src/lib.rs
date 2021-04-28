@@ -24,6 +24,9 @@ use utility::AnyError;
 
 pub mod logging;
 
+#[path = "task/_.rs"]
+pub mod task;
+
 pub struct Engine {
 	vulkan_validation_enabled: bool,
 	graphics_context: Context,
