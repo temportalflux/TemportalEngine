@@ -3,29 +3,29 @@ extern crate sdl2;
 
 use std::{cell::RefCell, rc::Rc};
 
-#[path = "asset/lib.rs"]
+#[path = "asset/_.rs"]
 pub mod asset;
 
-#[path = "display/lib.rs"]
+#[path = "display/_.rs"]
 pub mod display;
 
-#[path = "graphics/lib.rs"]
+#[path = "graphics/_.rs"]
 pub mod graphics;
 use graphics::{AppInfo, Context};
 
+pub mod logging;
+
 pub use temportal_math as math;
 
-#[path = "world/lib.rs"]
+#[path = "world/_.rs"]
 pub mod world;
-
-#[path = "utility/lib.rs"]
-pub mod utility;
-use utility::AnyError;
-
-pub mod logging;
 
 #[path = "task/_.rs"]
 pub mod task;
+
+#[path = "utility/_.rs"]
+pub mod utility;
+use utility::AnyError;
 
 pub struct Engine {
 	vulkan_validation_enabled: bool,
