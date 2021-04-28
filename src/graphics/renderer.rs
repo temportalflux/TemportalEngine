@@ -76,11 +76,11 @@ impl RenderChain {
 		let mut swapchain_info = swapchain::Info::default()
 			.set_image_count(frame_count as u32)
 			.set_image_format(flags::Format::B8G8R8A8_SRGB)
-			.set_image_color_space(flags::ColorSpace::SRGB_NONLINEAR_KHR)
+			.set_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
 			.set_image_array_layer_count(1)
 			.set_image_usage(flags::ImageUsageFlags::COLOR_ATTACHMENT)
 			.set_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
-			.set_composite_alpha(flags::CompositeAlpha::OPAQUE_KHR)
+			.set_composite_alpha(flags::CompositeAlpha::OPAQUE)
 			.set_is_clipped(true);
 		let mut render_pass_instruction = renderpass::RecordInstruction::default();
 
@@ -289,7 +289,7 @@ impl RenderChain {
 		for image in frame_images.iter() {
 			views.push(utility::as_graphics_error(
 				image::ViewInfo::new()
-					.set_view_type(flags::ImageViewType::_2D)
+					.set_view_type(flags::ImageViewType::TYPE_2D)
 					.set_format(flags::Format::B8G8R8A8_SRGB)
 					.set_subresource_range(structs::ImageSubresourceRange {
 						aspect_mask: flags::ImageAspect::COLOR,
@@ -392,8 +392,8 @@ impl RenderChain {
 			Some(&self.img_available_semaphores[self.current_frame]),
 			None,
 		);
-		let next_image_idx = match acquisition_result {
-			Ok(img) => img,
+		let (next_image_idx, is_suboptimal) = match acquisition_result {
+			Ok(data) => data,
 			Err(e) => match e {
 				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
 					self.is_dirty = true;
@@ -402,6 +402,11 @@ impl RenderChain {
 				_ => return Err(utility::Error::Graphics(e)),
 			},
 		};
+		let next_image_idx = next_image_idx as usize;
+		if is_suboptimal {
+			self.is_dirty = true;
+			return Ok(());
+		}
 
 		// Ensure that the image for the next index is not being written to or displayed
 		{
@@ -449,7 +454,12 @@ impl RenderChain {
 				.add_image_index(next_image_idx as u32),
 		);
 		match present_result {
-			Ok(_) => {}
+			Ok(is_suboptimal) => {
+				if is_suboptimal {
+					self.is_dirty = true;
+					return Ok(());
+				}
+			}
 			Err(e) => match e {
 				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
 					self.is_dirty = true;

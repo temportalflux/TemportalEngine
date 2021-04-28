@@ -81,7 +81,7 @@ impl Window {
 		)?;
 		let vulkan = std::rc::Rc::new(instance);
 		let surface = Rc::new(utility::as_graphics_error(
-			instance::Instance::create_surface(&vulkan, &internal),
+			instance::Instance::create_surface(&eng.graphics_context, &vulkan, &internal),
 		)?);
 
 		let physical_device = Rc::new(Window::find_physical_device(
