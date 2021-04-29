@@ -57,6 +57,7 @@ pub struct RenderChain {
 
 	surface: Weak<Surface>,
 	graphics_queue: logical::Queue,
+	allocator: Weak<graphics::Allocator>,
 	logical: Weak<logical::Device>,
 	physical: Weak<physical::Device>,
 
@@ -68,6 +69,7 @@ impl RenderChain {
 		window_id: u32,
 		physical: &Rc<physical::Device>,
 		logical: &Rc<logical::Device>,
+		allocator: &Rc<graphics::Allocator>,
 		graphics_queue: logical::Queue,
 		surface: &Rc<Surface>,
 		frame_count: usize,
@@ -120,6 +122,7 @@ impl RenderChain {
 			window_id,
 			physical: Rc::downgrade(physical),
 			logical: Rc::downgrade(logical),
+			allocator: Rc::downgrade(allocator),
 			graphics_queue,
 			surface: Rc::downgrade(surface),
 			frame_count,
@@ -155,6 +158,10 @@ impl RenderChain {
 
 	pub fn logical(&self) -> Rc<logical::Device> {
 		self.logical.upgrade().unwrap()
+	}
+
+	pub fn allocator(&self) -> Rc<graphics::Allocator> {
+		self.allocator.upgrade().unwrap()
 	}
 
 	pub fn render_pass(&self) -> &renderpass::Pass {

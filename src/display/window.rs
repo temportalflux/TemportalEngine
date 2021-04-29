@@ -58,6 +58,7 @@ pub struct Window {
 	surface: Rc<Surface>,
 
 	// This is at the bottom to ensure that rust deallocates it last
+	graphics_allocator: Rc<graphics::Allocator>,
 	_vulkan: Rc<instance::Instance>,
 	internal: WinWrapper,
 }
@@ -110,9 +111,16 @@ impl Window {
 				.create_object(&vulkan, &physical_device),
 		)?);
 
+		let graphics_allocator = Rc::new(utility::as_graphics_error(graphics::Allocator::create(
+			&vulkan,
+			&physical_device,
+			&logical_device,
+		))?);
+
 		Ok(Window {
 			internal,
 			_vulkan: vulkan,
+			graphics_allocator,
 			surface,
 			physical_device,
 			logical_device,
@@ -163,6 +171,7 @@ impl Window {
 			self.id(),
 			&self.physical_device,
 			&self.logical_device,
+			&self.graphics_allocator,
 			graphics_queue,
 			&self.surface,
 			frame_count,
