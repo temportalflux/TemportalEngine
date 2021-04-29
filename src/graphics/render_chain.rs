@@ -55,6 +55,7 @@ pub struct RenderChain {
 
 	frame_count: usize,
 
+	persistent_descriptor_pool: RefCell<graphics::descriptor::pool::Pool>,
 	surface: Weak<Surface>,
 	graphics_queue: logical::Queue,
 	allocator: Weak<graphics::Allocator>,
@@ -118,6 +119,13 @@ impl RenderChain {
 
 		let frame_command_buffer_requires_recording = vec![true; frame_count];
 
+		let persistent_descriptor_pool = RefCell::new(utility::as_graphics_error(
+			graphics::descriptor::Pool::builder()
+				.with_total_set_count(100)
+				.with_descriptor(flags::DescriptorKind::COMBINED_IMAGE_SAMPLER, 100)
+				.build(logical),
+		)?);
+
 		Ok(RenderChain {
 			window_id,
 			physical: Rc::downgrade(physical),
@@ -126,6 +134,8 @@ impl RenderChain {
 			graphics_queue,
 			surface: Rc::downgrade(surface),
 			frame_count,
+
+			persistent_descriptor_pool,
 
 			command_pool,
 			command_buffers,
@@ -162,6 +172,10 @@ impl RenderChain {
 
 	pub fn allocator(&self) -> Rc<graphics::Allocator> {
 		self.allocator.upgrade().unwrap()
+	}
+
+	pub fn persistent_descriptor_pool(&self) -> &RefCell<graphics::descriptor::pool::Pool> {
+		&self.persistent_descriptor_pool
 	}
 
 	pub fn render_pass(&self) -> &renderpass::Pass {

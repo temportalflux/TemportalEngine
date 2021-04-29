@@ -6,5 +6,5 @@ pub mod font;
 mod shader_engine;
 pub use shader_engine::*;
 
-mod renderer;
-pub use renderer::*;
+mod render_chain;
+pub use render_chain::*;
