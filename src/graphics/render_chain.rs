@@ -361,18 +361,27 @@ impl RenderChain {
 		logical: &Rc<logical::Device>,
 		amount: usize,
 	) -> utility::Result<Vec<command::Semaphore>> {
-		utility::as_graphics_error(logical::Device::create_semaphores(logical, amount))
+		let mut vec: Vec<command::Semaphore> = Vec::new();
+		for _ in 0..amount {
+			vec.push(utility::as_graphics_error(command::Semaphore::new(
+				logical,
+			))?);
+		}
+		Ok(vec)
 	}
 
 	fn create_fences(
 		logical: &Rc<logical::Device>,
 		amount: usize,
 	) -> utility::Result<Vec<command::Fence>> {
-		utility::as_graphics_error(logical::Device::create_fences(
-			logical,
-			amount,
-			flags::FenceState::SIGNALED,
-		))
+		let mut vec: Vec<command::Fence> = Vec::new();
+		for _ in 0..amount {
+			vec.push(utility::as_graphics_error(command::Fence::new(
+				logical,
+				flags::FenceState::SIGNALED,
+			))?);
+		}
+		Ok(vec)
 	}
 
 	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
