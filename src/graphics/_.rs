@@ -8,3 +8,6 @@ pub use shader_engine::*;
 
 mod render_chain;
 pub use render_chain::*;
+
+mod task;
+pub use task::*;

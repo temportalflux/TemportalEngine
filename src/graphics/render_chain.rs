@@ -48,7 +48,7 @@ pub struct RenderChain {
 	render_pass: renderpass::Pass,
 	command_buffers: Vec<command::Buffer>,
 	frame_command_pool: command::Pool,
-	transient_command_pool: command::Pool,
+	transient_command_pool: Rc<command::Pool>,
 
 	is_dirty: bool,
 	render_pass_info: renderpass::Info,
@@ -58,7 +58,7 @@ pub struct RenderChain {
 
 	persistent_descriptor_pool: RefCell<graphics::descriptor::pool::Pool>,
 	surface: Weak<Surface>,
-	graphics_queue: logical::Queue,
+	graphics_queue: Rc<logical::Queue>,
 	allocator: Weak<graphics::alloc::Allocator>,
 	logical: Weak<logical::Device>,
 	physical: Weak<physical::Device>,
@@ -94,8 +94,10 @@ impl RenderChain {
 
 		let frame_command_pool =
 			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
-		let transient_command_pool =
-			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
+		let transient_command_pool = Rc::new(utility::as_graphics_error(command::Pool::create(
+			&logical,
+			graphics_queue.index(),
+		))?);
 
 		let command_buffers = utility::as_graphics_error(
 			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY),
@@ -138,7 +140,7 @@ impl RenderChain {
 			physical: Rc::downgrade(physical),
 			logical: Rc::downgrade(logical),
 			allocator: Rc::downgrade(allocator),
-			graphics_queue,
+			graphics_queue: Rc::new(graphics_queue),
 			surface: Rc::downgrade(surface),
 			frame_count,
 
@@ -182,11 +184,11 @@ impl RenderChain {
 		self.allocator.upgrade().unwrap()
 	}
 
-	pub fn transient_command_pool(&self) -> &command::Pool {
+	pub fn transient_command_pool(&self) -> &Rc<command::Pool> {
 		&self.transient_command_pool
 	}
 
-	pub fn graphics_queue(&self) -> &logical::Queue {
+	pub fn graphics_queue(&self) -> &Rc<logical::Queue> {
 		&self.graphics_queue
 	}
 
