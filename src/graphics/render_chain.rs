@@ -47,7 +47,8 @@ pub struct RenderChain {
 	swapchain_info: swapchain::Info,
 	render_pass: renderpass::Pass,
 	command_buffers: Vec<command::Buffer>,
-	command_pool: command::Pool,
+	frame_command_pool: command::Pool,
+	transient_command_pool: command::Pool,
 
 	is_dirty: bool,
 	render_pass_info: renderpass::Info,
@@ -91,11 +92,14 @@ impl RenderChain {
 		swapchain_info.fill_from_physical(&physical);
 		render_pass_instruction.set_extent(resolution);
 
-		let command_pool =
+		let frame_command_pool =
+			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
+		let transient_command_pool =
 			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
 
-		let command_buffers =
-			utility::as_graphics_error(command_pool.allocate_buffers(frame_count))?;
+		let command_buffers = utility::as_graphics_error(
+			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY),
+		)?;
 
 		let swapchain = RenderChain::create_swapchain(&swapchain_info, logical, surface, None)?;
 		let frame_images = utility::as_graphics_error(swapchain.get_images())?;
@@ -137,7 +141,8 @@ impl RenderChain {
 
 			persistent_descriptor_pool,
 
-			command_pool,
+			transient_command_pool,
+			frame_command_pool,
 			command_buffers,
 			render_pass_instruction,
 			render_pass_info,
@@ -172,6 +177,14 @@ impl RenderChain {
 
 	pub fn allocator(&self) -> Rc<graphics::alloc::Allocator> {
 		self.allocator.upgrade().unwrap()
+	}
+
+	pub fn transient_command_pool(&self) -> &command::Pool {
+		&self.transient_command_pool
+	}
+
+	pub fn graphics_queue(&self) -> &logical::Queue {
+		&self.graphics_queue
 	}
 
 	pub fn persistent_descriptor_pool(&self) -> &RefCell<graphics::descriptor::pool::Pool> {
@@ -240,12 +253,14 @@ impl RenderChain {
 		self.swapchain_info.fill_from_physical(&physical);
 		self.render_pass_instruction.set_extent(resolution);
 
-		self.command_pool = utility::as_graphics_error(command::Pool::create(
+		self.frame_command_pool = utility::as_graphics_error(command::Pool::create(
 			&logical,
 			self.graphics_queue.index(),
 		))?;
-		self.command_buffers =
-			utility::as_graphics_error(self.command_pool.allocate_buffers(self.frame_count))?;
+		self.command_buffers = utility::as_graphics_error(
+			self.frame_command_pool
+				.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY),
+		)?;
 
 		self.render_pass =
 			utility::as_graphics_error(self.render_pass_info.create_object(&logical))?;
@@ -361,7 +376,7 @@ impl RenderChain {
 	}
 
 	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
-		utility::as_graphics_error(self.command_buffers[buffer_index].begin())?;
+		utility::as_graphics_error(self.command_buffers[buffer_index].begin(None))?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
 			&self.render_pass,

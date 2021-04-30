@@ -111,11 +111,9 @@ impl Window {
 				.create_object(&vulkan, &physical_device),
 		)?);
 
-		let graphics_allocator = Rc::new(utility::as_graphics_error(graphics::alloc::Allocator::create(
-			&vulkan,
-			&physical_device,
-			&logical_device,
-		))?);
+		let graphics_allocator = Rc::new(utility::as_graphics_error(
+			graphics::alloc::Allocator::create(&vulkan, &physical_device, &logical_device),
+		)?);
 
 		Ok(Window {
 			internal,
