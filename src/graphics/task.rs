@@ -71,7 +71,9 @@ impl TaskCopyImageToGpu {
 				command::ImageBarrier::default()
 					.prevents(flags::Access::TRANSFER_WRITE)
 					.with_image(Rc::downgrade(&image))
-					.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
+					.with_range(
+						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
+					)
 					.with_layout(
 						flags::ImageLayout::UNDEFINED,
 						flags::ImageLayout::TRANSFER_DST_OPTIMAL,
@@ -80,7 +82,7 @@ impl TaskCopyImageToGpu {
 		});
 		self
 	}
-	
+
 	pub fn format_image_for_read(self, image: &Rc<image::Image>) -> Self {
 		optick::event!();
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
@@ -91,7 +93,9 @@ impl TaskCopyImageToGpu {
 					.requires(flags::Access::TRANSFER_WRITE)
 					.prevents(flags::Access::SHADER_READ)
 					.with_image(Rc::downgrade(&image))
-					.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
+					.with_range(
+						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
+					)
 					.with_layout(
 						flags::ImageLayout::TRANSFER_DST_OPTIMAL,
 						flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
@@ -134,6 +138,19 @@ impl TaskCopyImageToGpu {
 		self
 	}
 
+	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
+		optick::event!();
+		self.cmd().copy_buffer_to_buffer(
+			&self.staging_buffer(),
+			&buffer,
+			vec![command::CopyBufferRange {
+				start_in_src: 0,
+				start_in_dst: 0,
+				size: self.staging_buffer().size(),
+			}],
+		);
+		self
+	}
 }
 
 impl Drop for TaskCopyImageToGpu {
