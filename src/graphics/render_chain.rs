@@ -2,7 +2,7 @@ use crate::{
 	graphics::{
 		self, command,
 		device::{logical, physical, swapchain},
-		flags, image, renderpass, structs, Surface,
+		flags, image, image_view, renderpass, structs, Surface,
 	},
 	utility,
 };
@@ -41,7 +41,7 @@ pub struct RenderChain {
 	frame_command_buffer_requires_recording: Vec<bool>,
 
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
-	frame_image_views: Vec<image::View>,
+	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<image::Image>,
 	swapchain: swapchain::Swapchain,
 	swapchain_info: swapchain::Info,
@@ -321,11 +321,11 @@ impl RenderChain {
 	fn create_image_views(
 		logical: &Rc<logical::Device>,
 		frame_images: &Vec<image::Image>,
-	) -> utility::Result<Vec<image::View>> {
-		let mut views: Vec<image::View> = Vec::new();
+	) -> utility::Result<Vec<image_view::View>> {
+		let mut views: Vec<image_view::View> = Vec::new();
 		for image in frame_images.iter() {
 			views.push(utility::as_graphics_error(
-				image::ViewInfo::new()
+				image_view::View::builder()
 					.set_view_type(flags::ImageViewType::TYPE_2D)
 					.set_format(flags::Format::B8G8R8A8_SRGB)
 					.set_subresource_range(
@@ -339,7 +339,7 @@ impl RenderChain {
 	}
 
 	fn create_frame_buffers(
-		views: &Vec<image::View>,
+		views: &Vec<image_view::View>,
 		extent: structs::Extent2D,
 		render_pass: &renderpass::Pass,
 		logical: &Rc<logical::Device>,
