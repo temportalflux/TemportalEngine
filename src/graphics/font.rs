@@ -60,6 +60,14 @@ impl Font {
 	pub fn glyphs(&self) -> &Vec<Glyph> {
 		&self.sdf.as_ref().unwrap().glyphs
 	}
+
+	pub fn binary(&self) -> &Vec<Vec<u8>> {
+		&self.sdf.as_ref().unwrap().binary
+	}
+
+	pub fn size(&self) -> &Vector<usize, 2> {
+		&self.sdf.as_ref().unwrap().size
+	}
 }
 
 pub struct FontMetadata {}

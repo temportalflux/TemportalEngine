@@ -58,7 +58,7 @@ pub struct RenderChain {
 	persistent_descriptor_pool: RefCell<graphics::descriptor::pool::Pool>,
 	surface: Weak<Surface>,
 	graphics_queue: logical::Queue,
-	allocator: Weak<graphics::Allocator>,
+	allocator: Weak<graphics::alloc::Allocator>,
 	logical: Weak<logical::Device>,
 	physical: Weak<physical::Device>,
 
@@ -70,7 +70,7 @@ impl RenderChain {
 		window_id: u32,
 		physical: &Rc<physical::Device>,
 		logical: &Rc<logical::Device>,
-		allocator: &Rc<graphics::Allocator>,
+		allocator: &Rc<graphics::alloc::Allocator>,
 		graphics_queue: logical::Queue,
 		surface: &Rc<Surface>,
 		frame_count: usize,
@@ -170,7 +170,7 @@ impl RenderChain {
 		self.logical.upgrade().unwrap()
 	}
 
-	pub fn allocator(&self) -> Rc<graphics::Allocator> {
+	pub fn allocator(&self) -> Rc<graphics::alloc::Allocator> {
 		self.allocator.upgrade().unwrap()
 	}
 
