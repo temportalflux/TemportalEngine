@@ -31,11 +31,17 @@ impl Library {
 		if !path.exists() {
 			log::warn!(
 				target: asset::LOG,
-				"No such asset pak-age found, skipping {}",
+				"Cannot scan {}, no such asset pak-age found.",
 				path.to_str().unwrap()
 			);
 			return Ok(());
 		}
+
+		log::info!(
+			target: asset::LOG,
+			"Scanning asset pak-age {}",
+			path.to_str().unwrap()
+		);
 
 		let mut pak_data = PakData {
 			location: path.to_path_buf(),
