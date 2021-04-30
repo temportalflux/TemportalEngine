@@ -42,7 +42,7 @@ pub struct RenderChain {
 
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
 	frame_image_views: Vec<image_view::View>,
-	frame_images: Vec<image::Image>,
+	frame_images: Vec<Rc<image::Image>>,
 	swapchain: swapchain::Swapchain,
 	swapchain_info: swapchain::Info,
 	render_pass: renderpass::Pass,
@@ -102,7 +102,10 @@ impl RenderChain {
 		)?;
 
 		let swapchain = RenderChain::create_swapchain(&swapchain_info, logical, surface, None)?;
-		let frame_images = utility::as_graphics_error(swapchain.get_images())?;
+		let frame_images = utility::as_graphics_error(swapchain.get_images())?
+			.into_iter()
+			.map(|image| Rc::new(image))
+			.collect();
 		let frame_image_views = RenderChain::create_image_views(logical, &frame_images)?;
 		let render_pass = utility::as_graphics_error(render_pass_info.create_object(&logical))?;
 		let frame_buffers = RenderChain::create_frame_buffers(
@@ -271,7 +274,10 @@ impl RenderChain {
 			&surface,
 			Some(&self.swapchain),
 		)?;
-		self.frame_images = utility::as_graphics_error(self.swapchain.get_images())?;
+		self.frame_images = utility::as_graphics_error(self.swapchain.get_images())?
+			.into_iter()
+			.map(|image| Rc::new(image))
+			.collect();
 		self.frame_image_views = RenderChain::create_image_views(&logical, &self.frame_images)?;
 		self.frame_buffers = RenderChain::create_frame_buffers(
 			&self.frame_image_views,
@@ -320,19 +326,20 @@ impl RenderChain {
 
 	fn create_image_views(
 		logical: &Rc<logical::Device>,
-		frame_images: &Vec<image::Image>,
+		frame_images: &Vec<Rc<image::Image>>,
 	) -> utility::Result<Vec<image_view::View>> {
 		let mut views: Vec<image_view::View> = Vec::new();
 		for image in frame_images.iter() {
 			views.push(utility::as_graphics_error(
 				image_view::View::builder()
-					.set_view_type(flags::ImageViewType::TYPE_2D)
-					.set_format(flags::Format::B8G8R8A8_SRGB)
-					.set_subresource_range(
+					.for_image(&image)
+					.with_view_type(flags::ImageViewType::TYPE_2D)
+					.with_format(flags::Format::B8G8R8A8_SRGB)
+					.with_range(
 						structs::subresource::Range::default()
 							.with_aspect(flags::ImageAspect::COLOR),
 					)
-					.create_object(logical, &image),
+					.build(logical),
 			)?);
 		}
 		Ok(views)
