@@ -42,6 +42,7 @@ impl WindowBuilder {
 	}
 
 	pub fn build(self, display: &mut display::Manager) -> utility::Result<Rc<RefCell<Window>>> {
+		optick::event!();
 		let sdl_window = display.create_sdl_window(self.title.as_str(), self.width, self.height)?;
 		Ok(Rc::new(RefCell::new(display::Window::new(
 			&display.engine(),
@@ -153,6 +154,7 @@ impl Window {
 		display: &mut display::Manager,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<Rc<RefCell<graphics::RenderChain>>> {
+		optick::event!();
 		let permitted_frame_count = self
 			.physical_device
 			.query_surface_support()

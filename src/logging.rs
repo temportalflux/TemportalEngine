@@ -2,6 +2,7 @@ use crate::utility::VoidResult;
 pub use log::Level;
 
 pub fn init(pkg_name: &str) -> VoidResult {
+	optick::event!();
 	use simplelog::*;
 	let mut log_path = std::env::current_dir()?.to_path_buf();
 	log_path.push(format!("{}.log", pkg_name));

@@ -225,6 +225,7 @@ impl RenderChain {
 	}
 
 	pub fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> utility::Result<()> {
+		optick::event!();
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
 		self.render_finished_semaphores.clear();
@@ -382,6 +383,7 @@ impl RenderChain {
 	}
 
 	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
+		optick::event!();
 		utility::as_graphics_error(self.command_buffers[buffer_index].begin(None))?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
@@ -406,6 +408,7 @@ impl RenderChain {
 	}
 
 	pub fn render_frame(&mut self) -> utility::Result<()> {
+		optick::next_frame();
 		let logical = self.logical.upgrade().unwrap();
 
 		if self.is_dirty {

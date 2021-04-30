@@ -65,6 +65,7 @@ impl Manager {
 	}
 
 	pub fn poll_all_events(&mut self) -> VoidResult {
+		optick::event!();
 		for event in self.event_pump()?.poll_iter() {
 			self.event_listeners
 				.retain(|listener| listener.strong_count() > 0);
