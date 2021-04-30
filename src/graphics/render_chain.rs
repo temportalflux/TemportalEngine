@@ -327,13 +327,10 @@ impl RenderChain {
 				image::ViewInfo::new()
 					.set_view_type(flags::ImageViewType::TYPE_2D)
 					.set_format(flags::Format::B8G8R8A8_SRGB)
-					.set_subresource_range(structs::ImageSubresourceRange {
-						aspect_mask: flags::ImageAspect::COLOR,
-						base_mip_level: 0,
-						level_count: 1,
-						base_array_layer: 0,
-						layer_count: 1,
-					})
+					.set_subresource_range(
+						structs::subresource::Range::default()
+							.with_aspect(flags::ImageAspect::COLOR),
+					)
 					.create_object(logical, &image),
 			)?);
 		}
