@@ -74,16 +74,16 @@ impl Window {
 			internal: sdl_window,
 		};
 		let eng = engine.borrow();
-		let instance = utility::as_graphics_error(
-			instance::Info::default()
-				.set_app_info(eng.app_info.clone())
-				.set_window(&internal)
-				.set_use_validation(eng.vulkan_validation_enabled)
-				.create_object(&eng.graphics_context),
-		)?;
+		let instance = instance::Info::default()
+			.set_app_info(eng.app_info.clone())
+			.set_window(&internal)
+			.set_use_validation(eng.vulkan_validation_enabled)
+			.create_object(&eng.graphics_context)?;
 		let vulkan = std::rc::Rc::new(instance);
-		let surface = Rc::new(utility::as_graphics_error(
-			instance::Instance::create_surface(&eng.graphics_context, &vulkan, &internal),
+		let surface = Rc::new(instance::Instance::create_surface(
+			&eng.graphics_context,
+			&vulkan,
+			&internal,
 		)?);
 
 		let physical_device = Rc::new(Window::find_physical_device(
@@ -101,7 +101,7 @@ impl Window {
 		let graphics_queue_index = physical_device
 			.get_queue_index(flags::QueueFlags::GRAPHICS, true)
 			.unwrap();
-		let logical_device = std::rc::Rc::new(utility::as_graphics_error(
+		let logical_device = std::rc::Rc::new(
 			logical::Info::default()
 				.add_extension("VK_KHR_swapchain")
 				.set_validation_enabled(engine.borrow().vulkan_validation_enabled)
@@ -109,11 +109,13 @@ impl Window {
 					queue_family_index: graphics_queue_index,
 					priorities: vec![1.0],
 				})
-				.create_object(&vulkan, &physical_device),
-		)?);
+				.create_object(&vulkan, &physical_device)?,
+		);
 
-		let graphics_allocator = Rc::new(utility::as_graphics_error(
-			graphics::alloc::Allocator::create(&vulkan, &physical_device, &logical_device),
+		let graphics_allocator = Rc::new(graphics::alloc::Allocator::create(
+			&vulkan,
+			&physical_device,
+			&logical_device,
 		)?);
 
 		Ok(Window {

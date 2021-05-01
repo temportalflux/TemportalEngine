@@ -20,7 +20,7 @@ pub struct Manager {
 
 impl Manager {
 	pub fn new(engine: Rc<RefCell<Engine>>) -> utility::Result<Manager> {
-		let sdl = utility::as_sdl_error(sdl2::init())?;
+		let sdl = sdl2::init().map_err(|e| utility::Error::Sdl(e))?;
 		Ok(Manager {
 			engine,
 			sdl,
@@ -34,7 +34,7 @@ impl Manager {
 	}
 
 	pub fn video_subsystem(&self) -> utility::Result<sdl2::VideoSubsystem> {
-		utility::as_sdl_error(self.sdl.video())
+		self.sdl.video().map_err(|e| utility::Error::Sdl(e))
 	}
 
 	pub fn create_sdl_window(
@@ -51,11 +51,11 @@ impl Manager {
 			height
 		);
 		let mut builder = self.video_subsystem()?.window(title, width, height);
-		utility::as_window_error(builder.position_centered().vulkan().resizable().build())
+		Ok(builder.position_centered().vulkan().resizable().build()?)
 	}
 
 	pub fn event_pump(&self) -> utility::Result<sdl2::EventPump> {
-		utility::as_sdl_error(self.sdl.event_pump())
+		self.sdl.event_pump().map_err(|e| utility::Error::Sdl(e))
 	}
 
 	/// Adds a listener to list of listeners.

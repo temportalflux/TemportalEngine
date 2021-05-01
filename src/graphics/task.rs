@@ -24,10 +24,9 @@ impl TaskCopyImageToGpu {
 			allocator: render_chain.allocator().clone(),
 			queue: render_chain.graphics_queue().clone(),
 			command_pool: command_pool.clone(),
-			command_buffer: utility::as_graphics_error(
-				command_pool.allocate_buffers(1, flags::CommandBufferLevel::PRIMARY),
-			)?
-			.pop(),
+			command_buffer: command_pool
+				.allocate_buffers(1, flags::CommandBufferLevel::PRIMARY)?
+				.pop(),
 			staging_buffer: None,
 		})
 	}
@@ -38,18 +37,16 @@ impl TaskCopyImageToGpu {
 
 	pub fn begin(self) -> utility::Result<Self> {
 		optick::event!();
-		utility::as_graphics_error(
-			self.cmd()
-				.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT)),
-		)?;
+		self.cmd()
+			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT))?;
 		Ok(self)
 	}
 
 	pub fn end(self) -> utility::Result<Self> {
 		optick::event!();
-		utility::as_graphics_error(self.cmd().end())?;
+		(self.cmd().end())?;
 
-		utility::as_graphics_error(self.queue.submit(
+		(self.queue.submit(
 			vec![command::SubmitInfo::default().add_buffer(&self.cmd())],
 			None,
 		))?;
@@ -59,7 +56,7 @@ impl TaskCopyImageToGpu {
 
 	pub fn wait_until_idle(self) -> utility::Result<()> {
 		optick::event!();
-		utility::as_graphics_error(self.device.wait_until_idle())
+		Ok(self.device.wait_until_idle()?)
 	}
 
 	pub fn format_image_for_write(self, image: &Rc<image::Image>) -> Self {
@@ -111,13 +108,13 @@ impl TaskCopyImageToGpu {
 
 	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
 		optick::event!();
-		self.staging_buffer = Some(utility::as_graphics_error(buffer::Buffer::create_staging(
-			data.len() * std::mem::size_of::<T>(),
-			&self.allocator,
-		))?);
-		let wrote_all = utility::as_graphics_error(self.staging_buffer().memory())?
-			.write_slice(data)
-			.unwrap();
+		self.staging_buffer = Some(
+			(buffer::Buffer::create_staging(
+				data.len() * std::mem::size_of::<T>(),
+				&self.allocator,
+			))?,
+		);
+		let wrote_all = (self.staging_buffer().memory())?.write_slice(data).unwrap();
 		assert!(wrote_all);
 		Ok(self)
 	}

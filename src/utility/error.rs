@@ -32,23 +32,14 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-pub fn as_sdl_error<T>(res: std::result::Result<T, String>) -> Result<T> {
-	match res {
-		Ok(v) => Ok(v),
-		Err(e) => Err(Error::Sdl(e)),
+impl From<utility::Error> for Error {
+	fn from(err: utility::Error) -> Error {
+		Error::Graphics(err)
 	}
 }
 
-pub fn as_graphics_error<T>(res: std::result::Result<T, utility::Error>) -> Result<T> {
-	match res {
-		Ok(v) => Ok(v),
-		Err(e) => Err(Error::Graphics(e)),
-	}
-}
-
-pub fn as_window_error<T>(res: std::result::Result<T, sdl2::video::WindowBuildError>) -> Result<T> {
-	match res {
-		Ok(v) => Ok(v),
-		Err(e) => Err(Error::SdlWindow(e)),
+impl From<sdl2::video::WindowBuildError> for Error {
+	fn from(err: sdl2::video::WindowBuildError) -> Error {
+		Error::SdlWindow(err)
 	}
 }

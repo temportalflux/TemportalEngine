@@ -92,24 +92,21 @@ impl RenderChain {
 		swapchain_info.fill_from_physical(&physical);
 		render_pass_instruction.set_extent(resolution);
 
-		let frame_command_pool =
-			utility::as_graphics_error(command::Pool::create(&logical, graphics_queue.index()))?;
-		let transient_command_pool = Rc::new(utility::as_graphics_error(command::Pool::create(
-			&logical,
-			graphics_queue.index(),
-		))?);
+		let frame_command_pool = command::Pool::create(&logical, graphics_queue.index())?;
+		let transient_command_pool =
+			Rc::new(command::Pool::create(&logical, graphics_queue.index())?);
 
-		let command_buffers = utility::as_graphics_error(
-			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY),
-		)?;
+		let command_buffers =
+			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
 		let swapchain = RenderChain::create_swapchain(&swapchain_info, logical, surface, None)?;
-		let frame_images = utility::as_graphics_error(swapchain.get_images())?
+		let frame_images = swapchain
+			.get_images()?
 			.into_iter()
 			.map(|image| Rc::new(image))
 			.collect();
 		let frame_image_views = RenderChain::create_image_views(logical, &frame_images)?;
-		let render_pass = utility::as_graphics_error(render_pass_info.create_object(&logical))?;
+		let render_pass = render_pass_info.create_object(&logical)?;
 		let frame_buffers = RenderChain::create_frame_buffers(
 			&frame_image_views,
 			resolution,
@@ -128,12 +125,12 @@ impl RenderChain {
 
 		let frame_command_buffer_requires_recording = vec![true; frame_count];
 
-		let persistent_descriptor_pool = RefCell::new(utility::as_graphics_error(
+		let persistent_descriptor_pool = RefCell::new(
 			graphics::descriptor::Pool::builder()
 				.with_total_set_count(100)
 				.with_descriptor(flags::DescriptorKind::COMBINED_IMAGE_SAMPLER, 100)
-				.build(logical),
-		)?);
+				.build(logical)?,
+		);
 
 		Ok(RenderChain {
 			window_id,
@@ -259,24 +256,21 @@ impl RenderChain {
 		self.swapchain_info.fill_from_physical(&physical);
 		self.render_pass_instruction.set_extent(resolution);
 
-		self.frame_command_pool = utility::as_graphics_error(command::Pool::create(
-			&logical,
-			self.graphics_queue.index(),
-		))?;
-		self.command_buffers = utility::as_graphics_error(
-			self.frame_command_pool
-				.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY),
-		)?;
+		self.frame_command_pool = command::Pool::create(&logical, self.graphics_queue.index())?;
+		self.command_buffers = self
+			.frame_command_pool
+			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
-		self.render_pass =
-			utility::as_graphics_error(self.render_pass_info.create_object(&logical))?;
+		self.render_pass = self.render_pass_info.create_object(&logical)?;
 		self.swapchain = RenderChain::create_swapchain(
 			&self.swapchain_info,
 			&logical,
 			&surface,
 			Some(&self.swapchain),
 		)?;
-		self.frame_images = utility::as_graphics_error(self.swapchain.get_images())?
+		self.frame_images = self
+			.swapchain
+			.get_images()?
 			.into_iter()
 			.map(|image| Rc::new(image))
 			.collect();
@@ -323,7 +317,7 @@ impl RenderChain {
 		surface: &Surface,
 		old_swapchain: Option<&swapchain::Swapchain>,
 	) -> utility::Result<swapchain::Swapchain> {
-		utility::as_graphics_error(info.create_object(logical, surface, old_swapchain))
+		Ok(info.create_object(logical, surface, old_swapchain)?)
 	}
 
 	fn create_image_views(
@@ -332,7 +326,7 @@ impl RenderChain {
 	) -> utility::Result<Vec<image_view::View>> {
 		let mut views: Vec<image_view::View> = Vec::new();
 		for image in frame_images.iter() {
-			views.push(utility::as_graphics_error(
+			views.push(
 				image_view::View::builder()
 					.for_image(&image)
 					.with_view_type(flags::ImageViewType::TYPE_2D)
@@ -341,8 +335,8 @@ impl RenderChain {
 						structs::subresource::Range::default()
 							.with_aspect(flags::ImageAspect::COLOR),
 					)
-					.build(logical),
-			)?);
+					.build(logical)?,
+			);
 		}
 		Ok(views)
 	}
@@ -355,11 +349,11 @@ impl RenderChain {
 	) -> utility::Result<Vec<command::framebuffer::Framebuffer>> {
 		let mut frame_buffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
 		for image_view in views.iter() {
-			frame_buffers.push(utility::as_graphics_error(
+			frame_buffers.push(
 				command::framebuffer::Info::default()
 					.set_extent(extent)
-					.create_object(&image_view, &render_pass, logical),
-			)?);
+					.create_object(&image_view, &render_pass, logical)?,
+			);
 		}
 		Ok(frame_buffers)
 	}
@@ -370,9 +364,7 @@ impl RenderChain {
 	) -> utility::Result<Vec<command::Semaphore>> {
 		let mut vec: Vec<command::Semaphore> = Vec::new();
 		for _ in 0..amount {
-			vec.push(utility::as_graphics_error(command::Semaphore::new(
-				logical,
-			))?);
+			vec.push((command::Semaphore::new(logical))?);
 		}
 		Ok(vec)
 	}
@@ -383,17 +375,14 @@ impl RenderChain {
 	) -> utility::Result<Vec<command::Fence>> {
 		let mut vec: Vec<command::Fence> = Vec::new();
 		for _ in 0..amount {
-			vec.push(utility::as_graphics_error(command::Fence::new(
-				logical,
-				flags::FenceState::SIGNALED,
-			))?);
+			vec.push((command::Fence::new(logical, flags::FenceState::SIGNALED))?);
 		}
 		Ok(vec)
 	}
 
 	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
 		optick::event!();
-		utility::as_graphics_error(self.command_buffers[buffer_index].begin(None))?;
+		(self.command_buffers[buffer_index].begin(None))?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
 			&self.render_pass,
@@ -411,7 +400,7 @@ impl RenderChain {
 		}
 
 		self.command_buffers[buffer_index].stop_render_pass();
-		utility::as_graphics_error(self.command_buffers[buffer_index].end())?;
+		(self.command_buffers[buffer_index].end())?;
 
 		Ok(())
 	}
@@ -421,7 +410,7 @@ impl RenderChain {
 		let logical = self.logical.upgrade().unwrap();
 
 		if self.is_dirty {
-			utility::as_graphics_error(logical.wait_until_idle())?;
+			(logical.wait_until_idle())?;
 			let resolution = self
 				.physical
 				.upgrade()
@@ -434,11 +423,7 @@ impl RenderChain {
 		}
 
 		// Wait for the previous frame/image to no longer be displayed
-		utility::as_graphics_error(logical.wait_for(
-			&self.in_flight_fences[self.current_frame],
-			true,
-			u64::MAX,
-		))?;
+		(logical.wait_for(&self.in_flight_fences[self.current_frame], true, u64::MAX))?;
 
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain.acquire_next_image(
@@ -466,7 +451,7 @@ impl RenderChain {
 		{
 			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
 			if fence_index_for_img_in_flight.is_some() {
-				utility::as_graphics_error(logical.wait_for(
+				(logical.wait_for(
 					&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()],
 					true,
 					u64::MAX,
@@ -483,11 +468,9 @@ impl RenderChain {
 		self.images_in_flight[next_image_idx] = Some(self.current_frame);
 
 		// Mark the image as not having been signaled (it is now being used)
-		utility::as_graphics_error(
-			logical.reset_fences(&[&self.in_flight_fences[self.current_frame]]),
-		)?;
+		logical.reset_fences(&[&self.in_flight_fences[self.current_frame]])?;
 
-		utility::as_graphics_error(self.graphics_queue.submit(
+		(self.graphics_queue.submit(
 			vec![command::SubmitInfo::default()
 				// tell the gpu to wait until the image is available
 				.wait_for(
