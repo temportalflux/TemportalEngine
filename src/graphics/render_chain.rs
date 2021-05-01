@@ -328,7 +328,7 @@ impl RenderChain {
 		for image in frame_images.iter() {
 			views.push(
 				image_view::View::builder()
-					.for_image(&image)
+					.for_image(image.clone())
 					.with_view_type(flags::ImageViewType::TYPE_2D)
 					.with_format(flags::Format::B8G8R8A8_SRGB)
 					.with_range(

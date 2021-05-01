@@ -26,6 +26,14 @@ impl Texture {
 	pub fn set_compiled(&mut self, size: Vector<usize, 2>, binary: Vec<u8>) {
 		self.compiled = Some(Compiled { size, binary })
 	}
+
+	pub fn size(&self) -> &Vector<usize, 2> {
+		&self.compiled.as_ref().unwrap().size
+	}
+
+	pub fn binary(&self) -> &Vec<u8> {
+		&self.compiled.as_ref().unwrap().binary
+	}
 }
 
 pub struct TextureMetadata {}
