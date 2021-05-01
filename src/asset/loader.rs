@@ -37,7 +37,7 @@ impl Loader {
 		registry: &asset::TypeRegistry,
 		library: &asset::Library,
 		id: &asset::Id,
-	) -> Result<asset::AssetBox, utility::AnyError> {
+	) -> Result<asset::AnyBox, utility::AnyError> {
 		let location = library
 			.find_location(&id)
 			.ok_or(asset::Error::AssetNotFound(id.clone()))?;

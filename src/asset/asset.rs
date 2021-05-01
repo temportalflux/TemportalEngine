@@ -1,7 +1,8 @@
 use crate::utility;
+use std::any::Any;
 
-pub type AssetBox = Box<dyn Asset>;
-pub type AssetResult = Result<AssetBox, utility::AnyError>;
+pub type AnyBox = Box<dyn Any + Send + Sync>;
+pub type AssetResult = Result<AnyBox, utility::AnyError>;
 
 pub type TypeId = &'static str;
 pub trait TypeMetadata {
@@ -9,15 +10,8 @@ pub trait TypeMetadata {
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult;
 }
 
-pub trait Asset: std::fmt::Debug + crate::utility::AToAny {
+pub trait Asset: std::fmt::Debug {
 	fn metadata() -> Box<dyn TypeMetadata>
 	where
 		Self: Sized;
-}
-
-pub fn as_asset<T>(asset: &AssetBox) -> &T
-where
-	T: Asset,
-{
-	asset.as_any().downcast_ref::<T>().unwrap()
 }
