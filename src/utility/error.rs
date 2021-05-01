@@ -6,6 +6,7 @@ pub enum Error {
 	SdlWindow(sdl2::video::WindowBuildError),
 	FailedToFindPhysicalDevice(Option<physical::Constraint>),
 	Graphics(utility::Error),
+	GraphicsBufferWrite(std::io::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -26,6 +27,7 @@ impl std::fmt::Display for Error {
 				None => write!(f, "Failed to find any physical devices, do you have a GPU?"),
 			},
 			Error::Graphics(ref graphics_error) => graphics_error.fmt(f),
+			Error::GraphicsBufferWrite(ref io_error) => io_error.fmt(f),
 		}
 	}
 }

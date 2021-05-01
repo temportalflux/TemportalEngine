@@ -108,14 +108,14 @@ impl TaskCopyImageToGpu {
 
 	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
 		optick::event!();
-		self.staging_buffer = Some(
-			(buffer::Buffer::create_staging(
-				data.len() * std::mem::size_of::<T>(),
-				&self.allocator,
-			))?,
-		);
-		let wrote_all = (self.staging_buffer().memory())?.write_slice(data).unwrap();
-		assert!(wrote_all);
+		let buf_size = data.len() * std::mem::size_of::<T>();
+		let buffer = buffer::Buffer::create_staging(buf_size, &self.allocator)?;
+		{
+			let mut mem = buffer.memory()?;
+			let wrote_all = mem.write_slice(data).map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
+			assert!(wrote_all);
+		}
+		self.staging_buffer = Some(buffer);
 		Ok(self)
 	}
 
