@@ -112,7 +112,9 @@ impl TaskCopyImageToGpu {
 		let buffer = buffer::Buffer::create_staging(buf_size, &self.allocator)?;
 		{
 			let mut mem = buffer.memory()?;
-			let wrote_all = mem.write_slice(data).map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
+			let wrote_all = mem
+				.write_slice(data)
+				.map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
 			assert!(wrote_all);
 		}
 		self.staging_buffer = Some(buffer);
@@ -136,6 +138,7 @@ impl TaskCopyImageToGpu {
 	}
 
 	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
+		use alloc::Object;
 		optick::event!();
 		self.cmd().copy_buffer_to_buffer(
 			&self.staging_buffer(),
