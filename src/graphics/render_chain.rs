@@ -4,6 +4,7 @@ use crate::{
 		device::{logical, physical, swapchain},
 		flags, image, image_view, renderpass, structs, Surface,
 	},
+	math::Vector,
 	utility,
 };
 use std::{
@@ -26,7 +27,12 @@ pub trait RenderChainElement {
 /// An object which records commands to one or more command buffers,
 /// notably when the render-chain is reconstructed.
 pub trait CommandRecorder {
-	fn record_to_buffer(&self, buffer: &mut command::Buffer) -> utility::Result<()>;
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
+	fn update_pre_submit(
+		&mut self,
+		frame: usize,
+		resolution: &Vector<u32, 2>,
+	) -> utility::Result<()>;
 }
 
 pub struct RenderChain {
@@ -50,6 +56,7 @@ pub struct RenderChain {
 	frame_command_pool: command::Pool,
 	transient_command_pool: Rc<command::Pool>,
 
+	resolution: Vector<u32, 2>,
 	is_dirty: bool,
 	render_pass_info: renderpass::Info,
 	render_pass_instruction: renderpass::RecordInstruction,
@@ -128,6 +135,7 @@ impl RenderChain {
 		let persistent_descriptor_pool = RefCell::new(
 			graphics::descriptor::Pool::builder()
 				.with_total_set_count(100)
+				.with_descriptor(flags::DescriptorKind::UNIFORM_BUFFER, 100)
 				.with_descriptor(flags::DescriptorKind::COMBINED_IMAGE_SAMPLER, 100)
 				.build(logical)?,
 		);
@@ -149,6 +157,7 @@ impl RenderChain {
 			render_pass_instruction,
 			render_pass_info,
 			is_dirty: false,
+			resolution: Vector::new([resolution.width, resolution.height]),
 
 			render_pass,
 			swapchain_info,
@@ -199,6 +208,10 @@ impl RenderChain {
 
 	pub fn add_clear_value(&mut self, clear: renderpass::ClearValue) {
 		self.render_pass_instruction.add_clear_value(clear);
+	}
+
+	pub fn frame_count(&self) -> usize {
+		self.frame_count
 	}
 
 	fn max_frames_in_flight(frame_count: usize) -> usize {
@@ -396,7 +409,7 @@ impl RenderChain {
 				.upgrade()
 				.unwrap()
 				.borrow_mut()
-				.record_to_buffer(&mut self.command_buffers[buffer_index])?;
+				.record_to_buffer(&mut self.command_buffers[buffer_index], buffer_index)?;
 		}
 
 		self.command_buffers[buffer_index].stop_render_pass();
@@ -410,13 +423,14 @@ impl RenderChain {
 		let logical = self.logical.upgrade().unwrap();
 
 		if self.is_dirty {
-			(logical.wait_until_idle())?;
+			logical.wait_until_idle()?;
 			let resolution = self
 				.physical
 				.upgrade()
 				.unwrap()
 				.query_surface_support()
 				.image_extent();
+			self.resolution = Vector::new([resolution.width, resolution.height]);
 			if resolution.width > 0 && resolution.height > 0 {
 				self.construct_render_chain(resolution)?;
 			}
@@ -469,6 +483,19 @@ impl RenderChain {
 
 		// Mark the image as not having been signaled (it is now being used)
 		logical.reset_fences(&[&self.in_flight_fences[self.current_frame]])?;
+
+		// Update any uniforms on pre-submit
+		{
+			self.command_recorders
+				.retain(|recorder| recorder.strong_count() > 0);
+			for recorder in self.command_recorders.iter() {
+				recorder
+					.upgrade()
+					.unwrap()
+					.borrow_mut()
+					.update_pre_submit(self.current_frame, &self.resolution)?;
+			}
+		}
 
 		(self.graphics_queue.submit(
 			vec![command::SubmitInfo::default()
