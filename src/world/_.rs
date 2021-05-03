@@ -2,6 +2,7 @@ use temportal_math::Vector;
 
 /// The unit vector for the world forward direction.
 /// Y-Up Right-Handed is +X, +Y, -Z
+/// In 2D space, forward points out of the screen at the user.
 pub fn global_forward() -> Vector<f32, 3> {
 	Vector::new([0.0, 0.0, -1.0])
 }
