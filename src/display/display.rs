@@ -37,23 +37,6 @@ impl Manager {
 		self.sdl.video().map_err(|e| utility::Error::Sdl(e))
 	}
 
-	pub fn create_sdl_window(
-		&mut self,
-		title: &str,
-		width: u32,
-		height: u32,
-	) -> utility::Result<sdl2::video::Window> {
-		log::info!(
-			target: LOG,
-			"Creating window \"{}\" ({}x{})",
-			title,
-			width,
-			height
-		);
-		let mut builder = self.video_subsystem()?.window(title, width, height);
-		Ok(builder.position_centered().vulkan().resizable().build()?)
-	}
-
 	pub fn event_pump(&self) -> utility::Result<sdl2::EventPump> {
 		self.sdl.event_pump().map_err(|e| utility::Error::Sdl(e))
 	}

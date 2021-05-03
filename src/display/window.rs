@@ -11,6 +11,7 @@ pub struct WindowBuilder {
 	width: u32,
 	height: u32,
 	constraints: Vec<physical::Constraint>,
+	resizable: bool,
 }
 
 impl Default for WindowBuilder {
@@ -20,6 +21,7 @@ impl Default for WindowBuilder {
 			width: 0,
 			height: 0,
 			constraints: Vec::new(),
+			resizable: false,
 		}
 	}
 }
@@ -41,12 +43,31 @@ impl WindowBuilder {
 		self
 	}
 
+	pub fn resizable(mut self, resizable: bool) -> Self {
+		self.resizable = resizable;
+		self
+	}
+
 	pub fn build(self, display: &mut display::Manager) -> utility::Result<Rc<RefCell<Window>>> {
 		optick::event!();
-		let sdl_window = display.create_sdl_window(self.title.as_str(), self.width, self.height)?;
+		log::info!(
+			target: display::LOG,
+			"Creating window \"{}\" ({}x{})",
+			self.title.as_str(),
+			self.width,
+			self.height
+		);
+		let mut builder =
+			display
+				.video_subsystem()?
+				.window(self.title.as_str(), self.width, self.height);
+		builder.position_centered().vulkan();
+		if self.resizable {
+			builder.resizable();
+		}
 		Ok(Rc::new(RefCell::new(display::Window::new(
 			&display.engine(),
-			sdl_window,
+			builder.build()?,
 			self.constraints,
 		)?)))
 	}

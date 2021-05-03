@@ -395,7 +395,7 @@ impl RenderChain {
 
 	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
 		optick::event!();
-		(self.command_buffers[buffer_index].begin(None))?;
+		self.command_buffers[buffer_index].begin(None)?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
 			&self.render_pass,
@@ -413,7 +413,7 @@ impl RenderChain {
 		}
 
 		self.command_buffers[buffer_index].stop_render_pass();
-		(self.command_buffers[buffer_index].end())?;
+		self.command_buffers[buffer_index].end()?;
 
 		Ok(())
 	}
@@ -437,7 +437,7 @@ impl RenderChain {
 		}
 
 		// Wait for the previous frame/image to no longer be displayed
-		(logical.wait_for(&self.in_flight_fences[self.current_frame], true, u64::MAX))?;
+		logical.wait_for(&self.in_flight_fences[self.current_frame], true, u64::MAX)?;
 
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain.acquire_next_image(
@@ -465,11 +465,11 @@ impl RenderChain {
 		{
 			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
 			if fence_index_for_img_in_flight.is_some() {
-				(logical.wait_for(
+				logical.wait_for(
 					&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()],
 					true,
 					u64::MAX,
-				))?;
+				)?;
 			}
 		}
 
@@ -493,11 +493,11 @@ impl RenderChain {
 					.upgrade()
 					.unwrap()
 					.borrow_mut()
-					.update_pre_submit(self.current_frame, &self.resolution)?;
+					.update_pre_submit(next_image_idx, &self.resolution)?;
 			}
 		}
 
-		(self.graphics_queue.submit(
+		self.graphics_queue.submit(
 			vec![command::SubmitInfo::default()
 				// tell the gpu to wait until the image is available
 				.wait_for(
@@ -509,7 +509,7 @@ impl RenderChain {
 				// tell the gpu to signal a semaphore when the image is available again
 				.signal_when_complete(&self.render_finished_semaphores[self.current_frame])],
 			Some(&self.in_flight_fences[self.current_frame]),
-		))?;
+		)?;
 
 		let present_result = self.graphics_queue.present(
 			command::PresentInfo::default()
