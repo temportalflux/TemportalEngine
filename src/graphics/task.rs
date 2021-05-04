@@ -5,15 +5,15 @@ use crate::{
 	math::Vector,
 	utility,
 };
-use std::rc::Rc;
+use std::sync;
 
 pub struct TaskCopyImageToGpu {
 	staging_buffer: Option<buffer::Buffer>,
 	command_buffer: Option<command::Buffer>,
-	command_pool: Rc<command::Pool>,
-	queue: Rc<logical::Queue>,
-	allocator: Rc<alloc::Allocator>,
-	device: Rc<logical::Device>,
+	command_pool: sync::Arc<command::Pool>,
+	queue: sync::Arc<logical::Queue>,
+	allocator: sync::Arc<alloc::Allocator>,
+	device: sync::Arc<logical::Device>,
 }
 
 impl TaskCopyImageToGpu {
@@ -59,7 +59,7 @@ impl TaskCopyImageToGpu {
 		Ok(self.device.wait_until_idle()?)
 	}
 
-	pub fn format_image_for_write(self, image: &Rc<image::Image>) -> Self {
+	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {
 		optick::event!();
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
 			src_stage: flags::PipelineStage::TOP_OF_PIPE,
@@ -67,7 +67,7 @@ impl TaskCopyImageToGpu {
 			kinds: vec![command::BarrierKind::Image(
 				command::ImageBarrier::default()
 					.prevents(flags::Access::TRANSFER_WRITE)
-					.with_image(Rc::downgrade(&image))
+					.with_image(sync::Arc::downgrade(&image))
 					.with_range(
 						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
 					)
@@ -80,7 +80,7 @@ impl TaskCopyImageToGpu {
 		self
 	}
 
-	pub fn format_image_for_read(self, image: &Rc<image::Image>) -> Self {
+	pub fn format_image_for_read(self, image: &sync::Arc<image::Image>) -> Self {
 		optick::event!();
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
 			src_stage: flags::PipelineStage::TRANSFER,
@@ -89,7 +89,7 @@ impl TaskCopyImageToGpu {
 				command::ImageBarrier::default()
 					.requires(flags::Access::TRANSFER_WRITE)
 					.prevents(flags::Access::SHADER_READ)
-					.with_image(Rc::downgrade(&image))
+					.with_image(sync::Arc::downgrade(&image))
 					.with_range(
 						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
 					)
@@ -121,7 +121,7 @@ impl TaskCopyImageToGpu {
 		Ok(self)
 	}
 
-	pub fn copy_stage_to_image(self, image: &Rc<image::Image>) -> Self {
+	pub fn copy_stage_to_image(self, image: &sync::Arc<image::Image>) -> Self {
 		optick::event!();
 		self.cmd().copy_buffer_to_image(
 			&self.staging_buffer(),

@@ -5,11 +5,11 @@ use crate::{
 		flags, image, image_view, renderpass, structs, Surface,
 	},
 	math::Vector,
-	utility,
+	utility::{self, AnyError},
 };
 use std::{
 	cell::RefCell,
-	rc::{Rc, Weak},
+	sync::{self, Arc, RwLock, Weak},
 };
 
 /// An object which contains data that needs to be updated when the render-chain is reconstructed
@@ -36,8 +36,8 @@ pub trait CommandRecorder {
 }
 
 pub struct RenderChain {
-	command_recorders: Vec<Weak<RefCell<dyn graphics::CommandRecorder>>>,
-	render_chain_elements: Vec<Weak<RefCell<dyn graphics::RenderChainElement>>>,
+	command_recorders: Vec<Weak<RwLock<dyn graphics::CommandRecorder>>>,
+	render_chain_elements: Vec<Weak<RwLock<dyn graphics::RenderChainElement>>>,
 
 	current_frame: usize,
 	images_in_flight: Vec<Option</*in_flight_fence index*/ usize>>,
@@ -48,13 +48,13 @@ pub struct RenderChain {
 
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
 	frame_image_views: Vec<image_view::View>,
-	frame_images: Vec<Rc<image::Image>>,
+	frame_images: Vec<sync::Arc<image::Image>>,
 	swapchain: swapchain::Swapchain,
 	swapchain_info: swapchain::Info,
 	render_pass: renderpass::Pass,
 	command_buffers: Vec<command::Buffer>,
 	frame_command_pool: command::Pool,
-	transient_command_pool: Rc<command::Pool>,
+	transient_command_pool: sync::Arc<command::Pool>,
 
 	resolution: Vector<u32, 2>,
 	is_dirty: bool,
@@ -64,11 +64,11 @@ pub struct RenderChain {
 	frame_count: usize,
 
 	persistent_descriptor_pool: RefCell<graphics::descriptor::pool::Pool>,
-	surface: Weak<Surface>,
-	graphics_queue: Rc<logical::Queue>,
-	allocator: Weak<graphics::alloc::Allocator>,
-	logical: Weak<logical::Device>,
-	physical: Weak<physical::Device>,
+	surface: sync::Weak<Surface>,
+	graphics_queue: sync::Arc<logical::Queue>,
+	allocator: sync::Weak<graphics::alloc::Allocator>,
+	logical: sync::Weak<logical::Device>,
+	physical: sync::Weak<physical::Device>,
 
 	window_id: u32,
 }
@@ -76,11 +76,11 @@ pub struct RenderChain {
 impl RenderChain {
 	pub fn new(
 		window_id: u32,
-		physical: &Rc<physical::Device>,
-		logical: &Rc<logical::Device>,
-		allocator: &Rc<graphics::alloc::Allocator>,
+		physical: &sync::Arc<physical::Device>,
+		logical: &sync::Arc<logical::Device>,
+		allocator: &sync::Arc<graphics::alloc::Allocator>,
 		graphics_queue: logical::Queue,
-		surface: &Rc<Surface>,
+		surface: &sync::Arc<Surface>,
 		frame_count: usize,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<RenderChain> {
@@ -101,7 +101,7 @@ impl RenderChain {
 
 		let frame_command_pool = command::Pool::create(&logical, graphics_queue.index())?;
 		let transient_command_pool =
-			Rc::new(command::Pool::create(&logical, graphics_queue.index())?);
+			sync::Arc::new(command::Pool::create(&logical, graphics_queue.index())?);
 
 		let command_buffers =
 			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY)?;
@@ -110,7 +110,7 @@ impl RenderChain {
 		let frame_images = swapchain
 			.get_images()?
 			.into_iter()
-			.map(|image| Rc::new(image))
+			.map(|image| sync::Arc::new(image))
 			.collect();
 		let frame_image_views = RenderChain::create_image_views(logical, &frame_images)?;
 		let render_pass = render_pass_info.create_object(&logical)?;
@@ -142,11 +142,11 @@ impl RenderChain {
 
 		Ok(RenderChain {
 			window_id,
-			physical: Rc::downgrade(physical),
-			logical: Rc::downgrade(logical),
-			allocator: Rc::downgrade(allocator),
-			graphics_queue: Rc::new(graphics_queue),
-			surface: Rc::downgrade(surface),
+			physical: sync::Arc::downgrade(physical),
+			logical: sync::Arc::downgrade(logical),
+			allocator: sync::Arc::downgrade(allocator),
+			graphics_queue: sync::Arc::new(graphics_queue),
+			surface: sync::Arc::downgrade(surface),
 			frame_count,
 
 			persistent_descriptor_pool,
@@ -178,23 +178,23 @@ impl RenderChain {
 		})
 	}
 
-	pub fn physical(&self) -> Rc<physical::Device> {
+	pub fn physical(&self) -> sync::Arc<physical::Device> {
 		self.physical.upgrade().unwrap()
 	}
 
-	pub fn logical(&self) -> Rc<logical::Device> {
+	pub fn logical(&self) -> sync::Arc<logical::Device> {
 		self.logical.upgrade().unwrap()
 	}
 
-	pub fn allocator(&self) -> Rc<graphics::alloc::Allocator> {
+	pub fn allocator(&self) -> sync::Arc<graphics::alloc::Allocator> {
 		self.allocator.upgrade().unwrap()
 	}
 
-	pub fn transient_command_pool(&self) -> &Rc<command::Pool> {
+	pub fn transient_command_pool(&self) -> &sync::Arc<command::Pool> {
 		&self.transient_command_pool
 	}
 
-	pub fn graphics_queue(&self) -> &Rc<logical::Queue> {
+	pub fn graphics_queue(&self) -> &sync::Arc<logical::Queue> {
 		&self.graphics_queue
 	}
 
@@ -218,28 +218,32 @@ impl RenderChain {
 		std::cmp::max(frame_count - 1, 1)
 	}
 
-	pub fn add_render_chain_element(
-		&mut self,
-		element: Rc<RefCell<dyn graphics::RenderChainElement>>,
-	) -> utility::Result<()> {
-		{
-			let mut element_mut = element.borrow_mut();
-			element_mut.initialize_with(&self)?;
-			element_mut.on_render_chain_constructed(&self, *self.swapchain_info.image_extent())?;
-		}
-		self.render_chain_elements.push(Rc::downgrade(&element));
+	pub fn add_render_chain_element<T>(&mut self, element: &Arc<RwLock<T>>) -> Result<(), AnyError>
+	where
+		T: 'static + graphics::RenderChainElement,
+	{
+		let mut locked = element.write().unwrap();
+		locked.initialize_with(&self)?;
+		locked.on_render_chain_constructed(&self, *self.swapchain_info.image_extent())?;
+
+		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
+		self.render_chain_elements.push(Arc::downgrade(&arc));
 		Ok(())
 	}
 
-	pub fn add_command_recorder(
-		&mut self,
-		recorder: Rc<RefCell<dyn graphics::CommandRecorder>>,
-	) -> utility::Result<()> {
-		self.command_recorders.push(Rc::downgrade(&recorder));
+	pub fn add_command_recorder<T>(&mut self, recorder: &Arc<RwLock<T>>) -> utility::Result<()>
+	where
+		T: 'static + graphics::CommandRecorder,
+	{
+		let arc: Arc<RwLock<dyn graphics::CommandRecorder>> = recorder.clone();
+		self.command_recorders.push(Arc::downgrade(&arc));
 		Ok(())
 	}
 
-	pub fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> utility::Result<()> {
+	pub fn construct_render_chain(
+		&mut self,
+		resolution: structs::Extent2D,
+	) -> Result<(), AnyError> {
 		optick::event!();
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
@@ -254,11 +258,9 @@ impl RenderChain {
 		self.render_chain_elements
 			.retain(|element| element.strong_count() > 0);
 		for element in self.render_chain_elements.iter() {
-			element
-				.upgrade()
-				.unwrap()
-				.borrow_mut()
-				.destroy_render_chain(self)?;
+			let arc = element.upgrade().unwrap();
+			let mut locked = arc.write().unwrap();
+			locked.destroy_render_chain(self)?;
 		}
 
 		self.is_dirty = false;
@@ -285,7 +287,7 @@ impl RenderChain {
 			.swapchain
 			.get_images()?
 			.into_iter()
-			.map(|image| Rc::new(image))
+			.map(|image| sync::Arc::new(image))
 			.collect();
 		self.frame_image_views = RenderChain::create_image_views(&logical, &self.frame_images)?;
 		self.frame_buffers = RenderChain::create_frame_buffers(
@@ -310,11 +312,9 @@ impl RenderChain {
 		self.mark_commands_dirty();
 
 		for element in self.render_chain_elements.iter() {
-			element
-				.upgrade()
-				.unwrap()
-				.borrow_mut()
-				.on_render_chain_constructed(self, resolution)?;
+			let arc = element.upgrade().unwrap();
+			let mut locked = arc.write().unwrap();
+			locked.on_render_chain_constructed(self, resolution)?;
 		}
 
 		Ok(())
@@ -326,7 +326,7 @@ impl RenderChain {
 
 	fn create_swapchain(
 		info: &swapchain::Info,
-		logical: &Rc<logical::Device>,
+		logical: &sync::Arc<logical::Device>,
 		surface: &Surface,
 		old_swapchain: Option<&swapchain::Swapchain>,
 	) -> utility::Result<swapchain::Swapchain> {
@@ -334,8 +334,8 @@ impl RenderChain {
 	}
 
 	fn create_image_views(
-		logical: &Rc<logical::Device>,
-		frame_images: &Vec<Rc<image::Image>>,
+		logical: &sync::Arc<logical::Device>,
+		frame_images: &Vec<sync::Arc<image::Image>>,
 	) -> utility::Result<Vec<image_view::View>> {
 		let mut views: Vec<image_view::View> = Vec::new();
 		for image in frame_images.iter() {
@@ -358,7 +358,7 @@ impl RenderChain {
 		views: &Vec<image_view::View>,
 		extent: structs::Extent2D,
 		render_pass: &renderpass::Pass,
-		logical: &Rc<logical::Device>,
+		logical: &sync::Arc<logical::Device>,
 	) -> utility::Result<Vec<command::framebuffer::Framebuffer>> {
 		let mut frame_buffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
 		for image_view in views.iter() {
@@ -372,7 +372,7 @@ impl RenderChain {
 	}
 
 	fn create_semaphores(
-		logical: &Rc<logical::Device>,
+		logical: &sync::Arc<logical::Device>,
 		amount: usize,
 	) -> utility::Result<Vec<command::Semaphore>> {
 		let mut vec: Vec<command::Semaphore> = Vec::new();
@@ -383,7 +383,7 @@ impl RenderChain {
 	}
 
 	fn create_fences(
-		logical: &Rc<logical::Device>,
+		logical: &sync::Arc<logical::Device>,
 		amount: usize,
 	) -> utility::Result<Vec<command::Fence>> {
 		let mut vec: Vec<command::Fence> = Vec::new();
@@ -393,7 +393,7 @@ impl RenderChain {
 		Ok(vec)
 	}
 
-	fn record_commands(&mut self, buffer_index: usize) -> utility::Result<()> {
+	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
 		optick::event!();
 		self.command_buffers[buffer_index].begin(None)?;
 		self.command_buffers[buffer_index].start_render_pass(
@@ -405,11 +405,9 @@ impl RenderChain {
 		self.command_recorders
 			.retain(|recorder| recorder.strong_count() > 0);
 		for recorder in self.command_recorders.iter() {
-			recorder
-				.upgrade()
-				.unwrap()
-				.borrow_mut()
-				.record_to_buffer(&mut self.command_buffers[buffer_index], buffer_index)?;
+			let arc = recorder.upgrade().unwrap();
+			let locked = arc.read().unwrap();
+			locked.record_to_buffer(&mut self.command_buffers[buffer_index], buffer_index)?;
 		}
 
 		self.command_buffers[buffer_index].stop_render_pass();
@@ -418,7 +416,7 @@ impl RenderChain {
 		Ok(())
 	}
 
-	pub fn render_frame(&mut self) -> utility::Result<()> {
+	pub fn render_frame(&mut self) -> Result<(), AnyError> {
 		optick::next_frame();
 		let logical = self.logical.upgrade().unwrap();
 
@@ -452,7 +450,7 @@ impl RenderChain {
 					self.is_dirty = true;
 					return Ok(());
 				}
-				_ => return Err(utility::Error::Graphics(e)),
+				_ => return Err(utility::Error::Graphics(e))?,
 			},
 		};
 		let next_image_idx = next_image_idx as usize;
@@ -489,11 +487,9 @@ impl RenderChain {
 			self.command_recorders
 				.retain(|recorder| recorder.strong_count() > 0);
 			for recorder in self.command_recorders.iter() {
-				recorder
-					.upgrade()
-					.unwrap()
-					.borrow_mut()
-					.update_pre_submit(next_image_idx, &self.resolution)?;
+				let arc = recorder.upgrade().unwrap();
+				let mut locked = arc.write().unwrap();
+				locked.update_pre_submit(next_image_idx, &self.resolution)?;
 			}
 		}
 
@@ -529,7 +525,7 @@ impl RenderChain {
 					self.is_dirty = true;
 					return Ok(());
 				}
-				_ => return Err(utility::Error::Graphics(e)),
+				_ => return Err(utility::Error::Graphics(e))?,
 			},
 		}
 

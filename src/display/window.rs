@@ -1,6 +1,6 @@
 use crate::{display, graphics, utility, Engine};
 use sdl2;
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, sync};
 use temportal_graphics::{
 	device::{logical, physical},
 	flags, instance, renderpass, Surface,
@@ -77,11 +77,11 @@ pub struct Window {
 	graphics_queue_index: usize,
 
 	// This is at the bottom to ensure that rust deallocates it last
-	graphics_allocator: Rc<graphics::alloc::Allocator>,
-	logical_device: Rc<logical::Device>,
-	physical_device: Rc<physical::Device>,
-	surface: Rc<Surface>,
-	_vulkan: Rc<instance::Instance>,
+	graphics_allocator: sync::Arc<graphics::alloc::Allocator>,
+	logical_device: sync::Arc<logical::Device>,
+	physical_device: sync::Arc<physical::Device>,
+	surface: sync::Arc<Surface>,
+	_vulkan: sync::Arc<instance::Instance>,
 	internal: WinWrapper,
 }
 
@@ -100,14 +100,14 @@ impl Window {
 			.set_window(&internal)
 			.set_use_validation(eng.vulkan_validation_enabled)
 			.create_object(&eng.graphics_context)?;
-		let vulkan = std::rc::Rc::new(instance);
-		let surface = Rc::new(instance::Instance::create_surface(
+		let vulkan = sync::Arc::new(instance);
+		let surface = sync::Arc::new(instance::Instance::create_surface(
 			&eng.graphics_context,
 			&vulkan,
 			&internal,
 		)?);
 
-		let physical_device = Rc::new(Window::find_physical_device(
+		let physical_device = sync::Arc::new(Window::find_physical_device(
 			&vulkan,
 			&surface,
 			constraints,
@@ -122,7 +122,7 @@ impl Window {
 		let graphics_queue_index = physical_device
 			.get_queue_index(flags::QueueFlags::GRAPHICS, true)
 			.unwrap();
-		let logical_device = std::rc::Rc::new(
+		let logical_device = sync::Arc::new(
 			logical::Info::default()
 				.add_extension("VK_KHR_swapchain")
 				.set_validation_enabled(engine.borrow().vulkan_validation_enabled)
@@ -133,7 +133,7 @@ impl Window {
 				.create_object(&vulkan, &physical_device)?,
 		);
 
-		let graphics_allocator = Rc::new(graphics::alloc::Allocator::create(
+		let graphics_allocator = sync::Arc::new(graphics::alloc::Allocator::create(
 			&vulkan,
 			&physical_device,
 			&logical_device,
@@ -155,8 +155,8 @@ impl Window {
 	}
 
 	fn find_physical_device(
-		vulkan: &Rc<instance::Instance>,
-		surface: &Rc<Surface>,
+		vulkan: &sync::Arc<instance::Instance>,
+		surface: &sync::Arc<Surface>,
 		constraints: Vec<physical::Constraint>,
 	) -> utility::Result<physical::Device> {
 		let mut constraints = constraints.clone();
