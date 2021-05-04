@@ -27,6 +27,8 @@ pub mod task;
 pub mod utility;
 use utility::AnyError;
 
+pub mod ecs;
+
 pub struct Engine {
 	vulkan_validation_enabled: bool,
 	graphics_context: Context,
