@@ -5,7 +5,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Orientation(Quaternion);
+pub struct Orientation(pub Quaternion);
 
 impl Component for Orientation {
 	type Storage = VecStorage<Self>;
