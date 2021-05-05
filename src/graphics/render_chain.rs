@@ -42,8 +42,8 @@ pub trait CommandRecorder: Send + Sync {
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
 	fn update_pre_submit(
 		&mut self,
-		frame: usize,
-		resolution: &Vector<u32, 2>,
+		_frame: usize,
+		_resolution: &Vector<u32, 2>,
 	) -> utility::Result<bool> {
 		Ok(false)
 	}
@@ -516,7 +516,6 @@ impl RenderChain {
 		}
 
 		if self.frame_command_buffer_requires_recording[next_image_idx] {
-			log::debug!("Recording frame {}", next_image_idx);
 			self.record_commands(next_image_idx)?;
 			self.frame_command_buffer_requires_recording[next_image_idx] = false;
 		}
