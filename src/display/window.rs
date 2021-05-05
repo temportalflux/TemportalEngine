@@ -172,7 +172,7 @@ impl Window {
 		&self,
 		render_pass_info: renderpass::Info,
 		task_spawner: sync::Arc<crate::task::Spawner>,
-	) -> utility::Result<sync::Arc<graphics::RenderChain>> {
+	) -> utility::Result<sync::Arc<sync::RwLock<graphics::RenderChain>>> {
 		optick::event!();
 		let permitted_frame_count = self
 			.physical_device
@@ -186,16 +186,18 @@ impl Window {
 		let graphics_queue =
 			logical::Device::get_queue(&self.logical_device, self.graphics_queue_index);
 
-		Ok(sync::Arc::new(graphics::RenderChain::new(
-			&self.physical_device,
-			&self.logical_device,
-			&self.graphics_allocator,
-			graphics_queue,
-			&self.surface,
-			frame_count,
-			render_pass_info,
-			task_spawner,
-		)?))
+		Ok(sync::Arc::new(sync::RwLock::new(
+			graphics::RenderChain::new(
+				&self.physical_device,
+				&self.logical_device,
+				&self.graphics_allocator,
+				graphics_queue,
+				&self.surface,
+				frame_count,
+				render_pass_info,
+				task_spawner,
+			)?,
+		)))
 	}
 }
 

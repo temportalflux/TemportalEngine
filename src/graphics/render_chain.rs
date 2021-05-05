@@ -44,7 +44,9 @@ pub trait CommandRecorder: Send + Sync {
 		&mut self,
 		frame: usize,
 		resolution: &Vector<u32, 2>,
-	) -> utility::Result<()>;
+	) -> utility::Result<bool> {
+		Ok(false)
+	}
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
@@ -80,7 +82,7 @@ pub struct RenderChain {
 	frame_count: usize,
 
 	task_spawner: sync::Arc<crate::task::Spawner>,
-	persistent_descriptor_pool: sync::Arc<graphics::descriptor::pool::Pool>,
+	persistent_descriptor_pool: sync::Arc<sync::RwLock<graphics::descriptor::pool::Pool>>,
 	surface: sync::Weak<Surface>,
 	graphics_queue: sync::Arc<logical::Queue>,
 	allocator: sync::Weak<graphics::alloc::Allocator>,
@@ -114,13 +116,13 @@ impl RenderChain {
 		let transient_command_pool =
 			sync::Arc::new(command::Pool::create(&logical, graphics_queue.index())?);
 
-		let persistent_descriptor_pool = sync::Arc::new(
+		let persistent_descriptor_pool = sync::Arc::new(sync::RwLock::new(
 			graphics::descriptor::Pool::builder()
 				.with_total_set_count(100)
 				.with_descriptor(flags::DescriptorKind::UNIFORM_BUFFER, 100)
 				.with_descriptor(flags::DescriptorKind::COMBINED_IMAGE_SAMPLER, 100)
 				.build(logical)?,
-		);
+		));
 
 		Ok(RenderChain {
 			physical: sync::Arc::downgrade(physical),
@@ -185,8 +187,8 @@ impl RenderChain {
 		&self.graphics_queue
 	}
 
-	pub fn persistent_descriptor_pool(&mut self) -> &mut graphics::descriptor::pool::Pool {
-		sync::Arc::get_mut(&mut self.persistent_descriptor_pool).unwrap()
+	pub fn persistent_descriptor_pool(&mut self) -> &Arc<RwLock<graphics::descriptor::pool::Pool>> {
+		&self.persistent_descriptor_pool
 	}
 
 	pub fn render_pass(&self) -> &renderpass::Pass {
@@ -500,7 +502,21 @@ impl RenderChain {
 			}
 		}
 
+		// Update any uniforms on pre-submit
+		{
+			self.command_recorders
+				.retain(|recorder| recorder.strong_count() > 0);
+			for recorder in self.command_recorders.iter() {
+				let arc = recorder.upgrade().unwrap();
+				let mut locked = arc.write().unwrap();
+				if locked.update_pre_submit(next_image_idx, &self.resolution)? {
+					self.frame_command_buffer_requires_recording[next_image_idx] = true;
+				}
+			}
+		}
+
 		if self.frame_command_buffer_requires_recording[next_image_idx] {
+			log::debug!("Recording frame {}", next_image_idx);
 			self.record_commands(next_image_idx)?;
 			self.frame_command_buffer_requires_recording[next_image_idx] = false;
 		}
@@ -510,17 +526,6 @@ impl RenderChain {
 
 		// Mark the image as not having been signaled (it is now being used)
 		logical.reset_fences(&[&self.in_flight_fences[self.current_frame]])?;
-
-		// Update any uniforms on pre-submit
-		{
-			self.command_recorders
-				.retain(|recorder| recorder.strong_count() > 0);
-			for recorder in self.command_recorders.iter() {
-				let arc = recorder.upgrade().unwrap();
-				let mut locked = arc.write().unwrap();
-				locked.update_pre_submit(next_image_idx, &self.resolution)?;
-			}
-		}
 
 		self.graphics_queue.submit(
 			vec![command::SubmitInfo::default()

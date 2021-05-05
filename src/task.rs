@@ -54,9 +54,13 @@ pub struct Watcher {
 }
 
 impl Watcher {
+	pub fn poll_until_empty(&self) {
+		while self.poll() {}
+	}
+
 	/// Polls any tasks that have been send for execution,
 	/// but does not block the thread if there are no tasks to execute/poll.
-	pub fn poll(&mut self) {
+	pub fn poll(&self) -> bool {
 		'poll_next_task: loop {
 			// Consume the next task in the channel
 			match self.task_channel.try_recv() {
@@ -76,7 +80,7 @@ impl Watcher {
 				}
 				Err(e) => match e {
 					// this is ok and expected, the loop should exit
-					TryRecvError::Empty => break 'poll_next_task,
+					TryRecvError::Empty => return false,
 					// this is not really expected, but it shouldnt panic or cause errors
 					TryRecvError::Disconnected => {
 						log::warn!("Task watcher's channel has been disconnected");
@@ -85,5 +89,6 @@ impl Watcher {
 				},
 			}
 		}
+		true
 	}
 }
