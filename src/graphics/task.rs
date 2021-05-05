@@ -8,6 +8,8 @@ use crate::{
 use std::sync;
 
 pub struct TaskCopyImageToGpu {
+	gpu_signal_on_complete: sync::Arc<command::Semaphore>,
+	cpu_signal_on_complete: sync::Arc<command::Fence>,
 	staging_buffer: Option<buffer::Buffer>,
 	command_buffer: Option<command::Buffer>,
 	command_pool: sync::Arc<command::Pool>,
@@ -28,6 +30,13 @@ impl TaskCopyImageToGpu {
 				.allocate_buffers(1, flags::CommandBufferLevel::PRIMARY)?
 				.pop(),
 			staging_buffer: None,
+			cpu_signal_on_complete: sync::Arc::new(command::Fence::new(
+				&render_chain.logical(),
+				flags::FenceState::default(),
+			)?),
+			gpu_signal_on_complete: sync::Arc::new(command::Semaphore::new(
+				&render_chain.logical(),
+			)?),
 		})
 	}
 
@@ -44,19 +53,31 @@ impl TaskCopyImageToGpu {
 
 	pub fn end(self) -> utility::Result<Self> {
 		optick::event!();
-		(self.cmd().end())?;
+		self.cmd().end()?;
 
-		(self.queue.submit(
-			vec![command::SubmitInfo::default().add_buffer(&self.cmd())],
-			None,
-		))?;
+		self.queue.submit(
+			vec![command::SubmitInfo::default()
+				.signal_when_complete(&self.gpu_signal_on_complete)
+				.add_buffer(&self.cmd())],
+			Some(&self.cpu_signal_on_complete),
+		)?;
 
 		Ok(self)
 	}
 
+	pub fn cpu_signal_on_complete(&self) -> sync::Arc<command::Fence> {
+		self.cpu_signal_on_complete.clone()
+	}
+
+	pub fn gpu_signal_on_complete(&self) -> sync::Arc<command::Semaphore> {
+		self.gpu_signal_on_complete.clone()
+	}
+
 	pub fn wait_until_idle(self) -> utility::Result<()> {
 		optick::event!();
-		Ok(self.device.wait_until_idle()?)
+		Ok(self
+			.device
+			.wait_for(&self.cpu_signal_on_complete, u64::MAX)?)
 	}
 
 	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {

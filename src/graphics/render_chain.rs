@@ -15,13 +15,23 @@ use std::{
 /// An object which contains data that needs to be updated when the render-chain is reconstructed
 /// (i.e. something which contains a pipeline, and is therefore reliant on the resolution of the window).
 pub trait RenderChainElement {
-	fn initialize_with(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
-	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
+	/// Initializes the renderer before the first frame.
+	/// Returns any semaphores which must complete before the first frame is submitted.
+	fn initialize_with(
+		&mut self,
+		render_chain: &RenderChain,
+	) -> utility::Result<Vec<Arc<command::Semaphore>>>;
+
+	/// Creates any objects, like pipelines, which need to be created for a given swapchain (i.e. on window size change).
+	/// Returns any semaphores which must complete before the next frame is submitted.
 	fn on_render_chain_constructed(
 		&mut self,
 		render_chain: &RenderChain,
 		resolution: structs::Extent2D,
 	) -> utility::Result<()>;
+
+	/// Destroys any objects which are created during `on_render_chain_constructed`.
+	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
 }
 
 /// An object which records commands to one or more command buffers,
@@ -35,9 +45,14 @@ pub trait CommandRecorder {
 	) -> utility::Result<()>;
 }
 
+struct ChainElement {
+	element: Weak<RwLock<dyn graphics::RenderChainElement>>,
+	has_initialized: bool,
+}
+
 pub struct RenderChain {
 	command_recorders: Vec<Weak<RwLock<dyn graphics::CommandRecorder>>>,
-	render_chain_elements: Vec<Weak<RwLock<dyn graphics::RenderChainElement>>>,
+	render_chain_elements: Vec<ChainElement>,
 
 	current_frame: usize,
 	images_in_flight: Vec<Option</*in_flight_fence index*/ usize>>,
@@ -190,12 +205,11 @@ impl RenderChain {
 	where
 		T: 'static + graphics::RenderChainElement,
 	{
-		{
-			let mut locked = element.write().unwrap();
-			locked.initialize_with(&self)?;
-		}
 		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
-		self.render_chain_elements.push(Arc::downgrade(&arc));
+		self.render_chain_elements.push(ChainElement {
+			element: Arc::downgrade(&arc),
+			has_initialized: false,
+		});
 		Ok(())
 	}
 
@@ -224,9 +238,9 @@ impl RenderChain {
 		self.command_buffers.clear();
 
 		self.render_chain_elements
-			.retain(|element| element.strong_count() > 0);
+			.retain(|element| element.element.strong_count() > 0);
 		for element in self.render_chain_elements.iter() {
-			let arc = element.upgrade().unwrap();
+			let arc = element.element.upgrade().unwrap();
 			let mut locked = arc.write().unwrap();
 			locked.destroy_render_chain(self)?;
 		}
@@ -285,7 +299,7 @@ impl RenderChain {
 		self.mark_commands_dirty();
 
 		for element in self.render_chain_elements.iter() {
-			let arc = element.upgrade().unwrap();
+			let arc = element.element.upgrade().unwrap();
 			let mut locked = arc.write().unwrap();
 			locked.on_render_chain_constructed(self, resolution)?;
 		}
@@ -397,6 +411,21 @@ impl RenderChain {
 		optick::next_frame();
 		let logical = self.logical.upgrade().unwrap();
 
+		let mut chain_elements_to_initialize = Vec::new();
+		for element in self.render_chain_elements.iter_mut() {
+			if !element.has_initialized {
+				element.has_initialized = true;
+				chain_elements_to_initialize.push(element.element.upgrade().unwrap());
+			}
+		}
+
+		let mut required_semaphores = Vec::new();
+		for rc in chain_elements_to_initialize {
+			let mut locked = rc.write().unwrap();
+			let mut found_semaphores = locked.initialize_with(self)?;
+			required_semaphores.append(&mut found_semaphores);
+		}
+
 		if self.is_dirty {
 			logical.wait_until_idle()?;
 			let resolution = self
@@ -412,7 +441,7 @@ impl RenderChain {
 		}
 
 		// Wait for the previous frame/image to no longer be displayed
-		logical.wait_for(&self.in_flight_fences[self.current_frame], true, u64::MAX)?;
+		logical.wait_for(&self.in_flight_fences[self.current_frame], u64::MAX)?;
 
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain().acquire_next_image(
@@ -442,7 +471,6 @@ impl RenderChain {
 			if fence_index_for_img_in_flight.is_some() {
 				logical.wait_for(
 					&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()],
-					true,
 					u64::MAX,
 				)?;
 			}
@@ -477,6 +505,7 @@ impl RenderChain {
 					&self.img_available_semaphores[self.current_frame],
 					flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT,
 				)
+				.wait_for_semaphores(&required_semaphores)
 				// denote which command buffer is being executed
 				.add_buffer(&self.command_buffers[next_image_idx])
 				// tell the gpu to signal a semaphore when the image is available again
