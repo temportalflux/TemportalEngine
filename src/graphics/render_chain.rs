@@ -7,19 +7,16 @@ use crate::{
 	math::Vector,
 	utility::{self, AnyError},
 };
-use std::{
-	cell::RefCell,
-	sync::{self, Arc, RwLock, Weak},
-};
+use std::sync::{self, Arc, RwLock, Weak};
 
 /// An object which contains data that needs to be updated when the render-chain is reconstructed
 /// (i.e. something which contains a pipeline, and is therefore reliant on the resolution of the window).
-pub trait RenderChainElement {
+pub trait RenderChainElement: Send + Sync {
 	/// Initializes the renderer before the first frame.
 	/// Returns any semaphores which must complete before the first frame is submitted.
 	fn initialize_with(
 		&mut self,
-		render_chain: &RenderChain,
+		render_chain: &mut RenderChain,
 	) -> utility::Result<Vec<Arc<command::Semaphore>>>;
 
 	/// Creates any objects, like pipelines, which need to be created for a given swapchain (i.e. on window size change).
@@ -30,13 +27,18 @@ pub trait RenderChainElement {
 		resolution: structs::Extent2D,
 	) -> utility::Result<()>;
 
+	/// Returns a list of gpu semaphores that need to be completed/signaled before the next frame can be submitted.
+	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
+		Vec::new()
+	}
+
 	/// Destroys any objects which are created during `on_render_chain_constructed`.
 	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
 }
 
 /// An object which records commands to one or more command buffers,
 /// notably when the render-chain is reconstructed.
-pub trait CommandRecorder {
+pub trait CommandRecorder: Send + Sync {
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
 	fn update_pre_submit(
 		&mut self,
@@ -45,14 +47,12 @@ pub trait CommandRecorder {
 	) -> utility::Result<()>;
 }
 
-struct ChainElement {
-	element: Weak<RwLock<dyn graphics::RenderChainElement>>,
-	has_initialized: bool,
-}
+type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
 
 pub struct RenderChain {
 	command_recorders: Vec<Weak<RwLock<dyn graphics::CommandRecorder>>>,
-	render_chain_elements: Vec<ChainElement>,
+	initialized_render_chain_elements: Vec<ChainElement>,
+	pending_render_chain_elements: Vec<ChainElement>,
 
 	current_frame: usize,
 	images_in_flight: Vec<Option</*in_flight_fence index*/ usize>>,
@@ -80,19 +80,16 @@ pub struct RenderChain {
 	frame_count: usize,
 
 	task_spawner: sync::Arc<crate::task::Spawner>,
-	persistent_descriptor_pool: RefCell<graphics::descriptor::pool::Pool>,
+	persistent_descriptor_pool: sync::Arc<graphics::descriptor::pool::Pool>,
 	surface: sync::Weak<Surface>,
 	graphics_queue: sync::Arc<logical::Queue>,
 	allocator: sync::Weak<graphics::alloc::Allocator>,
 	logical: sync::Weak<logical::Device>,
 	physical: sync::Weak<physical::Device>,
-
-	window_id: u32,
 }
 
 impl RenderChain {
 	pub fn new(
-		window_id: u32,
 		physical: &sync::Arc<physical::Device>,
 		logical: &sync::Arc<logical::Device>,
 		allocator: &sync::Arc<graphics::alloc::Allocator>,
@@ -117,7 +114,7 @@ impl RenderChain {
 		let transient_command_pool =
 			sync::Arc::new(command::Pool::create(&logical, graphics_queue.index())?);
 
-		let persistent_descriptor_pool = RefCell::new(
+		let persistent_descriptor_pool = sync::Arc::new(
 			graphics::descriptor::Pool::builder()
 				.with_total_set_count(100)
 				.with_descriptor(flags::DescriptorKind::UNIFORM_BUFFER, 100)
@@ -126,7 +123,6 @@ impl RenderChain {
 		);
 
 		Ok(RenderChain {
-			window_id,
 			physical: sync::Arc::downgrade(physical),
 			logical: sync::Arc::downgrade(logical),
 			allocator: sync::Arc::downgrade(allocator),
@@ -160,7 +156,8 @@ impl RenderChain {
 			current_frame: 0,
 
 			command_recorders: Vec::new(),
-			render_chain_elements: Vec::new(),
+			pending_render_chain_elements: Vec::new(),
+			initialized_render_chain_elements: Vec::new(),
 		})
 	}
 
@@ -188,8 +185,8 @@ impl RenderChain {
 		&self.graphics_queue
 	}
 
-	pub fn persistent_descriptor_pool(&self) -> &RefCell<graphics::descriptor::pool::Pool> {
-		&self.persistent_descriptor_pool
+	pub fn persistent_descriptor_pool(&mut self) -> &mut graphics::descriptor::pool::Pool {
+		sync::Arc::get_mut(&mut self.persistent_descriptor_pool).unwrap()
 	}
 
 	pub fn render_pass(&self) -> &renderpass::Pass {
@@ -213,10 +210,8 @@ impl RenderChain {
 		T: 'static + graphics::RenderChainElement,
 	{
 		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
-		self.render_chain_elements.push(ChainElement {
-			element: Arc::downgrade(&arc),
-			has_initialized: false,
-		});
+		self.pending_render_chain_elements
+			.push(Arc::downgrade(&arc));
 		Ok(())
 	}
 
@@ -244,10 +239,10 @@ impl RenderChain {
 		self.frame_images.clear();
 		self.command_buffers.clear();
 
-		self.render_chain_elements
-			.retain(|element| element.element.strong_count() > 0);
-		for element in self.render_chain_elements.iter() {
-			let arc = element.element.upgrade().unwrap();
+		self.initialized_render_chain_elements
+			.retain(|element| element.strong_count() > 0);
+		for element in self.initialized_render_chain_elements.iter() {
+			let arc = element.upgrade().unwrap();
 			let mut locked = arc.write().unwrap();
 			locked.destroy_render_chain(self)?;
 		}
@@ -305,8 +300,8 @@ impl RenderChain {
 
 		self.mark_commands_dirty();
 
-		for element in self.render_chain_elements.iter() {
-			let arc = element.element.upgrade().unwrap();
+		for element in self.initialized_render_chain_elements.iter() {
+			let arc = element.upgrade().unwrap();
 			let mut locked = arc.write().unwrap();
 			locked.on_render_chain_constructed(self, resolution)?;
 		}
@@ -418,18 +413,40 @@ impl RenderChain {
 		optick::next_frame();
 		let logical = self.logical.upgrade().unwrap();
 
-		let mut chain_elements_to_initialize = Vec::new();
-		for element in self.render_chain_elements.iter_mut() {
-			if !element.has_initialized {
-				element.has_initialized = true;
-				chain_elements_to_initialize.push(element.element.upgrade().unwrap());
+		let mut required_semaphores = Vec::new();
+		let mut has_constructed_new_elements = false;
+		let uninitialized_elements = self.pending_render_chain_elements.clone();
+		self.pending_render_chain_elements.clear();
+		for element in uninitialized_elements.iter() {
+			let rc = element.upgrade().unwrap();
+			let mut locked = rc.write().unwrap();
+			// initialize the item
+			{
+				let mut found_semaphores = locked.initialize_with(self)?;
+				required_semaphores.append(&mut found_semaphores);
+				self.initialized_render_chain_elements.push(element.clone());
+			}
+			// construct the chain if the chain already exists
+			if !self.is_dirty {
+				locked.on_render_chain_constructed(
+					self,
+					structs::Extent2D {
+						width: self.resolution.x(),
+						height: self.resolution.y(),
+					},
+				)?;
+				has_constructed_new_elements = true;
 			}
 		}
 
-		let mut required_semaphores = Vec::new();
-		for rc in chain_elements_to_initialize {
+		if has_constructed_new_elements {
+			self.mark_commands_dirty();
+		}
+
+		for element in self.initialized_render_chain_elements.iter() {
+			let rc = element.upgrade().unwrap();
 			let mut locked = rc.write().unwrap();
-			let mut found_semaphores = locked.initialize_with(self)?;
+			let mut found_semaphores = locked.take_gpu_signals();
 			required_semaphores.append(&mut found_semaphores);
 		}
 
@@ -545,21 +562,5 @@ impl RenderChain {
 		self.current_frame =
 			(self.current_frame + 1) % RenderChain::max_frames_in_flight(self.frame_count);
 		Ok(())
-	}
-}
-
-impl crate::display::EventListener for RenderChain {
-	fn on_event(&mut self, event: &sdl2::event::Event) -> bool {
-		match event {
-			sdl2::event::Event::Window {
-				window_id,
-				win_event: sdl2::event::WindowEvent::Resized(w, h),
-				..
-			} if *window_id == self.window_id => {
-				log::debug!("Resized window {} to {}x{}", self.window_id, w, h);
-			}
-			_ => {}
-		}
-		false
 	}
 }

@@ -150,10 +150,6 @@ impl Window {
 		})
 	}
 
-	fn id(&self) -> u32 {
-		self.internal.internal.id()
-	}
-
 	fn find_physical_device(
 		vulkan: &sync::Arc<instance::Instance>,
 		surface: &sync::Arc<Surface>,
@@ -174,10 +170,9 @@ impl Window {
 
 	pub fn create_render_chain(
 		&self,
-		display: &mut display::Manager,
 		render_pass_info: renderpass::Info,
 		task_spawner: sync::Arc<crate::task::Spawner>,
-	) -> utility::Result<Rc<RefCell<graphics::RenderChain>>> {
+	) -> utility::Result<sync::Arc<graphics::RenderChain>> {
 		optick::event!();
 		let permitted_frame_count = self
 			.physical_device
@@ -191,8 +186,7 @@ impl Window {
 		let graphics_queue =
 			logical::Device::get_queue(&self.logical_device, self.graphics_queue_index);
 
-		let render_chain_raw = graphics::RenderChain::new(
-			self.id(),
+		Ok(sync::Arc::new(graphics::RenderChain::new(
 			&self.physical_device,
 			&self.logical_device,
 			&self.graphics_allocator,
@@ -201,12 +195,7 @@ impl Window {
 			frame_count,
 			render_pass_info,
 			task_spawner,
-		)?;
-		let render_chain = Rc::new(RefCell::new(render_chain_raw));
-		let render_chain_weak = Rc::downgrade(&render_chain);
-		display.add_event_listener(render_chain_weak);
-
-		Ok(render_chain)
+		)?))
 	}
 }
 
