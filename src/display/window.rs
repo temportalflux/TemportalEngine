@@ -176,6 +176,7 @@ impl Window {
 		&self,
 		display: &mut display::Manager,
 		render_pass_info: renderpass::Info,
+		task_spawner: sync::Arc<crate::task::Spawner>,
 	) -> utility::Result<Rc<RefCell<graphics::RenderChain>>> {
 		optick::event!();
 		let permitted_frame_count = self
@@ -199,6 +200,7 @@ impl Window {
 			&self.surface,
 			frame_count,
 			render_pass_info,
+			task_spawner,
 		)?;
 		let render_chain = Rc::new(RefCell::new(render_chain_raw));
 		let render_chain_weak = Rc::downgrade(&render_chain);

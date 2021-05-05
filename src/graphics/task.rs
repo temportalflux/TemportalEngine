@@ -5,11 +5,19 @@ use crate::{
 	math::Vector,
 	utility,
 };
+use futures::future::Future;
 use std::sync;
 
+struct State {
+	is_complete: bool,
+	waker: Option<std::task::Waker>,
+}
+
 pub struct TaskCopyImageToGpu {
+	state: sync::Arc<sync::Mutex<State>>,
 	gpu_signal_on_complete: sync::Arc<command::Semaphore>,
 	cpu_signal_on_complete: sync::Arc<command::Fence>,
+
 	staging_buffer: Option<buffer::Buffer>,
 	command_buffer: Option<command::Buffer>,
 	command_pool: sync::Arc<command::Pool>,
@@ -21,6 +29,12 @@ pub struct TaskCopyImageToGpu {
 impl TaskCopyImageToGpu {
 	pub fn new(render_chain: &RenderChain) -> utility::Result<TaskCopyImageToGpu> {
 		let command_pool = render_chain.transient_command_pool();
+
+		let state = sync::Arc::new(sync::Mutex::new(State {
+			is_complete: false,
+			waker: None,
+		}));
+
 		Ok(TaskCopyImageToGpu {
 			device: render_chain.logical().clone(),
 			allocator: render_chain.allocator().clone(),
@@ -37,7 +51,12 @@ impl TaskCopyImageToGpu {
 			gpu_signal_on_complete: sync::Arc::new(command::Semaphore::new(
 				&render_chain.logical(),
 			)?),
+			state,
 		})
+	}
+
+	pub fn send_to(self, spawner: &sync::Arc<crate::task::Spawner>) {
+		spawner.spawn(self)
 	}
 
 	fn cmd(&self) -> &command::Buffer {
@@ -61,6 +80,20 @@ impl TaskCopyImageToGpu {
 				.add_buffer(&self.cmd())],
 			Some(&self.cpu_signal_on_complete),
 		)?;
+
+		let thread_device = self.device.clone();
+		let thread_cpu_signal = self.cpu_signal_on_complete.clone();
+		let thread_state = self.state.clone();
+		std::thread::spawn(move || {
+			thread_device
+				.wait_for(&thread_cpu_signal, u64::MAX)
+				.unwrap();
+			let mut state = thread_state.lock().unwrap();
+			state.is_complete = true;
+			if let Some(waker) = state.waker.take() {
+				waker.wake();
+			}
+		});
 
 		Ok(self)
 	}
@@ -178,5 +211,22 @@ impl Drop for TaskCopyImageToGpu {
 	fn drop(&mut self) {
 		self.command_pool
 			.free_buffers(vec![self.command_buffer.take().unwrap()]);
+	}
+}
+
+impl Future for TaskCopyImageToGpu {
+	type Output = ();
+	fn poll(
+		self: std::pin::Pin<&mut Self>,
+		ctx: &mut std::task::Context<'_>,
+	) -> std::task::Poll<Self::Output> {
+		use std::task::Poll;
+		let mut state = self.state.lock().unwrap();
+		if !state.is_complete {
+			state.waker = Some(ctx.waker().clone());
+			Poll::Pending
+		} else {
+			Poll::Ready(())
+		}
 	}
 }

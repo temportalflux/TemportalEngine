@@ -20,7 +20,6 @@ pub use temportal_math as math;
 #[path = "world/_.rs"]
 pub mod world;
 
-#[path = "task/_.rs"]
 pub mod task;
 
 #[path = "utility/_.rs"]
