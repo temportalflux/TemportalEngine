@@ -46,14 +46,15 @@ pub struct RenderChain {
 	img_available_semaphores: Vec<command::Semaphore>,
 	frame_command_buffer_requires_recording: Vec<bool>,
 
+	command_buffers: Vec<command::Buffer>,
+	frame_command_pool: Option<command::Pool>,
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
 	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<sync::Arc<image::Image>>,
-	swapchain: swapchain::Swapchain,
+	swapchain: Option<swapchain::Swapchain>,
+	render_pass: Option<renderpass::Pass>,
+
 	swapchain_info: swapchain::Info,
-	render_pass: renderpass::Pass,
-	command_buffers: Vec<command::Buffer>,
-	frame_command_pool: command::Pool,
 	transient_command_pool: sync::Arc<command::Pool>,
 
 	resolution: Vector<u32, 2>,
@@ -84,7 +85,7 @@ impl RenderChain {
 		frame_count: usize,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<RenderChain> {
-		let mut swapchain_info = swapchain::Info::default()
+		let swapchain_info = swapchain::Info::default()
 			.set_image_count(frame_count as u32)
 			.set_image_format(flags::Format::B8G8R8A8_SRGB)
 			.set_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
@@ -93,44 +94,11 @@ impl RenderChain {
 			.set_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
 			.set_composite_alpha(flags::CompositeAlpha::OPAQUE)
 			.set_is_clipped(true);
-		let mut render_pass_instruction = renderpass::RecordInstruction::default();
-
+		let render_pass_instruction = renderpass::RecordInstruction::default();
 		let resolution = physical.query_surface_support().image_extent();
-		swapchain_info.fill_from_physical(&physical);
-		render_pass_instruction.set_extent(resolution);
 
-		let frame_command_pool = command::Pool::create(&logical, graphics_queue.index())?;
 		let transient_command_pool =
 			sync::Arc::new(command::Pool::create(&logical, graphics_queue.index())?);
-
-		let command_buffers =
-			frame_command_pool.allocate_buffers(frame_count, flags::CommandBufferLevel::PRIMARY)?;
-
-		let swapchain = RenderChain::create_swapchain(&swapchain_info, logical, surface, None)?;
-		let frame_images = swapchain
-			.get_images()?
-			.into_iter()
-			.map(|image| sync::Arc::new(image))
-			.collect();
-		let frame_image_views = RenderChain::create_image_views(logical, &frame_images)?;
-		let render_pass = render_pass_info.create_object(&logical)?;
-		let frame_buffers = RenderChain::create_frame_buffers(
-			&frame_image_views,
-			resolution,
-			&render_pass,
-			logical,
-		)?;
-
-		let max_frames_in_flight = RenderChain::max_frames_in_flight(frame_count);
-		let img_available_semaphores =
-			RenderChain::create_semaphores(logical, max_frames_in_flight)?;
-		let render_finished_semaphores =
-			RenderChain::create_semaphores(logical, max_frames_in_flight)?;
-		let in_flight_fences = RenderChain::create_fences(logical, max_frames_in_flight)?;
-		let images_in_flight: Vec<Option<usize>> =
-			frame_image_views.iter().map(|_| None).collect::<Vec<_>>();
-
-		let frame_command_buffer_requires_recording = vec![true; frame_count];
 
 		let persistent_descriptor_pool = RefCell::new(
 			graphics::descriptor::Pool::builder()
@@ -152,25 +120,25 @@ impl RenderChain {
 			persistent_descriptor_pool,
 
 			transient_command_pool,
-			frame_command_pool,
-			command_buffers,
+			frame_command_pool: None,
+			command_buffers: Vec::new(),
 			render_pass_instruction,
 			render_pass_info,
-			is_dirty: false,
+			is_dirty: true,
 			resolution: Vector::new([resolution.width, resolution.height]),
 
-			render_pass,
+			render_pass: None,
 			swapchain_info,
-			swapchain,
-			frame_images,
-			frame_image_views,
-			frame_buffers,
+			swapchain: None,
+			frame_images: Vec::new(),
+			frame_image_views: Vec::new(),
+			frame_buffers: Vec::new(),
 
-			frame_command_buffer_requires_recording,
-			img_available_semaphores,
-			render_finished_semaphores,
-			in_flight_fences,
-			images_in_flight,
+			frame_command_buffer_requires_recording: vec![true; frame_count],
+			img_available_semaphores: Vec::new(),
+			render_finished_semaphores: Vec::new(),
+			in_flight_fences: Vec::new(),
+			images_in_flight: Vec::new(),
 			current_frame: 0,
 
 			command_recorders: Vec::new(),
@@ -203,7 +171,7 @@ impl RenderChain {
 	}
 
 	pub fn render_pass(&self) -> &renderpass::Pass {
-		&self.render_pass
+		self.render_pass.as_ref().unwrap()
 	}
 
 	pub fn add_clear_value(&mut self, clear: renderpass::ClearValue) {
@@ -222,10 +190,10 @@ impl RenderChain {
 	where
 		T: 'static + graphics::RenderChainElement,
 	{
-		let mut locked = element.write().unwrap();
-		locked.initialize_with(&self)?;
-		locked.on_render_chain_constructed(&self, *self.swapchain_info.image_extent())?;
-
+		{
+			let mut locked = element.write().unwrap();
+			locked.initialize_with(&self)?;
+		}
 		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
 		self.render_chain_elements.push(Arc::downgrade(&arc));
 		Ok(())
@@ -271,20 +239,25 @@ impl RenderChain {
 		self.swapchain_info.fill_from_physical(&physical);
 		self.render_pass_instruction.set_extent(resolution);
 
-		self.frame_command_pool = command::Pool::create(&logical, self.graphics_queue.index())?;
+		self.frame_command_pool = Some(command::Pool::create(
+			&logical,
+			self.graphics_queue.index(),
+		)?);
 		self.command_buffers = self
 			.frame_command_pool
+			.as_ref()
+			.unwrap()
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
-		self.render_pass = self.render_pass_info.create_object(&logical)?;
-		self.swapchain = RenderChain::create_swapchain(
+		self.render_pass = Some(self.render_pass_info.create_object(&logical)?);
+		self.swapchain = Some(RenderChain::create_swapchain(
 			&self.swapchain_info,
 			&logical,
 			&surface,
-			Some(&self.swapchain),
-		)?;
+			self.swapchain.as_ref(),
+		)?);
 		self.frame_images = self
-			.swapchain
+			.swapchain()
 			.get_images()?
 			.into_iter()
 			.map(|image| sync::Arc::new(image))
@@ -293,7 +266,7 @@ impl RenderChain {
 		self.frame_buffers = RenderChain::create_frame_buffers(
 			&self.frame_image_views,
 			resolution,
-			&self.render_pass,
+			self.render_pass(),
 			&logical,
 		)?;
 
@@ -331,6 +304,10 @@ impl RenderChain {
 		old_swapchain: Option<&swapchain::Swapchain>,
 	) -> utility::Result<swapchain::Swapchain> {
 		Ok(info.create_object(logical, surface, old_swapchain)?)
+	}
+
+	fn swapchain(&self) -> &swapchain::Swapchain {
+		self.swapchain.as_ref().unwrap()
 	}
 
 	fn create_image_views(
@@ -398,7 +375,7 @@ impl RenderChain {
 		self.command_buffers[buffer_index].begin(None)?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
-			&self.render_pass,
+			self.render_pass(),
 			self.render_pass_instruction.clone(),
 		);
 
@@ -438,7 +415,7 @@ impl RenderChain {
 		logical.wait_for(&self.in_flight_fences[self.current_frame], true, u64::MAX)?;
 
 		// Get the index of the next image to display
-		let acquisition_result = self.swapchain.acquire_next_image(
+		let acquisition_result = self.swapchain().acquire_next_image(
 			u64::MAX,
 			Some(&self.img_available_semaphores[self.current_frame]),
 			None,
@@ -510,7 +487,7 @@ impl RenderChain {
 		let present_result = self.graphics_queue.present(
 			command::PresentInfo::default()
 				.wait_for(&self.render_finished_semaphores[self.current_frame])
-				.add_swapchain(&self.swapchain)
+				.add_swapchain(self.swapchain())
 				.add_image_index(next_image_idx as u32),
 		);
 		match present_result {
