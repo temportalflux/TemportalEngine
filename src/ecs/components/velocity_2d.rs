@@ -10,3 +10,9 @@ pub struct Velocity2D(pub Vector<f32, 2>);
 impl Component for Velocity2D {
 	type Storage = VecStorage<Self>;
 }
+
+impl Velocity2D {
+	pub fn get(&self) -> Vector<f32, 2> {
+		self.0
+	}
+}
