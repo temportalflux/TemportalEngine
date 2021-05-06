@@ -21,7 +21,7 @@ rmp-serde = "0.15"
 zip = "0.5"
 physx = "0.11"
 optick = "1.3"
-specs = "0.16.1"
+specs = { version = "0.16", features = ["shred-derive"] }
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
