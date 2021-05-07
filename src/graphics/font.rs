@@ -30,7 +30,7 @@ impl std::fmt::Debug for SDF {
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Glyph {
-	pub ascii_code: usize,
+	pub unicode: u32,
 	// The position of the glyph in the atlas texture.
 	pub atlas_pos: Vector<usize, 2>,
 	// The size of the glyph in the atlas texture.
@@ -44,6 +44,12 @@ pub struct Glyph {
 	// The amount of space to the right that the pen position should move,
 	// when the glyph is rendered.
 	pub metric_advance: usize,
+}
+
+impl Glyph {
+	pub fn as_char(&self) -> char {
+		char::from_u32(self.unicode as u32).unwrap()
+	}
 }
 
 impl asset::Asset for Font {
