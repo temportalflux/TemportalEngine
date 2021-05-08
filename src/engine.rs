@@ -1,9 +1,9 @@
-use crate::{asset, logging, task, utility::AnyError, Application, graphics};
+use crate::{asset, graphics, logging, task, utility::AnyError, Application};
+use std::sync::{Arc, RwLock};
 use winit::{
 	event::Event,
 	event_loop::{ControlFlow, EventLoop},
 };
-use std::sync::{Arc, RwLock};
 
 pub struct Engine {
 	event_loop: EventLoop<()>,
@@ -27,13 +27,13 @@ impl Engine {
 	}
 
 	pub fn add_system<T>(&mut self, system: &Arc<RwLock<T>>)
-	where T: EngineSystem + 'static
+	where
+		T: EngineSystem + 'static,
 	{
 		self.systems.push(system.clone());
 	}
 
-	pub fn run(mut self, render_chain: Arc<RwLock<graphics::RenderChain>>)
-	{
+	pub fn run(mut self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut systems: Vec<_> = self.systems.drain(..).collect();
 		self.event_loop.run(move |event, _, control_flow| {
