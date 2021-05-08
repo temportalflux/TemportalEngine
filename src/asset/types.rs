@@ -1,6 +1,5 @@
 use crate::asset;
 use std::collections::HashMap;
-use std::sync::RwLock;
 
 /// Runtime listings of the kinds of assets that exist.
 /// Each asset type corresponds one-to-one with an implementation of the [`Asset`](crate::asset::Asset) trait.
@@ -19,7 +18,7 @@ impl Default for TypeRegistry {
 }
 
 impl TypeRegistry {
-	pub fn get() -> &'static RwLock<TypeRegistry> {
+	pub fn get() -> &'static std::sync::RwLock<TypeRegistry> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<TypeRegistry> = Singleton::uninit();
 		unsafe { INSTANCE.get() }

@@ -16,14 +16,28 @@ pub struct Library {
 	asset_locations: HashMap<asset::Id, asset::Location>,
 }
 
-impl Library {
-	pub fn new() -> Library {
+impl Default for Library {
+	fn default() -> Library {
 		Library {
 			paks: HashMap::new(),
 			asset_locations: HashMap::new(),
 		}
 	}
+}
 
+impl Library {
+	pub fn get() -> &'static std::sync::RwLock<Library> {
+		use crate::utility::singleton::*;
+		static mut INSTANCE: Singleton<Library> = Singleton::uninit();
+		unsafe { INSTANCE.get() }
+	}
+
+	pub fn read() -> std::sync::RwLockReadGuard<'static, Library> {
+		Library::get().read().unwrap()
+	}
+}
+
+impl Library {
 	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
 		optick::event!();
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();

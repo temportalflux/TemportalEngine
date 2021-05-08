@@ -30,12 +30,6 @@ pub mod ecs;
 
 pub struct Engine {
 	app_info: AppInfo,
-
-	pub assets: EngineAssets,
-}
-
-pub struct EngineAssets {
-	pub library: asset::Library,
 }
 
 impl std::fmt::Debug for Engine {
@@ -48,13 +42,7 @@ impl Engine {
 	pub fn new() -> Result<Rc<RefCell<Engine>>, AnyError> {
 		let app_info = AppInfo::new().engine("TemportalEngine", utility::make_version(0, 1, 0));
 		log::info!(target: app_info.engine_name(), "Initializing engine v{}", app_info.engine_version());
-		let engine = Engine {
-			app_info,
-
-			assets: EngineAssets {
-				library: asset::Library::new(),
-			},
-		};
+		let engine = Engine { app_info };
 
 		{
 			let mut locked = asset::TypeRegistry::get().write().unwrap();

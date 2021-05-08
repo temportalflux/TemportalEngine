@@ -24,10 +24,8 @@ impl Loader {
 			.decompile(&bytes)
 	}
 
-	pub fn load_sync(
-		library: &asset::Library,
-		id: &asset::Id,
-	) -> Result<asset::AnyBox, utility::AnyError> {
+	pub fn load_sync(id: &asset::Id) -> Result<asset::AnyBox, utility::AnyError> {
+		let library = asset::Library::get().read().unwrap();
 		let location = library
 			.find_location(&id)
 			.ok_or(asset::Error::AssetNotFound(id.clone()))?;
