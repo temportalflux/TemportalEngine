@@ -1,6 +1,6 @@
 use crate::{display, graphics, utility, Application};
 use sdl2;
-use std::{cell::RefCell, rc::Rc, sync};
+use std::sync;
 use temportal_graphics::{
 	device::{logical, physical},
 	flags, instance, renderpass, AppInfo, Context, Surface,
@@ -59,10 +59,7 @@ impl WindowBuilder {
 		self
 	}
 
-	pub fn build(
-		self,
-		display: &mut display::Manager,
-	) -> Result<Rc<RefCell<Window>>, utility::AnyError> {
+	pub fn build(self, display: &mut display::Manager) -> Result<Window, utility::AnyError> {
 		optick::event!();
 		log::info!(
 			target: display::LOG,
@@ -79,11 +76,11 @@ impl WindowBuilder {
 		if self.resizable {
 			builder.resizable();
 		}
-		Ok(Rc::new(RefCell::new(display::Window::new(
+		Ok(display::Window::new(
 			self.app_info,
 			builder.build()?,
 			self.constraints,
-		)?)))
+		)?)
 	}
 }
 
