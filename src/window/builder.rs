@@ -49,6 +49,11 @@ impl Builder {
 		self
 	}
 
+	pub fn with_clear_color(mut self, color: Vector<f32, 4>) -> Self {
+		self.render_pass_clear_color = color;
+		self
+	}
+
 	pub fn build(self, engine: &Engine) -> Result<window::Window, utility::AnyError> {
 		optick::event!();
 		log::info!(

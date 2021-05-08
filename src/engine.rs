@@ -1,12 +1,13 @@
-use crate::{asset, graphics, logging, task, utility::AnyError, Application};
-use std::sync::{Arc, RwLock};
+use crate::{asset, logging, task, utility::AnyError, Application, graphics};
 use winit::{
 	event::Event,
 	event_loop::{ControlFlow, EventLoop},
 };
+use std::sync::{Arc, RwLock};
 
 pub struct Engine {
 	event_loop: EventLoop<()>,
+	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
 }
 
 impl Engine {
@@ -17,6 +18,7 @@ impl Engine {
 		asset::Library::scan_application::<T>()?;
 		Ok(Engine {
 			event_loop: EventLoop::new(),
+			systems: Vec::new(),
 		})
 	}
 
@@ -24,9 +26,16 @@ impl Engine {
 		&self.event_loop
 	}
 
-	pub fn run(self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
+	pub fn add_system<T>(&mut self, system: &Arc<RwLock<T>>)
+	where T: EngineSystem + 'static
+	{
+		self.systems.push(system.clone());
+	}
+
+	pub fn run(mut self, render_chain: Arc<RwLock<graphics::RenderChain>>)
+	{
 		let mut prev_frame_time = std::time::Instant::now();
-		let mut delta_time = std::time::Duration::from_secs(0);
+		let mut systems: Vec<_> = self.systems.drain(..).collect();
 		self.event_loop.run(move |event, _, control_flow| {
 			*control_flow = ControlFlow::Poll;
 			match event {
@@ -38,11 +47,13 @@ impl Engine {
 				}
 				Event::MainEventsCleared => {
 					let frame_time = std::time::Instant::now();
-					delta_time = frame_time - prev_frame_time;
-					prev_frame_time = frame_time;
-
 					task::watcher().poll();
+					let delta_time = frame_time - prev_frame_time;
+					for system in systems.iter_mut() {
+						system.write().unwrap().update(delta_time);
+					}
 					render_chain.write().unwrap().render_frame().unwrap();
+					prev_frame_time = frame_time;
 				}
 				Event::RedrawRequested(_) => {}
 				Event::LoopDestroyed => {
@@ -52,4 +63,8 @@ impl Engine {
 			}
 		});
 	}
+}
+
+pub trait EngineSystem {
+	fn update(&mut self, delta_time: std::time::Duration);
 }
