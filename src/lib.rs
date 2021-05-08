@@ -36,7 +36,6 @@ pub struct Engine {
 
 pub struct EngineAssets {
 	pub library: asset::Library,
-	pub loader: asset::Loader,
 }
 
 impl std::fmt::Debug for Engine {
@@ -54,7 +53,6 @@ impl Engine {
 
 			assets: EngineAssets {
 				library: asset::Library::new(),
-				loader: asset::Loader::new(),
 			},
 		};
 

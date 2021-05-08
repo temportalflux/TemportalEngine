@@ -14,11 +14,7 @@ pub struct AssetGeneric {
 pub struct Loader {}
 
 impl Loader {
-	pub fn new() -> Loader {
-		Loader {}
-	}
-
-	pub fn decompile(&self, bin_path: &PathBuf) -> asset::AssetResult {
+	pub fn decompile(bin_path: &PathBuf) -> asset::AssetResult {
 		let bytes = std::fs::read(&bin_path)?;
 		let generic: AssetGeneric = rmp_serde::from_read_ref(&bytes)?;
 		let type_id = generic.asset_type;
@@ -29,7 +25,6 @@ impl Loader {
 	}
 
 	pub fn load_sync(
-		&self,
 		library: &asset::Library,
 		id: &asset::Id,
 	) -> Result<asset::AnyBox, utility::AnyError> {
