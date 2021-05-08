@@ -9,6 +9,7 @@ pub mod graphics;
 pub mod logging;
 pub use temportal_math as math;
 pub mod task;
+pub mod ui;
 pub mod utility;
 pub mod window;
 pub mod world;
