@@ -1,17 +1,12 @@
 use crate::{
 	display,
 	utility::{self, VoidResult},
-	Engine,
 };
-use std::{
-	cell::RefCell,
-	rc::{Rc, Weak},
-};
+use std::{cell::RefCell, rc::Weak};
 
 pub static LOG: &'static str = "display";
 
 pub struct Manager {
-	engine: Rc<RefCell<Engine>>,
 	sdl: sdl2::Sdl,
 	event_listeners: Vec<Weak<RefCell<dyn display::EventListener>>>,
 
@@ -19,18 +14,13 @@ pub struct Manager {
 }
 
 impl Manager {
-	pub fn new(engine: Rc<RefCell<Engine>>) -> utility::Result<Manager> {
+	pub fn new() -> utility::Result<Manager> {
 		let sdl = sdl2::init().map_err(|e| utility::Error::Sdl(e))?;
 		Ok(Manager {
-			engine,
 			sdl,
 			event_listeners: Vec::new(),
 			quit_has_been_triggered: false,
 		})
-	}
-
-	pub fn engine(&self) -> &Rc<RefCell<Engine>> {
-		&self.engine
 	}
 
 	pub fn video_subsystem(&self) -> utility::Result<sdl2::VideoSubsystem> {

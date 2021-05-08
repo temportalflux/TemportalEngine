@@ -1,9 +1,9 @@
-use crate::{display, graphics, utility, Engine};
+use crate::{display, graphics, utility};
 use sdl2;
 use std::{cell::RefCell, rc::Rc, sync};
 use temportal_graphics::{
 	device::{logical, physical},
-	flags, instance, renderpass, Context, Surface,
+	flags, instance, renderpass, AppInfo, Context, Surface,
 };
 
 fn is_vulkan_validation_enabled() -> bool {
@@ -11,6 +11,7 @@ fn is_vulkan_validation_enabled() -> bool {
 }
 
 pub struct WindowBuilder {
+	app_info: AppInfo,
 	title: String,
 	width: u32,
 	height: u32,
@@ -21,6 +22,7 @@ pub struct WindowBuilder {
 impl Default for WindowBuilder {
 	fn default() -> WindowBuilder {
 		WindowBuilder {
+			app_info: AppInfo::default(),
 			title: String::default(),
 			width: 0,
 			height: 0,
@@ -31,6 +33,11 @@ impl Default for WindowBuilder {
 }
 
 impl WindowBuilder {
+	pub fn with_info(mut self, info: AppInfo) -> Self {
+		self.app_info = info;
+		self
+	}
+
 	pub fn title(mut self, title: &str) -> Self {
 		self.title = title.to_string();
 		self
@@ -73,7 +80,7 @@ impl WindowBuilder {
 			builder.resizable();
 		}
 		Ok(Rc::new(RefCell::new(display::Window::new(
-			&display.engine(),
+			self.app_info,
 			builder.build()?,
 			self.constraints,
 		)?)))
@@ -95,7 +102,7 @@ pub struct Window {
 
 impl Window {
 	pub fn new(
-		engine: &Rc<RefCell<Engine>>,
+		app_info: AppInfo,
 		sdl_window: sdl2::video::Window,
 		constraints: Vec<physical::Constraint>,
 	) -> Result<Window, utility::AnyError> {
@@ -103,9 +110,8 @@ impl Window {
 		let internal = WinWrapper {
 			internal: sdl_window,
 		};
-		let eng = engine.borrow();
 		let instance = instance::Info::default()
-			.set_app_info(eng.app_info.clone())
+			.set_app_info(app_info)
 			.set_window(&internal)
 			.set_use_validation(is_vulkan_validation_enabled())
 			.create_object(&graphics_context)?;
