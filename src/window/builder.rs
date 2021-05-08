@@ -17,7 +17,7 @@ impl Default for Builder {
 			inner_logical_size: Vector::default(),
 			resizable: false,
 			app_info: AppInfo::default(),
-			constraints: Vec::new(),
+			constraints: physical::default_constraints(),
 			render_pass_clear_color: Vector::new([0.0, 0.0, 0.0, 1.0]),
 		}
 	}
