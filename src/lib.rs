@@ -11,7 +11,7 @@ pub mod display;
 
 #[path = "graphics/_.rs"]
 pub mod graphics;
-use graphics::{AppInfo, Context};
+use graphics::AppInfo;
 
 pub mod logging;
 
@@ -29,8 +29,6 @@ use utility::AnyError;
 pub mod ecs;
 
 pub struct Engine {
-	vulkan_validation_enabled: bool,
-	graphics_context: Context,
 	app_info: AppInfo,
 
 	pub assets: EngineAssets,
@@ -50,12 +48,9 @@ impl std::fmt::Debug for Engine {
 
 impl Engine {
 	pub fn new() -> Result<Rc<RefCell<Engine>>, AnyError> {
-		let graphics_context = Context::new()?;
 		let app_info = AppInfo::new().engine("TemportalEngine", utility::make_version(0, 1, 0));
 		log::info!(target: app_info.engine_name(), "Initializing engine v{}", app_info.engine_version());
 		let mut engine = Engine {
-			vulkan_validation_enabled: cfg!(debug_assertions),
-			graphics_context,
 			app_info,
 
 			assets: EngineAssets {

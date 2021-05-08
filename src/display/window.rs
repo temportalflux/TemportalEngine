@@ -3,8 +3,12 @@ use sdl2;
 use std::{cell::RefCell, rc::Rc, sync};
 use temportal_graphics::{
 	device::{logical, physical},
-	flags, instance, renderpass, Surface,
+	flags, instance, renderpass, Context, Surface,
 };
+
+fn is_vulkan_validation_enabled() -> bool {
+	cfg!(debug_assertions)
+}
 
 pub struct WindowBuilder {
 	title: String,
@@ -48,7 +52,10 @@ impl WindowBuilder {
 		self
 	}
 
-	pub fn build(self, display: &mut display::Manager) -> utility::Result<Rc<RefCell<Window>>> {
+	pub fn build(
+		self,
+		display: &mut display::Manager,
+	) -> Result<Rc<RefCell<Window>>, utility::AnyError> {
 		optick::event!();
 		log::info!(
 			target: display::LOG,
@@ -83,6 +90,7 @@ pub struct Window {
 	surface: sync::Arc<Surface>,
 	_vulkan: sync::Arc<instance::Instance>,
 	internal: WinWrapper,
+	_graphics_context: Context,
 }
 
 impl Window {
@@ -90,7 +98,8 @@ impl Window {
 		engine: &Rc<RefCell<Engine>>,
 		sdl_window: sdl2::video::Window,
 		constraints: Vec<physical::Constraint>,
-	) -> utility::Result<Window> {
+	) -> Result<Window, utility::AnyError> {
+		let graphics_context = Context::new()?;
 		let internal = WinWrapper {
 			internal: sdl_window,
 		};
@@ -98,11 +107,11 @@ impl Window {
 		let instance = instance::Info::default()
 			.set_app_info(eng.app_info.clone())
 			.set_window(&internal)
-			.set_use_validation(eng.vulkan_validation_enabled)
-			.create_object(&eng.graphics_context)?;
+			.set_use_validation(is_vulkan_validation_enabled())
+			.create_object(&graphics_context)?;
 		let vulkan = sync::Arc::new(instance);
 		let surface = sync::Arc::new(instance::Instance::create_surface(
-			&eng.graphics_context,
+			&graphics_context,
 			&vulkan,
 			&internal,
 		)?);
@@ -125,7 +134,7 @@ impl Window {
 		let logical_device = sync::Arc::new(
 			logical::Info::default()
 				.add_extension("VK_KHR_swapchain")
-				.set_validation_enabled(engine.borrow().vulkan_validation_enabled)
+				.set_validation_enabled(is_vulkan_validation_enabled())
 				.add_queue(logical::DeviceQueue {
 					queue_family_index: graphics_queue_index,
 					priorities: vec![1.0],
@@ -140,6 +149,7 @@ impl Window {
 		)?);
 
 		Ok(Window {
+			_graphics_context: graphics_context,
 			internal,
 			_vulkan: vulkan,
 			graphics_allocator,
