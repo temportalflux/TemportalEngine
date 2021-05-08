@@ -1,4 +1,4 @@
-use crate::{asset, utility::VoidResult};
+use crate::{asset, utility::VoidResult, Application};
 use std::{collections::HashMap, fs};
 use zip;
 
@@ -38,6 +38,15 @@ impl Library {
 }
 
 impl Library {
+	pub fn scan_application<T: Application>() -> VoidResult {
+		let mut library = asset::Library::get().write().unwrap();
+		library.scan_pak(
+			&[T::location(), format!("{}.pak", T::name()).as_str()]
+				.iter()
+				.collect::<std::path::PathBuf>(),
+		)
+	}
+
 	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
 		optick::event!();
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();

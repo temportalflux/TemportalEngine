@@ -1,4 +1,4 @@
-use crate::{display, graphics, utility};
+use crate::{display, graphics, utility, Application};
 use sdl2;
 use std::{cell::RefCell, rc::Rc, sync};
 use temportal_graphics::{
@@ -33,8 +33,8 @@ impl Default for WindowBuilder {
 }
 
 impl WindowBuilder {
-	pub fn with_info(mut self, info: AppInfo) -> Self {
-		self.app_info = info;
+	pub fn with_application<T: Application>(mut self) -> Self {
+		self.app_info = crate::make_app_info::<T>();
 		self
 	}
 

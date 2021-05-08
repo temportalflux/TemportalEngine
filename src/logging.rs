@@ -1,11 +1,15 @@
-use crate::utility::VoidResult;
+use crate::{utility::VoidResult, Application};
 pub use log::Level;
 
-pub fn init(pkg_name: &str) -> VoidResult {
+pub fn init<T: Application>() -> VoidResult {
+	init_named(T::name())
+}
+
+pub fn init_named(log_name: &str) -> VoidResult {
 	optick::event!();
 	use simplelog::*;
 	let mut log_path = std::env::current_dir()?.to_path_buf();
-	log_path.push(format!("{}.log", pkg_name));
+	log_path.push(format!("{}.log", log_name));
 	let file = std::fs::OpenOptions::new()
 		.create(true)
 		.write(true)
