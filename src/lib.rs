@@ -1,38 +1,19 @@
-extern crate log;
-extern crate sdl2;
-
-#[path = "asset/_.rs"]
-pub mod asset;
-
-#[path = "display/_.rs"]
-pub mod display;
-
 mod application;
+pub mod asset;
 pub use application::*;
-
+pub mod display;
 pub mod ecs;
-
 mod engine;
 pub use engine::*;
-
-#[path = "graphics/_.rs"]
 pub mod graphics;
-use graphics::AppInfo;
-
 pub mod logging;
-
 pub use temportal_math as math;
-
 pub mod task;
-
-#[path = "utility/_.rs"]
 pub mod utility;
-
-#[path = "window/_.rs"]
 pub mod window;
-
-#[path = "world/_.rs"]
 pub mod world;
+
+use graphics::AppInfo;
 
 pub fn make_app_info<T: Application>() -> AppInfo {
 	AppInfo::new()
