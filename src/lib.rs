@@ -10,6 +10,11 @@ pub mod display;
 mod application;
 pub use application::*;
 
+pub mod ecs;
+
+mod engine;
+pub use engine::*;
+
 #[path = "graphics/_.rs"]
 pub mod graphics;
 use graphics::AppInfo;
@@ -18,15 +23,16 @@ pub mod logging;
 
 pub use temportal_math as math;
 
-#[path = "world/_.rs"]
-pub mod world;
-
 pub mod task;
 
 #[path = "utility/_.rs"]
 pub mod utility;
 
-pub mod ecs;
+#[path = "window/_.rs"]
+pub mod window;
+
+#[path = "world/_.rs"]
+pub mod world;
 
 pub fn make_app_info<T: Application>() -> AppInfo {
 	AppInfo::new()

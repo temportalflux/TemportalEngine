@@ -1,3 +1,5 @@
+pub use winit;
+
 #[path = "display.rs"]
 mod display;
 pub use display::*;

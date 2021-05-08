@@ -36,6 +36,10 @@ pub fn initialize_system() -> &'static Watcher {
 	unsafe { &*WATCHER.as_ptr() }
 }
 
+pub fn watcher() -> &'static Watcher {
+	unsafe { &*WATCHER.as_ptr() }
+}
+
 pub fn sender() -> &'static Arc<Sender> {
 	unsafe { &*SENDER.as_ptr() }
 }
