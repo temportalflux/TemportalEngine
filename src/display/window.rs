@@ -187,7 +187,6 @@ impl Window {
 	pub fn create_render_chain(
 		&self,
 		render_pass_info: renderpass::Info,
-		task_spawner: sync::Arc<crate::task::Spawner>,
 	) -> utility::Result<sync::Arc<sync::RwLock<graphics::RenderChain>>> {
 		optick::event!();
 		let permitted_frame_count = self
@@ -211,7 +210,6 @@ impl Window {
 				&self.surface,
 				frame_count,
 				render_pass_info,
-				task_spawner,
 			)?,
 		)))
 	}

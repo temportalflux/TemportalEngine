@@ -55,7 +55,7 @@ impl TaskCopyImageToGpu {
 		})
 	}
 
-	pub fn send_to(self, spawner: &sync::Arc<crate::task::Spawner>) {
+	pub fn send_to(self, spawner: &sync::Arc<crate::task::Sender>) {
 		spawner.spawn(self)
 	}
 

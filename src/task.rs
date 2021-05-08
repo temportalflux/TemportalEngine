@@ -7,16 +7,6 @@ use std::sync::{
 	Arc, Mutex,
 };
 
-pub fn create_system() -> (Arc<Spawner>, Arc<Watcher>) {
-	let (sender, receiver) = mpsc::sync_channel(10_000);
-	(
-		Arc::new(Spawner { sender }),
-		Arc::new(Watcher {
-			task_channel: receiver,
-		}),
-	)
-}
-
 struct Task {
 	future: Mutex<Option<BoxFuture<'static, ()>>>,
 	sender: SyncSender<Arc<Task>>,
@@ -29,11 +19,28 @@ impl task::ArcWake for Task {
 	}
 }
 
-pub struct Spawner {
-	sender: SyncSender<Arc<Task>>,
+pub struct Watcher(Receiver<Arc<Task>>);
+pub struct Sender(SyncSender<Arc<Task>>);
+static mut WATCHER: std::mem::MaybeUninit<Watcher> = std::mem::MaybeUninit::uninit();
+static mut SENDER: std::mem::MaybeUninit<Arc<Sender>> = std::mem::MaybeUninit::uninit();
+
+pub fn initialize_system() -> &'static Watcher {
+	static mut ONCE: std::sync::Once = std::sync::Once::new();
+	unsafe {
+		ONCE.call_once(|| {
+			let (sender, receiver) = mpsc::sync_channel(10_000);
+			WATCHER.as_mut_ptr().write(Watcher(receiver));
+			SENDER.as_mut_ptr().write(Arc::new(Sender(sender)));
+		});
+	}
+	unsafe { &*WATCHER.as_ptr() }
 }
 
-impl Spawner {
+pub fn sender() -> &'static Arc<Sender> {
+	unsafe { &*SENDER.as_ptr() }
+}
+
+impl Sender {
 	pub fn spawn<T>(&self, future: T)
 	where
 		T: Future<Output = ()> + 'static + Send,
@@ -41,16 +48,12 @@ impl Spawner {
 		let future = future.boxed();
 		let task = Arc::new(Task {
 			future: Mutex::new(Some(future)),
-			sender: self.sender.clone(),
+			sender: self.0.clone(),
 		});
-		if let Err(e) = self.sender.try_send(task) {
+		if let Err(e) = self.0.try_send(task) {
 			log::error!("Failed to spawn task: {:?}", e);
 		}
 	}
-}
-
-pub struct Watcher {
-	task_channel: Receiver<Arc<Task>>,
 }
 
 impl Watcher {
@@ -63,7 +66,7 @@ impl Watcher {
 	pub fn poll(&self) -> bool {
 		'poll_next_task: loop {
 			// Consume the next task in the channel
-			match self.task_channel.try_recv() {
+			match self.0.try_recv() {
 				Ok(task) => {
 					let mut slot = task.future.lock().unwrap();
 					if let Some(mut future) = slot.take() {

@@ -81,7 +81,6 @@ pub struct RenderChain {
 
 	frame_count: usize,
 
-	task_spawner: sync::Arc<crate::task::Spawner>,
 	persistent_descriptor_pool: sync::Arc<sync::RwLock<graphics::descriptor::pool::Pool>>,
 	surface: sync::Weak<Surface>,
 	graphics_queue: sync::Arc<logical::Queue>,
@@ -99,7 +98,6 @@ impl RenderChain {
 		surface: &sync::Arc<Surface>,
 		frame_count: usize,
 		render_pass_info: renderpass::Info,
-		task_spawner: sync::Arc<crate::task::Spawner>,
 	) -> utility::Result<RenderChain> {
 		let swapchain_info = swapchain::Info::default()
 			.set_image_count(frame_count as u32)
@@ -131,7 +129,6 @@ impl RenderChain {
 			graphics_queue: sync::Arc::new(graphics_queue),
 			surface: sync::Arc::downgrade(surface),
 			frame_count,
-			task_spawner,
 
 			persistent_descriptor_pool,
 
@@ -161,10 +158,6 @@ impl RenderChain {
 			pending_render_chain_elements: Vec::new(),
 			initialized_render_chain_elements: Vec::new(),
 		})
-	}
-
-	pub fn task_spawner(&self) -> &Arc<crate::task::Spawner> {
-		&self.task_spawner
 	}
 
 	pub fn physical(&self) -> sync::Arc<physical::Device> {
