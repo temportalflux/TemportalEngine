@@ -35,7 +35,6 @@ pub struct Engine {
 }
 
 pub struct EngineAssets {
-	pub types: asset::TypeRegistry,
 	pub library: asset::Library,
 	pub loader: asset::Loader,
 }
@@ -50,19 +49,21 @@ impl Engine {
 	pub fn new() -> Result<Rc<RefCell<Engine>>, AnyError> {
 		let app_info = AppInfo::new().engine("TemportalEngine", utility::make_version(0, 1, 0));
 		log::info!(target: app_info.engine_name(), "Initializing engine v{}", app_info.engine_version());
-		let mut engine = Engine {
+		let engine = Engine {
 			app_info,
 
 			assets: EngineAssets {
-				types: asset::TypeRegistry::new(),
 				library: asset::Library::new(),
 				loader: asset::Loader::new(),
 			},
 		};
 
-		engine.assets.types.register::<graphics::Shader>();
-		engine.assets.types.register::<graphics::font::Font>();
-		engine.assets.types.register::<graphics::Texture>();
+		{
+			let mut locked = asset::TypeRegistry::get().write().unwrap();
+			locked.register::<graphics::Shader>();
+			locked.register::<graphics::font::Font>();
+			locked.register::<graphics::Texture>();
+		}
 
 		Ok(Rc::new(RefCell::new(engine)))
 	}

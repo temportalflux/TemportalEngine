@@ -15,5 +15,5 @@ pub use library::*;
 mod loader;
 pub use loader::*;
 
-mod registry;
-pub use registry::*;
+mod types;
+pub use types::*;

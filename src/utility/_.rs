@@ -12,3 +12,5 @@ impl<T: 'static> AToAny for T {
 		self
 	}
 }
+
+pub mod singleton;

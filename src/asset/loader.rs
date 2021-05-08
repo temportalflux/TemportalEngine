@@ -18,23 +18,18 @@ impl Loader {
 		Loader {}
 	}
 
-	pub fn decompile(
-		&self,
-		registry: &asset::TypeRegistry,
-		bin_path: &PathBuf,
-	) -> asset::AssetResult {
+	pub fn decompile(&self, bin_path: &PathBuf) -> asset::AssetResult {
 		let bytes = std::fs::read(&bin_path)?;
 		let generic: AssetGeneric = rmp_serde::from_read_ref(&bytes)?;
 		let type_id = generic.asset_type;
-		registry
-			.get(type_id.as_str())
+		asset::TypeRegistry::read()
+			.at(type_id.as_str())
 			.ok_or(asset::Error::UnregisteredAssetType(type_id.to_string()))?
 			.decompile(&bytes)
 	}
 
 	pub fn load_sync(
 		&self,
-		registry: &asset::TypeRegistry,
 		library: &asset::Library,
 		id: &asset::Id,
 	) -> Result<asset::AnyBox, utility::AnyError> {
@@ -52,8 +47,8 @@ impl Loader {
 
 		let generic: AssetGeneric = rmp_serde::from_read_ref(&bytes)?;
 		let type_id = generic.asset_type;
-		registry
-			.get(type_id.as_str())
+		asset::TypeRegistry::read()
+			.at(type_id.as_str())
 			.ok_or(asset::Error::UnregisteredAssetType(type_id.to_string()))?
 			.decompile(&bytes)
 	}
