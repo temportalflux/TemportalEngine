@@ -23,7 +23,7 @@ zip = "0.5"
 physx = "0.11"
 optick = "1.3"
 specs = { version = "0.16", features = ["shred-derive"] }
-raui = { version = "0.34", features = ["material", "tesselate"] }
+raui = { version = ">=0.34", features = ["material", "tesselate"] }
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
