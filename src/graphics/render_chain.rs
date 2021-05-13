@@ -395,7 +395,7 @@ impl RenderChain {
 			&self.frame_buffers[buffer_index],
 			self.render_pass.as_ref().unwrap(),
 			self.render_pass_instruction.clone(),
-			false
+			false,
 		);
 
 		self.command_recorders
