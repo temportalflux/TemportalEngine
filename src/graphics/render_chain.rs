@@ -39,14 +39,15 @@ pub trait RenderChainElement: Send + Sync {
 /// An object which records commands to one or more command buffers,
 /// notably when the render-chain is reconstructed.
 pub trait CommandRecorder: Send + Sync {
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
-	fn update_pre_submit(
+	fn prerecord_update(
 		&mut self,
+		_buffer: &command::Buffer,
 		_frame: usize,
 		_resolution: &Vector<u32, 2>,
 	) -> utility::Result<bool> {
 		Ok(false)
 	}
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
@@ -111,8 +112,11 @@ impl RenderChain {
 		let render_pass_instruction = renderpass::RecordInstruction::default();
 		let resolution = physical.query_surface_support().image_extent();
 
-		let transient_command_pool =
-			sync::Arc::new(command::Pool::create(&logical, graphics_queue.index())?);
+		let transient_command_pool = sync::Arc::new(command::Pool::create(
+			&logical,
+			graphics_queue.index(),
+			Some(flags::CommandPoolCreate::TRANSIENT),
+		)?);
 
 		let persistent_descriptor_pool = sync::Arc::new(sync::RwLock::new(
 			graphics::descriptor::Pool::builder()
@@ -253,11 +257,10 @@ impl RenderChain {
 		self.frame_command_pool = Some(command::Pool::create(
 			&logical,
 			self.graphics_queue.index(),
+			Some(flags::CommandPoolCreate::RESET_COMMAND_BUFFER),
 		)?);
 		self.command_buffers = self
-			.frame_command_pool
-			.as_ref()
-			.unwrap()
+			.frame_command_pool()
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
 		self.render_pass = Some(self.render_pass_info.create_object(&logical)?);
@@ -319,6 +322,10 @@ impl RenderChain {
 
 	fn swapchain(&self) -> &swapchain::Swapchain {
 		self.swapchain.as_ref().unwrap()
+	}
+
+	pub fn frame_command_pool(&self) -> &command::Pool {
+		self.frame_command_pool.as_ref().unwrap()
 	}
 
 	fn create_image_views(
@@ -383,11 +390,12 @@ impl RenderChain {
 
 	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
 		optick::event!();
-		self.command_buffers[buffer_index].begin(None)?;
+		self.command_buffers[buffer_index].begin(None, None)?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
-			self.render_pass(),
+			self.render_pass.as_ref().unwrap(),
 			self.render_pass_instruction.clone(),
+			false
 		);
 
 		self.command_recorders
@@ -502,7 +510,11 @@ impl RenderChain {
 			for recorder in self.command_recorders.iter() {
 				let arc = recorder.upgrade().unwrap();
 				let mut locked = arc.write().unwrap();
-				if locked.update_pre_submit(next_image_idx, &self.resolution)? {
+				if locked.prerecord_update(
+					&self.command_buffers[next_image_idx],
+					next_image_idx,
+					&self.resolution,
+				)? {
 					self.frame_command_buffer_requires_recording[next_image_idx] = true;
 				}
 			}

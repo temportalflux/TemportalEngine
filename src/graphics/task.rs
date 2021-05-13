@@ -66,7 +66,7 @@ impl TaskCopyImageToGpu {
 	pub fn begin(self) -> utility::Result<Self> {
 		optick::event!();
 		self.cmd()
-			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT))?;
+			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
 	}
 
