@@ -37,6 +37,7 @@ impl Engine {
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut systems: Vec<_> = self.systems.drain(..).collect();
 		self.event_loop.run(move |event, _, control_flow| {
+			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
 			match event {
 				winit::event::Event::WindowEvent {
@@ -46,6 +47,7 @@ impl Engine {
 					*control_flow = winit::event_loop::ControlFlow::Exit;
 				}
 				Event::MainEventsCleared => {
+					profiling::scope!("update");
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
 					let delta_time = frame_time - prev_frame_time;

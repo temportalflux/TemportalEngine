@@ -46,6 +46,7 @@ impl System {
 		})
 	}
 
+	#[profiling::function]
 	fn tesselate(&self, coord_mapping: &CoordsMapping) -> Option<Tesselation> {
 		let mut renderer = TesselateRenderer::with_capacity(
 			TesselationVerticesFormat::Interleaved,
@@ -62,6 +63,7 @@ impl System {
 }
 
 impl EngineSystem for System {
+	#[profiling::function]
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
 
@@ -98,6 +100,7 @@ impl EngineSystem for System {
 
 impl System {
 
+	#[profiling::function]
 	fn write_mesh(&mut self, tesselation: &Tesselation) {
 		let _vertices = tesselation.vertices.as_interleaved().unwrap();
 		let _indices = &tesselation.indices;
@@ -107,6 +110,7 @@ impl System {
 }
 
 impl graphics::RenderChainElement for System {
+	#[profiling::function]
 	fn initialize_with(
 		&mut self,
 		_render_chain: &mut graphics::RenderChain,
@@ -114,10 +118,12 @@ impl graphics::RenderChainElement for System {
 		Ok(Vec::new())
 	}
 
+	#[profiling::function]
 	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
 		Ok(())
 	}
 
+	#[profiling::function]
 	fn on_render_chain_constructed(
 		&mut self,
 		_render_chain: &graphics::RenderChain,
@@ -134,6 +140,7 @@ impl graphics::RenderChainElement for System {
 impl graphics::CommandRecorder for System {
 	/// Update the data (like uniforms) for a given frame -
 	/// Or in the case of the UI Render, record changes to the secondary command buffer.
+	#[profiling::function]
 	fn prerecord_update(
 		&mut self,
 		_buffer: &command::Buffer,
@@ -144,6 +151,7 @@ impl graphics::CommandRecorder for System {
 	}
 
 	/// Record to the primary command buffer for a given frame
+	#[profiling::function]
 	fn record_to_buffer(
 		&self,
 		_buffer: &mut command::Buffer,
