@@ -1,35 +1,64 @@
 use crate::{
+	asset,
 	graphics::{
 		self, buffer, command, flags,
 		font::{Font, Glyph},
-		image_view, sampler,
+		image_view, pipeline, sampler, shader,
 	},
 	math::Vector,
-	task, utility,
+	task,
+	utility::{self, VoidResult},
 };
 pub use raui::prelude::*;
 use std::{collections::HashMap, sync};
 
-pub type FontId = String;
-pub type UnicodeId = u32;
-pub type FontGlyphMap = HashMap<UnicodeId, Glyph>;
-pub struct PendingFontAtlas {
+type FontId = String;
+type UnicodeId = u32;
+type FontGlyphMap = HashMap<UnicodeId, Glyph>;
+struct PendingFontAtlas {
 	size: Vector<usize, 2>,
 	binary: Vec<u8>,
 	format: flags::Format,
 	glyph_map: FontGlyphMap,
 }
-pub struct LoadedFont {
+struct LoadedFont {
 	glyph_map: FontGlyphMap,
 	view: sync::Arc<image_view::View>,
 	//vertex_buffer: sync::Arc<buffer::Buffer>,
 	//index_buffer: sync::Arc<buffer::Buffer>,
 }
 
+struct Vertex {
+	pos_and_width_edge: Vector<f32, 4>,
+	tex_coord: Vector<f32, 4>,
+	color: Vector<f32, 4>,
+}
+
+impl pipeline::vertex::Object for Vertex {
+	fn attributes() -> Vec<pipeline::vertex::Attribute> {
+		vec![
+			pipeline::vertex::Attribute {
+				offset: graphics::utility::offset_of!(Vertex, pos_and_width_edge),
+				format: flags::Format::R32G32B32A32_SFLOAT,
+			},
+			pipeline::vertex::Attribute {
+				offset: graphics::utility::offset_of!(Vertex, tex_coord),
+				format: flags::Format::R32G32_SFLOAT,
+			},
+			pipeline::vertex::Attribute {
+				offset: graphics::utility::offset_of!(Vertex, color),
+				format: flags::Format::R32G32B32A32_SFLOAT,
+			},
+		]
+	}
+}
+
 pub struct TextData {
 	pending_font_atlases: HashMap<FontId, PendingFontAtlas>,
 	fonts: HashMap<FontId, LoadedFont>,
 
+	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
+	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
 	sampler: sync::Arc<sampler::Sampler>,
 }
 
@@ -42,9 +71,20 @@ impl TextData {
 					.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
 					.build(&render_chain.logical())?,
 			),
+			pending_shaders: HashMap::new(),
+			shaders: HashMap::new(),
 			fonts: HashMap::new(),
 			pending_font_atlases: HashMap::new(),
 		})
+	}
+
+	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
+		let shader = asset::Loader::load_sync(&id)?
+			.downcast::<graphics::Shader>()
+			.unwrap();
+		self.pending_shaders
+			.insert(shader.kind(), shader.contents().clone());
+		Ok(())
 	}
 
 	pub fn add_pending(&mut self, id: String, font: Box<Font>) {
@@ -61,6 +101,23 @@ impl TextData {
 					.collect(),
 			},
 		);
+	}
+
+	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+		for (kind, binary) in self.pending_shaders.drain() {
+			self.shaders.insert(
+				kind,
+				sync::Arc::new(shader::Module::create(
+					render_chain.logical().clone(),
+					shader::Info {
+						kind: kind,
+						entry_point: String::from("main"),
+						bytes: binary,
+					},
+				)?),
+			);
+		}
+		Ok(())
 	}
 
 	pub fn create_pending_font_atlases(

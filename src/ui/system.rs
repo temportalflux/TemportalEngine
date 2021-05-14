@@ -66,6 +66,10 @@ impl System {
 }
 
 impl System {
+	pub fn add_text_shader(&mut self, id: &asset::Id) -> VoidResult {
+		self.text.add_shader(id)
+	}
+
 	pub fn add_font(&mut self, font_asset_id: &asset::Id) -> VoidResult {
 		self.text.add_pending(
 			font_asset_id.file_name(),
@@ -99,7 +103,7 @@ impl EngineSystem for System {
 					}
 					Batch::ExternalText(_widget_id, text) => {
 						// TODO: Handle `text.matrix` https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
-						log::debug!("{:?}", text);
+						//log::debug!("{:?}", text);
 					}
 					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
 					Batch::ClipPush(_clip) => {}
@@ -125,6 +129,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
 		Ok(self.take_gpu_signals())

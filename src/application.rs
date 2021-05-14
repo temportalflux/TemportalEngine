@@ -11,4 +11,8 @@ pub trait Application {
 
 	/// Returns a packed version integer by converting `std::env!("CARGO_PKG_VERSION")` using `utility::make_version`.
 	fn version() -> u32;
+
+	fn get_asset_id(path: &str) -> crate::asset::Id {
+		crate::asset::Id::new(Self::name(), path)
+	}
 }
