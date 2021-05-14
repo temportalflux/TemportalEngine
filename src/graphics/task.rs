@@ -63,15 +63,15 @@ impl TaskCopyImageToGpu {
 		self.command_buffer.as_ref().unwrap()
 	}
 
+	#[profiling::function]
 	pub fn begin(self) -> utility::Result<Self> {
-		optick::event!();
 		self.cmd()
 			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
 	}
 
+	#[profiling::function]
 	pub fn end(self) -> utility::Result<Self> {
-		optick::event!();
 		self.cmd().end()?;
 
 		self.queue.submit(
@@ -106,15 +106,15 @@ impl TaskCopyImageToGpu {
 		self.gpu_signal_on_complete.clone()
 	}
 
+	#[profiling::function]
 	pub fn wait_until_idle(self) -> utility::Result<()> {
-		optick::event!();
 		Ok(self
 			.device
 			.wait_for(&self.cpu_signal_on_complete, u64::MAX)?)
 	}
 
+	#[profiling::function]
 	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {
-		optick::event!();
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
 			src_stage: flags::PipelineStage::TOP_OF_PIPE,
 			dst_stage: flags::PipelineStage::TRANSFER,
@@ -134,8 +134,8 @@ impl TaskCopyImageToGpu {
 		self
 	}
 
+	#[profiling::function]
 	pub fn format_image_for_read(self, image: &sync::Arc<image::Image>) -> Self {
-		optick::event!();
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
 			src_stage: flags::PipelineStage::TRANSFER,
 			dst_stage: flags::PipelineStage::FRAGMENT_SHADER,
@@ -160,8 +160,8 @@ impl TaskCopyImageToGpu {
 		self.staging_buffer.as_ref().unwrap()
 	}
 
+	#[profiling::function]
 	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
-		optick::event!();
 		let buf_size = data.len() * std::mem::size_of::<T>();
 		let buffer = buffer::Buffer::create_staging(buf_size, &self.allocator)?;
 		{
@@ -175,8 +175,8 @@ impl TaskCopyImageToGpu {
 		Ok(self)
 	}
 
+	#[profiling::function]
 	pub fn copy_stage_to_image(self, image: &sync::Arc<image::Image>) -> Self {
-		optick::event!();
 		self.cmd().copy_buffer_to_image(
 			&self.staging_buffer(),
 			&image,
@@ -191,9 +191,9 @@ impl TaskCopyImageToGpu {
 		self
 	}
 
+	#[profiling::function]
 	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
 		use alloc::Object;
-		optick::event!();
 		self.cmd().copy_buffer_to_buffer(
 			&self.staging_buffer(),
 			&buffer,

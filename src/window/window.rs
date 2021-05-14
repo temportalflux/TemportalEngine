@@ -120,11 +120,11 @@ impl Window {
 		}
 	}
 
+	#[profiling::function]
 	pub fn create_render_chain(
 		&mut self,
 		render_pass_info: renderpass::Info,
 	) -> Result<sync::Arc<sync::RwLock<graphics::RenderChain>>, utility::AnyError> {
-		optick::event!();
 		let permitted_frame_count = self
 			.physical_device
 			.query_surface_support()

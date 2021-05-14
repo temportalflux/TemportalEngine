@@ -54,8 +54,8 @@ impl Builder {
 		self
 	}
 
+	#[profiling::function]
 	pub fn build(self, engine: &Engine) -> Result<window::Window, utility::AnyError> {
-		optick::event!();
 		log::info!(
 			target: window::LOG,
 			"Creating window \"{}\" with size {}",

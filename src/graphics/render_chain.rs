@@ -223,11 +223,11 @@ impl RenderChain {
 		Ok(())
 	}
 
+	#[profiling::function]
 	pub fn construct_render_chain(
 		&mut self,
 		resolution: structs::Extent2D,
 	) -> Result<(), AnyError> {
-		optick::event!();
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
 		self.render_finished_semaphores.clear();
@@ -388,8 +388,8 @@ impl RenderChain {
 		Ok(vec)
 	}
 
+	#[profiling::function]
 	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
-		optick::event!();
 		self.command_buffers[buffer_index].begin(None, None)?;
 		self.command_buffers[buffer_index].start_render_pass(
 			&self.frame_buffers[buffer_index],
@@ -412,8 +412,8 @@ impl RenderChain {
 		Ok(())
 	}
 
+	#[profiling::function]
 	pub fn render_frame(&mut self) -> Result<(), AnyError> {
-		optick::next_frame();
 		let logical = self.logical.upgrade().unwrap();
 
 		let mut required_semaphores = Vec::new();
@@ -570,6 +570,7 @@ impl RenderChain {
 
 		self.current_frame =
 			(self.current_frame + 1) % RenderChain::max_frames_in_flight(self.frame_count);
+		profiling::finish_frame!();
 		Ok(())
 	}
 }

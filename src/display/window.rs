@@ -59,8 +59,8 @@ impl WindowBuilder {
 		self
 	}
 
+	#[profiling::function]
 	pub fn build(self, display: &mut display::Manager) -> Result<Window, utility::AnyError> {
-		optick::event!();
 		log::info!(
 			target: display::LOG,
 			"Creating window \"{}\" ({}x{})",
@@ -181,11 +181,11 @@ impl Window {
 		}
 	}
 
+	#[profiling::function]
 	pub fn create_render_chain(
 		&self,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<sync::Arc<sync::RwLock<graphics::RenderChain>>> {
-		optick::event!();
 		let permitted_frame_count = self
 			.physical_device
 			.query_surface_support()

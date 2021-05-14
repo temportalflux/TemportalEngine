@@ -5,8 +5,8 @@ pub fn init<T: Application>() -> VoidResult {
 	init_named(T::name())
 }
 
+#[profiling::function]
 pub fn init_named(log_name: &str) -> VoidResult {
-	optick::event!();
 	use simplelog::*;
 	let mut log_path = std::env::current_dir()?.to_path_buf();
 	log_path.push(format!("{}.log", log_name));
