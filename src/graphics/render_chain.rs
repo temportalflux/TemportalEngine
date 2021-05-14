@@ -27,6 +27,10 @@ pub trait RenderChainElement: Send + Sync {
 		resolution: structs::Extent2D,
 	) -> utility::Result<()>;
 
+	fn preframe_update(&mut self, render_chain: &RenderChain) -> utility::Result<()> {
+		Ok(())
+	}
+
 	/// Returns a list of gpu semaphores that need to be completed/signaled before the next frame can be submitted.
 	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
 		Vec::new()
@@ -449,6 +453,7 @@ impl RenderChain {
 		for element in self.initialized_render_chain_elements.iter() {
 			let rc = element.upgrade().unwrap();
 			let mut locked = rc.write().unwrap();
+			locked.preframe_update(self)?;
 			let mut found_semaphores = locked.take_gpu_signals();
 			required_semaphores.append(&mut found_semaphores);
 		}

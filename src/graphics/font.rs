@@ -31,9 +31,9 @@ impl std::fmt::Debug for SDF {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Glyph {
 	pub unicode: u32,
-	// The position of the glyph in the atlas texture.
+	// The position (in pixels) of the glyph in the atlas texture.
 	pub atlas_pos: Vector<usize, 2>,
-	// The size of the glyph in the atlas texture.
+	// The size (in pixels) of the glyph in the atlas texture.
 	pub atlas_size: Vector<usize, 2>,
 	// The size of the glyph in metrics.
 	pub metric_size: Vector<usize, 2>,

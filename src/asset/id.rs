@@ -12,6 +12,15 @@ impl Id {
 			asset_path: std::path::PathBuf::from(asset_path),
 		}
 	}
+
+	pub fn file_name(&self) -> String {
+		self.asset_path
+			.file_name()
+			.unwrap()
+			.to_str()
+			.unwrap()
+			.to_owned()
+	}
 }
 
 impl PartialEq for Id {
