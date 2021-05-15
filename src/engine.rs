@@ -60,7 +60,12 @@ impl Engine {
 				Event::RedrawRequested(_) => {}
 				Event::LoopDestroyed => {
 					task::watcher().poll_until_empty();
-					render_chain.read().unwrap().logical().wait_until_idle().unwrap();
+					render_chain
+						.read()
+						.unwrap()
+						.logical()
+						.wait_until_idle()
+						.unwrap();
 				}
 				_ => {}
 			}

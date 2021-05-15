@@ -243,5 +243,4 @@ impl DataPipeline {
 		buffer.draw(*widget.index_count(), 0, 1, 0, 0);
 		Ok(())
 	}
-
 }

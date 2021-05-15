@@ -10,6 +10,8 @@ pub use raui::prelude::*;
 use std::{collections::HashMap, sync};
 
 pub struct System {
+	draw_calls: Vec<DrawCall>,
+
 	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
 	atlas_mapping: HashMap<String, (String, Rect)>,
 	image_sizes: HashMap<String, Vec2>,
@@ -19,6 +21,10 @@ pub struct System {
 
 	resolution: Vector<u32, 2>,
 	application: Application,
+}
+
+enum DrawCall {
+	Text(WidgetId),
 }
 
 impl System {
@@ -33,6 +39,7 @@ impl System {
 			atlas_mapping: HashMap::new(),
 			image_sizes: HashMap::new(),
 			pending_gpu_signals: Vec::new(),
+			draw_calls: Vec::new(),
 		})
 	}
 
@@ -164,6 +171,7 @@ impl graphics::CommandRecorder for System {
 		// Drain the existing widgets
 		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
 			self.text_widgets[frame].drain().collect();
+		self.draw_calls = Vec::new();
 		if let Some(tesselation) = self.tesselate(&mapping) {
 			self.write_mesh(&tesselation);
 
@@ -185,6 +193,7 @@ impl graphics::CommandRecorder for System {
 						)?;
 						self.text_widgets[frame].insert(widget_id.clone(), widget_data);
 						self.pending_gpu_signals.append(&mut gpu_signals);
+						self.draw_calls.push(DrawCall::Text(widget_id));
 					}
 					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
 					Batch::ClipPush(_clip) => {}
@@ -198,13 +207,13 @@ impl graphics::CommandRecorder for System {
 
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
-	fn record_to_buffer(
-		&self,
-		buffer: &mut command::Buffer,
-		frame: usize,
-	) -> utility::Result<()> {
-		for (_, widget) in self.text_widgets[frame].iter() {
-			self.text.record_to_buffer(buffer, widget)?;
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
+		for call in self.draw_calls.iter() {
+			match call {
+				DrawCall::Text(widget_id) => self
+					.text
+					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?,
+			}
 		}
 		Ok(())
 	}

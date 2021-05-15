@@ -178,14 +178,17 @@ impl WidgetData {
 			let glyph = font.get(unicode).unwrap_or(unknown_glyph);
 			let glyph_metrics = glyph.metrics * self.font_size * dpi;
 			let bearing = vector![glyph_metrics.bearing.x(), -glyph_metrics.bearing.y()];
-			let glyph_pos_in_atlas = Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
-			let glyph_size_in_atlas = Vector::new([glyph.atlas_size.x() as f32, glyph.atlas_size.y() as f32]);
+			let glyph_pos_in_atlas =
+				Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
+			let glyph_size_in_atlas =
+				Vector::new([glyph.atlas_size.x() as f32, glyph.atlas_size.y() as f32]);
 
 			let mut push_glyph_vert = |mask: Vector<f32, 2>| -> u32 {
 				let mut pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
 				pos *= 2.0;
 				pos -= 1.0;
-				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size()).subvec::<4>(None);
+				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size())
+					.subvec::<4>(None);
 				push_vertex(Vertex {
 					pos_and_width_edge: vector![pos.x(), pos.y(), 0.6, 0.2],
 					tex_coord,
@@ -215,5 +218,4 @@ impl WidgetData {
 		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
 	}
-
 }
