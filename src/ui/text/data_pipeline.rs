@@ -217,4 +217,31 @@ impl DataPipeline {
 
 		Ok(())
 	}
+
+	#[profiling::function]
+	pub fn record_to_buffer(
+		&self,
+		buffer: &mut command::Buffer,
+		widget: &text::WidgetData,
+	) -> utility::Result<()> {
+		let font_data = self
+			.fonts
+			.get(widget.font_id())
+			.ok_or(ui::Error::InvalidFont(widget.font_id().clone()))?;
+
+		buffer.bind_pipeline(
+			&self.pipeline.as_ref().unwrap(),
+			flags::PipelineBindPoint::GRAPHICS,
+		);
+		buffer.bind_descriptors(
+			flags::PipelineBindPoint::GRAPHICS,
+			self.pipeline_layout.as_ref().unwrap(),
+			0,
+			vec![&font_data.descriptor_set.upgrade().unwrap()],
+		);
+		widget.bind_buffers(buffer);
+		buffer.draw(*widget.index_count(), 0, 1, 0, 0);
+		Ok(())
+	}
+
 }

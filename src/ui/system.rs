@@ -200,9 +200,12 @@ impl graphics::CommandRecorder for System {
 	#[profiling::function]
 	fn record_to_buffer(
 		&self,
-		_buffer: &mut command::Buffer,
-		_frame: usize,
+		buffer: &mut command::Buffer,
+		frame: usize,
 	) -> utility::Result<()> {
+		for (_, widget) in self.text_widgets[frame].iter() {
+			self.text.record_to_buffer(buffer, widget)?;
+		}
 		Ok(())
 	}
 }

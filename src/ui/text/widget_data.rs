@@ -14,7 +14,7 @@ pub struct WidgetData {
 	font_id: font::Id,
 	font_size: f32,
 	color: Vector<f32, 4>,
-
+	index_count: usize,
 	index_buffer: sync::Arc<buffer::Buffer>,
 	vertex_buffer: sync::Arc<buffer::Buffer>,
 }
@@ -39,7 +39,16 @@ impl WidgetData {
 				&text.text,
 				render_chain,
 			)?,
+			index_count: 0,
 		})
+	}
+
+	pub fn font_id(&self) -> &font::Id {
+		&self.font_id
+	}
+
+	pub fn index_count(&self) -> &usize {
+		&self.index_count
 	}
 
 	fn vertex_buffer_size_for(content: &String) -> usize {
@@ -47,7 +56,7 @@ impl WidgetData {
 	}
 
 	fn index_buffer_size_for(content: &String) -> usize {
-		std::mem::size_of::<u16>() * content.len() * 6
+		std::mem::size_of::<u32>() * content.len() * 6
 	}
 
 	fn allocate_buffer(
@@ -115,6 +124,7 @@ impl WidgetData {
 		let mut gpu_signals = Vec::with_capacity(2);
 		let (vertices, indices) =
 			self.build_buffer_data(Matrix::from_column_major(&text.matrix), font, resolution);
+		self.index_count = indices.len();
 
 		graphics::TaskCopyImageToGpu::new(&render_chain)?
 			.begin()?
@@ -140,7 +150,7 @@ impl WidgetData {
 		matrix: Matrix<f32, 4, 4>,
 		font: &font::Loaded,
 		resolution: &Vector<u32, 2>,
-	) -> (Vec<Vertex>, Vec<u16>) {
+	) -> (Vec<Vertex>, Vec<u32>) {
 		let resolution: Vector<f32, 2> = vector![resolution.x() as f32, resolution.y() as f32];
 		// DPI is always 1.0 because winit handles the scale factor https://docs.rs/winit/0.24.0/winit/dpi/index.html
 		let dpi = 1_f32;
@@ -155,7 +165,7 @@ impl WidgetData {
 		let mut push_vertex = |vertex: Vertex| {
 			let index = vertices.len();
 			vertices.push(vertex);
-			index as u16
+			index as u32
 		};
 
 		// The position of the cursor on screen in pixels.
@@ -168,11 +178,14 @@ impl WidgetData {
 			let glyph = font.get(unicode).unwrap_or(unknown_glyph);
 			let glyph_metrics = glyph.metrics * self.font_size * dpi;
 			let bearing = vector![glyph_metrics.bearing.x(), -glyph_metrics.bearing.y()];
-			let atlas_pos = Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
+			let glyph_pos_in_atlas = Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
+			let glyph_size_in_atlas = Vector::new([glyph.atlas_size.x() as f32, glyph.atlas_size.y() as f32]);
 
 			let make_glyph_vert = |mask: Vector<f32, 2>| -> Vertex {
-				let pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
-				let tex_coord = ((atlas_pos * mask) / font.size()).subvec::<4>(None);
+				let mut pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
+				pos *= 2.0;
+				pos -= 1.0;
+				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size()).subvec::<4>(None);
 				Vertex {
 					pos_and_width_edge: vector![pos.x(), pos.y(), 0.5, 0.1],
 					tex_coord,
@@ -180,19 +193,27 @@ impl WidgetData {
 				}
 			};
 
-			let tl = push_vertex(make_glyph_vert(vector![0.0, 0.0]));
-			let tr = push_vertex(make_glyph_vert(vector![1.0, 0.0]));
-			let bl = push_vertex(make_glyph_vert(vector![0.0, 1.0]));
-			let br = push_vertex(make_glyph_vert(vector![1.0, 1.0]));
-			indices.push(tl);
-			indices.push(tr);
-			indices.push(br);
-			indices.push(br);
-			indices.push(bl);
-			indices.push(tl);
+			if unicode != ' ' {
+				let tl = push_vertex(make_glyph_vert(vector![0.0, 0.0]));
+				let tr = push_vertex(make_glyph_vert(vector![1.0, 0.0]));
+				let bl = push_vertex(make_glyph_vert(vector![0.0, 1.0]));
+				let br = push_vertex(make_glyph_vert(vector![1.0, 1.0]));
+				indices.push(tl);
+				indices.push(tr);
+				indices.push(br);
+				indices.push(br);
+				indices.push(bl);
+				indices.push(tl);
+			}
 
 			*cursor_pos.x_mut() += glyph_metrics.advance;
 		}
 		(vertices, indices)
 	}
+
+	pub fn bind_buffers(&self, buffer: &mut command::Buffer) {
+		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
+		buffer.bind_index_buffer(&self.index_buffer, 0);
+	}
+
 }
