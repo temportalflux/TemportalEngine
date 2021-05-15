@@ -181,23 +181,23 @@ impl WidgetData {
 			let glyph_pos_in_atlas = Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
 			let glyph_size_in_atlas = Vector::new([glyph.atlas_size.x() as f32, glyph.atlas_size.y() as f32]);
 
-			let make_glyph_vert = |mask: Vector<f32, 2>| -> Vertex {
+			let mut push_glyph_vert = |mask: Vector<f32, 2>| -> u32 {
 				let mut pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
 				pos *= 2.0;
 				pos -= 1.0;
 				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size()).subvec::<4>(None);
-				Vertex {
-					pos_and_width_edge: vector![pos.x(), pos.y(), 0.5, 0.1],
+				push_vertex(Vertex {
+					pos_and_width_edge: vector![pos.x(), pos.y(), 0.6, 0.2],
 					tex_coord,
 					color: self.color,
-				}
+				})
 			};
 
 			if unicode != ' ' {
-				let tl = push_vertex(make_glyph_vert(vector![0.0, 0.0]));
-				let tr = push_vertex(make_glyph_vert(vector![1.0, 0.0]));
-				let bl = push_vertex(make_glyph_vert(vector![0.0, 1.0]));
-				let br = push_vertex(make_glyph_vert(vector![1.0, 1.0]));
+				let tl = push_glyph_vert(vector![0.0, 0.0]);
+				let tr = push_glyph_vert(vector![1.0, 0.0]);
+				let bl = push_glyph_vert(vector![0.0, 1.0]);
+				let br = push_glyph_vert(vector![1.0, 1.0]);
 				indices.push(tl);
 				indices.push(tr);
 				indices.push(br);
