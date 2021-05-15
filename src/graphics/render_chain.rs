@@ -27,7 +27,7 @@ pub trait RenderChainElement: Send + Sync {
 		resolution: structs::Extent2D,
 	) -> utility::Result<()>;
 
-	fn preframe_update(&mut self, render_chain: &RenderChain) -> utility::Result<()> {
+	fn preframe_update(&mut self, _render_chain: &RenderChain) -> utility::Result<()> {
 		Ok(())
 	}
 
@@ -45,6 +45,7 @@ pub trait RenderChainElement: Send + Sync {
 pub trait CommandRecorder: Send + Sync {
 	fn prerecord_update(
 		&mut self,
+		_render_chain: &RenderChain,
 		_buffer: &command::Buffer,
 		_frame: usize,
 		_resolution: &Vector<u32, 2>,
@@ -454,8 +455,6 @@ impl RenderChain {
 			let rc = element.upgrade().unwrap();
 			let mut locked = rc.write().unwrap();
 			locked.preframe_update(self)?;
-			let mut found_semaphores = locked.take_gpu_signals();
-			required_semaphores.append(&mut found_semaphores);
 		}
 
 		if self.is_dirty {
@@ -516,6 +515,7 @@ impl RenderChain {
 				let arc = recorder.upgrade().unwrap();
 				let mut locked = arc.write().unwrap();
 				if locked.prerecord_update(
+					&self,
 					&self.command_buffers[next_image_idx],
 					next_image_idx,
 					&self.resolution,
@@ -535,6 +535,13 @@ impl RenderChain {
 
 		// Mark the image as not having been signaled (it is now being used)
 		logical.reset_fences(&[&self.in_flight_fences[self.current_frame]])?;
+
+		for element in self.initialized_render_chain_elements.iter() {
+			let rc = element.upgrade().unwrap();
+			let mut locked = rc.write().unwrap();
+			let mut found_semaphores = locked.take_gpu_signals();
+			required_semaphores.append(&mut found_semaphores);
+		}
 
 		self.graphics_queue.submit(
 			vec![command::SubmitInfo::default()

@@ -106,6 +106,11 @@ impl TaskCopyImageToGpu {
 		self.gpu_signal_on_complete.clone()
 	}
 
+	pub fn add_signal_to(self, signals: &mut Vec<sync::Arc<command::Semaphore>>) -> Self {
+		signals.push(self.gpu_signal_on_complete());
+		self
+	}
+
 	#[profiling::function]
 	pub fn wait_until_idle(self) -> utility::Result<()> {
 		Ok(self

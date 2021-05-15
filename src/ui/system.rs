@@ -113,10 +113,7 @@ impl graphics::RenderChainElement for System {
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
 		self.text_widgets = (0..render_chain.frame_count())
-			.map(|i| {
-				log::debug!("{}", i);
-				HashMap::new()
-			})
+			.map(|i| HashMap::new())
 			.collect();
 		Ok(self.take_gpu_signals())
 	}
@@ -152,6 +149,7 @@ impl graphics::CommandRecorder for System {
 	#[profiling::function]
 	fn prerecord_update(
 		&mut self,
+		render_chain: &graphics::RenderChain,
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector<u32, 2>,
@@ -173,16 +171,14 @@ impl graphics::CommandRecorder for System {
 						// TODO: draw the vertices for range with the texture for texture_id bound
 					}
 					Batch::ExternalText(widget_id, text) => {
-						//log::debug!("{:?} => {:?}", widget_id, text);
-						self.text_widgets[frame].insert(
-							widget_id.clone(),
-							match retained_text_widgets.remove(&widget_id) {
-								None => self.text.create_item(text, resolution)?,
-								Some(widget_data) => {
-									self.text.update_item(widget_data, text, resolution)
-								}
-							},
-						);
+						let (widget_data, mut gpu_signals) = self.text.update_or_create(
+							render_chain,
+							resolution,
+							text,
+							retained_text_widgets.remove(&widget_id),
+						)?;
+						self.text_widgets[frame].insert(widget_id.clone(), widget_data);
+						self.pending_gpu_signals.append(&mut gpu_signals);
 					}
 					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
 					Batch::ClipPush(_clip) => {}

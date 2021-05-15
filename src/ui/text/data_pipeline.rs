@@ -1,10 +1,10 @@
 use crate::{
 	asset,
 	graphics::{self, command, flags, font::Font, sampler, shader},
-	math::{vector, Matrix, Vector},
+	math::Vector,
 	ui::{
 		self,
-		text::{font, Vertex, WidgetData},
+		text::{self, font},
 	},
 	utility::{self, VoidResult},
 };
@@ -81,90 +81,22 @@ impl DataPipeline {
 		Ok(pending_gpu_signals)
 	}
 
-	pub fn create_item(
+	pub fn update_or_create(
 		&self,
-		text: BatchExternalText,
+		render_chain: &graphics::RenderChain,
 		resolution: &Vector<u32, 2>,
-	) -> Result<WidgetData, ui::Error> {
+		text: BatchExternalText,
+		widget: Option<text::WidgetData>,
+	) -> utility::Result<(text::WidgetData, Vec<sync::Arc<command::Semaphore>>)> {
 		let font = self
 			.fonts
 			.get(&text.font)
 			.ok_or(ui::Error::InvalidFont(text.font.clone()))?;
-		let (vertices, indices) = self.build_buffer_data(&text, font, resolution);
-		Ok(WidgetData {})
-	}
-
-	pub fn update_item(
-		&self,
-		widget: WidgetData,
-		text: BatchExternalText,
-		resolution: &Vector<u32, 2>,
-	) -> WidgetData {
-		widget
-	}
-
-	fn build_buffer_data(
-		&self,
-		text: &BatchExternalText,
-		font: &font::Loaded,
-		resolution: &Vector<u32, 2>,
-	) -> (Vec<Vertex>, Vec<u16>) {
-		let resolution: Vector<f32, 2> = vector![resolution.x() as f32, resolution.y() as f32];
-		// DPI is always 1.0 because winit handles the scale factor https://docs.rs/winit/0.24.0/winit/dpi/index.html
-		let dpi = 1_f32;
-
-		let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&text.matrix);
-		let base_pos: Matrix<f32, 1, 4> = Matrix::new([[0.0], [0.0], [0.0], [1.0]]);
-		let screen_pos_pixels = (base_pos * matrix).column_vec(0).subvec::<2>(None);
-
-		let unknown_glyph = font.get('?').unwrap();
-		let mut vertices = Vec::with_capacity(text.text.len() * 4);
-		let mut indices = Vec::with_capacity(text.text.len() * 6);
-
-		let mut push_vertex = |vertex: Vertex| {
-			let index = vertices.len();
-			vertices.push(vertex);
-			index as u16
+		let mut widget = match widget {
+			Some(widget) => widget,
+			None => text::WidgetData::new(&text, render_chain)?,
 		};
-
-		// The position of the cursor on screen in pixels.
-		// The cursor starts at the screen_pos but with an extra bump down
-		// equivalent to the distance between the baseline and the top of the line.
-		let line_height = font.line_height() * text.size * dpi;
-		let mut cursor_pos = screen_pos_pixels + vector![0.0, line_height];
-
-		for unicode in text.text.chars() {
-			let color = vector![text.color.0, text.color.1, text.color.2, text.color.3];
-
-			let glyph = font.get(unicode).unwrap_or(unknown_glyph);
-			let glyph_metrics = glyph.metrics * text.size * dpi;
-			let bearing = vector![glyph_metrics.bearing.x(), -glyph_metrics.bearing.y()];
-			let atlas_pos = Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
-
-			let make_glyph_vert = |mask: Vector<f32, 2>| -> Vertex {
-				let pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
-				let tex_coord = ((atlas_pos * mask) / font.size()).subvec::<4>(None);
-				Vertex {
-					pos_and_width_edge: vector![pos.x(), pos.y(), 0.5, 0.1],
-					tex_coord,
-					color,
-				}
-			};
-
-			let tl = push_vertex(make_glyph_vert(vector![0.0, 0.0]));
-			let tr = push_vertex(make_glyph_vert(vector![1.0, 0.0]));
-			let bl = push_vertex(make_glyph_vert(vector![0.0, 1.0]));
-			let br = push_vertex(make_glyph_vert(vector![1.0, 1.0]));
-			indices.push(tl);
-			indices.push(tr);
-			indices.push(br);
-			indices.push(br);
-			indices.push(bl);
-			indices.push(tl);
-
-			*cursor_pos.x_mut() += glyph_metrics.advance;
-		}
-		(vertices, indices)
+		let signals = widget.write_buffer_data(&text, font, render_chain, resolution)?;
+		Ok((widget, signals))
 	}
-
 }
