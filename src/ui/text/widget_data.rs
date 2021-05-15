@@ -196,7 +196,7 @@ impl WidgetData {
 				})
 			};
 
-			if unicode != ' ' {
+			if !unicode.is_whitespace() {
 				let tl = push_glyph_vert(vector![0.0, 0.0]);
 				let tr = push_glyph_vert(vector![1.0, 0.0]);
 				let bl = push_glyph_vert(vector![0.0, 1.0]);
@@ -209,7 +209,14 @@ impl WidgetData {
 				indices.push(tl);
 			}
 
-			*cursor_pos.x_mut() += glyph_metrics.advance;
+			if unicode == '\n' {
+				*cursor_pos.y_mut() += line_height;
+				*cursor_pos.x_mut() = screen_pos_pixels.x();
+			}
+			else
+			{
+				*cursor_pos.x_mut() += glyph_metrics.advance;
+			}
 		}
 		(vertices, indices)
 	}
