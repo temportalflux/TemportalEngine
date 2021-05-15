@@ -7,6 +7,7 @@ pub enum Error {
 	FailedToFindPhysicalDevice(Option<physical::Constraint>),
 	Graphics(utility::Error),
 	GraphicsBufferWrite(std::io::Error),
+	UI(crate::ui::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -28,6 +29,7 @@ impl std::fmt::Display for Error {
 			},
 			Error::Graphics(ref graphics_error) => graphics_error.fmt(f),
 			Error::GraphicsBufferWrite(ref io_error) => io_error.fmt(f),
+			Error::UI(ref ui_error) => ui_error.fmt(f),
 		}
 	}
 }
@@ -37,6 +39,12 @@ impl std::error::Error for Error {}
 impl From<utility::Error> for Error {
 	fn from(err: utility::Error) -> Error {
 		Error::Graphics(err)
+	}
+}
+
+impl From<crate::ui::Error> for Error {
+	fn from(err: crate::ui::Error) -> Error {
+		Error::UI(err)
 	}
 }
 

@@ -2,7 +2,7 @@ use crate::{
 	asset,
 	graphics::{self, command, font::Font},
 	math::Vector,
-	ui::system_text::*,
+	ui::text,
 	utility::{self, VoidResult},
 	EngineSystem,
 };
@@ -13,7 +13,10 @@ pub struct System {
 	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
 	atlas_mapping: HashMap<String, (String, Rect)>,
 	image_sizes: HashMap<String, Vec2>,
-	text: TextData,
+
+	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
+	text: text::DataPipeline,
+
 	resolution: Vector<u32, 2>,
 	application: Application,
 }
@@ -25,7 +28,8 @@ impl System {
 		Ok(Self {
 			application,
 			resolution: Vector::default(),
-			text: TextData::new(&render_chain)?,
+			text: text::DataPipeline::new(&render_chain)?,
+			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
 			image_sizes: HashMap::new(),
 			pending_gpu_signals: Vec::new(),
@@ -85,32 +89,8 @@ impl EngineSystem for System {
 	#[profiling::function]
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
-
 		self.application.process();
 		let _res = self.application.layout(&mapping, &mut DefaultLayoutEngine);
-
-		if let Some(tesselation) = self.tesselate(&mapping) {
-			self.write_mesh(&tesselation);
-
-			for batch in tesselation.batches {
-				match batch {
-					Batch::None | Batch::FontTriangles(_, _, _) => {}
-					Batch::ColoredTriangles(_range) => {
-						// TODO: range is the first to last values of `tesselation.indices` to draw for this batch
-					}
-					Batch::ImageTriangles(_texture_id, _range) => {
-						// TODO: draw the vertices for range with the texture for texture_id bound
-					}
-					Batch::ExternalText(_widget_id, text) => {
-						// TODO: Handle `text.matrix` https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
-						//log::debug!("{:?}", text);
-					}
-					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
-					Batch::ClipPush(_clip) => {}
-					Batch::ClipPop => {}
-				}
-			}
-		}
 	}
 }
 
@@ -132,6 +112,12 @@ impl graphics::RenderChainElement for System {
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
+		self.text_widgets = (0..render_chain.frame_count())
+			.map(|i| {
+				log::debug!("{}", i);
+				HashMap::new()
+			})
+			.collect();
 		Ok(self.take_gpu_signals())
 	}
 
@@ -167,9 +153,44 @@ impl graphics::CommandRecorder for System {
 	fn prerecord_update(
 		&mut self,
 		_buffer: &command::Buffer,
-		_frame: usize,
-		_resolution: &Vector<u32, 2>,
+		frame: usize,
+		resolution: &Vector<u32, 2>,
 	) -> utility::Result<bool> {
+		let mapping = self.mapping();
+		// Drain the existing widgets
+		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
+			self.text_widgets[frame].drain().collect();
+		if let Some(tesselation) = self.tesselate(&mapping) {
+			self.write_mesh(&tesselation);
+
+			for batch in tesselation.batches {
+				match batch {
+					Batch::None | Batch::FontTriangles(_, _, _) => {}
+					Batch::ColoredTriangles(_range) => {
+						// TODO: range is the first to last values of `tesselation.indices` to draw for this batch
+					}
+					Batch::ImageTriangles(_texture_id, _range) => {
+						// TODO: draw the vertices for range with the texture for texture_id bound
+					}
+					Batch::ExternalText(widget_id, text) => {
+						//log::debug!("{:?} => {:?}", widget_id, text);
+						self.text_widgets[frame].insert(
+							widget_id.clone(),
+							match retained_text_widgets.remove(&widget_id) {
+								None => self.text.create_item(text, resolution)?,
+								Some(widget_data) => {
+									self.text.update_item(widget_data, text, resolution)
+								}
+							},
+						);
+					}
+					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
+					Batch::ClipPush(_clip) => {}
+					Batch::ClipPop => {}
+				}
+			}
+		}
+
 		Ok(true) // the ui uses immediate mode, and therefore requires re-recording every frame
 	}
 

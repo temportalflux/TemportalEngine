@@ -1,4 +1,7 @@
+mod error;
+pub use error::*;
+
 mod system;
 pub use system::*;
 
-pub(crate) mod system_text;
+pub(crate) mod text;
