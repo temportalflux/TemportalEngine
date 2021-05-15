@@ -126,7 +126,7 @@ impl WidgetData {
 			self.build_buffer_data(Matrix::from_column_major(&text.matrix), font, resolution);
 		self.index_count = indices.len();
 
-		graphics::TaskCopyImageToGpu::new(&render_chain)?
+		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
 			.stage(&vertices[..])?
 			.copy_stage_to_buffer(&self.vertex_buffer)
@@ -134,7 +134,7 @@ impl WidgetData {
 			.add_signal_to(&mut gpu_signals)
 			.send_to(task::sender());
 
-		graphics::TaskCopyImageToGpu::new(&render_chain)?
+		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
 			.stage(&indices[..])?
 			.copy_stage_to_buffer(&self.index_buffer)

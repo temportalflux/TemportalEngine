@@ -13,7 +13,7 @@ struct State {
 	waker: Option<std::task::Waker>,
 }
 
-pub struct TaskCopyImageToGpu {
+pub struct TaskGpuCopy {
 	state: sync::Arc<sync::Mutex<State>>,
 	gpu_signal_on_complete: sync::Arc<command::Semaphore>,
 	cpu_signal_on_complete: sync::Arc<command::Fence>,
@@ -26,8 +26,8 @@ pub struct TaskCopyImageToGpu {
 	device: sync::Arc<logical::Device>,
 }
 
-impl TaskCopyImageToGpu {
-	pub fn new(render_chain: &RenderChain) -> utility::Result<TaskCopyImageToGpu> {
+impl TaskGpuCopy {
+	pub fn new(render_chain: &RenderChain) -> utility::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
 
 		let state = sync::Arc::new(sync::Mutex::new(State {
@@ -35,7 +35,7 @@ impl TaskCopyImageToGpu {
 			waker: None,
 		}));
 
-		Ok(TaskCopyImageToGpu {
+		Ok(Self {
 			device: render_chain.logical().clone(),
 			allocator: render_chain.allocator().clone(),
 			queue: render_chain.graphics_queue().clone(),
@@ -212,14 +212,14 @@ impl TaskCopyImageToGpu {
 	}
 }
 
-impl Drop for TaskCopyImageToGpu {
+impl Drop for TaskGpuCopy {
 	fn drop(&mut self) {
 		self.command_pool
 			.free_buffers(vec![self.command_buffer.take().unwrap()]);
 	}
 }
 
-impl Future for TaskCopyImageToGpu {
+impl Future for TaskGpuCopy {
 	type Output = ();
 	fn poll(
 		self: std::pin::Pin<&mut Self>,

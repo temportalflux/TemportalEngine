@@ -49,7 +49,7 @@ impl PendingAtlas {
 		self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
-		use graphics::{alloc, image, structs::subresource, TaskCopyImageToGpu};
+		use graphics::{alloc, image, structs::subresource, TaskGpuCopy};
 		let mut signals = Vec::new();
 
 		let image_size = self.size.subvec::<3>(None).with_z(1);
@@ -67,7 +67,7 @@ impl PendingAtlas {
 				.build(&render_chain.allocator())?,
 		);
 
-		let copy_task = TaskCopyImageToGpu::new(&render_chain)?
+		let copy_task = TaskGpuCopy::new(&render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&self.binary[..])?
