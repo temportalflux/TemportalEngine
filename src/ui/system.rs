@@ -113,22 +113,28 @@ impl graphics::RenderChainElement for System {
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
 		self.text_widgets = (0..render_chain.frame_count())
-			.map(|i| HashMap::new())
+			.map(|_| HashMap::new())
 			.collect();
 		Ok(self.take_gpu_signals())
 	}
 
 	#[profiling::function]
-	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
+	fn destroy_render_chain(
+		&mut self,
+		render_chain: &graphics::RenderChain,
+	) -> utility::Result<()> {
+		self.text.destroy_render_chain(render_chain)?;
 		Ok(())
 	}
 
 	#[profiling::function]
 	fn on_render_chain_constructed(
 		&mut self,
-		_render_chain: &graphics::RenderChain,
-		_resolution: graphics::structs::Extent2D,
+		render_chain: &graphics::RenderChain,
+		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
+		self.text
+			.on_render_chain_constructed(render_chain, resolution)?;
 		Ok(())
 	}
 

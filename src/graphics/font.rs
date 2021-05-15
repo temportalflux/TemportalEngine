@@ -1,6 +1,6 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	math::{vector, Vector},
+	math::Vector,
 };
 use serde::{Deserialize, Serialize};
 

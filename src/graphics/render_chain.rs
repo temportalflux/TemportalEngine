@@ -189,7 +189,7 @@ impl RenderChain {
 		&self.graphics_queue
 	}
 
-	pub fn persistent_descriptor_pool(&mut self) -> &Arc<RwLock<graphics::descriptor::pool::Pool>> {
+	pub fn persistent_descriptor_pool(&self) -> &Arc<RwLock<graphics::descriptor::pool::Pool>> {
 		&self.persistent_descriptor_pool
 	}
 

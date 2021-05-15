@@ -99,6 +99,10 @@ impl PendingAtlas {
 }
 
 impl Loaded {
+	pub fn view(&self) -> &sync::Arc<image_view::View> {
+		&self.view
+	}
+
 	pub fn get(&self, i: char) -> Option<&Glyph> {
 		self.glyph_map.get(&(i as u32))
 	}
