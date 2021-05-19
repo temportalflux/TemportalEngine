@@ -98,7 +98,11 @@ impl Mesh {
 		//log::debug!("{:?}", tesselation.vertices.as_interleaved().unwrap());
 		//log::debug!("{:?}", vertices);
 		//log::debug!("{:?}", tesselation.indices);
-		let indices = tesselation.indices.iter().map(|i| *i as u32).collect::<Vec<_>>();
+		let indices = tesselation
+			.indices
+			.iter()
+			.map(|i| *i as u32)
+			.collect::<Vec<_>>();
 		self.index_count = indices.len();
 
 		let mut gpu_signals = Vec::with_capacity(2);

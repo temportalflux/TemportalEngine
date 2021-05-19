@@ -106,12 +106,17 @@ impl System {
 		}
 	}
 
-	pub fn add_font(&mut self, font_asset_id: &asset::Id) -> VoidResult {
+	pub fn add_font(
+		&mut self,
+		font_asset_id: &asset::Id,
+		get_width_edge: text::font::BoxedGetWidthEdge,
+	) -> VoidResult {
 		self.text.add_pending(
 			font_asset_id.file_name(),
 			asset::Loader::load_sync(&font_asset_id)?
 				.downcast::<Font>()
 				.unwrap(),
+			get_width_edge,
 		);
 		Ok(())
 	}
