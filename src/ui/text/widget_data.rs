@@ -90,31 +90,14 @@ impl WidgetData {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector<u32, 2>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		use graphics::alloc::Object;
-
+		
 		// Update the buffer objects if we need more space than is currently allocated
-		if Self::vertex_buffer_size_for(&text.text) > self.vertex_buffer.size() {
-			if !sync::Arc::get_mut(&mut self.vertex_buffer).unwrap().resize(
-				&render_chain.allocator(),
-				Self::vertex_buffer_size_for(&text.text),
-			) {
-				self.vertex_buffer = Self::allocate_buffer(
-					flags::BufferUsage::VERTEX_BUFFER,
-					&text.text,
-					render_chain,
-				)?;
-			}
-			if !sync::Arc::get_mut(&mut self.index_buffer).unwrap().resize(
-				&render_chain.allocator(),
-				Self::index_buffer_size_for(&text.text),
-			) {
-				self.index_buffer = Self::allocate_buffer(
-					flags::BufferUsage::INDEX_BUFFER,
-					&text.text,
-					render_chain,
-				)?;
-			}
-		}
+		sync::Arc::get_mut(&mut self.vertex_buffer)
+			.unwrap()
+			.expand(Self::vertex_buffer_size_for(&text.text))?;
+		sync::Arc::get_mut(&mut self.index_buffer)
+			.unwrap()
+			.expand(Self::index_buffer_size_for(&text.text))?;
 
 		self.content = text.text.clone();
 		self.font_id = text.font.clone();
