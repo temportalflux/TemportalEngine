@@ -177,13 +177,13 @@ impl graphics::CommandRecorder for System {
 		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
 			self.text_widgets[frame].drain().collect();
 		self.draw_calls = Vec::new();
-		
+
 		// Garuntee that there will always be a scissor clip available for the recording to use
 		self.draw_calls.push(DrawCall::PushClip(Scissor::new(
 			vector![0, 0],
 			resolution.clone(),
 		)));
-		
+
 		if let Some(tesselation) = self.tesselate(&mapping) {
 			self.write_mesh(&tesselation);
 
