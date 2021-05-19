@@ -14,6 +14,7 @@ pub struct Mesh {
 	vertex_buffer: sync::Arc<buffer::Buffer>,
 }
 
+#[derive(Debug)]
 pub struct Vertex {
 	pos: Vector<f32, 4>,
 	tex_coord: Vector<f32, 4>,
@@ -82,8 +83,7 @@ impl Mesh {
 			.unwrap()
 			.into_iter()
 			.map(|(pos, tex_coord, color)| Vertex {
-				pos: vector![pos.0 as f32, pos.1 as f32]
-					.scale(resolution)
+				pos: (vector![pos.0 as f32, pos.1 as f32].scale(resolution) * 2.0 - 1.0)
 					.subvec::<4>(None),
 				tex_coord: vector![tex_coord.0 as f32, tex_coord.1 as f32].subvec::<4>(None),
 				color: [
@@ -95,33 +95,49 @@ impl Mesh {
 				.into(),
 			})
 			.collect::<Vec<_>>();
-		let indices = &tesselation.indices;
+		//log::debug!("{:?}", tesselation.vertices.as_interleaved().unwrap());
+		//log::debug!("{:?}", vertices);
+		//log::debug!("{:?}", tesselation.indices);
+		let indices = tesselation.indices.iter().map(|i| *i as u32).collect::<Vec<_>>();
 		self.index_count = indices.len();
 
-		sync::Arc::get_mut(&mut self.vertex_buffer)
-			.unwrap()
-			.expand(std::mem::size_of::<Vertex>() * vertices.len())?;
-		sync::Arc::get_mut(&mut self.index_buffer)
-			.unwrap()
-			.expand(std::mem::size_of::<u32>() * indices.len())?;
-
 		let mut gpu_signals = Vec::with_capacity(2);
-		TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.stage(&vertices[..])?
-			.copy_stage_to_buffer(&self.vertex_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
 
-		TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.stage(&vertices[..])?
-			.copy_stage_to_buffer(&self.vertex_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+		Self::write_buffer(
+			sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
+			&vertices[..],
+			render_chain,
+			&mut gpu_signals,
+		)?;
+		Self::write_buffer(
+			sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
+			&indices[..],
+			render_chain,
+			&mut gpu_signals,
+		)?;
 
 		Ok(gpu_signals)
+	}
+
+	fn write_buffer<T: Sized>(
+		buffer: &mut buffer::Buffer,
+		data: &[T],
+		render_chain: &RenderChain,
+		signals: &mut Vec<sync::Arc<command::Semaphore>>,
+	) -> utility::Result<()> {
+		buffer.expand(std::mem::size_of::<T>() * data.len())?;
+		TaskGpuCopy::new(&render_chain)?
+			.begin()?
+			.stage(data)?
+			.copy_stage_to_buffer(&buffer)
+			.end()?
+			.add_signal_to(signals)
+			.send_to(task::sender());
+		Ok(())
+	}
+
+	pub fn bind_buffers(&self, buffer: &command::Buffer) {
+		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
+		buffer.bind_index_buffer(&self.index_buffer, 0);
 	}
 }

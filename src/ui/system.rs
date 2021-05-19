@@ -9,6 +9,14 @@ use crate::{
 use raui::renderer::tesselate::prelude::*;
 use std::{collections::HashMap, sync};
 
+pub enum SystemShader {
+	TextVertex,
+	TextFragment,
+	MeshVertex,
+	MeshSimpleFragment,
+	MeshImageFragment,
+}
+
 pub struct System {
 	draw_calls: Vec<DrawCall>,
 
@@ -19,6 +27,7 @@ pub struct System {
 	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
 	text: text::DataPipeline,
 
+	colored_area: ColoredAreaPipeline,
 	frame_meshes: Vec<Mesh>,
 
 	resolution: Vector<u32, 2>,
@@ -41,6 +50,7 @@ impl System {
 			application,
 			resolution: Vector::default(),
 			frame_meshes: Vec::new(),
+			colored_area: ColoredAreaPipeline::new(),
 			text: text::DataPipeline::new(&render_chain)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
@@ -84,8 +94,16 @@ impl System {
 }
 
 impl System {
-	pub fn add_text_shader(&mut self, id: &asset::Id) -> VoidResult {
-		self.text.add_shader(id)
+	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> VoidResult {
+		match key {
+			SystemShader::TextVertex | SystemShader::TextFragment => self.text.add_shader(id),
+			SystemShader::MeshVertex => {
+				self.colored_area.add_shader(id)?;
+				Ok(())
+			}
+			SystemShader::MeshSimpleFragment => self.colored_area.add_shader(id),
+			SystemShader::MeshImageFragment => Ok(()),
+		}
 	}
 
 	pub fn add_font(&mut self, font_asset_id: &asset::Id) -> VoidResult {
@@ -114,6 +132,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+		self.colored_area.create_shaders(&render_chain)?;
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
@@ -130,6 +149,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<()> {
+		self.colored_area.destroy_render_chain(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
 		Ok(())
 	}
@@ -140,6 +160,8 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
+		self.colored_area
+			.on_render_chain_constructed(render_chain, resolution)?;
 		self.text
 			.on_render_chain_constructed(render_chain, resolution)?;
 		Ok(())
@@ -253,7 +275,11 @@ impl graphics::CommandRecorder for System {
 				DrawCall::Text(widget_id) => self
 					.text
 					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?,
-				DrawCall::Range(_range) => {}
+				DrawCall::Range(range) => {
+					self.colored_area.bind_pipeline(buffer);
+					self.frame_meshes[frame].bind_buffers(buffer);
+					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
+				}
 				DrawCall::Texture(_texture_id, _range) => {}
 			}
 		}

@@ -8,5 +8,6 @@ pub use system::*;
 
 mod mesh;
 pub(crate) use mesh::*;
-
+mod colored_area_pipeline;
+pub(crate) use colored_area_pipeline::*;
 pub(crate) mod text;
