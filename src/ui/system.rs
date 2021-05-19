@@ -1,12 +1,12 @@
 use crate::{
 	asset,
-	graphics::{self, command, font::Font},
-	math::Vector,
-	ui::text,
+	graphics::{self, command, font::Font, utility::Scissor},
+	math::{vector, Matrix, Vector},
+	ui::*,
 	utility::{self, VoidResult},
 	EngineSystem,
 };
-pub use raui::prelude::*;
+use raui::renderer::tesselate::prelude::*;
 use std::{collections::HashMap, sync};
 
 pub struct System {
@@ -25,6 +25,10 @@ pub struct System {
 
 enum DrawCall {
 	Text(WidgetId),
+	Range(std::ops::Range<usize>),
+	Texture(String, std::ops::Range<usize>),
+	PushClip(Scissor),
+	PopClip(),
 }
 
 impl System {
@@ -107,6 +111,7 @@ impl System {
 		let _vertices = tesselation.vertices.as_interleaved().unwrap();
 		let _indices = &tesselation.indices;
 		// TODO: write to buffers for images
+		log::debug!("{:?}", tesselation.vertices);
 	}
 }
 
@@ -172,17 +177,24 @@ impl graphics::CommandRecorder for System {
 		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
 			self.text_widgets[frame].drain().collect();
 		self.draw_calls = Vec::new();
+		
+		// Garuntee that there will always be a scissor clip available for the recording to use
+		self.draw_calls.push(DrawCall::PushClip(Scissor::new(
+			vector![0, 0],
+			resolution.clone(),
+		)));
+		
 		if let Some(tesselation) = self.tesselate(&mapping) {
 			self.write_mesh(&tesselation);
 
 			for batch in tesselation.batches {
 				match batch {
 					Batch::None | Batch::FontTriangles(_, _, _) => {}
-					Batch::ColoredTriangles(_range) => {
-						// TODO: range is the first to last values of `tesselation.indices` to draw for this batch
+					Batch::ColoredTriangles(range) => {
+						self.draw_calls.push(DrawCall::Range(range));
 					}
-					Batch::ImageTriangles(_texture_id, _range) => {
-						// TODO: draw the vertices for range with the texture for texture_id bound
+					Batch::ImageTriangles(texture_id, range) => {
+						self.draw_calls.push(DrawCall::Texture(texture_id, range));
 					}
 					Batch::ExternalText(widget_id, text) => {
 						let (widget_data, mut gpu_signals) = self.text.update_or_create(
@@ -195,9 +207,32 @@ impl graphics::CommandRecorder for System {
 						self.pending_gpu_signals.append(&mut gpu_signals);
 						self.draw_calls.push(DrawCall::Text(widget_id));
 					}
-					// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
-					Batch::ClipPush(_clip) => {}
-					Batch::ClipPop => {}
+					Batch::ClipPush(clip) => {
+						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
+						let clip_vec = vector![clip.box_size.0, clip.box_size.1];
+						let transform = |mask: Vector<f32, 2>| -> Vector<f32, 2> {
+							(matrix * (clip_vec * mask).extend([0.0, 1.0].into()).into())
+								.column_vec(0)
+								.subvec::<2>(None)
+						};
+
+						let tl = transform(vector![0.0, 0.0]);
+						let tr = transform(vector![1.0, 0.0]);
+						let bl = transform(vector![0.0, 1.0]);
+						let br = transform(vector![1.0, 1.0]);
+
+						let min = tl.min(tr).min(br).min(bl);
+						let max = tl.max(tr).max(br).max(bl);
+						let size = max - min;
+
+						self.draw_calls.push(DrawCall::PushClip(Scissor::new(
+							[min.x() as i32, min.y() as i32].into(),
+							[size.x() as u32, size.y() as u32].into(),
+						)));
+					}
+					Batch::ClipPop => {
+						self.draw_calls.push(DrawCall::PopClip());
+					}
 				}
 			}
 		}
@@ -208,11 +243,21 @@ impl graphics::CommandRecorder for System {
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
+		// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
+		// Should use dynamic scissors on the pipeline command buffers
+		let mut clips = Vec::new();
 		for call in self.draw_calls.iter() {
 			match call {
+				DrawCall::PushClip(scissor) => clips.push(scissor),
+				DrawCall::PopClip() => {
+					clips.pop();
+				}
+
 				DrawCall::Text(widget_id) => self
 					.text
 					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?,
+				DrawCall::Range(_range) => {}
+				DrawCall::Texture(_texture_id, _range) => {}
 			}
 		}
 		Ok(())

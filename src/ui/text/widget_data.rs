@@ -5,7 +5,7 @@ use crate::{
 	ui::text::{font, Vertex},
 	utility,
 };
-pub use raui::prelude::*;
+use raui::renderer::tesselate::prelude::*;
 use std::sync;
 
 /// Data about rendering a specific piece of text
@@ -212,9 +212,7 @@ impl WidgetData {
 			if unicode == '\n' {
 				*cursor_pos.y_mut() += line_height;
 				*cursor_pos.x_mut() = screen_pos_pixels.x();
-			}
-			else
-			{
+			} else {
 				*cursor_pos.x_mut() += glyph_metrics.advance;
 			}
 		}
