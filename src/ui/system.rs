@@ -19,6 +19,8 @@ pub struct System {
 	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
 	text: text::DataPipeline,
 
+	frame_meshes: Vec<Mesh>,
+
 	resolution: Vector<u32, 2>,
 	application: Application,
 }
@@ -38,6 +40,7 @@ impl System {
 		Ok(Self {
 			application,
 			resolution: Vector::default(),
+			frame_meshes: Vec::new(),
 			text: text::DataPipeline::new(&render_chain)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
@@ -105,16 +108,6 @@ impl EngineSystem for System {
 	}
 }
 
-impl System {
-	#[profiling::function]
-	fn write_mesh(&mut self, tesselation: &Tesselation) {
-		let _vertices = tesselation.vertices.as_interleaved().unwrap();
-		let _indices = &tesselation.indices;
-		// TODO: write to buffers for images
-		log::debug!("{:?}", tesselation.vertices);
-	}
-}
-
 impl graphics::RenderChainElement for System {
 	#[profiling::function]
 	fn initialize_with(
@@ -124,9 +117,11 @@ impl graphics::RenderChainElement for System {
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
-		self.text_widgets = (0..render_chain.frame_count())
-			.map(|_| HashMap::new())
-			.collect();
+		for _ in 0..render_chain.frame_count() {
+			self.text_widgets.push(HashMap::new());
+			self.frame_meshes
+				.push(Mesh::new(&render_chain.allocator(), 10)?);
+		}
 		Ok(self.take_gpu_signals())
 	}
 
@@ -185,7 +180,9 @@ impl graphics::CommandRecorder for System {
 		)));
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
-			self.write_mesh(&tesselation);
+			let mut mesh_gpu_signals =
+				self.frame_meshes[frame].write(&tesselation, &render_chain, resolution)?;
+			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 
 			for batch in tesselation.batches {
 				match batch {

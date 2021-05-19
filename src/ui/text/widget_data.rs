@@ -90,7 +90,6 @@ impl WidgetData {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector<u32, 2>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		
 		// Update the buffer objects if we need more space than is currently allocated
 		sync::Arc::get_mut(&mut self.vertex_buffer)
 			.unwrap()
