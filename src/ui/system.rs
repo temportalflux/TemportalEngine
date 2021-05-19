@@ -1,6 +1,6 @@
 use crate::{
 	asset,
-	graphics::{self, command, font::Font, utility::Scissor},
+	graphics::{self, command, font::Font, utility::Scissor, Texture},
 	math::{vector, Matrix, Vector},
 	ui::*,
 	utility::{self, VoidResult},
@@ -26,7 +26,7 @@ pub struct System {
 
 	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
 	text: text::DataPipeline,
-
+	image: ImagePipeline,
 	colored_area: ColoredAreaPipeline,
 	frame_meshes: Vec<Mesh>,
 
@@ -51,6 +51,7 @@ impl System {
 			resolution: Vector::default(),
 			frame_meshes: Vec::new(),
 			colored_area: ColoredAreaPipeline::new(),
+			image: ImagePipeline::new(&render_chain)?,
 			text: text::DataPipeline::new(&render_chain)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
@@ -99,10 +100,11 @@ impl System {
 			SystemShader::TextVertex | SystemShader::TextFragment => self.text.add_shader(id),
 			SystemShader::MeshVertex => {
 				self.colored_area.add_shader(id)?;
+				self.image.add_shader(id)?;
 				Ok(())
 			}
 			SystemShader::MeshSimpleFragment => self.colored_area.add_shader(id),
-			SystemShader::MeshImageFragment => Ok(()),
+			SystemShader::MeshImageFragment => self.image.add_shader(id),
 		}
 	}
 
@@ -118,6 +120,16 @@ impl System {
 				.unwrap(),
 			get_width_edge,
 		);
+		Ok(())
+	}
+
+	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
+		self.image.add_pending(
+			id,
+			asset::Loader::load_sync(&id)?
+				.downcast::<Texture>()
+				.unwrap(),
+		)?;
 		Ok(())
 	}
 }
@@ -138,6 +150,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
 		self.colored_area.create_shaders(&render_chain)?;
+		self.image.create_shaders(&render_chain)?;
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
@@ -155,6 +168,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<()> {
 		self.colored_area.destroy_render_chain(render_chain)?;
+		self.image.destroy_render_chain(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
 		Ok(())
 	}
@@ -167,12 +181,16 @@ impl graphics::RenderChainElement for System {
 	) -> utility::Result<()> {
 		self.colored_area
 			.on_render_chain_constructed(render_chain, resolution)?;
+		self.image
+			.on_render_chain_constructed(render_chain, resolution)?;
 		self.text
 			.on_render_chain_constructed(render_chain, resolution)?;
 		Ok(())
 	}
 
 	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+		self.pending_gpu_signals
+			.append(&mut self.image.create_pending_images(&render_chain)?);
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
 		Ok(())
@@ -218,7 +236,14 @@ impl graphics::CommandRecorder for System {
 						self.draw_calls.push(DrawCall::Range(range));
 					}
 					Batch::ImageTriangles(texture_id, range) => {
-						self.draw_calls.push(DrawCall::Texture(texture_id, range));
+						if self.image.has_image(&texture_id) {
+							self.draw_calls.push(DrawCall::Texture(texture_id, range));
+						} else {
+							log::warn!(
+								"Texture for id \"{}\" has not been added to the ui render system.",
+								texture_id
+							);
+						}
 					}
 					Batch::ExternalText(widget_id, text) => {
 						let (widget_data, mut gpu_signals) = self.text.update_or_create(
@@ -285,7 +310,12 @@ impl graphics::CommandRecorder for System {
 					self.frame_meshes[frame].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
 				}
-				DrawCall::Texture(_texture_id, _range) => {}
+				DrawCall::Texture(texture_id, range) => {
+					self.image.bind_pipeline(buffer);
+					self.image.bind_texture(buffer, texture_id);
+					self.frame_meshes[frame].bind_buffers(buffer);
+					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
+				}
 			}
 		}
 		Ok(())

@@ -10,4 +10,6 @@ mod mesh;
 pub(crate) use mesh::*;
 mod colored_area_pipeline;
 pub(crate) use colored_area_pipeline::*;
+mod image_pipeline;
+pub(crate) use image_pipeline::*;
 pub(crate) mod text;

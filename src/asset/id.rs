@@ -21,6 +21,10 @@ impl Id {
 			.unwrap()
 			.to_owned()
 	}
+
+	pub fn to_str(&self) -> &str {
+		self.asset_path.to_str().unwrap()
+	}
 }
 
 impl PartialEq for Id {

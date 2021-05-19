@@ -7,13 +7,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Texture {
 	asset_type: String,
-	compiled: Option<Compiled>,
+	compiled: Option<CompiledTexture>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct Compiled {
-	size: Vector<usize, 2>,
-	binary: Vec<u8>,
+pub(crate) struct CompiledTexture {
+	pub(crate) size: Vector<usize, 2>,
+	pub(crate) binary: Vec<u8>,
 }
 
 impl asset::Asset for Texture {
@@ -24,7 +24,7 @@ impl asset::Asset for Texture {
 
 impl Texture {
 	pub fn set_compiled(&mut self, size: Vector<usize, 2>, binary: Vec<u8>) {
-		self.compiled = Some(Compiled { size, binary })
+		self.compiled = Some(CompiledTexture { size, binary })
 	}
 
 	pub fn size(&self) -> &Vector<usize, 2> {
@@ -33,6 +33,10 @@ impl Texture {
 
 	pub fn binary(&self) -> &Vec<u8> {
 		&self.compiled.as_ref().unwrap().binary
+	}
+
+	pub(crate) fn get_compiled(&self) -> &CompiledTexture {
+		self.compiled.as_ref().unwrap()
 	}
 }
 
