@@ -1,33 +1,29 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, descriptor, flags, image_view, pipeline, sampler, shader, structs, Texture,
+		self, command, descriptor, flags, image_view, pipeline, sampler, structs, Drawable, Texture,
 	},
-	task, ui,
+	task,
+	ui::{image, mesh},
 	utility::{self, VoidResult},
 };
 use std::{collections::HashMap, sync};
 
-type Id = String;
 struct Loaded {
 	view: sync::Arc<image_view::View>,
 	sampler: sync::Arc<sampler::Sampler>,
 	descriptor_set: sync::Weak<descriptor::Set>,
 }
 
-pub struct ImagePipeline {
-	pending_images: HashMap<Id, graphics::CompiledTexture>,
-	images: HashMap<Id, Loaded>,
+pub struct DataPipeline {
+	pending_images: HashMap<image::Id, graphics::CompiledTexture>,
+	images: HashMap<image::Id, Loaded>,
 
-	pipeline: Option<pipeline::Pipeline>,
-	pipeline_layout: Option<pipeline::Layout>,
 	descriptor_layout: sync::Arc<descriptor::SetLayout>,
-
-	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
-	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
+	drawable: Drawable,
 }
 
-impl ImagePipeline {
+impl DataPipeline {
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		let descriptor_layout = sync::Arc::new(
 			descriptor::SetLayout::builder()
@@ -41,45 +37,23 @@ impl ImagePipeline {
 		);
 		Ok(Self {
 			descriptor_layout,
-			pending_shaders: HashMap::new(),
-			shaders: HashMap::new(),
-			pipeline_layout: None,
-			pipeline: None,
+			drawable: Drawable::default(),
 			images: HashMap::new(),
 			pending_images: HashMap::new(),
 		})
 	}
 
 	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
-		let shader = asset::Loader::load_sync(&id)?
-			.downcast::<graphics::Shader>()
-			.unwrap();
-		self.pending_shaders
-			.insert(shader.kind(), shader.contents().clone());
-		Ok(())
+		self.drawable.add_shader(id)
+	}
+
+	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+		self.drawable.create_shaders(render_chain)
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) -> VoidResult {
 		self.pending_images
 			.insert(id.to_str().to_owned(), texture.get_compiled().clone());
-		Ok(())
-	}
-
-	#[profiling::function]
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
-		for (kind, binary) in self.pending_shaders.drain() {
-			self.shaders.insert(
-				kind,
-				sync::Arc::new(shader::Module::create(
-					render_chain.logical().clone(),
-					shader::Info {
-						kind: kind,
-						entry_point: String::from("main"),
-						bytes: binary,
-					},
-				)?),
-			);
-		}
 		Ok(())
 	}
 
@@ -177,81 +151,48 @@ impl ImagePipeline {
 	}
 
 	#[profiling::function]
-	pub fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
-		self.pipeline = None;
-		self.pipeline_layout = None;
-		Ok(())
+	pub fn destroy_pipeline(
+		&mut self,
+		render_chain: &graphics::RenderChain,
+	) -> utility::Result<()> {
+		self.drawable.destroy_pipeline(render_chain)
 	}
 
 	#[profiling::function]
-	pub fn on_render_chain_constructed(
+	pub fn create_pipeline(
 		&mut self,
 		render_chain: &graphics::RenderChain,
 		resolution: structs::Extent2D,
 	) -> utility::Result<()> {
-		use flags::blend::{Constant::*, Factor::*, Source::*};
-		self.pipeline_layout = Some(
-			pipeline::Layout::builder()
-				.with_descriptors(&self.descriptor_layout)
-				.build(render_chain.logical().clone())?,
-		);
-		self.pipeline = Some(
+		self.drawable.create_pipeline(
+			render_chain,
+			Some(&self.descriptor_layout),
 			pipeline::Info::default()
-				.add_shader(sync::Arc::downgrade(
-					self.shaders.get(&flags::ShaderKind::Vertex).unwrap(),
-				))
-				.add_shader(sync::Arc::downgrade(
-					self.shaders.get(&flags::ShaderKind::Fragment).unwrap(),
-				))
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()
-						.with_object::<ui::mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
+						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(
-					pipeline::ViewportState::default()
-						.add_viewport(graphics::utility::Viewport::default().set_size(resolution))
-						.add_scissor(graphics::utility::Scissor::default().set_size(resolution)),
-				)
-				.set_rasterization_state(pipeline::RasterizationState::default())
-				.set_color_blending(pipeline::ColorBlendState::default().add_attachment(
-					pipeline::ColorBlendAttachment {
-						color_flags: flags::ColorComponent::R
-							| flags::ColorComponent::G | flags::ColorComponent::B
-							| flags::ColorComponent::A,
-						blend: Some(pipeline::Blend {
-							color: SrcAlpha * New + (One - SrcAlpha) * Old,
-							alpha: One * New + Zero * Old,
-						}),
-					},
-				))
-				.create_object(
-					render_chain.logical().clone(),
-					&self.pipeline_layout.as_ref().unwrap(),
-					&render_chain.render_pass(),
-				)?,
-		);
-
-		Ok(())
+				.set_viewport_state(pipeline::ViewportState::from(resolution))
+				.set_color_blending(
+					pipeline::ColorBlendState::default()
+						.add_attachment(pipeline::ColorBlendAttachment::default()),
+				),
+		)
 	}
 
-	pub fn has_image(&self, id: &Id) -> bool {
+	pub fn has_image(&self, id: &image::Id) -> bool {
 		self.images.contains_key(id) || self.pending_images.contains_key(id)
 	}
 
 	pub fn bind_pipeline(&self, buffer: &mut command::Buffer) {
-		buffer.bind_pipeline(
-			&self.pipeline.as_ref().unwrap(),
-			flags::PipelineBindPoint::GRAPHICS,
-		);
+		self.drawable.bind_pipeline(buffer)
 	}
 
-	pub fn bind_texture(&self, buffer: &mut command::Buffer, texture_id: &Id) {
-		assert!(self.has_image(texture_id));
-		buffer.bind_descriptors(
-			flags::PipelineBindPoint::GRAPHICS,
-			self.pipeline_layout.as_ref().unwrap(),
-			0,
-			vec![&self.images[texture_id].descriptor_set.upgrade().unwrap()],
+	pub fn bind_texture(&self, buffer: &mut command::Buffer, image_id: &image::Id) {
+		assert!(self.images.contains_key(image_id));
+		self.drawable.bind_descriptors(
+			buffer,
+			vec![&self.images[image_id].descriptor_set.upgrade().unwrap()],
 		);
 	}
 }

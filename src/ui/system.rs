@@ -1,6 +1,6 @@
 use crate::{
 	asset,
-	graphics::{self, command, font::Font, utility::Scissor, Texture},
+	graphics::{self, command, flags, font::Font, pipeline, utility::Scissor, Drawable, Texture},
 	math::{vector, Matrix, Vector},
 	ui::*,
 	utility::{self, VoidResult},
@@ -26,8 +26,8 @@ pub struct System {
 
 	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
 	text: text::DataPipeline,
-	image: ImagePipeline,
-	colored_area: ColoredAreaPipeline,
+	image: image::DataPipeline,
+	colored_area: Drawable,
 	frame_meshes: Vec<Mesh>,
 
 	resolution: Vector<u32, 2>,
@@ -50,8 +50,8 @@ impl System {
 			application,
 			resolution: Vector::default(),
 			frame_meshes: Vec::new(),
-			colored_area: ColoredAreaPipeline::new(),
-			image: ImagePipeline::new(&render_chain)?,
+			colored_area: Drawable::default(),
+			image: image::DataPipeline::new(&render_chain)?,
 			text: text::DataPipeline::new(&render_chain)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
@@ -167,8 +167,8 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<()> {
-		self.colored_area.destroy_render_chain(render_chain)?;
-		self.image.destroy_render_chain(render_chain)?;
+		self.colored_area.destroy_pipeline(render_chain)?;
+		self.image.destroy_pipeline(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
 		Ok(())
 	}
@@ -179,10 +179,21 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
-		self.colored_area
-			.on_render_chain_constructed(render_chain, resolution)?;
-		self.image
-			.on_render_chain_constructed(render_chain, resolution)?;
+		self.colored_area.create_pipeline(
+			render_chain,
+			None,
+			pipeline::Info::default()
+				.with_vertex_layout(
+					pipeline::vertex::Layout::default()
+						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
+				)
+				.set_viewport_state(pipeline::ViewportState::from(resolution))
+				.set_color_blending(
+					pipeline::ColorBlendState::default()
+						.add_attachment(pipeline::ColorBlendAttachment::default()),
+				),
+		)?;
+		self.image.create_pipeline(render_chain, resolution)?;
 		self.text
 			.on_render_chain_constructed(render_chain, resolution)?;
 		Ok(())
