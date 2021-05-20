@@ -1,45 +1,35 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, descriptor, flags, image_view, pipeline, sampler, structs, Drawable, Texture,
+		self, command, descriptor, flags, pipeline, structs, DescriptorCache, Drawable, ImageCache,
+		Texture,
 	},
-	task,
 	ui::{image, mesh},
 	utility::{self, VoidResult},
 };
-use std::{collections::HashMap, sync};
-
-struct Loaded {
-	view: sync::Arc<image_view::View>,
-	sampler: sync::Arc<sampler::Sampler>,
-	descriptor_set: sync::Weak<descriptor::Set>,
-}
+use std::sync;
 
 pub struct DataPipeline {
-	pending_images: HashMap<image::Id, graphics::CompiledTexture>,
-	images: HashMap<image::Id, Loaded>,
-
-	descriptor_layout: sync::Arc<descriptor::SetLayout>,
+	descriptor_cache: DescriptorCache,
+	image_cache: ImageCache,
 	drawable: Drawable,
 }
 
 impl DataPipeline {
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
-		let descriptor_layout = sync::Arc::new(
-			descriptor::SetLayout::builder()
-				.with_binding(
-					0,
-					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
-					1,
-					flags::ShaderKind::Fragment,
-				)
-				.build(&render_chain.logical())?,
-		);
 		Ok(Self {
-			descriptor_layout,
 			drawable: Drawable::default(),
-			images: HashMap::new(),
-			pending_images: HashMap::new(),
+			descriptor_cache: DescriptorCache::new(
+				descriptor::SetLayout::builder()
+					.with_binding(
+						0,
+						flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
+						1,
+						flags::ShaderKind::Fragment,
+					)
+					.build(&render_chain.logical())?,
+			),
+			image_cache: ImageCache::default(),
 		})
 	}
 
@@ -52,9 +42,7 @@ impl DataPipeline {
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) -> VoidResult {
-		self.pending_images
-			.insert(id.to_str().to_owned(), texture.get_compiled().clone());
-		Ok(())
+		self.image_cache.insert(id, texture)
 	}
 
 	#[profiling::function]
@@ -62,92 +50,33 @@ impl DataPipeline {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+		use graphics::descriptor::*;
+
 		let mut pending_gpu_signals = Vec::new();
-		if !self.pending_images.is_empty() {
-			let pending_images = self.pending_images.drain().collect::<Vec<_>>();
-			for (id, pending) in pending_images.into_iter() {
-				let (loaded, mut signals) = self.create_image(render_chain, &pending)?;
-				pending_gpu_signals.append(&mut signals);
-				self.images.insert(id, loaded);
-			}
+		let (image_ids, mut signals) = self.image_cache.load_pending(render_chain)?;
+		pending_gpu_signals.append(&mut signals);
+
+		for image_id in image_ids.into_iter() {
+			let cached_image = &self.image_cache[&image_id];
+			let descriptor_set = self.descriptor_cache.insert(image_id, render_chain)?;
+			SetUpdate::default()
+				.with(UpdateOperation::Write(WriteOp {
+					destination: UpdateOperationSet {
+						set: descriptor_set.clone(),
+						binding_index: 0,
+						array_element: 0,
+					},
+					kind: graphics::flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
+					object: ObjectKind::Image(vec![ImageKind {
+						sampler: cached_image.sampler.clone(),
+						view: cached_image.view.clone(),
+						layout: flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+					}]),
+				}))
+				.apply(&render_chain.logical());
 		}
+
 		Ok(pending_gpu_signals)
-	}
-
-	fn create_image(
-		&self,
-		render_chain: &graphics::RenderChain,
-		pending: &graphics::CompiledTexture,
-	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
-		use graphics::{descriptor::*, image, structs::subresource, TaskGpuCopy};
-
-		let mut signals = Vec::new();
-
-		let image = sync::Arc::new(image::Image::create_gpu(
-			&render_chain.allocator(),
-			flags::Format::R8G8B8A8_SRGB,
-			pending.size.subvec::<3>(None).with_z(1),
-		)?);
-
-		TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.format_image_for_write(&image)
-			.stage(&pending.binary[..])?
-			.copy_stage_to_image(&image)
-			.format_image_for_read(&image)
-			.end()?
-			.add_signal_to(&mut signals)
-			.send_to(task::sender());
-
-		let view = sync::Arc::new(
-			image_view::View::builder()
-				.for_image(image.clone())
-				.with_view_type(flags::ImageViewType::TYPE_2D)
-				.with_format(image.format())
-				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
-				.build(&render_chain.logical())?,
-		);
-
-		let sampler = sync::Arc::new(
-			graphics::sampler::Sampler::builder()
-				.with_magnification(flags::Filter::NEAREST)
-				.with_minification(flags::Filter::NEAREST)
-				.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
-				.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
-				.build(&render_chain.logical())?,
-		);
-
-		let descriptor_set = render_chain
-			.persistent_descriptor_pool()
-			.write()
-			.unwrap()
-			.allocate_descriptor_sets(&vec![self.descriptor_layout.clone()])?
-			.pop()
-			.unwrap();
-
-		let loaded = Loaded {
-			view,
-			sampler,
-			descriptor_set,
-		};
-
-		SetUpdate::default()
-			.with(UpdateOperation::Write(WriteOp {
-				destination: UpdateOperationSet {
-					set: loaded.descriptor_set.clone(),
-					binding_index: 0,
-					array_element: 0,
-				},
-				kind: graphics::flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
-				object: ObjectKind::Image(vec![ImageKind {
-					sampler: loaded.sampler.clone(),
-					view: loaded.view.clone(),
-					layout: flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-				}]),
-			}))
-			.apply(&render_chain.logical());
-
-		Ok((loaded, signals))
 	}
 
 	#[profiling::function]
@@ -166,7 +95,7 @@ impl DataPipeline {
 	) -> utility::Result<()> {
 		self.drawable.create_pipeline(
 			render_chain,
-			Some(&self.descriptor_layout),
+			Some(self.descriptor_cache.layout()),
 			pipeline::Info::default()
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()
@@ -180,8 +109,8 @@ impl DataPipeline {
 		)
 	}
 
-	pub fn has_image(&self, id: &image::Id) -> bool {
-		self.images.contains_key(id) || self.pending_images.contains_key(id)
+	pub fn has_image(&self, image_id: &image::Id) -> bool {
+		self.image_cache.contains(image_id) && self.descriptor_cache.contains(image_id)
 	}
 
 	pub fn bind_pipeline(&self, buffer: &mut command::Buffer) {
@@ -189,10 +118,10 @@ impl DataPipeline {
 	}
 
 	pub fn bind_texture(&self, buffer: &mut command::Buffer, image_id: &image::Id) {
-		assert!(self.images.contains_key(image_id));
+		assert!(self.descriptor_cache.contains(image_id));
 		self.drawable.bind_descriptors(
 			buffer,
-			vec![&self.images[image_id].descriptor_set.upgrade().unwrap()],
+			vec![&self.descriptor_cache[image_id].upgrade().unwrap()],
 		);
 	}
 }
