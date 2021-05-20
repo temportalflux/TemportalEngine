@@ -1,6 +1,8 @@
 use crate::{
 	asset,
-	graphics::{self, command, descriptor, flags, font::Font, pipeline, sampler, shader, structs},
+	graphics::{
+		self, command, descriptor, flags, font::Font, pipeline, sampler, structs, Drawable,
+	},
 	math::Vector,
 	ui::{
 		self,
@@ -20,12 +22,8 @@ pub struct DataPipeline {
 	pending_font_atlases: HashMap<font::Id, font::PendingAtlas>,
 	fonts: HashMap<font::Id, FontData>,
 
-	pipeline: Option<pipeline::Pipeline>,
-	pipeline_layout: Option<pipeline::Layout>,
+	drawable: Drawable,
 	descriptor_layout: sync::Arc<descriptor::SetLayout>,
-
-	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
-	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
 	sampler: sync::Arc<sampler::Sampler>,
 }
 
@@ -50,22 +48,14 @@ impl DataPipeline {
 					.build(&render_chain.logical())?,
 			),
 			descriptor_layout,
-			pending_shaders: HashMap::new(),
-			shaders: HashMap::new(),
+			drawable: Drawable::default(),
 			fonts: HashMap::new(),
 			pending_font_atlases: HashMap::new(),
-			pipeline_layout: None,
-			pipeline: None,
 		})
 	}
 
 	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
-		let shader = asset::Loader::load_sync(&id)?
-			.downcast::<graphics::Shader>()
-			.unwrap();
-		self.pending_shaders
-			.insert(shader.kind(), shader.contents().clone());
-		Ok(())
+		self.drawable.add_shader(id)
 	}
 
 	pub fn add_pending(
@@ -82,20 +72,7 @@ impl DataPipeline {
 
 	#[profiling::function]
 	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
-		for (kind, binary) in self.pending_shaders.drain() {
-			self.shaders.insert(
-				kind,
-				sync::Arc::new(shader::Module::create(
-					render_chain.logical().clone(),
-					shader::Info {
-						kind: kind,
-						entry_point: String::from("main"),
-						bytes: binary,
-					},
-				)?),
-			);
-		}
-		Ok(())
+		self.drawable.create_shaders(render_chain)
 	}
 
 	#[profiling::function]
@@ -170,10 +147,11 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
-		self.pipeline = None;
-		self.pipeline_layout = None;
-		Ok(())
+	pub fn destroy_render_chain(
+		&mut self,
+		render_chain: &graphics::RenderChain,
+	) -> utility::Result<()> {
+		self.drawable.destroy_pipeline(render_chain)
 	}
 
 	pub fn on_render_chain_constructed(
@@ -181,49 +159,21 @@ impl DataPipeline {
 		render_chain: &graphics::RenderChain,
 		resolution: structs::Extent2D,
 	) -> utility::Result<()> {
-		use flags::blend::{Constant::*, Factor::*, Source::*};
-		self.pipeline_layout = Some(
-			pipeline::Layout::builder()
-				.with_descriptors(&self.descriptor_layout)
-				.build(render_chain.logical().clone())?,
-		);
-		self.pipeline = Some(
+		self.drawable.create_pipeline(
+			render_chain,
+			Some(&self.descriptor_layout),
 			pipeline::Info::default()
-				.add_shader(sync::Arc::downgrade(
-					self.shaders.get(&flags::ShaderKind::Vertex).unwrap(),
-				))
-				.add_shader(sync::Arc::downgrade(
-					self.shaders.get(&flags::ShaderKind::Fragment).unwrap(),
-				))
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()
 						.with_object::<text::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(
-					pipeline::ViewportState::default()
-						.add_viewport(graphics::utility::Viewport::default().set_size(resolution))
-						.add_scissor(graphics::utility::Scissor::default().set_size(resolution)),
-				)
+				.set_viewport_state(pipeline::ViewportState::from(resolution))
 				.set_rasterization_state(pipeline::RasterizationState::default())
-				.set_color_blending(pipeline::ColorBlendState::default().add_attachment(
-					pipeline::ColorBlendAttachment {
-						color_flags: flags::ColorComponent::R
-							| flags::ColorComponent::G | flags::ColorComponent::B
-							| flags::ColorComponent::A,
-						blend: Some(pipeline::Blend {
-							color: SrcAlpha * New + (One - SrcAlpha) * Old,
-							alpha: One * New + Zero * Old,
-						}),
-					},
-				))
-				.create_object(
-					render_chain.logical().clone(),
-					&self.pipeline_layout.as_ref().unwrap(),
-					&render_chain.render_pass(),
-				)?,
-		);
-
-		Ok(())
+				.set_color_blending(
+					pipeline::ColorBlendState::default()
+						.add_attachment(pipeline::ColorBlendAttachment::default()),
+				),
+		)
 	}
 
 	#[profiling::function]
@@ -237,16 +187,9 @@ impl DataPipeline {
 			.get(widget.font_id())
 			.ok_or(ui::Error::InvalidFont(widget.font_id().clone()))?;
 
-		buffer.bind_pipeline(
-			&self.pipeline.as_ref().unwrap(),
-			flags::PipelineBindPoint::GRAPHICS,
-		);
-		buffer.bind_descriptors(
-			flags::PipelineBindPoint::GRAPHICS,
-			self.pipeline_layout.as_ref().unwrap(),
-			0,
-			vec![&font_data.descriptor_set.upgrade().unwrap()],
-		);
+		self.drawable.bind_pipeline(buffer);
+		self.drawable
+			.bind_descriptors(buffer, vec![&font_data.descriptor_set.upgrade().unwrap()]);
 		widget.bind_buffers(buffer);
 		buffer.draw(*widget.index_count(), 0, 1, 0, 0);
 		Ok(())
