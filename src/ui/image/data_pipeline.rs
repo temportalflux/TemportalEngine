@@ -10,7 +10,7 @@ use crate::{
 use std::sync;
 
 pub struct DataPipeline {
-	descriptor_cache: DescriptorCache,
+	descriptor_cache: DescriptorCache<String>,
 	image_cache: ImageCache,
 	drawable: Drawable,
 }
@@ -42,7 +42,7 @@ impl DataPipeline {
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) -> VoidResult {
-		self.image_cache.insert(id, texture)
+		self.image_cache.insert(id.to_str().to_owned(), texture)
 	}
 
 	#[profiling::function]

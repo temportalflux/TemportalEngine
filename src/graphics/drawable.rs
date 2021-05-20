@@ -5,6 +5,9 @@ use crate::{
 };
 use std::sync;
 
+/// A grouping of pipeline and [`shader objects`](ShaderSet) that can be drawn with a set of buffers and descriptors.
+/// This is largely an engine-level abstraction around the graphics pipeline and shaders that is meant
+/// to take the mental load off of pipeline creation and management.
 pub struct Drawable {
 	pipeline: Option<pipeline::Pipeline>,
 	pipeline_layout: Option<pipeline::Layout>,
@@ -22,14 +25,19 @@ impl Default for Drawable {
 }
 
 impl Drawable {
+	/// Adds a shader by its asset id to the drawable.
+	/// Offloads logic to [`ShaderSet::insert`].
 	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
 		self.shaders.insert(id)
 	}
 
+	/// Creates the shader modules from any pending shaders added via [`Drawable::add_shader`].
+	/// Offloads logic to [`ShaderSet::create_modules`].
 	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
 		self.shaders.create_modules(render_chain)
 	}
 
+	/// Destroys the pipeline objects so they can be recreated by [`Drawable::create_pipeline`].
 	#[profiling::function]
 	pub fn destroy_pipeline(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
 		self.pipeline = None;
@@ -37,6 +45,7 @@ impl Drawable {
 		Ok(())
 	}
 
+	/// Creates the [`Pipeline`](graphics::pipeline::Pipeline) objects with a provided descriptor layout and pipline info.
 	#[profiling::function]
 	pub fn create_pipeline(
 		&mut self,
@@ -68,6 +77,7 @@ impl Drawable {
 		Ok(())
 	}
 
+	/// Binds the drawable pipeline to the command buffer.
 	pub fn bind_pipeline(&self, buffer: &mut command::Buffer) {
 		buffer.bind_pipeline(
 			&self.pipeline.as_ref().unwrap(),
@@ -75,6 +85,7 @@ impl Drawable {
 		);
 	}
 
+	/// Binds the provided descriptor sets to the buffer using the drawable pipeline layout.
 	pub fn bind_descriptors(
 		&self,
 		buffer: &mut command::Buffer,

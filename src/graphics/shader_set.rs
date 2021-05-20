@@ -5,6 +5,10 @@ use crate::{
 };
 use std::{collections::HashMap, sync};
 
+/// A discrete collection of shaders which will be or have been created on the GPU.
+/// This is an engine-level abstraction to encapsulate the creation and management
+/// of [`shader modules`](shader::Module).
+/// Only 1 shader per [`kind`](flags::ShaderKind) may be present at the same time.
 pub struct ShaderSet {
 	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
 	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
@@ -20,6 +24,9 @@ impl Default for ShaderSet {
 }
 
 impl ShaderSet {
+	/// Adds a [`shader asset`](graphics::Shader) to the set.
+	/// If a shader of the same kind already exists, it will be dropped the next time
+	/// [`create_modules`](ShaderSet::create_modules) is called.
 	#[profiling::function]
 	pub fn insert(&mut self, id: &asset::Id) -> VoidResult {
 		let shader = asset::Loader::load_sync(&id)?
@@ -30,6 +37,8 @@ impl ShaderSet {
 		Ok(())
 	}
 
+	/// Creates [`shader modules`](shader::Module) from pending shaders added by [`insert`](ShaderSet::insert),
+	/// thereby dropping any existing modules with the same kind.
 	#[profiling::function]
 	pub fn create_modules(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
 		for (kind, binary) in self.pending_shaders.drain() {

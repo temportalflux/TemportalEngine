@@ -1,7 +1,10 @@
-use crate::asset::{self, AssetResult, TypeMetadata};
+use crate::{
+	asset::{self, AssetResult, TypeMetadata},
+	graphics::{flags::ShaderKind}
+};
 use serde::{Deserialize, Serialize};
-use temportal_graphics::flags::ShaderKind;
 
+/// The engine asset representation of [`shaders`](crate::graphics::shader::Module).
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Shader {
 	asset_type: String,
@@ -21,27 +24,34 @@ impl asset::Asset for Shader {
 }
 
 impl Shader {
+
+	/// The shader stage/kind this shader can be used in.
 	pub fn kind(&self) -> ShaderKind {
 		self.kind
 	}
 
+	/// The String or SPIR-V binary of the shader.
 	pub fn contents(&self) -> &Vec<u8> {
 		&self.contents.as_ref().unwrap()
 	}
 
+	#[doc(hidden)]
 	pub fn set_contents(&mut self, contents: Vec<u8>) {
 		self.contents = Some(contents);
 	}
 
+	#[doc(hidden)]
 	pub fn content_as_string(&self) -> Result<String, std::string::FromUtf8Error> {
 		String::from_utf8(self.contents.as_ref().unwrap().clone())
 	}
 
+	#[doc(hidden)]
 	pub fn set_contents_from_string(&mut self, contents: String) {
 		self.contents = Some(contents.into_bytes());
 	}
 }
 
+/// The metadata about the [`Shader`] asset type.
 pub struct ShaderMetadata {}
 
 impl TypeMetadata for ShaderMetadata {
