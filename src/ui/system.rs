@@ -51,7 +51,6 @@ enum DrawCall {
 }
 
 impl System {
-
 	/// Constructs a ui rendering system for the provided render chain.
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		let mut application = Application::new();
@@ -103,7 +102,6 @@ impl System {
 }
 
 impl System {
-
 	/// Adds a shader to the ui system so that the various kinda of meshes can render.
 	/// The system must be provided with one of each system shader before it can run properly.
 	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> VoidResult {
@@ -228,9 +226,7 @@ impl graphics::RenderChainElement for System {
 	fn take_gpu_signals(&mut self) -> Vec<sync::Arc<command::Semaphore>> {
 		self.pending_gpu_signals.drain(..).collect()
 	}
-}
 
-impl graphics::CommandRecorder for System {
 	/// Update the data (like uniforms) for a given frame -
 	/// Or in the case of the UI Render, record changes to the secondary command buffer.
 	#[profiling::function]

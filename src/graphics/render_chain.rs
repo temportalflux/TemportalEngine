@@ -10,6 +10,7 @@ use crate::{
 use std::sync::{self, Arc, RwLock, Weak};
 
 /// An object which contains data that needs to be updated when the render-chain is reconstructed
+/// and records commands to one or more command buffers.
 /// (i.e. something which contains a pipeline, and is therefore reliant on the resolution of the window).
 pub trait RenderChainElement: Send + Sync {
 	/// Initializes the renderer before the first frame.
@@ -38,11 +39,7 @@ pub trait RenderChainElement: Send + Sync {
 
 	/// Destroys any objects which are created during `on_render_chain_constructed`.
 	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
-}
 
-/// An object which records commands to one or more command buffers,
-/// notably when the render-chain is reconstructed.
-pub trait CommandRecorder: Send + Sync {
 	fn prerecord_update(
 		&mut self,
 		_render_chain: &RenderChain,
@@ -52,13 +49,13 @@ pub trait CommandRecorder: Send + Sync {
 	) -> utility::Result<bool> {
 		Ok(false)
 	}
+
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
 
 pub struct RenderChain {
-	command_recorders: Vec<Weak<RwLock<dyn graphics::CommandRecorder>>>,
 	initialized_render_chain_elements: Vec<ChainElement>,
 	pending_render_chain_elements: Vec<ChainElement>,
 
@@ -163,7 +160,6 @@ impl RenderChain {
 			images_in_flight: Vec::new(),
 			current_frame: 0,
 
-			command_recorders: Vec::new(),
 			pending_render_chain_elements: Vec::new(),
 			initialized_render_chain_elements: Vec::new(),
 		})
@@ -216,15 +212,6 @@ impl RenderChain {
 		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
 		self.pending_render_chain_elements
 			.push(Arc::downgrade(&arc));
-		Ok(())
-	}
-
-	pub fn add_command_recorder<T>(&mut self, recorder: &Arc<RwLock<T>>) -> utility::Result<()>
-	where
-		T: 'static + graphics::CommandRecorder,
-	{
-		let arc: Arc<RwLock<dyn graphics::CommandRecorder>> = recorder.clone();
-		self.command_recorders.push(Arc::downgrade(&arc));
 		Ok(())
 	}
 
@@ -403,10 +390,8 @@ impl RenderChain {
 			false,
 		);
 
-		self.command_recorders
-			.retain(|recorder| recorder.strong_count() > 0);
-		for recorder in self.command_recorders.iter() {
-			let arc = recorder.upgrade().unwrap();
+		for element in self.initialized_render_chain_elements.iter() {
+			let arc = element.upgrade().unwrap();
 			let locked = arc.read().unwrap();
 			locked.record_to_buffer(&mut self.command_buffers[buffer_index], buffer_index)?;
 		}
@@ -447,7 +432,12 @@ impl RenderChain {
 			}
 		}
 
-		if has_constructed_new_elements {
+		let pre_retain_element_count = self.initialized_render_chain_elements.len();
+		self.initialized_render_chain_elements
+			.retain(|element| element.strong_count() > 0);
+		if has_constructed_new_elements
+			|| pre_retain_element_count > self.initialized_render_chain_elements.len()
+		{
 			self.mark_commands_dirty();
 		}
 
@@ -509,10 +499,8 @@ impl RenderChain {
 
 		// Update any uniforms on pre-submit
 		{
-			self.command_recorders
-				.retain(|recorder| recorder.strong_count() > 0);
-			for recorder in self.command_recorders.iter() {
-				let arc = recorder.upgrade().unwrap();
+			for element in self.initialized_render_chain_elements.iter() {
+				let arc = element.upgrade().unwrap();
 				let mut locked = arc.write().unwrap();
 				if locked.prerecord_update(
 					&self,

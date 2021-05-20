@@ -24,7 +24,6 @@ impl asset::Asset for Texture {
 }
 
 impl Texture {
-
 	#[doc(hidden)]
 	pub fn set_compiled(&mut self, size: Vector<usize, 2>, binary: Vec<u8>) {
 		self.compiled = Some(CompiledTexture { size, binary })

@@ -1,6 +1,6 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	graphics::{flags::ShaderKind}
+	graphics::flags::ShaderKind,
 };
 use serde::{Deserialize, Serialize};
 
@@ -24,7 +24,6 @@ impl asset::Asset for Shader {
 }
 
 impl Shader {
-
 	/// The shader stage/kind this shader can be used in.
 	pub fn kind(&self) -> ShaderKind {
 		self.kind
