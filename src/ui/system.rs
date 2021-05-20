@@ -9,14 +9,22 @@ use crate::{
 use raui::renderer::tesselate::prelude::*;
 use std::{collections::HashMap, sync};
 
+/// The types of shaders used by the [`ui system`](System).
 pub enum SystemShader {
+	/// The shader used in the [`vertex stage`](flags::ShaderKind::Vertex) of the text renderer.
 	TextVertex,
+	/// The shader used in the [`fragment stage`](flags::ShaderKind::Fragment) of the text renderer.
 	TextFragment,
+	/// The shader used in the [`vertex stage`](flags::ShaderKind::Vertex) of the image & colored-rect renderers.
 	MeshVertex,
+	/// The shader used in the [`fragment stage`](flags::ShaderKind::Fragment) of the colored-rect renderer.
 	MeshSimpleFragment,
+	/// The shader used in the [`fragment stage`](flags::ShaderKind::Fragment) of the image renderer.
 	MeshImageFragment,
 }
 
+/// Handles the rendering of the UI widgets to the screen.
+/// Also updates and processes the UI widgets via the ECS system.
 pub struct System {
 	draw_calls: Vec<DrawCall>,
 
@@ -43,6 +51,8 @@ enum DrawCall {
 }
 
 impl System {
+
+	/// Constructs a ui rendering system for the provided render chain.
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		let mut application = Application::new();
 		application.setup(widget::setup);
@@ -61,15 +71,12 @@ impl System {
 		})
 	}
 
+	/// Set the ui widget tree to update and render.
 	pub fn apply_tree(&mut self, tree: WidgetNode) {
 		self.application.apply(tree);
 	}
 
-	pub fn set_resolution(&mut self, resolution: Vector<u32, 2>) {
-		self.resolution = resolution;
-	}
-
-	pub fn mapping(&self) -> CoordsMapping {
+	fn mapping(&self) -> CoordsMapping {
 		CoordsMapping::new(Rect {
 			left: 0.0,
 			right: self.resolution.x() as f32,
@@ -78,6 +85,7 @@ impl System {
 		})
 	}
 
+	/// Render widgets into interleaved tesselation mesh & batches.
 	#[profiling::function]
 	fn tesselate(&self, coord_mapping: &CoordsMapping) -> Option<Tesselation> {
 		let mut renderer = TesselateRenderer::with_capacity(
@@ -95,6 +103,9 @@ impl System {
 }
 
 impl System {
+
+	/// Adds a shader to the ui system so that the various kinda of meshes can render.
+	/// The system must be provided with one of each system shader before it can run properly.
 	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> VoidResult {
 		match key {
 			SystemShader::TextVertex | SystemShader::TextFragment => self.text.add_shader(id),
@@ -108,6 +119,9 @@ impl System {
 		}
 	}
 
+	/// Adds a font to the text rendering system.
+	/// Fonts must be registered/added before they can be used in a widget,
+	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_font(
 		&mut self,
 		font_asset_id: &asset::Id,
@@ -123,6 +137,9 @@ impl System {
 		Ok(())
 	}
 
+	/// Adds a texture to the image rendering system.
+	/// Images must be registered/added before they can be used in a widget,
+	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
 		self.image.add_pending(
 			id,
@@ -179,6 +196,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
+		self.resolution = vector![resolution.width, resolution.height];
 		self.colored_area.create_pipeline(
 			render_chain,
 			None,
