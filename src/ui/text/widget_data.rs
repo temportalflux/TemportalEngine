@@ -74,7 +74,7 @@ impl WidgetData {
 					_ => 0,
 				})
 				.with_alloc(
-					graphics::alloc::Info::default()
+					graphics::alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)

@@ -67,7 +67,7 @@ impl PendingAtlas {
 		let image = sync::Arc::new(
 			image::Image::builder()
 				.with_alloc(
-					alloc::Info::default()
+					alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
