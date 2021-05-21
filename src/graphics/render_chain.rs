@@ -22,24 +22,32 @@ pub trait RenderChainElement: Send + Sync {
 
 	/// Creates any objects, like pipelines, which need to be created for a given swapchain (i.e. on window size change).
 	/// Returns any semaphores which must complete before the next frame is submitted.
+	/// Called any time the render chain is constructed
+	/// (whereas `initialize_with` is only called once at the begining of an element's lifecycle).
 	fn on_render_chain_constructed(
 		&mut self,
 		render_chain: &RenderChain,
 		resolution: structs::Extent2D,
 	) -> utility::Result<()>;
 
+	/// Performs any changes to data that need to happen before the frame begins to be processed
+	/// (but after an uninitialized elements have been initialized).
+	/// There is no frame-specific information provided to this function,
+	/// see [`prerecord_update`](RenderChainElement::prerecord_update),
+	/// if you need to make data changes for a specific frame.
 	fn preframe_update(&mut self, _render_chain: &RenderChain) -> utility::Result<()> {
 		Ok(())
 	}
 
-	/// Returns a list of gpu semaphores that need to be completed/signaled before the next frame can be submitted.
-	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		Vec::new()
-	}
-
 	/// Destroys any objects which are created during `on_render_chain_constructed`.
+	/// The render chain may be reconstructed soon after this is called, or it may just be dropped entirely.
+	/// This function is not garunteed to be called when the render chain is dropped.
 	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
 
+	/// Performs any tweaks that need to be made to data before the frame may be recorded.
+	/// The frame may not be recorded after all elements have been processed,
+	/// but if any element returns true from this function, the frame is marked as dirty and must be recorded.
+	/// This is one way to enforce an immediate mode rendering (in which all frames are always rerecorded).
 	fn prerecord_update(
 		&mut self,
 		_render_chain: &RenderChain,
@@ -50,11 +58,28 @@ pub trait RenderChainElement: Send + Sync {
 		Ok(false)
 	}
 
+	/// Returns a list of gpu semaphores that need to be completed/signaled before the next frame can be submitted.
+	/// This should modify any signals stored on the element,
+	/// such that all future frames do not need to rely on the taken semaphores.
+	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
+		Vec::new()
+	}
+
+	/// Records commands to the command buffer for a given frame.
+	/// Only called if the frame has been marked as dirty, either by [`mark_commands_dirty`](RenderChain::mark_commands_dirty),
+	/// or by any element returning `true` from [`prerecord_update`](RenderChainElement::prerecord_update).
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
 
+/// A general purpose renderer used for managing the recording of
+/// command buffers, generating the swapchain and its framebuffers, etc.
+///
+/// Frames can be marked as dirty to force a re-recording the next time the frame is being preparred,
+/// so render chains are optionally immediate mode.
+///
+/// Create a render chain from the display window via [`create_render_chain`](crate::window::Window::create_render_chain).
 pub struct RenderChain {
 	initialized_render_chain_elements: Vec<ChainElement>,
 	pending_render_chain_elements: Vec<ChainElement>,
@@ -93,6 +118,18 @@ pub struct RenderChain {
 }
 
 impl RenderChain {
+	/// Constructs a render chain from vulkan device objects.
+	///
+	/// # Arguments
+	///
+	/// * `physical` - The GPU device
+	/// * `logical` - The logical device for `physical`
+	/// * `allocator` - The graphics device allocator for creating buffers and images
+	/// * `graphics_queue` - The queue on which to submit graphics commands
+	/// * `surface` - The window surface to which frames can be presented
+	/// * `frame_count` - The number of frames to manage (2 for double buffer, 3 for ring buffer).
+	/// 		This controls the number of swapchain images, framebuffers, and primary command buffers.
+	/// * `render_pass_info` - The info for creating a render pass that the render chain will manage and use
 	pub fn new(
 		physical: &sync::Arc<physical::Device>,
 		logical: &sync::Arc<logical::Device>,
@@ -165,46 +202,69 @@ impl RenderChain {
 		})
 	}
 
+	/// Returns a pointer to the physical rendering device / GPU.
 	pub fn physical(&self) -> sync::Arc<physical::Device> {
 		self.physical.upgrade().unwrap()
 	}
 
+	/// Returns a pointer to the logical device for the GPU.
 	pub fn logical(&self) -> sync::Arc<logical::Device> {
 		self.logical.upgrade().unwrap()
 	}
 
+	/// Returns a pointer to the graphics object allocator (for creating buffers and images).
 	pub fn allocator(&self) -> sync::Arc<graphics::alloc::Allocator> {
 		self.allocator.upgrade().unwrap()
 	}
 
+	/// Returns a pointer to the command pool that should be used for one time submit / transient commands.
+	/// This command pool is not dropped until the render chain is dropped.
 	pub fn transient_command_pool(&self) -> &sync::Arc<command::Pool> {
 		&self.transient_command_pool
 	}
 
+	/// Returns a pointer to the command pool that should be used for secondary command buffers
+	/// (and is used for primary command buffers within the render chain).
+	/// This command pool is dropped when destroying the render chain,
+	/// and created when the render chain is constructed (often the same function call).
+	pub fn frame_command_pool(&self) -> &command::Pool {
+		self.frame_command_pool.as_ref().unwrap()
+	}
+
+	/// Returns a pointer to the logical queue for submitted graphics commands.
 	pub fn graphics_queue(&self) -> &sync::Arc<logical::Queue> {
 		&self.graphics_queue
 	}
 
+	/// Returns a mutex-pointer to the descriptor pool used for allocating all descriptor sets.
+	/// This command pool is not dropped until the render chain is dropped.
 	pub fn persistent_descriptor_pool(&self) -> &Arc<RwLock<graphics::descriptor::pool::Pool>> {
 		&self.persistent_descriptor_pool
 	}
 
+	/// Returns a reference to the render pass used to organize the render order.
 	pub fn render_pass(&self) -> &renderpass::Pass {
 		self.render_pass.as_ref().unwrap()
 	}
 
+	/// Adds a clear value to the render pass control so that a given frame is cleared when rendering begins.
 	pub fn add_clear_value(&mut self, clear: renderpass::ClearValue) {
 		self.render_pass_instruction.add_clear_value(clear);
 	}
 
+	/// Returns the number of frames that are being used/rendered.
 	pub fn frame_count(&self) -> usize {
 		self.frame_count
 	}
 
+	/// Returns the number of frames/images that can be in flight
+	/// (being recorded to, being processed by the GPU commands, or being currently presented) at any given time.
 	fn max_frames_in_flight(frame_count: usize) -> usize {
 		std::cmp::max(frame_count - 1, 1)
 	}
 
+	/// Adds a rendering element to the chain for recording render commands.
+	/// Elements will be initialized the next time `render_frame` is called.
 	pub fn add_render_chain_element<T>(&mut self, element: &Arc<RwLock<T>>) -> Result<(), AnyError>
 	where
 		T: 'static + graphics::RenderChainElement,
@@ -215,11 +275,12 @@ impl RenderChain {
 		Ok(())
 	}
 
+	/// Creates the pipelines, command buffers, etc for the render chain, with a provided resolution.
+	/// Any pre-existing pipelines and other objects will be dropped
+	/// (and [`destroy_render_chain`](RenderChainElement::destroy_render_chain) will be called on any initialized elements).
+	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
-	pub fn construct_render_chain(
-		&mut self,
-		resolution: structs::Extent2D,
-	) -> Result<(), AnyError> {
+	fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> Result<(), AnyError> {
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
 		self.render_finished_semaphores.clear();
@@ -256,25 +317,38 @@ impl RenderChain {
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
 		self.render_pass = Some(self.render_pass_info.create_object(&logical)?);
-		self.swapchain = Some(RenderChain::create_swapchain(
-			&self.swapchain_info,
+		self.swapchain = Some(self.swapchain_info.create_object(
 			&logical,
 			&surface,
 			self.swapchain.as_ref(),
 		)?);
+
 		self.frame_images = self
 			.swapchain()
 			.get_images()?
 			.into_iter()
 			.map(|image| sync::Arc::new(image))
 			.collect();
-		self.frame_image_views = RenderChain::create_image_views(&logical, &self.frame_images)?;
-		self.frame_buffers = RenderChain::create_frame_buffers(
-			&self.frame_image_views,
-			resolution,
-			self.render_pass(),
-			&logical,
-		)?;
+		for image in self.frame_images.iter() {
+			self.frame_image_views.push(
+				image_view::View::builder()
+					.for_image(image.clone())
+					.with_view_type(flags::ImageViewType::TYPE_2D)
+					.with_format(flags::Format::B8G8R8A8_SRGB)
+					.with_range(
+						structs::subresource::Range::default()
+							.with_aspect(flags::ImageAspect::COLOR),
+					)
+					.build(&logical)?,
+			);
+		}
+		for image_view in self.frame_image_views.iter() {
+			self.frame_buffers.push(
+				command::framebuffer::Info::default()
+					.set_extent(resolution)
+					.create_object(&image_view, &self.render_pass(), &logical)?,
+			);
+		}
 
 		let max_frames_in_flight = RenderChain::max_frames_in_flight(self.frame_count);
 		self.img_available_semaphores =
@@ -299,63 +373,13 @@ impl RenderChain {
 		Ok(())
 	}
 
+	/// Marks all frames dirty, which results in the frames being re-recorded the next time they are rendered.
 	pub fn mark_commands_dirty(&mut self) {
 		self.frame_command_buffer_requires_recording = vec![true; self.frame_count];
 	}
 
-	fn create_swapchain(
-		info: &swapchain::Info,
-		logical: &sync::Arc<logical::Device>,
-		surface: &Surface,
-		old_swapchain: Option<&swapchain::Swapchain>,
-	) -> utility::Result<swapchain::Swapchain> {
-		Ok(info.create_object(logical, surface, old_swapchain)?)
-	}
-
 	fn swapchain(&self) -> &swapchain::Swapchain {
 		self.swapchain.as_ref().unwrap()
-	}
-
-	pub fn frame_command_pool(&self) -> &command::Pool {
-		self.frame_command_pool.as_ref().unwrap()
-	}
-
-	fn create_image_views(
-		logical: &sync::Arc<logical::Device>,
-		frame_images: &Vec<sync::Arc<image::Image>>,
-	) -> utility::Result<Vec<image_view::View>> {
-		let mut views: Vec<image_view::View> = Vec::new();
-		for image in frame_images.iter() {
-			views.push(
-				image_view::View::builder()
-					.for_image(image.clone())
-					.with_view_type(flags::ImageViewType::TYPE_2D)
-					.with_format(flags::Format::B8G8R8A8_SRGB)
-					.with_range(
-						structs::subresource::Range::default()
-							.with_aspect(flags::ImageAspect::COLOR),
-					)
-					.build(logical)?,
-			);
-		}
-		Ok(views)
-	}
-
-	fn create_frame_buffers(
-		views: &Vec<image_view::View>,
-		extent: structs::Extent2D,
-		render_pass: &renderpass::Pass,
-		logical: &sync::Arc<logical::Device>,
-	) -> utility::Result<Vec<command::framebuffer::Framebuffer>> {
-		let mut frame_buffers: Vec<command::framebuffer::Framebuffer> = Vec::new();
-		for image_view in views.iter() {
-			frame_buffers.push(
-				command::framebuffer::Info::default()
-					.set_extent(extent)
-					.create_object(&image_view, &render_pass, logical)?,
-			);
-		}
-		Ok(frame_buffers)
 	}
 
 	fn create_semaphores(
@@ -380,6 +404,7 @@ impl RenderChain {
 		Ok(vec)
 	}
 
+	/// Records commands for one frame to a command buffer.
 	#[profiling::function]
 	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
 		self.command_buffers[buffer_index].begin(None, None)?;
@@ -402,6 +427,16 @@ impl RenderChain {
 		Ok(())
 	}
 
+	/// Renders the next frame, thereby performing mutations like:
+	/// initializing rendering elements,
+	/// acquiring the next frame image,
+	/// recording commands if necessary,
+	/// submitting the command buffer to the GPU,
+	/// and presenting the image to the window surface.
+	/// 
+	/// If the swapchain is out of date, then the render chain will
+	/// destroy the display objects and reconstruct them
+	/// (thereby causing all frames to be marked as dirty).
 	#[profiling::function]
 	pub fn render_frame(&mut self) -> Result<(), AnyError> {
 		let logical = self.logical.upgrade().unwrap();
