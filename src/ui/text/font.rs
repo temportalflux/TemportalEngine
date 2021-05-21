@@ -120,7 +120,7 @@ impl Loaded {
 	}
 
 	pub fn size(&self) -> Vector<f32, 2> {
-		Vector::new([self.size.x() as f32, self.size.y() as f32])
+		self.size.try_into::<f32>().unwrap()
 	}
 
 	pub fn line_height(&self) -> &f32 {

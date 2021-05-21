@@ -2,7 +2,7 @@ use crate::{
 	graphics::{
 		alloc, buffer, command, flags, pipeline, utility::offset_of, RenderChain, TaskGpuCopy,
 	},
-	math::{vector, Vector},
+	math::Vector,
 	task, utility,
 };
 use raui::renderer::tesselate::prelude::*;
@@ -76,23 +76,26 @@ impl Mesh {
 		render_chain: &RenderChain,
 		resolution: &Vector<u32, 2>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		let resolution = vector![resolution.x() as f32, resolution.y() as f32];
+		let resolution = resolution.try_into::<f32>().unwrap();
 		let vertices = tesselation
 			.vertices
 			.as_interleaved()
 			.unwrap()
 			.into_iter()
 			.map(|(pos, tex_coord, color)| Vertex {
-				pos: (vector![pos.0 as f32, pos.1 as f32].scale(resolution) * 2.0 - 1.0)
+				pos: Vector::from([pos.0, pos.1])
+					.try_into::<f32>()
+					.unwrap()
+					.scale(resolution)
+					.subvec::<4>(None) * 2.0
+					- 1.0,
+				tex_coord: Vector::from([tex_coord.0, tex_coord.1])
+					.try_into::<f32>()
+					.unwrap()
 					.subvec::<4>(None),
-				tex_coord: vector![tex_coord.0 as f32, tex_coord.1 as f32].subvec::<4>(None),
-				color: [
-					color.0 as f32,
-					color.1 as f32,
-					color.2 as f32,
-					color.3 as f32,
-				]
-				.into(),
+				color: Vector::from([color.0, color.1, color.2, color.3])
+					.try_into::<f32>()
+					.unwrap(),
 			})
 			.collect::<Vec<_>>();
 		//log::debug!("{:?}", tesselation.vertices.as_interleaved().unwrap());

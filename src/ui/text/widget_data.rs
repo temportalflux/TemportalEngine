@@ -133,7 +133,7 @@ impl WidgetData {
 		font: &font::Loaded,
 		resolution: &Vector<u32, 2>,
 	) -> (Vec<Vertex>, Vec<u32>) {
-		let resolution: Vector<f32, 2> = vector![resolution.x() as f32, resolution.y() as f32];
+		let resolution = resolution.try_into::<f32>().unwrap();
 		// DPI is always 1.0 because winit handles the scale factor https://docs.rs/winit/0.24.0/winit/dpi/index.html
 		let dpi = 1_f32;
 
@@ -161,10 +161,8 @@ impl WidgetData {
 			let glyph = font.get(unicode).unwrap_or(unknown_glyph);
 			let glyph_metrics = glyph.metrics * self.font_size * dpi;
 			let bearing = vector![glyph_metrics.bearing.x(), -glyph_metrics.bearing.y()];
-			let glyph_pos_in_atlas =
-				Vector::new([glyph.atlas_pos.x() as f32, glyph.atlas_pos.y() as f32]);
-			let glyph_size_in_atlas =
-				Vector::new([glyph.atlas_size.x() as f32, glyph.atlas_size.y() as f32]);
+			let glyph_pos_in_atlas = glyph.atlas_pos.try_into::<f32>().unwrap();
+			let glyph_size_in_atlas = glyph.atlas_size.try_into::<f32>().unwrap();
 
 			let mut push_glyph_vert = |mask: Vector<f32, 2>| -> u32 {
 				let mut pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;

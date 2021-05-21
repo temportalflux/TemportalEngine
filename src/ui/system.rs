@@ -171,7 +171,7 @@ impl System {
 			.unwrap();
 		self.image_sizes.insert(
 			id.to_str().to_owned(),
-			Vec2::from((texture.size().x() as f32, texture.size().y() as f32)),
+			Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
 		);
 		self.image.add_pending(id, texture)?;
 		Ok(())
