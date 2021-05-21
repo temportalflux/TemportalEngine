@@ -334,7 +334,6 @@ impl RenderChain {
 				image_view::View::builder()
 					.for_image(image.clone())
 					.with_view_type(flags::ImageViewType::TYPE_2D)
-					.with_format(flags::Format::B8G8R8A8_SRGB)
 					.with_range(
 						structs::subresource::Range::default()
 							.with_aspect(flags::ImageAspect::COLOR),

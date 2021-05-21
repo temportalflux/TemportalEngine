@@ -115,7 +115,6 @@ impl ImageCache {
 			image_view::View::builder()
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
-				.with_format(image.format())
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
 				.build(&render_chain.logical())?,
 		);
