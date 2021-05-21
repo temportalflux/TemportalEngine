@@ -1,7 +1,10 @@
 use crate::{
 	graphics::{
 		self, command,
-		device::{logical, physical, swapchain},
+		device::{
+			logical, physical,
+			swapchain::{self, Swapchain},
+		},
 		flags, image, image_view, renderpass, structs, Surface,
 	},
 	math::Vector,
@@ -96,10 +99,10 @@ pub struct RenderChain {
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
 	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<sync::Arc<image::Image>>,
-	swapchain: Option<swapchain::Swapchain>,
+	swapchain: Option<Swapchain>,
 	render_pass: Option<renderpass::Pass>,
 
-	swapchain_info: swapchain::Info,
+	swapchain_info: swapchain::Builder,
 	transient_command_pool: sync::Arc<command::Pool>,
 
 	resolution: Vector<u32, 2>,
@@ -139,15 +142,15 @@ impl RenderChain {
 		frame_count: usize,
 		render_pass_info: renderpass::Info,
 	) -> utility::Result<RenderChain> {
-		let swapchain_info = swapchain::Info::default()
-			.set_image_count(frame_count as u32)
-			.set_image_format(flags::Format::B8G8R8A8_SRGB)
-			.set_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
-			.set_image_array_layer_count(1)
-			.set_image_usage(flags::ImageUsageFlags::COLOR_ATTACHMENT)
-			.set_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
-			.set_composite_alpha(flags::CompositeAlpha::OPAQUE)
-			.set_is_clipped(true);
+		let swapchain_info = Swapchain::builder()
+			.with_image_count(frame_count as u32)
+			.with_image_format(flags::Format::B8G8R8A8_SRGB)
+			.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
+			.with_image_array_layer_count(1)
+			.with_image_usage(flags::ImageUsageFlags::COLOR_ATTACHMENT)
+			.with_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
+			.with_composite_alpha(flags::CompositeAlpha::OPAQUE)
+			.with_is_clipped(true);
 		let render_pass_instruction = renderpass::RecordInstruction::default();
 		let resolution = physical.query_surface_support().image_extent();
 
@@ -317,7 +320,7 @@ impl RenderChain {
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
 		self.render_pass = Some(self.render_pass_info.create_object(&logical)?);
-		self.swapchain = Some(self.swapchain_info.create_object(
+		self.swapchain = Some(self.swapchain_info.clone().build(
 			&logical,
 			&surface,
 			self.swapchain.as_ref(),
@@ -377,7 +380,7 @@ impl RenderChain {
 		self.frame_command_buffer_requires_recording = vec![true; self.frame_count];
 	}
 
-	fn swapchain(&self) -> &swapchain::Swapchain {
+	fn swapchain(&self) -> &Swapchain {
 		self.swapchain.as_ref().unwrap()
 	}
 
