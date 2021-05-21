@@ -224,7 +224,7 @@ impl TaskGpuCopy {
 	#[profiling::function]
 	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
 		let buf_size = data.len() * std::mem::size_of::<T>();
-		let buffer = buffer::Buffer::create_staging(buf_size, &self.allocator)?;
+		let buffer = buffer::Buffer::create_staging(&self.allocator, buf_size)?;
 		{
 			let mut mem = buffer.memory()?;
 			let wrote_all = mem
