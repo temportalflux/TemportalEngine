@@ -102,11 +102,10 @@ impl System {
 }
 
 impl System {
-
 	/// Initializes the ui system with shaders from [`EngineApp`](crate::EngineApp),
 	/// instead of manually applying shaders for each [`SystemShader`] type.
 	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
-		use crate::{EngineApp, Application};
+		use crate::{Application, EngineApp};
 		self.add_shader(
 			SystemShader::TextVertex,
 			&EngineApp::get_asset_id("shaders/ui/text/vertex"),
@@ -167,12 +166,14 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
-		self.image.add_pending(
-			id,
-			asset::Loader::load_sync(&id)?
-				.downcast::<Texture>()
-				.unwrap(),
-		)?;
+		let texture = asset::Loader::load_sync(&id)?
+			.downcast::<Texture>()
+			.unwrap();
+		self.image_sizes.insert(
+			id.to_str().to_owned(),
+			Vec2::from((texture.size().x() as f32, texture.size().y() as f32)),
+		);
+		self.image.add_pending(id, texture)?;
 		Ok(())
 	}
 }
