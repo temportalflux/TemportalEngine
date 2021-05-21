@@ -102,6 +102,34 @@ impl System {
 }
 
 impl System {
+
+	/// Initializes the ui system with shaders from [`EngineApp`](crate::EngineApp),
+	/// instead of manually applying shaders for each [`SystemShader`] type.
+	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
+		use crate::{EngineApp, Application};
+		self.add_shader(
+			SystemShader::TextVertex,
+			&EngineApp::get_asset_id("shaders/ui/text/vertex"),
+		)?;
+		self.add_shader(
+			SystemShader::TextFragment,
+			&EngineApp::get_asset_id("shaders/ui/text/fragment"),
+		)?;
+		self.add_shader(
+			SystemShader::MeshVertex,
+			&EngineApp::get_asset_id("shaders/ui/mesh/vertex"),
+		)?;
+		self.add_shader(
+			SystemShader::MeshSimpleFragment,
+			&EngineApp::get_asset_id("shaders/ui/mesh/simple_fragment"),
+		)?;
+		self.add_shader(
+			SystemShader::MeshImageFragment,
+			&EngineApp::get_asset_id("shaders/ui/mesh/image_fragment"),
+		)?;
+		Ok(())
+	}
+
 	/// Adds a shader to the ui system so that the various kinda of meshes can render.
 	/// The system must be provided with one of each system shader before it can run properly.
 	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> VoidResult {

@@ -17,9 +17,29 @@ pub use profiling;
 
 use graphics::AppInfo;
 
+pub struct EngineApp();
+impl Application for EngineApp {
+	fn name() -> &'static str {
+		std::env!("CARGO_PKG_NAME")
+	}
+	fn display_name() -> &'static str {
+		"Temportal Engine"
+	}
+	fn location() -> &'static str {
+		std::env!("CARGO_MANIFEST_DIR")
+	}
+	fn version() -> u32 {
+		utility::make_version(
+			std::env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
+			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
+			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
+		)
+	}
+}
+
 pub fn make_app_info<T: Application>() -> AppInfo {
 	AppInfo::new()
-		.engine("TemportalEngine", utility::make_version(0, 1, 0))
+		.engine(EngineApp::name(), EngineApp::version())
 		.with_application(T::name(), T::version())
 }
 

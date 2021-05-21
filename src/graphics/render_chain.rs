@@ -433,7 +433,7 @@ impl RenderChain {
 	/// recording commands if necessary,
 	/// submitting the command buffer to the GPU,
 	/// and presenting the image to the window surface.
-	/// 
+	///
 	/// If the swapchain is out of date, then the render chain will
 	/// destroy the display objects and reconstruct them
 	/// (thereby causing all frames to be marked as dirty).

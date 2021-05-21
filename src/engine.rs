@@ -1,4 +1,4 @@
-use crate::{asset, graphics, logging, task, utility::AnyError, Application};
+use crate::{asset, graphics, logging, task, utility::AnyError, Application, EngineApp};
 use std::sync::{Arc, RwLock};
 use winit::{
 	event::Event,
@@ -15,6 +15,7 @@ impl Engine {
 		logging::init::<T>()?;
 		task::initialize_system();
 		crate::register_asset_types();
+		asset::Library::scan_application::<EngineApp>()?;
 		asset::Library::scan_application::<T>()?;
 		Ok(Engine {
 			event_loop: EventLoop::new(),
