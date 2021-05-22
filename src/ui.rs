@@ -1,5 +1,7 @@
 pub use raui::prelude::*;
 
+pub static LOG: &'static str = "ui";
+
 mod error;
 pub use error::*;
 

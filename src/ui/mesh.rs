@@ -110,18 +110,22 @@ impl Mesh {
 
 		let mut gpu_signals = Vec::with_capacity(2);
 
-		Self::write_buffer(
-			sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
-			&vertices[..],
-			render_chain,
-			&mut gpu_signals,
-		)?;
-		Self::write_buffer(
-			sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
-			&indices[..],
-			render_chain,
-			&mut gpu_signals,
-		)?;
+		if !vertices.is_empty() {
+			Self::write_buffer(
+				sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
+				&vertices[..],
+				render_chain,
+				&mut gpu_signals,
+			)?;
+		}
+		if !indices.is_empty() {
+			Self::write_buffer(
+				sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
+				&indices[..],
+				render_chain,
+				&mut gpu_signals,
+			)?;
+		}
 
 		Ok(gpu_signals)
 	}

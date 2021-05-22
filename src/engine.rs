@@ -37,6 +37,7 @@ impl Engine {
 	pub fn run(mut self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut systems: Vec<_> = self.systems.drain(..).collect();
+		let mut prev_render_error = None;
 		self.event_loop.run(move |event, _, control_flow| {
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
@@ -57,7 +58,15 @@ impl Engine {
 					}
 					{
 						let mut chain_write = render_chain.write().unwrap();
-						chain_write.render_frame().unwrap();
+						match chain_write.render_frame() {
+							Ok(_) => prev_render_error = None,
+							Err(error) => {
+								if prev_render_error.is_none() {
+									log::error!("Frame render failed {:?}", error);
+								}
+								prev_render_error = Some(error);
+							}
+						}
 					}
 					prev_frame_time = frame_time;
 				}

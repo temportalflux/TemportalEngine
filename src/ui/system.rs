@@ -118,6 +118,7 @@ impl System {
 	/// instead of manually applying shaders for each [`SystemShader`] type.
 	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
 		use crate::{Application, EngineApp};
+		log::info!(target: LOG, "Initializing engine shaders");
 		self.add_shader(
 			SystemShader::TextVertex,
 			&EngineApp::get_asset_id("shaders/ui/text/vertex"),
@@ -170,14 +171,13 @@ impl System {
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_font(
 		&mut self,
-		font_asset_id: &asset::Id,
+		id: &asset::Id,
 		get_width_edge: text::font::BoxedGetWidthEdge,
 	) -> VoidResult {
+		log::info!(target: LOG, "Adding font {}", id.to_str());
 		self.text.add_pending(
-			font_asset_id.file_name(),
-			asset::Loader::load_sync(&font_asset_id)?
-				.downcast::<Font>()
-				.unwrap(),
+			id.file_name(),
+			asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap(),
 			get_width_edge,
 		);
 		Ok(())
@@ -192,6 +192,7 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
+		log::info!(target: LOG, "Adding texture {}", id.to_str());
 		let texture = asset::Loader::load_sync(&id)?
 			.downcast::<Texture>()
 			.unwrap();
@@ -233,6 +234,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+		log::info!(target: LOG, "Initializing render chain element");
 		self.colored_area.create_shaders(&render_chain)?;
 		self.image.create_shaders(&render_chain)?;
 		self.text.create_shaders(&render_chain)?;
@@ -251,6 +253,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<()> {
+		log::info!(target: LOG, "Destroying render chain");
 		self.colored_area.destroy_pipeline(render_chain)?;
 		self.image.destroy_pipeline(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
@@ -263,6 +266,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
+		log::info!(target: LOG, "Creating render chain");
 		self.resolution = vector![resolution.width, resolution.height];
 		self.colored_area.create_pipeline(
 			render_chain,
