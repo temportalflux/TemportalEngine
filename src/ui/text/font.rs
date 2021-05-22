@@ -42,7 +42,7 @@ impl From<Box<Font>> for PendingAtlas {
 				.map(|glyph| (glyph.unicode, glyph.clone()))
 				.collect(),
 			line_height: *font.line_height(),
-			width_edge: [0.6, 0.08].into(),
+			width_edge: *font.width_edge(),
 		}
 	}
 }

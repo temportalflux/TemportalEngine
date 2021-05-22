@@ -178,10 +178,11 @@ impl System {
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_font(&mut self, id: &asset::Id) -> VoidResult {
 		let font_id = id.to_str().to_owned().replace("\\", "/");
-		log::info!(target: LOG, "Adding font '{}'", font_id);
+		let asset = asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap();
+		log::info!(target: LOG, "Adding font '{}' with width-edge {}", font_id, asset.width_edge());
 		self.text.add_pending(
 			font_id,
-			asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap(),
+			asset
 		);
 		Ok(())
 	}
