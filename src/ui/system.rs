@@ -363,7 +363,9 @@ impl graphics::RenderChainElement for System {
 						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
 						let clip_vec = vector![clip.box_size.0, clip.box_size.1];
 						let transform = |mask: Vector<f32, 2>| -> Vector<f32, 2> {
-							(matrix * (clip_vec * mask).extend([0.0, 1.0].into()).into())
+							let v4: Matrix<f32, 1, 4> = (clip_vec * mask).extend([0.0, 1.0].into()).into();
+							let mat_vec = v4 * matrix;
+							mat_vec
 								.column_vec(0)
 								.subvec::<2>(None)
 						};
