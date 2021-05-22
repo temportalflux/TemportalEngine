@@ -157,28 +157,19 @@ impl System {
 		}
 	}
 
-	pub fn with_font(
-		mut self,
-		id: &asset::Id,
-		get_width_edge: text::font::BoxedGetWidthEdge,
-	) -> Result<Self, utility::AnyError> {
-		self.add_font(id, get_width_edge)?;
+	pub fn with_font(mut self, id: &asset::Id) -> Result<Self, utility::AnyError> {
+		self.add_font(id)?;
 		Ok(self)
 	}
 
 	/// Adds a font to the text rendering system.
 	/// Fonts must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
-	pub fn add_font(
-		&mut self,
-		id: &asset::Id,
-		get_width_edge: text::font::BoxedGetWidthEdge,
-	) -> VoidResult {
+	pub fn add_font(&mut self, id: &asset::Id) -> VoidResult {
 		log::info!(target: LOG, "Adding font {}", id.to_str());
 		self.text.add_pending(
-			id.file_name(),
+			id.to_str().to_owned(),
 			asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap(),
-			get_width_edge,
 		);
 		Ok(())
 	}

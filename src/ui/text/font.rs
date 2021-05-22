@@ -13,16 +13,13 @@ pub type Id = String;
 type UnicodeId = u32;
 type FontGlyphMap = HashMap<UnicodeId, Glyph>;
 
-pub type FGetWidthEdge = dyn Fn(f32) -> Vector<f32, 2> + Send + Sync;
-pub type BoxedGetWidthEdge = sync::Arc<FGetWidthEdge>;
-
 pub struct PendingAtlas {
 	size: Vector<usize, 2>,
 	binary: Vec<u8>,
 	format: flags::Format,
 	glyph_map: FontGlyphMap,
 	line_height: f32,
-	get_width_edge: BoxedGetWidthEdge,
+	width_edge: Vector<f32, 2>,
 }
 
 pub struct Loaded {
@@ -30,7 +27,7 @@ pub struct Loaded {
 	line_height: f32,
 	glyph_map: FontGlyphMap,
 	view: sync::Arc<image_view::View>,
-	get_width_edge: BoxedGetWidthEdge,
+	width_edge: Vector<f32, 2>,
 }
 
 impl From<Box<Font>> for PendingAtlas {
@@ -45,17 +42,12 @@ impl From<Box<Font>> for PendingAtlas {
 				.map(|glyph| (glyph.unicode, glyph.clone()))
 				.collect(),
 			line_height: *font.line_height(),
-			get_width_edge: sync::Arc::new(|_| Vector::new([0.6, 0.2])),
+			width_edge: [0.6, 0.08].into(),
 		}
 	}
 }
 
 impl PendingAtlas {
-	pub fn with_width_edge(mut self, get_width_edge: BoxedGetWidthEdge) -> Self {
-		self.get_width_edge = get_width_edge;
-		self
-	}
-
 	pub fn load(
 		self,
 		render_chain: &graphics::RenderChain,
@@ -102,7 +94,7 @@ impl PendingAtlas {
 				size: self.size,
 				glyph_map: self.glyph_map,
 				line_height: self.line_height,
-				get_width_edge: self.get_width_edge,
+				width_edge: self.width_edge,
 			},
 			signals,
 		))
@@ -126,7 +118,7 @@ impl Loaded {
 		&self.line_height
 	}
 
-	pub fn get_width_edge(&self, font_size: f32) -> Vector<f32, 2> {
-		self.get_width_edge.as_ref()(font_size)
+	pub fn get_width_edge(&self) -> &Vector<f32, 2> {
+		&self.width_edge
 	}
 }

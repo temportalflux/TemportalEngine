@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Font {
 	asset_type: String,
+	width_edge: Vector<f32, 2>,
 	sdf: Option<SDF>,
 }
 
@@ -92,6 +93,10 @@ impl Font {
 
 	pub fn line_height(&self) -> &f32 {
 		&self.sdf.as_ref().unwrap().line_height
+	}
+
+	pub fn width_edge(&self) -> &Vector<f32, 2> {
+		&self.width_edge
 	}
 }
 

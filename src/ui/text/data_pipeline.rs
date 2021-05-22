@@ -58,16 +58,9 @@ impl DataPipeline {
 		self.drawable.add_shader(id)
 	}
 
-	pub fn add_pending(
-		&mut self,
-		id: String,
-		font: Box<Font>,
-		get_width_edge: font::BoxedGetWidthEdge,
-	) {
-		self.pending_font_atlases.insert(
-			id,
-			font::PendingAtlas::from(font).with_width_edge(get_width_edge),
-		);
+	pub fn add_pending(&mut self, id: String, font: Box<Font>) {
+		self.pending_font_atlases
+			.insert(id, font::PendingAtlas::from(font));
 	}
 
 	#[profiling::function]

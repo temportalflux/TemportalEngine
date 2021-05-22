@@ -72,6 +72,7 @@ impl Engine {
 									log::error!("Frame render failed {:?}", error);
 								}
 								prev_render_error = Some(error);
+								*control_flow = winit::event_loop::ControlFlow::Exit;
 							}
 						}
 					}

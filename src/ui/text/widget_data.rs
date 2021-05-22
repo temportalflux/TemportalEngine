@@ -144,7 +144,6 @@ impl WidgetData {
 		let mut vertices = Vec::with_capacity(self.content.len() * 4);
 		let mut indices = Vec::with_capacity(self.content.len() * 6);
 
-		let width_edge = font.get_width_edge(self.font_size);
 		let mut push_vertex = |vertex: Vertex| {
 			let index = vertices.len();
 			vertices.push(vertex);
@@ -171,7 +170,7 @@ impl WidgetData {
 				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size())
 					.subvec::<4>(None);
 				push_vertex(Vertex {
-					pos_and_width_edge: vector![pos.x(), pos.y()].extend(width_edge),
+					pos_and_width_edge: vector![pos.x(), pos.y()].extend(*font.get_width_edge()),
 					tex_coord,
 					color: self.color,
 				})
