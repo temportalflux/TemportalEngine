@@ -105,7 +105,8 @@ impl DataPipeline {
 				.set_color_blending(
 					pipeline::ColorBlendState::default()
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
-				),
+				)
+				.with_dynamic_state(flags::DynamicState::SCISSOR),
 		)
 	}
 

@@ -285,7 +285,8 @@ impl graphics::RenderChainElement for System {
 				.set_color_blending(
 					pipeline::ColorBlendState::default()
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
-				),
+				)
+				.with_dynamic_state(flags::DynamicState::SCISSOR),
 		)?;
 		self.image.create_pipeline(render_chain, resolution)?;
 		self.text
@@ -363,11 +364,10 @@ impl graphics::RenderChainElement for System {
 						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
 						let clip_vec = vector![clip.box_size.0, clip.box_size.1];
 						let transform = |mask: Vector<f32, 2>| -> Vector<f32, 2> {
-							let v4: Matrix<f32, 1, 4> = (clip_vec * mask).extend([0.0, 1.0].into()).into();
+							let v4: Matrix<f32, 1, 4> =
+								(clip_vec * mask).extend([0.0, 1.0].into()).into();
 							let mat_vec = v4 * matrix;
-							mat_vec
-								.column_vec(0)
-								.subvec::<2>(None)
+							mat_vec.column_vec(0).subvec::<2>(None)
 						};
 
 						let tl = transform(vector![0.0, 0.0]);
@@ -380,7 +380,7 @@ impl graphics::RenderChainElement for System {
 						let size = max - min;
 
 						self.draw_calls.push(DrawCall::PushClip(Scissor::new(
-							[min.x() as i32, min.y() as i32].into(),
+							[min.x() as u32, min.y() as u32].into(),
 							[size.x() as u32, size.y() as u32].into(),
 						)));
 					}
@@ -397,8 +397,6 @@ impl graphics::RenderChainElement for System {
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
-		// TODO: https://github.com/RAUI-labs/raui/discussions/52#discussioncomment-738219
-		// Should use dynamic scissors on the pipeline command buffers
 		let mut clips = Vec::new();
 		for call in self.draw_calls.iter() {
 			match call {
@@ -407,15 +405,20 @@ impl graphics::RenderChainElement for System {
 					clips.pop();
 				}
 
-				DrawCall::Text(widget_id) => self
+				DrawCall::Text(widget_id) => {
+					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
+					self
 					.text
-					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?,
+					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?
+				},
 				DrawCall::Range(range) => {
+					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.colored_area.bind_pipeline(buffer);
 					self.frame_meshes[frame].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
 				}
 				DrawCall::Texture(texture_id, range) => {
+					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.image.bind_pipeline(buffer);
 					self.image.bind_texture(buffer, texture_id);
 					self.frame_meshes[frame].bind_buffers(buffer);
