@@ -181,7 +181,7 @@ impl System {
 		log::info!(
 			target: LOG,
 			"Adding font '{}' with width-edge {}",
-			id.name(),
+			id.short_id(),
 			asset.width_edge()
 		);
 		self.text.add_pending(id.name(), asset);
@@ -197,10 +197,10 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
-		log::info!(target: LOG, "Adding texture '{}'", id.name());
 		let texture = asset::Loader::load_sync(&id)?
 			.downcast::<Texture>()
 			.unwrap();
+		log::info!(target: LOG, "Adding texture '{}'", id.short_id());
 		self.image_sizes.insert(
 			id.name(),
 			Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),

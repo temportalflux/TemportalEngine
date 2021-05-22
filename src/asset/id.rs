@@ -29,6 +29,10 @@ impl Id {
 	pub fn name(&self) -> String {
 		self.to_str().to_owned().replace("\\", "/")
 	}
+
+	pub fn short_id(&self) -> String {
+		format!("{}:{}", self.module_name, self.name())
+	}
 }
 
 impl PartialEq for Id {

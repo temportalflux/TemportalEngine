@@ -20,6 +20,7 @@ impl Loader {
 	}
 
 	pub fn load_sync(id: &asset::Id) -> Result<asset::AnyBox, utility::AnyError> {
+		log::info!(target: asset::LOG, "Synchronously loading '{}'", id.short_id());
 		let library = asset::Library::get().read().unwrap();
 		let location = library
 			.find_location(&id)
