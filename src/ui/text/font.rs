@@ -43,6 +43,7 @@ impl From<Box<Font>> for PendingAtlas {
 				.collect(),
 			line_height: *font.line_height(),
 			width_edge: *font.width_edge(),
+			//width_edge: [0.8, 0.05].into(),
 		}
 	}
 }
