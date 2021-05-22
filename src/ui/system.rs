@@ -177,13 +177,14 @@ impl System {
 	/// Fonts must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_font(&mut self, id: &asset::Id) -> VoidResult {
-		let font_id = id.to_str().to_owned().replace("\\", "/");
 		let asset = asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap();
-		log::info!(target: LOG, "Adding font '{}' with width-edge {}", font_id, asset.width_edge());
-		self.text.add_pending(
-			font_id,
-			asset
+		log::info!(
+			target: LOG,
+			"Adding font '{}' with width-edge {}",
+			id.name(),
+			asset.width_edge()
 		);
+		self.text.add_pending(id.name(), asset);
 		Ok(())
 	}
 
@@ -196,13 +197,12 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
-		let tex_id = id.to_str().to_owned().replace("\\", "/");
-		log::info!(target: LOG, "Adding texture '{}'", tex_id);
+		log::info!(target: LOG, "Adding texture '{}'", id.name());
 		let texture = asset::Loader::load_sync(&id)?
 			.downcast::<Texture>()
 			.unwrap();
 		self.image_sizes.insert(
-			tex_id,
+			id.name(),
 			Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
 		);
 		self.image.add_pending(id, texture)?;

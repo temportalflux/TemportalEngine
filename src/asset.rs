@@ -17,3 +17,5 @@ pub use loader::*;
 
 mod types;
 pub use types::*;
+
+pub mod statics;

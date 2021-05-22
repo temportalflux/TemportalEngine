@@ -25,6 +25,10 @@ impl Id {
 	pub fn to_str(&self) -> &str {
 		self.asset_path.to_str().unwrap()
 	}
+
+	pub fn name(&self) -> String {
+		self.to_str().to_owned().replace("\\", "/")
+	}
 }
 
 impl PartialEq for Id {
