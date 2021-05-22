@@ -6,7 +6,7 @@ use winit::{
 };
 
 pub struct Engine {
-	event_loop: EventLoop<()>,
+	event_loop: Option<EventLoop<()>>,
 	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
 }
 
@@ -18,13 +18,13 @@ impl Engine {
 		asset::Library::scan_application::<EngineApp>()?;
 		asset::Library::scan_application::<T>()?;
 		Ok(Engine {
-			event_loop: EventLoop::new(),
+			event_loop: Some(EventLoop::new()),
 			systems: Vec::new(),
 		})
 	}
 
 	pub fn event_loop(&self) -> &EventLoop<()> {
-		&self.event_loop
+		self.event_loop.as_ref().unwrap()
 	}
 
 	pub fn add_system<T>(&mut self, system: &Arc<RwLock<T>>)
@@ -34,11 +34,15 @@ impl Engine {
 		self.systems.push(system.clone());
 	}
 
-	pub fn run(mut self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
+	pub fn run(self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
+		Self::run_engine(Arc::new(RwLock::new(self)), render_chain)
+	}
+
+	pub fn run_engine(engine: Arc<RwLock<Self>>, render_chain: Arc<RwLock<graphics::RenderChain>>) {
 		let mut prev_frame_time = std::time::Instant::now();
-		let mut systems: Vec<_> = self.systems.drain(..).collect();
 		let mut prev_render_error = None;
-		self.event_loop.run(move |event, _, control_flow| {
+		let event_loop = engine.write().unwrap().event_loop.take();
+		event_loop.unwrap().run(move |event, _, control_flow| {
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
 			match event {
@@ -53,8 +57,11 @@ impl Engine {
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
 					let delta_time = frame_time - prev_frame_time;
-					for system in systems.iter_mut() {
-						system.write().unwrap().update(delta_time);
+					{
+						let systems = &mut engine.write().unwrap().systems;
+						for system in systems.iter_mut() {
+							system.write().unwrap().update(delta_time);
+						}
 					}
 					{
 						let mut chain_write = render_chain.write().unwrap();
