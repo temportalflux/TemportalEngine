@@ -55,7 +55,10 @@ impl Engine {
 					for system in systems.iter_mut() {
 						system.write().unwrap().update(delta_time);
 					}
-					render_chain.write().unwrap().render_frame().unwrap();
+					{
+						let mut chain_write = render_chain.write().unwrap();
+						chain_write.render_frame().unwrap();
+					}
 					prev_frame_time = frame_time;
 				}
 				Event::RedrawRequested(_) => {}

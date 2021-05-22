@@ -52,22 +52,31 @@ enum DrawCall {
 
 impl System {
 	/// Constructs a ui rendering system for the provided render chain.
-	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
+	pub fn new(
+		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
+	) -> utility::Result<Self> {
 		let mut application = Application::new();
 		application.setup(widget::setup);
+
+		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
 			resolution: Vector::default(),
 			frame_meshes: Vec::new(),
 			colored_area: Drawable::default(),
-			image: image::DataPipeline::new(&render_chain)?,
-			text: text::DataPipeline::new(&render_chain)?,
+			image: image::DataPipeline::new(&chain_read)?,
+			text: text::DataPipeline::new(&chain_read)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
 			image_sizes: HashMap::new(),
 			pending_gpu_signals: Vec::new(),
 			draw_calls: Vec::new(),
 		})
+	}
+
+	pub fn with_tree(mut self, tree: WidgetNode) -> Self {
+		self.apply_tree(tree);
+		self
 	}
 
 	/// Set the ui widget tree to update and render.
@@ -99,9 +108,12 @@ impl System {
 			.map(|success| success.optimized_batches())
 			.ok()
 	}
-}
 
-impl System {
+	pub fn with_engine_shaders(mut self) -> Result<Self, utility::AnyError> {
+		self.initialize_engine_shaders()?;
+		Ok(self)
+	}
+
 	/// Initializes the ui system with shaders from [`EngineApp`](crate::EngineApp),
 	/// instead of manually applying shaders for each [`SystemShader`] type.
 	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
@@ -144,6 +156,15 @@ impl System {
 		}
 	}
 
+	pub fn with_font(
+		mut self,
+		id: &asset::Id,
+		get_width_edge: text::font::BoxedGetWidthEdge,
+	) -> Result<Self, utility::AnyError> {
+		self.add_font(id, get_width_edge)?;
+		Ok(self)
+	}
+
 	/// Adds a font to the text rendering system.
 	/// Fonts must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
@@ -162,6 +183,11 @@ impl System {
 		Ok(())
 	}
 
+	pub fn with_texture(mut self, id: &asset::Id) -> Result<Self, utility::AnyError> {
+		self.add_texture(id)?;
+		Ok(self)
+	}
+
 	/// Adds a texture to the image rendering system.
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
@@ -175,6 +201,20 @@ impl System {
 		);
 		self.image.add_pending(id, texture)?;
 		Ok(())
+	}
+
+	pub fn attach_system(
+		self,
+		engine: &mut crate::Engine,
+		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
+	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
+		let system = sync::Arc::new(sync::RwLock::new(self));
+		engine.add_system(&system);
+		render_chain
+			.write()
+			.unwrap()
+			.add_render_chain_element(&system)?;
+		Ok(system)
 	}
 }
 
