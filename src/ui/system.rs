@@ -79,6 +79,11 @@ impl System {
 		self
 	}
 
+	pub fn with_tree_root(mut self, component: WidgetComponent) -> Self {
+		self.apply_tree(WidgetNode::Component(component));
+		self
+	}
+
 	/// Set the ui widget tree to update and render.
 	pub fn apply_tree(&mut self, tree: WidgetNode) {
 		self.application.apply(tree);
@@ -407,10 +412,9 @@ impl graphics::RenderChainElement for System {
 
 				DrawCall::Text(widget_id) => {
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
-					self
-					.text
-					.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?
-				},
+					self.text
+						.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?
+				}
 				DrawCall::Range(range) => {
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.colored_area.bind_pipeline(buffer);
