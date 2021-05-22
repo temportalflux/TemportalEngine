@@ -162,13 +162,25 @@ impl System {
 		Ok(self)
 	}
 
+	pub fn with_all_fonts(mut self) -> Result<Self, utility::AnyError> {
+		let library = crate::asset::Library::get().read().unwrap();
+		let font_asset_ids = library.get_ids_of_type::<Font>();
+		if let Some(asset_ids) = font_asset_ids {
+			for id in asset_ids {
+				self.add_font(id)?;
+			}
+		}
+		Ok(self)
+	}
+
 	/// Adds a font to the text rendering system.
 	/// Fonts must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_font(&mut self, id: &asset::Id) -> VoidResult {
-		log::info!(target: LOG, "Adding font {}", id.to_str());
+		let font_id = id.to_str().to_owned().replace("\\", "/");
+		log::info!(target: LOG, "Adding font '{}'", font_id);
 		self.text.add_pending(
-			id.to_str().to_owned(),
+			font_id,
 			asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap(),
 		);
 		Ok(())
@@ -183,12 +195,13 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
-		log::info!(target: LOG, "Adding texture {}", id.to_str());
+		let tex_id = id.to_str().to_owned().replace("\\", "/");
+		log::info!(target: LOG, "Adding texture '{}'", tex_id);
 		let texture = asset::Loader::load_sync(&id)?
 			.downcast::<Texture>()
 			.unwrap();
 		self.image_sizes.insert(
-			id.to_str().to_owned(),
+			tex_id,
 			Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
 		);
 		self.image.add_pending(id, texture)?;

@@ -8,19 +8,27 @@ struct PakData {
 	asset_paths: Vec<std::path::PathBuf>,
 }
 
+#[derive(Debug)]
+struct Metadata {
+	type_id: asset::TypeIdOwned,
+	location: asset::Location,
+}
+
 /// Record-keeper of all the assets scanned at runtime.
 /// Asset instances are query-able by type or by id.
 #[derive(Debug)]
 pub struct Library {
 	paks: HashMap</*module_name*/ String, PakData>,
-	asset_locations: HashMap<asset::Id, asset::Location>,
+	assets: HashMap<asset::Id, Metadata>,
+	ids_by_type: HashMap<asset::TypeIdOwned, Vec<asset::Id>>,
 }
 
 impl Default for Library {
 	fn default() -> Library {
 		Library {
 			paks: HashMap::new(),
-			asset_locations: HashMap::new(),
+			assets: HashMap::new(),
+			ids_by_type: HashMap::new(),
 		}
 	}
 }
@@ -49,6 +57,7 @@ impl Library {
 
 	#[profiling::function]
 	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
+		use std::io::Read;
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
@@ -74,13 +83,27 @@ impl Library {
 		let file = fs::File::open(&path)?;
 		let mut archive = zip::ZipArchive::new(file)?;
 		for i in 0..archive.len() {
-			let item = archive.by_index(i)?;
-			let item_path = item.enclosed_name().unwrap();
-			pak_data.asset_paths.push(item_path.to_path_buf());
-			self.asset_locations.insert(
-				asset::Id::new(module_name.as_str(), item_path.to_str().unwrap()),
-				asset::Location::from_pak(&pak_data.location, i),
+			let mut item = archive.by_index(i)?;
+			let item_path = item.enclosed_name().unwrap().to_path_buf();
+			pak_data.asset_paths.push(item_path.clone());
+
+			let type_id = {
+				let mut bytes: Vec<u8> = Vec::new();
+				item.read_to_end(&mut bytes)?;
+				let generic: asset::Generic = rmp_serde::from_read_ref(&bytes)?;
+				generic.asset_type.to_owned()
+			};
+
+			let id = asset::Id::new(module_name.as_str(), item_path.as_path().to_str().unwrap());
+			self.assets.insert(
+				id.clone(),
+				Metadata {
+					type_id: type_id.clone(),
+					location: asset::Location::from_pak(&pak_data.location, i),
+				},
 			);
+
+			self.get_mut_ids_of_type(type_id.clone()).push(id);
 		}
 
 		log::info!(
@@ -94,7 +117,26 @@ impl Library {
 		Ok(())
 	}
 
+	pub fn get_ids_of_type<T: asset::Asset>(&self) -> Option<&Vec<asset::Id>> {
+		self.ids_by_type.get(&T::metadata().name().to_owned())
+	}
+
+	fn get_mut_ids_of_type(&mut self, type_id: asset::TypeIdOwned) -> &mut Vec<asset::Id> {
+		if !self.ids_by_type.contains_key(&type_id) {
+			self.ids_by_type.insert(type_id.clone(), Vec::new());
+		}
+		self.ids_by_type.get_mut(&type_id).unwrap()
+	}
+
+	fn find_asset(&self, id: &asset::Id) -> Option<&Metadata> {
+		self.assets.get(id)
+	}
+
 	pub fn find_location(&self, id: &asset::Id) -> Option<asset::Location> {
-		self.asset_locations.get(&id).map(|ref_loc| ref_loc.clone())
+		self.find_asset(id).map(|md| md.location.clone())
+	}
+
+	pub fn get_asset_type(&self, id: &asset::Id) -> Option<asset::TypeIdOwned> {
+		self.find_asset(id).map(|md| md.type_id.clone())
 	}
 }
