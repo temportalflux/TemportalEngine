@@ -53,34 +53,44 @@ impl Engine {
 				}
 				Event::WindowEvent {
 					window_id: _,
-					event: WindowEvent::Focused(has_focus)
+					event: WindowEvent::Focused(has_focus),
 				} => {
 					engine_has_focus = has_focus;
 				}
 				// TODO: Winit gamepad support is still in progress https://github.com/rust-windowing/winit/issues/944
-				Event::DeviceEvent { event: DeviceEvent::MouseMotion {
-					delta
-				}, .. } if engine_has_focus => {
+				Event::DeviceEvent {
+					event: DeviceEvent::MouseMotion { delta },
+					..
+				} if engine_has_focus => {
 					log::debug!("mouse motion {:?}", delta);
 				}
-				Event::DeviceEvent { event: DeviceEvent::MouseWheel {
-					delta
-				}, .. } if engine_has_focus => {
+				Event::DeviceEvent {
+					event: DeviceEvent::MouseWheel { delta },
+					..
+				} if engine_has_focus => {
 					log::debug!("mouse wheel {:?}", delta);
 				}
-				Event::DeviceEvent { event: DeviceEvent::Motion {
-					axis, value
-				}, .. } if engine_has_focus => {
+				Event::DeviceEvent {
+					event: DeviceEvent::Motion { axis, value },
+					..
+				} if engine_has_focus => {
 					log::debug!("axis motion {:?} {:?}", axis, value);
 				}
-				Event::DeviceEvent { event: DeviceEvent::Button {
-					button, state
-				}, .. } if engine_has_focus => {
+				Event::DeviceEvent {
+					event: DeviceEvent::Button { button, state },
+					..
+				} if engine_has_focus => {
 					log::debug!("button {:?} {:?}", button, state);
 				}
-				Event::DeviceEvent { event: DeviceEvent::Key(KeyboardInput {
-					state, virtual_keycode, ..
-				}), .. } if engine_has_focus => {
+				Event::DeviceEvent {
+					event:
+						DeviceEvent::Key(KeyboardInput {
+							state,
+							virtual_keycode,
+							..
+						}),
+					..
+				} if engine_has_focus => {
 					log::debug!("button {:?} {:?}", virtual_keycode, state);
 				}
 				Event::MainEventsCleared => {
