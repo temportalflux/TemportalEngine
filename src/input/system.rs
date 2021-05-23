@@ -44,9 +44,13 @@ impl System {
 		}
 	}
 
-	pub fn is_key_pressed(&self, keycode: KeyCode, time_since_pressed: std::time::Duration) -> bool {
+	pub fn is_key_pressed(
+		&self,
+		keycode: KeyCode,
+		time_since_pressed: std::time::Duration,
+	) -> bool {
 		match self.key_states.get(&keycode) {
-			Some(state_time) => std::time::Instant::now() - state_time.1 <= time_since_pressed,
+			Some(state_time) => state_time.0 == ButtonState::Pressed && std::time::Instant::now() - state_time.1 <= time_since_pressed,
 			None => false,
 		}
 	}

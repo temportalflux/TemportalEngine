@@ -1,6 +1,6 @@
 pub use winit::event::VirtualKeyCode as KeyCode;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ButtonState {
 	Pressed,
 	Released,
