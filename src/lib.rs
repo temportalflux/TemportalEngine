@@ -6,14 +6,15 @@ pub mod ecs;
 mod engine;
 pub use engine::*;
 pub mod graphics;
+pub mod input;
 pub mod logging;
+pub use profiling;
 pub use temportal_math as math;
 pub mod task;
 pub mod ui;
 pub mod utility;
 pub mod window;
 pub mod world;
-pub use profiling;
 
 use graphics::AppInfo;
 

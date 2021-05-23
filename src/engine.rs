@@ -1,4 +1,4 @@
-use crate::{asset, graphics, logging, task, utility::AnyError, Application, EngineApp};
+use crate::{asset, graphics, input, logging, task, utility::AnyError, Application, EngineApp};
 use std::sync::{Arc, RwLock};
 use winit::event_loop::EventLoop;
 
@@ -62,25 +62,35 @@ impl Engine {
 					event: DeviceEvent::MouseMotion { delta },
 					..
 				} if engine_has_focus => {
-					log::debug!("mouse motion {:?}", delta);
+					input::System::write()
+						.send_event(input::SystemEvent::MouseMove(delta.0, delta.1));
 				}
 				Event::DeviceEvent {
 					event: DeviceEvent::MouseWheel { delta },
 					..
 				} if engine_has_focus => {
-					log::debug!("mouse wheel {:?}", delta);
+					if let MouseScrollDelta::LineDelta(horizontal, vertical) = delta {
+						input::System::write()
+							.send_event(input::SystemEvent::MouseScroll(horizontal, vertical));
+					}
 				}
 				Event::DeviceEvent {
 					event: DeviceEvent::Motion { axis, value },
 					..
 				} if engine_has_focus => {
-					log::debug!("axis motion {:?} {:?}", axis, value);
+					input::System::write().send_event(input::SystemEvent::Axis(axis, value));
 				}
 				Event::DeviceEvent {
 					event: DeviceEvent::Button { button, state },
 					..
 				} if engine_has_focus => {
-					log::debug!("button {:?} {:?}", button, state);
+					input::System::write().send_event(input::SystemEvent::Button(
+						button,
+						match state {
+							ElementState::Pressed => input::ButtonState::Pressed,
+							ElementState::Released => input::ButtonState::Released,
+						},
+					));
 				}
 				Event::DeviceEvent {
 					event:
@@ -91,7 +101,15 @@ impl Engine {
 						}),
 					..
 				} if engine_has_focus => {
-					log::debug!("button {:?} {:?}", virtual_keycode, state);
+					if let Some(keycode) = virtual_keycode {
+						input::System::write().send_event(input::SystemEvent::Key(
+							keycode,
+							match state {
+								ElementState::Pressed => input::ButtonState::Pressed,
+								ElementState::Released => input::ButtonState::Released,
+							},
+						));
+					}
 				}
 				Event::MainEventsCleared => {
 					profiling::scope!("update");
