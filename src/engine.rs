@@ -57,6 +57,7 @@ impl Engine {
 				} => {
 					engine_has_focus = has_focus;
 				}
+				// TODO: Winit gamepad support is still in progress https://github.com/rust-windowing/winit/issues/944
 				Event::DeviceEvent { event: DeviceEvent::MouseMotion {
 					delta
 				}, .. } if engine_has_focus => {
