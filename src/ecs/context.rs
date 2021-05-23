@@ -65,11 +65,12 @@ impl<'a, 'b> Context<'a, 'b> {
 
 impl<'a, 'b> EngineSystem for Context<'a, 'b> {
 	fn update(&mut self, delta_time: std::time::Duration) {
+		use ecs::WorldExt;
 		{
-			use ecs::WorldExt;
 			let mut resource = self.world.write_resource::<ecs::resources::DeltaTime>();
 			*resource = ecs::resources::DeltaTime(delta_time);
 		}
 		self.dispatcher.as_mut().unwrap().dispatch(&mut self.world);
+		self.world.maintain();
 	}
 }
