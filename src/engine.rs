@@ -1,9 +1,6 @@
 use crate::{asset, graphics, logging, task, utility::AnyError, Application, EngineApp};
 use std::sync::{Arc, RwLock};
-use winit::{
-	event::Event,
-	event_loop::{ControlFlow, EventLoop},
-};
+use winit::event_loop::EventLoop;
 
 pub struct Engine {
 	event_loop: Option<EventLoop<()>>,
@@ -42,15 +39,48 @@ impl Engine {
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut prev_render_error = None;
 		let event_loop = engine.write().unwrap().event_loop.take();
+		let mut engine_has_focus = true;
 		event_loop.unwrap().run(move |event, _, control_flow| {
+			use winit::{event::*, event_loop::*};
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
 			match event {
-				winit::event::Event::WindowEvent {
+				Event::WindowEvent {
 					window_id: _,
-					event: winit::event::WindowEvent::CloseRequested,
+					event: WindowEvent::CloseRequested,
 				} => {
-					*control_flow = winit::event_loop::ControlFlow::Exit;
+					*control_flow = ControlFlow::Exit;
+				}
+				Event::WindowEvent {
+					window_id: _,
+					event: WindowEvent::Focused(has_focus)
+				} => {
+					engine_has_focus = has_focus;
+				}
+				Event::DeviceEvent { event: DeviceEvent::MouseMotion {
+					delta
+				}, .. } if engine_has_focus => {
+					log::debug!("mouse motion {:?}", delta);
+				}
+				Event::DeviceEvent { event: DeviceEvent::MouseWheel {
+					delta
+				}, .. } if engine_has_focus => {
+					log::debug!("mouse wheel {:?}", delta);
+				}
+				Event::DeviceEvent { event: DeviceEvent::Motion {
+					axis, value
+				}, .. } if engine_has_focus => {
+					log::debug!("axis motion {:?} {:?}", axis, value);
+				}
+				Event::DeviceEvent { event: DeviceEvent::Button {
+					button, state
+				}, .. } if engine_has_focus => {
+					log::debug!("button {:?} {:?}", button, state);
+				}
+				Event::DeviceEvent { event: DeviceEvent::Key(KeyboardInput {
+					state, virtual_keycode, ..
+				}), .. } if engine_has_focus => {
+					log::debug!("button {:?} {:?}", virtual_keycode, state);
 				}
 				Event::MainEventsCleared => {
 					profiling::scope!("update");
