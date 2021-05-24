@@ -1,4 +1,7 @@
-use crate::{ecs::{Component, VecStorage}, math::Quaternion};
+use crate::{
+	ecs::{Component, VecStorage},
+	math::Quaternion,
+};
 use serde::{Deserialize, Serialize};
 
 /// Settings for the wander behavior explained in

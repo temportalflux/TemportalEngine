@@ -146,7 +146,9 @@ impl Window {
 			frame_count,
 			render_pass_info,
 		)?;
-		chain.add_clear_value(renderpass::ClearValue::Color(self.render_pass_clear_color));
+		chain.add_clear_value(renderpass::ClearValue::Color(
+			*self.render_pass_clear_color.data(),
+		));
 		self.render_chain = Some(sync::Arc::new(sync::RwLock::new(chain)));
 
 		Ok(self.render_chain().clone())

@@ -2,7 +2,6 @@ use crate::{
 	graphics::{
 		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
 	},
-	math::Vector,
 	utility,
 };
 use futures::future::Future;
@@ -250,7 +249,7 @@ impl TaskGpuCopy {
 			vec![command::CopyBufferToImage {
 				buffer_offset: 0,
 				layers: subresource::Layers::default().with_aspect(flags::ImageAspect::COLOR),
-				offset: Vector::filled(0),
+				offset: Default::default(),
 				size: image.image_size(),
 			}],
 		);

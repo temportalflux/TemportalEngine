@@ -1,5 +1,5 @@
 use crate::{
-	graphics::{self, command, flags, image_view, sampler, Texture},
+	graphics::{self, command, flags, image_view, sampler, structs, Texture},
 	task,
 	utility::{self, VoidResult},
 };
@@ -98,7 +98,11 @@ impl ImageCache {
 		let image = sync::Arc::new(image::Image::create_gpu(
 			&render_chain.allocator(),
 			flags::Format::R8G8B8A8_SRGB,
-			pending.size.subvec::<3>(None).with_z(1),
+			structs::Extent3D {
+				width: pending.size.x() as u32,
+				height: pending.size.y() as u32,
+				depth: 1,
+			},
 		)?);
 
 		TaskGpuCopy::new(&render_chain)?

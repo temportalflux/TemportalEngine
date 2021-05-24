@@ -63,7 +63,8 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 			);
 
 			let target_position = circle_center
-				+ wander.target_orientation
+				+ wander
+					.target_orientation
 					.rotate(&world::global_up())
 					.subvec::<2>(None);
 			let next_forward_2d = (target_position - *position.get()).normal();

@@ -2,7 +2,7 @@ use crate::{
 	graphics::{
 		self, command, flags,
 		font::{Font, Glyph},
-		image_view,
+		image_view, structs,
 	},
 	math::Vector,
 	task, utility,
@@ -56,7 +56,6 @@ impl PendingAtlas {
 		use graphics::{alloc, image, structs::subresource, TaskGpuCopy};
 		let mut signals = Vec::new();
 
-		let image_size = self.size.subvec::<3>(None).with_z(1);
 		let image = sync::Arc::new(
 			image::Image::builder()
 				.with_alloc(
@@ -65,7 +64,11 @@ impl PendingAtlas {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_format(self.format)
-				.with_size(image_size)
+				.with_size(structs::Extent3D {
+					width: self.size.x() as u32,
+					height: self.size.y() as u32,
+					depth: 1,
+				})
 				.with_usage(flags::ImageUsage::TRANSFER_DST)
 				.with_usage(flags::ImageUsage::SAMPLED)
 				.build(&render_chain.allocator())?,

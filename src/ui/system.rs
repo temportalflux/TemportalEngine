@@ -1,6 +1,13 @@
 use crate::{
 	asset,
-	graphics::{self, command, flags, font::Font, pipeline, utility::Scissor, Drawable, Texture},
+	graphics::{
+		self, command, flags,
+		font::Font,
+		pipeline,
+		structs::{Extent2D, Offset2D},
+		utility::Scissor,
+		Drawable, Texture,
+	},
 	math::{vector, Matrix, Vector},
 	ui::*,
 	utility::{self, VoidResult},
@@ -329,8 +336,11 @@ impl graphics::RenderChainElement for System {
 
 		// Garuntee that there will always be a scissor clip available for the recording to use
 		self.draw_calls.push(DrawCall::PushClip(Scissor::new(
-			vector![0, 0],
-			resolution.clone(),
+			Offset2D::default(),
+			Extent2D {
+				width: resolution.x(),
+				height: resolution.y(),
+			},
 		)));
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
@@ -385,8 +395,14 @@ impl graphics::RenderChainElement for System {
 						let size = max - min;
 
 						self.draw_calls.push(DrawCall::PushClip(Scissor::new(
-							[min.x() as u32, min.y() as u32].into(),
-							[size.x() as u32, size.y() as u32].into(),
+							Offset2D {
+								x: min.x() as i32,
+								y: min.y() as i32,
+							},
+							Extent2D {
+								width: size.x() as u32,
+								height: size.y() as u32,
+							},
 						)));
 					}
 					Batch::ClipPop => {
