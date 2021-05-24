@@ -1,7 +1,7 @@
 mod error;
 pub use error::*;
 
-pub use temportal_graphics::utility::make_version;
+pub use vulkan_rs::utility::make_version;
 
 pub trait AToAny: 'static {
 	fn as_any(&self) -> &dyn std::any::Any;

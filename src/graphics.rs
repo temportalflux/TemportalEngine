@@ -1,4 +1,4 @@
-pub use temportal_graphics::*;
+pub use vulkan_rs::*;
 
 mod drawable;
 pub use drawable::*;

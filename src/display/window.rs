@@ -1,10 +1,14 @@
-use crate::{display, graphics, utility, Application};
+use crate::{
+	display,
+	graphics::{
+		self,
+		device::{logical, physical},
+		flags, instance, renderpass, AppInfo, Context, Surface,
+	},
+	utility, Application,
+};
 use sdl2;
 use std::sync;
-use temportal_graphics::{
-	device::{logical, physical},
-	flags, instance, renderpass, AppInfo, Context, Surface,
-};
 
 fn is_vulkan_validation_enabled() -> bool {
 	cfg!(debug_assertions)

@@ -510,7 +510,7 @@ impl RenderChain {
 		let (next_image_idx, is_suboptimal) = match acquisition_result {
 			Ok(data) => data,
 			Err(e) => match e {
-				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
+				crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
 					self.is_dirty = true;
 					return Ok(());
 				}
@@ -597,7 +597,7 @@ impl RenderChain {
 				}
 			}
 			Err(e) => match e {
-				temportal_graphics::utility::Error::RequiresRenderChainUpdate() => {
+				crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
 					self.is_dirty = true;
 					return Ok(());
 				}
