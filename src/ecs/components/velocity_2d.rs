@@ -15,4 +15,8 @@ impl Velocity2D {
 	pub fn get(&self) -> Vector<f32, 2> {
 		self.0
 	}
+
+	pub fn set(&mut self, velocity: Vector<f32, 2>) {
+		self.0 = velocity;
+	}
 }

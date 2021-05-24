@@ -24,3 +24,9 @@ impl std::ops::DerefMut for Position2D {
 		&mut self.0
 	}
 }
+
+impl Position2D {
+	pub fn get(&self) -> &Vector<f32, 2> {
+		&self.0
+	}
+}

@@ -1,6 +1,7 @@
 use crate::{
 	ecs::{Component, VecStorage},
-	math::Quaternion,
+	math::{Quaternion, Vector},
+	world,
 };
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +22,16 @@ impl Orientation {
 	pub fn rotate(&mut self, rotation: Quaternion) {
 		self.0 = Quaternion::concat(&self.0, &rotation);
 	}
+
 	pub fn get(&self) -> &Quaternion {
 		&self.0
+	}
+
+	pub fn set(&mut self, orientation: Quaternion) {
+		self.0 = orientation;
+	}
+
+	pub fn up(&self) -> Vector<f32, 3> {
+		self.get().rotate(&world::global_up())
 	}
 }
