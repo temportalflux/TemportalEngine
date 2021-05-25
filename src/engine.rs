@@ -44,6 +44,12 @@ impl Engine {
 			use winit::{event::*, event_loop::*};
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
+			if engine_has_focus {
+				if let Ok(input_event) = input::winit::parse_winit_event(&event) {
+					input::System::write().send_event(input_event);
+					return;
+				}
+			}
 			match event {
 				Event::WindowEvent {
 					window_id: _,
@@ -56,60 +62,6 @@ impl Engine {
 					event: WindowEvent::Focused(has_focus),
 				} => {
 					engine_has_focus = has_focus;
-				}
-				// TODO: Winit gamepad support is still in progress https://github.com/rust-windowing/winit/issues/944
-				Event::DeviceEvent {
-					event: DeviceEvent::MouseMotion { delta },
-					..
-				} if engine_has_focus => {
-					input::InputSystem::write()
-						.send_event(input::SystemEvent::MouseMove(delta.0, delta.1));
-				}
-				Event::DeviceEvent {
-					event: DeviceEvent::MouseWheel { delta },
-					..
-				} if engine_has_focus => {
-					if let MouseScrollDelta::LineDelta(horizontal, vertical) = delta {
-						input::InputSystem::write()
-							.send_event(input::SystemEvent::MouseScroll(horizontal, vertical));
-					}
-				}
-				Event::DeviceEvent {
-					event: DeviceEvent::Motion { axis, value },
-					..
-				} if engine_has_focus => {
-					input::InputSystem::write().send_event(input::SystemEvent::Axis(axis, value));
-				}
-				Event::DeviceEvent {
-					event: DeviceEvent::Button { button, state },
-					..
-				} if engine_has_focus => {
-					input::InputSystem::write().send_event(input::SystemEvent::Button(
-						button,
-						match state {
-							ElementState::Pressed => input::ButtonState::Pressed,
-							ElementState::Released => input::ButtonState::Released,
-						},
-					));
-				}
-				Event::DeviceEvent {
-					event:
-						DeviceEvent::Key(KeyboardInput {
-							state,
-							virtual_keycode,
-							..
-						}),
-					..
-				} if engine_has_focus => {
-					if let Some(keycode) = virtual_keycode {
-						input::InputSystem::write().send_event(input::SystemEvent::Key(
-							keycode,
-							match state {
-								ElementState::Pressed => input::ButtonState::Pressed,
-								ElementState::Released => input::ButtonState::Released,
-							},
-						));
-					}
 				}
 				Event::MainEventsCleared => {
 					profiling::scope!("update");
