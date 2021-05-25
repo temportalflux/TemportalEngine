@@ -62,7 +62,7 @@ impl Engine {
 					event: DeviceEvent::MouseMotion { delta },
 					..
 				} if engine_has_focus => {
-					input::System::write()
+					input::InputSystem::write()
 						.send_event(input::SystemEvent::MouseMove(delta.0, delta.1));
 				}
 				Event::DeviceEvent {
@@ -70,7 +70,7 @@ impl Engine {
 					..
 				} if engine_has_focus => {
 					if let MouseScrollDelta::LineDelta(horizontal, vertical) = delta {
-						input::System::write()
+						input::InputSystem::write()
 							.send_event(input::SystemEvent::MouseScroll(horizontal, vertical));
 					}
 				}
@@ -78,13 +78,13 @@ impl Engine {
 					event: DeviceEvent::Motion { axis, value },
 					..
 				} if engine_has_focus => {
-					input::System::write().send_event(input::SystemEvent::Axis(axis, value));
+					input::InputSystem::write().send_event(input::SystemEvent::Axis(axis, value));
 				}
 				Event::DeviceEvent {
 					event: DeviceEvent::Button { button, state },
 					..
 				} if engine_has_focus => {
-					input::System::write().send_event(input::SystemEvent::Button(
+					input::InputSystem::write().send_event(input::SystemEvent::Button(
 						button,
 						match state {
 							ElementState::Pressed => input::ButtonState::Pressed,
@@ -102,7 +102,7 @@ impl Engine {
 					..
 				} if engine_has_focus => {
 					if let Some(keycode) = virtual_keycode {
-						input::System::write().send_event(input::SystemEvent::Key(
+						input::InputSystem::write().send_event(input::SystemEvent::Key(
 							keycode,
 							match state {
 								ElementState::Pressed => input::ButtonState::Pressed,

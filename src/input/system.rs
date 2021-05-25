@@ -5,11 +5,11 @@ use std::{
 };
 
 #[derive(Debug)]
-pub struct System {
+pub struct InputSystem {
 	key_states: HashMap<KeyCode, (ButtonState, std::time::Instant)>,
 }
 
-impl Default for System {
+impl Default for InputSystem {
 	fn default() -> Self {
 		Self {
 			key_states: HashMap::new(),
@@ -17,10 +17,10 @@ impl Default for System {
 	}
 }
 
-impl System {
+impl InputSystem {
 	pub fn get() -> &'static RwLock<Self> {
 		use crate::utility::singleton::*;
-		static mut INSTANCE: Singleton<System> = Singleton::uninit();
+		static mut INSTANCE: Singleton<InputSystem> = Singleton::uninit();
 		unsafe { INSTANCE.get() }
 	}
 
@@ -33,7 +33,7 @@ impl System {
 	}
 }
 
-impl System {
+impl InputSystem {
 	pub fn send_event(&mut self, sys_event: SystemEvent) {
 		match sys_event {
 			SystemEvent::Key(keycode, state) => {
