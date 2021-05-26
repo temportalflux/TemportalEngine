@@ -45,8 +45,8 @@ impl Engine {
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
 			if engine_has_focus {
-				if let Ok(input_event) = input::winit::parse_winit_event(&event) {
-					input::System::write().send_event(input_event);
+				if let Ok((source, input_event)) = input::winit::parse_winit_event(&event) {
+					input::System::write().send_event(source, input_event);
 					return;
 				}
 			}
@@ -67,6 +67,9 @@ impl Engine {
 					profiling::scope!("update");
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
+					if engine_has_focus {
+						input::System::write().read_gamepad_events();
+					}
 					let delta_time = frame_time - prev_frame_time;
 					{
 						let systems = &mut engine.write().unwrap().systems;

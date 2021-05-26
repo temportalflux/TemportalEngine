@@ -11,7 +11,7 @@ build = "build.rs"
 futures = "0.3"
 temportal-math = { path = "../temportal-math" }
 vulkan-rs = { path = "../vulkan-rs" }
-rebound = { path = "../rebound", features = ["winit"] }
+rebound = { path = "../rebound", features = ["winit", "log"] }
 log = { version = "0.4", features = ["std"] }
 simplelog = "0.10"
 raw-window-handle = "0.3"
