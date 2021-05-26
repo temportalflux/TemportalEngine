@@ -68,7 +68,7 @@ impl Engine {
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
 					if engine_has_focus {
-						input::System::write().read_gamepad_events();
+						input::System::write().update();
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
