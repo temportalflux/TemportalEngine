@@ -46,7 +46,7 @@ impl Engine {
 			*control_flow = ControlFlow::Poll;
 			if engine_has_focus {
 				if let Ok((source, input_event)) = input::winit::parse_winit_event(&event) {
-					input::System::write().send_event(source, input_event);
+					input::write().send_event(source, input_event);
 					return;
 				}
 			}
@@ -68,7 +68,7 @@ impl Engine {
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
 					if engine_has_focus {
-						input::System::write().update();
+						input::write().update();
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{

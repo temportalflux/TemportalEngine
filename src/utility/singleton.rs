@@ -14,9 +14,16 @@ impl<T> Singleton<T> {
 	where
 		T: Default,
 	{
+		self.get_init(T::default)
+	}
+
+	pub fn get_init<F>(&mut self, init: F) -> &'static RwLock<T>
+	where
+		F: Fn() -> T,
+	{
 		let rwlock = &mut self.0;
 		let once = &mut self.1;
-		once.call_once(|| unsafe { rwlock.as_mut_ptr().write(RwLock::new(T::default())) });
+		once.call_once(|| unsafe { rwlock.as_mut_ptr().write(RwLock::new(init())) });
 		unsafe { &*self.0.as_ptr() }
 	}
 }
