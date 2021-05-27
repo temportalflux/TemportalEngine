@@ -19,7 +19,9 @@ pub struct Wander2D {
 	/// circumfrence of the wander circle.
 	rate_of_change: f32,
 	// How fast the entity should move towards its wander target.
-	speed: f32,
+	linear_speed: f32,
+	// How fast the entity should adjust its orientation
+	angular_speed: f32,
 
 	pub(crate) target_orientation: Quaternion,
 }
@@ -34,7 +36,8 @@ impl Default for Wander2D {
 			radius: 1.0,
 			projection_distance: 1.0,
 			rate_of_change: 360.0_f32.to_radians(),
-			speed: 1.0,
+			linear_speed: 1.0,
+			angular_speed: 1.0,
 			target_orientation: Quaternion::identity(),
 		}
 	}
@@ -74,12 +77,21 @@ impl Wander2D {
 		self.rate_of_change
 	}
 
-	pub fn with_speed(mut self, speed: f32) -> Self {
-		self.speed = speed;
+	pub fn with_linear_speed(mut self, speed: f32) -> Self {
+		self.linear_speed = speed;
 		self
 	}
 
-	pub fn speed(&self) -> f32 {
-		self.speed
+	pub fn linear_speed(&self) -> f32 {
+		self.linear_speed
+	}
+
+	pub fn with_angular_speed(mut self, speed: f32) -> Self {
+		self.angular_speed = speed;
+		self
+	}
+
+	pub fn angular_speed(&self) -> f32 {
+		self.angular_speed
 	}
 }

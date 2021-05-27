@@ -2,6 +2,7 @@ use crate::{
 	ecs::{
 		self,
 		components::{ai::Wander2D, Orientation, Position2D, Velocity2D},
+		resources::DeltaTime,
 		Join, NamedSystem,
 	},
 	math::Quaternion,
@@ -25,6 +26,7 @@ impl NamedSystem for WanderIn2D {
 
 impl<'a> ecs::System<'a> for WanderIn2D {
 	type SystemData = (
+		ecs::Read<'a, DeltaTime>,
 		ecs::WriteStorage<'a, Position2D>,
 		ecs::WriteStorage<'a, Orientation>,
 		ecs::WriteStorage<'a, Wander2D>,
@@ -33,9 +35,16 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 
 	fn run(
 		&mut self,
-		(mut store_position, mut store_orientation, mut store_wander, mut store_velocity): Self::SystemData,
+		(
+			delta_time,
+			mut store_position,
+			mut store_orientation,
+			mut store_wander,
+			mut store_velocity,
+		): Self::SystemData,
 	) {
 		let mut rng = rand::thread_rng();
+		let dt = delta_time.get().as_secs_f32();
 		for (position, orientation, wander, velocity) in (
 			&mut store_position,
 			&mut store_orientation,
@@ -56,7 +65,7 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 			wander.target_orientation = Quaternion::concat(
 				&wander.target_orientation,
 				&Quaternion::from_axis_angle(
-					-world::global_forward(),
+					world::global_forward(),
 					wander.target_rate_of_change() * random_binomial,
 				),
 			);
@@ -70,8 +79,15 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 			let look_at_orientation =
 				Quaternion::look_at_2d(&forward2d, &next_forward_2d, &world::global_forward());
 
-			velocity.set(next_forward_2d * wander.speed());
-			orientation.set(look_at_orientation);
+			velocity.set(next_forward_2d * wander.linear_speed());
+
+			let rot = Quaternion::interp_to(
+				*orientation.get(),
+				look_at_orientation,
+				dt,
+				wander.angular_speed(),
+			);
+			//orientation.set(rot);
 		}
 	}
 }
