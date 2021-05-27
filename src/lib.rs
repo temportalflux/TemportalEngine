@@ -6,7 +6,7 @@ pub mod ecs;
 mod engine;
 pub use engine::*;
 pub mod graphics;
-pub use rebound as input;
+pub use input_actions as input;
 pub mod logging;
 pub use profiling;
 pub use temportal_math as math;
