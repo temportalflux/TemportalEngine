@@ -2,7 +2,6 @@ use crate::{
 	ecs::{
 		self,
 		components::{ai::Wander2D, Orientation, Position2D, Velocity2D},
-		resources::DeltaTime,
 		Join, NamedSystem,
 	},
 	math::Quaternion,
