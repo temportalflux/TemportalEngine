@@ -45,7 +45,9 @@ pub struct System {
 	colored_area: Drawable,
 	frame_meshes: Vec<Mesh>,
 
+	mouse_position_unnormalized: Vector<f32, 2>,
 	resolution: Vector<u32, 2>,
+	interactions: DefaultInteractionsEngine,
 	application: Application,
 }
 
@@ -68,7 +70,9 @@ impl System {
 		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
+			interactions: DefaultInteractionsEngine::new(),
 			resolution: Vector::default(),
+			mouse_position_unnormalized: Default::default(),
 			frame_meshes: Vec::new(),
 			colored_area: Drawable::default(),
 			image: image::DataPipeline::new(&chain_read)?,
@@ -102,6 +106,13 @@ impl System {
 			right: self.resolution.x() as f32,
 			top: 0.0,
 			bottom: self.resolution.y() as f32,
+		})
+	}
+
+	fn mouse_position(&self) -> Vec2 {
+		self.mapping().real_to_virtual_vec2(Vec2 {
+			x: self.mouse_position_unnormalized.x(),
+			y: self.mouse_position_unnormalized.y(),
 		})
 	}
 
@@ -237,11 +248,139 @@ impl System {
 }
 
 impl EngineSystem for System {
+	fn should_receive_winit_events(&self) -> bool {
+		true
+	}
+
+	fn on_event(&mut self, event: &winit::event::Event<()>) {
+		use crate::input::source::{Key, MouseButton};
+		use std::convert::TryFrom;
+		use winit::event::{DeviceEvent, ElementState, KeyboardInput, MouseScrollDelta};
+		match event {
+			winit::event::Event::DeviceEvent {
+				event: DeviceEvent::MouseMotion { delta },
+				..
+			} => {
+				self.mouse_position_unnormalized += vector![delta.0 as f32, delta.1 as f32];
+				self.interactions
+					.interact(Interaction::PointerMove(self.mouse_position()));
+			}
+			winit::event::Event::DeviceEvent {
+				event:
+					DeviceEvent::MouseWheel {
+						delta: MouseScrollDelta::LineDelta(horizontal, vertical),
+					},
+				..
+			} => {
+				let single_scroll_units = Vec2 { x: 10.0, y: 10.0 };
+				self.interactions
+					.interact(Interaction::Navigate(NavSignal::Jump(NavJump::Scroll(
+						NavScroll::Units(
+							Vec2 {
+								x: -single_scroll_units.x * (*horizontal),
+								y: -single_scroll_units.y * (*vertical),
+							},
+							true,
+						),
+					))));
+			}
+			winit::event::Event::DeviceEvent {
+				event: DeviceEvent::Button { button, state },
+				..
+			} => {
+				if let Some(pointer_button) = match MouseButton::try_from(*button) {
+					Ok(MouseButton::Left) => Some(PointerButton::Trigger),
+					Ok(MouseButton::Right) => Some(PointerButton::Context),
+					_ => None,
+				} {
+					self.interactions.interact(match state {
+						ElementState::Pressed => {
+							Interaction::PointerDown(pointer_button, self.mouse_position())
+						}
+						ElementState::Released => {
+							Interaction::PointerUp(pointer_button, self.mouse_position())
+						}
+					});
+				}
+			}
+			winit::event::Event::DeviceEvent {
+				event:
+					DeviceEvent::Key(KeyboardInput {
+						state: ElementState::Pressed,
+						virtual_keycode: Some(keycode),
+						..
+					}),
+				..
+			} => {
+				if let Ok(key) = Key::try_from(*keycode) {
+					if let Some(signal) = match self.interactions.focused_text_input() {
+						Some(_) => match key {
+							Key::Left => Some(NavSignal::TextChange(NavTextChange::MoveCursorLeft)),
+							Key::Right => {
+								Some(NavSignal::TextChange(NavTextChange::MoveCursorRight))
+							}
+							Key::Home => {
+								Some(NavSignal::TextChange(NavTextChange::MoveCursorStart))
+							}
+							Key::End => Some(NavSignal::TextChange(NavTextChange::MoveCursorEnd)),
+							Key::Back => Some(NavSignal::TextChange(NavTextChange::DeleteLeft)),
+							Key::Delete => Some(NavSignal::TextChange(NavTextChange::DeleteRight)),
+							Key::Return | Key::NumpadEnter => {
+								Some(NavSignal::TextChange(NavTextChange::NewLine))
+							}
+							Key::Escape => Some(NavSignal::FocusTextInput(().into())),
+							_ => None,
+						},
+						None => match key {
+							Key::W | Key::Up => Some(NavSignal::Up),
+							Key::A | Key::Left => Some(NavSignal::Left),
+							Key::S | Key::Down => Some(NavSignal::Down),
+							Key::D | Key::Right => Some(NavSignal::Right),
+							Key::Return | Key::NumpadEnter | Key::Space => {
+								Some(NavSignal::Accept(true))
+							}
+							Key::Escape => Some(NavSignal::Cancel(true)),
+							_ => None,
+						},
+					} {
+						self.interactions.interact(Interaction::Navigate(signal));
+					}
+				}
+			}
+			winit::event::Event::DeviceEvent {
+				event:
+					DeviceEvent::Key(KeyboardInput {
+						state: ElementState::Released,
+						virtual_keycode: Some(keycode),
+						..
+					}),
+				..
+			} => {
+				if let Ok(key) = Key::try_from(*keycode) {
+					if let Some(signal) = match self.interactions.focused_text_input() {
+						Some(_) => None,
+						None => match key {
+							Key::Return | Key::NumpadEnter | Key::Space => {
+								Some(NavSignal::Accept(false))
+							}
+							Key::Escape => Some(NavSignal::Cancel(false)),
+							_ => None,
+						},
+					} {
+						self.interactions.interact(Interaction::Navigate(signal));
+					}
+				}
+			}
+			_ => {}
+		}
+	}
+
 	#[profiling::function]
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
 		self.application.process();
 		let _res = self.application.layout(&mapping, &mut DefaultLayoutEngine);
+		let _res = self.application.interact(&mut self.interactions);
 	}
 }
 

@@ -4,6 +4,7 @@ use winit::event_loop::EventLoop;
 
 pub struct Engine {
 	event_loop: Option<EventLoop<()>>,
+	systems_to_receive_events: Vec<Arc<RwLock<dyn EngineSystem>>>,
 	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
 }
 
@@ -16,6 +17,7 @@ impl Engine {
 		asset::Library::scan_application::<T>()?;
 		Ok(Engine {
 			event_loop: Some(EventLoop::new()),
+			systems_to_receive_events: Vec::new(),
 			systems: Vec::new(),
 		})
 	}
@@ -29,6 +31,9 @@ impl Engine {
 		T: EngineSystem + 'static,
 	{
 		self.systems.push(system.clone());
+		if system.read().unwrap().should_receive_winit_events() {
+			self.systems_to_receive_events.push(system.clone());
+		}
 	}
 
 	pub fn run(self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
@@ -47,7 +52,12 @@ impl Engine {
 			if engine_has_focus {
 				if let Ok((source, input_event)) = input::winit::parse_winit_event(&event) {
 					input::write().send_event(source, input_event);
-					return;
+				}
+				{
+					let systems = &mut engine.write().unwrap().systems_to_receive_events;
+					for system in systems.iter_mut() {
+						system.write().unwrap().on_event(&event);
+					}
 				}
 			}
 			match event {
@@ -109,5 +119,9 @@ impl Engine {
 }
 
 pub trait EngineSystem {
+	fn should_receive_winit_events(&self) -> bool {
+		false
+	}
+	fn on_event(&mut self, _event: &winit::event::Event<()>) {}
 	fn update(&mut self, delta_time: std::time::Duration);
 }
