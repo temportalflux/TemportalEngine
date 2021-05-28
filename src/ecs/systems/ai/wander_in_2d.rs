@@ -53,10 +53,6 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 		)
 			.join()
 		{
-			let forward2d = orientation.up().subvec::<2>(None);
-			// the center of the wander circle - which is a projection in front of the position of the entity
-			let circle_center = *position.get() + forward2d * wander.projection_distance();
-
 			// To determine the "target" location, we need a point on the circumfrence of the circle.
 			// Such a point would be determined by a rotation around the circle at a given radius.
 			// We don't want the target to move too drastically, so we will use the entity's current
@@ -70,24 +66,38 @@ impl<'a> ecs::System<'a> for WanderIn2D {
 				),
 			);
 
-			let target_position = circle_center
-				+ wander
-					.target_orientation
-					.rotate(&world::global_up())
-					.subvec::<2>(None);
+			let forward2d = wander
+				.entity_desired_orientation
+				.rotate(&world::global_up())
+				.subvec::<2>(None);
+
+			// normalized vector from circle center in the direction of the target on the circle edge
+			let target_forward = wander
+				.target_orientation
+				.rotate(&world::global_right())
+				.subvec::<2>(None);
+			// the center of the wander circle - which is a projection in front of the position of the entity
+			let circle_center = *position.get() + forward2d * wander.projection_distance();
+			// world position of the target on the edge of the circle
+			let target_position = circle_center + target_forward * wander.circle_radius();
+
+			// normalized vector from current position to the target on the circle edge
 			let next_forward_2d = (target_position - *position.get()).normal();
-			let look_at_orientation =
+			let rot_to_look_at_target =
 				Quaternion::look_at_2d(&forward2d, &next_forward_2d, &world::global_forward());
-
-			velocity.set(next_forward_2d * wander.linear_speed());
-
-			let rot = Quaternion::interp_to(
+			wander.entity_desired_orientation =
+				orientation.get().then(&rot_to_look_at_target).normal();
+			let interp_rot = Quaternion::interp_to(
 				*orientation.get(),
-				look_at_orientation,
+				wander.entity_desired_orientation,
 				dt,
 				wander.angular_speed(),
 			);
-			//orientation.set(rot);
+
+			orientation.set(interp_rot);
+			velocity.set(
+				interp_rot.rotate(&world::global_up()).subvec::<2>(None) * wander.linear_speed(),
+			);
 		}
 	}
 }

@@ -24,6 +24,7 @@ pub struct Wander2D {
 	angular_speed: f32,
 
 	pub(crate) target_orientation: Quaternion,
+	pub(crate) entity_desired_orientation: Quaternion,
 }
 
 impl Component for Wander2D {
@@ -34,11 +35,12 @@ impl Default for Wander2D {
 	fn default() -> Self {
 		Self {
 			radius: 1.0,
-			projection_distance: 1.0,
-			rate_of_change: 360.0_f32.to_radians(),
+			projection_distance: 2.0,
+			rate_of_change: 180.0_f32.to_radians(),
 			linear_speed: 1.0,
 			angular_speed: 1.0,
 			target_orientation: Quaternion::identity(),
+			entity_desired_orientation: Quaternion::identity(),
 		}
 	}
 }

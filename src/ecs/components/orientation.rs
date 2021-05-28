@@ -19,7 +19,7 @@ impl Default for Orientation {
 }
 
 impl Orientation {
-	pub fn rotate(&mut self, rotation: Quaternion) {
+	pub fn rotate_by(&mut self, rotation: Quaternion) {
 		self.0 = Quaternion::concat(&self.0, &rotation);
 	}
 
