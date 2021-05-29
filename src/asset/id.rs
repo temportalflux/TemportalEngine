@@ -43,6 +43,12 @@ impl PartialEq for Id {
 
 impl std::cmp::Eq for Id {}
 
+impl std::fmt::Display for Id {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(f, "{}", self.short_id())
+	}
+}
+
 #[derive(Debug, Clone)]
 pub struct Location {
 	pak_path: std::path::PathBuf,

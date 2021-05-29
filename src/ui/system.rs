@@ -220,15 +220,17 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
-		let texture = asset::Loader::load_sync(&id)?
-			.downcast::<Texture>()
-			.unwrap();
-		log::info!(target: LOG, "Adding texture '{}'", id.short_id());
-		self.image_sizes.insert(
-			id.name(),
-			Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
-		);
-		self.image.add_pending(id, texture)?;
+		if let Ok(asset) = asset::Loader::load_sync(&id) {
+			let texture = asset.downcast::<Texture>().unwrap();
+			log::info!(target: LOG, "Adding texture '{}'", id.short_id());
+			self.image_sizes.insert(
+				id.name(),
+				Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
+			);
+			self.image.add_pending(id, texture)?;
+		} else {
+			log::error!("Failed to load texture asset {}", id);
+		}
 		Ok(())
 	}
 
@@ -245,6 +247,10 @@ impl System {
 			.add_render_chain_element(&system)?;
 		Ok(system)
 	}
+
+	fn interact(&mut self, interaction: Interaction) {
+		self.interactions.interact(interaction);
+	}
 }
 
 impl EngineSystem for System {
@@ -255,15 +261,16 @@ impl EngineSystem for System {
 	fn on_event(&mut self, event: &winit::event::Event<()>) {
 		use crate::input::source::{Key, MouseButton};
 		use std::convert::TryFrom;
-		use winit::event::{DeviceEvent, ElementState, KeyboardInput, MouseScrollDelta};
+		use winit::event::{
+			DeviceEvent, ElementState, KeyboardInput, MouseScrollDelta, WindowEvent,
+		};
 		match event {
-			winit::event::Event::DeviceEvent {
-				event: DeviceEvent::MouseMotion { delta },
+			winit::event::Event::WindowEvent {
+				event: WindowEvent::CursorMoved { position, .. },
 				..
 			} => {
-				self.mouse_position_unnormalized += vector![delta.0 as f32, delta.1 as f32];
-				self.interactions
-					.interact(Interaction::PointerMove(self.mouse_position()));
+				self.mouse_position_unnormalized = vector![position.x as f32, position.y as f32];
+				self.interact(Interaction::PointerMove(self.mouse_position()));
 			}
 			winit::event::Event::DeviceEvent {
 				event:
@@ -273,16 +280,15 @@ impl EngineSystem for System {
 				..
 			} => {
 				let single_scroll_units = Vec2 { x: 10.0, y: 10.0 };
-				self.interactions
-					.interact(Interaction::Navigate(NavSignal::Jump(NavJump::Scroll(
-						NavScroll::Units(
-							Vec2 {
-								x: -single_scroll_units.x * (*horizontal),
-								y: -single_scroll_units.y * (*vertical),
-							},
-							true,
-						),
-					))));
+				self.interact(Interaction::Navigate(NavSignal::Jump(NavJump::Scroll(
+					NavScroll::Units(
+						Vec2 {
+							x: -single_scroll_units.x * (*horizontal),
+							y: -single_scroll_units.y * (*vertical),
+						},
+						true,
+					),
+				))));
 			}
 			winit::event::Event::DeviceEvent {
 				event: DeviceEvent::Button { button, state },
@@ -293,7 +299,7 @@ impl EngineSystem for System {
 					Ok(MouseButton::Right) => Some(PointerButton::Context),
 					_ => None,
 				} {
-					self.interactions.interact(match state {
+					self.interact(match state {
 						ElementState::Pressed => {
 							Interaction::PointerDown(pointer_button, self.mouse_position())
 						}
@@ -343,7 +349,7 @@ impl EngineSystem for System {
 							_ => None,
 						},
 					} {
-						self.interactions.interact(Interaction::Navigate(signal));
+						self.interact(Interaction::Navigate(signal));
 					}
 				}
 			}
@@ -367,7 +373,7 @@ impl EngineSystem for System {
 							_ => None,
 						},
 					} {
-						self.interactions.interact(Interaction::Navigate(signal));
+						self.interact(Interaction::Navigate(signal));
 					}
 				}
 			}
