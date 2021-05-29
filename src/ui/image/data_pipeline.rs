@@ -102,6 +102,9 @@ impl DataPipeline {
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
 				.set_viewport_state(pipeline::ViewportState::from(resolution))
+				.set_rasterization_state(
+					pipeline::RasterizationState::default().set_cull_mode(flags::CullMode::NONE),
+				)
 				.set_color_blending(
 					pipeline::ColorBlendState::default()
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
