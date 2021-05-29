@@ -33,7 +33,7 @@ pub enum SystemShader {
 /// Handles the rendering of the UI widgets to the screen.
 /// Also updates and processes the UI widgets via the ECS system.
 pub struct System {
-	draw_calls: Vec<DrawCall>,
+	draw_calls_by_frame: Vec<Vec<DrawCall>>,
 
 	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
 	atlas_mapping: HashMap<String, (String, Rect)>,
@@ -51,6 +51,7 @@ pub struct System {
 	application: Application,
 }
 
+#[derive(Debug, Clone)]
 enum DrawCall {
 	Text(WidgetId),
 	Range(std::ops::Range<usize>),
@@ -81,7 +82,7 @@ impl System {
 			atlas_mapping: HashMap::new(),
 			image_sizes: HashMap::new(),
 			pending_gpu_signals: Vec::new(),
-			draw_calls: Vec::new(),
+			draw_calls_by_frame: Vec::new(),
 		})
 	}
 
@@ -397,6 +398,8 @@ impl graphics::RenderChainElement for System {
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
 		log::info!(target: LOG, "Initializing render chain element");
+		self.draw_calls_by_frame
+			.resize(render_chain.frame_count(), Vec::new());
 		self.colored_area.create_shaders(&render_chain)?;
 		self.image.create_shaders(&render_chain)?;
 		self.text.create_shaders(&render_chain)?;
@@ -477,10 +480,10 @@ impl graphics::RenderChainElement for System {
 		// Drain the existing widgets
 		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
 			self.text_widgets[frame].drain().collect();
-		self.draw_calls = Vec::new();
+		let mut draw_calls = Vec::new();
 
 		// Garuntee that there will always be a scissor clip available for the recording to use
-		self.draw_calls.push(DrawCall::PushClip(Scissor::new(
+		draw_calls.push(DrawCall::PushClip(Scissor::new(
 			Offset2D::default(),
 			Extent2D {
 				width: resolution.x(),
@@ -497,11 +500,11 @@ impl graphics::RenderChainElement for System {
 				match batch {
 					Batch::None | Batch::FontTriangles(_, _, _) => {}
 					Batch::ColoredTriangles(range) => {
-						self.draw_calls.push(DrawCall::Range(range));
+						draw_calls.push(DrawCall::Range(range));
 					}
 					Batch::ImageTriangles(texture_id, range) => {
 						if self.image.has_image(&texture_id) {
-							self.draw_calls.push(DrawCall::Texture(texture_id, range));
+							draw_calls.push(DrawCall::Texture(texture_id, range));
 						} else {
 							log::warn!(
 								"Texture for id \"{}\" has not been added to the ui render system.",
@@ -518,7 +521,7 @@ impl graphics::RenderChainElement for System {
 						)?;
 						self.text_widgets[frame].insert(widget_id.clone(), widget_data);
 						self.pending_gpu_signals.append(&mut gpu_signals);
-						self.draw_calls.push(DrawCall::Text(widget_id));
+						draw_calls.push(DrawCall::Text(widget_id));
 					}
 					Batch::ClipPush(clip) => {
 						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
@@ -539,7 +542,7 @@ impl graphics::RenderChainElement for System {
 						let max = tl.max(tr).max(br).max(bl);
 						let size = max - min;
 
-						self.draw_calls.push(DrawCall::PushClip(Scissor::new(
+						draw_calls.push(DrawCall::PushClip(Scissor::new(
 							Offset2D {
 								x: min.x() as i32,
 								y: min.y() as i32,
@@ -551,11 +554,13 @@ impl graphics::RenderChainElement for System {
 						)));
 					}
 					Batch::ClipPop => {
-						self.draw_calls.push(DrawCall::PopClip());
+						draw_calls.push(DrawCall::PopClip());
 					}
 				}
 			}
 		}
+
+		self.draw_calls_by_frame[frame] = draw_calls;
 
 		Ok(true) // the ui uses immediate mode, and therefore requires re-recording every frame
 	}
@@ -564,7 +569,7 @@ impl graphics::RenderChainElement for System {
 	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
 		let mut clips = Vec::new();
-		for call in self.draw_calls.iter() {
+		for call in self.draw_calls_by_frame[frame].iter() {
 			match call {
 				DrawCall::PushClip(scissor) => clips.push(scissor),
 				DrawCall::PopClip() => {
