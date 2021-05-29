@@ -72,6 +72,9 @@ impl Builder {
 					self.inner_logical_size.x(),
 					self.inner_logical_size.y(),
 				)))
+				.with_position(winit::dpi::Position::Logical(
+					winit::dpi::LogicalPosition::new(0.0, 0.0),
+				))
 				.with_resizable(self.resizable)
 				.build(engine.event_loop())?,
 			self.app_info,
