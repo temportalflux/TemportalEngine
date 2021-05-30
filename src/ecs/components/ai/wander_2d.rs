@@ -22,7 +22,7 @@ pub struct Wander2D {
 	rate_of_change: f32,
 	// How fast the entity should move towards its wander target.
 	linear_speed: f32,
-	
+
 	face: steering::Face,
 
 	pub(crate) target_orientation: Quaternion,
@@ -83,7 +83,7 @@ impl Wander2D {
 		self.linear_speed = speed;
 		self
 	}
-	
+
 	pub fn with_face(mut self, face: steering::Face) -> Self {
 		self.face = face;
 		self

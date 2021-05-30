@@ -1,7 +1,4 @@
-use crate::{
-	ecs::{Component, VecStorage},
-	math::Quaternion,
-};
+use crate::ecs::{Component, VecStorage};
 use serde::{Deserialize, Serialize};
 
 // Angular Velocity
