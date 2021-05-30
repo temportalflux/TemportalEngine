@@ -1,2 +1,2 @@
-mod wander_in_2d;
-pub use wander_in_2d::*;
+mod weighted_steering;
+pub use weighted_steering::*;

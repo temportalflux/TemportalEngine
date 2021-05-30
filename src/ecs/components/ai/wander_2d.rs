@@ -1,6 +1,8 @@
 use crate::{
-	ecs::{Component, VecStorage},
+	ecs::{components::ai::steering, Component, VecStorage},
 	math::Quaternion,
+	rand::{self, Rng},
+	world,
 };
 use serde::{Deserialize, Serialize};
 
@@ -20,11 +22,10 @@ pub struct Wander2D {
 	rate_of_change: f32,
 	// How fast the entity should move towards its wander target.
 	linear_speed: f32,
-	// How fast the entity should adjust its orientation
-	angular_speed: f32,
+	
+	face: steering::Face,
 
 	pub(crate) target_orientation: Quaternion,
-	pub(crate) entity_desired_orientation: Quaternion,
 }
 
 impl Component for Wander2D {
@@ -38,9 +39,8 @@ impl Default for Wander2D {
 			projection_distance: 2.0,
 			rate_of_change: 180.0_f32.to_radians(),
 			linear_speed: 1.0,
-			angular_speed: 1.0,
 			target_orientation: Quaternion::identity(),
-			entity_desired_orientation: Quaternion::identity(),
+			face: steering::Face::default(),
 		}
 	}
 }
@@ -83,17 +83,44 @@ impl Wander2D {
 		self.linear_speed = speed;
 		self
 	}
-
-	pub fn linear_speed(&self) -> f32 {
-		self.linear_speed
-	}
-
-	pub fn with_angular_speed(mut self, speed: f32) -> Self {
-		self.angular_speed = speed;
+	
+	pub fn with_face(mut self, face: steering::Face) -> Self {
+		self.face = face;
 		self
 	}
+}
 
-	pub fn angular_speed(&self) -> f32 {
-		self.angular_speed
+impl steering::Behavior for Wander2D {
+	fn name() -> &'static str {
+		"wander_2d"
+	}
+
+	fn get_steering(&mut self, state: &steering::State) -> steering::Output {
+		let mut rng = rand::thread_rng();
+		// To determine the "target" location, we need a point on the circumfrence of the circle.
+		// Such a point would be determined by a rotation around the circle at a given radius.
+		// We don't want the target to move too drastically, so we will use the entity's current
+		// orientation + some rotational rate around the circle to determine the rotation around the cirlce.
+		let random_binomial = rng.gen::<f32>() - rng.gen::<f32>();
+		self.target_orientation = Quaternion::concat(
+			&self.target_orientation,
+			&Quaternion::from_axis_angle(
+				world::global_forward(),
+				self.target_rate_of_change() * random_binomial,
+			),
+		);
+
+		let forward = state.orientation.rotate(&world::global_up());
+
+		// normalized vector from circle center in the direction of the target on the circle edge
+		let target_forward = self.target_orientation.rotate(&world::global_right());
+		// the center of the wander circle - which is a projection in front of the position of the entity
+		let circle_center = state.position + forward * self.projection_distance();
+		// world position of the target on the edge of the circle
+		let target_position = circle_center + target_forward * self.circle_radius();
+
+		let mut steering = self.face.get_steering(state, target_position);
+		steering.linear_acceleration = forward * self.linear_speed;
+		steering
 	}
 }
