@@ -96,8 +96,8 @@ impl<'a> ecs::System<'a> for ApplyWeightedSteering {
 				.normal();
 
 			velocity.0 += (steering.linear_acceleration * dt).subvec::<2>(None);
-			if velocity.0.magnitude_sq() > steering_weights.max_linear_acceleration().powi(2) {
-				velocity.0 = velocity.0.normal() * steering_weights.max_linear_acceleration();
+			if velocity.0.magnitude_sq() > steering_weights.max_linear_speed().powi(2) {
+				velocity.0 = velocity.0.normal() * steering_weights.max_linear_speed();
 			}
 			rotation.0 += steering.angular_acceleration * dt;
 		}

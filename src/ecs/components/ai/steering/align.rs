@@ -1,4 +1,4 @@
-use crate::ecs::components::ai::steering;
+use crate::{ecs::components::ai::steering, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize)]
@@ -33,12 +33,11 @@ impl Align {
 		let mut steering = steering::Output::default();
 
 		let mut radians_to_target = target_angle - state.orientation.angle();
-		while radians_to_target < std::f32::consts::PI {
-			radians_to_target += 2.0 * std::f32::consts::PI;
-		}
-		while radians_to_target > std::f32::consts::PI {
-			radians_to_target -= 2.0 * std::f32::consts::PI;
-		}
+		radians_to_target = math::map_to(
+			radians_to_target,
+			-std::f32::consts::PI..std::f32::consts::PI,
+			2.0 * std::f32::consts::PI,
+		);
 		if radians_to_target.abs() <= f32::EPSILON {
 			return steering;
 		}

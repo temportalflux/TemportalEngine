@@ -5,18 +5,18 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Weighted {
 	weights: HashMap<steering::IdOwned, f32>,
-	max_linear_acceleration: f32,
+	max_linear_speed: f32,
 }
 
 impl Component for Weighted {
 	type Storage = VecStorage<Self>;
 }
 
-impl Weighted {
-	pub fn new(max_linear_acceleration: f32) -> Self {
+impl Default for Weighted {
+	fn default() -> Self {
 		Self {
 			weights: HashMap::new(),
-			max_linear_acceleration,
+			max_linear_speed: 0.0,
 		}
 	}
 }
@@ -31,7 +31,12 @@ impl Weighted {
 		self.weights.get(&T::name_owned())
 	}
 
-	pub fn max_linear_acceleration(&self) -> f32 {
-		self.max_linear_acceleration
+	pub fn with_max_linear(mut self, speed: f32) -> Self {
+		self.max_linear_speed = speed;
+		self
+	}
+
+	pub fn max_linear_speed(&self) -> f32 {
+		self.max_linear_speed
 	}
 }
