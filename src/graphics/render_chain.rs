@@ -1,6 +1,8 @@
 use crate::{
 	graphics::{
-		self, command,
+		self,
+		camera::Camera,
+		command,
 		device::{
 			logical, physical,
 			swapchain::{self, Swapchain},
@@ -113,6 +115,7 @@ pub struct RenderChain {
 	render_pass_instruction: renderpass::RecordInstruction,
 
 	frame_count: usize,
+	camera: Camera,
 
 	persistent_descriptor_pool: sync::Arc<sync::RwLock<graphics::descriptor::pool::Pool>>,
 	surface: sync::Weak<Surface>,
@@ -177,6 +180,7 @@ impl RenderChain {
 			graphics_queue: sync::Arc::new(graphics_queue),
 			surface: sync::Arc::downgrade(surface),
 			frame_count,
+			camera: Camera::default(),
 
 			persistent_descriptor_pool,
 
@@ -205,6 +209,19 @@ impl RenderChain {
 			pending_render_chain_elements: Vec::new(),
 			initialized_render_chain_elements: Vec::new(),
 		})
+	}
+
+	pub fn with_camera(mut self, camera: Camera) -> Self {
+		self.set_camera(camera);
+		self
+	}
+
+	pub fn set_camera(&mut self, camera: Camera) {
+		self.camera = camera;
+	}
+
+	pub fn camera(&self) -> &Camera {
+		&self.camera
 	}
 
 	/// Returns a pointer to the physical rendering device / GPU.
