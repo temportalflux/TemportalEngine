@@ -102,7 +102,7 @@ impl<'a> ecs::System<'a> for DrawNeighborhoods {
 				if entity.id() != *selected_id {
 					continue;
 				}
-				
+
 				let pos = position.0.subvec::<3>(None);
 				drawer.draw_segment(
 					render::Point {

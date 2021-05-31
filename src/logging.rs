@@ -15,13 +15,19 @@ pub fn init_named(log_name: &str) -> VoidResult {
 		.write(true)
 		.truncate(true)
 		.open(log_path)?;
-	let cfg = ConfigBuilder::new()
-		.set_max_level(log::LevelFilter::Error)
-		.set_time_format_str("%Y.%m.%d-%H.%M.%S")
-		.set_thread_level(log::LevelFilter::Debug)
-		.set_target_level(log::LevelFilter::Error)
-		.set_location_level(log::LevelFilter::Off)
-		.build();
+	let cfg = {
+		let mut builder = ConfigBuilder::new();
+		builder
+			.set_max_level(log::LevelFilter::Error)
+			.set_time_format_str("%Y.%m.%d-%H.%M.%S")
+			.set_thread_level(log::LevelFilter::Debug)
+			.set_target_level(log::LevelFilter::Error)
+			.set_location_level(log::LevelFilter::Off);
+		for input_dep in crate::input::DEPENDENCY_LOG_TARGETS.iter() {
+			builder.add_filter_ignore_str(input_dep);
+		}
+		builder.build()
+	};
 	CombinedLogger::init(vec![
 		TermLogger::new(
 			LevelFilter::Trace,
