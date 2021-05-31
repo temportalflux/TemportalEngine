@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 /// Settings for the wander behavior explained in
 /// "Artificial Intelligence for Games: 2nd Edition" by Ian Millington.
-/// Functionality handled by [`WanderIn2D`](crate::ecs::systems::ai::WanderIn2D).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Wander2D {
 	/// The radius of the circle projected in front of the entity's position,
