@@ -1,5 +1,7 @@
 pub use vulkan_rs::*;
 
+pub mod camera;
+
 mod drawable;
 pub use drawable::*;
 
