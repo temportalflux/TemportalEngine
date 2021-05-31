@@ -435,7 +435,7 @@ impl graphics::RenderChainElement for System {
 		self.resolution = vector![resolution.width, resolution.height];
 		self.colored_area.create_pipeline(
 			render_chain,
-			None,
+			vec![],
 			pipeline::Info::default()
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()

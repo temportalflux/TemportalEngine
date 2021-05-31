@@ -154,7 +154,7 @@ impl DataPipeline {
 	) -> utility::Result<()> {
 		self.drawable.create_pipeline(
 			render_chain,
-			Some(&self.descriptor_layout),
+			vec![&self.descriptor_layout],
 			pipeline::Info::default()
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()

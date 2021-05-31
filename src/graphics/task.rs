@@ -221,7 +221,7 @@ impl TaskGpuCopy {
 	/// [`copy_stage_to_buffer`](TaskGpuCopy::copy_stage_to_buffer)
 	/// or [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image) respectively.
 	#[profiling::function]
-	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
+	pub fn stage<T: Sized>(self, data: &[T]) -> utility::Result<Self> {
 		self.stage_any(data.len() * std::mem::size_of::<T>(), |mem| {
 			mem.write_slice(data)
 		})

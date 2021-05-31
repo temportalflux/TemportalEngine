@@ -1,6 +1,6 @@
 use crate::{
 	asset,
-	graphics::{self, buffer, command, flags, pipeline, utility::offset_of, Drawable},
+	graphics::{self, buffer, camera, command, flags, pipeline, utility::offset_of, Drawable},
 	math::Vector,
 	task,
 	utility::{self, AnyError, VoidResult},
@@ -32,6 +32,7 @@ impl pipeline::vertex::Object for LineSegmentVertex {
 }
 
 pub struct DebugRender {
+	camera_uniform: camera::Uniform,
 	frames: Vec<Frame>,
 	line_drawable: Drawable,
 }
@@ -43,11 +44,12 @@ struct Frame {
 }
 
 impl DebugRender {
-	pub fn new() -> Self {
-		Self {
+	pub fn new(chain: &graphics::RenderChain) -> Result<Self, AnyError> {
+		Ok(Self {
 			line_drawable: Drawable::default(),
 			frames: Vec::new(),
-		}
+			camera_uniform: camera::Uniform::new(chain)?,
+		})
 	}
 
 	pub fn create<F>(
@@ -58,7 +60,7 @@ impl DebugRender {
 		F: Fn(Self) -> Result<Self, AnyError>,
 	{
 		let mut chain_write = chain.write().unwrap();
-		let inst = initializer(Self::new())?;
+		let inst = initializer(Self::new(&chain_write)?)?;
 		let render = Arc::new(RwLock::new(inst));
 		chain_write.add_render_chain_element(&render)?;
 		Ok(render)
@@ -107,7 +109,8 @@ impl graphics::RenderChainElement for DebugRender {
 	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
 		let mut gpu_signals = Vec::new();
 
-		self.line_drawable.create_shaders(&chain)?;
+		self.camera_uniform.write_descriptor_sets(chain);
+		self.line_drawable.create_shaders(chain)?;
 
 		self.frames.clear();
 		for _ in 0..chain.frame_count() {
@@ -150,7 +153,7 @@ impl graphics::RenderChainElement for DebugRender {
 	) -> utility::Result<()> {
 		self.line_drawable.create_pipeline(
 			render_chain,
-			None,
+			vec![self.camera_uniform.layout()],
 			pipeline::Info::default()
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()
@@ -167,17 +170,18 @@ impl graphics::RenderChainElement for DebugRender {
 		)
 	}
 
-	/// Update the data (like uniforms) for a given frame -
-	/// Or in the case of the UI Render, record changes to the secondary command buffer.
+	/// Update the data (like uniforms) for a given frame.
 	#[profiling::function]
 	fn prerecord_update(
 		&mut self,
-		_render_chain: &graphics::RenderChain,
+		chain: &graphics::RenderChain,
 		_buffer: &command::Buffer,
-		_frame: usize,
-		_resolution: &Vector<u32, 2>,
+		frame: usize,
+		resolution: &Vector<u32, 2>,
 	) -> utility::Result<bool> {
-		Ok(true)
+		self.camera_uniform
+			.write_camera(frame, resolution.try_into().unwrap(), &chain.camera())?;
+		Ok(false)
 	}
 
 	/// Record to the primary command buffer for a given frame
@@ -185,9 +189,11 @@ impl graphics::RenderChainElement for DebugRender {
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
 		let frame_data = &self.frames[frame];
 		self.line_drawable.bind_pipeline(buffer);
-		//buffer.bind_vertex_buffers(0, vec![&frame_data.vertex_buffer], vec![0]);
-		//buffer.bind_index_buffer(&frame_data.index_buffer, 0);
-		//buffer.draw(frame_data.index_count, 0, 1, 0, 0);
+		self.line_drawable
+			.bind_descriptors(buffer, vec![&self.camera_uniform.get_set(frame).unwrap()]);
+		buffer.bind_vertex_buffers(0, vec![&frame_data.vertex_buffer], vec![0]);
+		buffer.bind_index_buffer(&frame_data.index_buffer, 0);
+		buffer.draw(frame_data.index_count, 0, 1, 0, 0);
 		Ok(())
 	}
 }

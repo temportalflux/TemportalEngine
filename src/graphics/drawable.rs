@@ -50,15 +50,16 @@ impl Drawable {
 	pub fn create_pipeline(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		descriptor_layout: Option<&sync::Arc<descriptor::SetLayout>>,
+		descriptor_layouts: Vec<&sync::Arc<descriptor::SetLayout>>,
 		pipeline_info: pipeline::Info,
 	) -> utility::Result<()> {
 		self.pipeline_layout = Some(
-			match descriptor_layout {
-				Some(layout) => pipeline::Layout::builder().with_descriptors(layout),
-				None => pipeline::Layout::builder(),
-			}
-			.build(render_chain.logical().clone())?,
+			descriptor_layouts
+				.iter()
+				.fold(pipeline::Layout::builder(), |builder, layout| {
+					builder.with_descriptors(layout)
+				})
+				.build(render_chain.logical().clone())?,
 		);
 		self.pipeline = Some(
 			pipeline_info
