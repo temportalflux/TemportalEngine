@@ -16,6 +16,16 @@ struct LineSegmentVertex {
 	color: Vector<f32, 4>,
 }
 
+pub enum DebugDraw {
+	LineSegment(LineSegment),
+}
+
+pub struct LineSegment {
+	pub start: Vector<f32, 3>,
+	pub end: Vector<f32, 3>,
+	pub color: Vector<f32, 4>,
+}
+
 impl pipeline::vertex::Object for LineSegmentVertex {
 	fn attributes() -> Vec<pipeline::vertex::Attribute> {
 		vec![
@@ -32,13 +42,14 @@ impl pipeline::vertex::Object for LineSegmentVertex {
 }
 
 pub struct DebugRender {
+	pending_objects: Vec<DebugDraw>,
 	camera_uniform: camera::Uniform,
 	frames: Vec<Frame>,
 	line_drawable: Drawable,
 }
 
 struct Frame {
-	index_count: usize,
+	index_order: Vec<std::ops::Range<usize>>,
 	index_buffer: Arc<buffer::Buffer>,
 	vertex_buffer: Arc<buffer::Buffer>,
 }
@@ -49,6 +60,7 @@ impl DebugRender {
 			line_drawable: Drawable::default(),
 			frames: Vec::new(),
 			camera_uniform: camera::Uniform::new(chain)?,
+			pending_objects: Vec::new(),
 		})
 	}
 
@@ -101,6 +113,20 @@ impl DebugRender {
 	}
 }
 
+impl DebugRender {
+	pub fn clear(&mut self) {
+		self.pending_objects.clear();
+	}
+
+	pub fn draw(&mut self, item: DebugDraw) {
+		self.pending_objects.push(item);
+	}
+
+	pub fn draw_segment(&mut self, segment: LineSegment) {
+		self.draw(DebugDraw::LineSegment(segment));
+	}
+}
+
 impl graphics::RenderChainElement for DebugRender {
 	#[profiling::function]
 	fn initialize_with(
@@ -125,11 +151,11 @@ impl graphics::RenderChainElement for DebugRender {
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
 				)?,
-				index_count: 0,
+				index_order: Vec::new(),
 			});
 		}
-		for frame in self.frames.iter() {
-			let mut signals = frame.write_buffer_data(&chain)?;
+		for frame in self.frames.iter_mut() {
+			let mut signals = frame.write_buffer_data(&chain, &self.pending_objects)?;
 			gpu_signals.append(&mut signals);
 		}
 
@@ -155,6 +181,10 @@ impl graphics::RenderChainElement for DebugRender {
 			render_chain,
 			vec![self.camera_uniform.layout()],
 			pipeline::Info::default()
+				.with_topology(
+					pipeline::Topology::default()
+						.with_primitive(flags::PrimitiveTopology::LINE_LIST),
+				)
 				.with_vertex_layout(
 					pipeline::vertex::Layout::default()
 						.with_object::<LineSegmentVertex>(0, flags::VertexInputRate::VERTEX),
@@ -193,45 +223,82 @@ impl graphics::RenderChainElement for DebugRender {
 			.bind_descriptors(buffer, vec![&self.camera_uniform.get_set(frame).unwrap()]);
 		buffer.bind_vertex_buffers(0, vec![&frame_data.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&frame_data.index_buffer, 0);
-		buffer.draw(frame_data.index_count, 0, 1, 0, 0);
+		for range in frame_data.index_order.iter() {
+			buffer.draw(range.end - range.start, range.start, 1, 0, 0);
+		}
 		Ok(())
 	}
 }
 
 impl Frame {
 	fn write_buffer_data(
-		&self,
+		&mut self,
 		chain: &graphics::RenderChain,
+		objects: &Vec<DebugDraw>,
 	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
-		use graphics::alloc::Object;
 		let mut gpu_signals = Vec::new();
 
-		// TODO: pull this from some compiled list
-		let data_size = self.vertex_buffer.size();
-		let empty_data = vec![0_u8; data_size];
+		let mut vertices: Vec<LineSegmentVertex> = Vec::new();
+		let mut indices: Vec<u32> = Vec::new();
+		self.index_order.clear();
+		for kind in objects {
+			match kind {
+				DebugDraw::LineSegment(segment) => {
+					let index_start = indices.len();
+					let mut seg_verts = segment.as_vertices();
+					for i in 0..seg_verts.len() {
+						indices.push((vertices.len() + i) as u32);
+					}
+					vertices.append(&mut seg_verts);
+					self.index_order.push(index_start..indices.len());
+				}
+			}
+		}
 
-		//buffer.expand(std::mem::size_of::<T>() * data.len())?;
-		graphics::TaskGpuCopy::new(&chain)?
-			.begin()?
-			.stage_any(data_size, |mem| mem.write_slice(&empty_data))?
-			.copy_stage_to_buffer(&self.vertex_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+		let vbuff_size = std::mem::size_of::<LineSegmentVertex>() * vertices.len();
+		let ibuff_size = std::mem::size_of::<u32>() * indices.len();
 
-		// TODO: pull this from some compiled list
-		let data_size = self.index_buffer.size();
-		let empty_data = vec![0_u8; data_size];
+		if vbuff_size > 0 {
+			if let Some(vbuf) = Arc::get_mut(&mut self.vertex_buffer) {
+				vbuf.expand(vbuff_size)?;
+			}
+			graphics::TaskGpuCopy::new(&chain)?
+				.begin()?
+				.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
+				.copy_stage_to_buffer(&self.vertex_buffer)
+				.end()?
+				.add_signal_to(&mut gpu_signals)
+				.send_to(task::sender());
+		}
 
-		//buffer.expand(std::mem::size_of::<T>() * data.len())?;
-		graphics::TaskGpuCopy::new(&chain)?
-			.begin()?
-			.stage_any(data_size, |mem| mem.write_slice(&empty_data))?
-			.copy_stage_to_buffer(&self.index_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+		if ibuff_size > 0 {
+			if let Some(ibuf) = Arc::get_mut(&mut self.index_buffer) {
+				ibuf.expand(ibuff_size)?;
+			}
+			graphics::TaskGpuCopy::new(&chain)?
+				.begin()?
+				.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
+				.copy_stage_to_buffer(&self.index_buffer)
+				.end()?
+				.add_signal_to(&mut gpu_signals)
+				.send_to(task::sender());
+		}
 
 		Ok(gpu_signals)
+	}
+}
+
+impl LineSegment {
+	fn as_vertices(&self) -> Vec<LineSegmentVertex> {
+		vec![
+			LineSegmentVertex {
+				position: self.start.subvec::<4>(None),
+				color: self.color,
+			},
+			LineSegmentVertex {
+				position: self.end.subvec::<4>(None),
+				color: self.color,
+			},
+		]
 	}
 }
