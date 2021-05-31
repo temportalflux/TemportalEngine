@@ -4,6 +4,7 @@ use crate::{
 		components::{ai::steering::Neighborhood, Position2D},
 		Join, NamedSystem,
 	},
+	math::vector,
 	render,
 };
 use std::sync::{Arc, RwLock};
@@ -42,7 +43,20 @@ impl<'a> ecs::System<'a> for DrawNeighborhoods {
 					None
 				}
 			}) {
-				// TODO: draw a line from position to neighbor position
+				if neighborhood
+					.is_within_distance((neighbor_position.0 - position.0).magnitude_sq())
+				{
+					drawer.draw_segment(
+						render::Point {
+							position: position.0.subvec::<3>(None),
+							color: vector![0.0, 1.0, 0.0, 1.0],
+						},
+						render::Point {
+							position: neighbor_position.0.subvec::<3>(None),
+							color: vector![0.0, 0.0, 1.0, 1.0],
+						},
+					);
+				}
 			}
 		}
 	}

@@ -4,6 +4,7 @@ use crate::{
 	math::Vector,
 	task,
 	utility::{self, AnyError, VoidResult},
+	EngineSystem,
 };
 use std::sync::{Arc, RwLock};
 
@@ -17,12 +18,11 @@ struct LineSegmentVertex {
 }
 
 pub enum DebugDraw {
-	LineSegment(LineSegment),
+	LineSegment(Point, Point),
 }
 
-pub struct LineSegment {
-	pub start: Vector<f32, 3>,
-	pub end: Vector<f32, 3>,
+pub struct Point {
+	pub position: Vector<f32, 3>,
 	pub color: Vector<f32, 4>,
 }
 
@@ -42,6 +42,7 @@ impl pipeline::vertex::Object for LineSegmentVertex {
 }
 
 pub struct DebugRender {
+	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 	pending_objects: Vec<DebugDraw>,
 	camera_uniform: camera::Uniform,
 	frames: Vec<Frame>,
@@ -61,6 +62,7 @@ impl DebugRender {
 			frames: Vec::new(),
 			camera_uniform: camera::Uniform::new(chain)?,
 			pending_objects: Vec::new(),
+			pending_gpu_signals: Vec::new(),
 		})
 	}
 
@@ -122,8 +124,14 @@ impl DebugRender {
 		self.pending_objects.push(item);
 	}
 
-	pub fn draw_segment(&mut self, segment: LineSegment) {
-		self.draw(DebugDraw::LineSegment(segment));
+	pub fn draw_segment(&mut self, start: Point, end: Point) {
+		self.draw(DebugDraw::LineSegment(start, end));
+	}
+}
+
+impl EngineSystem for DebugRender {
+	fn update(&mut self, _: std::time::Duration) {
+		self.clear();
 	}
 }
 
@@ -211,6 +219,10 @@ impl graphics::RenderChainElement for DebugRender {
 	) -> utility::Result<bool> {
 		self.camera_uniform
 			.write_camera(frame, resolution.try_into().unwrap(), &chain.camera())?;
+
+		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
+		self.pending_gpu_signals.append(&mut signals);
+
 		Ok(false)
 	}
 
@@ -228,6 +240,10 @@ impl graphics::RenderChainElement for DebugRender {
 		}
 		Ok(())
 	}
+
+	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
+		self.pending_gpu_signals.drain(..).collect()
+	}
 }
 
 impl Frame {
@@ -243,13 +259,21 @@ impl Frame {
 		self.index_order.clear();
 		for kind in objects {
 			match kind {
-				DebugDraw::LineSegment(segment) => {
+				DebugDraw::LineSegment(start, end) => {
 					let index_start = indices.len();
-					let mut seg_verts = segment.as_vertices();
-					for i in 0..seg_verts.len() {
-						indices.push((vertices.len() + i) as u32);
-					}
-					vertices.append(&mut seg_verts);
+
+					indices.push(vertices.len() as u32);
+					vertices.push(LineSegmentVertex {
+						position: start.position.subvec::<4>(None),
+						color: start.color,
+					});
+
+					indices.push(vertices.len() as u32);
+					vertices.push(LineSegmentVertex {
+						position: end.position.subvec::<4>(None),
+						color: end.color,
+					});
+
 					self.index_order.push(index_start..indices.len());
 				}
 			}
@@ -285,20 +309,5 @@ impl Frame {
 		}
 
 		Ok(gpu_signals)
-	}
-}
-
-impl LineSegment {
-	fn as_vertices(&self) -> Vec<LineSegmentVertex> {
-		vec![
-			LineSegmentVertex {
-				position: self.start.subvec::<4>(None),
-				color: self.color,
-			},
-			LineSegmentVertex {
-				position: self.end.subvec::<4>(None),
-				color: self.color,
-			},
-		]
 	}
 }
