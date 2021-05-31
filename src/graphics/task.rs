@@ -222,13 +222,20 @@ impl TaskGpuCopy {
 	/// or [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image) respectively.
 	#[profiling::function]
 	pub fn stage<T: Sized>(mut self, data: &[T]) -> utility::Result<Self> {
-		let buf_size = data.len() * std::mem::size_of::<T>();
-		let buffer = buffer::Buffer::create_staging(&self.allocator, buf_size)?;
+		self.stage_any(data.len() * std::mem::size_of::<T>(), |mem| {
+			mem.write_slice(data)
+		})
+	}
+
+	#[profiling::function]
+	pub fn stage_any<F>(mut self, memory_size: usize, write: F) -> utility::Result<Self>
+	where
+		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
+	{
+		let buffer = buffer::Buffer::create_staging(&self.allocator, memory_size)?;
 		{
 			let mut mem = buffer.memory()?;
-			let wrote_all = mem
-				.write_slice(data)
-				.map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
+			let wrote_all = write(&mut mem).map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
 			assert!(wrote_all);
 		}
 		self.staging_buffer = Some(buffer);

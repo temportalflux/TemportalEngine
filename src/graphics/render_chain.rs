@@ -20,8 +20,10 @@ pub trait RenderChainElement: Send + Sync {
 	/// Returns any semaphores which must complete before the first frame is submitted.
 	fn initialize_with(
 		&mut self,
-		render_chain: &mut RenderChain,
-	) -> utility::Result<Vec<Arc<command::Semaphore>>>;
+		_render_chain: &mut RenderChain,
+	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
+		Ok(vec![])
+	}
 
 	/// Creates any objects, like pipelines, which need to be created for a given swapchain (i.e. on window size change).
 	/// Returns any semaphores which must complete before the next frame is submitted.
@@ -284,6 +286,12 @@ impl RenderChain {
 	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
 	fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> Result<(), AnyError> {
+		log::info!(
+			"{}Constructing render chain with resolution <{}, {}>",
+			self.render_pass.as_ref().map(|_| "re").unwrap_or(""),
+			resolution.width,
+			resolution.height
+		);
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
 		self.render_finished_semaphores.clear();

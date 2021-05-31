@@ -16,6 +16,7 @@ pub mod utility;
 pub mod window;
 pub mod world;
 pub use rand;
+pub mod render;
 
 use graphics::AppInfo;
 
