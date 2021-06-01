@@ -54,7 +54,7 @@ impl<'a> ecs::System<'a> for GatherNeighbors {
 					let self_forward_2d = orientation.up();
 					let self_to_other = position.0 - *other_pos;
 					let alignment =
-						Vector::dot(&self_forward_2d, &self_to_other.normal().subvec::<3>(None));
+						Vector::dot(&self_forward_2d, &self_to_other.normalized().subvec::<3>(None));
 					let distance_sq = self_to_other.magnitude_sq();
 					if neighborhood.is_aligned(alignment)
 						&& neighborhood.is_within_distance(distance_sq)

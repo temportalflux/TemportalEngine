@@ -11,7 +11,7 @@ pub struct Neighborhood {
 	/// 1.0 means "anywhere forward"/infinite cone,
 	/// 0.5 would represent a cone at 45 degrees.
 	///
-	/// An entity is aligned if `1.0 - dot(self.forward, (other.position - self.position).normal()) <= alignment`,
+	/// An entity is aligned if `1.0 - dot(self.forward, (other.position - self.position).normalized()) <= alignment`,
 	/// aka "the other entity's position within an angle of separation from the forward vector of this entity".
 	alignment: f32,
 	/// How far in front of the entity can an entity be

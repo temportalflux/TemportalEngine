@@ -5,17 +5,11 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct Orientation(pub Quaternion);
 
 impl Component for Orientation {
 	type Storage = VecStorage<Self>;
-}
-
-impl Default for Orientation {
-	fn default() -> Orientation {
-		Orientation(Quaternion::identity())
-	}
 }
 
 impl Orientation {

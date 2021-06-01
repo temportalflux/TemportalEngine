@@ -93,11 +93,11 @@ impl<'a> ecs::System<'a> for ApplyWeightedSteering {
 					world::global_forward(),
 					rotation.0 * dt,
 				))
-				.normal();
+				.normalized();
 
 			velocity.0 += (steering.linear_acceleration * dt).subvec::<2>(None);
 			if velocity.0.magnitude_sq() > steering_weights.max_linear_speed().powi(2) {
-				velocity.0 = velocity.0.normal() * steering_weights.max_linear_speed();
+				velocity.0 = velocity.0.normalized() * steering_weights.max_linear_speed();
 			}
 			rotation.0 += steering.angular_acceleration * dt;
 		}

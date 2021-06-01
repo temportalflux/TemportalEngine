@@ -22,7 +22,7 @@ impl Face {
 		target_position: Vector<f32, 3>,
 	) -> steering::Output {
 		let forward = state.orientation.rotate(&world::global_up());
-		let next_forward = (target_position - state.position).normal();
+		let next_forward = (target_position - state.position).normalized();
 		let rot_to_look_at_target =
 			Quaternion::look_at_3d(&forward, &next_forward, &world::global_forward());
 		self.align

@@ -3,7 +3,7 @@ use crate::{
 	world,
 };
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy)]
 pub struct Camera {
 	position: Vector<f32, 3>,
 	orientation: Quaternion,
@@ -48,16 +48,6 @@ impl Default for ViewProjection {
 		Self {
 			view: Matrix::identity(),
 			projection: Matrix::identity(),
-		}
-	}
-}
-
-impl Default for Camera {
-	fn default() -> Self {
-		Self {
-			position: Vector::default(),
-			orientation: Quaternion::identity(),
-			projection: Projection::default(),
 		}
 	}
 }
