@@ -97,7 +97,7 @@ impl ImageCache {
 
 		let image = sync::Arc::new(image::Image::create_gpu(
 			&render_chain.allocator(),
-			flags::Format::R8G8B8A8_SRGB,
+			flags::format::SRGB_8BIT,
 			structs::Extent3D {
 				width: pending.size.x() as u32,
 				height: pending.size.y() as u32,

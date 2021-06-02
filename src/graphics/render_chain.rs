@@ -149,7 +149,7 @@ impl RenderChain {
 	) -> utility::Result<RenderChain> {
 		let swapchain_info = Swapchain::builder()
 			.with_image_count(frame_count as u32)
-			.with_image_format(flags::Format::B8G8R8A8_SRGB)
+			.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
 			.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
 			.with_image_array_layer_count(1)
 			.with_image_usage(flags::ImageUsageFlags::COLOR_ATTACHMENT)
@@ -598,7 +598,7 @@ impl RenderChain {
 				// tell the gpu to wait until the image is available
 				.wait_for(
 					&self.img_available_semaphores[self.current_frame],
-					flags::PipelineStage::COLOR_ATTACHMENT_OUTPUT,
+					flags::PipelineStage::ColorAttachmentOutput,
 				)
 				.wait_for_semaphores(&required_semaphores)
 				// denote which command buffer is being executed

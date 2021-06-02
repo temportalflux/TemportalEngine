@@ -1,3 +1,6 @@
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt;
+
 /// A unique identifier given to each instance of a class which implements [`Asset`](crate::asset::Asset).
 #[derive(Debug, Hash, Clone)]
 pub struct Id {
@@ -11,6 +14,14 @@ impl Id {
 			module_name: module_name.to_string(),
 			asset_path: std::path::PathBuf::from(asset_path),
 		}
+	}
+
+	pub fn from_short_id(short_id: &str) -> Option<Self> {
+		let parts = short_id.split(':').collect::<Vec<_>>();
+		if parts.len() == 1 {
+			return None;
+		}
+		Some(Self::new(&parts[0], &parts[1]))
 	}
 
 	pub fn file_name(&self) -> String {
@@ -69,5 +80,39 @@ impl Location {
 
 	pub fn index(&self) -> usize {
 		self.pak_index
+	}
+}
+
+impl Serialize for Id {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		serializer.serialize_str(&self.short_id())
+	}
+}
+
+struct IdVisitor;
+impl<'de> de::Visitor<'de> for IdVisitor {
+	type Value = Id;
+
+	fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+		formatter.write_str("an integer between -2^31 and 2^31")
+	}
+
+	fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+	where
+		E: de::Error,
+	{
+		Id::from_short_id(value).ok_or(de::Error::custom("invalid asset id"))
+	}
+}
+
+impl<'de> Deserialize<'de> for Id {
+	fn deserialize<D>(deserializer: D) -> Result<Id, D::Error>
+	where
+		D: Deserializer<'de>,
+	{
+		deserializer.deserialize_str(IdVisitor)
 	}
 }

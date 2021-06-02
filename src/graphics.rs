@@ -16,6 +16,8 @@ pub use image_cache::*;
 mod render_chain;
 pub use render_chain::*;
 
+pub mod render_pass;
+
 #[path = "graphics/shader.rs"]
 mod shader_engine;
 pub use shader_engine::*;
@@ -28,3 +30,10 @@ pub use task::*;
 
 mod texture;
 pub use texture::*;
+
+pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
+	type_reg.register::<Shader>();
+	type_reg.register::<font::Font>();
+	type_reg.register::<Texture>();
+	render_pass::register_asset_types(type_reg);
+}

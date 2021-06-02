@@ -26,15 +26,15 @@ impl pipeline::vertex::Object for Vertex {
 		vec![
 			pipeline::vertex::Attribute {
 				offset: offset_of!(Vertex, pos),
-				format: flags::Format::R32G32_SFLOAT,
+				format: flags::format::VEC2,
 			},
 			pipeline::vertex::Attribute {
 				offset: offset_of!(Vertex, tex_coord),
-				format: flags::Format::R32G32_SFLOAT,
+				format: flags::format::VEC2,
 			},
 			pipeline::vertex::Attribute {
 				offset: offset_of!(Vertex, color),
-				format: flags::Format::R32G32B32A32_SFLOAT,
+				format: flags::format::VEC4,
 			},
 		]
 	}

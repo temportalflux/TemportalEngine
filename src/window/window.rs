@@ -59,8 +59,7 @@ impl Window {
 		)?);
 		log::info!(
 			target: window::LOG,
-			"Window {:?} found physical device {}",
-			internal.id(),
+			"Found physical device {}",
 			physical_device
 		);
 

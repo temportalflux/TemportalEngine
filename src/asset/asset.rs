@@ -22,3 +22,10 @@ pub trait Asset: std::fmt::Debug {
 pub struct Generic {
 	pub asset_type: String,
 }
+
+pub fn decompile_asset<'a, T>(bin: &'a Vec<u8>) -> AssetResult
+where
+	T: Asset + Any + Send + Sync + Deserialize<'a>,
+{
+	Ok(Box::new(rmp_serde::from_read_ref::<'a, Vec<u8>, T>(&bin)?))
+}

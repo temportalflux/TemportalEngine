@@ -31,11 +31,11 @@ impl pipeline::vertex::Object for LineSegmentVertex {
 		vec![
 			pipeline::vertex::Attribute {
 				offset: offset_of!(LineSegmentVertex, position),
-				format: flags::Format::R32G32B32_SFLOAT,
+				format: flags::format::VEC3,
 			},
 			pipeline::vertex::Attribute {
 				offset: offset_of!(LineSegmentVertex, color),
-				format: flags::Format::R32G32B32A32_SFLOAT,
+				format: flags::format::VEC4,
 			},
 		]
 	}

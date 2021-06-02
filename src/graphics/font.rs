@@ -108,8 +108,7 @@ impl TypeMetadata for FontMetadata {
 	}
 
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		let shader: Font = rmp_serde::from_read_ref(&bin)?;
-		Ok(Box::new(shader))
+		asset::decompile_asset::<Font>(bin)
 	}
 }
 

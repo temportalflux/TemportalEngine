@@ -16,7 +16,7 @@ type FontGlyphMap = HashMap<UnicodeId, Glyph>;
 pub struct PendingAtlas {
 	size: Vector<usize, 2>,
 	binary: Vec<u8>,
-	format: flags::Format,
+	format: flags::format::Format,
 	glyph_map: FontGlyphMap,
 	line_height: f32,
 	width_edge: Vector<f32, 2>,
@@ -35,7 +35,7 @@ impl From<Box<Font>> for PendingAtlas {
 		Self {
 			size: *font.size(),
 			binary: font.binary().iter().flatten().map(|alpha| *alpha).collect(),
-			format: flags::Format::R8_SRGB,
+			format: flags::format::SRGB_8BIT_R,
 			glyph_map: font
 				.glyphs()
 				.iter()

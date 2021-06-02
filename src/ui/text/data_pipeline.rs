@@ -100,7 +100,7 @@ impl DataPipeline {
 							object: ObjectKind::Image(vec![ImageKind {
 								sampler: self.sampler.clone(),
 								view: loaded.view().clone(),
-								layout: flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+								layout: flags::ImageLayout::ShaderReadOnlyOptimal,
 							}]),
 						}))
 						.apply(&render_chain.logical());

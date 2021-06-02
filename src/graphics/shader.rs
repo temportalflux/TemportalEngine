@@ -59,7 +59,6 @@ impl TypeMetadata for ShaderMetadata {
 	}
 
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		let shader: Shader = rmp_serde::from_read_ref(&bin)?;
-		Ok(Box::new(shader))
+		asset::decompile_asset::<Shader>(bin)
 	}
 }

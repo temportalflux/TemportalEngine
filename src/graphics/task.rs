@@ -152,8 +152,8 @@ impl TaskGpuCopy {
 	}
 
 	/// Instructs the task to try to move an image from an
-	/// [`undefined`](flags::ImageLayout::UNDEFINED) layout to the
-	/// [`transfer destination`](flags::ImageLayout::TRANSFER_DST_OPTIMAL) layout.
+	/// [`undefined`](flags::ImageLayout::Undefined) layout to the
+	/// [`transfer destination`](flags::ImageLayout::TransferDstOptimal) layout.
 	/// This format prepares the image for writing by [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
 	///
 	/// Can only be called after [`begin`](TaskGpuCopy::begin) and before [`end`](TaskGpuCopy::end).
@@ -162,18 +162,18 @@ impl TaskGpuCopy {
 	#[profiling::function]
 	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
-			src_stage: flags::PipelineStage::TOP_OF_PIPE,
-			dst_stage: flags::PipelineStage::TRANSFER,
+			src_stage: flags::PipelineStage::TopOfPipe,
+			dst_stage: flags::PipelineStage::Transfer,
 			kinds: vec![command::BarrierKind::Image(
 				command::ImageBarrier::default()
-					.prevents(flags::Access::TRANSFER_WRITE)
+					.prevents(flags::Access::TransferWrite)
 					.with_image(sync::Arc::downgrade(&image))
 					.with_range(
 						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
 					)
 					.with_layout(
-						flags::ImageLayout::UNDEFINED,
-						flags::ImageLayout::TRANSFER_DST_OPTIMAL,
+						flags::ImageLayout::Undefined,
+						flags::ImageLayout::TransferDstOptimal,
 					),
 			)],
 		});
@@ -181,8 +181,8 @@ impl TaskGpuCopy {
 	}
 
 	/// Instructs the task to try to move an image from the
-	/// [`transfer destination`](flags::ImageLayout::TRANSFER_DST_OPTIMAL) layout
-	/// to the [`read only`](flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL) format.
+	/// [`transfer destination`](flags::ImageLayout::TransferDstOptimal) layout
+	/// to the [`read only`](flags::ImageLayout::ShaderReadOnlyOptimal) format.
 	///
 	/// Can only be called after [`begin`](TaskGpuCopy::begin) and before [`end`](TaskGpuCopy::end).
 	///
@@ -190,19 +190,19 @@ impl TaskGpuCopy {
 	#[profiling::function]
 	pub fn format_image_for_read(self, image: &sync::Arc<image::Image>) -> Self {
 		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
-			src_stage: flags::PipelineStage::TRANSFER,
-			dst_stage: flags::PipelineStage::FRAGMENT_SHADER,
+			src_stage: flags::PipelineStage::Transfer,
+			dst_stage: flags::PipelineStage::FragmentShader,
 			kinds: vec![command::BarrierKind::Image(
 				command::ImageBarrier::default()
-					.requires(flags::Access::TRANSFER_WRITE)
-					.prevents(flags::Access::SHADER_READ)
+					.requires(flags::Access::TransferWrite)
+					.prevents(flags::Access::ShaderRead)
 					.with_image(sync::Arc::downgrade(&image))
 					.with_range(
 						subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
 					)
 					.with_layout(
-						flags::ImageLayout::TRANSFER_DST_OPTIMAL,
-						flags::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
+						flags::ImageLayout::TransferDstOptimal,
+						flags::ImageLayout::ShaderReadOnlyOptimal,
 					),
 			)],
 		});
@@ -252,7 +252,7 @@ impl TaskGpuCopy {
 		self.cmd().copy_buffer_to_image(
 			&self.staging_buffer(),
 			&image,
-			flags::ImageLayout::TRANSFER_DST_OPTIMAL,
+			flags::ImageLayout::TransferDstOptimal,
 			vec![command::CopyBufferToImage {
 				buffer_offset: 0,
 				layers: subresource::Layers::default().with_aspect(flags::ImageAspect::COLOR),

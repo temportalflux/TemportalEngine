@@ -56,8 +56,6 @@ impl TypeMetadata for TextureMetadata {
 	}
 
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		Ok(Box::new(rmp_serde::from_read_ref::<Vec<u8>, Texture>(
-			&bin,
-		)?))
+		asset::decompile_asset::<Texture>(bin)
 	}
 }
