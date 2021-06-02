@@ -34,6 +34,32 @@ struct Ops {
 	stencil: AttachmentOps,
 }
 
+impl Attachment {
+	pub fn format(&self) -> &format::Components {
+		&self.format
+	}
+
+	pub fn sample_count(&self) -> &SampleCount {
+		&self.sample_count
+	}
+
+	pub fn general_ops(&self) -> &AttachmentOps {
+		&self.operations.general
+	}
+
+	pub fn stencil_ops(&self) -> &AttachmentOps {
+		&self.operations.stencil
+	}
+
+	pub fn initial_layout(&self) -> &ImageLayout {
+		&self.initial_layout
+	}
+
+	pub fn final_layout(&self) -> &ImageLayout {
+		&self.layout
+	}
+}
+
 impl asset::Asset for Attachment {
 	fn metadata() -> Box<dyn TypeMetadata> {
 		Box::new(AttachmentMetadata {})

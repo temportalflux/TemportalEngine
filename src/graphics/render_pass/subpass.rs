@@ -8,23 +8,23 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Subpass {
 	asset_type: String,
-	attachments: AttachmentSet,
+	pub(crate) attachments: AttachmentSet,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
-struct AttachmentSet {
+pub(crate) struct AttachmentSet {
 	#[serde(default)]
-	input: Vec<AttachmentItem>,
+	pub input: Vec<AttachmentItem>,
 	#[serde(default)]
-	color: Vec<AttachmentItem>,
+	pub color: Vec<AttachmentItem>,
 	#[serde(default)]
-	depth: Vec<AttachmentItem>,
+	pub depth_stencil: Option<AttachmentItem>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct AttachmentItem {
-	id: asset::Id,
-	layout: ImageLayout,
+pub(crate) struct AttachmentItem {
+	pub id: asset::Id,
+	pub layout: ImageLayout,
 }
 
 impl asset::Asset for Subpass {

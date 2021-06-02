@@ -49,14 +49,12 @@ impl Library {
 	pub fn read() -> std::sync::RwLockReadGuard<'static, Self> {
 		Self::get().read().unwrap()
 	}
-
 }
 
 impl Library {
-
 	/// Scans a provided [`Application`] module,
 	/// thereby scanning all assets in the pak file for that module.
-	/// 
+	///
 	/// Delegates to [`scan_pak`](Library::scan_pak) to actually scan the module.
 	pub fn scan_application<T: Application>() -> VoidResult {
 		asset::Library::write().scan_pak(

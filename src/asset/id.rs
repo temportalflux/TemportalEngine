@@ -35,7 +35,7 @@ impl Id {
 	/// Returns the stringified eqivalent of the id,
 	/// concatenating the module name and path with the format:
 	/// `{module_name}:{path_name}`.
-	/// 
+	///
 	/// Use `Id::try_from(&str)` to convert from the string back into an Id.
 	pub fn as_string(&self) -> String {
 		format!("{}:{}", self.module_name, self.name())
