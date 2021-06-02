@@ -23,10 +23,9 @@ impl Loader {
 		log::info!(
 			target: asset::LOG,
 			"Synchronously loading '{}'",
-			id.short_id()
+			id.as_string()
 		);
-		let library = asset::Library::get().read().unwrap();
-		let location = library
+		let location = asset::Library::read()
 			.find_location(&id)
 			.ok_or(asset::Error::AssetNotFound(id.clone()))?;
 

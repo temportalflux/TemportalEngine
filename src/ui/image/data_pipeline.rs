@@ -42,7 +42,7 @@ impl DataPipeline {
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) -> VoidResult {
-		self.image_cache.insert(id.to_str().to_owned(), texture)
+		self.image_cache.insert(id.name(), texture)
 	}
 
 	#[profiling::function]

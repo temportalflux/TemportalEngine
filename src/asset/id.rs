@@ -2,13 +2,19 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 
 /// A unique identifier given to each instance of a class which implements [`Asset`](crate::asset::Asset).
-#[derive(Debug, Hash, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Id {
 	module_name: String,
 	asset_path: std::path::PathBuf,
 }
 
 impl Id {
+	/// Creates an asset id based on the name of a module and
+	/// the path to the asset from that module's `assets` directory.
+	///
+	/// It is recommended that modules use
+	/// [`Application::get_asset_id`](crate::Application::get_asset_id)
+	/// to get asset ids by path.
 	pub fn new(module_name: &str, asset_path: &str) -> Id {
 		Id {
 			module_name: module_name.to_string(),
@@ -16,47 +22,58 @@ impl Id {
 		}
 	}
 
-	pub fn from_short_id(short_id: &str) -> Option<Self> {
-		let parts = short_id.split(':').collect::<Vec<_>>();
-		if parts.len() == 1 {
-			return None;
-		}
-		Some(Self::new(&parts[0], &parts[1]))
-	}
-
-	pub fn file_name(&self) -> String {
+	/// Returns the full name of the asset (i.e. its path within a module),
+	/// using forward-slash separators `/`.
+	pub fn name(&self) -> String {
 		self.asset_path
-			.file_name()
-			.unwrap()
 			.to_str()
 			.unwrap()
 			.to_owned()
+			.replace("\\", "/")
 	}
 
-	pub fn to_str(&self) -> &str {
-		self.asset_path.to_str().unwrap()
-	}
-
-	pub fn name(&self) -> String {
-		self.to_str().to_owned().replace("\\", "/")
-	}
-
-	pub fn short_id(&self) -> String {
+	/// Returns the stringified eqivalent of the id,
+	/// concatenating the module name and path with the format:
+	/// `{module_name}:{path_name}`.
+	/// 
+	/// Use `Id::try_from(&str)` to convert from the string back into an Id.
+	pub fn as_string(&self) -> String {
 		format!("{}:{}", self.module_name, self.name())
 	}
-}
 
-impl PartialEq for Id {
-	fn eq(&self, other: &Self) -> bool {
-		self.module_name == other.module_name && self.asset_path == other.asset_path
+	/// Returns true if this asset id has been scanned
+	/// by the asset [`Library`](crate::asset::Library).
+	pub fn has_been_scanned(&self) -> bool {
+		crate::asset::Library::read().has_been_scanned(self)
 	}
 }
 
-impl std::cmp::Eq for Id {}
+impl std::convert::TryFrom<&str> for Id {
+	type Error = ();
+
+	/// Parses an asset id from a string created by [`as_string`](Id::as_string).
+	///
+	/// Examples:
+	/// ```
+	/// let id = Id::try_from("invalid");
+	/// assert_eq!(id, Err(()));
+	/// ```
+	/// ```
+	/// let id = Id::try_from("somemodule:path/to/asset");
+	/// assert_eq!(id, Ok(Id::new("somemodule", "path/to/asset")));
+	/// ```
+	fn try_from(s: &str) -> Result<Self, Self::Error> {
+		let parts = s.split(':').collect::<Vec<_>>();
+		if parts.len() == 1 {
+			return Err(());
+		}
+		Ok(Self::new(&parts[0], &parts[1]))
+	}
+}
 
 impl std::fmt::Display for Id {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f, "{}", self.short_id())
+		write!(f, "{}", self.as_string())
 	}
 }
 
@@ -88,7 +105,7 @@ impl Serialize for Id {
 	where
 		S: Serializer,
 	{
-		serializer.serialize_str(&self.short_id())
+		serializer.serialize_str(&self.as_string())
 	}
 }
 
@@ -104,7 +121,8 @@ impl<'de> de::Visitor<'de> for IdVisitor {
 	where
 		E: de::Error,
 	{
-		Id::from_short_id(value).ok_or(de::Error::custom("invalid asset id"))
+		use std::convert::TryFrom;
+		Id::try_from(value).map_err(|_| de::Error::custom("invalid asset id"))
 	}
 }
 

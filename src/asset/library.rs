@@ -34,27 +34,40 @@ impl Default for Library {
 }
 
 impl Library {
-	pub fn get() -> &'static std::sync::RwLock<Library> {
+	fn get() -> &'static std::sync::RwLock<Self> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Library> = Singleton::uninit();
 		unsafe { INSTANCE.get() }
 	}
 
-	pub fn read() -> std::sync::RwLockReadGuard<'static, Library> {
-		Library::get().read().unwrap()
+	/// Returns mutable thread-safe access to the library singleton.
+	pub fn write() -> std::sync::RwLockWriteGuard<'static, Self> {
+		Self::get().write().unwrap()
 	}
+
+	/// Returns unmutable thread-safe access to the library singleton.
+	pub fn read() -> std::sync::RwLockReadGuard<'static, Self> {
+		Self::get().read().unwrap()
+	}
+
 }
 
 impl Library {
+
+	/// Scans a provided [`Application`] module,
+	/// thereby scanning all assets in the pak file for that module.
+	/// 
+	/// Delegates to [`scan_pak`](Library::scan_pak) to actually scan the module.
 	pub fn scan_application<T: Application>() -> VoidResult {
-		let mut library = asset::Library::get().write().unwrap();
-		library.scan_pak(
+		asset::Library::write().scan_pak(
 			&[T::location(), format!("{}.pak", T::name()).as_str()]
 				.iter()
 				.collect::<std::path::PathBuf>(),
 		)
 	}
 
+	/// Scans a specific file at a provided path.
+	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
 	#[profiling::function]
 	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
 		use std::io::Read;
@@ -103,7 +116,10 @@ impl Library {
 				},
 			);
 
-			self.get_mut_ids_of_type(type_id.clone()).push(id);
+			if !self.ids_by_type.contains_key(&type_id) {
+				self.ids_by_type.insert(type_id.clone(), Vec::new());
+			}
+			self.ids_by_type.get_mut(&type_id).unwrap().push(id);
 		}
 
 		log::info!(
@@ -117,25 +133,28 @@ impl Library {
 		Ok(())
 	}
 
+	/// Returns a list of all ids for a given [`asset type`](asset::Asset).
+	/// Returns `None` if the asset type has not been registered or there are no assets
+	/// of that type that have been scanned by [`scan_pak`](Library::scan_pak).
 	pub fn get_ids_of_type<T: asset::Asset>(&self) -> Option<&Vec<asset::Id>> {
 		self.ids_by_type.get(&T::metadata().name().to_owned())
-	}
-
-	fn get_mut_ids_of_type(&mut self, type_id: asset::TypeIdOwned) -> &mut Vec<asset::Id> {
-		if !self.ids_by_type.contains_key(&type_id) {
-			self.ids_by_type.insert(type_id.clone(), Vec::new());
-		}
-		self.ids_by_type.get_mut(&type_id).unwrap()
 	}
 
 	fn find_asset(&self, id: &asset::Id) -> Option<&Metadata> {
 		self.assets.get(id)
 	}
 
-	pub fn find_location(&self, id: &asset::Id) -> Option<asset::Location> {
+	/// Returns true if the provided id has been scanned by [`scan_pak`](Library::scan_pak).
+	pub fn has_been_scanned(&self, id: &asset::Id) -> bool {
+		self.assets.contains_key(id)
+	}
+
+	/// Returns the location of the asset in its pak file.
+	pub(crate) fn find_location(&self, id: &asset::Id) -> Option<asset::Location> {
 		self.find_asset(id).map(|md| md.location.clone())
 	}
 
+	/// Returns the asset type of the id, which can be looked up in the [`Type Registry`](crate::asset::TypeRegistry).
 	pub fn get_asset_type(&self, id: &asset::Id) -> Option<asset::TypeIdOwned> {
 		self.find_asset(id).map(|md| md.type_id.clone())
 	}

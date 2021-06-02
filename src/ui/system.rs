@@ -187,7 +187,7 @@ impl System {
 	}
 
 	pub fn with_all_fonts(mut self) -> Result<Self, utility::AnyError> {
-		let library = crate::asset::Library::get().read().unwrap();
+		let library = crate::asset::Library::read();
 		let font_asset_ids = library.get_ids_of_type::<Font>();
 		if let Some(asset_ids) = font_asset_ids {
 			for id in asset_ids {
@@ -205,7 +205,7 @@ impl System {
 		log::info!(
 			target: LOG,
 			"Adding font '{}' with width-edge {}",
-			id.short_id(),
+			id.as_string(),
 			asset.width_edge()
 		);
 		self.text.add_pending(id.name(), asset);
@@ -223,7 +223,7 @@ impl System {
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
 		if let Ok(asset) = asset::Loader::load_sync(&id) {
 			let texture = asset.downcast::<Texture>().unwrap();
-			log::info!(target: LOG, "Adding texture '{}'", id.short_id());
+			log::info!(target: LOG, "Adding texture '{}'", id.as_string());
 			self.image_sizes.insert(
 				id.name(),
 				Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
