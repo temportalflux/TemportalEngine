@@ -59,27 +59,27 @@ impl Pass {
 		};
 		let mut rp_info = GraphicsPassInfo::empty();
 
-		log::debug!("{:?}", self);
 		let mut attachment_ids = HashSet::new();
 		for id in self.subpass_order.iter() {
 			let subpass = Loader::load_sync(id)?
 				.downcast::<render_pass::Subpass>()
 				.unwrap();
-			log::debug!("{:?}", subpass);
 			let mut graphics = renderpass::Subpass::new(id.as_string());
 
 			for attachment in subpass.attachments.input.iter() {
 				attachment_ids.insert(attachment.id.clone());
-				graphics = graphics.add_input_attachment(attachment.id.as_string(), attachment.layout);
+				graphics =
+					graphics.add_input_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			for attachment in subpass.attachments.color.iter() {
 				attachment_ids.insert(attachment.id.clone());
-				graphics = graphics.add_color_attachment(attachment.id.as_string(), attachment.layout);
+				graphics =
+					graphics.add_color_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			if let Some(attachment) = &subpass.attachments.depth_stencil {
 				attachment_ids.insert(attachment.id.clone());
-				graphics =
-					graphics.with_depth_stencil_attachment(attachment.id.as_string(), attachment.layout);
+				graphics = graphics
+					.with_depth_stencil_attachment(attachment.id.as_string(), attachment.layout);
 			}
 
 			rp_info.add_subpass(graphics);
@@ -88,7 +88,6 @@ impl Pass {
 		for id in attachment_ids.iter() {
 			let asset = Loader::load_sync(id)?;
 			let attachment = asset.downcast::<render_pass::Attachment>().unwrap();
-			log::debug!("{:?}", attachment);
 			rp_info.attach(
 				renderpass::Attachment::new(id.as_string())
 					.with_format(attachment.format().as_format())
@@ -102,12 +101,24 @@ impl Pass {
 
 		for dependency_link in self.dependencies.iter() {
 			rp_info.add_dependency(
-				renderpass::Dependency::new(dependency_link.first.subpass.as_ref().map(|id| id.as_string()))
-					.with_stage_set(flags::PipelineStage::vecset(&dependency_link.first.stage))
-					.with_access_set(flags::Access::vecset(&dependency_link.first.access)),
-				renderpass::Dependency::new(dependency_link.then.subpass.as_ref().map(|id| id.as_string()))
-					.with_stage_set(flags::PipelineStage::vecset(&dependency_link.then.stage))
-					.with_access_set(flags::Access::vecset(&dependency_link.then.access)),
+				renderpass::Dependency::new(
+					dependency_link
+						.first
+						.subpass
+						.as_ref()
+						.map(|id| id.as_string()),
+				)
+				.with_stage_set(flags::PipelineStage::vecset(&dependency_link.first.stage))
+				.with_access_set(flags::Access::vecset(&dependency_link.first.access)),
+				renderpass::Dependency::new(
+					dependency_link
+						.then
+						.subpass
+						.as_ref()
+						.map(|id| id.as_string()),
+				)
+				.with_stage_set(flags::PipelineStage::vecset(&dependency_link.then.stage))
+				.with_access_set(flags::Access::vecset(&dependency_link.then.access)),
 			);
 		}
 

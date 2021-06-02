@@ -239,13 +239,14 @@ impl System {
 		self,
 		engine: &mut crate::Engine,
 		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
+		subpass_id: Option<String>,
 	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(&system);
 		render_chain
 			.write()
 			.unwrap()
-			.add_render_chain_element(&system)?;
+			.add_render_chain_element(subpass_id, &system)?;
 		Ok(system)
 	}
 
@@ -392,12 +393,15 @@ impl EngineSystem for System {
 }
 
 impl graphics::RenderChainElement for System {
+	fn name(&self) -> &'static str {
+		"render-ui"
+	}
+
 	#[profiling::function]
 	fn initialize_with(
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		log::info!(target: LOG, "Initializing render chain element");
 		self.draw_calls_by_frame
 			.resize(render_chain.frame_count(), Vec::new());
 		self.colored_area.create_shaders(&render_chain)?;
@@ -418,7 +422,6 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<()> {
-		log::info!(target: LOG, "Destroying render chain");
 		self.colored_area.destroy_pipeline(render_chain)?;
 		self.image.destroy_pipeline(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
@@ -431,7 +434,6 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
 	) -> utility::Result<()> {
-		log::info!(target: LOG, "Creating render chain");
 		self.resolution = vector![resolution.width, resolution.height];
 		self.colored_area.create_pipeline(
 			render_chain,

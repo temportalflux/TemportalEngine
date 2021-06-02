@@ -76,7 +76,7 @@ impl DebugRender {
 		let mut chain_write = chain.write().unwrap();
 		let inst = initializer(Self::new(&chain_write)?)?;
 		let render = Arc::new(RwLock::new(inst));
-		chain_write.add_render_chain_element(&render)?;
+		chain_write.add_render_chain_element(None, &render)?;
 		Ok(render)
 	}
 
@@ -136,6 +136,10 @@ impl EngineSystem for DebugRender {
 }
 
 impl graphics::RenderChainElement for DebugRender {
+	fn name(&self) -> &'static str {
+		"render-debug"
+	}
+
 	#[profiling::function]
 	fn initialize_with(
 		&mut self,

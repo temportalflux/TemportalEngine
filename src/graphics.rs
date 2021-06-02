@@ -1,5 +1,7 @@
 pub use vulkan_rs::*;
 
+pub static LOG: &'static str = "graphics";
+
 pub mod camera;
 
 mod drawable;

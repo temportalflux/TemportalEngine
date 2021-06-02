@@ -80,10 +80,11 @@ impl Drawable {
 
 	/// Binds the drawable pipeline to the command buffer.
 	pub fn bind_pipeline(&self, buffer: &mut command::Buffer) {
-		buffer.bind_pipeline(
-			&self.pipeline.as_ref().unwrap(),
-			flags::PipelineBindPoint::GRAPHICS,
-		);
+		if let Some(pipeline) = self.pipeline.as_ref() {
+			buffer.bind_pipeline(pipeline, flags::PipelineBindPoint::GRAPHICS);
+		} else {
+			log::warn!("Cannot bind a pipeline that has not been created.");
+		}
 	}
 
 	/// Binds the provided descriptor sets to the buffer using the drawable pipeline layout.
@@ -92,11 +93,15 @@ impl Drawable {
 		buffer: &mut command::Buffer,
 		descriptor_sets: Vec<&descriptor::Set>,
 	) {
-		buffer.bind_descriptors(
-			flags::PipelineBindPoint::GRAPHICS,
-			self.pipeline_layout.as_ref().unwrap(),
-			0,
-			descriptor_sets,
-		);
+		if let Some(layout) = self.pipeline_layout.as_ref() {
+			buffer.bind_descriptors(
+				flags::PipelineBindPoint::GRAPHICS,
+				layout,
+				0,
+				descriptor_sets,
+			);
+		} else {
+			log::warn!("Cannot bind descriptors to a pipeline that has not been created.");
+		}
 	}
 }

@@ -12,12 +12,16 @@ use crate::{
 	math::Vector,
 	utility::{self, AnyError},
 };
+use multimap::MultiMap;
 use std::sync::{self, Arc, RwLock, Weak};
 
 /// An object which contains data that needs to be updated when the render-chain is reconstructed
 /// and records commands to one or more command buffers.
 /// (i.e. something which contains a pipeline, and is therefore reliant on the resolution of the window).
 pub trait RenderChainElement: Send + Sync {
+	/// Returns some unique identifier that can be used when logging about the system
+	fn name(&self) -> &'static str;
+
 	/// Initializes the renderer before the first frame.
 	/// Returns any semaphores which must complete before the first frame is submitted.
 	fn initialize_with(
@@ -88,8 +92,9 @@ type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
 ///
 /// Create a render chain from the display window via [`create_render_chain`](crate::window::Window::create_render_chain).
 pub struct RenderChain {
-	initialized_render_chain_elements: Vec<ChainElement>,
-	pending_render_chain_elements: Vec<ChainElement>,
+	initialized_render_chain_elements:
+		MultiMap</*render subpass*/ Option<String>, ChainElement>,
+	pending_render_chain_elements: MultiMap</*render subpass*/ Option<String>, ChainElement>,
 
 	current_frame: usize,
 	images_in_flight: Vec<Option</*in_flight_fence index*/ usize>>,
@@ -206,8 +211,8 @@ impl RenderChain {
 			images_in_flight: Vec::new(),
 			current_frame: 0,
 
-			pending_render_chain_elements: Vec::new(),
-			initialized_render_chain_elements: Vec::new(),
+			pending_render_chain_elements: MultiMap::new(),
+			initialized_render_chain_elements: MultiMap::new(),
 		})
 	}
 
@@ -287,13 +292,22 @@ impl RenderChain {
 
 	/// Adds a rendering element to the chain for recording render commands.
 	/// Elements will be initialized the next time `render_frame` is called.
-	pub fn add_render_chain_element<T>(&mut self, element: &Arc<RwLock<T>>) -> Result<(), AnyError>
+	pub fn add_render_chain_element<T>(
+		&mut self,
+		subpass_id: Option<String>,
+		element: &Arc<RwLock<T>>,
+	) -> Result<(), AnyError>
 	where
 		T: 'static + graphics::RenderChainElement,
 	{
+		log::info!(
+			target: graphics::LOG,
+			"Adding render chain element {}",
+			element.read().unwrap().name()
+		);
 		let arc: Arc<RwLock<dyn graphics::RenderChainElement>> = element.clone();
 		self.pending_render_chain_elements
-			.push(Arc::downgrade(&arc));
+			.insert(subpass_id, Arc::downgrade(&arc));
 		Ok(())
 	}
 
@@ -304,6 +318,7 @@ impl RenderChain {
 	#[profiling::function]
 	fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> Result<(), AnyError> {
 		log::info!(
+			target: graphics::LOG,
 			"{}Constructing render chain with resolution <{}, {}>",
 			self.render_pass.as_ref().map(|_| "re").unwrap_or(""),
 			resolution.width,
@@ -320,11 +335,13 @@ impl RenderChain {
 		self.command_buffers.clear();
 
 		self.initialized_render_chain_elements
-			.retain(|element| element.strong_count() > 0);
-		for element in self.initialized_render_chain_elements.iter() {
-			let arc = element.upgrade().unwrap();
-			let mut locked = arc.write().unwrap();
-			locked.destroy_render_chain(self)?;
+			.retain(|_, element| element.strong_count() > 0);
+		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+			for element in elements.iter() {
+				let arc = element.upgrade().unwrap();
+				let mut locked = arc.write().unwrap();
+				locked.destroy_render_chain(self)?;
+			}
 		}
 
 		self.is_dirty = false;
@@ -391,10 +408,17 @@ impl RenderChain {
 
 		self.mark_commands_dirty();
 
-		for element in self.initialized_render_chain_elements.iter() {
-			let arc = element.upgrade().unwrap();
-			let mut locked = arc.write().unwrap();
-			locked.on_render_chain_constructed(self, resolution)?;
+		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+			for element in elements.iter() {
+				let arc = element.upgrade().unwrap();
+				let mut locked = arc.write().unwrap();
+				log::info!(
+					target: graphics::LOG,
+					"Constructing render chain for {}",
+					locked.name()
+				);
+				locked.on_render_chain_constructed(self, resolution)?;
+			}
 		}
 
 		Ok(())
@@ -434,22 +458,44 @@ impl RenderChain {
 	/// Records commands for one frame to a command buffer.
 	#[profiling::function]
 	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
-		self.command_buffers[buffer_index].begin(None, None)?;
-		self.command_buffers[buffer_index].start_render_pass(
+		let use_secondary_buffers = false;
+		let cmd = &mut self.command_buffers[buffer_index];
+
+		cmd.begin(None, None)?;
+		cmd.start_render_pass(
 			&self.frame_buffers[buffer_index],
 			self.render_pass.as_ref().unwrap(),
 			self.render_pass_instruction.clone(),
-			false,
+			use_secondary_buffers,
 		);
 
-		for element in self.initialized_render_chain_elements.iter() {
-			let arc = element.upgrade().unwrap();
-			let locked = arc.read().unwrap();
-			locked.record_to_buffer(&mut self.command_buffers[buffer_index], buffer_index)?;
+		let record_elements =
+			|buffer: &mut command::Buffer, elements: &Vec<ChainElement>| -> Result<(), AnyError> {
+				for element in elements.iter() {
+					let arc = element.upgrade().unwrap();
+					let locked = arc.read().unwrap();
+					locked.record_to_buffer(buffer, buffer_index)?;
+				}
+				Ok(())
+			};
+
+		if let Some(prepass_elements) = self.initialized_render_chain_elements.get_vec(&None) {
+			record_elements(cmd, prepass_elements)?;
 		}
 
-		self.command_buffers[buffer_index].stop_render_pass();
-		self.command_buffers[buffer_index].end()?;
+		let subpass_ids = self.render_pass_info.subpass_order();
+		for idx in 0..subpass_ids.len() {
+			let subpass_id = Some(subpass_ids[idx].clone());
+			if let Some(elements) = self.initialized_render_chain_elements.get_vec(&subpass_id) {
+				record_elements(cmd, elements)?;
+			}
+			if idx + 1 < subpass_ids.len() {
+				cmd.next_subpass(use_secondary_buffers);
+			}
+		}
+
+		cmd.stop_render_pass();
+		cmd.end()?;
 
 		Ok(())
 	}
@@ -472,41 +518,57 @@ impl RenderChain {
 		let mut has_constructed_new_elements = false;
 		let uninitialized_elements = self.pending_render_chain_elements.clone();
 		self.pending_render_chain_elements.clear();
-		for element in uninitialized_elements.iter() {
-			let rc = element.upgrade().unwrap();
-			let mut locked = rc.write().unwrap();
-			// initialize the item
-			{
-				let mut found_semaphores = locked.initialize_with(self)?;
-				required_semaphores.append(&mut found_semaphores);
-				self.initialized_render_chain_elements.push(element.clone());
-			}
-			// construct the chain if the chain already exists
-			if !self.is_dirty {
-				locked.on_render_chain_constructed(
-					self,
-					structs::Extent2D {
-						width: self.resolution.x(),
-						height: self.resolution.y(),
-					},
-				)?;
-				has_constructed_new_elements = true;
+		for (subpass_id, elements) in uninitialized_elements.iter_all() {
+			for element in elements.iter() {
+				let rc = element.upgrade().unwrap();
+				let mut locked = rc.write().unwrap();
+				// initialize the item
+				{
+					log::info!(
+						target: graphics::LOG,
+						"Initializing {} for subpass {:?}",
+						locked.name(),
+						subpass_id
+					);
+					let mut found_semaphores = locked.initialize_with(self)?;
+					required_semaphores.append(&mut found_semaphores);
+					self.initialized_render_chain_elements
+						.insert(subpass_id.clone(), element.clone());
+				}
+				// construct the chain if the chain already exists
+				if !self.is_dirty {
+					log::info!(
+						target: graphics::LOG,
+						"Constructing render chain for {}",
+						locked.name()
+					);
+					locked.on_render_chain_constructed(
+						self,
+						structs::Extent2D {
+							width: self.resolution.x(),
+							height: self.resolution.y(),
+						},
+					)?;
+					has_constructed_new_elements = true;
+				}
 			}
 		}
 
 		let pre_retain_element_count = self.initialized_render_chain_elements.len();
 		self.initialized_render_chain_elements
-			.retain(|element| element.strong_count() > 0);
+			.retain(|_, element| element.strong_count() > 0);
 		if has_constructed_new_elements
 			|| pre_retain_element_count > self.initialized_render_chain_elements.len()
 		{
 			self.mark_commands_dirty();
 		}
 
-		for element in self.initialized_render_chain_elements.iter() {
-			let rc = element.upgrade().unwrap();
-			let mut locked = rc.write().unwrap();
-			locked.preframe_update(self)?;
+		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+			for element in elements.iter() {
+				let rc = element.upgrade().unwrap();
+				let mut locked = rc.write().unwrap();
+				locked.preframe_update(self)?;
+			}
 		}
 
 		if self.is_dirty {
@@ -561,16 +623,18 @@ impl RenderChain {
 
 		// Update any uniforms on pre-submit
 		{
-			for element in self.initialized_render_chain_elements.iter() {
-				let arc = element.upgrade().unwrap();
-				let mut locked = arc.write().unwrap();
-				if locked.prerecord_update(
-					&self,
-					&self.command_buffers[next_image_idx],
-					next_image_idx,
-					&self.resolution,
-				)? {
-					self.frame_command_buffer_requires_recording[next_image_idx] = true;
+			for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+				for element in elements.iter() {
+					let arc = element.upgrade().unwrap();
+					let mut locked = arc.write().unwrap();
+					if locked.prerecord_update(
+						&self,
+						&self.command_buffers[next_image_idx],
+						next_image_idx,
+						&self.resolution,
+					)? {
+						self.frame_command_buffer_requires_recording[next_image_idx] = true;
+					}
 				}
 			}
 		}
@@ -586,11 +650,13 @@ impl RenderChain {
 		// Mark the image as not having been signaled (it is now being used)
 		logical.reset_fences(&[&self.in_flight_fences[self.current_frame]])?;
 
-		for element in self.initialized_render_chain_elements.iter() {
-			let rc = element.upgrade().unwrap();
-			let mut locked = rc.write().unwrap();
-			let mut found_semaphores = locked.take_gpu_signals();
-			required_semaphores.append(&mut found_semaphores);
+		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+			for element in elements.iter() {
+				let rc = element.upgrade().unwrap();
+				let mut locked = rc.write().unwrap();
+				let mut found_semaphores = locked.take_gpu_signals();
+				required_semaphores.append(&mut found_semaphores);
+			}
 		}
 
 		self.graphics_queue.submit(

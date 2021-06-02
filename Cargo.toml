@@ -27,6 +27,7 @@ specs = { version = "0.16", features = ["shred-derive"] }
 raui = { version = ">=0.35", features = ["material", "tesselate"] }
 rand = "0.8"
 enumset = { version = "1.0", features = ["serde"] }
+multimap = "0.8.3"
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
