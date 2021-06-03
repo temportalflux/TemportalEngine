@@ -70,7 +70,7 @@ impl System {
 
 		let mut interactions = DefaultInteractionsEngine::new();
 		interactions.deselect_when_no_button_found = true;
-		
+
 		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
