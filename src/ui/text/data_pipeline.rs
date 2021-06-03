@@ -151,6 +151,7 @@ impl DataPipeline {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 		resolution: structs::Extent2D,
+		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		self.drawable.create_pipeline(
 			render_chain,
@@ -167,6 +168,7 @@ impl DataPipeline {
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
+			subpass_id,
 		)
 	}
 

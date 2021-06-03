@@ -433,6 +433,7 @@ impl graphics::RenderChainElement for System {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
+		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		self.resolution = vector![resolution.width, resolution.height];
 		self.colored_area.create_pipeline(
@@ -449,10 +450,12 @@ impl graphics::RenderChainElement for System {
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
+			subpass_id,
 		)?;
-		self.image.create_pipeline(render_chain, resolution)?;
+		self.image
+			.create_pipeline(render_chain, resolution, subpass_id)?;
 		self.text
-			.on_render_chain_constructed(render_chain, resolution)?;
+			.on_render_chain_constructed(render_chain, resolution, subpass_id)?;
 		Ok(())
 	}
 

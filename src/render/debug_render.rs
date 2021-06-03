@@ -188,6 +188,7 @@ impl graphics::RenderChainElement for DebugRender {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 		resolution: graphics::structs::Extent2D,
+		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		self.line_drawable.create_pipeline(
 			render_chain,
@@ -209,6 +210,7 @@ impl graphics::RenderChainElement for DebugRender {
 					pipeline::ColorBlendState::default()
 						.add_attachment(pipeline::ColorBlendAttachment::default()),
 				),
+			subpass_id,
 		)
 	}
 

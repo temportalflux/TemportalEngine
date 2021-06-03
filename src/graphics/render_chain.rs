@@ -39,6 +39,7 @@ pub trait RenderChainElement: Send + Sync {
 		&mut self,
 		render_chain: &RenderChain,
 		resolution: structs::Extent2D,
+		subpass_id: &Option<String>,
 	) -> utility::Result<()>;
 
 	/// Performs any changes to data that need to happen before the frame begins to be processed
@@ -408,7 +409,7 @@ impl RenderChain {
 
 		self.mark_commands_dirty();
 
-		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+		for (subpass_id, elements) in self.initialized_render_chain_elements.iter_all() {
 			for element in elements.iter() {
 				let arc = element.upgrade().unwrap();
 				let mut locked = arc.write().unwrap();
@@ -417,7 +418,7 @@ impl RenderChain {
 					"Constructing render chain for {}",
 					locked.name()
 				);
-				locked.on_render_chain_constructed(self, resolution)?;
+				locked.on_render_chain_constructed(self, resolution, subpass_id)?;
 			}
 		}
 
@@ -548,6 +549,7 @@ impl RenderChain {
 							width: self.resolution.x(),
 							height: self.resolution.y(),
 						},
+						subpass_id,
 					)?;
 					has_constructed_new_elements = true;
 				}

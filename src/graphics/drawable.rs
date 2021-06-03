@@ -52,6 +52,7 @@ impl Drawable {
 		render_chain: &graphics::RenderChain,
 		descriptor_layouts: Vec<&sync::Arc<descriptor::SetLayout>>,
 		pipeline_info: pipeline::Info,
+		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		self.pipeline_layout = Some(
 			descriptor_layouts
@@ -73,6 +74,7 @@ impl Drawable {
 					render_chain.logical().clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
 					&render_chain.render_pass(),
+					subpass_id,
 				)?,
 		);
 		Ok(())
