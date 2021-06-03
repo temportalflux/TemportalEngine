@@ -1,5 +1,5 @@
 use crate::{
-	graphics::{self, flags, pipeline},
+	graphics::{self, flags, pipeline::state::vertex},
 	math::Vector,
 };
 
@@ -10,18 +10,18 @@ pub struct Vertex {
 	pub color: Vector<f32, 4>,
 }
 
-impl pipeline::vertex::Object for Vertex {
-	fn attributes() -> Vec<pipeline::vertex::Attribute> {
+impl vertex::Object for Vertex {
+	fn attributes() -> Vec<vertex::Attribute> {
 		vec![
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: graphics::utility::offset_of!(Vertex, pos_and_width_edge),
 				format: flags::format::VEC4,
 			},
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: graphics::utility::offset_of!(Vertex, tex_coord),
 				format: flags::format::VEC2,
 			},
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: graphics::utility::offset_of!(Vertex, color),
 				format: flags::format::VEC4,
 			},

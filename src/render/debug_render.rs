@@ -1,6 +1,11 @@
 use crate::{
 	asset,
-	graphics::{self, buffer, camera, command, flags, pipeline, utility::offset_of, Drawable},
+	graphics::{
+		self, buffer, camera, command, flags,
+		pipeline::{self, state::vertex},
+		utility::offset_of,
+		Drawable,
+	},
 	math::Vector,
 	task,
 	utility::{self, AnyError, VoidResult},
@@ -26,14 +31,14 @@ pub struct Point {
 	pub color: Vector<f32, 4>,
 }
 
-impl pipeline::vertex::Object for LineSegmentVertex {
-	fn attributes() -> Vec<pipeline::vertex::Attribute> {
+impl vertex::Object for LineSegmentVertex {
+	fn attributes() -> Vec<vertex::Attribute> {
 		vec![
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: offset_of!(LineSegmentVertex, position),
 				format: flags::format::VEC3,
 			},
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: offset_of!(LineSegmentVertex, color),
 				format: flags::format::VEC4,
 			},
@@ -190,25 +195,25 @@ impl graphics::RenderChainElement for DebugRender {
 		resolution: graphics::structs::Extent2D,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
+		use pipeline::state::*;
 		self.line_drawable.create_pipeline(
 			render_chain,
 			vec![self.camera_uniform.layout()],
-			pipeline::Info::default()
+			pipeline::Pipeline::builder()
 				.with_topology(
-					pipeline::Topology::default()
-						.with_primitive(flags::PrimitiveTopology::LINE_LIST),
+					Topology::default().with_primitive(flags::PrimitiveTopology::LINE_LIST),
 				)
 				.with_vertex_layout(
-					pipeline::vertex::Layout::default()
+					vertex::Layout::default()
 						.with_object::<LineSegmentVertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(pipeline::ViewportState::from(resolution))
+				.set_viewport_state(Viewport::from(resolution))
 				.set_rasterization_state(
-					pipeline::RasterizationState::default().set_cull_mode(flags::CullMode::NONE),
+					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)
 				.set_color_blending(
-					pipeline::ColorBlendState::default()
-						.add_attachment(pipeline::ColorBlendAttachment::default()),
+					color_blend::ColorBlend::default()
+						.add_attachment(color_blend::Attachment::default()),
 				),
 			subpass_id,
 		)

@@ -94,21 +94,22 @@ impl DataPipeline {
 		resolution: structs::Extent2D,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
+		use pipeline::state::*;
 		self.drawable.create_pipeline(
 			render_chain,
 			vec![self.descriptor_cache.layout()],
-			pipeline::Info::default()
+			pipeline::Pipeline::builder()
 				.with_vertex_layout(
-					pipeline::vertex::Layout::default()
+					vertex::Layout::default()
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(pipeline::ViewportState::from(resolution))
+				.set_viewport_state(Viewport::from(resolution))
 				.set_rasterization_state(
-					pipeline::RasterizationState::default().set_cull_mode(flags::CullMode::NONE),
+					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)
 				.set_color_blending(
-					pipeline::ColorBlendState::default()
-						.add_attachment(pipeline::ColorBlendAttachment::default()),
+					color_blend::ColorBlend::default()
+						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
 			subpass_id,

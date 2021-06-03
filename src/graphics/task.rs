@@ -161,11 +161,14 @@ impl TaskGpuCopy {
 	/// Should be called before initializing image data via [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
 	#[profiling::function]
 	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {
-		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
-			src_stage: flags::PipelineStage::TopOfPipe,
-			dst_stage: flags::PipelineStage::Transfer,
-			kinds: vec![command::BarrierKind::Image(
-				command::ImageBarrier::default()
+		use command::barrier::{Image, Kind, Pipeline};
+		self.cmd().mark_pipeline_barrier(
+			Pipeline::new(
+				flags::PipelineStage::TopOfPipe,
+				flags::PipelineStage::Transfer,
+			)
+			.with(Kind::Image(
+				Image::default()
 					.prevents(flags::Access::TransferWrite)
 					.with_image(sync::Arc::downgrade(&image))
 					.with_range(
@@ -175,8 +178,8 @@ impl TaskGpuCopy {
 						flags::ImageLayout::Undefined,
 						flags::ImageLayout::TransferDstOptimal,
 					),
-			)],
-		});
+			)),
+		);
 		self
 	}
 
@@ -189,11 +192,14 @@ impl TaskGpuCopy {
 	/// Should be called after initializing image data via [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
 	#[profiling::function]
 	pub fn format_image_for_read(self, image: &sync::Arc<image::Image>) -> Self {
-		self.cmd().mark_pipeline_barrier(command::PipelineBarrier {
-			src_stage: flags::PipelineStage::Transfer,
-			dst_stage: flags::PipelineStage::FragmentShader,
-			kinds: vec![command::BarrierKind::Image(
-				command::ImageBarrier::default()
+		use command::barrier::{Image, Kind, Pipeline};
+		self.cmd().mark_pipeline_barrier(
+			Pipeline::new(
+				flags::PipelineStage::Transfer,
+				flags::PipelineStage::FragmentShader,
+			)
+			.with(Kind::Image(
+				Image::default()
 					.requires(flags::Access::TransferWrite)
 					.prevents(flags::Access::ShaderRead)
 					.with_image(sync::Arc::downgrade(&image))
@@ -204,8 +210,8 @@ impl TaskGpuCopy {
 						flags::ImageLayout::TransferDstOptimal,
 						flags::ImageLayout::ShaderReadOnlyOptimal,
 					),
-			)],
-		});
+			)),
+		);
 		self
 	}
 

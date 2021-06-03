@@ -389,9 +389,9 @@ impl RenderChain {
 		}
 		for image_view in self.frame_image_views.iter() {
 			self.frame_buffers.push(
-				command::framebuffer::Info::default()
+				command::framebuffer::Framebuffer::builder()
 					.set_extent(resolution)
-					.create_object(&image_view, &self.render_pass(), &logical)?,
+					.build(&image_view, &self.render_pass(), &logical)?,
 			);
 		}
 

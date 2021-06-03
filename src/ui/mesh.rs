@@ -1,6 +1,7 @@
 use crate::{
 	graphics::{
-		alloc, buffer, command, flags, pipeline, utility::offset_of, RenderChain, TaskGpuCopy,
+		alloc, buffer, command, flags, pipeline::state::vertex, utility::offset_of, RenderChain,
+		TaskGpuCopy,
 	},
 	math::Vector,
 	task, utility,
@@ -21,18 +22,18 @@ pub struct Vertex {
 	color: Vector<f32, 4>,
 }
 
-impl pipeline::vertex::Object for Vertex {
-	fn attributes() -> Vec<pipeline::vertex::Attribute> {
+impl vertex::Object for Vertex {
+	fn attributes() -> Vec<vertex::Attribute> {
 		vec![
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: offset_of!(Vertex, pos),
 				format: flags::format::VEC2,
 			},
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: offset_of!(Vertex, tex_coord),
 				format: flags::format::VEC2,
 			},
-			pipeline::vertex::Attribute {
+			vertex::Attribute {
 				offset: offset_of!(Vertex, color),
 				format: flags::format::VEC4,
 			},

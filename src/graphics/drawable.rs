@@ -10,7 +10,7 @@ use std::sync;
 /// to take the mental load off of pipeline creation and management.
 pub struct Drawable {
 	pipeline: Option<pipeline::Pipeline>,
-	pipeline_layout: Option<pipeline::Layout>,
+	pipeline_layout: Option<pipeline::layout::Layout>,
 	shaders: ShaderSet,
 }
 
@@ -51,13 +51,13 @@ impl Drawable {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 		descriptor_layouts: Vec<&sync::Arc<descriptor::SetLayout>>,
-		pipeline_info: pipeline::Info,
+		pipeline_info: pipeline::Builder,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		self.pipeline_layout = Some(
 			descriptor_layouts
 				.iter()
-				.fold(pipeline::Layout::builder(), |builder, layout| {
+				.fold(pipeline::layout::Layout::builder(), |builder, layout| {
 					builder.with_descriptors(layout)
 				})
 				.build(render_chain.logical().clone())?,
@@ -70,7 +70,7 @@ impl Drawable {
 				.add_shader(sync::Arc::downgrade(
 					&self.shaders[flags::ShaderKind::Fragment],
 				))
-				.create_object(
+				.build(
 					render_chain.logical().clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
 					&render_chain.render_pass(),
