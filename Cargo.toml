@@ -8,26 +8,27 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+enumset = { version = "1.0", features = ["serde"] }
 futures = "0.3"
-temportal-math = { path = "../temportal-math" }
-vulkan-rs = { path = "../vulkan-rs" }
 input-actions = { path = "../input-actions", features = ["winit", "log"] }
 log = { version = "0.4", features = ["std"] }
-simplelog = "0.10"
-raw-window-handle = "0.3"
-winit = "0.25"
-sdl2 = { version = "0.34", features = ["raw-window-handle"] }
-serde = { version = "1.0", features = ["derive"] }
-rmp = "0.8"
-rmp-serde = "0.15"
-zip = "0.5"
+multimap = "0.8.3"
 physx = "0.11"
 profiling = { version = "1.0", features = ["profile-with-optick"] }
-specs = { version = "0.16", features = ["shred-derive"] }
-raui = { version = ">=0.35", features = ["material", "tesselate"] }
 rand = "0.8"
-enumset = { version = "1.0", features = ["serde"] }
-multimap = "0.8.3"
+raui = { version = ">=0.35", features = ["material", "tesselate"] }
+raw-window-handle = "0.3"
+rmp = "0.8"
+rmp-serde = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+simplelog = "0.10"
+specs = { version = "0.16", features = ["shred-derive"] }
+temportal-math = { path = "../temportal-math" }
+vulkan-rs = { path = "../vulkan-rs" }
+winit = "0.25"
+zip = "0.5"
+
+sdl2 = { version = "0.34", features = ["raw-window-handle"] }
 
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }
