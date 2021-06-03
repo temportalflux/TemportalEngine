@@ -68,10 +68,13 @@ impl System {
 		let mut application = Application::new();
 		application.setup(widget::setup);
 
+		let mut interactions = DefaultInteractionsEngine::new();
+		interactions.deselect_when_no_button_found = true;
+		
 		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
-			interactions: DefaultInteractionsEngine::new(),
+			interactions,
 			resolution: Vector::default(),
 			mouse_position_unnormalized: Default::default(),
 			frame_meshes: Vec::new(),
