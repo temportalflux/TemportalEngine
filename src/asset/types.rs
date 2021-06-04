@@ -21,7 +21,7 @@ impl TypeRegistry {
 	pub fn get() -> &'static std::sync::RwLock<TypeRegistry> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<TypeRegistry> = Singleton::uninit();
-		unsafe { INSTANCE.get() }
+		unsafe { INSTANCE.get_or_default() }
 	}
 
 	pub fn read() -> std::sync::RwLockReadGuard<'static, TypeRegistry> {

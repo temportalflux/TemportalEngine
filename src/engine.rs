@@ -1,4 +1,6 @@
-use crate::{asset, graphics, input, logging, task, utility::AnyError, Application, EngineApp};
+use crate::{
+	asset, audio, graphics, input, logging, task, utility::AnyError, Application, EngineApp,
+};
 use std::sync::{Arc, RwLock};
 use winit::event_loop::EventLoop;
 
@@ -15,6 +17,7 @@ impl Engine {
 		crate::register_asset_types();
 		asset::Library::scan_application::<EngineApp>()?;
 		asset::Library::scan_application::<T>()?;
+		audio::System::initialize();
 		Ok(Engine {
 			event_loop: Some(EventLoop::new()),
 			systems_to_receive_events: Vec::new(),

@@ -37,7 +37,7 @@ impl Library {
 	fn get() -> &'static std::sync::RwLock<Self> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Library> = Singleton::uninit();
-		unsafe { INSTANCE.get() }
+		unsafe { INSTANCE.get_or_default() }
 	}
 
 	/// Returns mutable thread-safe access to the library singleton.
