@@ -28,7 +28,7 @@ impl WidgetData {
 			content: text.text.clone(),
 			font_id: text.font.clone(),
 			font_size: text.size,
-			color: vector![text.color.0, text.color.1, text.color.2, text.color.3],
+			color: vector![text.color.r, text.color.g, text.color.b, text.color.a],
 			vertex_buffer: Self::allocate_buffer(
 				flags::BufferUsage::VERTEX_BUFFER,
 				&text.text,
@@ -101,7 +101,7 @@ impl WidgetData {
 		self.content = text.text.clone();
 		self.font_id = text.font.clone();
 		self.font_size = text.size;
-		self.color = vector![text.color.0, text.color.1, text.color.2, text.color.3];
+		self.color = vector![text.color.r, text.color.g, text.color.b, text.color.a];
 
 		let mut gpu_signals = Vec::with_capacity(2);
 		let (vertices, indices) =

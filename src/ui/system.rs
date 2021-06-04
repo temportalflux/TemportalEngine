@@ -114,10 +114,13 @@ impl System {
 	}
 
 	fn mouse_position(&self) -> Vec2 {
-		self.mapping().real_to_virtual_vec2(Vec2 {
-			x: self.mouse_position_unnormalized.x(),
-			y: self.mouse_position_unnormalized.y(),
-		})
+		self.mapping().real_to_virtual_vec2(
+			Vec2 {
+				x: self.mouse_position_unnormalized.x(),
+				y: self.mouse_position_unnormalized.y(),
+			},
+			false,
+		)
 	}
 
 	/// Render widgets into interleaved tesselation mesh & batches.
@@ -534,7 +537,7 @@ impl graphics::RenderChainElement for System {
 					}
 					Batch::ClipPush(clip) => {
 						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
-						let clip_vec = vector![clip.box_size.0, clip.box_size.1];
+						let clip_vec = vector![clip.box_size.x, clip.box_size.y];
 						let transform = |mask: Vector<f32, 2>| -> Vector<f32, 2> {
 							let v4: Matrix<f32, 1, 4> =
 								(clip_vec * mask).extend([0.0, 1.0].into()).into();

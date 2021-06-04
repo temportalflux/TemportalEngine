@@ -83,21 +83,26 @@ impl Mesh {
 			.as_interleaved()
 			.unwrap()
 			.into_iter()
-			.map(|(pos, tex_coord, color)| Vertex {
-				pos: Vector::from([pos.0, pos.1])
-					.try_into::<f32>()
-					.unwrap()
-					.scale(resolution)
-					.subvec::<4>(None) * 2.0
-					- 1.0,
-				tex_coord: Vector::from([tex_coord.0, tex_coord.1])
-					.try_into::<f32>()
-					.unwrap()
-					.subvec::<4>(None),
-				color: Vector::from([color.0, color.1, color.2, color.3])
-					.try_into::<f32>()
-					.unwrap(),
-			})
+			.map(
+				|TesselationVerticeInterleaved {
+				     position,
+				     tex_coord,
+				     color,
+				 }| Vertex {
+					pos: Vector::from([position.x, position.y])
+						.try_into::<f32>()
+						.unwrap()
+						.scale(resolution)
+						.subvec::<4>(None) * 2.0 - 1.0,
+					tex_coord: Vector::from([tex_coord.x, tex_coord.y])
+						.try_into::<f32>()
+						.unwrap()
+						.subvec::<4>(None),
+					color: Vector::from([color.r, color.g, color.b, color.a])
+						.try_into::<f32>()
+						.unwrap(),
+				},
+			)
 			.collect::<Vec<_>>();
 		//log::debug!("{:?}", tesselation.vertices.as_interleaved().unwrap());
 		//log::debug!("{:?}", vertices);
