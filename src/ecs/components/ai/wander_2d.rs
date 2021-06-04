@@ -1,6 +1,6 @@
 use crate::{
 	ecs::{components::ai::steering, Component, VecStorage},
-	math::Quaternion,
+	math::nalgebra::{Point3, UnitQuaternion},
 	rand::{self, Rng},
 	world,
 };
@@ -23,6 +23,9 @@ pub struct Wander2D {
 	linear_speed: f32,
 
 	face: steering::Face,
+
+	// DEBUG
+	pub(crate) target_position: Point3<f32>,
 }
 
 impl Component for Wander2D {
@@ -37,6 +40,7 @@ impl Default for Wander2D {
 			rate_of_change: 180.0_f32.to_radians(),
 			linear_speed: 1.0,
 			face: steering::Face::default(),
+			target_position: [0.0, 0.0, 0.0].into(),
 		}
 	}
 }
@@ -98,19 +102,23 @@ impl steering::Behavior for Wander2D {
 		// We don't want the target to move too drastically, so we will use the entity's current
 		// orientation + some rotational rate around the circle to determine the rotation around the cirlce.
 		let random_binomial = rng.gen::<f32>() - rng.gen::<f32>();
-		let target_orientation = Quaternion::from_axis_angle(
-			world::global_forward(),
-			self.target_rate_of_change() * random_binomial,
-		);
+		let target_orientation = state.orientation
+			* UnitQuaternion::from_axis_angle(
+				&world::global_forward(),
+				self.target_rate_of_change() * random_binomial,
+			);
 
-		let forward = state.orientation.rotate(&world::global_up());
+		let forward = state.orientation * world::global_up().into_inner();
 
 		// normalized vector from circle center in the direction of the target on the circle edge
-		let target_forward = target_orientation.rotate(&world::global_right());
+		let target_forward = target_orientation * world::global_up().into_inner();
 		// the center of the wander circle - which is a projection in front of the position of the entity
 		let circle_center = state.position + forward * self.projection_distance();
 		// world position of the target on the edge of the circle
 		let target_position = circle_center + target_forward * self.circle_radius();
+
+		//log::debug!("{}", target_forward - forward);
+		self.target_position = target_position;
 
 		let mut steering = self.face.get_steering(state, target_position);
 		steering.linear_acceleration = forward * self.linear_speed;

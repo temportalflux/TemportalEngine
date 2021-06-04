@@ -4,7 +4,7 @@ use crate::{
 		device::{logical, physical},
 		flags, instance, renderpass, AppInfo, Context, Surface,
 	},
-	math::Vector,
+	math::nalgebra::Vector4,
 	utility, window,
 };
 use std::sync;
@@ -18,7 +18,7 @@ pub struct Window {
 
 	// This is at the bottom to ensure that rust deallocates it last
 	render_chain: Option<sync::Arc<sync::RwLock<graphics::RenderChain>>>,
-	render_pass_clear_color: Vector<f32, 4>,
+	render_pass_clear_color: Vector4<f32>,
 	graphics_allocator: sync::Arc<graphics::alloc::Allocator>,
 	logical_device: sync::Arc<logical::Device>,
 	physical_device: sync::Arc<physical::Device>,
@@ -37,7 +37,7 @@ impl Window {
 		internal: winit::window::Window,
 		app_info: AppInfo,
 		constraints: Vec<physical::Constraint>,
-		render_pass_clear_color: Vector<f32, 4>,
+		render_pass_clear_color: Vector4<f32>,
 	) -> Result<Window, utility::AnyError> {
 		let graphics_context = Context::new()?;
 		let instance = instance::Info::default()
@@ -145,9 +145,12 @@ impl Window {
 			frame_count,
 			render_pass_info,
 		)?;
-		chain.add_clear_value(renderpass::ClearValue::Color(
-			*self.render_pass_clear_color.data(),
-		));
+		chain.add_clear_value(renderpass::ClearValue::Color([
+			self.render_pass_clear_color.x,
+			self.render_pass_clear_color.y,
+			self.render_pass_clear_color.z,
+			self.render_pass_clear_color.w,
+		]));
 		self.render_chain = Some(sync::Arc::new(sync::RwLock::new(chain)));
 
 		Ok(self.render_chain().clone())

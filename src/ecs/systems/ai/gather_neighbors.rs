@@ -1,10 +1,7 @@
-use crate::{
-	ecs::{
-		self,
-		components::{ai::steering::Neighborhood, Orientation, Position2D},
-		Join, NamedSystem,
-	},
-	math::Vector,
+use crate::ecs::{
+	self,
+	components::{ai::steering::Neighborhood, Orientation, Position2D},
+	Join, NamedSystem,
 };
 
 pub struct GatherNeighbors {}
@@ -35,7 +32,7 @@ impl<'a> ecs::System<'a> for GatherNeighbors {
 	) {
 		let all_entity_positions = (&store_entities, &store_position)
 			.join()
-			.map(|(entity, position)| (entity, position.0))
+			.map(|(entity, position)| (entity, position.get3()))
 			.collect::<Vec<_>>();
 		for (entity, position, orientation, mut neighborhood) in (
 			&store_entities,
@@ -52,12 +49,9 @@ impl<'a> ecs::System<'a> for GatherNeighbors {
 						return None;
 					}
 					let self_forward_2d = orientation.up();
-					let self_to_other = position.0 - *other_pos;
-					let alignment = Vector::dot(
-						&self_forward_2d,
-						&self_to_other.normalized().subvec::<3>(None),
-					);
-					let distance_sq = self_to_other.magnitude_sq();
+					let self_to_other = position.get3() - *other_pos;
+					let alignment = self_forward_2d.dot(&self_to_other.normalize());
+					let distance_sq = self_to_other.magnitude_squared();
 					if neighborhood.is_aligned(alignment)
 						&& neighborhood.is_within_distance(distance_sq)
 					{

@@ -99,8 +99,8 @@ impl ImageCache {
 			&render_chain.allocator(),
 			flags::format::SRGB_8BIT,
 			structs::Extent3D {
-				width: pending.size.x() as u32,
-				height: pending.size.y() as u32,
+				width: pending.size.x as u32,
+				height: pending.size.y as u32,
 				depth: 1,
 			},
 		)?);

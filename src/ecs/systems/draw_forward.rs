@@ -4,7 +4,7 @@ use crate::{
 		components::{Orientation, Position2D},
 		Join, NamedSystem,
 	},
-	math::vector,
+	math::nalgebra::vector,
 	render,
 };
 use std::sync::{Arc, RwLock};
@@ -36,11 +36,11 @@ impl<'a> ecs::System<'a> for DrawForward {
 		for (position, orientation) in (&store_position, &store_orientation).join() {
 			drawer.draw_segment(
 				render::Point {
-					position: position.0.subvec::<3>(None),
+					position: position.get3(),
 					color: vector![0.0, 0.0, 1.0, 1.0],
 				},
 				render::Point {
-					position: position.0.subvec::<3>(None) + orientation.up(),
+					position: position.get3() + orientation.up(),
 					color: vector![0.0, 0.0, 1.0, 1.0],
 				},
 			);

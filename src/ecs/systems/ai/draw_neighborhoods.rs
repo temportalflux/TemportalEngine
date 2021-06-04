@@ -5,8 +5,8 @@ use crate::{
 		Join, NamedSystem,
 	},
 	input,
-	math::vector,
-	rand, render,
+	math::nalgebra::vector,
+	rand, render, world,
 };
 use std::sync::{Arc, RwLock};
 
@@ -103,14 +103,13 @@ impl<'a> ecs::System<'a> for DrawNeighborhoods {
 					continue;
 				}
 
-				let pos = position.0.subvec::<3>(None);
 				drawer.draw_segment(
 					render::Point {
-						position: pos,
+						position: position.get3(),
 						color: vector![0.0, 1.0, 0.0, 1.0],
 					},
 					render::Point {
-						position: pos - vector![0.0, 1.0, 0.0],
+						position: position.get3() - world::global_up().into_inner(),
 						color: vector![0.0, 1.0, 0.0, 1.0],
 					},
 				);
@@ -124,16 +123,16 @@ impl<'a> ecs::System<'a> for DrawNeighborhoods {
 					None
 				}
 			}) {
-				if neighborhood
-					.is_within_distance((neighbor_position.0 - position.0).magnitude_sq())
-				{
+				if neighborhood.is_within_distance(
+					(neighbor_position.get3() - position.get3()).magnitude_squared(),
+				) {
 					drawer.draw_segment(
 						render::Point {
-							position: position.0.subvec::<3>(None),
+							position: position.get3(),
 							color: vector![0.0, 1.0, 0.0, 1.0],
 						},
 						render::Point {
-							position: neighbor_position.0.subvec::<3>(None),
+							position: neighbor_position.get3(),
 							color: vector![0.0, 0.0, 1.0, 1.0],
 						},
 					);

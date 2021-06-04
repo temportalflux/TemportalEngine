@@ -1,6 +1,6 @@
 use crate::{
 	graphics::{self, buffer, command, flags},
-	math::{vector, Matrix, Vector},
+	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
 	task,
 	ui::text::{font, Vertex},
 	utility,
@@ -13,7 +13,7 @@ pub struct WidgetData {
 	content: String,
 	font_id: font::Id,
 	font_size: f32,
-	color: Vector<f32, 4>,
+	color: Vector4<f32>,
 	index_count: usize,
 	index_buffer: sync::Arc<buffer::Buffer>,
 	vertex_buffer: sync::Arc<buffer::Buffer>,
@@ -88,7 +88,7 @@ impl WidgetData {
 		text: &BatchExternalText,
 		font: &font::Loaded,
 		render_chain: &graphics::RenderChain,
-		resolution: &Vector<u32, 2>,
+		resolution: &Vector2<f32>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
 		// Update the buffer objects if we need more space than is currently allocated
 		sync::Arc::get_mut(&mut self.vertex_buffer)
@@ -104,8 +104,12 @@ impl WidgetData {
 		self.color = vector![text.color.r, text.color.g, text.color.b, text.color.a];
 
 		let mut gpu_signals = Vec::with_capacity(2);
-		let (vertices, indices) =
-			self.build_buffer_data(Matrix::from_column_major(&text.matrix), font, resolution);
+		let column_major = Matrix4::<f32>::from_vec_generic(
+			nalgebra::Const::<4>,
+			nalgebra::Const::<4>,
+			text.matrix.to_vec(),
+		);
+		let (vertices, indices) = self.build_buffer_data(column_major, font, resolution);
 		self.index_count = indices.len();
 
 		graphics::TaskGpuCopy::new(&render_chain)?
@@ -129,16 +133,15 @@ impl WidgetData {
 
 	fn build_buffer_data(
 		&self,
-		matrix: Matrix<f32, 4, 4>,
+		matrix: Matrix4<f32>,
 		font: &font::Loaded,
-		resolution: &Vector<u32, 2>,
+		resolution: &Vector2<f32>,
 	) -> (Vec<Vertex>, Vec<u32>) {
-		let resolution = resolution.try_into::<f32>().unwrap();
 		// DPI is always 1.0 because winit handles the scale factor https://docs.rs/winit/0.24.0/winit/dpi/index.html
 		let dpi = 1_f32;
 
-		let base_pos: Matrix<f32, 1, 4> = Matrix::new([[0.0], [0.0], [0.0], [1.0]]);
-		let screen_pos_pixels = (base_pos * matrix).column_vec(0).subvec::<2>(None);
+		let base_pos = Vector4::new(0.0, 0.0, 0.0, 1.0);
+		let screen_pos_pixels = (matrix * base_pos).xy();
 
 		let unknown_glyph = font.get('?').unwrap();
 		let mut vertices = Vec::with_capacity(self.content.len() * 4);
@@ -160,20 +163,25 @@ impl WidgetData {
 		for unicode in self.content.chars() {
 			let glyph = font.get(unicode).unwrap_or(unknown_glyph);
 			let glyph_metrics = glyph.metrics * self.font_size * dpi;
-			let bearing = vector![glyph_metrics.bearing.x(), -glyph_metrics.bearing.y()];
-			let glyph_pos_in_atlas = glyph.atlas_pos.try_into::<f32>().unwrap();
-			let glyph_size_in_atlas = glyph.atlas_size.try_into::<f32>().unwrap();
+			let bearing = vector![glyph_metrics.bearing.x, -glyph_metrics.bearing.y];
+			let glyph_pos_in_atlas = vector![glyph.atlas_pos.x as f32, glyph.atlas_pos.y as f32];
+			let glyph_size_in_atlas = vector![glyph.atlas_size.x as f32, glyph.atlas_size.y as f32];
 
-			let mut push_glyph_vert = |mask: Vector<f32, 2>| -> u32 {
-				let mut pos = (cursor_pos + bearing + glyph_metrics.size * mask) / resolution;
-				pos *= 2.0;
-				pos -= 1.0;
-				let tex_coord = ((glyph_pos_in_atlas + glyph_size_in_atlas * mask) / font.size())
-					.subvec::<4>(None);
+			let mut push_glyph_vert = |mask: Vector2<f32>| -> u32 {
+				let pos = (cursor_pos + bearing + glyph_metrics.size.component_mul(&mask))
+					.component_div(resolution);
+				let tex_coord = (glyph_pos_in_atlas + glyph_size_in_atlas.component_mul(&mask))
+					.component_div(&font.size());
 				push_vertex(Vertex {
-					pos_and_width_edge: vector![pos.x(), pos.y()].extend(width_edge),
-					tex_coord,
-					color: self.color,
+					pos_and_width_edge: [
+						pos.x * 2.0 - 1.0,
+						pos.y * 2.0 - 1.0,
+						width_edge.x,
+						width_edge.y,
+					]
+					.into(),
+					tex_coord: [tex_coord.x, tex_coord.y, 0.0, 0.0].into(),
+					color: [self.color.x, self.color.y, self.color.z, self.color.w].into(),
 				})
 			};
 
@@ -191,10 +199,10 @@ impl WidgetData {
 			}
 
 			if unicode == '\n' {
-				*cursor_pos.y_mut() += line_height;
-				*cursor_pos.x_mut() = screen_pos_pixels.x();
+				cursor_pos.y += line_height;
+				cursor_pos.x = screen_pos_pixels.x;
 			} else {
-				*cursor_pos.x_mut() += glyph_metrics.advance;
+				cursor_pos.x += glyph_metrics.advance;
 			}
 		}
 		(vertices, indices)

@@ -1,13 +1,13 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	math::Vector,
+	math::nalgebra::Vector2,
 };
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Font {
 	asset_type: String,
-	width_edge: Vector<f32, 2>,
+	width_edge: Vector2<f32>,
 	sdf: Option<SDF>,
 }
 
@@ -16,7 +16,7 @@ pub struct Font {
 /// https://freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_facerec
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SDF {
-	pub size: Vector<usize, 2>,
+	pub size: Vector2<usize>,
 	pub binary: Vec<Vec<u8>>,
 	pub glyphs: Vec<Glyph>,
 	/// The y-distance from the previous baseline to the next.
@@ -40,9 +40,9 @@ impl std::fmt::Debug for SDF {
 pub struct Glyph {
 	pub unicode: u32,
 	// The position (in pixels) of the glyph in the atlas texture.
-	pub atlas_pos: Vector<usize, 2>,
+	pub atlas_pos: Vector2<usize>,
 	// The size (in pixels) of the glyph in the atlas texture.
-	pub atlas_size: Vector<usize, 2>,
+	pub atlas_size: Vector2<usize>,
 	pub metrics: GlyphMetrics,
 }
 
@@ -50,12 +50,12 @@ pub struct Glyph {
 pub struct GlyphMetrics {
 	/// The size of the glyph in metrics.
 	/// Expressed as a scalar value to be multiplied by the font size.
-	pub size: Vector<f32, 2>,
+	pub size: Vector2<f32>,
 	/// The bearing meteric, where x is the distance to the right of the pen position,
 	/// and y is the distance up from the pen position,
 	/// that the glyph's top-left position should be rendered at.
 	/// Expressed as a scalar value to be multiplied by the font size.
-	pub bearing: Vector<f32, 2>,
+	pub bearing: Vector2<f32>,
 	/// The amount of space to the right that the pen position should move,
 	/// when the glyph is rendered.
 	/// Expressed as a scalar value to be multiplied by the font size.
@@ -87,7 +87,7 @@ impl Font {
 		&self.sdf.as_ref().unwrap().binary
 	}
 
-	pub fn size(&self) -> &Vector<usize, 2> {
+	pub fn size(&self) -> &Vector2<usize> {
 		&self.sdf.as_ref().unwrap().size
 	}
 
@@ -95,7 +95,7 @@ impl Font {
 		&self.sdf.as_ref().unwrap().line_height
 	}
 
-	pub fn width_edge(&self) -> &Vector<f32, 2> {
+	pub fn width_edge(&self) -> &Vector2<f32> {
 		&self.width_edge
 	}
 }

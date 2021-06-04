@@ -1,13 +1,13 @@
 use crate::{
 	graphics::{self, flags, pipeline::state::vertex},
-	math::Vector,
+	math::nalgebra::Vector4,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vertex {
-	pub pos_and_width_edge: Vector<f32, 4>,
-	pub tex_coord: Vector<f32, 4>,
-	pub color: Vector<f32, 4>,
+	pub pos_and_width_edge: Vector4<f32>,
+	pub tex_coord: Vector4<f32>,
+	pub color: Vector4<f32>,
 }
 
 impl vertex::Object for Vertex {

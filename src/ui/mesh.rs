@@ -3,7 +3,7 @@ use crate::{
 		alloc, buffer, command, flags, pipeline::state::vertex, utility::offset_of, RenderChain,
 		TaskGpuCopy,
 	},
-	math::Vector,
+	math::nalgebra::{Vector2, Vector4},
 	task, utility,
 };
 use raui::renderer::tesselate::prelude::*;
@@ -17,9 +17,9 @@ pub struct Mesh {
 
 #[derive(Debug)]
 pub struct Vertex {
-	pos: Vector<f32, 4>,
-	tex_coord: Vector<f32, 4>,
-	color: Vector<f32, 4>,
+	pos: Vector4<f32>,
+	tex_coord: Vector4<f32>,
+	color: Vector4<f32>,
 }
 
 impl vertex::Object for Vertex {
@@ -75,34 +75,14 @@ impl Mesh {
 		&mut self,
 		tesselation: &Tesselation,
 		render_chain: &RenderChain,
-		resolution: &Vector<u32, 2>,
+		resolution: &Vector2<f32>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		let resolution = resolution.try_into::<f32>().unwrap();
 		let vertices = tesselation
 			.vertices
 			.as_interleaved()
 			.unwrap()
 			.into_iter()
-			.map(
-				|TesselationVerticeInterleaved {
-				     position,
-				     tex_coord,
-				     color,
-				 }| Vertex {
-					pos: Vector::from([position.x, position.y])
-						.try_into::<f32>()
-						.unwrap()
-						.scale(resolution)
-						.subvec::<4>(None) * 2.0 - 1.0,
-					tex_coord: Vector::from([tex_coord.x, tex_coord.y])
-						.try_into::<f32>()
-						.unwrap()
-						.subvec::<4>(None),
-					color: Vector::from([color.r, color.g, color.b, color.a])
-						.try_into::<f32>()
-						.unwrap(),
-				},
-			)
+			.map(|interleaved| Vertex::from_interleaved(interleaved, resolution))
 			.collect::<Vec<_>>();
 		//log::debug!("{:?}", tesselation.vertices.as_interleaved().unwrap());
 		//log::debug!("{:?}", vertices);
@@ -156,5 +136,25 @@ impl Mesh {
 	pub fn bind_buffers(&self, buffer: &command::Buffer) {
 		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
+	}
+}
+
+impl Vertex {
+	fn from_interleaved(
+		interleaved: &TesselationVerticeInterleaved,
+		resolution: &Vector2<f32>,
+	) -> Self {
+		let TesselationVerticeInterleaved {
+			position,
+			tex_coord,
+			color,
+		} = interleaved;
+		let pos: Vector2<f32> = [position.x as f32, position.y as f32].into();
+		let pos = pos.component_div(resolution);
+		Self {
+			pos: [pos.x * 2.0 - 1.0, pos.y * 2.0 - 1.0, 0.0, 0.0].into(),
+			tex_coord: [tex_coord.x, tex_coord.y, 0.0, 0.0].into(),
+			color: [color.r, color.g, color.b, color.a].into(),
+		}
 	}
 }

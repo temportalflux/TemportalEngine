@@ -14,8 +14,7 @@ input-actions = { path = "../input-actions", features = ["winit", "log"] }
 log = { version = "0.4", features = ["std"] }
 mint = "0.5"
 multimap = "0.8"
-nalgebra = "0.27"
-physx = "0.11"
+nalgebra = { version = "0.27", features = ["serde-serialize"] }
 profiling = { version = "1.0", features = ["profile-with-optick"] }
 rand = "0.8"
 raui = { version = ">=0.35", features = ["material", "tesselate"] }
@@ -26,7 +25,6 @@ rodio = "0.14"
 serde = { version = "1.0", features = ["derive"] }
 simplelog = "0.10"
 specs = { version = "0.16", features = ["shred-derive"] }
-temportal-math = { path = "../temportal-math" }
 vulkan-rs = { path = "../vulkan-rs" }
 winit = "0.25"
 zip = "0.5"

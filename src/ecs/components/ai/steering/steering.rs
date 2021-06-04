@@ -1,4 +1,4 @@
-use crate::math::{Quaternion, Vector};
+use crate::math::nalgebra::{Point3, UnitQuaternion, Vector3};
 
 pub type Id = &'static str;
 pub type IdOwned = String;
@@ -12,15 +12,15 @@ pub trait Behavior {
 }
 
 pub struct State {
-	pub position: Vector<f32, 3>,
-	pub velocity: Vector<f32, 3>,
-	pub orientation: Quaternion,
+	pub position: Point3<f32>,
+	pub velocity: Vector3<f32>,
+	pub orientation: UnitQuaternion<f32>,
 	pub rotation: f32,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Output {
-	pub linear_acceleration: Vector<f32, 3>,
+	pub linear_acceleration: Vector3<f32>,
 	pub angular_acceleration: f32,
 }
 

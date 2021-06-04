@@ -4,7 +4,7 @@ use crate::{
 		font::{Font, Glyph},
 		image_view, structs,
 	},
-	math::Vector,
+	math::nalgebra::Vector2,
 	task, utility,
 };
 use std::{collections::HashMap, sync};
@@ -14,20 +14,20 @@ type UnicodeId = u32;
 type FontGlyphMap = HashMap<UnicodeId, Glyph>;
 
 pub struct PendingAtlas {
-	size: Vector<usize, 2>,
+	size: Vector2<usize>,
 	binary: Vec<u8>,
 	format: flags::format::Format,
 	glyph_map: FontGlyphMap,
 	line_height: f32,
-	width_edge: Vector<f32, 2>,
+	width_edge: Vector2<f32>,
 }
 
 pub struct Loaded {
-	size: Vector<usize, 2>,
+	size: Vector2<usize>,
 	line_height: f32,
 	glyph_map: FontGlyphMap,
 	view: sync::Arc<image_view::View>,
-	width_edge: Vector<f32, 2>,
+	width_edge: Vector2<f32>,
 }
 
 impl From<Box<Font>> for PendingAtlas {
@@ -65,8 +65,8 @@ impl PendingAtlas {
 				)
 				.with_format(self.format)
 				.with_size(structs::Extent3D {
-					width: self.size.x() as u32,
-					height: self.size.y() as u32,
+					width: self.size.x as u32,
+					height: self.size.y as u32,
 					depth: 1,
 				})
 				.with_usage(flags::ImageUsage::TRANSFER_DST)
@@ -114,15 +114,15 @@ impl Loaded {
 		self.glyph_map.get(&(i as u32))
 	}
 
-	pub fn size(&self) -> Vector<f32, 2> {
-		self.size.try_into::<f32>().unwrap()
+	pub fn size(&self) -> Vector2<f32> {
+		[self.size.x as f32, self.size.y as f32].into()
 	}
 
 	pub fn line_height(&self) -> &f32 {
 		&self.line_height
 	}
 
-	pub fn get_width_edge(&self) -> &Vector<f32, 2> {
+	pub fn get_width_edge(&self) -> &Vector2<f32> {
 		&self.width_edge
 	}
 }

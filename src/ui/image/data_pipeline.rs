@@ -4,6 +4,7 @@ use crate::{
 		self, command, descriptor, flags, pipeline, structs, DescriptorCache, Drawable, ImageCache,
 		Texture,
 	},
+	math::nalgebra::Vector2,
 	ui::{image, mesh},
 	utility::{self, VoidResult},
 };
@@ -91,7 +92,7 @@ impl DataPipeline {
 	pub fn create_pipeline(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		resolution: structs::Extent2D,
+		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		use pipeline::state::*;
@@ -103,7 +104,10 @@ impl DataPipeline {
 					vertex::Layout::default()
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(resolution))
+				.set_viewport_state(Viewport::from(structs::Extent2D {
+					width: resolution.x as u32,
+					height: resolution.y as u32,
+				}))
 				.set_rasterization_state(
 					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)

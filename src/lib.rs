@@ -10,7 +10,7 @@ pub mod graphics;
 pub mod input;
 pub mod logging;
 pub use profiling;
-pub use temportal_math as math;
+pub mod math;
 pub mod task;
 pub mod ui;
 pub mod utility;

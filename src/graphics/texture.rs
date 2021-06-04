@@ -1,6 +1,6 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	math::Vector,
+	math::nalgebra::Vector2,
 };
 use serde::{Deserialize, Serialize};
 
@@ -13,7 +13,7 @@ pub struct Texture {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub(crate) struct CompiledTexture {
-	pub(crate) size: Vector<usize, 2>,
+	pub(crate) size: Vector2<usize>,
 	pub(crate) binary: Vec<u8>,
 }
 
@@ -25,12 +25,12 @@ impl asset::Asset for Texture {
 
 impl Texture {
 	#[doc(hidden)]
-	pub fn set_compiled(&mut self, size: Vector<usize, 2>, binary: Vec<u8>) {
+	pub fn set_compiled(&mut self, size: Vector2<usize>, binary: Vec<u8>) {
 		self.compiled = Some(CompiledTexture { size, binary })
 	}
 
 	/// Returns the <width, height> of the image/texture.
-	pub fn size(&self) -> &Vector<usize, 2> {
+	pub fn size(&self) -> &Vector2<usize> {
 		&self.compiled.as_ref().unwrap().size
 	}
 

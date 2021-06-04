@@ -46,7 +46,6 @@ impl System {
 }
 
 impl System {
-
 	pub fn create_sound<D>(&mut self, bytes: Vec<u8>) -> Sound
 	where
 		D: rodio::Sample + Send + Sync + 'static,

@@ -3,12 +3,12 @@ use crate::{
 	graphics::{
 		self, command, flags,
 		font::Font,
-		pipeline,
+		pipeline, structs,
 		structs::{Extent2D, Offset2D},
 		utility::Scissor,
 		Drawable, Texture,
 	},
-	math::{vector, Matrix, Vector},
+	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
 	ui::*,
 	utility::{self, VoidResult},
 	EngineSystem,
@@ -45,8 +45,8 @@ pub struct System {
 	colored_area: Drawable,
 	frame_meshes: Vec<Mesh>,
 
-	mouse_position_unnormalized: Vector<f32, 2>,
-	resolution: Vector<u32, 2>,
+	mouse_position_unnormalized: Point2<f32>,
+	resolution: Vector2<f32>,
 	interactions: DefaultInteractionsEngine,
 	application: Application,
 }
@@ -75,8 +75,8 @@ impl System {
 		Ok(Self {
 			application,
 			interactions,
-			resolution: Vector::default(),
-			mouse_position_unnormalized: Default::default(),
+			resolution: [0.0, 0.0].into(),
+			mouse_position_unnormalized: [0.0, 0.0].into(),
 			frame_meshes: Vec::new(),
 			colored_area: Drawable::default(),
 			image: image::DataPipeline::new(&chain_read)?,
@@ -107,17 +107,17 @@ impl System {
 	fn mapping(&self) -> CoordsMapping {
 		CoordsMapping::new(Rect {
 			left: 0.0,
-			right: self.resolution.x() as f32,
+			right: self.resolution.x,
 			top: 0.0,
-			bottom: self.resolution.y() as f32,
+			bottom: self.resolution.y,
 		})
 	}
 
 	fn mouse_position(&self) -> Vec2 {
 		self.mapping().real_to_virtual_vec2(
 			Vec2 {
-				x: self.mouse_position_unnormalized.x(),
-				y: self.mouse_position_unnormalized.y(),
+				x: self.mouse_position_unnormalized.x,
+				y: self.mouse_position_unnormalized.y,
 			},
 			false,
 		)
@@ -210,9 +210,10 @@ impl System {
 		let asset = asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap();
 		log::info!(
 			target: LOG,
-			"Adding font '{}' with width-edge {}",
+			"Adding font '{}' with width-edge <{},{}>",
 			id.as_string(),
-			asset.width_edge()
+			asset.width_edge().x,
+			asset.width_edge().y,
 		);
 		self.text.add_pending(id.name(), asset);
 		Ok(())
@@ -232,7 +233,7 @@ impl System {
 			log::info!(target: LOG, "Adding texture '{}'", id.as_string());
 			self.image_sizes.insert(
 				id.name(),
-				Vec2::from(*texture.size().try_into::<f32>().unwrap().data()),
+				[texture.size().x as f32, texture.size().y as f32].into(),
 			);
 			self.image.add_pending(id, texture)?;
 		} else {
@@ -277,7 +278,7 @@ impl EngineSystem for System {
 				event: WindowEvent::CursorMoved { position, .. },
 				..
 			} => {
-				self.mouse_position_unnormalized = vector![position.x as f32, position.y as f32];
+				self.mouse_position_unnormalized = [position.x as f32, position.y as f32].into();
 				self.interact(Interaction::PointerMove(self.mouse_position()));
 			}
 			winit::event::Event::DeviceEvent {
@@ -438,11 +439,11 @@ impl graphics::RenderChainElement for System {
 	fn on_render_chain_constructed(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		resolution: graphics::structs::Extent2D,
+		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		use pipeline::state::*;
-		self.resolution = vector![resolution.width, resolution.height];
+		self.resolution = *resolution;
 		self.colored_area.create_pipeline(
 			render_chain,
 			vec![],
@@ -451,7 +452,10 @@ impl graphics::RenderChainElement for System {
 					vertex::Layout::default()
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(resolution))
+				.set_viewport_state(Viewport::from(structs::Extent2D {
+					width: resolution.x as u32,
+					height: resolution.y as u32,
+				}))
 				.set_color_blending(
 					color_blend::ColorBlend::default()
 						.add_attachment(color_blend::Attachment::default()),
@@ -486,7 +490,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		_buffer: &command::Buffer,
 		frame: usize,
-		resolution: &Vector<u32, 2>,
+		resolution: &Vector2<f32>,
 	) -> utility::Result<bool> {
 		let mapping = self.mapping();
 		// Drain the existing widgets
@@ -498,8 +502,8 @@ impl graphics::RenderChainElement for System {
 		draw_calls.push(DrawCall::PushClip(Scissor::new(
 			Offset2D::default(),
 			Extent2D {
-				width: resolution.x(),
-				height: resolution.y(),
+				width: resolution.x as u32,
+				height: resolution.y as u32,
 			},
 		)));
 
@@ -536,32 +540,43 @@ impl graphics::RenderChainElement for System {
 						draw_calls.push(DrawCall::Text(widget_id));
 					}
 					Batch::ClipPush(clip) => {
-						let matrix: Matrix<f32, 4, 4> = Matrix::from_column_major(&clip.matrix);
-						let clip_vec = vector![clip.box_size.x, clip.box_size.y];
-						let transform = |mask: Vector<f32, 2>| -> Vector<f32, 2> {
-							let v4: Matrix<f32, 1, 4> =
-								(clip_vec * mask).extend([0.0, 1.0].into()).into();
-							let mat_vec = v4 * matrix;
-							mat_vec.column_vec(0).subvec::<2>(None)
+						let column_major = Matrix4::<f32>::from_vec_generic(
+							nalgebra::Const::<4>,
+							nalgebra::Const::<4>,
+							clip.matrix.to_vec(),
+						);
+						let clip_vec: Vector2<f32> = [clip.box_size.x, clip.box_size.y].into();
+						let transform = |mask: Vector2<f32>| -> Vector2<f32> {
+							let v2 = clip_vec.component_mul(&mask);
+							let v4: Vector4<f32> = [v2.x, v2.y, 0.0, 1.0].into();
+							(column_major * v4).xy()
 						};
 
-						let tl = transform(vector![0.0, 0.0]);
-						let tr = transform(vector![1.0, 0.0]);
-						let bl = transform(vector![0.0, 1.0]);
-						let br = transform(vector![1.0, 1.0]);
+						let tl = transform([0.0, 0.0].into());
+						let tr = transform([1.0, 0.0].into());
+						let bl = transform([0.0, 1.0].into());
+						let br = transform([1.0, 1.0].into());
 
-						let min = tl.min(tr).min(br).min(bl);
-						let max = tl.max(tr).max(br).max(bl);
+						let min: Vector2<f32> = [
+							tl.x.min(tr.x).min(bl.x).min(br.x),
+							tl.y.min(tr.y).min(bl.y).min(br.y),
+						]
+						.into();
+						let max: Vector2<f32> = [
+							tl.x.max(tr.x).max(bl.x).max(br.x),
+							tl.y.max(tr.y).max(bl.y).max(br.y),
+						]
+						.into();
 						let size = max - min;
 
 						draw_calls.push(DrawCall::PushClip(Scissor::new(
 							Offset2D {
-								x: min.x() as i32,
-								y: min.y() as i32,
+								x: min.x as i32,
+								y: max.y as i32,
 							},
 							Extent2D {
-								width: size.x() as u32,
-								height: size.y() as u32,
+								width: size.x as u32,
+								height: size.y as u32,
 							},
 						)));
 					}

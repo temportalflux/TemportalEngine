@@ -1,27 +1,27 @@
 use crate::{
 	graphics::{device::physical, AppInfo},
-	math::Vector,
+	math::nalgebra::{Vector2, Vector4},
 	utility, window, Application, Engine,
 };
 
 pub struct Builder {
 	title: String,
-	inner_logical_size: Vector<f64, 2>,
+	inner_logical_size: Vector2<f64>,
 	resizable: bool,
 	app_info: AppInfo,
 	constraints: Vec<physical::Constraint>,
-	render_pass_clear_color: Vector<f32, 4>,
+	render_pass_clear_color: Vector4<f32>,
 }
 
 impl Default for Builder {
 	fn default() -> Builder {
 		Builder {
 			title: String::new(),
-			inner_logical_size: Vector::default(),
+			inner_logical_size: [0.0, 0.0].into(),
 			resizable: false,
 			app_info: AppInfo::default(),
 			constraints: physical::default_constraints(),
-			render_pass_clear_color: Vector::new([0.0, 0.0, 0.0, 1.0]),
+			render_pass_clear_color: [0.0, 0.0, 0.0, 1.0].into(),
 		}
 	}
 }
@@ -33,7 +33,7 @@ impl Builder {
 	}
 
 	pub fn with_size(mut self, width: f64, height: f64) -> Self {
-		self.inner_logical_size = Vector::new([width, height]);
+		self.inner_logical_size = [width, height].into();
 		self
 	}
 
@@ -52,7 +52,7 @@ impl Builder {
 		self
 	}
 
-	pub fn with_clear_color(mut self, color: Vector<f32, 4>) -> Self {
+	pub fn with_clear_color(mut self, color: Vector4<f32>) -> Self {
 		self.render_pass_clear_color = color;
 		self
 	}
@@ -61,16 +61,17 @@ impl Builder {
 	pub fn build(self, engine: &Engine) -> Result<window::Window, utility::AnyError> {
 		log::info!(
 			target: window::LOG,
-			"Creating window \"{}\" with size {}",
+			"Creating window \"{}\" with size <{},{}>",
 			self.title,
-			self.inner_logical_size
+			self.inner_logical_size.x,
+			self.inner_logical_size.y,
 		);
 		Ok(window::Window::new(
 			winit::window::WindowBuilder::new()
 				.with_title(self.title)
 				.with_inner_size(winit::dpi::Size::Logical(winit::dpi::LogicalSize::new(
-					self.inner_logical_size.x(),
-					self.inner_logical_size.y(),
+					self.inner_logical_size.x,
+					self.inner_logical_size.y,
 				)))
 				.with_position(winit::dpi::Position::Logical(
 					winit::dpi::LogicalPosition::new(0.0, 0.0),

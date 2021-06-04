@@ -8,7 +8,7 @@ use crate::{
 		resources::DeltaTime,
 		Join, NamedSystem,
 	},
-	math::Quaternion,
+	math::nalgebra::UnitQuaternion,
 	world,
 };
 
@@ -77,28 +77,23 @@ impl<'a> ecs::System<'a> for ApplyWeightedSteering {
 			.join()
 		{
 			let state = steering::State {
-				position: position.0.subvec::<3>(None),
-				velocity: velocity.0.subvec::<3>(None),
-				orientation: orientation.0,
+				position: position.get3(),
+				velocity: velocity.get3(),
+				orientation: orientation.get(),
 				rotation: rotation.0,
 			};
 			let mut steering = steering::Output::default();
 
 			steering += self.get_steering_mut(&state, steering_weights, wander_maybe);
 
-			position.0 = position.0 + (velocity.0 * dt);
-			orientation.0 = orientation
-				.0
-				.then(&Quaternion::from_axis_angle(
-					world::global_forward(),
-					rotation.0 * dt,
-				))
-				.normalized();
+			position.apply(velocity.get() * dt);
+			orientation.apply(UnitQuaternion::from_axis_angle(
+				&world::global_forward(),
+				rotation.0 * dt,
+			));
 
-			velocity.0 += (steering.linear_acceleration * dt).subvec::<2>(None);
-			if velocity.0.magnitude_sq() > steering_weights.max_linear_speed().powi(2) {
-				velocity.0 = velocity.0.normalized() * steering_weights.max_linear_speed();
-			}
+			velocity.apply(steering.linear_acceleration.xy() * dt);
+			velocity.apply_max_speed(steering_weights.max_linear_speed());
 			rotation.0 += steering.angular_acceleration * dt;
 		}
 	}

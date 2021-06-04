@@ -3,10 +3,11 @@ use crate::{
 	graphics::{
 		self, buffer, camera, command, flags,
 		pipeline::{self, state::vertex},
+		structs,
 		utility::offset_of,
 		Drawable,
 	},
-	math::Vector,
+	math::nalgebra::{Point3, Vector2, Vector4},
 	task,
 	utility::{self, AnyError, VoidResult},
 	EngineSystem,
@@ -18,8 +19,8 @@ pub enum DebugRenderPipeline {
 }
 
 struct LineSegmentVertex {
-	position: Vector<f32, 4>,
-	color: Vector<f32, 4>,
+	position: Vector4<f32>,
+	color: Vector4<f32>,
 }
 
 pub enum DebugDraw {
@@ -27,8 +28,8 @@ pub enum DebugDraw {
 }
 
 pub struct Point {
-	pub position: Vector<f32, 3>,
-	pub color: Vector<f32, 4>,
+	pub position: Point3<f32>,
+	pub color: Vector4<f32>,
 }
 
 impl vertex::Object for LineSegmentVertex {
@@ -192,7 +193,7 @@ impl graphics::RenderChainElement for DebugRender {
 	fn on_render_chain_constructed(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		resolution: graphics::structs::Extent2D,
+		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
 		use pipeline::state::*;
@@ -207,7 +208,10 @@ impl graphics::RenderChainElement for DebugRender {
 					vertex::Layout::default()
 						.with_object::<LineSegmentVertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(resolution))
+				.set_viewport_state(Viewport::from(structs::Extent2D {
+					width: resolution.x as u32,
+					height: resolution.y as u32,
+				}))
 				.set_rasterization_state(
 					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)
@@ -226,10 +230,10 @@ impl graphics::RenderChainElement for DebugRender {
 		chain: &graphics::RenderChain,
 		_buffer: &command::Buffer,
 		frame: usize,
-		resolution: &Vector<u32, 2>,
+		resolution: &Vector2<f32>,
 	) -> utility::Result<bool> {
 		self.camera_uniform
-			.write_camera(frame, resolution.try_into().unwrap(), &chain.camera())?;
+			.write_camera(frame, resolution, &chain.camera())?;
 
 		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
 		self.pending_gpu_signals.append(&mut signals);
@@ -275,13 +279,14 @@ impl Frame {
 
 					indices.push(vertices.len() as u32);
 					vertices.push(LineSegmentVertex {
-						position: start.position.subvec::<4>(None),
+						position: [start.position.x, start.position.y, start.position.z, 1.0]
+							.into(),
 						color: start.color,
 					});
 
 					indices.push(vertices.len() as u32);
 					vertices.push(LineSegmentVertex {
-						position: end.position.subvec::<4>(None),
+						position: [end.position.x, end.position.y, end.position.z, 1.0].into(),
 						color: end.color,
 					});
 

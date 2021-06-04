@@ -1,6 +1,6 @@
 use crate::{
 	graphics::{alloc, buffer, camera, descriptor, flags, RenderChain},
-	math::Vector,
+	math::nalgebra::Vector2,
 	utility::{self, AnyError},
 };
 use std::sync::{Arc, Weak};
@@ -100,7 +100,7 @@ impl Uniform {
 	pub fn write_camera(
 		&self,
 		frame: usize,
-		resolution: Vector<f32, 2>,
+		resolution: &Vector2<f32>,
 		camera: &camera::Camera,
 	) -> utility::Result<()> {
 		self.write_data(frame, &camera.as_uniform_matrix(resolution))

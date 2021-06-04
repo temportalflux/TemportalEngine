@@ -9,7 +9,7 @@ use crate::{
 		},
 		flags, image, image_view, renderpass, structs, Surface,
 	},
-	math::Vector,
+	math::nalgebra::Vector2,
 	utility::{self, AnyError},
 };
 use multimap::MultiMap;
@@ -38,7 +38,7 @@ pub trait RenderChainElement: Send + Sync {
 	fn on_render_chain_constructed(
 		&mut self,
 		render_chain: &RenderChain,
-		resolution: structs::Extent2D,
+		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()>;
 
@@ -65,7 +65,7 @@ pub trait RenderChainElement: Send + Sync {
 		_render_chain: &RenderChain,
 		_buffer: &command::Buffer,
 		_frame: usize,
-		_resolution: &Vector<u32, 2>,
+		_resolution: &Vector2<f32>,
 	) -> utility::Result<bool> {
 		Ok(false)
 	}
@@ -115,7 +115,7 @@ pub struct RenderChain {
 	swapchain_info: swapchain::Builder,
 	transient_command_pool: sync::Arc<command::Pool>,
 
-	resolution: Vector<u32, 2>,
+	resolution: Vector2<f32>,
 	is_dirty: bool,
 	render_pass_info: renderpass::Info,
 	render_pass_instruction: renderpass::RecordInstruction,
@@ -196,7 +196,7 @@ impl RenderChain {
 			render_pass_instruction,
 			render_pass_info,
 			is_dirty: true,
-			resolution: Vector::new([resolution.width, resolution.height]),
+			resolution: [resolution.width as f32, resolution.height as f32].into(),
 
 			render_pass: None,
 			swapchain_info,
@@ -317,13 +317,13 @@ impl RenderChain {
 	/// (and [`destroy_render_chain`](RenderChainElement::destroy_render_chain) will be called on any initialized elements).
 	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
-	fn construct_render_chain(&mut self, resolution: structs::Extent2D) -> Result<(), AnyError> {
+	fn construct_render_chain(&mut self, extent: structs::Extent2D) -> Result<(), AnyError> {
 		log::info!(
 			target: graphics::LOG,
-			"{}Constructing render chain with resolution <{}, {}>",
+			"{}Constructing render chain with resolution <{},{}>",
 			self.render_pass.as_ref().map(|_| "re").unwrap_or(""),
-			resolution.width,
-			resolution.height
+			extent.width,
+			extent.height
 		);
 		self.images_in_flight.clear();
 		self.in_flight_fences.clear();
@@ -351,7 +351,7 @@ impl RenderChain {
 		let surface = self.surface.upgrade().unwrap();
 
 		self.swapchain_info.fill_from_physical(&physical);
-		self.render_pass_instruction.set_extent(resolution);
+		self.render_pass_instruction.set_extent(extent);
 
 		self.frame_command_pool = Some(command::Pool::create(
 			&logical,
@@ -390,7 +390,7 @@ impl RenderChain {
 		for image_view in self.frame_image_views.iter() {
 			self.frame_buffers.push(
 				command::framebuffer::Framebuffer::builder()
-					.set_extent(resolution)
+					.set_extent(extent)
 					.build(&image_view, &self.render_pass(), &logical)?,
 			);
 		}
@@ -418,7 +418,7 @@ impl RenderChain {
 					"Constructing render chain for {}",
 					locked.name()
 				);
-				locked.on_render_chain_constructed(self, resolution, subpass_id)?;
+				locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
 			}
 		}
 
@@ -543,14 +543,7 @@ impl RenderChain {
 						"Constructing render chain for {}",
 						locked.name()
 					);
-					locked.on_render_chain_constructed(
-						self,
-						structs::Extent2D {
-							width: self.resolution.x(),
-							height: self.resolution.y(),
-						},
-						subpass_id,
-					)?;
+					locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
 					has_constructed_new_elements = true;
 				}
 			}
@@ -575,15 +568,15 @@ impl RenderChain {
 
 		if self.is_dirty {
 			logical.wait_until_idle()?;
-			let resolution = self
+			let extent = self
 				.physical
 				.upgrade()
 				.unwrap()
 				.query_surface_support()
 				.image_extent();
-			self.resolution = Vector::new([resolution.width, resolution.height]);
-			if resolution.width > 0 && resolution.height > 0 {
-				self.construct_render_chain(resolution)?;
+			self.resolution = [extent.width as f32, extent.height as f32].into();
+			if extent.width > 0 && extent.height > 0 {
+				self.construct_render_chain(extent)?;
 			}
 		}
 
