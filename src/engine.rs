@@ -6,13 +6,13 @@ use winit::event_loop::EventLoop;
 
 pub struct Engine {
 	event_loop: Option<EventLoop<()>>,
-	systems_to_receive_events: Vec<Arc<RwLock<dyn EngineSystem>>>,
+	winit_listeners: Vec<Arc<RwLock<dyn WinitEventListener>>>,
 	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
 }
 
 impl Engine {
-	pub fn new<T: Application>() -> Result<Engine, AnyError> {
-		logging::init::<T>()?;
+	pub fn new<T: Application>(log_suffix: Option<&str>) -> Result<Engine, AnyError> {
+		logging::init::<T>(log_suffix)?;
 		task::initialize_system();
 		crate::register_asset_types();
 		asset::Library::scan_application::<EngineApp>()?;
@@ -20,7 +20,7 @@ impl Engine {
 		audio::System::initialize();
 		Ok(Engine {
 			event_loop: Some(EventLoop::new()),
-			systems_to_receive_events: Vec::new(),
+			winit_listeners: Vec::new(),
 			systems: Vec::new(),
 		})
 	}
@@ -34,9 +34,13 @@ impl Engine {
 		T: EngineSystem + 'static,
 	{
 		self.systems.push(system.clone());
-		if system.read().unwrap().should_receive_winit_events() {
-			self.systems_to_receive_events.push(system.clone());
-		}
+	}
+
+	pub fn add_winit_listener<T>(&mut self, system: &Arc<RwLock<T>>)
+	where
+		T: WinitEventListener + 'static,
+	{
+		self.winit_listeners.push(system.clone());
 	}
 
 	pub fn run(self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
@@ -57,7 +61,7 @@ impl Engine {
 					input::write().send_event(source, input_event);
 				}
 				{
-					let systems = &mut engine.write().unwrap().systems_to_receive_events;
+					let systems = &mut engine.write().unwrap().winit_listeners;
 					for system in systems.iter_mut() {
 						system.write().unwrap().on_event(&event);
 					}
@@ -121,10 +125,10 @@ impl Engine {
 	}
 }
 
+pub trait WinitEventListener {
+	fn on_event(&mut self, event: &winit::event::Event<()>);
+}
+
 pub trait EngineSystem {
-	fn should_receive_winit_events(&self) -> bool {
-		false
-	}
-	fn on_event(&mut self, _event: &winit::event::Event<()>) {}
 	fn update(&mut self, delta_time: std::time::Duration);
 }

@@ -27,7 +27,7 @@ pub trait RenderChainElement: Send + Sync {
 	fn initialize_with(
 		&mut self,
 		_render_chain: &mut RenderChain,
-	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
+	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
 		Ok(vec![])
 	}
 
@@ -40,21 +40,21 @@ pub trait RenderChainElement: Send + Sync {
 		render_chain: &RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()>;
+	) -> Result<(), AnyError>;
 
 	/// Performs any changes to data that need to happen before the frame begins to be processed
 	/// (but after an uninitialized elements have been initialized).
 	/// There is no frame-specific information provided to this function,
 	/// see [`prerecord_update`](RenderChainElement::prerecord_update),
 	/// if you need to make data changes for a specific frame.
-	fn preframe_update(&mut self, _render_chain: &RenderChain) -> utility::Result<()> {
+	fn preframe_update(&mut self, _render_chain: &RenderChain) -> Result<(), AnyError> {
 		Ok(())
 	}
 
 	/// Destroys any objects which are created during `on_render_chain_constructed`.
 	/// The render chain may be reconstructed soon after this is called, or it may just be dropped entirely.
 	/// This function is not garunteed to be called when the render chain is dropped.
-	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> utility::Result<()>;
+	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> Result<(), AnyError>;
 
 	/// Performs any tweaks that need to be made to data before the frame may be recorded.
 	/// The frame may not be recorded after all elements have been processed,
@@ -66,7 +66,7 @@ pub trait RenderChainElement: Send + Sync {
 		_buffer: &command::Buffer,
 		_frame: usize,
 		_resolution: &Vector2<f32>,
-	) -> utility::Result<bool> {
+	) -> Result<bool, AnyError> {
 		Ok(false)
 	}
 
@@ -80,7 +80,7 @@ pub trait RenderChainElement: Send + Sync {
 	/// Records commands to the command buffer for a given frame.
 	/// Only called if the frame has been marked as dirty, either by [`mark_commands_dirty`](RenderChain::mark_commands_dirty),
 	/// or by any element returning `true` from [`prerecord_update`](RenderChainElement::prerecord_update).
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()>;
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError>;
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;

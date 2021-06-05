@@ -1,7 +1,8 @@
 use crate::{
 	graphics::{self, command, flags, image_view, sampler, structs, Texture},
+	math::nalgebra::Vector2,
 	task,
-	utility::{self, VoidResult},
+	utility::{self},
 };
 use std::{collections::HashMap, sync};
 
@@ -16,12 +17,15 @@ pub struct CombinedImageSampler {
 /// and [`Sampler`](graphics::sampler::Sampler) objects, keyed by a user-facing identifier.
 /// Useful when a collection of images are used frequently by multiple draw calls but in the same pipeline,
 /// or when managing any collection of engine asset textures.
-pub struct ImageCache {
-	pending: HashMap<String, graphics::CompiledTexture>,
-	loaded: HashMap<String, CombinedImageSampler>,
+pub struct ImageCache<T: Eq + std::hash::Hash + Clone> {
+	pending: HashMap<T, graphics::CompiledTexture>,
+	loaded: HashMap<T, CombinedImageSampler>,
 }
 
-impl Default for ImageCache {
+impl<T> Default for ImageCache<T>
+where
+	T: Eq + std::hash::Hash + Clone,
+{
 	fn default() -> Self {
 		Self {
 			loaded: HashMap::new(),
@@ -30,17 +34,24 @@ impl Default for ImageCache {
 	}
 }
 
-impl ImageCache {
+impl<T> ImageCache<T>
+where
+	T: Eq + std::hash::Hash + Clone,
+{
 	/// Adds an engine asset texture to the cache,
 	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
-	pub fn insert(&mut self, id: String, texture: Box<Texture>) -> VoidResult {
+	pub fn insert(&mut self, id: T, texture: Box<Texture>) {
 		self.pending.insert(id, texture.get_compiled().clone());
-		Ok(())
+	}
+
+	pub fn insert_compiled(&mut self, id: T, size: Vector2<usize>, binary: Vec<u8>) {
+		self.pending
+			.insert(id, graphics::CompiledTexture { size, binary });
 	}
 
 	/// Returns true if the `id` has been added via [`insert`](ImageCache::insert),
 	/// regardless of if [`load_pending`](ImageCache::load_pending) has been executed since insertion or not.
-	pub fn contains(&self, id: &String) -> bool {
+	pub fn contains(&self, id: &T) -> bool {
 		self.loaded.contains_key(id) || self.pending.contains_key(id)
 	}
 
@@ -61,7 +72,7 @@ impl ImageCache {
 	pub fn load_pending(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<(Vec<String>, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> utility::Result<(Vec<T>, Vec<sync::Arc<command::Semaphore>>)> {
 		let mut ids = Vec::new();
 		let mut pending_gpu_signals = Vec::new();
 		if !self.pending.is_empty() {
@@ -136,9 +147,12 @@ impl ImageCache {
 	}
 }
 
-impl std::ops::Index<&String> for ImageCache {
+impl<T> std::ops::Index<&T> for ImageCache<T>
+where
+	T: Eq + std::hash::Hash + Clone,
+{
 	type Output = CombinedImageSampler;
-	fn index(&self, id: &String) -> &Self::Output {
+	fn index(&self, id: &T) -> &Self::Output {
 		&self.loaded[id]
 	}
 }

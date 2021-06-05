@@ -29,7 +29,5 @@ vulkan-rs = { path = "../vulkan-rs" }
 winit = "0.25"
 zip = "0.5"
 
-sdl2 = { version = "0.34", features = ["raw-window-handle"] }
-
 [build-dependencies]
 extern-reader = { path = "../extern-reader" }

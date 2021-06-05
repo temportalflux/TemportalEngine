@@ -9,9 +9,9 @@ use crate::{
 		Drawable, Texture,
 	},
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
-	ui::*,
-	utility::{self, VoidResult},
-	EngineSystem,
+	ui::{mesh::*, *},
+	utility::{self, AnyError, VoidResult},
+	EngineSystem, WinitEventListener,
 };
 use raui::renderer::tesselate::prelude::*;
 use std::{collections::HashMap, sync};
@@ -235,7 +235,7 @@ impl System {
 				id.name(),
 				[texture.size().x as f32, texture.size().y as f32].into(),
 			);
-			self.image.add_pending(id, texture)?;
+			self.image.add_pending(id, texture);
 		} else {
 			log::error!("Failed to load texture asset {}", id);
 		}
@@ -250,6 +250,7 @@ impl System {
 	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(&system);
+		engine.add_winit_listener(&system);
 		render_chain
 			.write()
 			.unwrap()
@@ -262,11 +263,7 @@ impl System {
 	}
 }
 
-impl EngineSystem for System {
-	fn should_receive_winit_events(&self) -> bool {
-		true
-	}
-
+impl WinitEventListener for System {
 	fn on_event(&mut self, event: &winit::event::Event<()>) {
 		use crate::input::source::{Key, MouseButton};
 		use std::convert::TryFrom;
@@ -389,7 +386,9 @@ impl EngineSystem for System {
 			_ => {}
 		}
 	}
+}
 
+impl EngineSystem for System {
 	#[profiling::function]
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
@@ -408,7 +407,7 @@ impl graphics::RenderChainElement for System {
 	fn initialize_with(
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+	) -> Result<Vec<sync::Arc<command::Semaphore>>, AnyError> {
 		self.draw_calls_by_frame
 			.resize(render_chain.frame_count(), Vec::new());
 		self.colored_area.create_shaders(&render_chain)?;
@@ -428,7 +427,7 @@ impl graphics::RenderChainElement for System {
 	fn destroy_render_chain(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<()> {
+	) -> Result<(), AnyError> {
 		self.colored_area.destroy_pipeline(render_chain)?;
 		self.image.destroy_pipeline(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
@@ -441,7 +440,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()> {
+	) -> Result<(), AnyError> {
 		use pipeline::state::*;
 		self.resolution = *resolution;
 		self.colored_area.create_pipeline(
@@ -470,7 +469,7 @@ impl graphics::RenderChainElement for System {
 		Ok(())
 	}
 
-	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> Result<(), AnyError> {
 		self.pending_gpu_signals
 			.append(&mut self.image.create_pending_images(&render_chain)?);
 		self.pending_gpu_signals
@@ -491,7 +490,7 @@ impl graphics::RenderChainElement for System {
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
-	) -> utility::Result<bool> {
+	) -> Result<bool, AnyError> {
 		let mapping = self.mapping();
 		// Drain the existing widgets
 		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
@@ -508,8 +507,11 @@ impl graphics::RenderChainElement for System {
 		)));
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
-			let mut mesh_gpu_signals =
-				self.frame_meshes[frame].write(&tesselation, &render_chain, resolution)?;
+			let mut mesh_gpu_signals = self.frame_meshes[frame].write_tesselation(
+				&tesselation,
+				&render_chain,
+				resolution,
+			)?;
 			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 
 			for batch in tesselation.batches {
@@ -594,7 +596,7 @@ impl graphics::RenderChainElement for System {
 
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
 		let mut clips = Vec::new();
 		for call in self.draw_calls_by_frame[frame].iter() {
 			match call {

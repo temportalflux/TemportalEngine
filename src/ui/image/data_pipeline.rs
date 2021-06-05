@@ -12,7 +12,7 @@ use std::sync;
 
 pub struct DataPipeline {
 	descriptor_cache: DescriptorCache<String>,
-	image_cache: ImageCache,
+	image_cache: ImageCache<String>,
 	drawable: Drawable,
 }
 
@@ -42,8 +42,8 @@ impl DataPipeline {
 		self.drawable.create_shaders(render_chain)
 	}
 
-	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) -> VoidResult {
-		self.image_cache.insert(id.name(), texture)
+	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) {
+		self.image_cache.insert(id.name(), texture);
 	}
 
 	#[profiling::function]

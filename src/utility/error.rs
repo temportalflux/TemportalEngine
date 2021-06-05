@@ -2,8 +2,6 @@ use crate::graphics::{device::physical, utility};
 
 #[derive(Debug)]
 pub enum Error {
-	Sdl(String),
-	SdlWindow(sdl2::video::WindowBuildError),
 	FailedToFindPhysicalDevice(Option<physical::Constraint>),
 	Graphics(utility::Error),
 	GraphicsBufferWrite(std::io::Error),
@@ -17,8 +15,6 @@ pub type VoidResult = std::result::Result<(), AnyError>;
 impl std::fmt::Display for Error {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		match *self {
-			Error::Sdl(ref msg) => write!(f, "Encountered SDL2 error: {}", msg),
-			Error::SdlWindow(ref e) => e.fmt(f),
 			Error::FailedToFindPhysicalDevice(ref constraint) => match constraint {
 				Some(constraint) => write!(
 					f,
@@ -45,11 +41,5 @@ impl From<utility::Error> for Error {
 impl From<crate::ui::Error> for Error {
 	fn from(err: crate::ui::Error) -> Error {
 		Error::UI(err)
-	}
-}
-
-impl From<sdl2::video::WindowBuildError> for Error {
-	fn from(err: sdl2::video::WindowBuildError) -> Error {
-		Error::SdlWindow(err)
 	}
 }

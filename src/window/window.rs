@@ -24,7 +24,7 @@ pub struct Window {
 	physical_device: sync::Arc<physical::Device>,
 	surface: sync::Arc<Surface>,
 	_vulkan: sync::Arc<instance::Instance>,
-	internal: winit::window::Window,
+	internal: sync::Arc<sync::RwLock<winit::window::Window>>,
 	_graphics_context: Context,
 }
 
@@ -85,7 +85,7 @@ impl Window {
 
 		Ok(Window {
 			_graphics_context: graphics_context,
-			internal,
+			internal: sync::Arc::new(sync::RwLock::new(internal)),
 			_vulkan: vulkan,
 			graphics_allocator,
 			surface,
@@ -97,8 +97,8 @@ impl Window {
 		})
 	}
 
-	pub fn unwrap(&self) -> &winit::window::Window {
-		&self.internal
+	pub fn unwrap(&self) -> sync::Weak<sync::RwLock<winit::window::Window>> {
+		sync::Arc::downgrade(&self.internal)
 	}
 
 	fn find_physical_device(

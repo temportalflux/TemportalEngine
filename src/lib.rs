@@ -2,7 +2,6 @@ mod application;
 pub mod asset;
 pub mod audio;
 pub use application::*;
-pub mod display;
 pub mod ecs;
 mod engine;
 pub use engine::*;

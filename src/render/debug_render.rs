@@ -150,7 +150,7 @@ impl graphics::RenderChainElement for DebugRender {
 	fn initialize_with(
 		&mut self,
 		chain: &mut graphics::RenderChain,
-	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
+	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
 		let mut gpu_signals = Vec::new();
 
 		self.camera_uniform.write_descriptor_sets(chain);
@@ -184,7 +184,7 @@ impl graphics::RenderChainElement for DebugRender {
 	fn destroy_render_chain(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<()> {
+	) -> Result<(), AnyError> {
 		self.line_drawable.destroy_pipeline(render_chain)?;
 		Ok(())
 	}
@@ -195,9 +195,9 @@ impl graphics::RenderChainElement for DebugRender {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()> {
+	) -> Result<(), AnyError> {
 		use pipeline::state::*;
-		self.line_drawable.create_pipeline(
+		Ok(self.line_drawable.create_pipeline(
 			render_chain,
 			vec![self.camera_uniform.layout()],
 			pipeline::Pipeline::builder()
@@ -220,7 +220,7 @@ impl graphics::RenderChainElement for DebugRender {
 						.add_attachment(color_blend::Attachment::default()),
 				),
 			subpass_id,
-		)
+		)?)
 	}
 
 	/// Update the data (like uniforms) for a given frame.
@@ -231,7 +231,7 @@ impl graphics::RenderChainElement for DebugRender {
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
-	) -> utility::Result<bool> {
+	) -> Result<bool, AnyError> {
 		self.camera_uniform
 			.write_camera(frame, resolution, &chain.camera())?;
 
@@ -243,7 +243,7 @@ impl graphics::RenderChainElement for DebugRender {
 
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> utility::Result<()> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
 		let frame_data = &self.frames[frame];
 		self.line_drawable.bind_pipeline(buffer);
 		self.line_drawable
