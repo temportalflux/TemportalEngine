@@ -1,21 +1,10 @@
 use crate::{
-	graphics::{
-		alloc, buffer, command, flags, pipeline::state::vertex, utility::offset_of, RenderChain,
-		TaskGpuCopy,
-	},
+	graphics::{self, flags, pipeline::state::vertex, utility::offset_of},
 	math::nalgebra::{Vector2, Vector4},
-	task, utility,
 };
 use raui::renderer::tesselate::prelude::*;
-use std::sync;
 
-pub struct Mesh {
-	index_count: usize,
-	index_buffer: sync::Arc<buffer::Buffer>,
-	vertex_buffer: sync::Arc<buffer::Buffer>,
-}
-
-pub type Index = u32;
+pub type Mesh = graphics::Mesh<u32, Vertex>;
 
 #[derive(Debug, Default)]
 pub struct Vertex {
@@ -43,112 +32,27 @@ impl vertex::Object for Vertex {
 	}
 }
 
-impl Mesh {
-	#[profiling::function]
-	pub fn new(
-		allocator: &sync::Arc<alloc::Allocator>,
-		item_count: usize,
-	) -> utility::Result<Self> {
-		Ok(Self {
-			vertex_buffer: buffer::Buffer::create_gpu(
-				allocator,
-				flags::BufferUsage::VERTEX_BUFFER,
-				Self::vertex_buffer_size_for(item_count),
-			)?,
-			index_buffer: buffer::Buffer::create_gpu(
-				allocator,
-				flags::BufferUsage::INDEX_BUFFER,
-				Self::index_buffer_size_for(item_count),
-			)?,
-			index_count: 0,
-		})
-	}
-
-	fn vertex_buffer_size_for(item_count: usize) -> usize {
-		std::mem::size_of::<Vertex>() * item_count * 4
-	}
-
-	fn index_buffer_size_for(item_count: usize) -> usize {
-		std::mem::size_of::<Index>() * item_count * 6
-	}
-
-	#[profiling::function]
-	pub fn write_tesselation(
-		&mut self,
-		tesselation: &Tesselation,
-		render_chain: &RenderChain,
-		resolution: &Vector2<f32>,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		let vertices = tesselation
-			.vertices
-			.as_interleaved()
-			.unwrap()
-			.into_iter()
-			.map(|interleaved| Vertex::from_interleaved(interleaved, resolution))
-			.collect::<Vec<_>>();
-		let indices = tesselation
-			.indices
-			.iter()
-			.map(|i| *i as Index)
-			.collect::<Vec<_>>();
-		self.write(&vertices, &indices, render_chain)
-	}
-
-	#[profiling::function]
-	pub fn write(
-		&mut self,
-		vertices: &Vec<Vertex>,
-		indices: &Vec<Index>,
-		render_chain: &RenderChain,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		self.index_count = indices.len();
-
-		let mut gpu_signals = Vec::with_capacity(2);
-
-		if !vertices.is_empty() {
-			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
-				&vertices[..],
-				render_chain,
-				&mut gpu_signals,
-			)?;
-		}
-		if !indices.is_empty() {
-			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
-				&indices[..],
-				render_chain,
-				&mut gpu_signals,
-			)?;
-		}
-
-		Ok(gpu_signals)
-	}
-
-	fn write_buffer<T: Sized>(
-		buffer: &mut buffer::Buffer,
-		data: &[T],
-		render_chain: &RenderChain,
-		signals: &mut Vec<sync::Arc<command::Semaphore>>,
-	) -> utility::Result<()> {
-		buffer.expand(std::mem::size_of::<T>() * data.len())?;
-		TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.stage(data)?
-			.copy_stage_to_buffer(&buffer)
-			.end()?
-			.add_signal_to(signals)
-			.send_to(task::sender());
-		Ok(())
-	}
-
-	pub fn bind_buffers(&self, buffer: &command::Buffer) {
-		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
-		buffer.bind_index_buffer(&self.index_buffer, 0);
-	}
-}
-
 impl Vertex {
+	pub(crate) fn create_interleaved_buffer_data(
+		tesselation: &Tesselation,
+		resolution: &Vector2<f32>,
+	) -> (Vec<Vertex>, Vec<u32>) {
+		(
+			tesselation
+				.vertices
+				.as_interleaved()
+				.unwrap()
+				.into_iter()
+				.map(|interleaved| Vertex::from_interleaved(interleaved, resolution))
+				.collect::<Vec<_>>(),
+			tesselation
+				.indices
+				.iter()
+				.map(|i| *i as u32)
+				.collect::<Vec<_>>(),
+		)
+	}
+
 	fn from_interleaved(
 		interleaved: &TesselationVerticeInterleaved,
 		resolution: &Vector2<f32>,
@@ -162,24 +66,10 @@ impl Vertex {
 		let pos = pos.component_div(resolution);
 		let offset: Vector2<f32> = [-1.0, -1.0].into();
 		let pos = pos * 2.0 + offset;
-		Self::default()
-			.with_position(pos)
-			.with_tex_coord([tex_coord.x, tex_coord.y].into())
-			.with_color([color.r, color.g, color.b, color.a].into())
-	}
-
-	pub fn with_position(mut self, pos: Vector2<f32>) -> Self {
-		self.pos = [pos.x, pos.y, 0.0, 1.0].into();
-		self
-	}
-
-	pub fn with_tex_coord(mut self, coord: Vector2<f32>) -> Self {
-		self.tex_coord = [coord.x, coord.y, 0.0, 0.0].into();
-		self
-	}
-
-	pub fn with_color(mut self, color: Vector4<f32>) -> Self {
-		self.color = color;
-		self
+		Vertex {
+			pos: [pos.x, pos.y, 0.0, 1.0].into(),
+			tex_coord: [tex_coord.x, tex_coord.y, 0.0, 0.0].into(),
+			color: [color.r, color.g, color.b, color.a].into(),
+		}
 	}
 }

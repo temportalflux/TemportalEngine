@@ -15,6 +15,9 @@ pub mod font;
 mod image_cache;
 pub use image_cache::*;
 
+mod mesh;
+pub use mesh::*;
+
 mod render_chain;
 pub use render_chain::*;
 

@@ -507,11 +507,10 @@ impl graphics::RenderChainElement for System {
 		)));
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
-			let mut mesh_gpu_signals = self.frame_meshes[frame].write_tesselation(
-				&tesselation,
-				&render_chain,
-				resolution,
-			)?;
+			let (vertices, indices) =
+				Vertex::create_interleaved_buffer_data(&tesselation, resolution);
+			let mut mesh_gpu_signals =
+				self.frame_meshes[frame].write(&vertices, &indices, &render_chain)?;
 			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 
 			for batch in tesselation.batches {
