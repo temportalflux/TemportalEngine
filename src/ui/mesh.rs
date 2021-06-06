@@ -1,35 +1,31 @@
 use crate::{
-	graphics::{self, flags, pipeline::state::vertex, utility::offset_of},
+	graphics::{self, flags, pipeline, vertex_object},
 	math::nalgebra::{Vector2, Vector4},
 };
 use raui::renderer::tesselate::prelude::*;
 
 pub type Mesh = graphics::Mesh<u32, Vertex>;
 
+/*
+#[repr(C, align(16))]
+struct Vec2([f32; 2]);
+#[repr(C, align(16))]
+struct Vec3([f32; 3]);
+#[repr(C, align(16))]
+struct Vec4([f32; 4]);
+*/
+
+#[vertex_object]
 #[derive(Debug, Default)]
 pub struct Vertex {
+	#[vertex_attribute([R, G], Bit32, SFloat)]
 	pos: Vector4<f32>,
-	tex_coord: Vector4<f32>,
-	color: Vector4<f32>,
-}
 
-impl vertex::Object for Vertex {
-	fn attributes() -> Vec<vertex::Attribute> {
-		vec![
-			vertex::Attribute {
-				offset: offset_of!(Vertex, pos),
-				format: flags::format::VEC2,
-			},
-			vertex::Attribute {
-				offset: offset_of!(Vertex, tex_coord),
-				format: flags::format::VEC2,
-			},
-			vertex::Attribute {
-				offset: offset_of!(Vertex, color),
-				format: flags::format::VEC4,
-			},
-		]
-	}
+	#[vertex_attribute([R, G], Bit32, SFloat)]
+	tex_coord: Vector4<f32>,
+
+	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
+	color: Vector4<f32>,
 }
 
 impl Vertex {
