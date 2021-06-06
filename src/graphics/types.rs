@@ -12,7 +12,7 @@
 //! struct which implements [`vertex::Object`](super::pipeline::state::vertex::Object).
 //!
 //! Sources:
-//! - https://fvcaputo.github.io/2019/02/06/memory-alignment.html
+//! - [Memory Alignment article](https://fvcaputo.github.io/2019/02/06/memory-alignment.html)
 //!
 //! Example:
 //! ```
