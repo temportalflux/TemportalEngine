@@ -22,7 +22,9 @@ impl Application for UIDemo {
 }
 
 pub fn run() -> VoidResult {
-	let mut engine = engine::Engine::new::<UIDemo>(None)?;
+	engine::logging::init::<UIDemo>(None)?;
+	let mut engine = engine::Engine::new()?;
+	engine.scan_paks(vec![UIDemo::pak_name()])?;
 
 	let mut window = engine::window::Window::builder()
 		.with_title(UIDemo::display_name())

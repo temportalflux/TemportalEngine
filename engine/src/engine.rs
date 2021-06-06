@@ -1,6 +1,4 @@
-use crate::{
-	asset, audio, graphics, input, logging, task, utility::AnyError, Application, EngineApp,
-};
+use crate::{asset, audio, graphics, input, task, utility::AnyError, Application, EngineApp};
 use std::sync::{Arc, RwLock};
 use winit::event_loop::EventLoop;
 
@@ -11,18 +9,25 @@ pub struct Engine {
 }
 
 impl Engine {
-	pub fn new<T: Application>(log_suffix: Option<&str>) -> Result<Engine, AnyError> {
-		logging::init::<T>(log_suffix)?;
+	pub fn new() -> Result<Self, AnyError> {
 		task::initialize_system();
 		crate::register_asset_types();
 		audio::System::initialize();
-		asset::Library::write().scan_pak(&EngineApp::pak_location())?;
-		asset::Library::write().scan_pak(&T::pak_location())?;
-		Ok(Engine {
+		Ok(Self {
 			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),
 			systems: Vec::new(),
 		})
+	}
+
+	/// Scans the engine pak file and any pak file names provided.
+	pub fn scan_paks(&self, paks: Vec<String>) -> Result<(), AnyError> {
+		let mut library = asset::Library::write();
+		library.scan_pak(&EngineApp::pak_name())?;
+		for pak_name in paks.iter() {
+			library.scan_pak(&pak_name)?;
+		}
+		Ok(())
 	}
 
 	pub fn event_loop(&self) -> &EventLoop<()> {

@@ -1,18 +1,41 @@
-use crate::engine::{asset, utility::VoidResult};
+use crate::{
+	engine::{asset, utility::VoidResult},
+	settings,
+};
 use std::{self, fs, io::Write, path::PathBuf};
 use zip;
 
-pub fn package(module_name: &str, module_location: &PathBuf) -> VoidResult {
+pub fn package(
+	settings: &settings::Editor,
+	module_name: &str,
+	module_location: &PathBuf,
+	is_editor_pak: bool,
+) -> VoidResult {
 	let mut output_dir_path = module_location.clone();
 	output_dir_path.push("binaries");
-	let mut zip_path = module_location.clone();
-	zip_path.push(format!("{}.pak", module_name));
+
+	let pak_rel_path = {
+		let mut path = PathBuf::new();
+		if !is_editor_pak {
+			path.push(settings.packager_output());
+		}
+		path.push("paks");
+		path.push(format!("{}.pak", module_name));
+		path
+	};
+	let zip_path = std::env::current_dir().unwrap().join(&pak_rel_path);
+
+	if let Some(parent) = zip_path.parent() {
+		if !parent.exists() {
+			std::fs::create_dir(&parent)?;
+		}
+	}
 
 	log::info!(
 		target: asset::LOG,
-		"[{}] Packaging assets into {:?}",
+		"[{}] Packaging assets into {}",
 		module_name,
-		zip_path.file_name().unwrap()
+		pak_rel_path.display()
 	);
 
 	let zip_file = fs::OpenOptions::new()

@@ -35,7 +35,12 @@ impl ui::Element for Workspace {
 						}
 					}
 					if package {
-						match asset::package(&app_module.name, &app_module.location) {
+						match asset::package(
+							&editor.settings,
+							&app_module.name,
+							&app_module.location,
+							app_module.is_editor_only,
+						) {
 							Ok(_) => {}
 							Err(e) => log::error!(target: "ui", "Failed to package... {:?}", e),
 						}

@@ -28,7 +28,9 @@ impl Application for TriangleDemo {
 }
 
 pub fn run() -> VoidResult {
-	let engine = engine::Engine::new::<TriangleDemo>(None)?;
+	engine::logging::init::<TriangleDemo>(None)?;
+	let engine = engine::Engine::new()?;
+	engine.scan_paks(vec![TriangleDemo::pak_name()])?;
 
 	let mut window = engine::window::Window::builder()
 		.with_title(TriangleDemo::display_name())

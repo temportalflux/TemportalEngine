@@ -43,7 +43,9 @@ impl Application for BoidDemo {
 }
 
 pub fn run() -> VoidResult {
-	let mut engine = engine::Engine::new::<BoidDemo>(None)?;
+	engine::logging::init::<BoidDemo>(None)?;
+	let mut engine = engine::Engine::new()?;
+	engine.scan_paks(vec![BoidDemo::pak_name()])?;
 	input::init();
 
 	// 25px = 1m

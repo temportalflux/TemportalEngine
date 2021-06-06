@@ -11,7 +11,7 @@ pub fn init<T: Application>(suffix: Option<&str>) -> VoidResult {
 		.create(true)
 		.write(true)
 		.truncate(true)
-		.open(log_path)?;
+		.open(&log_path)?;
 	let cfg = {
 		let mut builder = ConfigBuilder::new();
 		builder
@@ -35,5 +35,6 @@ pub fn init<T: Application>(suffix: Option<&str>) -> VoidResult {
 		WriteLogger::new(LevelFilter::Trace, cfg.clone(), file),
 	])
 	.unwrap();
+	log::info!(target: "engine", "Writing log to {}", log_path.display());
 	Ok(())
 }

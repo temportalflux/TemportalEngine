@@ -15,6 +15,7 @@ pub static EDITOR_LOG: &'static str = "Editor";
 pub struct ApplicationModule {
 	pub name: String,
 	pub location: PathBuf,
+	pub is_editor_only: bool,
 }
 
 impl ApplicationModule {
@@ -22,6 +23,7 @@ impl ApplicationModule {
 		Self {
 			name: T::name().to_string(),
 			location: PathBuf::from(T::location()),
+			is_editor_only: T::is_editor_only(),
 		}
 	}
 }
@@ -48,6 +50,9 @@ impl Application for Editor {
 			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
 			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
 		)
+	}
+	fn is_editor_only() -> bool {
+		true
 	}
 }
 
@@ -86,7 +91,7 @@ impl Editor {
 			],
 		};
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
-		engine::asset::Library::scan_application::<Editor>()?;
+		engine::asset::Library::write().scan_pak(&Editor::pak_name())?;
 		Ok(editor)
 	}
 
@@ -113,7 +118,12 @@ impl Editor {
 					)?;
 				}
 				if should_package_assets {
-					asset::package(&app_module.name, &app_module.location)?;
+					asset::package(
+						&self.settings,
+						&app_module.name,
+						&app_module.location,
+						app_module.is_editor_only,
+					)?;
 				}
 			}
 			return Ok(true);

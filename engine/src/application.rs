@@ -20,9 +20,17 @@ pub trait Application {
 		crate::asset::Id::new(Self::name(), path)
 	}
 
+	fn pak_name() -> String {
+		format!("{}.pak", Self::name())
+	}
+
 	fn pak_location() -> PathBuf {
-		[Self::location(), format!("{}.pak", Self::name()).as_str()]
+		[Self::location(), Self::pak_name().as_str()]
 			.iter()
 			.collect()
+	}
+
+	fn is_editor_only() -> bool {
+		false
 	}
 }

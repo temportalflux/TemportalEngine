@@ -34,7 +34,7 @@ impl Default for Library {
 }
 
 impl Library {
-	fn get() -> &'static std::sync::RwLock<Self> {
+	pub fn get() -> &'static std::sync::RwLock<Self> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Library> = Singleton::uninit();
 		unsafe { INSTANCE.get_or_default() }
@@ -55,8 +55,15 @@ impl Library {
 	/// Scans a specific file at a provided path.
 	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
 	#[profiling::function]
-	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
+	pub fn scan_pak(&mut self, pak_name: &str) -> VoidResult {
 		use std::io::Read;
+
+		let path = {
+			let mut abs_path = std::env::current_dir().unwrap();
+			abs_path.push("paks");
+			abs_path.push(pak_name);
+			abs_path
+		};
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
