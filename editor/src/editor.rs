@@ -2,10 +2,10 @@ use crate::{
 	asset,
 	engine::{
 		self,
-		utility::{singleton::Singleton, AnyError, VoidResult},
+		utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
 		Application, EngineApp,
 	},
-	settings::{self, Settings},
+	settings::{self},
 };
 use std::path::PathBuf;
 

@@ -15,9 +15,9 @@ impl Engine {
 		logging::init::<T>(log_suffix)?;
 		task::initialize_system();
 		crate::register_asset_types();
+		audio::System::initialize();
 		asset::Library::scan_application::<EngineApp>()?;
 		asset::Library::scan_application::<T>()?;
-		audio::System::initialize();
 		Ok(Engine {
 			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),

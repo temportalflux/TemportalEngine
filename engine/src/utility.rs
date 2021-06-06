@@ -13,3 +13,6 @@ impl<T: 'static> AToAny for T {
 }
 
 pub mod singleton;
+
+mod save_data;
+pub use save_data::*;
