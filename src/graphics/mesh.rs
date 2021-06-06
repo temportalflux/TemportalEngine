@@ -19,10 +19,48 @@ impl<Index, Vertex> Mesh<Index, Vertex>
 where
 	Vertex: vertex::Object,
 {
-	#[profiling::function]
+	pub fn new_mesh(
+		allocator: &sync::Arc<alloc::Allocator>,
+		item_count: usize,
+		index_type: flags::IndexType,
+	) -> utility::Result<Self> {
+		Self::new_internal(allocator, item_count, index_type)
+	}
+}
+
+impl<Vertex> Mesh<u16, Vertex>
+where
+	Vertex: vertex::Object,
+{
 	pub fn new(
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
+	) -> utility::Result<Self> {
+		Self::new_internal(allocator, item_count, flags::IndexType::UINT16)
+	}
+}
+
+impl<Vertex> Mesh<u32, Vertex>
+where
+	Vertex: vertex::Object,
+{
+	pub fn new(
+		allocator: &sync::Arc<alloc::Allocator>,
+		item_count: usize,
+	) -> utility::Result<Self> {
+		Self::new_internal(allocator, item_count, flags::IndexType::UINT32)
+	}
+}
+
+impl<Index, Vertex> Mesh<Index, Vertex>
+where
+	Vertex: vertex::Object,
+{
+	#[profiling::function]
+	fn new_internal(
+		allocator: &sync::Arc<alloc::Allocator>,
+		item_count: usize,
+		index_type: flags::IndexType,
 	) -> utility::Result<Self> {
 		Ok(Self {
 			vertex_t: std::marker::PhantomData,
@@ -31,11 +69,13 @@ where
 				allocator,
 				flags::BufferUsage::VERTEX_BUFFER,
 				Self::vertex_buffer_size_for(item_count),
+				None,
 			)?,
 			index_buffer: buffer::Buffer::create_gpu(
 				allocator,
 				flags::BufferUsage::INDEX_BUFFER,
 				Self::index_buffer_size_for(item_count),
+				Some(index_type),
 			)?,
 			index_count: 0,
 		})

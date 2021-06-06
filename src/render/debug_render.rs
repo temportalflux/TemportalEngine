@@ -163,11 +163,13 @@ impl graphics::RenderChainElement for DebugRender {
 					&chain.allocator(),
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
+					None,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
 					&chain.allocator(),
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
+					Some(flags::IndexType::UINT32),
 				)?,
 				index_order: Vec::new(),
 			});

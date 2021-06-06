@@ -73,6 +73,10 @@ impl WidgetData {
 					flags::BufferUsage::INDEX_BUFFER => Self::index_buffer_size_for(&content),
 					_ => 0,
 				})
+				.with_index_type(match usage {
+					flags::BufferUsage::INDEX_BUFFER => Some(flags::IndexType::UINT32),
+					_ => None,
+				})
 				.with_alloc(
 					graphics::alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)
