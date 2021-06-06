@@ -1,7 +1,6 @@
 use crate::engine::{
 	graphics::{
-		flags,
-		pipeline,
+		flags, pipeline,
 		types::{Mat4, Vec4},
 		vertex_object,
 	},

@@ -1,0 +1,6 @@
+[submodule "input-actions"]
+	path = input-actions
+	url = https://github.com/temportalflux/input-actions
+[submodule "vulkan-rs"]
+	path = vulkan-rs
+	url = https://github.com/temportalflux/vulkan-rs

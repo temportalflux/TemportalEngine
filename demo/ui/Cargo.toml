@@ -10,5 +10,5 @@ edition = "2018"
 profile = []
 
 [dependencies]
-temportal-engine = { path = "../../temportal-engine" }
+temportal-engine = { path = "../../engine" }
 log = "0.4.14"
