@@ -1,4 +1,4 @@
-use crate::{asset, utility::VoidResult, Application};
+use crate::{asset, utility::VoidResult};
 use std::{collections::HashMap, fs};
 use zip;
 
@@ -52,18 +52,6 @@ impl Library {
 }
 
 impl Library {
-	/// Scans a provided [`Application`] module,
-	/// thereby scanning all assets in the pak file for that module.
-	///
-	/// Delegates to [`scan_pak`](Library::scan_pak) to actually scan the module.
-	pub fn scan_application<T: Application>() -> VoidResult {
-		asset::Library::write().scan_pak(
-			&[T::location(), format!("{}.pak", T::name()).as_str()]
-				.iter()
-				.collect::<std::path::PathBuf>(),
-		)
-	}
-
 	/// Scans a specific file at a provided path.
 	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
 	#[profiling::function]

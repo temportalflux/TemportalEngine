@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 pub trait Application {
 	/// Returns the name of the crate package via `std::env!("CARGO_PKG_NAME")`.
 	fn name() -> &'static str;
@@ -16,5 +18,11 @@ pub trait Application {
 	/// Delegates to [`Id::new(Self::name(), path)`](crate::asset::Id::new).
 	fn get_asset_id(path: &str) -> crate::asset::Id {
 		crate::asset::Id::new(Self::name(), path)
+	}
+
+	fn pak_location() -> PathBuf {
+		[Self::location(), format!("{}.pak", Self::name()).as_str()]
+			.iter()
+			.collect()
 	}
 }

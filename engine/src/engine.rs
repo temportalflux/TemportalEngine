@@ -16,8 +16,8 @@ impl Engine {
 		task::initialize_system();
 		crate::register_asset_types();
 		audio::System::initialize();
-		asset::Library::scan_application::<EngineApp>()?;
-		asset::Library::scan_application::<T>()?;
+		asset::Library::write().scan_pak(&EngineApp::pak_location())?;
+		asset::Library::write().scan_pak(&T::pak_location())?;
 		Ok(Engine {
 			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),
