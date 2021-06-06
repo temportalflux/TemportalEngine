@@ -1,0 +1,23 @@
+[package]
+name = "temportal-engine-editor"
+version = "0.1.0"
+authors = ["Dustin Yost <dustin.yost.t@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+temportal-engine = { path = "../temportal-engine" }
+log = { version = "0.4", features = ["std"] }
+serde = { version = "1.0", features = ["derive"] }
+rmp = "0.8"
+rmp-serde = "0.15"
+zip = "0.5"
+winit = "0.25"
+
+imgui = "0.7"
+imgui-winit-support = { version = "0.7.1", default-features = false, features = ["winit-25"] }
+serde_json = "1.0"
+shaderc = "0.7"
+freetype-rs = "0.28"
+image = "0.23"
