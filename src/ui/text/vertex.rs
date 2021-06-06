@@ -1,30 +1,18 @@
-use crate::{
-	graphics::{self, flags, pipeline::state::vertex},
-	math::nalgebra::Vector4,
+use crate::graphics::{
+	flags, pipeline,
+	types::{Vec2, Vec4},
+	vertex_object,
 };
 
-#[derive(Debug, Clone, Copy)]
+#[vertex_object]
+#[derive(Debug, Default)]
 pub struct Vertex {
-	pub pos_and_width_edge: Vector4<f32>,
-	pub tex_coord: Vector4<f32>,
-	pub color: Vector4<f32>,
-}
+	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
+	pub(crate) pos_and_width_edge: Vec4,
 
-impl vertex::Object for Vertex {
-	fn attributes() -> Vec<vertex::Attribute> {
-		vec![
-			vertex::Attribute {
-				offset: graphics::utility::offset_of!(Vertex, pos_and_width_edge),
-				format: flags::format::VEC4,
-			},
-			vertex::Attribute {
-				offset: graphics::utility::offset_of!(Vertex, tex_coord),
-				format: flags::format::VEC2,
-			},
-			vertex::Attribute {
-				offset: graphics::utility::offset_of!(Vertex, color),
-				format: flags::format::VEC4,
-			},
-		]
-	}
+	#[vertex_attribute([R, G], Bit32, SFloat)]
+	pub(crate) tex_coord: Vec2,
+
+	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
+	pub(crate) color: Vec4,
 }

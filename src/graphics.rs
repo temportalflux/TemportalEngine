@@ -36,6 +36,8 @@ pub use task::*;
 mod texture;
 pub use texture::*;
 
+pub mod types;
+
 pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
 	type_reg.register::<Shader>();
 	type_reg.register::<font::Font>();

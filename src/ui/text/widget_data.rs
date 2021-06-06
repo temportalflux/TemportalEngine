@@ -184,8 +184,8 @@ impl WidgetData {
 						width_edge.y,
 					]
 					.into(),
-					tex_coord: [tex_coord.x, tex_coord.y, 0.0, 0.0].into(),
-					color: [self.color.x, self.color.y, self.color.z, self.color.w].into(),
+					tex_coord: tex_coord.into(),
+					color: self.color.into(),
 				})
 			};
 

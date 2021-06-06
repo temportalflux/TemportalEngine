@@ -1,13 +1,11 @@
 use crate::{
 	asset,
 	graphics::{
-		self, buffer, camera, command, flags,
-		pipeline::{self, state::vertex},
-		structs,
-		utility::offset_of,
-		Drawable,
+		self, buffer, camera, command, flags, pipeline, structs,
+		types::{Vec3, Vec4},
+		vertex_object, Drawable,
 	},
-	math::nalgebra::{Point3, Vector2, Vector4},
+	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
 	task,
 	utility::{self, AnyError, VoidResult},
 	EngineSystem,
@@ -18,9 +16,25 @@ pub enum DebugRenderPipeline {
 	LineSegment,
 }
 
-struct LineSegmentVertex {
-	position: Vector4<f32>,
-	color: Vector4<f32>,
+#[vertex_object]
+#[derive(Debug, Default)]
+pub struct LineSegmentVertex {
+	#[vertex_attribute([R, G, B], Bit32, SFloat)]
+	position: Vec3,
+
+	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
+	color: Vec4,
+}
+
+impl LineSegmentVertex {
+	pub fn with_pos(mut self, pos: Vector3<f32>) -> Self {
+		self.position = pos.into();
+		self
+	}
+	pub fn with_color(mut self, color: Vector4<f32>) -> Self {
+		self.color = color.into();
+		self
+	}
 }
 
 pub enum DebugDraw {
@@ -30,21 +44,6 @@ pub enum DebugDraw {
 pub struct Point {
 	pub position: Point3<f32>,
 	pub color: Vector4<f32>,
-}
-
-impl vertex::Object for LineSegmentVertex {
-	fn attributes() -> Vec<vertex::Attribute> {
-		vec![
-			vertex::Attribute {
-				offset: offset_of!(LineSegmentVertex, position),
-				format: flags::format::VEC3,
-			},
-			vertex::Attribute {
-				offset: offset_of!(LineSegmentVertex, color),
-				format: flags::format::VEC4,
-			},
-		]
-	}
 }
 
 pub struct DebugRender {
@@ -281,15 +280,14 @@ impl Frame {
 
 					indices.push(vertices.len() as u32);
 					vertices.push(LineSegmentVertex {
-						position: [start.position.x, start.position.y, start.position.z, 1.0]
-							.into(),
-						color: start.color,
+						position: start.position.coords.into(),
+						color: start.color.into(),
 					});
 
 					indices.push(vertices.len() as u32);
 					vertices.push(LineSegmentVertex {
-						position: [end.position.x, end.position.y, end.position.z, 1.0].into(),
-						color: end.color,
+						position: end.position.coords.into(),
+						color: end.color.into(),
 					});
 
 					self.index_order.push(index_start..indices.len());

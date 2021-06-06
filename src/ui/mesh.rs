@@ -1,31 +1,26 @@
 use crate::{
-	graphics::{self, flags, pipeline, vertex_object},
-	math::nalgebra::{Vector2, Vector4},
+	graphics::{
+		self, flags, pipeline,
+		types::{Vec2, Vec4},
+		vertex_object,
+	},
+	math::nalgebra::Vector2,
 };
 use raui::renderer::tesselate::prelude::*;
 
 pub type Mesh = graphics::Mesh<u32, Vertex>;
 
-/*
-#[repr(C, align(16))]
-struct Vec2([f32; 2]);
-#[repr(C, align(16))]
-struct Vec3([f32; 3]);
-#[repr(C, align(16))]
-struct Vec4([f32; 4]);
-*/
-
 #[vertex_object]
 #[derive(Debug, Default)]
 pub struct Vertex {
 	#[vertex_attribute([R, G], Bit32, SFloat)]
-	pos: Vector4<f32>,
+	pos: Vec2,
 
 	#[vertex_attribute([R, G], Bit32, SFloat)]
-	tex_coord: Vector4<f32>,
+	tex_coord: Vec2,
 
 	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
-	color: Vector4<f32>,
+	color: Vec4,
 }
 
 impl Vertex {
@@ -62,9 +57,9 @@ impl Vertex {
 		let pos = pos.component_div(resolution);
 		let offset: Vector2<f32> = [-1.0, -1.0].into();
 		let pos = pos * 2.0 + offset;
-		Vertex {
-			pos: [pos.x, pos.y, 0.0, 1.0].into(),
-			tex_coord: [tex_coord.x, tex_coord.y, 0.0, 0.0].into(),
+		Self {
+			pos: [pos.x, pos.y].into(),
+			tex_coord: [tex_coord.x, tex_coord.y].into(),
 			color: [color.r, color.g, color.b, color.a].into(),
 		}
 	}
