@@ -2,7 +2,7 @@ use crate::math::nalgebra::Vector3;
 
 /// An array of 3 f32 values, aligned to a 16-byte boundary,
 /// (so it takes up 16 bytes instead of 12 bytes).
-/// 
+///
 /// Often used to represent 3-dimensional positions or RGB color.
 #[derive(Debug, Default, Clone)]
 #[repr(C, align(16))]

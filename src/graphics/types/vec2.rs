@@ -2,7 +2,7 @@ use crate::math::nalgebra::Vector2;
 
 /// An array of 2 f32 values, aligned to a 16-byte boundary,
 /// (so it takes up 16 bytes instead of 8 bytes).
-/// 
+///
 /// Often used to represent 2-dimensional positions or texture coordinates.
 #[derive(Debug, Default, Clone)]
 #[repr(C, align(16))]
