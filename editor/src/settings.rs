@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Editor {
+	#[serde(default)]
 	open_windows: Vec<String>,
 	/// The output directory (relative to the current working directory of the editor runtime),
 	/// that the [`packager`](`crate::asset::package`) should place `.pak` files.
@@ -20,7 +21,7 @@ impl Default for Editor {
 }
 
 fn default_pak_output() -> String {
-	"paks".to_owned()
+	"".to_owned()
 }
 
 impl SaveData<Editor> for Editor {

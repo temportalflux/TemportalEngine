@@ -13,6 +13,12 @@
 				"--",
 				"-v"
 			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "../triangle-run/demo"
+			},
 			"problemMatcher": []
 		}
 	]

@@ -1,11 +1,14 @@
-use crate::engine::{
-	graphics::font,
-	math::{
-		self,
-		nalgebra::{self, vector, Vector2, Vector4},
+use crate::{
+	engine::{
+		graphics::font,
+		math::{
+			self,
+			nalgebra::{self, vector, Vector2, Vector4},
+		},
+		profiling::{self, optick},
+		utility::AnyError,
 	},
-	profiling::{self, optick},
-	utility::AnyError,
+	graphics::font::LOG as FONT_LOG,
 };
 use std::path::{Path, PathBuf};
 
@@ -89,6 +92,7 @@ impl SDFBuilder {
 		optick::tag!("min-atlas-size.x", self.minimum_atlas_size.x as u32);
 		optick::tag!("min-atlas-size.y", self.minimum_atlas_size.y as u32);
 		log::debug!(
+			target: FONT_LOG,
 			"Creating SDF for font {:?}",
 			self.font_path.file_name().unwrap()
 		);
@@ -218,10 +222,14 @@ impl SDFBuilder {
 				.cmp(&a.texture_size.y)
 				.then(b.texture_size.x.cmp(&a.texture_size.x))
 		});
-		log::debug!("SDF calculations complete, starting atlas generation.");
+		log::debug!(
+			target: FONT_LOG,
+			"SDF calculations complete, starting atlas generation."
+		);
 
 		let (size, binary, glyphs) = self.binpack_pow2_atlas(&glyphs);
 		log::debug!(
+			target: FONT_LOG,
 			"Packed {} glyphs into a <{},{}> SDF texture",
 			glyphs.len(),
 			size.x,
@@ -352,6 +360,7 @@ impl SDFBuilder {
 				}) {
 					Ok(existing_idx) => {
 						log::error!(
+							target: FONT_LOG,
 							"Tried inserting cell that already exists {:?} at {} => {:?}",
 							cell,
 							existing_idx,

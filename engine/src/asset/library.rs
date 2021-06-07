@@ -58,19 +58,20 @@ impl Library {
 	pub fn scan_pak(&mut self, pak_name: &str) -> VoidResult {
 		use std::io::Read;
 
-		let path = {
-			let mut abs_path = std::env::current_dir().unwrap();
+		let rel_path = {
+			let mut abs_path = std::path::PathBuf::new();
 			abs_path.push("paks");
 			abs_path.push(pak_name);
 			abs_path
 		};
+		let path = std::env::current_dir().unwrap().join(&rel_path);
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
 			log::warn!(
 				target: asset::LOG,
 				"Cannot scan {}, no such asset pak-age found.",
-				path.to_str().unwrap()
+				rel_path.to_str().unwrap()
 			);
 			return Ok(());
 		}
@@ -78,7 +79,7 @@ impl Library {
 		log::info!(
 			target: asset::LOG,
 			"Scanning asset pak-age {}",
-			path.to_str().unwrap()
+			rel_path.to_str().unwrap()
 		);
 
 		let mut pak_data = PakData {

@@ -27,7 +27,7 @@ pub fn package(
 
 	if let Some(parent) = zip_path.parent() {
 		if !parent.exists() {
-			std::fs::create_dir(&parent)?;
+			std::fs::create_dir_all(&parent)?;
 		}
 	}
 

@@ -14,7 +14,8 @@
 			"options": {
 				"env": {
 					"RUST_BACKTRACE": "1"
-				}
+				},
+				"cwd": "../boid-run/demo"
 			},
 			"problemMatcher": []
 		}

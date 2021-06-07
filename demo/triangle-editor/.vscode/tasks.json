@@ -15,6 +15,12 @@
 				"-build-assets",
 				"-package"
 			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "../triangle-run/editor"
+			},
 			"problemMatcher": []
 		}
 	]

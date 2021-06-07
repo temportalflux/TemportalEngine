@@ -14,7 +14,8 @@
 			"options": {
 				"env": {
 					"RUST_BACKTRACE": "1"
-				}
+				},
+				"cwd": "../ui-run/demo"
 			},
 			"problemMatcher": []
 		},
@@ -27,6 +28,12 @@
 				"--features", "profile",
 				"--", "-v"
 			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "../ui-run/demo"
+			},
 			"problemMatcher": []
 		}
 	]

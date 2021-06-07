@@ -16,9 +16,11 @@ use std::{
 mod sdf_builder;
 pub use sdf_builder::*;
 
-pub struct FontEditorMetadata {}
+pub static LOG: &'static str = "font-builder";
 
-impl FontEditorMetadata {
+pub struct EditorMetadata {}
+
+impl EditorMetadata {
 	fn font_path(&self, asset_path: &Path) -> PathBuf {
 		let mut path = asset_path.parent().unwrap().to_path_buf();
 		path.push(asset_path.file_stem().unwrap());
@@ -27,9 +29,9 @@ impl FontEditorMetadata {
 	}
 }
 
-impl TypeEditorMetadata for FontEditorMetadata {
+impl TypeEditorMetadata for EditorMetadata {
 	fn boxed() -> Box<dyn TypeEditorMetadata> {
-		Box::new(FontEditorMetadata {})
+		Box::new(Self {})
 	}
 
 	fn last_modified(&self, path: &Path) -> Result<SystemTime, AnyError> {

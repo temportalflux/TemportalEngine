@@ -1,6 +1,8 @@
 extern crate imgui;
 extern crate shaderc;
 
+pub static LOG: &'static str = "editor";
+
 pub use temportal_engine as engine;
 
 #[path = "asset/_.rs"]
