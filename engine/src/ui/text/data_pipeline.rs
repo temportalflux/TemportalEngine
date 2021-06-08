@@ -1,7 +1,7 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, descriptor, flags, font::Font, pipeline, sampler, structs, Drawable,
+		self, command, descriptor::{self, layout::SetLayout}, flags, font::Font, pipeline, sampler, structs, Drawable,
 	},
 	math::nalgebra::Vector2,
 	ui::{
@@ -23,7 +23,7 @@ pub struct DataPipeline {
 	fonts: HashMap<font::Id, FontData>,
 
 	drawable: Drawable,
-	descriptor_layout: sync::Arc<descriptor::SetLayout>,
+	descriptor_layout: sync::Arc<SetLayout>,
 	sampler: sync::Arc<sampler::Sampler>,
 }
 
@@ -31,7 +31,7 @@ impl DataPipeline {
 	#[profiling::function]
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		let descriptor_layout = sync::Arc::new(
-			descriptor::SetLayout::builder()
+			SetLayout::builder()
 				.with_binding(
 					0,
 					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -88,7 +88,7 @@ impl DataPipeline {
 					.unwrap();
 
 				{
-					use graphics::descriptor::*;
+					use graphics::descriptor::update::*;
 					SetUpdate::default()
 						.with(UpdateOperation::Write(WriteOp {
 							destination: UpdateOperationSet {

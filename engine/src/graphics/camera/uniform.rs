@@ -1,5 +1,5 @@
 use crate::{
-	graphics::{alloc, buffer, camera, descriptor, flags, RenderChain},
+	graphics::{alloc, buffer, camera, descriptor::{self, layout::SetLayout}, flags, RenderChain},
 	math::nalgebra::Vector2,
 	utility::{self, AnyError},
 };
@@ -8,13 +8,13 @@ use std::sync::{Arc, Weak};
 pub struct Uniform {
 	buffers: Vec<Arc<buffer::Buffer>>,
 	descriptor_sets: Vec<Weak<descriptor::Set>>,
-	descriptor_layout: Arc<descriptor::SetLayout>,
+	descriptor_layout: Arc<SetLayout>,
 }
 
 impl Uniform {
 	pub fn new(chain: &RenderChain) -> Result<Self, AnyError> {
 		let descriptor_layout = Arc::new(
-			descriptor::SetLayout::builder()
+			SetLayout::builder()
 				.with_binding(
 					0,
 					flags::DescriptorKind::UNIFORM_BUFFER,
@@ -60,7 +60,7 @@ impl Uniform {
 
 	pub fn write_descriptor_sets(&self, chain: &RenderChain) {
 		use alloc::Object;
-		use descriptor::*;
+		use descriptor::update::*;
 		let mut set_updates = SetUpdate::default();
 		for (set_weak, buffer_rc) in self.descriptor_sets.iter().zip(self.buffers.iter()) {
 			set_updates = set_updates.with(UpdateOperation::Write(WriteOp {
@@ -80,7 +80,7 @@ impl Uniform {
 		set_updates.apply(&chain.logical());
 	}
 
-	pub fn layout(&self) -> &Arc<descriptor::SetLayout> {
+	pub fn layout(&self) -> &Arc<SetLayout> {
 		&self.descriptor_layout
 	}
 

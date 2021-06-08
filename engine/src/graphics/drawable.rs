@@ -1,6 +1,6 @@
 use crate::{
 	asset,
-	graphics::{self, command, descriptor, flags, pipeline, ShaderSet},
+	graphics::{self, command, descriptor::{layout::SetLayout, self}, flags, pipeline, ShaderSet},
 	utility::{self, VoidResult},
 };
 use std::sync;
@@ -50,7 +50,7 @@ impl Drawable {
 	pub fn create_pipeline(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		descriptor_layouts: Vec<&sync::Arc<descriptor::SetLayout>>,
+		descriptor_layouts: Vec<&sync::Arc<SetLayout>>,
 		pipeline_info: pipeline::Builder,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {

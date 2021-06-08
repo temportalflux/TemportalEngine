@@ -3,6 +3,7 @@ use crate::{
 	graphics::{
 		self, buffer, camera, command, flags, image, image_view, pipeline, sampler, shader,
 		structs, Instance, RenderChain, Vertex,
+		descriptor::{self, layout::SetLayout},
 	},
 	BoidDemo,
 };
@@ -24,8 +25,8 @@ pub struct RenderBoids {
 	index_buffer: buffer::Buffer,
 	vertex_buffer: buffer::Buffer,
 
-	image_descriptor_set: Weak<graphics::descriptor::Set>,
-	image_descriptor_layout: Arc<graphics::descriptor::SetLayout>,
+	image_descriptor_set: Weak<descriptor::Set>,
+	image_descriptor_layout: Arc<SetLayout>,
 	image_sampler: Arc<sampler::Sampler>,
 	image_view: Arc<image_view::View>,
 
@@ -73,7 +74,7 @@ impl RenderBoids {
 		);
 
 		let image_descriptor_layout = Arc::new(
-			graphics::descriptor::SetLayout::builder()
+			SetLayout::builder()
 				.with_binding(
 					0,
 					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -293,7 +294,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
-		use graphics::descriptor::*;
+		use graphics::descriptor::update::*;
 
 		SetUpdate::default()
 			.with(UpdateOperation::Write(WriteOp {

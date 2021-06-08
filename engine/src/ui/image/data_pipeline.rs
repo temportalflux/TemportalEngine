@@ -21,7 +21,7 @@ impl DataPipeline {
 		Ok(Self {
 			drawable: Drawable::default(),
 			descriptor_cache: DescriptorCache::new(
-				descriptor::SetLayout::builder()
+				descriptor::layout::SetLayout::builder()
 					.with_binding(
 						0,
 						flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -51,7 +51,7 @@ impl DataPipeline {
 		&mut self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		use graphics::descriptor::*;
+		use graphics::descriptor::update::*;
 
 		let mut pending_gpu_signals = Vec::new();
 		let (image_ids, mut signals) = self.image_cache.load_pending(render_chain)?;

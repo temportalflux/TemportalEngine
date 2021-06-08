@@ -113,7 +113,7 @@ impl Ui {
 			drawable: Drawable::default(),
 			image_cache: ImageCache::default(),
 			descriptor_cache: DescriptorCache::new(
-				descriptor::SetLayout::builder()
+				descriptor::layout::SetLayout::builder()
 					.with_binding(
 						0,
 						flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -255,7 +255,7 @@ impl RenderChainElement for Ui {
 		self.pending_gpu_signals.append(&mut signals);
 
 		for image_id in image_ids.into_iter() {
-			use descriptor::*;
+			use descriptor::update::*;
 			let cached_image = &self.image_cache[&image_id];
 			let descriptor_set = self.descriptor_cache.insert(image_id, chain)?;
 			SetUpdate::default()

@@ -1,3 +1,5 @@
+//! Module for all rendering/graphics specific structures on the engine level.
+//! Leverages/re-exports [`vulkan_rs`].
 pub use vulkan_rs::*;
 
 pub static LOG: &'static str = "graphics";

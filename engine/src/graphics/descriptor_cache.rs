@@ -1,25 +1,25 @@
 use crate::{
-	graphics::{descriptor, RenderChain},
+	graphics::{descriptor::{self, layout::SetLayout}, RenderChain},
 	utility,
 };
 use std::{collections::HashMap, sync};
 
 /// An engine-level abstraction to handle creating/managing [`Descriptor Sets`](descriptor::Set)
-/// which all have the same [`Layout`](descriptor::SetLayout).
+/// which all have the same [`Layout`](SetLayout).
 ///
 /// Users provide the key-type `T` which are used to identify different sets.
 /// Users are also responsible for writing to each descriptor set that they create via [`insert`](DescriptorCache::insert).
 pub struct DescriptorCache<T: Eq + std::hash::Hash> {
 	sets: HashMap<T, sync::Weak<descriptor::Set>>,
-	layout: sync::Arc<descriptor::SetLayout>,
+	layout: sync::Arc<SetLayout>,
 }
 
 impl<T> DescriptorCache<T>
 where
 	T: Eq + std::hash::Hash,
 {
-	/// Creates a descriptor cache with a provided [`Layout`](descriptor::SetLayout).
-	pub fn new(layout: descriptor::SetLayout) -> Self {
+	/// Creates a descriptor cache with a provided [`Layout`](SetLayout).
+	pub fn new(layout: SetLayout) -> Self {
 		Self {
 			layout: sync::Arc::new(layout),
 			sets: HashMap::new(),
@@ -27,7 +27,7 @@ where
 	}
 
 	/// Returns a thread-safe reference-counted pointer to the descriptor layout.
-	pub fn layout(&self) -> &sync::Arc<descriptor::SetLayout> {
+	pub fn layout(&self) -> &sync::Arc<SetLayout> {
 		&self.layout
 	}
 
