@@ -61,10 +61,10 @@ impl Uniform {
 	pub fn write_descriptor_sets(&self, chain: &RenderChain) {
 		use alloc::Object;
 		use descriptor::update::*;
-		let mut set_updates = SetUpdate::default();
+		let mut set_updates = Queue::default();
 		for (set_weak, buffer_rc) in self.descriptor_sets.iter().zip(self.buffers.iter()) {
-			set_updates = set_updates.with(UpdateOperation::Write(WriteOp {
-				destination: UpdateOperationSet {
+			set_updates = set_updates.with(Operation::Write(WriteOp {
+				destination: Descriptor {
 					set: set_weak.clone(),
 					binding_index: 0,
 					array_element: 0,

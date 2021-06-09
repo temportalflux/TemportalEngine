@@ -296,9 +296,9 @@ impl graphics::RenderChainElement for RenderBoids {
 	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
 		use graphics::descriptor::update::*;
 
-		SetUpdate::default()
-			.with(UpdateOperation::Write(WriteOp {
-				destination: UpdateOperationSet {
+		Queue::default()
+			.with(Operation::Write(WriteOp {
+				destination: Descriptor {
 					set: self.image_descriptor_set.clone(),
 					binding_index: 0,
 					array_element: 0,

@@ -60,9 +60,9 @@ impl DataPipeline {
 		for image_id in image_ids.into_iter() {
 			let cached_image = &self.image_cache[&image_id];
 			let descriptor_set = self.descriptor_cache.insert(image_id, render_chain)?;
-			SetUpdate::default()
-				.with(UpdateOperation::Write(WriteOp {
-					destination: UpdateOperationSet {
+			Queue::default()
+				.with(Operation::Write(WriteOp {
+					destination: Descriptor {
 						set: descriptor_set.clone(),
 						binding_index: 0,
 						array_element: 0,
