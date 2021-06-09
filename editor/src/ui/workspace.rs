@@ -34,15 +34,11 @@ impl ui::Element for Workspace {
 							Err(e) => log::error!(target: "ui", "Failed to build... {:?}", e),
 						}
 					}
-					if package {
-						match asset::package(
-							&editor.settings,
-							&app_module.name,
-							&app_module.location,
-							app_module.is_editor_only,
-						) {
-							Ok(_) => {}
-							Err(e) => log::error!(target: "ui", "Failed to package... {:?}", e),
+				}
+				if package {
+					for pak in editor.paks.iter() {
+						if let Err(e) = pak.package() {
+							log::error!(target: "ui", "Failed to package... {:?}", e);
 						}
 					}
 				}

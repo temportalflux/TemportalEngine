@@ -1,7 +1,11 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, descriptor::{self, layout::SetLayout}, flags, font::Font, pipeline, sampler, structs, Drawable,
+		self, command,
+		descriptor::{self, layout::SetLayout},
+		flags,
+		font::Font,
+		pipeline, sampler, structs, Drawable,
 	},
 	math::nalgebra::Vector2,
 	ui::{

@@ -1,5 +1,8 @@
 use crate::{
-	graphics::{descriptor::{self, layout::SetLayout}, RenderChain},
+	graphics::{
+		descriptor::{self, layout::SetLayout},
+		RenderChain,
+	},
 	utility,
 };
 use std::{collections::HashMap, sync};

@@ -1,4 +1,7 @@
-use crate::{asset, audio, graphics, input, task, utility::{VoidResult, AnyError}};
+use crate::{
+	asset, audio, graphics, input, task,
+	utility::{AnyError, VoidResult},
+};
 use std::sync::{Arc, RwLock};
 use winit::event_loop::EventLoop;
 

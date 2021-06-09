@@ -1,9 +1,10 @@
 use crate::{
 	engine::{self, asset, math::nalgebra::Vector2, utility::AnyError, Application},
 	graphics::{
-		self, buffer, camera, command, flags, image, image_view, pipeline, sampler, shader,
-		structs, Instance, RenderChain, Vertex,
+		self, buffer, camera, command,
 		descriptor::{self, layout::SetLayout},
+		flags, image, image_view, pipeline, sampler, shader, structs, Instance, RenderChain,
+		Vertex,
 	},
 	BoidDemo,
 };

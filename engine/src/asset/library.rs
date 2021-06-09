@@ -52,7 +52,6 @@ impl Library {
 }
 
 impl Library {
-
 	#[profiling::function]
 	pub fn scan_pak_directory(&mut self) -> VoidResult {
 		let pak_dir = std::env::current_dir().unwrap().join("paks");

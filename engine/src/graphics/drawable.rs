@@ -1,6 +1,10 @@
 use crate::{
 	asset,
-	graphics::{self, command, descriptor::{layout::SetLayout, self}, flags, pipeline, ShaderSet},
+	graphics::{
+		self, command,
+		descriptor::{self, layout::SetLayout},
+		flags, pipeline, ShaderSet,
+	},
 	utility::{self, VoidResult},
 };
 use std::sync;

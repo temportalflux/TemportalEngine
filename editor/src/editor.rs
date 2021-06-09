@@ -32,6 +32,7 @@ pub struct Editor {
 	asset_manager: asset::Manager,
 	pub settings: settings::Editor,
 	pub modules: Vec<ApplicationModule>,
+	pub paks: Vec<asset::Pak>,
 }
 
 impl Application for Editor {
@@ -67,7 +68,7 @@ impl Editor {
 		Ok(())
 	}
 
-	fn get() -> &'static std::sync::RwLock<Self> {
+	pub fn get() -> &'static std::sync::RwLock<Self> {
 		unsafe { Self::instance() }.get()
 	}
 
@@ -89,10 +90,22 @@ impl Editor {
 				ApplicationModule::new::<Editor>(),
 				ApplicationModule::new::<T>(),
 			],
+			paks: Vec::new(),
 		};
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
+
+		editor.add_pak(asset::Pak::from_app::<Editor>(None));
+
+		let output_directory = editor.settings.packager_output().clone();
+		editor.add_pak(asset::Pak::from_app::<EngineApp>(Some(&output_directory)));
+		editor.add_pak(asset::Pak::from_app::<T>(Some(&output_directory)));
+
 		Ok(editor)
+	}
+
+	pub fn add_pak(&mut self, pak: asset::Pak) {
+		self.paks.push(pak);
 	}
 
 	pub fn asset_manager(&self) -> &asset::Manager {
@@ -117,13 +130,10 @@ impl Editor {
 						args.any(|arg| arg == "-force"),
 					)?;
 				}
-				if should_package_assets {
-					asset::package(
-						&self.settings,
-						&app_module.name,
-						&app_module.location,
-						app_module.is_editor_only,
-					)?;
+			}
+			if should_package_assets {
+				for pak in self.paks.iter() {
+					pak.package()?;
 				}
 			}
 			return Ok(true);
