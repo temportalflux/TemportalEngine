@@ -1,4 +1,4 @@
-use crate::{asset, ui};
+use crate::ui;
 use imgui::{self, im_str};
 use std::sync::{Arc, RwLock};
 
@@ -22,14 +22,9 @@ impl ui::Element for Workspace {
 				let rebuild = imgui::MenuItem::new(im_str!("Build (Force)")).build(&ui);
 				let package = imgui::MenuItem::new(im_str!("Package")).build(&ui);
 				let editor = crate::Editor::read();
-				for app_module in editor.modules.iter() {
-					if build || rebuild {
-						match asset::build(
-							editor.asset_manager(),
-							&app_module.name,
-							&app_module.location,
-							rebuild,
-						) {
+				if build || rebuild {
+					for module in editor.asset_modules.iter() {
+						match module.build(editor.asset_manager(), rebuild) {
 							Ok(_) => {}
 							Err(e) => log::error!(target: "ui", "Failed to build... {:?}", e),
 						}

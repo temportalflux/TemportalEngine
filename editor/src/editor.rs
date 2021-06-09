@@ -5,33 +5,15 @@ use crate::{
 		utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
 		Application, EngineApp,
 	},
-	settings::{self},
+	settings,
 };
-use std::path::PathBuf;
 
 pub static EDITOR_LOG: &'static str = "Editor";
-
-/// Editor-level wrapper for [`Application`] objects which are present in this runtime.
-pub struct ApplicationModule {
-	pub name: String,
-	pub location: PathBuf,
-	pub is_editor_only: bool,
-}
-
-impl ApplicationModule {
-	pub fn new<T: Application>() -> Self {
-		Self {
-			name: T::name().to_string(),
-			location: PathBuf::from(T::location()),
-			is_editor_only: T::is_editor_only(),
-		}
-	}
-}
 
 pub struct Editor {
 	asset_manager: asset::Manager,
 	pub settings: settings::Editor,
-	pub modules: Vec<ApplicationModule>,
+	pub asset_modules: Vec<asset::Module>,
 	pub paks: Vec<asset::Pak>,
 }
 
@@ -51,9 +33,6 @@ impl Application for Editor {
 			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
 			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
 		)
-	}
-	fn is_editor_only() -> bool {
-		true
 	}
 }
 
@@ -85,23 +64,26 @@ impl Editor {
 		let mut editor = Self {
 			asset_manager: asset::Manager::new(),
 			settings: settings::Editor::load()?,
-			modules: vec![
-				ApplicationModule::new::<EngineApp>(),
-				ApplicationModule::new::<Editor>(),
-				ApplicationModule::new::<T>(),
-			],
+			asset_modules: Vec::new(),
 			paks: Vec::new(),
 		};
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
 
+		editor.add_asset_module(asset::Module::from_app::<Editor>());
 		editor.add_pak(asset::Pak::from_app::<Editor>(None));
 
 		let output_directory = editor.settings.packager_output().clone();
+		editor.add_asset_module(asset::Module::from_app::<EngineApp>());
 		editor.add_pak(asset::Pak::from_app::<EngineApp>(Some(&output_directory)));
+		editor.add_asset_module(asset::Module::from_app::<T>());
 		editor.add_pak(asset::Pak::from_app::<T>(Some(&output_directory)));
 
 		Ok(editor)
+	}
+
+	pub fn add_asset_module(&mut self, module: asset::Module) {
+		self.asset_modules.push(module);
 	}
 
 	pub fn add_pak(&mut self, pak: asset::Pak) {
@@ -121,14 +103,9 @@ impl Editor {
 		let should_build_assets = args.any(|arg| arg == "-build-assets");
 		let should_package_assets = args.any(|arg| arg == "-package");
 		if should_build_assets || should_package_assets {
-			for app_module in self.modules.iter() {
-				if should_build_assets {
-					asset::build(
-						self.asset_manager(),
-						&app_module.name,
-						&app_module.location,
-						args.any(|arg| arg == "-force"),
-					)?;
+			if should_build_assets {
+				for module in self.asset_modules.iter() {
+					module.build(self.asset_manager(), args.any(|arg| arg == "-force"))?;
 				}
 			}
 			if should_package_assets {

@@ -1,104 +1,136 @@
-use crate::engine::{self, asset};
+use crate::engine::{self, asset, Application};
 use std::{
 	self, fs,
 	io::{self},
 	path::{Path, PathBuf},
 };
 
-pub fn build(
-	asset_manager: &crate::asset::Manager,
-	module_name: &str,
-	module_location: &PathBuf,
-	force_build: bool,
-) -> engine::utility::VoidResult {
-	log::info!(target: asset::LOG, "[{}] Building assets", module_name);
-	let mut assets_dir_path = module_location.clone();
-	assets_dir_path.push("assets");
-	let mut output_dir_path = module_location.clone();
-	output_dir_path.push("binaries");
+pub struct Module {
+	pub name: String,
+	pub assets_directory: PathBuf,
+	pub binaries_directory: PathBuf,
+}
 
-	if !assets_dir_path.exists() {
-		log::info!(
-			target: asset::LOG,
-			"[{}] Generating assets directory {:?}",
-			module_name,
-			assets_dir_path
-		);
-		fs::create_dir(&assets_dir_path)?;
-	}
-
-	if !output_dir_path.exists() {
-		log::info!(
-			target: asset::LOG,
-			"[{}] Generating output directory {:?}",
-			module_name,
-			output_dir_path
-		);
-		fs::create_dir(&output_dir_path)?;
-	} else if force_build {
-		log::info!(
-			target: asset::LOG,
-			"[{}] Wiping output directory {:?}",
-			module_name,
-			output_dir_path
-		);
-		fs::remove_dir_all(&output_dir_path)?;
-	}
-
-	let mut intended_binaries: Vec<PathBuf> = Vec::new();
-	for asset_file_path in collect_file_paths(&assets_dir_path, &Vec::new())?.iter() {
-		let relative_path = asset_file_path.as_path().strip_prefix(&assets_dir_path)?;
-		if let Some(ext) = relative_path.extension() {
-			if ext == "json" {
-				let mut binary_file_path = output_dir_path.clone();
-				if let Some(parent) = relative_path.parent() {
-					binary_file_path.push(parent);
-				}
-				binary_file_path.push(relative_path.file_stem().unwrap());
-
-				if !binary_file_path.exists()
-					|| (asset_manager.last_modified(&asset_file_path)?
-						> binary_file_path.metadata()?.modified()?)
-				{
-					log::info!(
-						target: asset::LOG,
-						"[{}] - Building {:?}",
-						module_name,
-						relative_path
-					);
-					let (type_id, asset) = asset_manager.read_sync(&asset_file_path.as_path())?;
-					asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
-				} else {
-					log::info!(
-						target: asset::LOG,
-						"[{}] - Skipping unchanged {:?}",
-						module_name,
-						relative_path
-					);
-				}
-
-				intended_binaries.push(binary_file_path);
-			}
+impl Module {
+	pub fn from_app<T: Application>() -> Self {
+		Self {
+			name: T::name().to_owned(),
+			assets_directory: PathBuf::from(T::location()).join("assets"),
+			binaries_directory: PathBuf::from(T::location()).join("binaries"),
 		}
 	}
 
-	log::info!(
-		target: asset::LOG,
-		"[{}] Removing old binaries",
-		module_name,
-	);
+	pub fn build(
+		&self,
+		asset_manager: &crate::asset::Manager,
+		force_build: bool,
+	) -> engine::utility::VoidResult {
+		log::info!(target: asset::LOG, "[{}] Building assets", self.name);
 
-	for binary_file_path in collect_file_paths(&output_dir_path, &intended_binaries)?.iter() {
-		log::info!(
-			target: asset::LOG,
-			"[{}] - Deleting old binary {:?}",
-			module_name,
-			binary_file_path.as_path().strip_prefix(&output_dir_path)?
-		);
-		std::fs::remove_file(binary_file_path)?;
+		if !self.assets_directory.exists() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Generating assets directory {:?}",
+				self.name,
+				self.assets_directory
+			);
+			fs::create_dir(&self.assets_directory)?;
+		}
+
+		if !self.binaries_directory.exists() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Generating output directory {:?}",
+				self.name,
+				self.binaries_directory
+			);
+			fs::create_dir(&self.binaries_directory)?;
+		} else if force_build {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Wiping output directory {:?}",
+				self.name,
+				self.binaries_directory
+			);
+			fs::remove_dir_all(&self.binaries_directory)?;
+		}
+
+		let mut intended_binaries: Vec<PathBuf> = Vec::new();
+		let mut skipped_paths = Vec::new();
+		for asset_file_path in collect_file_paths(&self.assets_directory, &Vec::new())?.iter() {
+			let relative_path = asset_file_path
+				.as_path()
+				.strip_prefix(&self.assets_directory)?;
+			if let Some(ext) = relative_path.extension() {
+				if ext == "json" {
+					let mut binary_file_path = self.binaries_directory.clone();
+					if let Some(parent) = relative_path.parent() {
+						binary_file_path.push(parent);
+					}
+					binary_file_path.push(relative_path.file_stem().unwrap());
+
+					if !binary_file_path.exists()
+						|| (asset_manager.last_modified(&asset_file_path)?
+							> binary_file_path.metadata()?.modified()?)
+					{
+						log::info!(
+							target: asset::LOG,
+							"[{}] - Building {:?}",
+							self.name,
+							relative_path
+						);
+						let (type_id, asset) =
+							asset_manager.read_sync(&asset_file_path.as_path())?;
+						asset_manager.compile(
+							&asset_file_path,
+							&type_id,
+							asset,
+							&binary_file_path,
+						)?;
+					} else {
+						skipped_paths.push(relative_path.to_owned());
+					}
+
+					intended_binaries.push(binary_file_path);
+				}
+			}
+		}
+
+		if !skipped_paths.is_empty() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] - Skipped {} unchanged assets",
+				self.name,
+				skipped_paths.len()
+			);
+			for relative_path in skipped_paths.iter() {
+				log::info!(
+					target: asset::LOG,
+					"[{}]   {}",
+					self.name,
+					relative_path.to_str().unwrap()
+				);
+			}
+		}
+
+		let old_binaries = collect_file_paths(&self.binaries_directory, &intended_binaries)?;
+		if !old_binaries.is_empty() {
+			log::info!(target: asset::LOG, "[{}] Removing old binaries", self.name,);
+			for binary_file_path in old_binaries.iter() {
+				log::info!(
+					target: asset::LOG,
+					"[{}] - Deleting old binary {:?}",
+					self.name,
+					binary_file_path
+						.as_path()
+						.strip_prefix(&self.binaries_directory)?
+				);
+				std::fs::remove_file(binary_file_path)?;
+			}
+		}
+
+		Ok(())
 	}
-
-	Ok(())
 }
 
 pub fn collect_file_paths(path: &Path, ignore: &Vec<PathBuf>) -> io::Result<Vec<PathBuf>> {
