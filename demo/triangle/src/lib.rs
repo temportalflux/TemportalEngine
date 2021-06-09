@@ -30,7 +30,7 @@ impl Application for TriangleDemo {
 pub fn run() -> VoidResult {
 	engine::logging::init::<TriangleDemo>(None)?;
 	let engine = engine::Engine::new()?;
-	engine.scan_paks(vec![TriangleDemo::pak_name()])?;
+	engine.scan_paks()?;
 
 	let mut window = engine::window::Window::builder()
 		.with_title(TriangleDemo::display_name())

@@ -52,34 +52,49 @@ impl Library {
 }
 
 impl Library {
+
+	#[profiling::function]
+	pub fn scan_pak_directory(&mut self) -> VoidResult {
+		let pak_dir = std::env::current_dir().unwrap().join("paks");
+		log::info!(
+			target: asset::LOG,
+			"Scanning pak directory {}",
+			pak_dir.to_str().unwrap()
+		);
+		for entry in fs::read_dir(pak_dir)? {
+			let entry_path = entry?.path().to_path_buf();
+			if !entry_path.is_dir() {
+				if let Some(ext) = entry_path.extension() {
+					if ext == "pak" {
+						self.scan_pak(&entry_path)?;
+					}
+				}
+			}
+		}
+
+		Ok(())
+	}
+
 	/// Scans a specific file at a provided path.
 	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
 	#[profiling::function]
-	pub fn scan_pak(&mut self, pak_name: &str) -> VoidResult {
+	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
 		use std::io::Read;
-
-		let rel_path = {
-			let mut abs_path = std::path::PathBuf::new();
-			abs_path.push("paks");
-			abs_path.push(pak_name);
-			abs_path
-		};
-		let path = std::env::current_dir().unwrap().join(&rel_path);
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
 			log::warn!(
 				target: asset::LOG,
-				"Cannot scan {}, no such asset pak-age found.",
-				rel_path.to_str().unwrap()
+				"Cannot scan \"{}\", no such asset pak-age found.",
+				path.to_str().unwrap()
 			);
 			return Ok(());
 		}
 
 		log::info!(
 			target: asset::LOG,
-			"Scanning asset pak-age {}",
-			rel_path.to_str().unwrap()
+			"Scanning asset pak-age \"{}\"",
+			path.file_name().unwrap().to_str().unwrap()
 		);
 
 		let mut pak_data = PakData {
@@ -118,9 +133,9 @@ impl Library {
 
 		log::info!(
 			target: asset::LOG,
-			"Scanned {} assets in {:?}",
+			"Scanned {} assets in \"{}\"",
 			pak_data.asset_paths.len(),
-			path.file_name().unwrap()
+			path.file_name().unwrap().to_str().unwrap()
 		);
 		self.paks.insert(module_name, pak_data);
 

@@ -91,7 +91,7 @@ impl Editor {
 			],
 		};
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
-		engine::asset::Library::write().scan_pak(&Editor::pak_name())?;
+		engine::asset::Library::write().scan_pak_directory()?;
 		Ok(editor)
 	}
 

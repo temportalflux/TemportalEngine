@@ -1,4 +1,4 @@
-use crate::{asset, audio, graphics, input, task, utility::AnyError, Application, EngineApp};
+use crate::{asset, audio, graphics, input, task, utility::{VoidResult, AnyError}};
 use std::sync::{Arc, RwLock};
 use winit::event_loop::EventLoop;
 
@@ -21,12 +21,9 @@ impl Engine {
 	}
 
 	/// Scans the engine pak file and any pak file names provided.
-	pub fn scan_paks(&self, paks: Vec<String>) -> Result<(), AnyError> {
+	pub fn scan_paks(&self) -> VoidResult {
 		let mut library = asset::Library::write();
-		library.scan_pak(&EngineApp::pak_name())?;
-		for pak_name in paks.iter() {
-			library.scan_pak(&pak_name)?;
-		}
+		library.scan_pak_directory()?;
 		Ok(())
 	}
 
