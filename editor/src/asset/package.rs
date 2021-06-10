@@ -12,10 +12,10 @@ pub struct Pak {
 }
 
 impl Pak {
-	pub fn from_app<T: Application>(pak_output: Option<&str>) -> Self {
+	pub fn from_app<T: Application>(location: &PathBuf, pak_output: Option<&str>) -> Self {
 		Self {
 			name: T::name().to_owned(),
-			binaries_directory: PathBuf::from(T::location()).join("binaries"),
+			binaries_directory: location.join("binaries"),
 			output_directory: {
 				let mut path = std::env::current_dir().unwrap();
 				if let Some(relative) = pak_output {

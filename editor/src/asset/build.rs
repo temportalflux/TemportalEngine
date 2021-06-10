@@ -12,11 +12,11 @@ pub struct Module {
 }
 
 impl Module {
-	pub fn from_app<T: Application>() -> Self {
+	pub fn from_app<T: Application>(location: &PathBuf) -> Self {
 		Self {
 			name: T::name().to_owned(),
-			assets_directory: PathBuf::from(T::location()).join("assets"),
-			binaries_directory: PathBuf::from(T::location()).join("binaries"),
+			assets_directory: location.join("assets"),
+			binaries_directory: location.join("binaries"),
 		}
 	}
 

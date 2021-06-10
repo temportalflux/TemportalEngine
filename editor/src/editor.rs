@@ -60,6 +60,7 @@ impl Editor {
 	}
 
 	fn new<T: Application>() -> Result<Self, AnyError> {
+		use std::path::PathBuf;
 		log::info!(target: EDITOR_LOG, "Initializing editor");
 		let mut editor = Self {
 			asset_manager: asset::Manager::new(),
@@ -70,14 +71,25 @@ impl Editor {
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
 
-		editor.add_asset_module(asset::Module::from_app::<Editor>());
-		editor.add_pak(asset::Pak::from_app::<Editor>(None));
+		let editor_path = PathBuf::from(Editor::location());
+		editor.add_asset_module(asset::Module::from_app::<Editor>(&editor_path));
+		editor.add_pak(asset::Pak::from_app::<Editor>(&editor_path, None));
 
 		let output_directory = editor.settings.packager_output().clone();
-		editor.add_asset_module(asset::Module::from_app::<EngineApp>());
-		editor.add_pak(asset::Pak::from_app::<EngineApp>(Some(&output_directory)));
-		editor.add_asset_module(asset::Module::from_app::<T>());
-		editor.add_pak(asset::Pak::from_app::<T>(Some(&output_directory)));
+
+		let engine_path = PathBuf::from(EngineApp::location());
+		editor.add_asset_module(asset::Module::from_app::<EngineApp>(&engine_path));
+		editor.add_pak(asset::Pak::from_app::<EngineApp>(
+			&engine_path,
+			Some(&output_directory),
+		));
+
+		let module_path = PathBuf::from(T::location());
+		editor.add_asset_module(asset::Module::from_app::<T>(&module_path));
+		editor.add_pak(asset::Pak::from_app::<T>(
+			&module_path,
+			Some(&output_directory),
+		));
 
 		Ok(editor)
 	}

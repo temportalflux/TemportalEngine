@@ -6,7 +6,7 @@ pub struct Editor {
 	#[serde(default)]
 	open_windows: Vec<String>,
 	/// The output directory (relative to the current working directory of the editor runtime),
-	/// that the [`packager`](`crate::asset::package`) should place `.pak` files.
+	/// that the [`packager`](`crate::asset::Pak::package`) should place `.pak` files.
 	#[serde(default = "default_pak_output")]
 	packager_output: String,
 }
