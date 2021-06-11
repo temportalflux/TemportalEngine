@@ -37,6 +37,12 @@ impl Pak {
 			}
 		}
 
+		let files = crate::asset::build::collect_file_paths(&self.binaries_directory, &Vec::new())?;
+		if files.is_empty() {
+			log::info!(target: asset::LOG, "[{}] No assets to package", self.name,);
+			return Ok(());
+		}
+
 		log::info!(
 			target: asset::LOG,
 			"[{}] Packaging assets into {}",
@@ -53,7 +59,6 @@ impl Pak {
 		let zip_options =
 			zip::write::FileOptions::default().compression_method(zip::CompressionMethod::BZIP2);
 
-		let files = crate::asset::build::collect_file_paths(&self.binaries_directory, &Vec::new())?;
 		for file_path in files.iter() {
 			let relative_path = file_path
 				.as_path()

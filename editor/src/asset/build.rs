@@ -26,8 +26,6 @@ impl Module {
 		asset_manager: &crate::asset::Manager,
 		force_build: bool,
 	) -> engine::utility::VoidResult {
-		log::info!(target: asset::LOG, "[{}] Building assets", self.name);
-
 		if !self.assets_directory.exists() {
 			log::info!(
 				target: asset::LOG,
@@ -56,45 +54,54 @@ impl Module {
 			fs::remove_dir_all(&self.binaries_directory)?;
 		}
 
+		let asset_paths = collect_file_paths(&self.assets_directory, &Vec::new())?
+			.into_iter()
+			.filter(|file_path| match file_path.extension() {
+				Some(ext) => ext == "json",
+				None => false,
+			})
+			.collect::<Vec<_>>();
+		if asset_paths.is_empty() {
+			log::info!(target: asset::LOG, "[{}] No assets to build", self.name);
+			return Ok(());
+		}
+
+		log::info!(
+			target: asset::LOG,
+			"[{}] Building {} assets",
+			self.name,
+			asset_paths.len()
+		);
+
 		let mut intended_binaries: Vec<PathBuf> = Vec::new();
 		let mut skipped_paths = Vec::new();
-		for asset_file_path in collect_file_paths(&self.assets_directory, &Vec::new())?.iter() {
+		for asset_file_path in asset_paths.iter() {
 			let relative_path = asset_file_path
 				.as_path()
 				.strip_prefix(&self.assets_directory)?;
-			if let Some(ext) = relative_path.extension() {
-				if ext == "json" {
-					let mut binary_file_path = self.binaries_directory.clone();
-					if let Some(parent) = relative_path.parent() {
-						binary_file_path.push(parent);
-					}
-					binary_file_path.push(relative_path.file_stem().unwrap());
-
-					if !binary_file_path.exists()
-						|| (asset_manager.last_modified(&asset_file_path)?
-							> binary_file_path.metadata()?.modified()?)
-					{
-						log::info!(
-							target: asset::LOG,
-							"[{}] - Building {:?}",
-							self.name,
-							relative_path
-						);
-						let (type_id, asset) =
-							asset_manager.read_sync(&asset_file_path.as_path())?;
-						asset_manager.compile(
-							&asset_file_path,
-							&type_id,
-							asset,
-							&binary_file_path,
-						)?;
-					} else {
-						skipped_paths.push(relative_path.to_owned());
-					}
-
-					intended_binaries.push(binary_file_path);
-				}
+			let mut binary_file_path = self.binaries_directory.clone();
+			if let Some(parent) = relative_path.parent() {
+				binary_file_path.push(parent);
 			}
+			binary_file_path.push(relative_path.file_stem().unwrap());
+
+			if !binary_file_path.exists()
+				|| (asset_manager.last_modified(&asset_file_path)?
+					> binary_file_path.metadata()?.modified()?)
+			{
+				log::info!(
+					target: asset::LOG,
+					"[{}] - Building {:?}",
+					self.name,
+					relative_path
+				);
+				let (type_id, asset) = asset_manager.read_sync(&asset_file_path.as_path())?;
+				asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
+			} else {
+				skipped_paths.push(relative_path.to_owned());
+			}
+
+			intended_binaries.push(binary_file_path);
 		}
 
 		if !skipped_paths.is_empty() {
