@@ -20,6 +20,10 @@ pub mod render;
 
 use graphics::AppInfo;
 
+pub fn manifest_location() -> &'static str {
+	std::env!("CARGO_MANIFEST_DIR")
+}
+
 pub struct EngineApp();
 impl Application for EngineApp {
 	fn name() -> &'static str {

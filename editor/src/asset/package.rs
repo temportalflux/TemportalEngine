@@ -2,6 +2,7 @@ use crate::engine::{asset, utility::VoidResult, Application};
 use std::{self, fs, io::Write, path::PathBuf};
 use zip;
 
+#[derive(Debug)]
 pub struct Pak {
 	/// The name of the pak file. Will be formatted as `{name}.pak`.
 	pub name: String,

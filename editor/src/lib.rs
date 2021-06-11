@@ -5,6 +5,10 @@ pub static LOG: &'static str = "editor";
 
 pub use temportal_engine as engine;
 
+pub fn manifest_location() -> &'static str {
+	std::env!("CARGO_MANIFEST_DIR")
+}
+
 #[path = "asset/_.rs"]
 pub mod asset;
 
@@ -18,3 +22,5 @@ pub mod graphics;
 pub mod ui;
 
 pub mod settings;
+
+pub mod config;

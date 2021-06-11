@@ -5,6 +5,7 @@ use std::{
 	path::{Path, PathBuf},
 };
 
+#[derive(Debug)]
 pub struct Module {
 	pub name: String,
 	pub assets_directory: PathBuf,

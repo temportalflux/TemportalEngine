@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		self,
 		utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
-		Application, EngineApp,
+		Application,
 	},
 	settings,
 };
@@ -75,30 +75,56 @@ impl Editor {
 		editor.add_asset_module(asset::Module::from_app::<Editor>(&editor_path));
 		editor.add_pak(asset::Pak::from_app::<Editor>(&editor_path, None));
 
-		let output_directory = editor.settings.packager_output().clone();
+		let cwd = std::env::current_dir()?;
+		let output_directory = cwd.join(editor.settings.packager_output().clone());
 
-		let engine_path = PathBuf::from(EngineApp::location());
-		editor.add_asset_module(asset::Module::from_app::<EngineApp>(&engine_path));
-		editor.add_pak(asset::Pak::from_app::<EngineApp>(
-			&engine_path,
-			Some(&output_directory),
-		));
+		editor.add_crate_manifest(
+			&crate::config::Manifest::parse(&PathBuf::from(engine::manifest_location())).unwrap(),
+			&output_directory,
+		);
 
-		let module_path = PathBuf::from(T::location());
-		editor.add_asset_module(asset::Module::from_app::<T>(&module_path));
-		editor.add_pak(asset::Pak::from_app::<T>(
-			&module_path,
-			Some(&output_directory),
-		));
+		editor.add_crate_manifest(
+			&crate::config::Manifest::parse(&PathBuf::from(crate::manifest_location())).unwrap(),
+			&cwd,
+		);
+
+		if let Ok(crates_cfg) = crate::config::Crates::read() {
+			for manifest in crates_cfg.manifests().into_iter() {
+				editor.add_crate_manifest(&manifest, &output_directory);
+			}
+		}
 
 		Ok(editor)
 	}
 
+	fn add_crate_manifest(
+		&mut self,
+		manifest: &crate::config::Manifest,
+		output_directory: &std::path::Path,
+	) {
+		self.add_asset_module(asset::Module {
+			name: manifest.name.clone(),
+			assets_directory: manifest.location.join("assets"),
+			binaries_directory: manifest.location.join("binaries"),
+		});
+		self.add_pak(asset::Pak {
+			name: manifest.name.clone(),
+			binaries_directory: manifest.location.join("binaries"),
+			output_directory: output_directory.join("paks"),
+		});
+	}
+
 	pub fn add_asset_module(&mut self, module: asset::Module) {
+		log::info!(
+			target: crate::LOG,
+			"Adding asset module \"{}\"",
+			module.name
+		);
 		self.asset_modules.push(module);
 	}
 
 	pub fn add_pak(&mut self, pak: asset::Pak) {
+		log::info!(target: crate::LOG, "Adding pak \"{}\"", pak.name);
 		self.paks.push(pak);
 	}
 
