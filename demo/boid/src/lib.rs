@@ -2,13 +2,13 @@ use engine::{graphics::camera, math::nalgebra, utility::VoidResult, Application}
 use std::sync::{Arc, RwLock};
 pub use temportal_engine as engine;
 
-#[path = "graphics/_.rs"]
+#[path = "graphics/mod.rs"]
 pub mod graphics;
 
-#[path = "ecs/_.rs"]
+#[path = "ecs/mod.rs"]
 pub mod ecs;
 
-#[path = "ui/_.rs"]
+#[path = "ui/mod.rs"]
 pub mod ui;
 
 #[path = "input.rs"]

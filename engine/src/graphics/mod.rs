@@ -25,7 +25,7 @@ pub use render_chain::*;
 
 pub mod render_pass;
 
-#[path = "graphics/shader.rs"]
+#[path = "shader.rs"]
 mod shader_engine;
 pub use shader_engine::*;
 
