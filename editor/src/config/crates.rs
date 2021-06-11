@@ -1,13 +1,21 @@
 use crate::engine::utility::{AnyError, SaveData};
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
-use std::sync::{LockResult, RwLockReadGuard, RwLockWriteGuard};
+use std::{
+	collections::HashMap,
+	path::{Path, PathBuf},
+	sync::{LockResult, RwLockReadGuard, RwLockWriteGuard},
+};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Crates {
-	// TODO: Each entry should specify where its pak file should be outputted
 	#[serde(default)]
-	crates: Vec<PathBuf>,
+	crates: HashMap<PathBuf, CrateConfig>,
+}
+
+#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+pub struct CrateConfig {
+	#[serde(default)]
+	pub pak_destination: PathBuf,
 }
 
 impl SaveData<Crates> for Crates {
@@ -60,10 +68,11 @@ pub struct Manifest {
 	pub name: String,
 	pub version: semver::Version,
 	pub location: PathBuf,
+	pub config: CrateConfig,
 }
 
 impl Manifest {
-	pub fn parse(directory: &Path) -> Option<Manifest> {
+	pub fn parse(directory: &Path, config: CrateConfig) -> Option<Manifest> {
 		let manifest_path = directory.join("Cargo.toml");
 		match std::fs::read_to_string(&manifest_path) {
 			Ok(raw) => match cargo_toml::Manifest::from_str(&raw) {
@@ -73,6 +82,7 @@ impl Manifest {
 							name: package.name.clone(),
 							version: semver::Version::parse(&package.version).unwrap(),
 							location: directory.canonicalize().unwrap(),
+							config,
 						});
 					} else {
 						log::error!(
@@ -105,9 +115,9 @@ impl Manifest {
 impl Crates {
 	pub fn manifests(&self) -> Vec<Manifest> {
 		let mut manifests = Vec::new();
-		for path in self.crates.iter() {
+		for (path, config) in self.crates.iter() {
 			let dir = std::env::current_dir().unwrap().join(path);
-			if let Some(manifest) = Manifest::parse(&dir) {
+			if let Some(manifest) = Manifest::parse(&dir, config.clone()) {
 				manifests.push(manifest);
 			}
 		}

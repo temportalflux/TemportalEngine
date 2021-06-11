@@ -60,7 +60,6 @@ impl Editor {
 	}
 
 	fn new<T: Application>() -> Result<Self, AnyError> {
-		use std::path::PathBuf;
 		log::info!(target: EDITOR_LOG, "Initializing editor");
 		let mut editor = Self {
 			asset_manager: asset::Manager::new(),
@@ -71,37 +70,16 @@ impl Editor {
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
 
-		let editor_path = PathBuf::from(Editor::location());
-		editor.add_asset_module(asset::Module::from_app::<Editor>(&editor_path));
-		editor.add_pak(asset::Pak::from_app::<Editor>(&editor_path, None));
-
-		let cwd = std::env::current_dir()?;
-		let output_directory = cwd.join(editor.settings.packager_output().clone());
-
-		editor.add_crate_manifest(
-			&crate::config::Manifest::parse(&PathBuf::from(engine::manifest_location())).unwrap(),
-			&output_directory,
-		);
-
-		editor.add_crate_manifest(
-			&crate::config::Manifest::parse(&PathBuf::from(crate::manifest_location())).unwrap(),
-			&cwd,
-		);
-
 		if let Ok(crates_cfg) = crate::config::Crates::read() {
 			for manifest in crates_cfg.manifests().into_iter() {
-				editor.add_crate_manifest(&manifest, &output_directory);
+				editor.add_crate_manifest(&manifest);
 			}
 		}
 
 		Ok(editor)
 	}
 
-	fn add_crate_manifest(
-		&mut self,
-		manifest: &crate::config::Manifest,
-		output_directory: &std::path::Path,
-	) {
+	fn add_crate_manifest(&mut self, manifest: &crate::config::Manifest) {
 		self.add_asset_module(asset::Module {
 			name: manifest.name.clone(),
 			assets_directory: manifest.location.join("assets"),
@@ -110,7 +88,7 @@ impl Editor {
 		self.add_pak(asset::Pak {
 			name: manifest.name.clone(),
 			binaries_directory: manifest.location.join("binaries"),
-			output_directory: output_directory.join("paks"),
+			output_directory: manifest.config.pak_destination.clone(),
 		});
 	}
 
