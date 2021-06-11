@@ -1,6 +1,9 @@
 use crate::utility::singleton::Singleton;
 use rodio;
 
+mod sound;
+pub use sound::*;
+
 pub static LOG: &'static str = "audio";
 
 pub struct System {
@@ -46,19 +49,22 @@ impl System {
 }
 
 impl System {
-	pub fn create_sound<D>(&mut self, bytes: Vec<u8>) -> Sound
+	pub fn create_sound<D>(&mut self, bytes: Vec<u8>) -> Source
 	where
 		D: rodio::Sample + Send + Sync + 'static,
 	{
-		use rodio::Source;
 		type Sampler<D> =
 			rodio::source::SamplesConverter<rodio::Decoder<std::io::Cursor<Vec<u8>>>, D>;
-		let sink = rodio::Sink::try_new(&self.handle).unwrap();
-		let source: Sampler<D> = rodio::Decoder::new(std::io::Cursor::new(bytes))
-			.unwrap()
-			.convert_samples();
-		sink.append(source);
-		Sound { sink }
+		let sink = {
+			use rodio::Source;
+			let sink = rodio::Sink::try_new(&self.handle).unwrap();
+			let source: Sampler<D> = rodio::Decoder::new(std::io::Cursor::new(bytes))
+				.unwrap()
+				.convert_samples();
+			sink.append(source);
+			sink
+		};
+		Source { sink }
 	}
 }
 
@@ -83,11 +89,11 @@ impl From<rodio::StreamError> for Error {
 	}
 }
 
-pub struct Sound {
+pub struct Source {
 	sink: rodio::Sink,
 }
 
-impl Sound {
+impl Source {
 	pub fn play(&self) {
 		self.sink.play()
 	}
