@@ -67,6 +67,7 @@ impl Editor {
 			asset_modules: Vec::new(),
 			paks: Vec::new(),
 		};
+		crate::audio::register_asset_types(&mut editor.asset_manager);
 		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
 

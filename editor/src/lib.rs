@@ -10,6 +10,7 @@ pub fn manifest_location() -> &'static str {
 }
 
 pub mod asset;
+pub mod audio;
 
 mod editor;
 pub use editor::*;

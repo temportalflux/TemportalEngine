@@ -4,7 +4,14 @@ use rodio;
 mod sound;
 pub use sound::*;
 
+mod source_kind;
+pub use source_kind::*;
+
 pub static LOG: &'static str = "audio";
+
+pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
+	type_reg.register::<Sound>();
+}
 
 pub struct System {
 	_stream: rodio::OutputStream,

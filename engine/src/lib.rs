@@ -52,5 +52,6 @@ pub fn make_app_info<T: Application>() -> AppInfo {
 
 pub fn register_asset_types() {
 	let mut locked = asset::TypeRegistry::get().write().unwrap();
+	audio::register_asset_types(&mut locked);
 	graphics::register_asset_types(&mut locked);
 }
