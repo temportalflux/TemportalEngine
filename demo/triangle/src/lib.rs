@@ -18,7 +18,7 @@ impl Application for TriangleDemo {
 }
 
 pub fn run() -> VoidResult {
-	engine::logging::init::<TriangleDemo>(None)?;
+	engine::logging::init(TriangleDemo::name(), None)?;
 	let engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 

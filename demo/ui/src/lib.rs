@@ -12,7 +12,7 @@ impl Application for UIDemo {
 }
 
 pub fn run() -> VoidResult {
-	engine::logging::init::<UIDemo>(None)?;
+	engine::logging::init(UIDemo::name(), None)?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 

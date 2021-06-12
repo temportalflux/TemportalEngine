@@ -33,7 +33,7 @@ impl Application for BoidDemo {
 }
 
 pub fn run() -> VoidResult {
-	engine::logging::init::<BoidDemo>(None)?;
+	engine::logging::init(BoidDemo::name(), None)?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 	input::init();

@@ -1,10 +1,10 @@
-use crate::{utility::VoidResult, Application};
+use crate::{utility::VoidResult};
 pub use log::Level;
 
 #[profiling::function]
-pub fn init<T: Application>(suffix: Option<&str>) -> VoidResult {
+pub fn init(app_name: &str, suffix: Option<&str>) -> VoidResult {
 	use simplelog::*;
-	let log_name = format!("{}{}", T::name(), suffix.unwrap_or(""));
+	let log_name = format!("{}{}", app_name, suffix.unwrap_or(""));
 	let mut log_path = std::env::current_dir()?.to_path_buf();
 	log_path.push(format!("{}.log", log_name));
 	let file = std::fs::OpenOptions::new()
