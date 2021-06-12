@@ -21,18 +21,8 @@ impl Application for Editor {
 	fn name() -> &'static str {
 		std::env!("CARGO_PKG_NAME")
 	}
-	fn display_name() -> &'static str {
-		"Crystal Sphinx"
-	}
-	fn location() -> &'static str {
-		std::env!("CARGO_MANIFEST_DIR")
-	}
-	fn version() -> u32 {
-		engine::utility::make_version(
-			std::env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
-		)
+	fn version() -> semver::Version {
+		semver::Version::parse(std::env!("CARGO_PKG_VERSION")).unwrap()
 	}
 }
 

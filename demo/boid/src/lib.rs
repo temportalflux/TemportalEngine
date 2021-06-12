@@ -27,18 +27,8 @@ impl Application for BoidDemo {
 	fn name() -> &'static str {
 		std::env!("CARGO_PKG_NAME")
 	}
-	fn display_name() -> &'static str {
-		"Boids"
-	}
-	fn location() -> &'static str {
-		std::env!("CARGO_MANIFEST_DIR")
-	}
-	fn version() -> u32 {
-		engine::utility::make_version(
-			std::env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
-		)
+	fn version() -> semver::Version {
+		semver::Version::parse(std::env!("CARGO_PKG_VERSION")).unwrap()
 	}
 }
 
@@ -83,7 +73,7 @@ pub fn run() -> VoidResult {
 	GameContext::write().with_senders(create_sender, destroy_sender);
 
 	let mut window = engine::window::Window::builder()
-		.with_title(BoidDemo::display_name())
+		.with_title("Boids")
 		.with_size(resolution.x as f64, resolution.y as f64)
 		.with_resizable(true)
 		.with_application::<BoidDemo>()

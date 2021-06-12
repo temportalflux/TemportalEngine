@@ -6,18 +6,8 @@ impl Application for UIDemo {
 	fn name() -> &'static str {
 		std::env!("CARGO_PKG_NAME")
 	}
-	fn display_name() -> &'static str {
-		"(RA)UI Demo"
-	}
-	fn location() -> &'static str {
-		std::env!("CARGO_MANIFEST_DIR")
-	}
-	fn version() -> u32 {
-		engine::utility::make_version(
-			std::env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
-		)
+	fn version() -> semver::Version {
+		semver::Version::parse(std::env!("CARGO_PKG_VERSION")).unwrap()
 	}
 }
 
@@ -27,7 +17,7 @@ pub fn run() -> VoidResult {
 	engine.scan_paks()?;
 
 	let mut window = engine::window::Window::builder()
-		.with_title(UIDemo::display_name())
+		.with_title("(RA)UI Demo")
 		.with_size(1280.0, 720.0)
 		.with_resizable(false)
 		.with_application::<UIDemo>()

@@ -20,34 +20,20 @@ pub mod render;
 
 use graphics::AppInfo;
 
-pub fn manifest_location() -> &'static str {
-	std::env!("CARGO_MANIFEST_DIR")
-}
-
 pub struct EngineApp();
 impl Application for EngineApp {
 	fn name() -> &'static str {
 		std::env!("CARGO_PKG_NAME")
 	}
-	fn display_name() -> &'static str {
-		"Temportal Engine"
-	}
-	fn location() -> &'static str {
-		std::env!("CARGO_MANIFEST_DIR")
-	}
-	fn version() -> u32 {
-		utility::make_version(
-			std::env!("CARGO_PKG_VERSION_MAJOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_MINOR").parse().unwrap(),
-			std::env!("CARGO_PKG_VERSION_PATCH").parse().unwrap(),
-		)
+	fn version() -> semver::Version {
+		semver::Version::parse(std::env!("CARGO_PKG_VERSION")).unwrap()
 	}
 }
 
 pub fn make_app_info<T: Application>() -> AppInfo {
 	AppInfo::new()
-		.engine(EngineApp::name(), EngineApp::version())
-		.with_application(T::name(), T::version())
+		.engine(EngineApp::name(), EngineApp::version_int())
+		.with_application(T::name(), T::version_int())
 }
 
 pub fn register_asset_types() {
