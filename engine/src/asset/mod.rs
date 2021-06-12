@@ -19,3 +19,6 @@ mod types;
 pub use types::*;
 
 pub mod statics;
+
+mod weighted_list;
+pub use weighted_list::*;
