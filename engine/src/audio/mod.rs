@@ -1,5 +1,6 @@
-use crate::utility::singleton::Singleton;
+use crate::utility::{singleton::Singleton, AnyError};
 use rodio;
+use std::sync::{LockResult, RwLock, RwLockWriteGuard};
 
 mod sound;
 pub use sound::*;
@@ -46,32 +47,41 @@ impl System {
 		Ok(Self { _stream, handle })
 	}
 
-	fn get() -> &'static std::sync::RwLock<Self> {
+	fn get() -> &'static RwLock<Self> {
 		unsafe { Self::instance() }.get()
 	}
 
-	pub fn write() -> std::sync::RwLockWriteGuard<'static, Self> {
-		Self::get().write().unwrap()
+	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
+		Self::get().write()
 	}
 }
 
 impl System {
-	pub fn create_sound<D>(&mut self, bytes: Vec<u8>) -> Source
-	where
-		D: rodio::Sample + Send + Sync + 'static,
-	{
-		type Sampler<D> =
-			rodio::source::SamplesConverter<rodio::Decoder<std::io::Cursor<Vec<u8>>>, D>;
-		let sink = {
-			use rodio::Source;
-			let sink = rodio::Sink::try_new(&self.handle).unwrap();
-			let source: Sampler<D> = rodio::Decoder::new(std::io::Cursor::new(bytes))
-				.unwrap()
-				.convert_samples();
-			sink.append(source);
-			sink
+	pub fn create_sound(&mut self, id: &crate::asset::Id) -> Result<Source, AnyError> {
+		let asset = crate::asset::Loader::load_sync(id)?
+			.downcast::<Sound>()
+			.unwrap();
+		let cursor = std::io::Cursor::new(asset.binary);
+		let decoder = match asset.kind {
+			SourceKind::MP3 => rodio::Decoder::new_mp3(cursor)?,
+			SourceKind::WAV => rodio::Decoder::new_wav(cursor)?,
+			SourceKind::Vorbis => rodio::Decoder::new_vorbis(cursor)?,
+			SourceKind::Flac => rodio::Decoder::new_flac(cursor)?,
 		};
-		Source { sink }
+		// idk what to actually pass as the rodio sample type
+		Ok(self.create_source(decoder))
+	}
+
+	fn create_source(&mut self, decoder: rodio::Decoder<std::io::Cursor<Vec<u8>>>) -> Source {
+		Source {
+			sink: {
+				use rodio::Source;
+				let sink = rodio::Sink::try_new(&self.handle).unwrap();
+				let samples = decoder.convert_samples::<f32>();
+				sink.append(samples);
+				sink
+			},
+		}
 	}
 }
 

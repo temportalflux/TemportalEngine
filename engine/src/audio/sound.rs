@@ -8,13 +8,10 @@ use serde::{Deserialize, Serialize};
 pub struct Sound {
 	asset_type: String,
 
-	kind: SourceKind,
+	pub(super) kind: SourceKind,
 
 	#[serde(default)]
-	tags: Vec<String>,
-
-	#[serde(default)]
-	binary: Vec<u8>,
+	pub(super) binary: Vec<u8>,
 }
 
 impl Sound {

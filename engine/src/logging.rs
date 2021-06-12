@@ -1,4 +1,4 @@
-use crate::{utility::VoidResult};
+use crate::utility::VoidResult;
 pub use log::Level;
 
 #[profiling::function]

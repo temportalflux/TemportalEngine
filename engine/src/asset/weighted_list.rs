@@ -9,6 +9,7 @@ pub struct WeightedIdList {
 impl WeightedIdList {
 	pub fn insert(&mut self, weight: usize, id: Id) {
 		self.ids.push((weight, id));
+		self.total_weight += weight;
 	}
 
 	pub fn total_weight(&self) -> usize {
