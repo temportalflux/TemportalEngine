@@ -1,5 +1,0 @@
-target/
-binaries/
-*.pak
-Cargo.lock
-*.log

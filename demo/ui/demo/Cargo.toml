@@ -1,0 +1,15 @@
+[package]
+name = "demo-ui"
+version = "0.1.0"
+authors = ["Dustin Yost <dustin.yost.t@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+profile = []
+
+[dependencies]
+temportal-engine = { path = "../../../engine" }
+log = "0.4.14"
+semver = "1.0"

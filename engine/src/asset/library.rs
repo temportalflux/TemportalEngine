@@ -60,6 +60,9 @@ impl Library {
 			"Scanning pak directory {}",
 			pak_dir.to_str().unwrap()
 		);
+		if !pak_dir.exists() {
+			return Ok(());
+		}
 		for entry in fs::read_dir(pak_dir)? {
 			let entry_path = entry?.path().to_path_buf();
 			if !entry_path.is_dir() {
