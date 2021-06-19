@@ -1,6 +1,9 @@
 use engine::{utility::VoidResult, Application};
 pub use temportal_engine as engine;
 
+#[path = "ui/mod.rs"]
+pub mod ui;
+
 pub struct ChatRoom();
 impl Application for ChatRoom {
 	fn name() -> &'static str {
@@ -28,7 +31,7 @@ pub fn run() -> VoidResult {
 	engine::ui::System::new(&chain)?
 		.with_engine_shaders()?
 		.with_all_fonts()?
-		//.with_tree_root(engine::ui::make_widget!(crate::ui::root))
+		.with_tree_root(engine::ui::make_widget!(ui::root::widget))
 		.attach_system(&mut engine, &chain, None)?;
 
 	engine.run(chain.clone());
