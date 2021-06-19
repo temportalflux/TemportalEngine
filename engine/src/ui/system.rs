@@ -8,11 +8,13 @@ use crate::{
 		utility::Scissor,
 		Drawable, Texture,
 	},
+	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
 	ui::{mesh::*, *},
 	utility::{self, AnyError, VoidResult},
 	EngineSystem, WinitEventListener,
 };
+use enumset::EnumSet;
 use raui::renderer::tesselate::prelude::*;
 use std::{collections::HashMap, sync};
 
@@ -47,6 +49,7 @@ pub struct System {
 
 	mouse_position_unnormalized: Point2<f32>,
 	resolution: Vector2<f32>,
+	keyboard_modifiers: EnumSet<input::source::KeyModifier>,
 	interactions: DefaultInteractionsEngine,
 	application: Application,
 }
@@ -75,6 +78,7 @@ impl System {
 		Ok(Self {
 			application,
 			interactions,
+			keyboard_modifiers: EnumSet::empty(),
 			resolution: [0.0, 0.0].into(),
 			mouse_position_unnormalized: [0.0, 0.0].into(),
 			frame_meshes: Vec::new(),
@@ -315,6 +319,22 @@ impl WinitEventListener for System {
 					});
 				}
 			}
+			winit::event::Event::WindowEvent {
+				event: WindowEvent::ModifiersChanged(modifiers_state),
+				..
+			} => {
+				self.keyboard_modifiers = EnumSet::empty();
+				for (active, modifier) in [
+					(modifiers_state.shift(), input::source::KeyModifier::Shift),
+					(modifiers_state.ctrl(), input::source::KeyModifier::Control),
+					(modifiers_state.alt(), input::source::KeyModifier::Alt),
+					(modifiers_state.logo(), input::source::KeyModifier::Platform),
+				] {
+					if active {
+						self.keyboard_modifiers.insert(modifier);
+					}
+				}
+			}
 			winit::event::Event::DeviceEvent {
 				event:
 					DeviceEvent::Key(KeyboardInput {
@@ -325,37 +345,58 @@ impl WinitEventListener for System {
 				..
 			} => {
 				if let Ok(key) = Key::try_from(*keycode) {
-					if let Some(signal) = match self.interactions.focused_text_input() {
+					if let Some(signals) = match self.interactions.focused_text_input() {
 						Some(_) => match key {
-							Key::Left => Some(NavSignal::TextChange(NavTextChange::MoveCursorLeft)),
+							Key::Left => {
+								Some(vec![NavSignal::TextChange(NavTextChange::MoveCursorLeft)])
+							}
 							Key::Right => {
-								Some(NavSignal::TextChange(NavTextChange::MoveCursorRight))
+								Some(vec![NavSignal::TextChange(NavTextChange::MoveCursorRight)])
 							}
 							Key::Home => {
-								Some(NavSignal::TextChange(NavTextChange::MoveCursorStart))
+								Some(vec![NavSignal::TextChange(NavTextChange::MoveCursorStart)])
 							}
-							Key::End => Some(NavSignal::TextChange(NavTextChange::MoveCursorEnd)),
-							Key::Back => Some(NavSignal::TextChange(NavTextChange::DeleteLeft)),
-							Key::Delete => Some(NavSignal::TextChange(NavTextChange::DeleteRight)),
+							Key::End => {
+								Some(vec![NavSignal::TextChange(NavTextChange::MoveCursorEnd)])
+							}
+							Key::Back => {
+								Some(vec![NavSignal::TextChange(NavTextChange::DeleteLeft)])
+							}
+							Key::Delete => {
+								Some(vec![NavSignal::TextChange(NavTextChange::DeleteRight)])
+							}
 							Key::Return | Key::NumpadEnter => {
-								Some(NavSignal::TextChange(NavTextChange::NewLine))
+								Some(vec![NavSignal::TextChange(NavTextChange::NewLine)])
 							}
-							Key::Escape => Some(NavSignal::FocusTextInput(().into())),
-							_ => None,
+							Key::Escape => Some(vec![NavSignal::FocusTextInput(().into())]),
+							key => match key.to_string(&self.keyboard_modifiers) {
+								Some(string) => {
+									let mut signals = Vec::new();
+									for c in string.chars() {
+										signals.push(NavSignal::TextChange(
+											NavTextChange::InsertCharacter(c),
+										));
+									}
+									Some(signals)
+								}
+								None => None,
+							},
 						},
 						None => match key {
-							Key::W | Key::Up => Some(NavSignal::Up),
-							Key::A | Key::Left => Some(NavSignal::Left),
-							Key::S | Key::Down => Some(NavSignal::Down),
-							Key::D | Key::Right => Some(NavSignal::Right),
+							Key::W | Key::Up => Some(vec![NavSignal::Up]),
+							Key::A | Key::Left => Some(vec![NavSignal::Left]),
+							Key::S | Key::Down => Some(vec![NavSignal::Down]),
+							Key::D | Key::Right => Some(vec![NavSignal::Right]),
 							Key::Return | Key::NumpadEnter | Key::Space => {
-								Some(NavSignal::Accept(true))
+								Some(vec![NavSignal::Accept(true)])
 							}
-							Key::Escape => Some(NavSignal::Cancel(true)),
+							Key::Escape => Some(vec![NavSignal::Cancel(true)]),
 							_ => None,
 						},
 					} {
-						self.interact(Interaction::Navigate(signal));
+						for signal in signals.into_iter() {
+							self.interact(Interaction::Navigate(signal));
+						}
 					}
 				}
 			}
