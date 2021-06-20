@@ -36,5 +36,6 @@ pub fn init(app_name: &str, suffix: Option<&str>) -> VoidResult {
 	])
 	.unwrap();
 	log::info!(target: "engine", "Writing log to {}", log_path.display());
+	log::info!("Executing: {:?}", std::env::args().collect::<Vec<_>>());
 	Ok(())
 }

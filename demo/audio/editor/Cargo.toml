@@ -1,0 +1,14 @@
+[package]
+name = "demo-audio-editor"
+version = "0.1.0"
+authors = ["Dustin Yost <dustin.yost.t@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+temportal-engine = { path = "../../../engine" }
+temportal-engine-editor = { path = "../../../editor" }
+demo-audio = { path = "../demo" }
+imgui = "0.7"
+log = "0.4.14"
