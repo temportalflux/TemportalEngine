@@ -18,7 +18,7 @@ pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
 }
 
 pub struct System {
-	stream: cpal::Stream,
+	_stream: cpal::Stream,
 	mixer_handle: oddio::Handle<oddio::Mixer<[f32; 2]>>,
 	_device: cpal::Device,
 	_config: cpal::StreamConfig,
@@ -48,7 +48,7 @@ impl System {
 
 	fn new() -> Result<Self, Error> {
 		log::info!(target: LOG, "Initializing system & output stream");
-		use cpal::traits::{DeviceTrait, HostTrait};
+		use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 		let host = cpal::default_host();
 		let device = host
 			.default_output_device()
@@ -70,11 +70,12 @@ impl System {
 				eprintln!("{}", err);
 			},
 		)?;
+		stream.play()?;
 		Ok(Self {
 			_device: device,
 			_config: config,
 			mixer_handle,
-			stream,
+			_stream: stream,
 		})
 	}
 
@@ -84,13 +85,6 @@ impl System {
 
 	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
 		Self::get().write()
-	}
-
-	pub fn start(&self) -> Result<(), Error> {
-		log::info!(target: LOG, "Starting output stream");
-		use cpal::traits::StreamTrait;
-		self.stream.play()?;
-		Ok(())
 	}
 }
 

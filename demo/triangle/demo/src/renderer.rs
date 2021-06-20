@@ -80,17 +80,6 @@ impl Triangle {
 	}
 }
 
-#[cfg(test)]
-mod vertex_data {
-	use super::*;
-
-	#[test]
-	fn alignment() {
-		assert_eq!(graphics::utility::offset_of!(Vertex, pos), 0);
-		assert_eq!(graphics::utility::offset_of!(Vertex, color), 16);
-	}
-}
-
 impl graphics::RenderChainElement for Triangle {
 	fn name(&self) -> &'static str {
 		"render-triangle"

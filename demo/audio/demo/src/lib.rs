@@ -1,5 +1,8 @@
-use engine::{asset::statics, ui, utility::VoidResult, Application};
+use engine::{utility::VoidResult, Application};
 pub use temportal_engine as engine;
+
+#[path = "ui/mod.rs"]
+mod ui;
 
 pub struct Demo();
 impl Application for Demo {
@@ -30,9 +33,11 @@ pub fn run() -> VoidResult {
 		ui::System::new(&chain)?
 			.with_engine_shaders()?
 			.with_all_fonts()?
-			.with_tree(WidgetNode::Component(
-				make_widget!(horizontal_box)
-			))
+			.with_texture(&Demo::get_asset_id("ui/cycle"))?
+			.with_texture(&Demo::get_asset_id("ui/fast-forward"))?
+			.with_texture(&Demo::get_asset_id("ui/pause"))?
+			.with_texture(&Demo::get_asset_id("ui/play"))?
+			.with_tree(WidgetNode::Component(make_widget!(ui::root::widget)))
 			.attach_system(&mut engine, &chain, None)?;
 	}
 

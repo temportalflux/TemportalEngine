@@ -17,6 +17,20 @@ pub struct Vertex {
 	color: Vec4,
 }
 
+#[cfg(test)]
+mod vertex_data {
+	use super::*;
+
+	#[test]
+	fn alignment() {
+		assert_eq!(crate::engine::graphics::utility::offset_of!(Vertex, pos), 0);
+		assert_eq!(
+			crate::engine::graphics::utility::offset_of!(Vertex, color),
+			16
+		);
+	}
+}
+
 impl Vertex {
 	pub fn with_pos(mut self, pos: Vector2<f32>) -> Self {
 		self.pos = pos.into();
