@@ -93,7 +93,7 @@ impl Module {
 					target: asset::LOG,
 					"[{}] - Building {:?}",
 					self.name,
-					relative_path
+					relative_path.file_stem().unwrap()
 				);
 				let (type_id, asset) = asset_manager.read_sync(&asset_file_path.as_path())?;
 				asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
@@ -114,9 +114,9 @@ impl Module {
 			for relative_path in skipped_paths.iter() {
 				log::info!(
 					target: asset::LOG,
-					"[{}]   {}",
+					"[{}]   {:?}",
 					self.name,
-					relative_path.to_str().unwrap()
+					relative_path.file_stem().unwrap()
 				);
 			}
 		}

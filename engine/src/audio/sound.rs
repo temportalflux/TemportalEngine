@@ -8,10 +8,10 @@ use serde::{Deserialize, Serialize};
 pub struct Sound {
 	asset_type: String,
 
-	pub(super) kind: SourceKind,
+	kind: SourceKind,
 
 	#[serde(default)]
-	pub(super) binary: Vec<u8>,
+	binary: Vec<u8>,
 }
 
 impl Sound {
@@ -21,6 +21,10 @@ impl Sound {
 
 	pub fn set_binary(&mut self, binary: Vec<u8>) {
 		self.binary = binary;
+	}
+
+	pub fn binary(&self) -> &Vec<u8> {
+		&self.binary
 	}
 }
 
