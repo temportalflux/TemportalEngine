@@ -17,13 +17,12 @@ impl SourceKind {
 		}
 	}
 
-	pub fn decode(
+	pub fn create_decoder(
 		&self,
 		cursor: std::io::Cursor<Vec<u8>>,
-	) -> Result<(u32, Vec<[oddio::Sample; 2]>), super::Error> {
-		use decoder::Decoder;
+	) -> Result<Box<dyn decoder::Decoder>, super::Error> {
 		match *self {
-			Self::Vorbis => decoder::Vorbis::decode(cursor),
+			Self::Vorbis => Ok(Box::new(decoder::Vorbis::new(cursor)?)),
 			_ => unimplemented!("Not yet implemented"),
 		}
 	}

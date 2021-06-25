@@ -41,6 +41,13 @@ pub fn run() -> VoidResult {
 			.attach_system(&mut engine, &chain, None)?;
 	}
 
+	{
+		use engine::audio;
+		let mut audio_system = audio::System::write()?;
+		let source = audio_system.create_sound(&Demo::get_asset_id("audio/click"))?;
+		audio_system.add_persistent_source(source);
+	}
+
 	engine.run(chain.clone());
 	Ok(())
 }

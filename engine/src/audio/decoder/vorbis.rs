@@ -1,20 +1,68 @@
-use super::Decoder;
+use super::{super::LOG, Decoder};
 use lewton::inside_ogg::OggStreamReader;
 
-pub struct Vorbis;
-impl Decoder for Vorbis {
-	fn decode(
-		cursor: std::io::Cursor<Vec<u8>>,
-	) -> Result<(u32, Vec<[oddio::Sample; 2]>), crate::audio::Error> {
-		let reader = OggStreamReader::new(cursor)?;
+pub struct Vorbis {
+	loops_remaining: Option<usize>,
+	sample_rate: u32,
+	iterator: OggIterator,
+	compressed: std::io::Cursor<Vec<u8>>,
+}
+
+impl Vorbis {
+	pub fn new(cursor: std::io::Cursor<Vec<u8>>) -> Result<Self, crate::audio::Error> {
+		let reader = OggStreamReader::new(cursor.clone())?;
 		let channel_count = reader.ident_hdr.audio_channels;
 		assert!(channel_count > 0);
 		assert!(channel_count <= 2);
 		let sample_rate = reader.ident_hdr.audio_sample_rate;
-		Ok((
+		Ok(Self {
 			sample_rate,
-			OggIterator::from_stream(reader).collect::<Vec<_>>(),
-		))
+			loops_remaining: Some(1),
+			compressed: cursor,
+			iterator: OggIterator::from_stream(reader),
+		})
+	}
+}
+
+impl Decoder for Vorbis {
+	fn sample_rate(&self) -> u32 {
+		self.sample_rate
+	}
+
+	fn set_loops_remaining(&mut self, loops: Option<usize>) {
+		self.loops_remaining = loops;
+	}
+
+	fn next_stereo(&mut self) -> Option<[oddio::Sample; 2]> {
+		let next_sample = self.iterator.next();
+		// if there is a sample remaining, then return it,
+		// otherwise the decoder has finished.
+		if next_sample.is_some() {
+			return next_sample;
+		}
+
+		let should_replay = match self.loops_remaining {
+			Some(mut loops) => {
+				// decrement the number of loops to play, because we just finished a loop
+				loops -= 1;
+				// return true if we should play at least 1 more loop
+				loops > 0
+			}
+			// if loops_remaining is none, then its an infinite loop
+			None => true,
+		};
+		if should_replay {
+			self.iterator = match OggStreamReader::new(self.compressed.clone()) {
+				Ok(reader) => OggIterator::from_stream(reader),
+				Err(e) => {
+					log::debug!(target: LOG, "Failed to replay Vorbis decoder: {}", e);
+					return None;
+				}
+			};
+			return self.next_stereo();
+		}
+
+		None
 	}
 }
 

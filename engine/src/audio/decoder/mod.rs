@@ -1,8 +1,8 @@
 mod vorbis;
 pub use vorbis::*;
 
-pub trait Decoder {
-	fn decode(
-		cursor: std::io::Cursor<Vec<u8>>,
-	) -> Result<(u32, Vec<[oddio::Sample; 2]>), crate::audio::Error>;
+pub trait Decoder: Send + Sync {
+	fn sample_rate(&self) -> u32;
+	fn set_loops_remaining(&mut self, loops: Option<usize>);
+	fn next_stereo(&mut self) -> Option<[oddio::Sample; 2]>;
 }
