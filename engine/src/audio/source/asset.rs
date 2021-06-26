@@ -26,16 +26,17 @@ pub struct Asset {
 	id: asset::Id,
 }
 
+static BUFFER_SIZE: usize = 1024;
+
 impl Asset {
-	pub fn create(
-		id: asset::Id,
-		number_of_frames_to_buffer: usize,
-		system: &mut System,
-	) -> Result<Self, AnyError> {
-		let stream = oddio::Stream::new(
-			Self::create_decoder(&id)?.sample_rate(),
-			number_of_frames_to_buffer,
-		);
+	pub fn from_id(id: asset::Id, system: &mut System) -> Result<Self, AnyError> {
+		let asset = asset::Loader::load_sync(&id)?.downcast::<Sound>().unwrap();
+		Self::create(id, asset, system)
+	}
+
+	pub fn create(id: asset::Id, asset: Box<Sound>, system: &mut System) -> Result<Self, AnyError> {
+		let sample_rate = Self::create_track(asset)?.sample_rate()?;
+		let stream = oddio::Stream::new(sample_rate, BUFFER_SIZE);
 		// TODO: Figure out a better way to convert the signal into a control handle than starting and pausing the audio
 		let mut handle = system
 			.mixer_handle
@@ -53,11 +54,11 @@ impl Asset {
 		&self.id
 	}
 
-	fn create_decoder(id: &asset::Id) -> Result<Box<dyn decoder::Decoder>, AnyError> {
-		let asset = asset::Loader::load_sync(id)?.downcast::<Sound>().unwrap();
-		let binary_cursor = std::io::Cursor::new(asset.binary().clone());
-		let decoder = asset.kind().create_decoder(binary_cursor)?;
-		Ok(decoder)
+	fn create_track(asset: Box<Sound>) -> Result<decoder::Track, AnyError> {
+		Ok(decoder::Track::new(
+			asset.kind(),
+			std::io::Cursor::new(asset.binary().clone()),
+		))
 	}
 
 	fn start_decoding(&mut self, playback_count: Option<usize>) {
@@ -65,8 +66,15 @@ impl Asset {
 		let arc_handle = self.handle.clone();
 		let decoding_state = self.decoding_state.clone();
 		std::thread::spawn(move || {
-			let mut decoder = match Self::create_decoder(&id) {
-				Ok(decoder) => decoder,
+			let asset = match asset::Loader::load_sync(&id) {
+				Ok(asset) => asset.downcast::<Sound>().unwrap(),
+				Err(e) => {
+					log::debug!(target: LOG, "Failed to load asset {}: {}", id, e);
+					return;
+				}
+			};
+			let mut track = match Self::create_track(asset) {
+				Ok(track) => track,
 				Err(e) => {
 					log::error!(
 						target: LOG,
@@ -77,7 +85,7 @@ impl Asset {
 					return;
 				}
 			};
-			decoder.set_loops_remaining(playback_count);
+			track.set_playback_counter(playback_count);
 			*decoding_state.write().unwrap() = DecodingState::Decoding;
 			let write_sample = |rw_handle: &ThreadSafeStreamHandle, stereo_sample| -> bool {
 				let mut handle = match rw_handle.lock() {
@@ -98,7 +106,7 @@ impl Asset {
 			};
 			// Iterate until there are no more samples in the decoder
 			while decoding_state.read().unwrap().is_active() {
-				match decoder.next_stereo() {
+				match track.sample_stereo() {
 					Some(stereo_sample) => {
 						// Try to write the sample to the stream,
 						while !write_sample(&arc_handle, stereo_sample) {

@@ -39,6 +39,8 @@ oddio = "0.4"
 cpal = "0.13"
 # [audio] for parsing vorbis/ogg audio binaries
 lewton = "0.10"
+# [audio] for parsing mp3 audio binaries
+minimp3 = "0.5"
 # [utility] semantic versioning
 semver = "1.0"
 # [serialization]

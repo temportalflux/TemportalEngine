@@ -103,6 +103,7 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
+						audio::System::write().unwrap().update(delta_time);
 						let systems = &mut engine.write().unwrap().systems;
 						for system in systems.iter_mut() {
 							system.write().unwrap().update(delta_time);

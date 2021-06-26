@@ -66,7 +66,7 @@ impl Sequence {
 		}
 		match self.queue.pop_front() {
 			Some(id) => {
-				let source = super::Asset::create(id, 1024, &mut audio::System::write().unwrap())?;
+				let source = super::Asset::from_id(id, &mut audio::System::write().unwrap())?;
 				Ok(Some(source))
 			}
 			None => Ok(None),

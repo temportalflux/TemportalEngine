@@ -1,10 +1,7 @@
-use crate::utility::{singleton::Singleton, AnyError};
+use crate::{asset, utility::singleton::Singleton, EngineSystem};
 use cpal;
 use oddio;
-use std::{
-	collections::HashMap,
-	sync::{LockResult, RwLock, RwLockWriteGuard},
-};
+use std::sync::{LockResult, RwLock, RwLockWriteGuard};
 
 pub static LOG: &'static str = "audio";
 
@@ -26,7 +23,7 @@ pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
 }
 
 pub struct System {
-	persistent_sources: HashMap<String, source::AnySource>,
+	active_sources: Vec<source::AnySource>,
 
 	_stream: cpal::Stream,
 	mixer_handle: oddio::Handle<oddio::Mixer<[oddio::Sample; 2]>>,
@@ -86,7 +83,7 @@ impl System {
 			_config: config,
 			mixer_handle,
 			_stream: stream,
-			persistent_sources: HashMap::new(),
+			active_sources: Vec::new(),
 		})
 	}
 
@@ -100,19 +97,52 @@ impl System {
 }
 
 impl System {
-	pub fn create_sound(&mut self, id: &crate::asset::Id) -> Result<source::AnySource, AnyError> {
-		Ok(Box::new(source::Asset::create(id.clone(), 1024, self)?))
+	pub fn play_until_stopped(
+		&mut self,
+		mut source: source::AnySource,
+		playback_count: Option<usize>,
+	) {
+		source.play(playback_count);
+		self.active_sources.push(source);
 	}
 
-	pub fn add_persistent_source(&mut self, id: String, source: source::AnySource) {
-		self.persistent_sources.insert(id, source);
+	pub fn play_immediate(id: asset::Id) {
+		std::thread::spawn(move || {
+			log::info!(target: LOG, "Loading asset {} for playing", id);
+			let asset = match asset::Loader::load_sync(&id) {
+				Ok(asset) => asset.downcast::<Sound>().unwrap(),
+				Err(e) => {
+					log::error!(target: LOG, "Failed to load asset {}: {}", id, e);
+					return;
+				}
+			};
+			log::info!(
+				target: LOG,
+				"Finished loading {}, creating audio source",
+				id
+			);
+			if let Ok(mut audio_system) = Self::write() {
+				let source = match source::Asset::create(id.clone(), asset, &mut audio_system) {
+					Ok(source) => source,
+					Err(e) => {
+						log::error!(
+							target: LOG,
+							"Failed to create source for asset {}: {}",
+							id,
+							e
+						);
+						return;
+					}
+				};
+				audio_system.play_until_stopped(Box::new(source), Some(1));
+			}
+		});
 	}
+}
 
-	pub fn remove_persistent_source(&mut self, id: &String) {
-		self.persistent_sources.remove(id);
-	}
-
-	pub fn get_persistent_source(&self, id: &String) -> Option<&source::AnySource> {
-		self.persistent_sources.get(id)
+impl EngineSystem for System {
+	#[profiling::function]
+	fn update(&mut self, _: std::time::Duration) {
+		self.active_sources.retain(|source| !source.is_stopped());
 	}
 }

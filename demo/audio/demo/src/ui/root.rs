@@ -26,16 +26,25 @@ pub fn widget(mut ctx: WidgetContext) -> WidgetNode {
 		make_widget!(nav_vertical_box).listed_slot(
 			make_widget!(nav_horizontal_box)
 				.listed_slot(
-					make_widget!(image_button::widget)
-						.key("play-music")
-						.with_props(image_button::Props {
-							image_id: "ui/play".to_owned(),
-						})
-						.with_props(ButtonNotifyProps(ctx.id.to_owned().into()))
-						.with_props(FlexBoxItemLayout {
-							grow: 0.0,
+					make_widget!(size_box)
+						.with_props(SizeBoxProps {
+							width: SizeBoxSizeValue::Exact(20.0),
+							height: SizeBoxSizeValue::Exact(20.0),
 							..Default::default()
-						}),
+						})
+						.named_slot(
+							"content",
+							make_widget!(image_button::widget)
+								.key("play-music")
+								.with_props(image_button::Props {
+									image_id: "ui/play".to_owned(),
+								})
+								.with_props(ButtonNotifyProps(ctx.id.to_owned().into()))
+								.with_props(FlexBoxItemLayout {
+									grow: 0.0,
+									..Default::default()
+								}),
+						),
 				)
 				.listed_slot(
 					make_widget!(image_button::widget)

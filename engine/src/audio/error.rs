@@ -4,7 +4,9 @@ pub enum Error {
 	FailedToConfigureOutput(cpal::DefaultStreamConfigError),
 	FailedToBuildStream(cpal::BuildStreamError),
 	FailedToStartStream(cpal::PlayStreamError),
+	FailedToCreateDecoder(super::SourceKind),
 	DecodeVorbis(lewton::VorbisError),
+	DecodeMp3(minimp3::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -20,8 +22,14 @@ impl std::fmt::Display for Error {
 			Error::FailedToStartStream(ref err) => {
 				write!(f, "Failed to start cpal output stream: {}", err)
 			}
+			Error::FailedToCreateDecoder(ref kind) => {
+				write!(f, "Failed to create decoder for {}", kind)
+			}
 			Error::DecodeVorbis(ref err) => {
 				write!(f, "Failed to decode vorbis: {}", err)
+			}
+			Error::DecodeMp3(ref err) => {
+				write!(f, "Failed to decode mp3: {}", err)
 			}
 		}
 	}
@@ -50,5 +58,11 @@ impl From<cpal::PlayStreamError> for Error {
 impl From<lewton::VorbisError> for Error {
 	fn from(err: lewton::VorbisError) -> Error {
 		Error::DecodeVorbis(err)
+	}
+}
+
+impl From<minimp3::Error> for Error {
+	fn from(err: minimp3::Error) -> Error {
+		Error::DecodeMp3(err)
 	}
 }
