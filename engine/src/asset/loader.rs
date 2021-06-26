@@ -19,12 +19,9 @@ impl Loader {
 			.decompile(&bytes)
 	}
 
+	#[profiling::function]
 	pub fn load_sync(id: &asset::Id) -> Result<asset::AnyBox, utility::AnyError> {
-		log::info!(
-			target: asset::LOG,
-			"Synchronously loading '{}'",
-			id.as_string()
-		);
+		crate::profiling::optick::tag!("asset", id.as_string().as_str());
 		let location = asset::Library::read()
 			.find_location(&id)
 			.ok_or(asset::Error::AssetNotFound(id.clone()))?;

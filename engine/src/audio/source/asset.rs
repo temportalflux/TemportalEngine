@@ -106,7 +106,6 @@ impl Asset {
 						}
 					}
 					None => {
-						log::debug!("decoding {} has completed", id);
 						*decoding_state.write().unwrap() = DecodingState::Complete;
 						// decoding has concluded (which implies that we are also done any playback loops),
 						// so it is time to stop the audio.

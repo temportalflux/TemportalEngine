@@ -147,6 +147,6 @@ pub fn run() -> VoidResult {
 			.attach_system(&mut engine, &chain, None)?;
 	}
 
-	engine.run(chain.clone());
+	engine.run(chain.clone(), || {});
 	Ok(())
 }

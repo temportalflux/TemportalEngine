@@ -48,11 +48,20 @@ impl Engine {
 		self.winit_listeners.push(system.clone());
 	}
 
-	pub fn run(self, render_chain: Arc<RwLock<graphics::RenderChain>>) {
-		Self::run_engine(Arc::new(RwLock::new(self)), render_chain)
+	pub fn run<F>(self, render_chain: Arc<RwLock<graphics::RenderChain>>, on_complete: F)
+	where
+		F: 'static + Fn() -> (),
+	{
+		Self::run_engine(Arc::new(RwLock::new(self)), render_chain, on_complete)
 	}
 
-	pub fn run_engine(engine: Arc<RwLock<Self>>, render_chain: Arc<RwLock<graphics::RenderChain>>) {
+	pub fn run_engine<F>(
+		engine: Arc<RwLock<Self>>,
+		render_chain: Arc<RwLock<graphics::RenderChain>>,
+		on_complete: F,
+	) where
+		F: 'static + Fn() -> (),
+	{
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut prev_render_error = None;
 		let event_loop = engine.write().unwrap().event_loop.take();
@@ -116,6 +125,7 @@ impl Engine {
 				}
 				Event::RedrawRequested(_) => {}
 				Event::LoopDestroyed => {
+					log::info!(target: "engine", "Engine loop complete");
 					task::watcher().poll_until_empty();
 					render_chain
 						.read()
@@ -123,6 +133,7 @@ impl Engine {
 						.logical()
 						.wait_until_idle()
 						.unwrap();
+					on_complete();
 				}
 				_ => {}
 			}

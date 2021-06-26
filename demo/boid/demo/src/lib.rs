@@ -123,6 +123,6 @@ pub fn run() -> VoidResult {
 		.with_tree_root(engine::ui::make_widget!(crate::ui::root))
 		.attach_system(&mut engine, &chain, None)?;
 
-	engine.run(chain.clone());
+	engine.run(chain.clone(), || {});
 	Ok(())
 }

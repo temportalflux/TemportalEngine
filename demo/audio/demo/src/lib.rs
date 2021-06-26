@@ -49,6 +49,6 @@ pub fn run() -> VoidResult {
 		audio_system.add_persistent_source(id.as_string(), source);
 	}
 
-	engine.run(chain.clone());
+	engine.run(chain.clone(), || {});
 	Ok(())
 }

@@ -32,6 +32,6 @@ pub fn run() -> VoidResult {
 	let chain = window.create_render_chain(engine::graphics::renderpass::Info::default())?;
 	let _renderer = renderer::Triangle::new(&chain);
 
-	engine.run(chain);
+	engine.run(chain, || {});
 	Ok(())
 }
