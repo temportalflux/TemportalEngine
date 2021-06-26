@@ -27,4 +27,8 @@ impl WeightedIdList {
 		}
 		None
 	}
+
+	pub fn iter(&self) -> std::slice::Iter<'_, (usize, Id)> {
+		self.ids.iter()
+	}
 }
