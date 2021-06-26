@@ -6,10 +6,10 @@ fn use_button(ctx: &mut WidgetContext) {
 		for msg in ctx.messenger.messages {
 			if let Some(msg) = msg.as_any().downcast_ref::<ButtonNotifyMessage>() {
 				if msg.trigger_start() {
-					//use crate::engine::Application;
-					//crate::engine::audio::System::play_immediate(crate::Demo::get_asset_id(
-					//	"audio/click",
-					//));
+					use crate::engine::Application;
+					crate::engine::audio::System::play_immediate(crate::Demo::get_asset_id(
+						"audio/click",
+					));
 				}
 				if let Ok(ButtonNotifyProps(notify)) = ctx.props.read() {
 					if let Some(to) = notify.read() {

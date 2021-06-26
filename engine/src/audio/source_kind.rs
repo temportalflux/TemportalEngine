@@ -29,8 +29,8 @@ impl SourceKind {
 	) -> Result<Box<dyn decoder::Decoder>, super::Error> {
 		match *self {
 			Self::MP3 => Ok(Box::new(decoder::Mpeg::new(cursor)?)),
+			Self::WAV => Ok(Box::new(decoder::Wav::new(cursor)?)),
 			Self::Vorbis => Ok(Box::new(decoder::Vorbis::new(cursor)?)),
-			_ => unimplemented!("Not yet implemented"),
 		}
 	}
 }

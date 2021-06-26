@@ -7,6 +7,7 @@ pub enum Error {
 	FailedToCreateDecoder(super::SourceKind),
 	DecodeVorbis(lewton::VorbisError),
 	DecodeMp3(minimp3::Error),
+	DecodeWav(hound::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -30,6 +31,9 @@ impl std::fmt::Display for Error {
 			}
 			Error::DecodeMp3(ref err) => {
 				write!(f, "Failed to decode mp3: {}", err)
+			}
+			Error::DecodeWav(ref err) => {
+				write!(f, "Failed to decode wav: {}", err)
 			}
 		}
 	}
@@ -64,5 +68,11 @@ impl From<lewton::VorbisError> for Error {
 impl From<minimp3::Error> for Error {
 	fn from(err: minimp3::Error) -> Error {
 		Error::DecodeMp3(err)
+	}
+}
+
+impl From<hound::Error> for Error {
+	fn from(err: hound::Error) -> Error {
+		Error::DecodeWav(err)
 	}
 }

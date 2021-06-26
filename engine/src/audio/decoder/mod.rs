@@ -7,6 +7,9 @@ pub use track::*;
 mod vorbis;
 pub use vorbis::*;
 
+mod wav;
+pub use wav::*;
+
 pub trait Decoder: Send + Sync + std::iter::Iterator<Item = oddio::Sample> {
 	fn sample_rate(&self) -> u32;
 	fn channel_count(&self) -> usize;
@@ -18,6 +21,16 @@ where
 {
 	use cpal::Sample;
 	<f32 as cpal::Sample>::from(&sample).to_f32()
+}
+
+pub fn resample_24bit(sample: i32) -> oddio::Sample {
+	// based on: https://github.com/RustAudio/rodio/blob/master/src/decoder/wav.rs#L170
+	resample((sample >> 8) as u16)
+}
+
+pub fn resample_8bit(sample: i8) -> oddio::Sample {
+	// based on: https://github.com/RustAudio/rodio/blob/master/src/decoder/wav.rs#L176
+	resample(((sample as i16) * 256) as u16)
 }
 
 pub(super) struct PlaybackLoop {

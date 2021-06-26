@@ -9,18 +9,28 @@ edition = "2018"
 [dependencies]
 # [utility] similar to a bitmap but for any enum with a derive-trait implemented
 enumset = { version = "1.0", features = ["serde"] } 
+# [audio] for manaing audio devices
+cpal = "0.13"
 # [rust] async/future support in rust (for thinks like ongoing/background tasks)
 futures = "0.3"
-# [log] log allows for logging formatted text to multiple outputs and provides a generic interface
-log = { version = "0.4", features = ["std"] }
+# [audio] for parsing wav audio binaries
+hound = "3.4"
 # [input] for processing user input from winit and gamepads using a user-defined configuration
 input-actions = { path = "../input-actions", features = ["winit", "log"] }
+# [audio] for parsing vorbis/ogg audio binaries
+lewton = "0.10"
+# [log] log allows for logging formatted text to multiple outputs and provides a generic interface
+log = { version = "0.4", features = ["std"] }
+# [audio] for parsing mp3 audio binaries
+minimp3 = "0.5"
 # [math] for math interoperability
 mint = "0.5"
 # [utility] for mapping a single key to multiple values
 multimap = "0.8"
 # [math] for math types and functions
 nalgebra = { version = "0.27", features = ["serde-serialize"] }
+# [audio] for managing audio playback and mixing
+oddio = "0.4"
 # [utility] for getting performance information and rendering via any chosen viewer
 profiling = { version = "1.0", features = ["profile-with-optick"] }
 # [utility] pseudo/generated randomness
@@ -33,14 +43,6 @@ raw-window-handle = "0.3"
 rmp = "0.8"
 # [serialization] expanded serialization support for serde
 rmp-serde = "0.15"
-# [audio] for managing audio playback and mixing
-oddio = "0.4"
-# [audio] for manaing audio devices
-cpal = "0.13"
-# [audio] for parsing vorbis/ogg audio binaries
-lewton = "0.10"
-# [audio] for parsing mp3 audio binaries
-minimp3 = "0.5"
 # [utility] semantic versioning
 semver = "1.0"
 # [serialization]
