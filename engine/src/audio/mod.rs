@@ -1,7 +1,10 @@
 use crate::{asset, utility::singleton::Singleton, EngineSystem};
 use cpal;
 use oddio;
-use std::sync::{LockResult, RwLock, RwLockWriteGuard};
+use std::{
+	collections::HashMap,
+	sync::{LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard},
+};
 
 pub static LOG: &'static str = "audio";
 
@@ -24,6 +27,7 @@ pub fn register_asset_types(type_reg: &mut crate::asset::TypeRegistry) {
 
 pub struct System {
 	active_sources: Vec<source::AnySource>,
+	named_sources: HashMap<asset::Id, Box<source::Asset>>,
 
 	_stream: cpal::Stream,
 	mixer_handle: oddio::Handle<oddio::Mixer<[oddio::Sample; 2]>>,
@@ -84,6 +88,7 @@ impl System {
 			mixer_handle,
 			_stream: stream,
 			active_sources: Vec::new(),
+			named_sources: HashMap::new(),
 		})
 	}
 
@@ -94,19 +99,17 @@ impl System {
 	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
 		Self::get().write()
 	}
+
+	pub fn read() -> LockResult<RwLockReadGuard<'static, Self>> {
+		Self::get().read()
+	}
 }
 
 impl System {
-	pub fn play_until_stopped(
-		&mut self,
-		mut source: source::AnySource,
-		playback_count: Option<usize>,
-	) {
-		source.play(playback_count);
-		self.active_sources.push(source);
-	}
-
-	pub fn play_immediate(id: asset::Id) {
+	fn load_source<F>(id: asset::Id, on_loaded: F)
+	where
+		F: Fn(&mut Self, Box<source::Asset>) + Send + 'static
+	{
 		std::thread::spawn(move || {
 			log::info!(target: LOG, "Loading asset {} for playing", id);
 			let asset = match asset::Loader::load_sync(&id) {
@@ -134,8 +137,33 @@ impl System {
 						return;
 					}
 				};
-				audio_system.play_until_stopped(Box::new(source), Some(1));
+				on_loaded(&mut audio_system, Box::new(source));
 			}
+		});
+	}
+
+	pub fn add_source(id: asset::Id) {
+		Self::load_source(id.clone(), move |audio_system: &mut Self, source| {
+			audio_system.named_sources.insert(id.clone(), source);
+		});
+	}
+
+	pub fn get_source(&mut self, id: &asset::Id) -> Option<&mut Box<source::Asset>> {
+		self.named_sources.get_mut(id)
+	}
+
+	pub fn play_until_stopped(
+		&mut self,
+		mut source: source::AnySource,
+		playback_count: Option<usize>,
+	) {
+		source.play(playback_count);
+		self.active_sources.push(source);
+	}
+
+	pub fn play_immediate(id: asset::Id) {
+		Self::load_source(id.clone(), move |audio_system: &mut Self, source| {
+			audio_system.play_until_stopped(source, Some(1));
 		});
 	}
 }

@@ -41,9 +41,7 @@ pub fn run() -> VoidResult {
 			.attach_system(&mut engine, &chain, None)?;
 	}
 
-	crate::engine::audio::System::play_immediate(crate::Demo::get_asset_id(
-		"audio/music-for-manatees",
-	));
+	crate::engine::audio::System::add_source(crate::Demo::get_asset_id("audio/music-for-manatees"));
 
 	engine.run(chain.clone(), || {});
 	Ok(())

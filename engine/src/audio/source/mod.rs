@@ -20,5 +20,6 @@ pub trait Source {
 	fn pause(&mut self);
 	fn resume(&mut self);
 	fn stop(&mut self);
+
 	fn is_stopped(&self) -> bool;
 }
