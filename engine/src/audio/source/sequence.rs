@@ -62,17 +62,10 @@ impl Sequence {
 			};
 			if should_play_next_set {
 				self.queue = self.create_shuffled_queue();
-				log::debug!(
-					target: LOG,
-					"Shuffled sequence into {:?} with {:?} loops remaining",
-					self.queue,
-					self.playback_count
-				);
 			}
 		}
 		match self.queue.pop_front() {
 			Some(id) => {
-				log::debug!(target: LOG, "Found next source: {}", id);
 				let source = super::Asset::create(id, 1024, &mut audio::System::write().unwrap())?;
 				Ok(Some(source))
 			}
