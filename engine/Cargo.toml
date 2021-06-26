@@ -34,8 +34,7 @@ rmp = "0.8"
 # [serialization] expanded serialization support for serde
 rmp-serde = "0.15"
 # [audio] for managing audio playback and mixing
-# oddio-v0.3 does not support stereo-channel streams, but the latest rev does
-oddio = { version = "0.3", git = "https://github.com/Ralith/oddio", rev = "9c2bb8224521e0cc228f95fd89cd8907d11f51fb" }
+oddio = "0.4"
 # [audio] for manaing audio devices
 cpal = "0.13"
 # [audio] for parsing vorbis/ogg audio binaries
