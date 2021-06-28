@@ -145,6 +145,6 @@ pub fn run() -> VoidResult {
 			.attach_system(&mut engine, None)?;
 	}
 
-	let engine = engine.make_threadsafe();
+	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
 }

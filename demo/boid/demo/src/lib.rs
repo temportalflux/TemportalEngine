@@ -124,6 +124,6 @@ pub fn run() -> VoidResult {
 		.with_tree_root(engine::ui::make_widget!(crate::ui::root))
 		.attach_system(&mut engine, None)?;
 
-	let engine = engine.make_threadsafe();
+	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
 }

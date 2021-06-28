@@ -31,6 +31,6 @@ pub fn run() -> VoidResult {
 
 	let _renderer = renderer::Triangle::new(engine.render_chain().unwrap());
 
-	let engine = engine.make_threadsafe();
+	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
 }

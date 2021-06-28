@@ -41,6 +41,6 @@ pub fn run() -> VoidResult {
 
 	crate::engine::audio::System::add_source(crate::Demo::get_asset_id("audio/music-for-manatees"));
 
-	let engine = engine.make_threadsafe();
+	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
 }

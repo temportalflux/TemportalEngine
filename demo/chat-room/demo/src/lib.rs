@@ -33,6 +33,6 @@ pub fn run() -> VoidResult {
 		.with_tree_root(engine::ui::make_widget!(ui::root::widget))
 		.attach_system(&mut engine, None)?;
 
-	let engine = engine.make_threadsafe();
+	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
 }

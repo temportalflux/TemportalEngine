@@ -69,7 +69,7 @@ impl Engine {
 			.flatten()
 	}
 
-	pub fn make_threadsafe(self) -> Arc<RwLock<Self>>
+	pub fn into_arclock(self) -> Arc<RwLock<Self>>
 	{
 		Arc::new(RwLock::new(self))
 	}
