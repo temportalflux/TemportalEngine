@@ -16,19 +16,17 @@ pub fn run() -> VoidResult {
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
-	let mut window = engine::window::Window::builder()
+	engine::window::Window::builder()
 		.with_title("(RA)UI Demo")
 		.with_size(1280.0, 720.0)
 		.with_resizable(false)
 		.with_application::<UIDemo>()
-		.build(&engine)?;
-
-	let chain = window.create_render_chain(engine::graphics::renderpass::Info::default())?;
+		.build(&mut engine)?;
 
 	// Create the UI system and widget tree
 	{
 		use ui::*;
-		ui::System::new(&chain)?
+		ui::System::new(engine.render_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?
 			.with_texture(&UIDemo::get_asset_id("textures/background"))?
@@ -144,9 +142,9 @@ pub fn run() -> VoidResult {
 							)),
 					),
 			))
-			.attach_system(&mut engine, &chain, None)?;
+			.attach_system(&mut engine, None)?;
 	}
 
-	engine.run(chain.clone(), || {});
-	Ok(())
+	let engine = engine.make_threadsafe();
+	engine::Engine::run(engine.clone(), || {})
 }

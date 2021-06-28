@@ -58,7 +58,7 @@ impl Builder {
 	}
 
 	#[profiling::function]
-	pub fn build(self, engine: &Engine) -> Result<window::Window, utility::AnyError> {
+	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window, utility::AnyError> {
 		log::info!(
 			target: window::LOG,
 			"Creating window \"{}\" with size <{},{}>",
@@ -66,7 +66,7 @@ impl Builder {
 			self.inner_logical_size.x,
 			self.inner_logical_size.y,
 		);
-		Ok(window::Window::new(
+		let mut window = window::Window::new(
 			winit::window::WindowBuilder::new()
 				.with_title(self.title)
 				.with_inner_size(winit::dpi::Size::Logical(winit::dpi::LogicalSize::new(
@@ -81,6 +81,8 @@ impl Builder {
 			self.app_info,
 			self.constraints,
 			self.render_pass_clear_color,
-		)?)
+		)?;
+		window.create_render_chain()?;
+		Ok(engine.set_window(window))
 	}
 }

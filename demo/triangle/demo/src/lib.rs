@@ -19,19 +19,18 @@ impl Application for TriangleDemo {
 
 pub fn run() -> VoidResult {
 	engine::logging::init(TriangleDemo::name(), None)?;
-	let engine = engine::Engine::new()?;
+	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
-	let mut window = engine::window::Window::builder()
+	engine::window::Window::builder()
 		.with_title("Triangle Demo")
 		.with_size(800.0, 600.0)
 		.with_resizable(true)
 		.with_application::<TriangleDemo>()
-		.build(&engine)?;
+		.build(&mut engine)?;
 
-	let chain = window.create_render_chain(engine::graphics::renderpass::Info::default())?;
-	let _renderer = renderer::Triangle::new(&chain);
+	let _renderer = renderer::Triangle::new(engine.render_chain().unwrap());
 
-	engine.run(chain, || {});
-	Ok(())
+	let engine = engine.make_threadsafe();
+	engine::Engine::run(engine.clone(), || {})
 }

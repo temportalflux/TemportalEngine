@@ -17,15 +17,15 @@ pub struct Window {
 	graphics_queue_index: usize,
 
 	// This is at the bottom to ensure that rust deallocates it last
-	render_chain: Option<sync::Arc<sync::RwLock<graphics::RenderChain>>>,
+	render_chain: Option<graphics::ArcRenderChain>,
 	render_pass_clear_color: Vector4<f32>,
 	graphics_allocator: sync::Arc<graphics::alloc::Allocator>,
 	logical_device: sync::Arc<logical::Device>,
 	physical_device: sync::Arc<physical::Device>,
 	surface: sync::Arc<Surface>,
 	_vulkan: sync::Arc<instance::Instance>,
-	internal: sync::Arc<sync::RwLock<winit::window::Window>>,
 	_graphics_context: Context,
+	internal: sync::Arc<sync::RwLock<winit::window::Window>>,
 }
 
 impl Window {
@@ -122,7 +122,6 @@ impl Window {
 	#[profiling::function]
 	pub fn create_render_chain(
 		&mut self,
-		render_pass_info: renderpass::Info,
 	) -> Result<sync::Arc<sync::RwLock<graphics::RenderChain>>, utility::AnyError> {
 		let permitted_frame_count = self
 			.physical_device
@@ -143,7 +142,6 @@ impl Window {
 			graphics_queue,
 			&self.surface,
 			frame_count,
-			render_pass_info,
 		)?;
 		chain.add_clear_value(renderpass::ClearValue::Color([
 			self.render_pass_clear_color.x,

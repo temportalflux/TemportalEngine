@@ -7,10 +7,12 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# [utility] similar to a bitmap but for any enum with a derive-trait implemented
-enumset = { version = "1.0", features = ["serde"] } 
+# [utility] for implementing single-producer-multi-receiver (broadcast) delegates
+bus = "2.2"
 # [audio] for manaing audio devices
 cpal = "0.13"
+# [utility] similar to a bitmap but for any enum with a derive-trait implemented
+enumset = { version = "1.0", features = ["serde"] } 
 # [rust] async/future support in rust (for thinks like ongoing/background tasks)
 futures = "0.3"
 # [audio] for parsing wav audio binaries

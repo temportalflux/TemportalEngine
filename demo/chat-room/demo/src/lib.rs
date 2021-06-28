@@ -19,21 +19,20 @@ pub fn run() -> VoidResult {
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
-	let mut window = engine::window::Window::builder()
+	engine::window::Window::builder()
 		.with_title("Chat Room")
 		.with_size(1280.0, 720.0)
 		.with_resizable(true)
 		.with_application::<ChatRoom>()
 		.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
-		.build(&engine)?;
-	let chain = window.create_render_chain(engine::graphics::renderpass::Info::default())?;
+		.build(&mut engine)?;
 
-	engine::ui::System::new(&chain)?
+	engine::ui::System::new(engine.render_chain().unwrap())?
 		.with_engine_shaders()?
 		.with_all_fonts()?
 		.with_tree_root(engine::ui::make_widget!(ui::root::widget))
-		.attach_system(&mut engine, &chain, None)?;
+		.attach_system(&mut engine, None)?;
 
-	engine.run(chain.clone(), || {});
-	Ok(())
+	let engine = engine.make_threadsafe();
+	engine::Engine::run(engine.clone(), || {})
 }

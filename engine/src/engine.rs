@@ -1,14 +1,15 @@
 use crate::{
-	asset, audio, graphics, input, task,
+	asset, audio, input, task,
 	utility::{AnyError, VoidResult},
 };
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, RwLockWriteGuard};
 use winit::event_loop::EventLoop;
 
 pub struct Engine {
 	event_loop: Option<EventLoop<()>>,
 	winit_listeners: Vec<Arc<RwLock<dyn WinitEventListener>>>,
 	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
+	window: Option<crate::window::Window>,
 }
 
 impl Engine {
@@ -20,6 +21,7 @@ impl Engine {
 			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),
 			systems: Vec::new(),
+			window: None,
 		})
 	}
 
@@ -48,18 +50,32 @@ impl Engine {
 		self.winit_listeners.push(system.clone());
 	}
 
-	pub fn run<F>(self, render_chain: Arc<RwLock<graphics::RenderChain>>, on_complete: F)
-	where
-		F: 'static + Fn() -> (),
-	{
-		Self::run_engine(Arc::new(RwLock::new(self)), render_chain, on_complete)
+	pub fn set_window(&mut self, window: crate::window::Window) -> &mut crate::window::Window {
+		self.window = Some(window);
+		self.window.as_mut().unwrap()
 	}
 
-	pub fn run_engine<F>(
-		engine: Arc<RwLock<Self>>,
-		render_chain: Arc<RwLock<graphics::RenderChain>>,
-		on_complete: F,
-	) where
+	pub fn window(&self) -> Option<&crate::window::Window> {
+		self.window.as_ref()
+	}
+
+	pub fn render_chain(&self) -> Option<&crate::graphics::ArcRenderChain> {
+		self.window.as_ref().map(|win| win.render_chain())
+	}
+
+	pub fn render_chain_write(&self) -> Option<RwLockWriteGuard<crate::graphics::RenderChain>> {
+		self.render_chain()
+			.map(|chain| chain.write().ok())
+			.flatten()
+	}
+
+	pub fn make_threadsafe(self) -> Arc<RwLock<Self>>
+	{
+		Arc::new(RwLock::new(self))
+	}
+
+	pub fn run<F>(engine: Arc<RwLock<Self>>, on_complete: F) -> !
+	where
 		F: 'static + Fn() -> (),
 	{
 		let mut prev_frame_time = std::time::Instant::now();
@@ -109,16 +125,17 @@ impl Engine {
 							system.write().unwrap().update(delta_time);
 						}
 					}
-					{
-						let mut chain_write = render_chain.write().unwrap();
-						match chain_write.render_frame() {
-							Ok(_) => prev_render_error = None,
-							Err(error) => {
-								if prev_render_error.is_none() {
-									log::error!("Frame render failed {:?}", error);
+					if let Ok(eng) = engine.read() {
+						if let Some(mut chain_write) = eng.render_chain_write() {
+							match (*chain_write).render_frame() {
+								Ok(_) => prev_render_error = None,
+								Err(error) => {
+									if prev_render_error.is_none() {
+										log::error!("Frame render failed {:?}", error);
+									}
+									prev_render_error = Some(error);
+									*control_flow = winit::event_loop::ControlFlow::Exit;
 								}
-								prev_render_error = Some(error);
-								*control_flow = winit::event_loop::ControlFlow::Exit;
 							}
 						}
 					}
@@ -128,17 +145,18 @@ impl Engine {
 				Event::LoopDestroyed => {
 					log::info!(target: "engine", "Engine loop complete");
 					task::watcher().poll_until_empty();
-					render_chain
-						.read()
-						.unwrap()
-						.logical()
-						.wait_until_idle()
-						.unwrap();
+					if let Ok(eng) = engine.read() {
+						if let Some(chain_read) =
+							eng.render_chain().map(|chain| chain.read().unwrap())
+						{
+							chain_read.logical().wait_until_idle().unwrap();
+						}
+					}
 					on_complete();
 				}
 				_ => {}
 			}
-		});
+		})
 	}
 }
 

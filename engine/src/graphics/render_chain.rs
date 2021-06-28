@@ -84,6 +84,7 @@ pub trait RenderChainElement: Send + Sync {
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
+pub type ArcRenderChain = Arc<RwLock<RenderChain>>;
 
 /// A general purpose renderer used for managing the recording of
 /// command buffers, generating the swapchain and its framebuffers, etc.
@@ -143,7 +144,6 @@ impl RenderChain {
 	/// * `surface` - The window surface to which frames can be presented
 	/// * `frame_count` - The number of frames to manage (2 for double buffer, 3 for ring buffer).
 	/// 		This controls the number of swapchain images, framebuffers, and primary command buffers.
-	/// * `render_pass_info` - The info for creating a render pass that the render chain will manage and use
 	pub fn new(
 		physical: &sync::Arc<physical::Device>,
 		logical: &sync::Arc<logical::Device>,
@@ -151,7 +151,6 @@ impl RenderChain {
 		graphics_queue: logical::Queue,
 		surface: &sync::Arc<Surface>,
 		frame_count: usize,
-		render_pass_info: renderpass::Info,
 	) -> utility::Result<RenderChain> {
 		let swapchain_info = Swapchain::builder()
 			.with_image_count(frame_count as u32)
@@ -194,7 +193,7 @@ impl RenderChain {
 			frame_command_pool: None,
 			command_buffers: Vec::new(),
 			render_pass_instruction,
-			render_pass_info,
+			render_pass_info: renderpass::Info::default(),
 			is_dirty: true,
 			resolution: [resolution.width as f32, resolution.height as f32].into(),
 
@@ -268,6 +267,11 @@ impl RenderChain {
 	/// This command pool is not dropped until the render chain is dropped.
 	pub fn persistent_descriptor_pool(&self) -> &Arc<RwLock<graphics::descriptor::pool::Pool>> {
 		&self.persistent_descriptor_pool
+	}
+
+	pub fn set_render_pass_info(&mut self, info: renderpass::Info) {
+		self.render_pass_info = info;
+		self.is_dirty = true;
 	}
 
 	/// Returns a reference to the render pass used to organize the render order.

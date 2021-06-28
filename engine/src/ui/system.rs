@@ -249,16 +249,18 @@ impl System {
 	pub fn attach_system(
 		self,
 		engine: &mut crate::Engine,
-		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
 		subpass_id: Option<String>,
 	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(&system);
 		engine.add_winit_listener(&system);
-		render_chain
-			.write()
-			.unwrap()
-			.add_render_chain_element(subpass_id, &system)?;
+		if let Some(mut chain_write) = engine
+			.render_chain()
+			.map(|chain| chain.write().ok())
+			.flatten()
+		{
+			chain_write.add_render_chain_element(subpass_id, &system)?;
+		}
 		Ok(system)
 	}
 

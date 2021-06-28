@@ -72,15 +72,14 @@ pub fn run() -> VoidResult {
 	ecs_context.add_system(ecs::systems::InputDestroyEntity::new(destroy_receiver));
 	GameContext::write().with_senders(create_sender, destroy_sender);
 
-	let mut window = engine::window::Window::builder()
+	engine::window::Window::builder()
 		.with_title("Boids")
 		.with_size(resolution.x as f64, resolution.y as f64)
 		.with_resizable(true)
 		.with_application::<BoidDemo>()
 		.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
-		.build(&engine)?;
-	let chain = window.create_render_chain(engine::graphics::renderpass::Info::default())?;
-	chain.write().unwrap().set_camera(
+		.build(&mut engine)?;
+	engine.render_chain_write().unwrap().set_camera(
 		camera::Camera::default()
 			.with_position([0.0, 0.0, -10.0].into())
 			.with_projection(camera::Projection::Orthographic(
@@ -93,13 +92,15 @@ pub fn run() -> VoidResult {
 	);
 
 	ecs_context.add_system(ecs::systems::InstanceCollector::new(
-		graphics::RenderBoids::new(&window.render_chain())?,
+		graphics::RenderBoids::new(engine.render_chain().unwrap())?,
 		100,
 	));
 
 	{
 		let debug_render =
-			engine::render::DebugRender::create(&chain, |debug| debug.with_engine_shaders())?;
+			engine::render::DebugRender::create(engine.render_chain().unwrap(), |debug| {
+				debug.with_engine_shaders()
+			})?;
 		engine.add_system(&debug_render);
 		ecs_context.add_system(ecs::systems::DrawForward::new(debug_render.clone()));
 		//ecs_context.add_system(ecs::systems::ai::DrawWanderDebug::new(debug_render.clone()));
@@ -116,13 +117,13 @@ pub fn run() -> VoidResult {
 	let ecs_context = Arc::new(RwLock::new(ecs_context));
 	engine.add_system(&ecs_context);
 
-	engine::ui::System::new(&chain)?
+	engine::ui::System::new(engine.render_chain().unwrap())?
 		.with_engine_shaders()?
 		.with_all_fonts()?
 		.with_texture(&BoidDemo::get_asset_id("arrow"))?
 		.with_tree_root(engine::ui::make_widget!(crate::ui::root))
-		.attach_system(&mut engine, &chain, None)?;
+		.attach_system(&mut engine, None)?;
 
-	engine.run(chain.clone(), || {});
-	Ok(())
+	let engine = engine.make_threadsafe();
+	engine::Engine::run(engine.clone(), || {})
 }

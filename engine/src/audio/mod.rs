@@ -108,7 +108,7 @@ impl System {
 impl System {
 	fn load_source<F>(id: asset::Id, on_loaded: F)
 	where
-		F: Fn(&mut Self, Box<source::Asset>) + Send + 'static
+		F: Fn(&mut Self, Box<source::Asset>) + Send + 'static,
 	{
 		std::thread::spawn(move || {
 			log::info!(target: LOG, "Loading asset {} for playing", id);

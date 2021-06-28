@@ -10,7 +10,6 @@ use crate::{
 		},
 		math::nalgebra::{Vector2, Vector4},
 		utility::AnyError,
-		window::Window,
 		Application, Engine, WinitEventListener,
 	},
 	ui, Editor,
@@ -78,20 +77,17 @@ impl Vertex {
 }
 
 impl Ui {
-	pub fn create(
-		window: &Window,
-		engine: &mut Engine,
-		render_chain: &Arc<RwLock<RenderChain>>,
-	) -> Result<Arc<RwLock<Self>>, AnyError> {
-		let mut chain = render_chain.write().unwrap();
-		let strong = Arc::new(RwLock::new(Self::new(window, &chain)?));
-		chain.add_render_chain_element(None, &strong)?;
+	pub fn create(engine: &mut Engine) -> Result<Arc<RwLock<Self>>, AnyError> {
+		let strong = Arc::new(RwLock::new(Self::new(engine)?));
+		if let Some(mut chain) = engine.render_chain_write() {
+			chain.add_render_chain_element(None, &strong)?;
+		}
 		engine.add_winit_listener(&strong);
 		Ok(strong)
 	}
 
-	fn new(window: &Window, chain: &RenderChain) -> engine::utility::Result<Ui> {
-		let window_handle = window.unwrap();
+	fn new(engine: &mut Engine) -> engine::utility::Result<Ui> {
+		let window_handle = engine.window().unwrap().unwrap();
 
 		let mut imgui_ctx = imgui::Context::create();
 		imgui_ctx.set_ini_filename(None);
@@ -120,7 +116,7 @@ impl Ui {
 						1,
 						flags::ShaderKind::Fragment,
 					)
-					.build(&chain.logical())?,
+					.build(&engine.render_chain().unwrap().read().unwrap().logical())?,
 			),
 			frames: Vec::new(),
 			pending_gpu_signals: Vec::new(),
