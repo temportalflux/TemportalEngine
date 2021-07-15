@@ -64,6 +64,7 @@ impl RenderBoids {
 		)?);
 		let image_sampler = Arc::new(
 			sampler::Sampler::builder()
+				.with_name("BoidModel.Image.Sampler")
 				.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
 				.with_max_anisotropy(Some(
 					render_chain
@@ -203,7 +204,7 @@ impl RenderBoids {
 		image: Arc<image::Image>,
 	) -> Result<image_view::View, AnyError> {
 		Ok(image_view::View::builder()
-			.with_name("BoidModel.ImageView")
+			.with_name("BoidModel.Image.View")
 			.for_image(image.clone())
 			.with_view_type(flags::ImageViewType::TYPE_2D)
 			.with_range(

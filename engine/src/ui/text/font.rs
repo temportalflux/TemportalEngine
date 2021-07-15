@@ -92,7 +92,7 @@ impl PendingAtlas {
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
-				.with_name(format!("UI.FontAtlas:{}.ImageView", self.id))
+				.with_name(format!("UI.FontAtlas:{}.Image.View", self.id))
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))

@@ -6,6 +6,7 @@ use crate::{
 		flags,
 		font::Font,
 		pipeline, sampler, structs, Drawable,
+		utility::{BuildFromDevice, NameableBuilder}
 	},
 	math::nalgebra::Vector2,
 	ui::{
@@ -47,6 +48,7 @@ impl DataPipeline {
 		Ok(Self {
 			sampler: sync::Arc::new(
 				graphics::sampler::Sampler::builder()
+					.with_name("UI.Font.Image.Sampler")
 					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
 					.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
 					.build(&render_chain.logical())?,

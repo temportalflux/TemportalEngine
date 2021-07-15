@@ -157,7 +157,7 @@ where
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
-				.with_optname(self.make_object_name(&pending.name, "View"))
+				.with_optname(self.make_object_name(&pending.name, "Image.View"))
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
@@ -166,6 +166,7 @@ where
 
 		let sampler = sync::Arc::new(
 			graphics::sampler::Sampler::builder()
+				.with_optname(self.make_object_name(&pending.name, "Image.Sampler"))
 				.with_magnification(flags::Filter::NEAREST)
 				.with_minification(flags::Filter::NEAREST)
 				.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])

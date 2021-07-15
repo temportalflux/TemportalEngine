@@ -384,7 +384,7 @@ impl RenderChain {
 		for (i, image) in self.frame_images.iter().enumerate() {
 			self.frame_image_views.push(
 				image_view::View::builder()
-					.with_name(format!("{}.ImageView", self.swapchain().frame_name(i)))
+					.with_name(format!("{}.Image.View", self.swapchain().frame_name(i)))
 					.for_image(image.clone())
 					.with_view_type(flags::ImageViewType::TYPE_2D)
 					.with_range(
