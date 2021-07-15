@@ -154,6 +154,7 @@ impl RenderChain {
 		frame_count: usize,
 	) -> utility::Result<RenderChain> {
 		let swapchain_info = Swapchain::builder()
+			.with_name("Swapchain")
 			.with_image_count(frame_count as u32)
 			.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
 			.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
