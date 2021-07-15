@@ -12,6 +12,7 @@ use std::{collections::HashMap, sync};
 pub struct ShaderSet {
 	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
 	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
+	name: Option<String>,
 }
 
 impl Default for ShaderSet {
@@ -19,11 +20,25 @@ impl Default for ShaderSet {
 		Self {
 			pending_shaders: HashMap::new(),
 			shaders: HashMap::new(),
+			name: None,
 		}
 	}
 }
 
 impl ShaderSet {
+	
+	pub fn with_name<TStr>(mut self, name: TStr) -> Self
+	where
+		TStr: Into<String>,
+	{
+		self.set_name(Some(name.into()));
+		self
+	}
+
+	pub fn set_name(&mut self, name: Option<String>) {
+		self.name = name;
+	}
+
 	/// Adds a [`shader asset`](graphics::Shader) to the set.
 	/// If a shader of the same kind already exists, it will be dropped the next time
 	/// [`create_modules`](ShaderSet::create_modules) is called.
@@ -42,12 +57,14 @@ impl ShaderSet {
 	#[profiling::function]
 	pub fn create_modules(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
 		for (kind, binary) in self.pending_shaders.drain() {
+			let kind_string: String = kind.into();
 			self.shaders.insert(
 				kind,
 				sync::Arc::new(shader::Module::create(
 					render_chain.logical().clone(),
 					shader::Info {
-						kind: kind,
+						name: self.name.as_ref().map(|name| format!("{}.{}", name, kind_string)),
+						kind,
 						entry_point: String::from("main"),
 						bytes: binary,
 					},

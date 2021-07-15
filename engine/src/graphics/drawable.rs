@@ -29,6 +29,12 @@ impl Default for Drawable {
 }
 
 impl Drawable {
+
+	pub fn with_name<TStr>(mut self, name: TStr) -> Self where TStr: Into<String> {
+		self.shaders.set_name(Some(format!("{}.Shader", name.into())));
+		self
+	}
+
 	/// Adds a shader by its asset id to the drawable.
 	/// Offloads logic to [`ShaderSet::insert`].
 	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {

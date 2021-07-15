@@ -5,8 +5,9 @@ use crate::{
 		descriptor::{self, layout::SetLayout},
 		flags,
 		font::Font,
-		pipeline, sampler, structs, Drawable,
-		utility::{BuildFromDevice, NameableBuilder}
+		pipeline, sampler, structs,
+		utility::{BuildFromDevice, NameableBuilder},
+		Drawable,
 	},
 	math::nalgebra::Vector2,
 	ui::{
@@ -54,7 +55,7 @@ impl DataPipeline {
 					.build(&render_chain.logical())?,
 			),
 			descriptor_layout,
-			drawable: Drawable::default(),
+			drawable: Drawable::default().with_name("UI.Text"),
 			fonts: HashMap::new(),
 			pending_font_atlases: HashMap::new(),
 		})

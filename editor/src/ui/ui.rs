@@ -106,7 +106,7 @@ impl Ui {
 			imgui_winit: RwLock::new(imgui_winit),
 			last_frame: Instant::now(),
 			ui_elements: Vec::new(),
-			drawable: Drawable::default(),
+			drawable: Drawable::default().with_name("EditorUI.ImGui"),
 			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
 			descriptor_cache: DescriptorCache::new(
 				descriptor::layout::SetLayout::builder()

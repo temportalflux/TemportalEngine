@@ -96,6 +96,7 @@ impl graphics::RenderChainElement for Triangle {
 		self.vert_shader = Some(sync::Arc::new(shader::Module::create(
 			render_chain.logical().clone(),
 			shader::Info {
+				name: Some("Shader.Vertex".to_string()),
 				kind: flags::ShaderKind::Vertex,
 				entry_point: String::from("main"),
 				bytes: self.vert_bytes.clone(),
@@ -105,6 +106,7 @@ impl graphics::RenderChainElement for Triangle {
 		self.frag_shader = Some(sync::Arc::new(shader::Module::create(
 			render_chain.logical().clone(),
 			shader::Info {
+				name: Some("Shader.Fragment".to_string()),
 				kind: flags::ShaderKind::Fragment,
 				entry_point: String::from("main"),
 				bytes: self.frag_bytes.clone(),

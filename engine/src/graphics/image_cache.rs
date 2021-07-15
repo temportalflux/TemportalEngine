@@ -1,8 +1,9 @@
 use crate::{
-	graphics::{self, command, flags, image_view, sampler, structs, Texture, utility::NameableBuilder},
+	graphics::{
+		self, command, flags, image_view, sampler, structs, utility::NameableBuilder, Texture,
+	},
 	math::nalgebra::Vector2,
-	task,
-	utility,
+	task, utility,
 };
 use std::{collections::HashMap, sync};
 
@@ -45,8 +46,10 @@ impl<T> ImageCache<T>
 where
 	T: Eq + std::hash::Hash + Clone,
 {
-
-	pub fn with_cache_name<TStr>(mut self, name: TStr) -> Self where TStr: Into<String> {
+	pub fn with_cache_name<TStr>(mut self, name: TStr) -> Self
+	where
+		TStr: Into<String>,
+	{
 		self.set_cache_name(Some(name.into()));
 		self
 	}
@@ -58,15 +61,29 @@ where
 	/// Adds an engine asset texture to the cache,
 	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
 	pub fn insert(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
-		self.pending.insert(id, PendingEntry {
-			name, compiled: texture.get_compiled().clone()
-		});
+		self.pending.insert(
+			id,
+			PendingEntry {
+				name,
+				compiled: texture.get_compiled().clone(),
+			},
+		);
 	}
 
-	pub fn insert_compiled(&mut self, id: T, name: Option<String>, size: Vector2<usize>, binary: Vec<u8>) {
-		self.pending.insert(id, PendingEntry {
-			name, compiled: graphics::CompiledTexture { size, binary }
-		});
+	pub fn insert_compiled(
+		&mut self,
+		id: T,
+		name: Option<String>,
+		size: Vector2<usize>,
+		binary: Vec<u8>,
+	) {
+		self.pending.insert(
+			id,
+			PendingEntry {
+				name,
+				compiled: graphics::CompiledTexture { size, binary },
+			},
+		);
 	}
 
 	/// Returns true if the `id` has been added via [`insert`](ImageCache::insert),
@@ -129,7 +146,7 @@ where
 		render_chain: &graphics::RenderChain,
 		pending: PendingEntry,
 	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
-		use graphics::{image, structs::subresource, TaskGpuCopy, utility::BuildFromDevice};
+		use graphics::{image, structs::subresource, utility::BuildFromDevice, TaskGpuCopy};
 
 		let mut signals = Vec::new();
 

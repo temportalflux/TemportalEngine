@@ -19,7 +19,7 @@ pub struct DataPipeline {
 impl DataPipeline {
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		Ok(Self {
-			drawable: Drawable::default(),
+			drawable: Drawable::default().with_name("UI.Image"),
 			descriptor_cache: DescriptorCache::new(
 				descriptor::layout::SetLayout::builder()
 					.with_binding(

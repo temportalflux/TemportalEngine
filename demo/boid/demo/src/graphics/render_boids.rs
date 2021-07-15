@@ -4,7 +4,7 @@ use crate::{
 		self, buffer, camera, command,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
-		utility::{BuildFromAllocator, NameableBuilder, BuildFromDevice},
+		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
 		Instance, RenderChain, Vertex,
 	},
 	BoidDemo,
@@ -151,6 +151,7 @@ impl RenderBoids {
 		Ok(shader::Module::create(
 			render_chain.logical().clone(),
 			shader::Info {
+				name: Some(format!("RenderBoids.Shader.{:?}", shader.kind())),
 				kind: shader.kind(),
 				entry_point: String::from("main"),
 				bytes: shader.contents().clone(),

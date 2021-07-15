@@ -63,7 +63,7 @@ struct Frame {
 impl DebugRender {
 	pub fn new(chain: &graphics::RenderChain) -> Result<Self, AnyError> {
 		Ok(Self {
-			line_drawable: Drawable::default(),
+			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
 			camera_uniform: camera::Uniform::new("DebugRender.Camera", chain)?,
 			pending_objects: Vec::new(),

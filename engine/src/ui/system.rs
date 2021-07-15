@@ -82,7 +82,7 @@ impl System {
 			resolution: [0.0, 0.0].into(),
 			mouse_position_unnormalized: [0.0, 0.0].into(),
 			frame_meshes: Vec::new(),
-			colored_area: Drawable::default(),
+			colored_area: Drawable::default().with_name("UI.ColoredArea"),
 			image: image::DataPipeline::new(&chain_read)?,
 			text: text::DataPipeline::new(&chain_read)?,
 			text_widgets: Vec::new(),

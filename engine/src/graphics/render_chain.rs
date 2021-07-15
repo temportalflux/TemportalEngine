@@ -7,8 +7,9 @@ use crate::{
 			logical, physical,
 			swapchain::{self, Swapchain},
 		},
-		flags, image, image_view, renderpass, structs, Surface,
-		utility::{BuildFromDevice, NameableBuilder}
+		flags, image, image_view, renderpass, structs,
+		utility::{BuildFromDevice, NameableBuilder},
+		Surface,
 	},
 	math::nalgebra::Vector2,
 	utility::{self, AnyError},
