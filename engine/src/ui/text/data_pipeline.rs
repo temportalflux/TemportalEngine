@@ -64,7 +64,7 @@ impl DataPipeline {
 
 	pub fn add_pending(&mut self, id: String, font: Box<Font>) {
 		self.pending_font_atlases
-			.insert(id, font::PendingAtlas::from(font));
+			.insert(id.clone(), font::PendingAtlas::from(id, font));
 	}
 
 	#[profiling::function]

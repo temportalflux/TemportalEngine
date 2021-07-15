@@ -171,6 +171,7 @@ impl RenderBoids {
 	) -> Result<Arc<image::Image>, AnyError> {
 		let image = Arc::new(
 			graphics::image::Image::builder()
+				.with_name("BoidModel.Image")
 				.with_alloc(
 					graphics::alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)

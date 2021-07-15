@@ -3,6 +3,7 @@ use crate::{
 		self, command, flags,
 		font::{Font, Glyph},
 		image_view, structs,
+		utility::NameableBuilder,
 	},
 	math::nalgebra::Vector2,
 	task, utility,
@@ -14,6 +15,7 @@ type UnicodeId = u32;
 type FontGlyphMap = HashMap<UnicodeId, Glyph>;
 
 pub struct PendingAtlas {
+	id: String,
 	size: Vector2<usize>,
 	binary: Vec<u8>,
 	format: flags::format::Format,
@@ -30,9 +32,10 @@ pub struct Loaded {
 	width_edge: Vector2<f32>,
 }
 
-impl From<Box<Font>> for PendingAtlas {
-	fn from(font: Box<Font>) -> Self {
+impl PendingAtlas {
+	pub fn from(id: String, font: Box<Font>) -> Self {
 		Self {
+			id,
 			size: *font.size(),
 			binary: font.binary().iter().flatten().map(|alpha| *alpha).collect(),
 			format: flags::format::SRGB_8BIT_R,
@@ -60,6 +63,7 @@ impl PendingAtlas {
 
 		let image = sync::Arc::new(
 			image::Image::builder()
+				.with_name(format!("UI.FontAtlas:{}.Image", self.id))
 				.with_alloc(
 					alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)
