@@ -347,12 +347,14 @@ impl graphics::RenderChainElement for RenderBoids {
 		use pipeline::state::*;
 		self.pipeline_layout = Some(
 			pipeline::layout::Layout::builder()
+				.with_name("RenderBoids.PipelineLayout")
 				.with_descriptors(self.camera_uniform.layout())
 				.with_descriptors(&self.image_descriptor_layout)
-				.build(render_chain.logical().clone())?,
+				.build(&render_chain.logical())?,
 		);
 		self.pipeline = Some(
 			pipeline::Pipeline::builder()
+				.with_name("RenderBoids.Pipeline")
 				.add_shader(Arc::downgrade(&self.vert_shader))
 				.add_shader(Arc::downgrade(&self.frag_shader))
 				.with_vertex_layout(

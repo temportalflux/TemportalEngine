@@ -3,7 +3,9 @@ use crate::{
 	graphics::{
 		self, command,
 		descriptor::{self, layout::SetLayout},
-		flags, pipeline, ShaderSet,
+		flags, pipeline,
+		utility::{BuildFromDevice, NameableBuilder},
+		ShaderSet,
 	},
 	utility::{self, VoidResult},
 };
@@ -16,6 +18,7 @@ pub struct Drawable {
 	pipeline: Option<pipeline::Pipeline>,
 	pipeline_layout: Option<pipeline::layout::Layout>,
 	shaders: ShaderSet,
+	name: Option<String>,
 }
 
 impl Default for Drawable {
@@ -24,6 +27,7 @@ impl Default for Drawable {
 			shaders: ShaderSet::default(),
 			pipeline_layout: None,
 			pipeline: None,
+			name: None,
 		}
 	}
 }
@@ -33,9 +37,13 @@ impl Drawable {
 	where
 		TStr: Into<String>,
 	{
-		self.shaders
-			.set_name(Some(format!("{}.Shader", name.into())));
+		self.name = Some(name.into());
+		self.shaders.set_name(self.make_subname("Shader"));
 		self
+	}
+
+	fn make_subname(&self, suffix: &str) -> Option<String> {
+		self.name.as_ref().map(|v| format!("{}.{}", v, suffix))
 	}
 
 	/// Adds a shader by its asset id to the drawable.
@@ -70,13 +78,16 @@ impl Drawable {
 		self.pipeline_layout = Some(
 			descriptor_layouts
 				.iter()
-				.fold(pipeline::layout::Layout::builder(), |builder, layout| {
-					builder.with_descriptors(layout)
-				})
-				.build(render_chain.logical().clone())?,
+				.fold(
+					pipeline::layout::Layout::builder()
+						.with_optname(self.make_subname("PipelineLayout")),
+					|builder, layout| builder.with_descriptors(layout),
+				)
+				.build(&render_chain.logical())?,
 		);
 		self.pipeline = Some(
 			pipeline_info
+				.with_optname(self.make_subname("Pipeline"))
 				.add_shader(sync::Arc::downgrade(
 					&self.shaders[flags::ShaderKind::Vertex],
 				))

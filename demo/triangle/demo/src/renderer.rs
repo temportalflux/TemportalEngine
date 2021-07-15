@@ -3,7 +3,7 @@ use crate::{
 		self, asset,
 		graphics::{
 			self, buffer, command, flags, pipeline, shader, structs,
-			utility::{BuildFromAllocator, NameableBuilder},
+			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
 			RenderChain,
 		},
 		math::nalgebra::Vector2,
@@ -184,10 +184,14 @@ impl graphics::RenderChainElement for Triangle {
 		subpass_id: &Option<String>,
 	) -> Result<(), AnyError> {
 		use pipeline::state::*;
-		self.pipeline_layout =
-			Some(pipeline::layout::Layout::builder().build(render_chain.logical().clone())?);
+		self.pipeline_layout = Some(
+			pipeline::layout::Layout::builder()
+				.with_name("PipelineLayout")
+				.build(&render_chain.logical())?,
+		);
 		self.pipeline = Some(
 			pipeline::Pipeline::builder()
+				.with_name("Pipeline")
 				.add_shader(sync::Arc::downgrade(self.vert_shader.as_ref().unwrap()))
 				.add_shader(sync::Arc::downgrade(self.frag_shader.as_ref().unwrap()))
 				.with_vertex_layout(
