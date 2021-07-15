@@ -395,9 +395,10 @@ impl RenderChain {
 					.build(&logical)?,
 			);
 		}
-		for image_view in self.frame_image_views.iter() {
+		for (i, image_view) in self.frame_image_views.iter().enumerate() {
 			self.frame_buffers.push(
 				command::framebuffer::Framebuffer::builder()
+					.with_name(format!("{}.Framebuffer", self.swapchain().frame_name(i)))
 					.set_extent(extent)
 					.build(&image_view, &self.render_pass(), &logical)?,
 			);
