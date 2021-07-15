@@ -26,7 +26,6 @@ impl Default for ShaderSet {
 }
 
 impl ShaderSet {
-	
 	pub fn with_name<TStr>(mut self, name: TStr) -> Self
 	where
 		TStr: Into<String>,
@@ -63,7 +62,10 @@ impl ShaderSet {
 				sync::Arc::new(shader::Module::create(
 					render_chain.logical().clone(),
 					shader::Info {
-						name: self.name.as_ref().map(|name| format!("{}.{}", name, kind_string)),
+						name: self
+							.name
+							.as_ref()
+							.map(|name| format!("{}.{}", name, kind_string)),
 						kind,
 						entry_point: String::from("main"),
 						bytes: binary,

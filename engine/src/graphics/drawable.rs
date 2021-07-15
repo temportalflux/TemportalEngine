@@ -29,9 +29,12 @@ impl Default for Drawable {
 }
 
 impl Drawable {
-
-	pub fn with_name<TStr>(mut self, name: TStr) -> Self where TStr: Into<String> {
-		self.shaders.set_name(Some(format!("{}.Shader", name.into())));
+	pub fn with_name<TStr>(mut self, name: TStr) -> Self
+	where
+		TStr: Into<String>,
+	{
+		self.shaders
+			.set_name(Some(format!("{}.Shader", name.into())));
 		self
 	}
 

@@ -137,8 +137,11 @@ impl Window {
 			permitted_frame_count.end as usize,
 		);
 
-		let graphics_queue =
-			logical::Device::get_queue(&self.logical_device, self.graphics_queue_index);
+		let graphics_queue = logical::Device::create_queue(
+			&self.logical_device,
+			Some("Queue.Graphics".to_string()),
+			self.graphics_queue_index,
+		);
 
 		let mut chain = graphics::RenderChain::new(
 			&self.physical_device,
