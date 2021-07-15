@@ -77,7 +77,7 @@ fn use_counter(ctx: &mut WidgetContext) {
 
 #[pre_hooks(use_counter)]
 pub fn counter(mut ctx: WidgetContext) -> WidgetNode {
-	let WidgetContext { id, key, state, .. } = ctx;
+	let WidgetContext { id, state, .. } = ctx;
 
 	let make_arrow = |scale_x: f32| {
 		make_widget!(image_box).with_props(ImageBoxProps {
@@ -121,13 +121,16 @@ pub fn counter(mut ctx: WidgetContext) -> WidgetNode {
 
 	WidgetNode::Component(
 		make_widget!(nav_horizontal_box)
-			.key(key)
 			.listed_slot(wrap(10.0.into(), make_arrow_button("sub", -1.0)))
-			.listed_slot(make_widget!(text_box).with_props(TextBoxProps {
-				text,
-				font: statics::font::unispace::REGULAR.at_size(30.0),
-				..Default::default()
-			}))
+			.listed_slot(
+				make_widget!(text_box)
+					.key("label")
+					.with_props(TextBoxProps {
+						text,
+						font: statics::font::unispace::REGULAR.at_size(30.0),
+						..Default::default()
+					}),
+			)
 			.listed_slot(wrap(10.0.into(), make_arrow_button("add", 1.0))),
 	)
 }

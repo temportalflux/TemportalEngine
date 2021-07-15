@@ -105,7 +105,6 @@ fn use_widget(ctx: &mut WidgetContext) {
 pub fn widget(mut ctx: WidgetContext) -> WidgetNode {
 	let WidgetContext {
 		id,
-		key,
 		state,
 		named_slots,
 		..
@@ -152,7 +151,6 @@ pub fn widget(mut ctx: WidgetContext) -> WidgetNode {
 
 	WidgetNode::Component(
 		make_widget!(nav_horizontal_box)
-			.key(key)
 			.listed_slot(wrap(10.0.into(), make_arrow_button("sub", -1.0)))
 			.listed_slot(match content {
 				WidgetNode::Component(content) => {
@@ -190,5 +188,5 @@ pub fn text_content(ctx: WidgetContext) -> WidgetNode {
 		text,
 		..ctx.props.read_cloned_or_default::<TextBoxProps>()
 	};
-	WidgetNode::Component(make_widget!(text_box).with_props(text_props))
+	WidgetNode::Component(make_widget!(text_box).key("label").with_props(text_props))
 }

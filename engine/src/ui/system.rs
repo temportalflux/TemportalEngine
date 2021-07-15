@@ -458,10 +458,13 @@ impl graphics::RenderChainElement for System {
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
-		for _ in 0..render_chain.frame_count() {
+		for i in 0..render_chain.frame_count() {
 			self.text_widgets.push(HashMap::new());
-			self.frame_meshes
-				.push(Mesh::new(&render_chain.allocator(), 10)?);
+			self.frame_meshes.push(Mesh::new(
+				format!("UI.frame{}.Mesh", i),
+				&render_chain.allocator(),
+				10,
+			)?);
 		}
 		Ok(self.take_gpu_signals())
 	}
@@ -576,6 +579,7 @@ impl graphics::RenderChainElement for System {
 						let (widget_data, mut gpu_signals) = self.text.update_or_create(
 							render_chain,
 							resolution,
+							&widget_id,
 							text,
 							retained_text_widgets.remove(&widget_id),
 						)?;

@@ -16,7 +16,10 @@ pub struct Uniform {
 }
 
 impl Uniform {
-	pub fn new(chain: &RenderChain) -> Result<Self, AnyError> {
+	pub fn new<T>(name: T, chain: &RenderChain) -> Result<Self, AnyError>
+	where
+		T: Into<String>,
+	{
 		let descriptor_layout = Arc::new(
 			SetLayout::builder()
 				.with_binding(
@@ -34,9 +37,11 @@ impl Uniform {
 			.unwrap()
 			.allocate_descriptor_sets(&vec![descriptor_layout.clone(); chain.frame_count()])?;
 
+		let uniform_name: String = name.into();
 		let mut buffers = Vec::new();
-		for _ in 0..chain.frame_count() {
+		for i in 0..chain.frame_count() {
 			let buffer = buffer::Buffer::builder()
+				.with_name(format!("{}.frame{}", uniform_name, i))
 				.with_usage(flags::BufferUsage::UNIFORM_BUFFER)
 				.with_size(std::mem::size_of::<camera::ViewProjection>())
 				.with_alloc(

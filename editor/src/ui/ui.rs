@@ -175,9 +175,13 @@ impl RenderChainElement for Ui {
 			.add_shader(&Editor::get_asset_id("imgui_frag"))?;
 		self.drawable.create_shaders(chain)?;
 
-		for _ in 0..chain.frame_count() {
+		for i in 0..chain.frame_count() {
 			self.frames.push(Frame {
-				mesh: Mesh::<u32, Vertex>::new(&chain.allocator(), 10)?,
+				mesh: Mesh::<u32, Vertex>::new(
+					format!("EditorUI.frame{}.Mesh", i),
+					&chain.allocator(),
+					10,
+				)?,
 				draw_calls: Vec::new(),
 			});
 		}

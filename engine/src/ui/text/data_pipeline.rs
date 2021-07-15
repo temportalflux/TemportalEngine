@@ -14,7 +14,7 @@ use crate::{
 	},
 	utility::{self, VoidResult},
 };
-use raui::renderer::tesselate::prelude::*;
+use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
 use std::{collections::HashMap, sync};
 
 struct FontData {
@@ -127,6 +127,7 @@ impl DataPipeline {
 		&self,
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
+		widget_id: &WidgetId,
 		text: BatchExternalText,
 		widget: Option<text::WidgetData>,
 	) -> utility::Result<(text::WidgetData, Vec<sync::Arc<command::Semaphore>>)> {
@@ -136,7 +137,7 @@ impl DataPipeline {
 			.ok_or(ui::Error::InvalidFont(text.font.clone()))?;
 		let mut widget = match widget {
 			Some(widget) => widget,
-			None => text::WidgetData::new(&text, render_chain)?,
+			None => text::WidgetData::new(Some((*widget_id).to_string()), &text, render_chain)?,
 		};
 		let signals =
 			widget.write_buffer_data(&text, &font_data.loaded, render_chain, resolution)?;

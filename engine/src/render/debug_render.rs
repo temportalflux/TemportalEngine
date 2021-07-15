@@ -65,7 +65,7 @@ impl DebugRender {
 		Ok(Self {
 			line_drawable: Drawable::default(),
 			frames: Vec::new(),
-			camera_uniform: camera::Uniform::new(chain)?,
+			camera_uniform: camera::Uniform::new("DebugRender.Camera", chain)?,
 			pending_objects: Vec::new(),
 			pending_gpu_signals: Vec::new(),
 		})
@@ -156,15 +156,17 @@ impl graphics::RenderChainElement for DebugRender {
 		self.line_drawable.create_shaders(chain)?;
 
 		self.frames.clear();
-		for _ in 0..chain.frame_count() {
+		for i in 0..chain.frame_count() {
 			self.frames.push(Frame {
 				vertex_buffer: buffer::Buffer::create_gpu(
+					Some(format!("DebugRender.frame{}.VertexBuffer", i)),
 					&chain.allocator(),
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
 					None,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
+					Some(format!("DebugRender.frame{}.IndexBuffer", i)),
 					&chain.allocator(),
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
@@ -304,6 +306,7 @@ impl Frame {
 			}
 			graphics::TaskGpuCopy::new(&chain)?
 				.begin()?
+				.set_stage_target(&self.vertex_buffer)
 				.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
 				.copy_stage_to_buffer(&self.vertex_buffer)
 				.end()?
@@ -317,6 +320,7 @@ impl Frame {
 			}
 			graphics::TaskGpuCopy::new(&chain)?
 				.begin()?
+				.set_stage_target(&self.index_buffer)
 				.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
 				.copy_stage_to_buffer(&self.index_buffer)
 				.end()?

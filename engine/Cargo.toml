@@ -41,6 +41,7 @@ rand = "0.8"
 raui = { version = ">=0.35", features = ["material", "tesselate"] }
 # [window] for interoperability of winit and vulkan-rs
 raw-window-handle = "0.3"
+regex = "1.5"
 # [serialization] expanded serialization support
 rmp = "0.8"
 # [serialization] expanded serialization support for serde

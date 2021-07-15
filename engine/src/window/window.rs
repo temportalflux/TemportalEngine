@@ -2,7 +2,9 @@ use crate::{
 	graphics::{
 		self,
 		device::{logical, physical},
-		flags, instance, renderpass, AppInfo, Context, Surface,
+		flags, instance, renderpass,
+		utility::NamableObject,
+		AppInfo, Context, Surface,
 	},
 	math::nalgebra::Vector4,
 	utility, window,
@@ -74,8 +76,11 @@ impl Window {
 					queue_family_index: graphics_queue_index,
 					priorities: vec![1.0],
 				})
+				.with_name("GPU (firmware)".to_string())
 				.create_object(&vulkan, &physical_device)?,
 		);
+		logical_device.set_object_name_logged(&vulkan.create_name("Instance"));
+		logical_device.set_object_name_logged(&physical_device.create_name("GPU (hardware)"));
 
 		let graphics_allocator = sync::Arc::new(graphics::alloc::Allocator::create(
 			&vulkan,

@@ -21,20 +21,31 @@ pub struct WidgetData {
 
 impl WidgetData {
 	pub fn new(
+		id: Option<String>,
 		text: &BatchExternalText,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<Self> {
+		// matches: "/.", "/<*>",
+		// and the series "/<0>", "/<1>", "/<2>", ..., "/<n>"
+		let id_regex = regex::Regex::new(r"(/\.)|(?:/<\*>)|(?:/<[0-9]*>)").unwrap();
+		let short_name = id.as_ref().map(|name| id_regex.replace_all(name, ""));
 		Ok(Self {
 			content: text.text.clone(),
 			font_id: text.font.clone(),
 			font_size: text.size,
 			color: vector![text.color.r, text.color.g, text.color.b, text.color.a],
 			vertex_buffer: Self::allocate_buffer(
+				short_name
+					.as_ref()
+					.map(|name| format!("UI.{}.VertexBuffer", name)),
 				flags::BufferUsage::VERTEX_BUFFER,
 				&text.text,
 				render_chain,
 			)?,
 			index_buffer: Self::allocate_buffer(
+				short_name
+					.as_ref()
+					.map(|name| format!("UI.{}.IndexBuffer", name)),
 				flags::BufferUsage::INDEX_BUFFER,
 				&text.text,
 				render_chain,
@@ -60,12 +71,14 @@ impl WidgetData {
 	}
 
 	fn allocate_buffer(
+		name: Option<String>,
 		usage: flags::BufferUsage,
 		content: &String,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<sync::Arc<buffer::Buffer>> {
 		Ok(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
+				.with_optname(name)
 				.with_usage(usage)
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
 				.with_size(match usage {
@@ -118,6 +131,7 @@ impl WidgetData {
 
 		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
+			.set_stage_target(&self.vertex_buffer)
 			.stage(&vertices[..])?
 			.copy_stage_to_buffer(&self.vertex_buffer)
 			.end()?
@@ -126,6 +140,7 @@ impl WidgetData {
 
 		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
+			.set_stage_target(&self.index_buffer)
 			.stage(&indices[..])?
 			.copy_stage_to_buffer(&self.index_buffer)
 			.end()?

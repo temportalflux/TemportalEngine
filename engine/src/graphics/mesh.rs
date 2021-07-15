@@ -20,11 +20,12 @@ where
 	Vertex: vertex::Object,
 {
 	pub fn new_mesh(
+		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 		index_type: flags::IndexType,
 	) -> utility::Result<Self> {
-		Self::new_internal(allocator, item_count, index_type)
+		Self::new_internal(name, allocator, item_count, index_type)
 	}
 }
 
@@ -33,10 +34,11 @@ where
 	Vertex: vertex::Object,
 {
 	pub fn new(
+		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 	) -> utility::Result<Self> {
-		Self::new_internal(allocator, item_count, flags::IndexType::UINT16)
+		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT16)
 	}
 }
 
@@ -45,10 +47,11 @@ where
 	Vertex: vertex::Object,
 {
 	pub fn new(
+		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 	) -> utility::Result<Self> {
-		Self::new_internal(allocator, item_count, flags::IndexType::UINT32)
+		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT32)
 	}
 }
 
@@ -58,6 +61,7 @@ where
 {
 	#[profiling::function]
 	fn new_internal(
+		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 		index_type: flags::IndexType,
@@ -66,12 +70,14 @@ where
 			vertex_t: std::marker::PhantomData,
 			index_t: std::marker::PhantomData,
 			vertex_buffer: buffer::Buffer::create_gpu(
+				Some(format!("{}.VertexBuffer", name)),
 				allocator,
 				flags::BufferUsage::VERTEX_BUFFER,
 				Self::vertex_buffer_size_for(item_count),
 				None,
 			)?,
 			index_buffer: buffer::Buffer::create_gpu(
+				Some(format!("{}.IndexBuffer", name)),
 				allocator,
 				flags::BufferUsage::INDEX_BUFFER,
 				Self::index_buffer_size_for(item_count),
@@ -129,6 +135,7 @@ where
 		buffer.expand(std::mem::size_of::<T>() * data.len())?;
 		TaskGpuCopy::new(&render_chain)?
 			.begin()?
+			.set_stage_target(&buffer)
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)
 			.end()?

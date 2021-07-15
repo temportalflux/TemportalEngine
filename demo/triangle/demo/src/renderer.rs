@@ -109,6 +109,7 @@ impl graphics::RenderChainElement for Triangle {
 
 		self.vertex_buffer = Some(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
+				.with_name("VertexBuffer")
 				.with_usage(flags::BufferUsage::VERTEX_BUFFER)
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
 				.with_size_of(&self.vertices[..])
@@ -124,6 +125,7 @@ impl graphics::RenderChainElement for Triangle {
 		let vertex_buffer_copy_signal = {
 			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
 				.begin()?
+				.set_stage_target(&self.vertex_buffer.as_ref().unwrap())
 				.stage(&self.vertices[..])?
 				.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
 				.end()?;
@@ -134,6 +136,7 @@ impl graphics::RenderChainElement for Triangle {
 
 		self.index_buffer = Some(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
+				.with_name("IndexBuffer")
 				.with_usage(flags::BufferUsage::INDEX_BUFFER)
 				.with_index_type(Some(flags::IndexType::UINT32))
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
@@ -150,6 +153,7 @@ impl graphics::RenderChainElement for Triangle {
 		let index_buffer_copy_signal = {
 			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
 				.begin()?
+				.set_stage_target(&self.index_buffer.as_ref().unwrap())
 				.stage(&self.indices[..])?
 				.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
 				.end()?;

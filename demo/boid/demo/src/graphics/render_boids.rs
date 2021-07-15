@@ -116,7 +116,10 @@ impl RenderBoids {
 			pipeline: None,
 			vert_shader,
 			frag_shader,
-			camera_uniform: camera::Uniform::new(&render_chain.read().unwrap())?,
+			camera_uniform: camera::Uniform::new(
+				"RenderBoids.Camera",
+				&render_chain.read().unwrap(),
+			)?,
 			image_view,
 			image_sampler,
 			image_descriptor_layout,
@@ -227,6 +230,7 @@ impl RenderBoids {
 		let indices = vec![0, 1, 2, 2, 3, 0];
 
 		let vertex_buffer = graphics::buffer::Buffer::builder()
+			.with_name("BoidModel.VertexBuffer")
 			.with_usage(flags::BufferUsage::VERTEX_BUFFER)
 			.with_usage(flags::BufferUsage::TRANSFER_DST)
 			.with_size_of(&vertices[..])
@@ -240,12 +244,14 @@ impl RenderBoids {
 
 		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
+			.set_stage_target(&vertex_buffer)
 			.stage(&vertices[..])?
 			.copy_stage_to_buffer(&vertex_buffer)
 			.end()?
 			.wait_until_idle()?;
 
 		let index_buffer = graphics::buffer::Buffer::builder()
+			.with_name("BoidModel.IndexBuffer")
 			.with_usage(flags::BufferUsage::INDEX_BUFFER)
 			.with_index_type(Some(flags::IndexType::UINT32))
 			.with_usage(flags::BufferUsage::TRANSFER_DST)
@@ -260,6 +266,7 @@ impl RenderBoids {
 
 		graphics::TaskGpuCopy::new(&render_chain)?
 			.begin()?
+			.set_stage_target(&index_buffer)
 			.stage(&indices[..])?
 			.copy_stage_to_buffer(&index_buffer)
 			.end()?
@@ -273,6 +280,7 @@ impl RenderBoids {
 		instance_count: usize,
 	) -> Result<buffer::Buffer, AnyError> {
 		Ok(graphics::buffer::Buffer::builder()
+			.with_name("RenderBoids.InstanceBuffer")
 			.with_usage(flags::BufferUsage::VERTEX_BUFFER)
 			.with_usage(flags::BufferUsage::TRANSFER_DST)
 			.with_size(std::mem::size_of::<Instance>() * instance_count)
@@ -465,6 +473,7 @@ impl RenderBoids {
 		if instances.len() > 0 {
 			let copy_task = graphics::TaskGpuCopy::new(&mut chain)?
 				.begin()?
+				.set_stage_target(&self.active_instance_buffer)
 				.stage(&instances[..])?
 				.copy_stage_to_buffer(&self.active_instance_buffer)
 				.end()?;

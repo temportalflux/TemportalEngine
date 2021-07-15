@@ -62,6 +62,7 @@ pub fn controls_info(mut context: WidgetContext) -> WidgetNode {
 			.merge_props(props.clone())
 			.listed_slot(
 				make_widget!(text_box)
+					.key("header")
 					.with_props(TextBoxProps {
 						text: "Controls".to_owned(),
 						font: TextBoxFont {
@@ -111,7 +112,6 @@ pub fn controls_info(mut context: WidgetContext) -> WidgetNode {
 					.named_slot(
 						"content",
 						make_widget!(carousel::text_content)
-							.key("boid_type_selector_text")
 							.with_props(TextBoxProps {
 								font: statics::font::unispace::REGULAR.at_size(30.0),
 								..Default::default()
@@ -133,11 +133,13 @@ pub fn controls_info(mut context: WidgetContext) -> WidgetNode {
 							.with_props(ButtonNotifyProps(id.to_owned().into()))
 							.named_slot(
 								"content",
-								make_widget!(text_box).with_props(TextBoxProps {
-									text: "Spawn".to_owned(),
-									font: statics::font::unispace::REGULAR.at_size(30.0),
-									..Default::default()
-								}),
+								make_widget!(text_box)
+									.key("label")
+									.with_props(TextBoxProps {
+										text: "Spawn".to_owned(),
+										font: statics::font::unispace::REGULAR.at_size(30.0),
+										..Default::default()
+									}),
 							),
 					)
 					.listed_slot(
@@ -147,11 +149,13 @@ pub fn controls_info(mut context: WidgetContext) -> WidgetNode {
 							.with_props(ButtonNotifyProps(id.to_owned().into()))
 							.named_slot(
 								"content",
-								make_widget!(text_box).with_props(TextBoxProps {
-									text: "Kill".to_owned(),
-									font: statics::font::unispace::REGULAR.at_size(30.0),
-									..Default::default()
-								}),
+								make_widget!(text_box)
+									.key("label")
+									.with_props(TextBoxProps {
+										text: "Kill".to_owned(),
+										font: statics::font::unispace::REGULAR.at_size(30.0),
+										..Default::default()
+									}),
 							),
 					)
 					.with_props(FlexBoxItemLayout {
