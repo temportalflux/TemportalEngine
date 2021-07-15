@@ -2,7 +2,9 @@ use crate::{
 	graphics::{
 		alloc, buffer, camera,
 		descriptor::{self, layout::SetLayout},
-		flags, RenderChain,
+		flags,
+		utility::{BuildFromAllocator, NameableBuilder},
+		RenderChain,
 	},
 	math::nalgebra::Vector2,
 	utility::{self, AnyError},

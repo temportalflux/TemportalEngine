@@ -3,8 +3,9 @@ use crate::{
 	graphics::{
 		self, buffer, camera, command,
 		descriptor::{self, layout::SetLayout},
-		flags, image, image_view, pipeline, sampler, shader, structs, Instance, RenderChain,
-		Vertex,
+		flags, image, image_view, pipeline, sampler, shader, structs,
+		utility::{BuildFromAllocator, NameableBuilder},
+		Instance, RenderChain, Vertex,
 	},
 	BoidDemo,
 };

@@ -53,7 +53,9 @@ impl PendingAtlas {
 		self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
-		use graphics::{alloc, image, structs::subresource, TaskGpuCopy};
+		use graphics::{
+			alloc, image, structs::subresource, utility::BuildFromAllocator, TaskGpuCopy,
+		};
 		let mut signals = Vec::new();
 
 		let image = sync::Arc::new(

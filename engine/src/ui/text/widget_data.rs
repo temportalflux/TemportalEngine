@@ -76,6 +76,7 @@ impl WidgetData {
 		content: &String,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<sync::Arc<buffer::Buffer>> {
+		use graphics::utility::{BuildFromAllocator, NameableBuilder};
 		Ok(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
 				.with_optname(name)
