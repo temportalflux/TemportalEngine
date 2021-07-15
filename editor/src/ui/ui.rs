@@ -107,7 +107,7 @@ impl Ui {
 			last_frame: Instant::now(),
 			ui_elements: Vec::new(),
 			drawable: Drawable::default(),
-			image_cache: ImageCache::default(),
+			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
 			descriptor_cache: DescriptorCache::new(
 				descriptor::layout::SetLayout::builder()
 					.with_binding(
@@ -178,7 +178,7 @@ impl RenderChainElement for Ui {
 		for i in 0..chain.frame_count() {
 			self.frames.push(Frame {
 				mesh: Mesh::<u32, Vertex>::new(
-					format!("EditorUI.frame{}.Mesh", i),
+					format!("EditorUI.Frame{}.Mesh", i),
 					&chain.allocator(),
 					10,
 				)?,
@@ -194,7 +194,8 @@ impl RenderChainElement for Ui {
 			// TODO: font image should use a specific sampler
 			// https://github.com/ocornut/imgui/blob/master/backends/imgui_impl_vulkan.cpp#L695
 			self.image_cache.insert_compiled(
-				texture_id,
+				texture_id.clone(),
+				Some(format!("Font.{}", texture_id.id())),
 				[tex.width as usize, tex.height as usize].into(),
 				tex.data.to_vec(),
 			);

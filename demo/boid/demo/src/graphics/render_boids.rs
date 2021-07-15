@@ -4,7 +4,7 @@ use crate::{
 		self, buffer, camera, command,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
-		utility::{BuildFromAllocator, NameableBuilder},
+		utility::{BuildFromAllocator, NameableBuilder, BuildFromDevice},
 		Instance, RenderChain, Vertex,
 	},
 	BoidDemo,
@@ -203,6 +203,7 @@ impl RenderBoids {
 		image: Arc<image::Image>,
 	) -> Result<image_view::View, AnyError> {
 		Ok(image_view::View::builder()
+			.with_name("BoidModel.ImageView")
 			.for_image(image.clone())
 			.with_view_type(flags::ImageViewType::TYPE_2D)
 			.with_range(
@@ -475,7 +476,7 @@ impl RenderBoids {
 		if instances.len() > 0 {
 			let copy_task = graphics::TaskGpuCopy::new(&mut chain)?
 				.begin()?
-				.set_stage_target(&self.active_instance_buffer)
+				.set_stage_target(&*self.active_instance_buffer)
 				.stage(&instances[..])?
 				.copy_stage_to_buffer(&self.active_instance_buffer)
 				.end()?;

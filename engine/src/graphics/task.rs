@@ -1,6 +1,6 @@
 use crate::{
 	graphics::{
-		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
+		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain, utility::NamedObject,
 	},
 	utility,
 };
@@ -221,8 +221,8 @@ impl TaskGpuCopy {
 		self.staging_buffer.as_ref().unwrap()
 	}
 
-	pub fn set_stage_target(mut self, buffer: &buffer::Buffer) -> Self {
-		self.staging_buffer_name = buffer.name().as_ref().map(|name| format!("{}|STAGE", name));
+	pub fn set_stage_target<T>(mut self, named: &T) -> Self where T: NamedObject {
+		self.staging_buffer_name = named.name().as_ref().map(|name| format!("{}|STAGE", name));
 		self
 	}
 

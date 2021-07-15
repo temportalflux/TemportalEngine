@@ -30,7 +30,7 @@ impl DataPipeline {
 					)
 					.build(&render_chain.logical())?,
 			),
-			image_cache: ImageCache::default(),
+			image_cache: ImageCache::default().with_cache_name("UI.Image"),
 		})
 	}
 
@@ -43,7 +43,7 @@ impl DataPipeline {
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) {
-		self.image_cache.insert(id.name(), texture);
+		self.image_cache.insert(id.name(), Some(id.name()), texture);
 	}
 
 	#[profiling::function]

@@ -461,7 +461,7 @@ impl graphics::RenderChainElement for System {
 		for i in 0..render_chain.frame_count() {
 			self.text_widgets.push(HashMap::new());
 			self.frame_meshes.push(Mesh::new(
-				format!("UI.frame{}.Mesh", i),
+				format!("UI.Frame{}.Mesh", i),
 				&render_chain.allocator(),
 				10,
 			)?);

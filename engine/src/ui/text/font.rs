@@ -57,7 +57,7 @@ impl PendingAtlas {
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
 		use graphics::{
-			alloc, image, structs::subresource, utility::BuildFromAllocator, TaskGpuCopy,
+			alloc, image, structs::subresource, utility::{BuildFromAllocator, BuildFromDevice}, TaskGpuCopy,
 		};
 		let mut signals = Vec::new();
 
@@ -92,6 +92,7 @@ impl PendingAtlas {
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
+				.with_name(format!("UI.FontAtlas:{}.ImageView", self.id))
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))

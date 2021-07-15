@@ -1,10 +1,15 @@
 use crate::{
-	graphics::{self, command, flags, image_view, sampler, structs, Texture},
+	graphics::{self, command, flags, image_view, sampler, structs, Texture, utility::NameableBuilder},
 	math::nalgebra::Vector2,
 	task,
-	utility::{self},
+	utility,
 };
 use std::{collections::HashMap, sync};
+
+struct PendingEntry {
+	name: Option<String>,
+	compiled: graphics::CompiledTexture,
+}
 
 /// The GPU objects to view and sample from an image.
 /// Created by [`ImageCache::load_pending`].
@@ -18,8 +23,9 @@ pub struct CombinedImageSampler {
 /// Useful when a collection of images are used frequently by multiple draw calls but in the same pipeline,
 /// or when managing any collection of engine asset textures.
 pub struct ImageCache<T: Eq + std::hash::Hash + Clone> {
-	pending: HashMap<T, graphics::CompiledTexture>,
+	pending: HashMap<T, PendingEntry>,
 	loaded: HashMap<T, CombinedImageSampler>,
+	name: Option<String>,
 }
 
 impl<T> Default for ImageCache<T>
@@ -30,6 +36,7 @@ where
 		Self {
 			loaded: HashMap::new(),
 			pending: HashMap::new(),
+			name: None,
 		}
 	}
 }
@@ -38,15 +45,28 @@ impl<T> ImageCache<T>
 where
 	T: Eq + std::hash::Hash + Clone,
 {
-	/// Adds an engine asset texture to the cache,
-	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
-	pub fn insert(&mut self, id: T, texture: Box<Texture>) {
-		self.pending.insert(id, texture.get_compiled().clone());
+
+	pub fn with_cache_name<TStr>(mut self, name: TStr) -> Self where TStr: Into<String> {
+		self.set_cache_name(Some(name.into()));
+		self
 	}
 
-	pub fn insert_compiled(&mut self, id: T, size: Vector2<usize>, binary: Vec<u8>) {
-		self.pending
-			.insert(id, graphics::CompiledTexture { size, binary });
+	pub fn set_cache_name(&mut self, name: Option<String>) {
+		self.name = name;
+	}
+
+	/// Adds an engine asset texture to the cache,
+	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
+	pub fn insert(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
+		self.pending.insert(id, PendingEntry {
+			name, compiled: texture.get_compiled().clone()
+		});
+	}
+
+	pub fn insert_compiled(&mut self, id: T, name: Option<String>, size: Vector2<usize>, binary: Vec<u8>) {
+		self.pending.insert(id, PendingEntry {
+			name, compiled: graphics::CompiledTexture { size, binary }
+		});
 	}
 
 	/// Returns true if the `id` has been added via [`insert`](ImageCache::insert),
@@ -80,7 +100,7 @@ where
 			let pending_images = self.pending.drain().collect::<Vec<_>>();
 			// Load/Create the image on GPU for each pending item
 			for (id, pending) in pending_images.into_iter() {
-				let (loaded, mut signals) = self.create_image(render_chain, &pending)?;
+				let (loaded, mut signals) = self.create_image(render_chain, pending)?;
 				// promote the required signals so they can be returned by `load_pending`
 				pending_gpu_signals.append(&mut signals);
 				ids.push(id.clone());
@@ -92,6 +112,13 @@ where
 		Ok((ids, pending_gpu_signals))
 	}
 
+	fn make_object_name(&self, name: &Option<String>, suffix: &str) -> Option<String> {
+		match (self.name.as_ref(), name) {
+			(Some(cache_name), Some(name)) => Some(format!("{}.{}.{}", cache_name, name, suffix)),
+			_ => None,
+		}
+	}
+
 	/// Creates the image, view, and sampler for each pending item.
 	/// Returns the loaded struct, and a list of semaphores which will
 	/// be signaled when the GPU has finished writing the image data.
@@ -100,18 +127,19 @@ where
 	fn create_image(
 		&self,
 		render_chain: &graphics::RenderChain,
-		pending: &graphics::CompiledTexture,
+		pending: PendingEntry,
 	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
-		use graphics::{image, structs::subresource, TaskGpuCopy};
+		use graphics::{image, structs::subresource, TaskGpuCopy, utility::BuildFromDevice};
 
 		let mut signals = Vec::new();
 
 		let image = sync::Arc::new(image::Image::create_gpu(
 			&render_chain.allocator(),
+			self.make_object_name(&pending.name, "Image"),
 			flags::format::SRGB_8BIT,
 			structs::Extent3D {
-				width: pending.size.x as u32,
-				height: pending.size.y as u32,
+				width: pending.compiled.size.x as u32,
+				height: pending.compiled.size.y as u32,
 				depth: 1,
 			},
 		)?);
@@ -119,7 +147,8 @@ where
 		TaskGpuCopy::new(&render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
-			.stage(&pending.binary[..])?
+			.set_stage_target(&*image)
+			.stage(&pending.compiled.binary[..])?
 			.copy_stage_to_image(&image)
 			.format_image_for_read(&image)
 			.end()?
@@ -128,6 +157,7 @@ where
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
+				.with_optname(self.make_object_name(&pending.name, "View"))
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))

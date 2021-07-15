@@ -43,7 +43,7 @@ impl Uniform {
 		let mut buffers = Vec::new();
 		for i in 0..chain.frame_count() {
 			let buffer = buffer::Buffer::builder()
-				.with_name(format!("{}.frame{}", uniform_name, i))
+				.with_name(format!("{}.Frame{}", uniform_name, i))
 				.with_usage(flags::BufferUsage::UNIFORM_BUFFER)
 				.with_size(std::mem::size_of::<camera::ViewProjection>())
 				.with_alloc(

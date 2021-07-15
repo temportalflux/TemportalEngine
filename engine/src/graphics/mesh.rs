@@ -135,7 +135,7 @@ where
 		buffer.expand(std::mem::size_of::<T>() * data.len())?;
 		TaskGpuCopy::new(&render_chain)?
 			.begin()?
-			.set_stage_target(&buffer)
+			.set_stage_target(buffer)
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)
 			.end()?

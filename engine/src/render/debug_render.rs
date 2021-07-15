@@ -159,14 +159,14 @@ impl graphics::RenderChainElement for DebugRender {
 		for i in 0..chain.frame_count() {
 			self.frames.push(Frame {
 				vertex_buffer: buffer::Buffer::create_gpu(
-					Some(format!("DebugRender.frame{}.VertexBuffer", i)),
+					Some(format!("DebugRender.Frame{}.VertexBuffer", i)),
 					&chain.allocator(),
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
 					None,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
-					Some(format!("DebugRender.frame{}.IndexBuffer", i)),
+					Some(format!("DebugRender.Frame{}.IndexBuffer", i)),
 					&chain.allocator(),
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
@@ -306,7 +306,7 @@ impl Frame {
 			}
 			graphics::TaskGpuCopy::new(&chain)?
 				.begin()?
-				.set_stage_target(&self.vertex_buffer)
+				.set_stage_target(&*self.vertex_buffer)
 				.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
 				.copy_stage_to_buffer(&self.vertex_buffer)
 				.end()?
@@ -320,7 +320,7 @@ impl Frame {
 			}
 			graphics::TaskGpuCopy::new(&chain)?
 				.begin()?
-				.set_stage_target(&self.index_buffer)
+				.set_stage_target(&*self.index_buffer)
 				.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
 				.copy_stage_to_buffer(&self.index_buffer)
 				.end()?

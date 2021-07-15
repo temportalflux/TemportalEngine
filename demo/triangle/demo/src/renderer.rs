@@ -129,7 +129,7 @@ impl graphics::RenderChainElement for Triangle {
 		let vertex_buffer_copy_signal = {
 			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
 				.begin()?
-				.set_stage_target(&self.vertex_buffer.as_ref().unwrap())
+				.set_stage_target(&**self.vertex_buffer.as_ref().unwrap())
 				.stage(&self.vertices[..])?
 				.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
 				.end()?;
@@ -157,7 +157,7 @@ impl graphics::RenderChainElement for Triangle {
 		let index_buffer_copy_signal = {
 			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
 				.begin()?
-				.set_stage_target(&self.index_buffer.as_ref().unwrap())
+				.set_stage_target(&**self.index_buffer.as_ref().unwrap())
 				.stage(&self.indices[..])?
 				.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
 				.end()?;
