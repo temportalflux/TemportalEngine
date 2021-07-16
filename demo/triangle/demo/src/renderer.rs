@@ -244,6 +244,8 @@ impl graphics::RenderChainElement for Triangle {
 	}
 
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, _: usize) -> Result<(), AnyError> {
+		use graphics::debug;
+		buffer.begin_label("Draw:Triangle", debug::LABEL_COLOR_DRAW);
 		buffer.bind_pipeline(
 			&self.pipeline.as_ref().unwrap(),
 			flags::PipelineBindPoint::GRAPHICS,
@@ -251,6 +253,7 @@ impl graphics::RenderChainElement for Triangle {
 		buffer.bind_vertex_buffers(0, vec![self.vertex_buffer.as_ref().unwrap()], vec![0]);
 		buffer.bind_index_buffer(self.index_buffer.as_ref().unwrap(), 0);
 		buffer.draw(self.indices.len(), 0, 1, 0, 0);
+		buffer.end_label();
 		Ok(())
 	}
 }

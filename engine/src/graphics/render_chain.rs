@@ -1,4 +1,5 @@
 use crate::{
+	asset,
 	graphics::{
 		self,
 		camera::Camera,
@@ -491,6 +492,8 @@ impl RenderChain {
 	/// Records commands for one frame to a command buffer.
 	#[profiling::function]
 	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
+		use graphics::debug;
+		use std::convert::TryFrom;
 		let use_secondary_buffers = false;
 		let cmd = &mut self.command_buffers[buffer_index];
 
@@ -513,18 +516,26 @@ impl RenderChain {
 			};
 
 		if let Some(prepass_elements) = self.initialized_render_chain_elements.get_vec(&None) {
+			cmd.begin_label("SubPass:General", debug::LABEL_COLOR_SUB_PASS);
 			record_elements(cmd, prepass_elements)?;
+			cmd.end_label();
 		}
 
 		let subpass_ids = self.render_pass_info.subpass_order();
 		for idx in 0..subpass_ids.len() {
-			let subpass_id = Some(subpass_ids[idx].clone());
-			if let Some(elements) = self.initialized_render_chain_elements.get_vec(&subpass_id) {
+			let subpass_id = asset::Id::try_from(subpass_ids[idx].as_str()).ok();
+			cmd.begin_label(
+				format!("SubPass:{}", subpass_id.map(|id| id.name()).unwrap_or(idx.to_string())),
+				debug::LABEL_COLOR_SUB_PASS,
+			);
+			let subpass_key = Some(subpass_ids[idx].clone());
+			if let Some(elements) = self.initialized_render_chain_elements.get_vec(&subpass_key) {
 				record_elements(cmd, elements)?;
 			}
 			if idx + 1 < subpass_ids.len() {
 				cmd.next_subpass(use_secondary_buffers);
 			}
+			cmd.end_label();
 		}
 
 		cmd.stop_render_pass();
@@ -545,6 +556,7 @@ impl RenderChain {
 	/// (thereby causing all frames to be marked as dirty).
 	#[profiling::function]
 	pub fn render_frame(&mut self) -> Result<(), AnyError> {
+		use graphics::debug;
 		let logical = self.logical.upgrade().unwrap();
 
 		let mut required_semaphores = Vec::new();
@@ -667,7 +679,7 @@ impl RenderChain {
 		}
 
 		self.graphics_queue
-			.begin_label("Render", [0.098, 0.353, 0.0196, 1.0]); // #195a05
+			.begin_label("Render", debug::LABEL_COLOR_RENDER_PASS);
 		if self.frame_command_buffer_requires_recording[next_image_idx] {
 			self.record_commands(next_image_idx)?;
 			self.frame_command_buffer_requires_recording[next_image_idx] = false;
@@ -705,7 +717,7 @@ impl RenderChain {
 		self.graphics_queue.end_label();
 
 		self.graphics_queue
-			.begin_label("Present", [0.235, 0.392, 0.184, 1.0]); // #3c642f
+			.begin_label("Present", debug::LABEL_COLOR_PRESENT);
 		let present_result = self.graphics_queue.present(
 			command::PresentInfo::default()
 				.wait_for(&self.render_finished_semaphores[self.current_frame])

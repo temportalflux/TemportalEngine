@@ -643,7 +643,9 @@ impl graphics::RenderChainElement for System {
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+		use graphics::debug;
 		let mut clips = Vec::new();
+		buffer.begin_label("Draw:UI", debug::LABEL_COLOR_DRAW);
 		for call in self.draw_calls_by_frame[frame].iter() {
 			match call {
 				DrawCall::PushClip(scissor) => clips.push(scissor),
@@ -652,25 +654,40 @@ impl graphics::RenderChainElement for System {
 				}
 
 				DrawCall::Text(widget_id) => {
+					let widget_data = &self.text_widgets[frame][widget_id];
+					if let Some(name) = widget_data.name().as_ref() {
+						buffer
+							.begin_label(format!("Draw:UI/Text {}", name), debug::LABEL_COLOR_DRAW);
+					}
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
-					self.text
-						.record_to_buffer(buffer, &self.text_widgets[frame][widget_id])?
+					self.text.record_to_buffer(buffer, widget_data)?;
+					if widget_data.name().is_some() {
+						buffer.end_label();
+					}
 				}
 				DrawCall::Range(range) => {
+					buffer.begin_label("Draw:UI/ColoredArea", debug::LABEL_COLOR_DRAW);
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.colored_area.bind_pipeline(buffer);
 					self.frame_meshes[frame].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
+					buffer.end_label();
 				}
 				DrawCall::Texture(texture_id, range) => {
+					buffer.begin_label(
+						format!("Draw:UI/Image {}", texture_id),
+						debug::LABEL_COLOR_DRAW,
+					);
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.image.bind_pipeline(buffer);
 					self.image.bind_texture(buffer, texture_id);
 					self.frame_meshes[frame].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
+					buffer.end_label();
 				}
 			}
 		}
+		buffer.end_label();
 		Ok(())
 	}
 }

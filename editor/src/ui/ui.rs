@@ -2,7 +2,7 @@ use crate::{
 	engine::{
 		self,
 		graphics::{
-			command, descriptor, flags, pipeline, structs,
+			self, command, descriptor, flags, pipeline, structs,
 			types::{Vec2, Vec4},
 			utility::Scissor,
 			utility::{BuildFromDevice, NameableBuilder},
@@ -322,6 +322,8 @@ impl RenderChainElement for Ui {
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
 		let frame = &self.frames[frame];
 
+		buffer.begin_label("Draw:EditorUI", graphics::debug::LABEL_COLOR_DRAW);
+
 		self.drawable.bind_pipeline(buffer);
 		frame.mesh.bind_buffers(buffer);
 		for draw_call in frame.draw_calls.iter() {
@@ -339,6 +341,8 @@ impl RenderChainElement for Ui {
 				);
 			}
 		}
+
+		buffer.end_label();
 
 		Ok(())
 	}

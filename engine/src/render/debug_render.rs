@@ -248,7 +248,9 @@ impl graphics::RenderChainElement for DebugRender {
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+		use graphics::debug;
 		let frame_data = &self.frames[frame];
+		buffer.begin_label("Draw:Debug", debug::LABEL_COLOR_DRAW);
 		self.line_drawable.bind_pipeline(buffer);
 		self.line_drawable
 			.bind_descriptors(buffer, vec![&self.camera_uniform.get_set(frame).unwrap()]);
@@ -257,6 +259,7 @@ impl graphics::RenderChainElement for DebugRender {
 		for range in frame_data.index_order.iter() {
 			buffer.draw(range.end - range.start, range.start, 1, 0, 0);
 		}
+		buffer.end_label();
 		Ok(())
 	}
 

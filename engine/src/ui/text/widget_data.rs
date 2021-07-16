@@ -17,6 +17,7 @@ pub struct WidgetData {
 	index_count: usize,
 	index_buffer: sync::Arc<buffer::Buffer>,
 	vertex_buffer: sync::Arc<buffer::Buffer>,
+	name: Option<String>,
 }
 
 impl WidgetData {
@@ -51,6 +52,7 @@ impl WidgetData {
 				render_chain,
 			)?,
 			index_count: 0,
+			name: short_name.map(|v| v.to_string()),
 		})
 	}
 
@@ -60,6 +62,10 @@ impl WidgetData {
 
 	pub fn index_count(&self) -> &usize {
 		&self.index_count
+	}
+
+	pub fn name(&self) -> &Option<String> {
+		&self.name
 	}
 
 	fn vertex_buffer_size_for(content: &String) -> usize {

@@ -413,6 +413,10 @@ impl graphics::RenderChainElement for RenderBoids {
 	}
 
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+		use graphics::debug;
+
+		buffer.begin_label("Draw:Boids", debug::LABEL_COLOR_DRAW);
+
 		buffer.bind_pipeline(
 			&self.pipeline.as_ref().unwrap(),
 			flags::PipelineBindPoint::GRAPHICS,
@@ -430,6 +434,9 @@ impl graphics::RenderChainElement for RenderBoids {
 		buffer.bind_vertex_buffers(1, vec![&self.frames[frame].instance_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
 		buffer.draw(self.index_count, 0, self.frames[frame].instance_count, 0, 0);
+
+		buffer.end_label();
+
 		Ok(())
 	}
 
