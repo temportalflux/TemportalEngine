@@ -1,6 +1,8 @@
 use crate::{
 	graphics::{
-		self, command, flags, image_view, sampler, structs, utility::NameableBuilder, Texture,
+		self, command, flags, image_view, sampler, structs,
+		utility::{NameableBuilder, NamedObject},
+		Texture,
 	},
 	math::nalgebra::Vector2,
 	task, utility,
@@ -161,7 +163,7 @@ where
 			},
 		)?);
 
-		TaskGpuCopy::new(&render_chain)?
+		TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.set_stage_target(&*image)

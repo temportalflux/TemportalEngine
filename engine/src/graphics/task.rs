@@ -37,7 +37,7 @@ pub struct TaskGpuCopy {
 }
 
 impl TaskGpuCopy {
-	pub fn new(render_chain: &RenderChain) -> utility::Result<Self> {
+	pub fn new(name: Option<String>, render_chain: &RenderChain) -> utility::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
 
 		let state = sync::Arc::new(sync::Mutex::new(State {
@@ -51,7 +51,10 @@ impl TaskGpuCopy {
 			queue: render_chain.graphics_queue().clone(),
 			command_pool: command_pool.clone(),
 			command_buffer: command_pool
-				.allocate_buffers(1, flags::CommandBufferLevel::PRIMARY)?
+				.allocate_named_buffers(
+					vec![name.map(|v| format!("Task.{}", v))],
+					flags::CommandBufferLevel::PRIMARY,
+				)?
 				.pop(),
 			staging_buffer: None,
 			staging_buffer_name: None,

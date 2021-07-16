@@ -4,7 +4,7 @@ use crate::{
 		self, buffer, camera, command,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
-		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
+		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
 		Instance, RenderChain, Vertex,
 	},
 	BoidDemo,
@@ -189,7 +189,7 @@ impl RenderBoids {
 				.with_usage(flags::ImageUsage::SAMPLED)
 				.build(&render_chain.allocator())?,
 		);
-		graphics::TaskGpuCopy::new(&render_chain)?
+		graphics::TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&texture.binary()[..])?
@@ -247,13 +247,16 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		graphics::TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.set_stage_target(&vertex_buffer)
-			.stage(&vertices[..])?
-			.copy_stage_to_buffer(&vertex_buffer)
-			.end()?
-			.wait_until_idle()?;
+		graphics::TaskGpuCopy::new(
+			vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+			&render_chain,
+		)?
+		.begin()?
+		.set_stage_target(&vertex_buffer)
+		.stage(&vertices[..])?
+		.copy_stage_to_buffer(&vertex_buffer)
+		.end()?
+		.wait_until_idle()?;
 
 		let index_buffer = graphics::buffer::Buffer::builder()
 			.with_name("BoidModel.IndexBuffer")
@@ -269,13 +272,16 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		graphics::TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.set_stage_target(&index_buffer)
-			.stage(&indices[..])?
-			.copy_stage_to_buffer(&index_buffer)
-			.end()?
-			.wait_until_idle()?;
+		graphics::TaskGpuCopy::new(
+			index_buffer.wrap_name(|v| format!("Write({})", v)),
+			&render_chain,
+		)?
+		.begin()?
+		.set_stage_target(&index_buffer)
+		.stage(&indices[..])?
+		.copy_stage_to_buffer(&index_buffer)
+		.end()?
+		.wait_until_idle()?;
 
 		Ok((vertex_buffer, index_buffer, indices.len()))
 	}
@@ -478,12 +484,16 @@ impl RenderBoids {
 
 		// Update buffer with data
 		if instances.len() > 0 {
-			let copy_task = graphics::TaskGpuCopy::new(&mut chain)?
-				.begin()?
-				.set_stage_target(&*self.active_instance_buffer)
-				.stage(&instances[..])?
-				.copy_stage_to_buffer(&self.active_instance_buffer)
-				.end()?;
+			let copy_task = graphics::TaskGpuCopy::new(
+				self.active_instance_buffer
+					.wrap_name(|v| format!("Write({})", v)),
+				&mut chain,
+			)?
+			.begin()?
+			.set_stage_target(&*self.active_instance_buffer)
+			.stage(&instances[..])?
+			.copy_stage_to_buffer(&self.active_instance_buffer)
+			.end()?;
 			self.pending_gpu_signals
 				.push(copy_task.gpu_signal_on_complete());
 			copy_task.send_to(engine::task::sender());

@@ -3,6 +3,7 @@ use crate::{
 	graphics::{
 		self, buffer, camera, command, flags, pipeline, structs,
 		types::{Vec3, Vec4},
+		utility::NamedObject,
 		vertex_object, Drawable,
 	},
 	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
@@ -304,28 +305,34 @@ impl Frame {
 			if let Some(vbuf) = Arc::get_mut(&mut self.vertex_buffer) {
 				vbuf.expand(vbuff_size)?;
 			}
-			graphics::TaskGpuCopy::new(&chain)?
-				.begin()?
-				.set_stage_target(&*self.vertex_buffer)
-				.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
-				.copy_stage_to_buffer(&self.vertex_buffer)
-				.end()?
-				.add_signal_to(&mut gpu_signals)
-				.send_to(task::sender());
+			graphics::TaskGpuCopy::new(
+				self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+				&chain,
+			)?
+			.begin()?
+			.set_stage_target(&*self.vertex_buffer)
+			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
+			.copy_stage_to_buffer(&self.vertex_buffer)
+			.end()?
+			.add_signal_to(&mut gpu_signals)
+			.send_to(task::sender());
 		}
 
 		if ibuff_size > 0 {
 			if let Some(ibuf) = Arc::get_mut(&mut self.index_buffer) {
 				ibuf.expand(ibuff_size)?;
 			}
-			graphics::TaskGpuCopy::new(&chain)?
-				.begin()?
-				.set_stage_target(&*self.index_buffer)
-				.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
-				.copy_stage_to_buffer(&self.index_buffer)
-				.end()?
-				.add_signal_to(&mut gpu_signals)
-				.send_to(task::sender());
+			graphics::TaskGpuCopy::new(
+				self.index_buffer.wrap_name(|v| format!("Write({})", v)),
+				&chain,
+			)?
+			.begin()?
+			.set_stage_target(&*self.index_buffer)
+			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
+			.copy_stage_to_buffer(&self.index_buffer)
+			.end()?
+			.add_signal_to(&mut gpu_signals)
+			.send_to(task::sender());
 		}
 
 		Ok(gpu_signals)

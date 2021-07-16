@@ -1,5 +1,5 @@
 use crate::{
-	graphics::{self, buffer, command, flags},
+	graphics::{self, buffer, command, flags, utility::NamedObject},
 	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
 	task,
 	ui::text::{font, Vertex},
@@ -130,23 +130,29 @@ impl WidgetData {
 		let (vertices, indices) = self.build_buffer_data(column_major, font, resolution);
 		self.index_count = indices.len();
 
-		graphics::TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.set_stage_target(&*self.vertex_buffer)
-			.stage(&vertices[..])?
-			.copy_stage_to_buffer(&self.vertex_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+		graphics::TaskGpuCopy::new(
+			self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+			&render_chain,
+		)?
+		.begin()?
+		.set_stage_target(&*self.vertex_buffer)
+		.stage(&vertices[..])?
+		.copy_stage_to_buffer(&self.vertex_buffer)
+		.end()?
+		.add_signal_to(&mut gpu_signals)
+		.send_to(task::sender());
 
-		graphics::TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.set_stage_target(&*self.index_buffer)
-			.stage(&indices[..])?
-			.copy_stage_to_buffer(&self.index_buffer)
-			.end()?
-			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+		graphics::TaskGpuCopy::new(
+			self.index_buffer.wrap_name(|v| format!("Write({})", v)),
+			&render_chain,
+		)?
+		.begin()?
+		.set_stage_target(&*self.index_buffer)
+		.stage(&indices[..])?
+		.copy_stage_to_buffer(&self.index_buffer)
+		.end()?
+		.add_signal_to(&mut gpu_signals)
+		.send_to(task::sender());
 
 		Ok(gpu_signals)
 	}

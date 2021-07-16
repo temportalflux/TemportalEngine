@@ -167,11 +167,13 @@ impl RenderChain {
 		let render_pass_instruction = renderpass::RecordInstruction::default();
 		let resolution = physical.query_surface_support().image_extent();
 
-		let transient_command_pool = sync::Arc::new(command::Pool::create(
-			&logical,
-			graphics_queue.index(),
-			Some(flags::CommandPoolCreate::TRANSIENT),
-		)?);
+		let transient_command_pool = sync::Arc::new(
+			command::Pool::builder()
+				.with_name("CommandPool.Transient")
+				.with_queue_family_index(graphics_queue.index())
+				.with_flag(flags::CommandPoolCreate::TRANSIENT)
+				.build(&logical)?,
+		);
 
 		let persistent_descriptor_pool = sync::Arc::new(sync::RwLock::new(
 			graphics::descriptor::pool::Pool::builder()
@@ -360,11 +362,13 @@ impl RenderChain {
 		self.swapchain_info.fill_from_physical(&physical);
 		self.render_pass_instruction.set_extent(extent);
 
-		self.frame_command_pool = Some(command::Pool::create(
-			&logical,
-			self.graphics_queue.index(),
-			Some(flags::CommandPoolCreate::RESET_COMMAND_BUFFER),
-		)?);
+		self.frame_command_pool = Some(
+			command::Pool::builder()
+				.with_name("CommandPool.Frames")
+				.with_queue_family_index(self.graphics_queue.index())
+				.with_flag(flags::CommandPoolCreate::RESET_COMMAND_BUFFER)
+				.build(&logical)?,
+		);
 		self.command_buffers = self
 			.frame_command_pool()
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;

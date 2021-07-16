@@ -1,5 +1,8 @@
 use crate::{
-	graphics::{alloc, buffer, command, flags, pipeline::state::vertex, RenderChain, TaskGpuCopy},
+	graphics::{
+		alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, RenderChain,
+		TaskGpuCopy,
+	},
 	task, utility,
 };
 use std::sync;
@@ -133,7 +136,7 @@ where
 		signals: &mut Vec<sync::Arc<command::Semaphore>>,
 	) -> utility::Result<()> {
 		buffer.expand(std::mem::size_of::<T>() * data.len())?;
-		TaskGpuCopy::new(&render_chain)?
+		TaskGpuCopy::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
 			.begin()?
 			.set_stage_target(buffer)
 			.stage(data)?

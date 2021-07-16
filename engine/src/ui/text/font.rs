@@ -3,7 +3,7 @@ use crate::{
 		self, command, flags,
 		font::{Font, Glyph},
 		image_view, structs,
-		utility::NameableBuilder,
+		utility::{NameableBuilder, NamedObject},
 	},
 	math::nalgebra::Vector2,
 	task, utility,
@@ -83,13 +83,14 @@ impl PendingAtlas {
 				.build(&render_chain.allocator())?,
 		);
 
-		let copy_task = TaskGpuCopy::new(&render_chain)?
-			.begin()?
-			.format_image_for_write(&image)
-			.stage(&self.binary[..])?
-			.copy_stage_to_image(&image)
-			.format_image_for_read(&image)
-			.end()?;
+		let copy_task =
+			TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+				.begin()?
+				.format_image_for_write(&image)
+				.stage(&self.binary[..])?
+				.copy_stage_to_image(&image)
+				.format_image_for_read(&image)
+				.end()?;
 		signals.push(copy_task.gpu_signal_on_complete());
 		copy_task.send_to(task::sender());
 

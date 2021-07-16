@@ -3,7 +3,7 @@ use crate::{
 		self, asset,
 		graphics::{
 			self, buffer, command, flags, pipeline, shader, structs,
-			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
+			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
 			RenderChain,
 		},
 		math::nalgebra::Vector2,
@@ -129,12 +129,18 @@ impl graphics::RenderChainElement for Triangle {
 		));
 
 		let vertex_buffer_copy_signal = {
-			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
-				.begin()?
-				.set_stage_target(&**self.vertex_buffer.as_ref().unwrap())
-				.stage(&self.vertices[..])?
-				.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
-				.end()?;
+			let copy_task = graphics::TaskGpuCopy::new(
+				self.vertex_buffer
+					.as_ref()
+					.unwrap()
+					.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.set_stage_target(&**self.vertex_buffer.as_ref().unwrap())
+			.stage(&self.vertices[..])?
+			.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
+			.end()?;
 			let gpu_signal = copy_task.gpu_signal_on_complete();
 			copy_task.send_to(engine::task::sender());
 			gpu_signal
@@ -157,12 +163,18 @@ impl graphics::RenderChainElement for Triangle {
 		));
 
 		let index_buffer_copy_signal = {
-			let copy_task = graphics::TaskGpuCopy::new(&render_chain)?
-				.begin()?
-				.set_stage_target(&**self.index_buffer.as_ref().unwrap())
-				.stage(&self.indices[..])?
-				.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
-				.end()?;
+			let copy_task = graphics::TaskGpuCopy::new(
+				self.index_buffer
+					.as_ref()
+					.unwrap()
+					.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.set_stage_target(&**self.index_buffer.as_ref().unwrap())
+			.stage(&self.indices[..])?
+			.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
+			.end()?;
 			let gpu_signal = copy_task.gpu_signal_on_complete();
 			copy_task.send_to(engine::task::sender());
 			gpu_signal
