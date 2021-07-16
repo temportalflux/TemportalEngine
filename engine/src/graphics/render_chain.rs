@@ -196,7 +196,7 @@ impl RenderChain {
 			frame_command_pool: None,
 			command_buffers: Vec::new(),
 			render_pass_instruction,
-			render_pass_info: renderpass::Info::default(),
+			render_pass_info: renderpass::Info::default().with_name("RenderPass"),
 			is_dirty: true,
 			resolution: [resolution.width as f32, resolution.height as f32].into(),
 
@@ -369,7 +369,7 @@ impl RenderChain {
 			.frame_command_pool()
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
-		self.render_pass = Some(self.render_pass_info.create_object(&logical)?);
+		self.render_pass = Some(self.render_pass_info.clone().build(&logical)?);
 		self.swapchain = Some(self.swapchain_info.clone().build(
 			&logical,
 			&surface,
