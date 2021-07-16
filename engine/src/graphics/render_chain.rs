@@ -155,7 +155,7 @@ impl RenderChain {
 		frame_count: usize,
 	) -> utility::Result<RenderChain> {
 		let swapchain_info = Swapchain::builder()
-			.with_name("Swapchain")
+			.with_name("RenderChain.Swapchain")
 			.with_image_count(frame_count as u32)
 			.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
 			.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
@@ -390,7 +390,7 @@ impl RenderChain {
 		for (i, image) in self.frame_images.iter().enumerate() {
 			self.frame_image_views.push(
 				image_view::View::builder()
-					.with_name(format!("{}.Image.View", self.swapchain().frame_name(i)))
+					.with_name(format!("RenderChain.Frame{}.View", i))
 					.for_image(image.clone())
 					.with_view_type(flags::ImageViewType::TYPE_2D)
 					.with_range(
@@ -403,18 +403,28 @@ impl RenderChain {
 		for (i, image_view) in self.frame_image_views.iter().enumerate() {
 			self.frame_buffers.push(
 				command::framebuffer::Framebuffer::builder()
-					.with_name(format!("{}.Framebuffer", self.swapchain().frame_name(i)))
+					.with_name(format!("RenderChain.Frame{}.Framebuffer", i))
 					.set_extent(extent)
 					.build(&image_view, &self.render_pass(), &logical)?,
 			);
 		}
 
 		let max_frames_in_flight = RenderChain::max_frames_in_flight(self.frame_count);
-		self.img_available_semaphores =
-			RenderChain::create_semaphores(&logical, max_frames_in_flight)?;
-		self.render_finished_semaphores =
-			RenderChain::create_semaphores(&logical, max_frames_in_flight)?;
-		self.in_flight_fences = RenderChain::create_fences(&logical, max_frames_in_flight)?;
+		self.img_available_semaphores = RenderChain::create_semaphores(
+			&logical,
+			"RenderChain.Signals.GPU.ImageAvailable",
+			max_frames_in_flight,
+		)?;
+		self.render_finished_semaphores = RenderChain::create_semaphores(
+			&logical,
+			"RenderChain.Signals.GPU.RenderFinished",
+			max_frames_in_flight,
+		)?;
+		self.in_flight_fences = RenderChain::create_fences(
+			&logical,
+			"RenderChain.Signals.CPU.FrameInFlight",
+			max_frames_in_flight,
+		)?;
 		self.images_in_flight = self
 			.frame_image_views
 			.iter()
@@ -450,22 +460,30 @@ impl RenderChain {
 
 	fn create_semaphores(
 		logical: &sync::Arc<logical::Device>,
+		name: &str,
 		amount: usize,
 	) -> utility::Result<Vec<command::Semaphore>> {
 		let mut vec: Vec<command::Semaphore> = Vec::new();
-		for _ in 0..amount {
-			vec.push((command::Semaphore::new(logical))?);
+		for i in 0..amount {
+			vec.push((command::Semaphore::new(logical, Some(format!("{}.{}", name, i))))?);
 		}
 		Ok(vec)
 	}
 
 	fn create_fences(
 		logical: &sync::Arc<logical::Device>,
+		name: &str,
 		amount: usize,
 	) -> utility::Result<Vec<command::Fence>> {
 		let mut vec: Vec<command::Fence> = Vec::new();
-		for _ in 0..amount {
-			vec.push((command::Fence::new(logical, flags::FenceState::SIGNALED))?);
+		for i in 0..amount {
+			vec.push(
+				(command::Fence::new(
+					logical,
+					Some(format!("{}.{}", name, i)),
+					flags::FenceState::SIGNALED,
+				))?,
+			);
 		}
 		Ok(vec)
 	}

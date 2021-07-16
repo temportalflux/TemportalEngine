@@ -1,7 +1,7 @@
 use crate::{
 	graphics::{
 		alloc, buffer, command, device::logical, flags, image, structs::subresource,
-		utility::NamedObject, RenderChain,
+		RenderChain,
 	},
 	utility,
 };
@@ -33,6 +33,7 @@ pub struct TaskGpuCopy {
 	allocator: sync::Arc<alloc::Allocator>,
 	/// The logical/virtual graphics device the command happens on.
 	device: sync::Arc<logical::Device>,
+	name: Option<String>,
 }
 
 impl TaskGpuCopy {
@@ -44,6 +45,8 @@ impl TaskGpuCopy {
 			waker: None,
 		}));
 
+		let task_name = name.as_ref().map(|v| format!("Task.{}", v));
+
 		Ok(Self {
 			device: render_chain.logical().clone(),
 			allocator: render_chain.allocator().clone(),
@@ -51,19 +54,24 @@ impl TaskGpuCopy {
 			command_pool: command_pool.clone(),
 			command_buffer: command_pool
 				.allocate_named_buffers(
-					vec![name.map(|v| format!("Task.{}", v))],
+					vec![task_name.as_ref().map(|v| format!("{}.Command", v))],
 					flags::CommandBufferLevel::PRIMARY,
 				)?
 				.pop(),
 			staging_buffer: None,
 			cpu_signal_on_complete: sync::Arc::new(command::Fence::new(
 				&render_chain.logical(),
+				name.as_ref()
+					.map(|v| format!("Task.{}.Signals.CPU.OnComplete", v)),
 				flags::FenceState::default(),
 			)?),
 			gpu_signal_on_complete: sync::Arc::new(command::Semaphore::new(
 				&render_chain.logical(),
+				name.as_ref()
+					.map(|v| format!("Task.{}.Signals.GPU.OnComplete", v)),
 			)?),
 			state,
+			name: task_name,
 		})
 	}
 
@@ -243,15 +251,9 @@ impl TaskGpuCopy {
 		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
 	{
 		let buffer = buffer::Buffer::create_staging(
-			self.command_buffer
+			self.name
 				.as_ref()
-				.map(|cmd_buffer| {
-					cmd_buffer
-						.name()
-						.as_ref()
-						.map(|name| format!("{}.StagingBuffer", name))
-				})
-				.flatten(),
+				.map(|name| format!("{}.StagingBuffer", name)),
 			&self.allocator,
 			memory_size,
 		)?;
