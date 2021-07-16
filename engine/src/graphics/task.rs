@@ -23,7 +23,6 @@ pub struct TaskGpuCopy {
 	cpu_signal_on_complete: sync::Arc<command::Fence>,
 	/// The intermediate CPU -> GPU buffer for holding data.
 	staging_buffer: Option<buffer::Buffer>,
-	staging_buffer_name: Option<String>,
 	/// The command recording to run to copy data from CPU to GPU.
 	command_buffer: Option<command::Buffer>,
 	/// The pool used to create the command buffer.
@@ -57,7 +56,6 @@ impl TaskGpuCopy {
 				)?
 				.pop(),
 			staging_buffer: None,
-			staging_buffer_name: None,
 			cpu_signal_on_complete: sync::Arc::new(command::Fence::new(
 				&render_chain.logical(),
 				flags::FenceState::default(),
@@ -225,14 +223,6 @@ impl TaskGpuCopy {
 		self.staging_buffer.as_ref().unwrap()
 	}
 
-	pub fn set_stage_target<T>(mut self, named: &T) -> Self
-	where
-		T: NamedObject,
-	{
-		self.staging_buffer_name = named.name().as_ref().map(|name| format!("{}|STAGE", name));
-		self
-	}
-
 	/// Creates an intermediate CPU & GPU compatible buffer,
 	/// and copies some data to it,
 	/// so that said data can be copied to a GPU-only buffer or image.
@@ -253,7 +243,15 @@ impl TaskGpuCopy {
 		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
 	{
 		let buffer = buffer::Buffer::create_staging(
-			self.staging_buffer_name.take(),
+			self.command_buffer
+				.as_ref()
+				.map(|cmd_buffer| {
+					cmd_buffer
+						.name()
+						.as_ref()
+						.map(|name| format!("{}.StagingBuffer", name))
+				})
+				.flatten(),
 			&self.allocator,
 			memory_size,
 		)?;

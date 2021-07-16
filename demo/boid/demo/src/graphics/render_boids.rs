@@ -252,7 +252,6 @@ impl RenderBoids {
 			&render_chain,
 		)?
 		.begin()?
-		.set_stage_target(&vertex_buffer)
 		.stage(&vertices[..])?
 		.copy_stage_to_buffer(&vertex_buffer)
 		.end()?
@@ -277,7 +276,6 @@ impl RenderBoids {
 			&render_chain,
 		)?
 		.begin()?
-		.set_stage_target(&index_buffer)
 		.stage(&indices[..])?
 		.copy_stage_to_buffer(&index_buffer)
 		.end()?
@@ -490,7 +488,6 @@ impl RenderBoids {
 				&mut chain,
 			)?
 			.begin()?
-			.set_stage_target(&*self.active_instance_buffer)
 			.stage(&instances[..])?
 			.copy_stage_to_buffer(&self.active_instance_buffer)
 			.end()?;

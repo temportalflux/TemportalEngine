@@ -166,7 +166,6 @@ where
 		TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
-			.set_stage_target(&*image)
 			.stage(&pending.compiled.binary[..])?
 			.copy_stage_to_image(&image)
 			.format_image_for_read(&image)

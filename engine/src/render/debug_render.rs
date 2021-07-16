@@ -310,7 +310,6 @@ impl Frame {
 				&chain,
 			)?
 			.begin()?
-			.set_stage_target(&*self.vertex_buffer)
 			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
 			.copy_stage_to_buffer(&self.vertex_buffer)
 			.end()?
@@ -327,7 +326,6 @@ impl Frame {
 				&chain,
 			)?
 			.begin()?
-			.set_stage_target(&*self.index_buffer)
 			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
 			.copy_stage_to_buffer(&self.index_buffer)
 			.end()?

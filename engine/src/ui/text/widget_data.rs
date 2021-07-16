@@ -135,7 +135,6 @@ impl WidgetData {
 			&render_chain,
 		)?
 		.begin()?
-		.set_stage_target(&*self.vertex_buffer)
 		.stage(&vertices[..])?
 		.copy_stage_to_buffer(&self.vertex_buffer)
 		.end()?
@@ -147,7 +146,6 @@ impl WidgetData {
 			&render_chain,
 		)?
 		.begin()?
-		.set_stage_target(&*self.index_buffer)
 		.stage(&indices[..])?
 		.copy_stage_to_buffer(&self.index_buffer)
 		.end()?
