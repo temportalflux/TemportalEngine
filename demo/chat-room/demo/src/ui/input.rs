@@ -30,45 +30,48 @@ pub fn widget(mut context: WidgetContext) -> WidgetNode {
 			.with_props(NavItemActive)
 			.with_props(TextInputNotifyProps(id.to_owned().into()))
 			.with_props(ButtonNotifyProps(id.to_owned().into()))
+			// need to manually indicate that this is a text field until https://github.com/RAUI-labs/raui/pull/73 is fixed
+			.with_props(TextInputMode::Text)
 			.named_slot(
 				"content",
-				make_widget!(text_box).with_props(TextBoxProps {
-					text,
-					font: TextBoxFont {
-						name: crate::engine::asset::statics::font::unispace::REGULAR.to_owned(),
-						size: 20.0,
-					},
-					color: if trigger {
-						Color {
-							r: 1.0,
-							g: 0.0,
-							b: 0.0,
-							a: 1.0,
-						}
-					} else if selected {
-						Color {
-							r: 0.0,
-							g: 1.0,
-							b: 0.0,
-							a: 1.0,
-						}
-					} else if focused {
-						Color {
-							r: 0.0,
-							g: 0.0,
-							b: 1.0,
-							a: 1.0,
-						}
-					} else {
-						Color {
-							r: 0.0,
-							g: 0.0,
-							b: 0.0,
-							a: 1.0,
-						}
-					},
-					..Default::default()
-				}),
+				make_widget!(text_box)
+					.with_props(TextBoxProps {
+						text,
+						font: TextBoxFont {
+							name: crate::engine::asset::statics::font::unispace::REGULAR.to_owned(),
+							size: 20.0,
+						},
+						color: if trigger {
+							Color {
+								r: 1.0,
+								g: 0.0,
+								b: 0.0,
+								a: 1.0,
+							}
+						} else if selected {
+							Color {
+								r: 0.0,
+								g: 1.0,
+								b: 0.0,
+								a: 1.0,
+							}
+						} else if focused {
+							Color {
+								r: 0.0,
+								g: 0.0,
+								b: 1.0,
+								a: 1.0,
+							}
+						} else {
+							Color {
+								r: 0.0,
+								g: 0.0,
+								b: 0.0,
+								a: 1.0,
+							}
+						},
+						..Default::default()
+					}),
 			),
 	)
 }

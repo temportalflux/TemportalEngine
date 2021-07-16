@@ -525,7 +525,10 @@ impl RenderChain {
 		for idx in 0..subpass_ids.len() {
 			let subpass_id = asset::Id::try_from(subpass_ids[idx].as_str()).ok();
 			cmd.begin_label(
-				format!("SubPass:{}", subpass_id.map(|id| id.name()).unwrap_or(idx.to_string())),
+				format!(
+					"SubPass:{}",
+					subpass_id.map(|id| id.name()).unwrap_or(idx.to_string())
+				),
 				debug::LABEL_COLOR_SUB_PASS,
 			);
 			let subpass_key = Some(subpass_ids[idx].clone());
