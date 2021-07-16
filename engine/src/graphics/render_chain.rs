@@ -177,6 +177,7 @@ impl RenderChain {
 
 		let persistent_descriptor_pool = sync::Arc::new(sync::RwLock::new(
 			graphics::descriptor::pool::Pool::builder()
+				.with_name("DescriptorPool.Persistent")
 				.with_total_set_count(100)
 				.with_descriptor(flags::DescriptorKind::UNIFORM_BUFFER, 100)
 				.with_descriptor(flags::DescriptorKind::COMBINED_IMAGE_SAMPLER, 100)

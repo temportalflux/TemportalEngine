@@ -40,13 +40,17 @@ where
 	pub fn insert(
 		&mut self,
 		id: T,
+		name: Option<String>,
 		render_chain: &RenderChain,
 	) -> utility::Result<sync::Weak<descriptor::Set>> {
 		let descriptor_set = render_chain
 			.persistent_descriptor_pool()
 			.write()
 			.unwrap()
-			.allocate_descriptor_sets(&vec![self.layout().clone()])?
+			.allocate_named_descriptor_sets(&vec![(
+				self.layout().clone(),
+				name.map(|v| format!("{}.Descriptor", v)),
+			)])?
 			.pop()
 			.unwrap();
 		self.sets.insert(id, descriptor_set.clone());

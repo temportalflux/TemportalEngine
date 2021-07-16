@@ -78,6 +78,7 @@ impl RenderBoids {
 
 		let image_descriptor_layout = Arc::new(
 			SetLayout::builder()
+				.with_name("BoidModel.Image.DescriptorLayout")
 				.with_binding(
 					0,
 					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -93,7 +94,10 @@ impl RenderBoids {
 			.persistent_descriptor_pool()
 			.write()
 			.unwrap()
-			.allocate_descriptor_sets(&vec![image_descriptor_layout.clone()])?
+			.allocate_named_descriptor_sets(&vec![(
+				image_descriptor_layout.clone(),
+				Some("BoidModel.Image.Descriptor".to_string()),
+			)])?
 			.pop()
 			.unwrap();
 

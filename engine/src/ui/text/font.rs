@@ -25,6 +25,7 @@ pub struct PendingAtlas {
 }
 
 pub struct Loaded {
+	name: String,
 	size: Vector2<usize>,
 	line_height: f32,
 	glyph_map: FontGlyphMap,
@@ -64,9 +65,11 @@ impl PendingAtlas {
 		};
 		let mut signals = Vec::new();
 
+		let atlas_name = format!("UI.FontAtlas:{}", self.id);
+
 		let image = sync::Arc::new(
 			image::Image::builder()
-				.with_name(format!("UI.FontAtlas:{}.Image", self.id))
+				.with_name(format!("{}.Image", atlas_name))
 				.with_alloc(
 					alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::GpuOnly)
@@ -96,7 +99,7 @@ impl PendingAtlas {
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
-				.with_name(format!("UI.FontAtlas:{}.Image.View", self.id))
+				.with_name(format!("{}.Image.View", atlas_name))
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
@@ -105,6 +108,7 @@ impl PendingAtlas {
 
 		Ok((
 			Loaded {
+				name: atlas_name,
 				view,
 				size: self.size,
 				glyph_map: self.glyph_map,
@@ -135,5 +139,9 @@ impl Loaded {
 
 	pub fn get_width_edge(&self) -> &Vector2<f32> {
 		&self.width_edge
+	}
+
+	pub fn name(&self) -> &String {
+		&self.name
 	}
 }

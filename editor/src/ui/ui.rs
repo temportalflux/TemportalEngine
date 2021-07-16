@@ -5,6 +5,7 @@ use crate::{
 			command, descriptor, flags, pipeline, structs,
 			types::{Vec2, Vec4},
 			utility::Scissor,
+			utility::{BuildFromDevice, NameableBuilder},
 			vertex_object, DescriptorCache, Drawable, ImageCache, Mesh, RenderChain,
 			RenderChainElement,
 		},
@@ -110,6 +111,7 @@ impl Ui {
 			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
 			descriptor_cache: DescriptorCache::new(
 				descriptor::layout::SetLayout::builder()
+					.with_name("EditorUI.DescriptorLayout")
 					.with_binding(
 						0,
 						flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -255,10 +257,14 @@ impl RenderChainElement for Ui {
 		let (image_ids, mut signals) = self.image_cache.load_pending(chain)?;
 		self.pending_gpu_signals.append(&mut signals);
 
-		for image_id in image_ids.into_iter() {
+		for (image_id, image_name) in image_ids.into_iter() {
 			use descriptor::update::*;
 			let cached_image = &self.image_cache[&image_id];
-			let descriptor_set = self.descriptor_cache.insert(image_id, chain)?;
+			let descriptor_set = self.descriptor_cache.insert(
+				image_id,
+				image_name.map(|v| format!("EditorUI.{}", v)),
+				chain,
+			)?;
 			Queue::default()
 				.with(Operation::Write(WriteOp {
 					destination: Descriptor {

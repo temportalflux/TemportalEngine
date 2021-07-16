@@ -111,7 +111,7 @@ where
 	pub fn load_pending(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<(Vec<T>, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> utility::Result<(Vec<(T, Option<String>)>, Vec<sync::Arc<command::Semaphore>>)> {
 		let mut ids = Vec::new();
 		let mut pending_gpu_signals = Vec::new();
 		if !self.pending.is_empty() {
@@ -119,10 +119,10 @@ where
 			let pending_images = self.pending.drain().collect::<Vec<_>>();
 			// Load/Create the image on GPU for each pending item
 			for (id, pending) in pending_images.into_iter() {
-				let (loaded, mut signals) = self.create_image(render_chain, pending)?;
+				let (loaded, mut signals) = self.create_image(render_chain, &pending)?;
 				// promote the required signals so they can be returned by `load_pending`
 				pending_gpu_signals.append(&mut signals);
-				ids.push(id.clone());
+				ids.push((id.clone(), pending.name.clone()));
 				// insert the image into the collection, thereby dropping any item with the same id
 				self.loaded.insert(id, loaded);
 			}
@@ -146,7 +146,7 @@ where
 	fn create_image(
 		&self,
 		render_chain: &graphics::RenderChain,
-		pending: PendingEntry,
+		pending: &PendingEntry,
 	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
 		use graphics::{image, structs::subresource, utility::BuildFromDevice, TaskGpuCopy};
 

@@ -38,6 +38,7 @@ impl DataPipeline {
 	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
 		let descriptor_layout = sync::Arc::new(
 			SetLayout::builder()
+				.with_name("UI.Text.DescriptorLayout")
 				.with_binding(
 					0,
 					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
@@ -49,7 +50,7 @@ impl DataPipeline {
 		Ok(Self {
 			sampler: sync::Arc::new(
 				graphics::sampler::Sampler::builder()
-					.with_name("UI.Font.Image.Sampler")
+					.with_name("UI.Text.Font.Sampler")
 					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
 					.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
 					.build(&render_chain.logical())?,
@@ -90,7 +91,10 @@ impl DataPipeline {
 					.persistent_descriptor_pool()
 					.write()
 					.unwrap()
-					.allocate_descriptor_sets(&vec![self.descriptor_layout.clone()])?
+					.allocate_named_descriptor_sets(&vec![(
+						self.descriptor_layout.clone(),
+						Some(format!("{}.Descriptor", loaded.name())),
+					)])?
 					.pop()
 					.unwrap();
 

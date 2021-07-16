@@ -3,7 +3,7 @@ use crate::{
 		alloc, buffer, camera,
 		descriptor::{self, layout::SetLayout},
 		flags,
-		utility::{BuildFromAllocator, NameableBuilder},
+		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
 		RenderChain,
 	},
 	math::nalgebra::Vector2,
@@ -22,8 +22,11 @@ impl Uniform {
 	where
 		T: Into<String>,
 	{
+		let uniform_name: String = name.into();
+
 		let descriptor_layout = Arc::new(
 			SetLayout::builder()
+				.with_name(format!("{}.DescriptorLayout", uniform_name))
 				.with_binding(
 					0,
 					flags::DescriptorKind::UNIFORM_BUFFER,
@@ -37,9 +40,17 @@ impl Uniform {
 			.persistent_descriptor_pool()
 			.write()
 			.unwrap()
-			.allocate_descriptor_sets(&vec![descriptor_layout.clone(); chain.frame_count()])?;
+			.allocate_named_descriptor_sets(
+				&(0..chain.frame_count())
+					.map(|i| {
+						(
+							descriptor_layout.clone(),
+							Some(format!("{}.Frame{}.Descriptor", uniform_name, i)),
+						)
+					})
+					.collect(),
+			)?;
 
-		let uniform_name: String = name.into();
 		let mut buffers = Vec::new();
 		for i in 0..chain.frame_count() {
 			let buffer = buffer::Buffer::builder()
