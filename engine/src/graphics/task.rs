@@ -1,7 +1,6 @@
 use crate::{
 	graphics::{
-		alloc, buffer, command, device::logical, flags, image, structs::subresource,
-		RenderChain,
+		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
 	},
 	utility,
 };
@@ -92,6 +91,10 @@ impl TaskGpuCopy {
 	/// The [`end`](TaskGpuCopy::end) MUST be called once complete.
 	#[profiling::function]
 	pub fn begin(self) -> utility::Result<Self> {
+		if let Some(name) = self.name.as_ref() {
+			self.queue
+				.begin_label(name.clone(), [0.957, 0.855, 0.298, 1.0]); // #f4da4c
+		}
 		self.cmd()
 			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
@@ -110,6 +113,9 @@ impl TaskGpuCopy {
 				.add_buffer(&self.cmd())],
 			Some(&self.cpu_signal_on_complete),
 		)?;
+		if self.name.is_some() {
+			self.queue.end_label();
+		}
 
 		let thread_device = self.device.clone();
 		let thread_cpu_signal = self.cpu_signal_on_complete.clone();

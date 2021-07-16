@@ -666,6 +666,8 @@ impl RenderChain {
 			}
 		}
 
+		self.graphics_queue
+			.begin_label("Render", [0.098, 0.353, 0.0196, 1.0]); // #195a05
 		if self.frame_command_buffer_requires_recording[next_image_idx] {
 			self.record_commands(next_image_idx)?;
 			self.frame_command_buffer_requires_recording[next_image_idx] = false;
@@ -700,13 +702,17 @@ impl RenderChain {
 				.signal_when_complete(&self.render_finished_semaphores[self.current_frame])],
 			Some(&self.in_flight_fences[self.current_frame]),
 		)?;
+		self.graphics_queue.end_label();
 
+		self.graphics_queue
+			.begin_label("Present", [0.235, 0.392, 0.184, 1.0]); // #3c642f
 		let present_result = self.graphics_queue.present(
 			command::PresentInfo::default()
 				.wait_for(&self.render_finished_semaphores[self.current_frame])
 				.add_swapchain(self.swapchain())
 				.add_image_index(next_image_idx as u32),
 		);
+		self.graphics_queue.end_label();
 		match present_result {
 			Ok(is_suboptimal) => {
 				if is_suboptimal {
