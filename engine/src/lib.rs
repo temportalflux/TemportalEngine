@@ -1,15 +1,16 @@
 mod application;
+pub use application::*;
 pub mod asset;
 pub mod audio;
-pub use application::*;
 pub mod ecs;
 mod engine;
 pub use engine::*;
 pub mod graphics;
 pub mod input;
 pub mod logging;
-pub use profiling;
 pub mod math;
+pub mod network;
+pub use profiling;
 pub mod task;
 pub mod ui;
 pub mod utility;
