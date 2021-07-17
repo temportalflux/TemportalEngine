@@ -23,7 +23,6 @@ pub fn widget(mut context: WidgetContext) -> WidgetNode {
 	} else {
 		text
 	};
-	log::debug!("{}", text);
 	WidgetNode::Component(
 		make_widget!(input_field)
 			.key(key)
