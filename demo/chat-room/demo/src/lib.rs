@@ -23,6 +23,11 @@ pub fn run() -> VoidResult {
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
+	let app = std::sync::Arc::new(std::sync::RwLock::new(App()));
+	if let Ok(mut network) = network::Network::write() {
+		network.add_observer(std::sync::Arc::downgrade(&app));
+	}
+
 	let network_port = std::env::args()
 		.find_map(|arg| {
 			arg.strip_prefix("-port=")
@@ -44,12 +49,7 @@ pub fn run() -> VoidResult {
 		})?;
 	}
 
-	if network::Network::read()
-		.ok()
-		.unwrap()
-		.mode()
-		.contains(network::Kind::Client)
-	{
+	if network::mode().contains(network::Kind::Client) {
 		engine::window::Window::builder()
 			.with_title("Chat Room")
 			.with_size(1280.0, 720.0)
@@ -78,4 +78,26 @@ pub fn run() -> VoidResult {
 
 	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
+}
+
+struct App();
+impl network::NetObserver for App {
+	fn on_connect(&mut self, source: std::net::SocketAddr) -> VoidResult {
+		if network::mode().contains(network::Kind::Client) {
+			log::info!(target: network::LOG, "Connected to {}", source);
+			network::Network::send(
+				network::packet::Packet::builder()
+					.with_address(source)?
+					.with_guarantee(
+						network::packet::DeliveryGuarantee::Reliable
+							+ network::packet::OrderGuarantee::Unordered,
+					)
+					.with_payload(&packet::Message {
+						content: "This is my first message".to_string(),
+					})
+					.build(),
+			);
+		}
+		Ok(())
+	}
 }

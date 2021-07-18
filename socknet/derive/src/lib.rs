@@ -4,8 +4,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
 	parse::{Parse, ParseStream, Result},
-	parse_macro_input,
-	ItemStruct, Token,
+	parse_macro_input, ItemStruct, Token,
 };
 
 #[derive(Debug)]
@@ -69,5 +68,6 @@ pub fn packet_kind(args: TokenStream, input: TokenStream) -> TokenStream {
 				Box::new(#socknet_crate_path::serde::from_read_ref::<[u8], #name>(&bytes).unwrap())
 			}
 		}
-	}.into();
+	}
+	.into();
 }

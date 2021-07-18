@@ -1,7 +1,7 @@
 use crate::packet::Packet;
 use std::net::SocketAddr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Event {
 	Connected(SocketAddr),
 	TimedOut(SocketAddr),
