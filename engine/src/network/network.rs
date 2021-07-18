@@ -63,6 +63,7 @@ impl Network {
 			},
 			_ => return,
 		};
+
 		let mut queue_locked = queue.lock().unwrap();
 		while let Some(event) = queue_locked.pop_front() {
 			log::debug!(target: LOG, "received {:?}", event);
@@ -72,20 +73,29 @@ impl Network {
 				Event::Disconnected(_address) => {}
 				Event::Packet(mut packet) => {
 					let (kind_id, packet_data, process_fn) = match packet::Registry::read() {
-						Ok(registry) => match packet.take_payload().into_packet(&registry) {
-							Some(data) => data,
-							None => {
-								log::error!(
-									target: LOG,
-									"Failed to parse packet with kind({})",
-									packet.kind()
-								);
-								return;
+						Ok(registry) => {
+							let payload = packet.take_payload();
+							match registry.at(payload.kind().as_str()) {
+								Some(entry) => (
+									payload.kind().clone(),
+									entry.deserialize_from(payload.data()),
+									entry.process_fn(),
+								),
+								None => {
+									log::error!(
+										target: LOG,
+										"Failed to parse packet with kind({})",
+										packet.kind()
+									);
+									return;
+								}
 							}
-						},
+						}
 						Err(_) => return,
 					};
-					if let Err(e) = (*process_fn)(packet_data, *packet.address(), *packet.guarantees()) {
+					if let Err(e) =
+						(*process_fn)(packet_data, *packet.address(), *packet.guarantees())
+					{
 						log::error!(
 							target: LOG,
 							"Failed to process packet with kind({}): {}",

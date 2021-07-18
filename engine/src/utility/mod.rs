@@ -1,6 +1,7 @@
 mod error;
 pub use error::*;
 
+pub use temportal_engine_utilities::*;
 pub use vulkan_rs::utility::make_version;
 
 pub trait AToAny: 'static {
@@ -16,6 +17,3 @@ pub mod singleton;
 
 mod save_data;
 pub use save_data::*;
-
-mod registry;
-pub use registry::*;

@@ -1,0 +1,15 @@
+[package]
+name = "temportal-engine-utilities"
+version = "0.1.0"
+authors = ["Dustin Yost <dustin.yost.t@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# [serialization] expanded serialization support
+rmp = "0.8"
+# [serialization] expanded serialization support for serde
+rmp-serde = "0.15"
+# [serialization]
+serde = { version = "1.0", features = ["derive"] }

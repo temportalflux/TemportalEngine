@@ -1,4 +1,4 @@
-use crate::network::packet::Packet;
+use crate::packet::Packet;
 use std::net::SocketAddr;
 
 #[derive(Debug)]

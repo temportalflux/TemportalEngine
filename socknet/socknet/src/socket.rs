@@ -1,7 +1,4 @@
-use crate::{
-	network::{event, packet},
-	utility::AnyError,
-};
+use crate::{event, packet, AnyError};
 use std::{
 	collections::VecDeque,
 	net::{IpAddr, Ipv4Addr, SocketAddr},

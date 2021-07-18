@@ -11,8 +11,6 @@ edition = "2018"
 bus = "2.2"
 # [audio] for manaing audio devices
 cpal = "0.13"
-# [networking] dependency from `laminar` used to send packers/receive events
-crossbeam-channel = "0.5"
 # [utility] similar to a bitmap but for any enum with a derive-trait implemented
 enumset = { version = "1.0", features = ["serde"] } 
 # [rust] async/future support in rust (for thinks like ongoing/background tasks)
@@ -21,8 +19,6 @@ futures = "0.3"
 hound = "3.4"
 # [input] for processing user input from winit and gamepads using a user-defined configuration
 input-actions = { path = "../input-actions", features = ["winit", "log"] }
-# [networking] for making socket connections and polling for data
-laminar = "0.5.0"
 # [audio] for parsing vorbis/ogg audio binaries
 lewton = "0.10"
 # [log] log allows for logging formatted text to multiple outputs and provides a generic interface
@@ -58,8 +54,11 @@ serde = { version = "1.0", features = ["derive"] }
 signal-hook = "0.3"
 # [log] backend for the log crate to output logging to multiple locations
 simplelog = "0.10"
+# [network] backend-agnostic wrapper for socket-based networking with packet support
+socknet = { path = "../socknet/socknet", features = ["derive"] }
 # [ecs] backend for entity-componment-system - may eventually replace with hecs
 specs = { version = "0.16", features = ["shred-derive"] }
+temportal-engine-utilities = { path = "../utility" }
 # [graphics] backend for rendering graphics to a window / working with the GPU
 vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
 # [window] for opening a window and getting user input

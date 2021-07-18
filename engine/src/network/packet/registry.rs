@@ -1,15 +1,14 @@
-use super::{Kind, KindId, Registration};
-use crate::utility;
+use super::{Kind, Registration};
 use std::sync::{LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 pub struct Registry {
-	types: utility::Registry<KindId, Registration>,
+	types: socknet::packet::Registry,
 }
 
 impl Default for Registry {
 	fn default() -> Self {
 		Self {
-			types: utility::Registry::new(),
+			types: socknet::packet::Registry::new(),
 		}
 	}
 }

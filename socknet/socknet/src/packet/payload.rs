@@ -1,9 +1,9 @@
-use super::{Kind, KindIdOwned, Registry, FnProcessKind, AnyBox};
+use super::Kind;
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct Payload {
-	kind_id: KindIdOwned,
+	kind_id: String,
 	data: Vec<u8>,
 }
 
@@ -31,8 +31,12 @@ where
 }
 
 impl Payload {
-	pub fn kind(&self) -> &KindIdOwned {
+	pub fn kind(&self) -> &String {
 		&self.kind_id
+	}
+
+	pub fn data(&self) -> &[u8] {
+		&self.data[..]
 	}
 
 	pub fn take(&mut self) -> Payload {
@@ -40,11 +44,5 @@ impl Payload {
 			kind_id: self.kind_id.clone(),
 			data: self.data.drain(..).collect(),
 		}
-	}
-
-	pub fn into_packet(self, registry: &Registry) -> Option<(KindIdOwned, AnyBox, FnProcessKind)> {
-		registry
-			.at(self.kind_id.as_str())
-			.map(|entry| (self.kind_id, entry.deserialize_from(&self.data[..]), entry.process_fn()))
 	}
 }

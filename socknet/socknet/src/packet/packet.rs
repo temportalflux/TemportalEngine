@@ -1,4 +1,4 @@
-use super::{DeliveryGuarantee, Guarantee, Kind, KindIdOwned, OrderGuarantee, Payload};
+use super::{DeliveryGuarantee, Guarantee, Kind, OrderGuarantee, Payload};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 
 pub struct PacketBuilder {
@@ -111,7 +111,7 @@ impl Packet {
 		&self.guarantee
 	}
 
-	pub fn kind(&self) -> &KindIdOwned {
+	pub fn kind(&self) -> &String {
 		self.payload.kind()
 	}
 

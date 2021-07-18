@@ -1,7 +1,4 @@
-use crate::{
-	network::{build_thread, packet},
-	utility::AnyError,
-};
+use crate::{build_thread, packet, AnyError};
 use std::{
 	collections::VecDeque,
 	sync,

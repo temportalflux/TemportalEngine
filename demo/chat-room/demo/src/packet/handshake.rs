@@ -1,41 +1,17 @@
 use crate::engine::{
 	network::{
 		self,
-		packet::{self, Guarantee, Packet, AnyBox, Processor},
-		Network,
+		packet::{AnyBox, Guarantee, Packet, Processor},
+		packet_kind, Network,
 	},
-	utility::{Registerable, VoidResult},
+	utility::VoidResult,
 };
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
+#[packet_kind(crate::engine::network, "handshake", Handshake)]
 #[derive(Serialize, Deserialize)]
 pub struct Handshake {}
-
-impl Registerable<packet::KindId, packet::Registration> for Handshake {
-	fn unique_id() -> packet::KindId {
-		"handshake"
-	}
-	fn registration() -> packet::Registration
-	where
-		Self: Sized + 'static,
-	{
-		packet::Registration::of::<Self, Self>()
-	}
-}
-
-impl packet::Kind for Handshake {
-	fn serialize_to(&self) -> Vec<u8> {
-		rmp_serde::to_vec(&self).unwrap()
-	}
-
-	fn deserialize_from(bytes: &[u8]) -> AnyBox
-	where
-		Self: Sized,
-	{
-		Box::new(rmp_serde::from_read_ref::<[u8], Handshake>(&bytes).unwrap())
-	}
-}
 
 impl Processor<Handshake> for Handshake {
 	fn process(data: &mut Self, source: SocketAddr, guarantees: Guarantee) -> VoidResult {
