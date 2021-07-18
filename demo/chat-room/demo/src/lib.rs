@@ -1,6 +1,9 @@
 use engine::{network, utility::VoidResult, Application};
 pub use temportal_engine as engine;
 
+#[path = "packet/mod.rs"]
+pub mod packet;
+
 #[path = "ui/mod.rs"]
 pub mod ui;
 
@@ -16,6 +19,7 @@ impl Application for ChatRoom {
 
 pub fn run() -> VoidResult {
 	engine::logging::init(ChatRoom::name(), None)?;
+	packet::register_types();
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
@@ -59,6 +63,17 @@ pub fn run() -> VoidResult {
 			.with_all_fonts()?
 			.with_tree_root(engine::ui::make_widget!(ui::root::widget))
 			.attach_system(&mut engine, None)?;
+
+		network::Network::send(
+			network::packet::Packet::builder()
+				.with_address("127.0.0.1:25565")?
+				.with_guarantee(
+					network::packet::DeliveryGuarantee::Reliable
+						+ network::packet::OrderGuarantee::Unordered,
+				)
+				.with_payload(&packet::Handshake {})
+				.build(),
+		);
 	}
 
 	let engine = engine.into_arclock();

@@ -1,4 +1,4 @@
-use super::{Kind, KindIdOwned, Registry};
+use super::{Kind, KindIdOwned, Registry, FnProcessKind, AnyBox};
 use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, Serialize, Deserialize)]
@@ -31,9 +31,20 @@ where
 }
 
 impl Payload {
-	pub fn into_packet(self, registry: &Registry) -> Option<(KindIdOwned, Box<dyn Kind>)> {
+	pub fn kind(&self) -> &KindIdOwned {
+		&self.kind_id
+	}
+
+	pub fn take(&mut self) -> Payload {
+		Payload {
+			kind_id: self.kind_id.clone(),
+			data: self.data.drain(..).collect(),
+		}
+	}
+
+	pub fn into_packet(self, registry: &Registry) -> Option<(KindIdOwned, AnyBox, FnProcessKind)> {
 		registry
 			.at(self.kind_id.as_str())
-			.map(|entry| (self.kind_id, entry.deserialize_from(&self.data[..])))
+			.map(|entry| (self.kind_id, entry.deserialize_from(&self.data[..]), entry.process_fn()))
 	}
 }

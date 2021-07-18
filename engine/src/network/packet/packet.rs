@@ -1,4 +1,4 @@
-use super::{DeliveryGuarantee, Guarantee, Kind, OrderGuarantee, Payload};
+use super::{DeliveryGuarantee, Guarantee, Kind, KindIdOwned, OrderGuarantee, Payload};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 
 pub struct PacketBuilder {
@@ -63,7 +63,7 @@ impl std::fmt::Debug for Packet {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		write!(
 			f,
-			"{} ({:?}, {:?}) {:?}",
+			"from:{} guaranteed:({:?}, {:?}) {:?}",
 			self.address,
 			self.guarantee.delivery(),
 			self.guarantee.order(),
@@ -109,6 +109,14 @@ impl Packet {
 
 	pub fn guarantees(&self) -> &Guarantee {
 		&self.guarantee
+	}
+
+	pub fn kind(&self) -> &KindIdOwned {
+		self.payload.kind()
+	}
+
+	pub fn take_payload(&mut self) -> Payload {
+		self.payload.take()
 	}
 }
 

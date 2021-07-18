@@ -9,4 +9,11 @@ edition = "2018"
 [dependencies]
 temportal-engine = { path = "../../../engine" }
 log = "0.4"
+# [serialization] expanded serialization support
+rmp = "0.8"
+# [serialization] expanded serialization support for serde
+rmp-serde = "0.15"
+# [utility] semantic versioning
 semver = "1.0"
+# [serialization]
+serde = { version = "1.0", features = ["derive"] }

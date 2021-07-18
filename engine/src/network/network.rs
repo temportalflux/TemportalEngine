@@ -1,5 +1,10 @@
 use crate::{
-	network::{self, Socket, SocketEventQueue, LOG},
+	network::{
+		self,
+		event::Event,
+		packet::{self, Packet},
+		Socket, SocketIncomingQueue, SocketOutgoingQueue, LOG,
+	},
 	utility::{AnyError, VoidResult},
 };
 use enumset::EnumSet;
@@ -46,37 +51,80 @@ impl Network {
 		log::info!(target: LOG, "Network stopped");
 	}
 
+	pub fn mode(&self) -> &EnumSet<network::Kind> {
+		&self.mode
+	}
+
 	pub fn process() {
 		let queue = match Self::read() {
 			Ok(network) => match network.access.as_ref() {
-				Some(access) => access.incoming_event_queue.clone(),
+				Some(access) => access.incoming_queue.clone(),
 				None => return,
 			},
 			_ => return,
 		};
 		let mut queue_locked = queue.lock().unwrap();
 		while let Some(event) = queue_locked.pop_front() {
-			log::debug!("network received {:?}", event);
+			log::debug!(target: LOG, "received {:?}", event);
+			match event {
+				Event::Connected(_address) => {}
+				Event::TimedOut(_address) => {}
+				Event::Disconnected(_address) => {}
+				Event::Packet(mut packet) => {
+					let (kind_id, packet_data, process_fn) = match packet::Registry::read() {
+						Ok(registry) => match packet.take_payload().into_packet(&registry) {
+							Some(data) => data,
+							None => {
+								log::error!(
+									target: LOG,
+									"Failed to parse packet with kind({})",
+									packet.kind()
+								);
+								return;
+							}
+						},
+						Err(_) => return,
+					};
+					if let Err(e) = (*process_fn)(packet_data, *packet.address(), *packet.guarantees()) {
+						log::error!(
+							target: LOG,
+							"Failed to process packet with kind({}): {}",
+							kind_id,
+							e
+						);
+					}
+				}
+			}
 		}
 	}
 
-	pub fn mode(&self) -> &EnumSet<network::Kind> {
-		&self.mode
+	/// Enqueues the packet to be sent in the sending thread
+	pub fn send(packet: Packet) {
+		let queue = match Self::read() {
+			Ok(network) => match network.access.as_ref() {
+				Some(access) => access.outgoing_queue.clone(),
+				None => return,
+			},
+			_ => return,
+		};
+		let mut queue_locked = queue.lock().unwrap();
+		queue_locked.push_back(packet);
 	}
 }
 
 struct NetAccess {
-	incoming_event_queue: SocketEventQueue,
-	socket: Socket,
+	outgoing_queue: SocketOutgoingQueue,
+	incoming_queue: SocketIncomingQueue,
+	_socket: Socket,
 }
 
 impl NetAccess {
 	fn new(config: Config) -> Result<Self, AnyError> {
 		let socket = network::Socket::new(config.port)?;
-		let incoming_event_queue = socket.create_reception_queue();
 		Ok(Self {
-			socket,
-			incoming_event_queue,
+			incoming_queue: socket.create_incoming_queue(),
+			outgoing_queue: socket.create_outgoing_queue(),
+			_socket: socket,
 		})
 	}
 }

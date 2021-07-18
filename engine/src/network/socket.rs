@@ -1,12 +1,17 @@
-use crate::{network::event, utility::AnyError};
+use crate::{
+	network::{event, packet},
+	utility::AnyError,
+};
 use std::{
 	collections::VecDeque,
 	net::{IpAddr, Ipv4Addr, SocketAddr},
 	sync,
 	thread::{self, JoinHandle},
+	time::Duration,
 };
 
-pub type SocketEventQueue = sync::Arc<sync::Mutex<VecDeque<event::Event>>>;
+pub type SocketIncomingQueue = sync::Arc<sync::Mutex<VecDeque<event::Event>>>;
+pub type SocketOutgoingQueue = sync::Arc<sync::Mutex<VecDeque<packet::Packet>>>;
 
 pub(crate) fn build_thread<F, T>(name: String, f: F) -> std::io::Result<JoinHandle<T>>
 where
@@ -18,8 +23,8 @@ where
 }
 
 pub struct Socket {
-	packet_sender: crossbeam_channel::Sender<laminar::Packet>,
-	event_queue: event::Queue,
+	outgoing_queue: packet::Queue,
+	incoming_queue: event::Queue,
 	address: SocketAddr,
 }
 
@@ -32,13 +37,19 @@ impl Socket {
 	pub fn new(port: u16) -> Result<Self, AnyError> {
 		let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
 		let name = Self::make_thread_name(&address);
-		let socket = laminar::Socket::bind(address)?;
-		let packet_sender = socket.get_packet_sender();
-		let event_queue = event::Queue::new(format!("{}:reader", name), socket)?;
+		let config = laminar::Config {
+			idle_connection_timeout: Duration::from_secs(5),
+			heartbeat_interval: Some(Duration::from_millis(2 * 1000)),
+			..Default::default()
+		};
+		let socket = laminar::Socket::bind_with_config(address, config)?;
+		let outgoing_queue =
+			packet::Queue::new(format!("{}:outgoing", name), socket.get_packet_sender())?;
+		let incoming_queue = event::Queue::new(format!("{}:incoming", name), socket)?;
 		Ok(Self {
 			address,
-			packet_sender,
-			event_queue,
+			incoming_queue,
+			outgoing_queue,
 		})
 	}
 
@@ -50,7 +61,11 @@ impl Socket {
 		self.address.port()
 	}
 
-	pub fn create_reception_queue(&self) -> SocketEventQueue {
-		self.event_queue.handle().clone()
+	pub fn create_incoming_queue(&self) -> SocketIncomingQueue {
+		self.incoming_queue.handle().clone()
+	}
+
+	pub fn create_outgoing_queue(&self) -> SocketOutgoingQueue {
+		self.outgoing_queue.handle().clone()
 	}
 }
