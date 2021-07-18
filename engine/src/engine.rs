@@ -1,8 +1,11 @@
 use crate::{
-	asset, audio, input, task,
+	asset, audio, input, network, task,
 	utility::{AnyError, VoidResult},
 };
-use std::sync::{Arc, RwLock, RwLockWriteGuard};
+use std::sync::{
+	atomic::{self, AtomicBool},
+	Arc, RwLock, RwLockWriteGuard,
+};
 use winit::event_loop::EventLoop;
 
 pub struct Engine {
@@ -77,6 +80,9 @@ impl Engine {
 	where
 		F: 'static + Fn() -> (),
 	{
+		let terminate_signal = Arc::new(AtomicBool::new(false));
+		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
+
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut prev_render_error = None;
 		let event_loop = engine.write().unwrap().event_loop.take();
@@ -85,6 +91,10 @@ impl Engine {
 			use winit::{event::*, event_loop::*};
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
+			if terminate_signal.load(atomic::Ordering::Relaxed) {
+				*control_flow = ControlFlow::Exit;
+				return;
+			}
 			if engine_has_focus {
 				if let Ok((source, input_event)) = input::winit::parse_winit_event(&event) {
 					input::write().send_event(source, input_event);
@@ -118,6 +128,7 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
+						network::Network::process();
 						audio::System::write().unwrap().update(delta_time);
 						let systems = &mut engine.write().unwrap().systems;
 						for system in systems.iter_mut() {

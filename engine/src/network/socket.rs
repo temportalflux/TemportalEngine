@@ -6,6 +6,8 @@ use std::{
 	thread::{self, JoinHandle},
 };
 
+pub type SocketEventQueue = sync::Arc<sync::Mutex<VecDeque<event::Event>>>;
+
 pub(crate) fn build_thread<F, T>(name: String, f: F) -> std::io::Result<JoinHandle<T>>
 where
 	F: FnOnce() -> T,
@@ -48,7 +50,7 @@ impl Socket {
 		self.address.port()
 	}
 
-	pub fn create_reception_queue(&self) -> sync::Arc<sync::Mutex<VecDeque<event::Event>>> {
+	pub fn create_reception_queue(&self) -> SocketEventQueue {
 		self.event_queue.handle().clone()
 	}
 }

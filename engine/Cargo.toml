@@ -54,6 +54,8 @@ rmp-serde = "0.15"
 semver = "1.0"
 # [serialization]
 serde = { version = "1.0", features = ["derive"] }
+# [utility] catching signals like CTRL+C from the terminal
+signal-hook = "0.3"
 # [log] backend for the log crate to output logging to multiple locations
 simplelog = "0.10"
 # [ecs] backend for entity-componment-system - may eventually replace with hecs

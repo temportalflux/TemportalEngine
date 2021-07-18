@@ -4,14 +4,13 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Chat-Room - Run Demo",
+			"label": "Chat-Room - Server",
 			"command": "cargo",
 			"args": [
-				"run",
-				"--bin",
-				"chat-room",
-				"--",
-				"-v"
+				"run", "--bin", "chat-room",
+				"--", "-v", "-server",
+				"-log-suffix=_server",
+				"-port=25565"
 			],
 			"options": {
 				"env": {
@@ -20,6 +19,40 @@
 				"cwd": "./run"
 			},
 			"problemMatcher": []
-		}
+		},
+		{
+			"label": "Chat-Room - Client 1",
+			"command": "cargo",
+			"args": [
+				"run", "--bin", "chat-room",
+				"--", "-v",
+				"-log-suffix=_client1",
+				"-port=25566"
+			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "./run"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Chat-Room - Client 2",
+			"command": "cargo",
+			"args": [
+				"run", "--bin", "chat-room",
+				"--", "-v",
+				"-log-suffix=_client2",
+				"-port=25567"
+			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "./run"
+			},
+			"problemMatcher": []
+		},
 	]
 }

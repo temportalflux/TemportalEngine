@@ -59,6 +59,19 @@ pub struct Packet {
 	guarantee: Guarantee,
 }
 
+impl std::fmt::Debug for Packet {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(
+			f,
+			"{} ({:?}, {:?}) {:?}",
+			self.address,
+			self.guarantee.delivery(),
+			self.guarantee.order(),
+			self.payload
+		)
+	}
+}
+
 impl From<laminar::Packet> for Packet {
 	fn from(packet: laminar::Packet) -> Self {
 		let payload = rmp_serde::from_read_ref::<[u8], Payload>(packet.payload()).unwrap();

@@ -7,6 +7,17 @@ pub struct Payload {
 	data: Vec<u8>,
 }
 
+impl std::fmt::Debug for Payload {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(
+			f,
+			"packet-kind:{} ({} bytes)",
+			self.kind_id,
+			self.data.len()
+		)
+	}
+}
+
 impl<TKind> From<&TKind> for Payload
 where
 	TKind: Kind,
