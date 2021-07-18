@@ -11,7 +11,6 @@ use syn::{
 #[derive(Debug)]
 struct PacketKindArgs {
 	socknet_crate_path: syn::ExprPath,
-	unique_id: syn::LitStr,
 	processor_type: syn::ExprPath,
 }
 
@@ -19,12 +18,9 @@ impl Parse for PacketKindArgs {
 	fn parse(input: ParseStream) -> Result<Self> {
 		let socknet_crate_path = input.parse()?;
 		let _: Token![,] = input.parse()?;
-		let unique_id = input.parse()?;
-		let _: Token![,] = input.parse()?;
 		let processor_type = input.parse()?;
 		Ok(Self {
 			socknet_crate_path,
-			unique_id,
 			processor_type,
 		})
 	}
@@ -39,9 +35,9 @@ pub fn packet_kind(args: TokenStream, input: TokenStream) -> TokenStream {
 	// ensure the `#[packet_kind]` macro has 2 specific arguments
 	let PacketKindArgs {
 		socknet_crate_path,
-		unique_id,
 		processor_type,
 	} = parse_macro_input!(args as PacketKindArgs);
+	let unique_id = format!("{}", name);
 
 	// Construct the final metaprogramming,
 	// implementing the `packet::Kind` and `Registerable<KindId, Registration>` traits for the struct.

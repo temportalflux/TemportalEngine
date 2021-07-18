@@ -9,7 +9,7 @@ use crate::engine::{
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
-#[packet_kind(crate::engine::network, "handshake", Handshake)]
+#[packet_kind(crate::engine::network, Handshake)]
 #[derive(Serialize, Deserialize)]
 pub struct Handshake {}
 
