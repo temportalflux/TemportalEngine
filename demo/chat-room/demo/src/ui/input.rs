@@ -1,6 +1,26 @@
 use crate::engine::ui::*;
 
-#[pre_hooks(use_button_notified_state, use_text_input_notified_state)]
+fn use_message_input(context: &mut WidgetContext) {
+	context.life_cycle.change(|context| {
+		for msg in context.messenger.messages {
+			log::debug!("{:?}", msg);
+			if let Some(msg) = msg.as_any().downcast_ref() {
+				match msg {
+					NavSignal::Accept(s) => {
+						log::debug!("accept {}", s);
+					}
+					_ => {}
+				}
+			}
+		}
+	});
+}
+
+#[pre_hooks(
+	use_button_notified_state,
+	use_text_input_notified_state,
+	use_message_input
+)]
 pub fn widget(mut context: WidgetContext) -> WidgetNode {
 	let WidgetContext { id, state, key, .. } = context;
 	let ButtonProps {

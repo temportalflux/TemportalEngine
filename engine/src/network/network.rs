@@ -60,7 +60,10 @@ impl Network {
 		&self.mode
 	}
 
-	pub fn add_observer<T>(&mut self, weak: Weak<RwLock<T>>) where T: NetObserver + 'static {
+	pub fn add_observer<T>(&mut self, weak: Weak<RwLock<T>>)
+	where
+		T: NetObserver + 'static,
+	{
 		self.observers.push(weak);
 	}
 
@@ -166,7 +169,13 @@ impl NetAccess {
 }
 
 pub trait NetObserver {
-	fn on_connect(&mut self, address: SocketAddr) -> VoidResult { Ok(()) }
-	fn on_timeout(&mut self, address: SocketAddr) -> VoidResult { Ok(()) }
-	fn on_disconnect(&mut self, address: SocketAddr) -> VoidResult { Ok(()) }
+	fn on_connect(&mut self, address: SocketAddr) -> VoidResult {
+		Ok(())
+	}
+	fn on_timeout(&mut self, address: SocketAddr) -> VoidResult {
+		Ok(())
+	}
+	fn on_disconnect(&mut self, address: SocketAddr) -> VoidResult {
+		Ok(())
+	}
 }
