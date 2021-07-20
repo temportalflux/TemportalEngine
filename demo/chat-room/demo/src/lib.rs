@@ -18,7 +18,14 @@ impl Application for ChatRoom {
 }
 
 pub fn run() -> VoidResult {
-	engine::logging::init(ChatRoom::name(), None)?;
+	let is_server = std::env::args().any(|arg| arg == "-server");
+	let log_path = {
+		let mut log_path = std::env::current_dir().unwrap().to_path_buf();
+		log_path.push(if is_server { "server" } else { "client" });
+		log_path.push(format!("{}.log", ChatRoom::name()));
+		log_path
+	};
+	engine::logging::init(&log_path)?;
 	packet::register_types();
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
@@ -36,7 +43,7 @@ pub fn run() -> VoidResult {
 		})
 		.unwrap_or(25565);
 	if let Ok(mut network) = network::Network::write() {
-		network.start(if std::env::args().any(|arg| arg == "-server") {
+		network.start(if is_server {
 			network::Config {
 				mode: network::Kind::Server.into(),
 				port: network_port,

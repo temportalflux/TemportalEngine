@@ -15,7 +15,7 @@ impl Application for Demo {
 }
 
 pub fn run() -> VoidResult {
-	engine::logging::init(Demo::name(), None)?;
+	engine::logging::init(&engine::logging::default_path(Demo::name(), None))?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 

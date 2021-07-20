@@ -1,24 +1,30 @@
 use crate::utility::VoidResult;
 pub use log::Level;
 
-#[profiling::function]
-pub fn init(app_name: &str, suffix: Option<&str>) -> VoidResult {
-	use simplelog::*;
-	let log_name = format!(
-		"{}{}{}",
+pub fn default_path(app_name: &str, suffix: Option<&str>) -> std::path::PathBuf {
+	let mut log_path = std::env::current_dir().unwrap().to_path_buf();
+	log_path.push(format!(
+		"{}{}{}.log",
 		app_name,
 		suffix.unwrap_or(""),
 		std::env::args()
 			.find_map(|arg| arg.strip_prefix("-log-suffix=").map(|s| s.to_string()))
 			.unwrap_or("".to_string())
-	);
-	let mut log_path = std::env::current_dir()?.to_path_buf();
-	log_path.push(format!("{}.log", log_name));
+	));
+	log_path
+}
+
+#[profiling::function]
+pub fn init(log_path: &std::path::Path) -> VoidResult {
+	use simplelog::*;
+	if let Some(parent) = log_path.parent() {
+		std::fs::create_dir_all(parent)?;
+	}
 	let file = std::fs::OpenOptions::new()
 		.create(true)
 		.write(true)
 		.truncate(true)
-		.open(&log_path)?;
+		.open(log_path)?;
 	let cfg = {
 		let mut builder = ConfigBuilder::new();
 		builder
