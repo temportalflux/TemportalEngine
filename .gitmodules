@@ -4,3 +4,6 @@
 [submodule "vulkan-rs"]
 	path = vulkan-rs
 	url = https://github.com/temportalflux/vulkan-rs
+[submodule "editor/bin/freetype"]
+	path = editor/bin/freetype
+	url = git@github.com:PistonDevelopers/binaries.git
