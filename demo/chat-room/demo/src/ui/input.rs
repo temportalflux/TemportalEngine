@@ -3,11 +3,22 @@ use crate::engine::ui::*;
 fn use_message_input(context: &mut WidgetContext) {
 	context.life_cycle.change(|context| {
 		for msg in context.messenger.messages {
-			log::debug!("{:?}", msg);
 			if let Some(msg) = msg.as_any().downcast_ref() {
 				match msg {
-					NavSignal::Accept(s) => {
-						log::debug!("accept {}", s);
+					TextInputNotifyMessage {
+						state: TextInputProps { text, .. },
+						..
+					} if text.ends_with("\n") => {
+						// get the user's input without the newline
+						let mut user_input = text.clone();
+						user_input.pop();
+						log::debug!("{}", user_input);
+
+						// clear the field
+						let mut input_state =
+							context.state.read_cloned_or_default::<TextInputProps>();
+						input_state.text = "".to_string();
+						let _ = context.state.write(input_state);
 					}
 					_ => {}
 				}
@@ -51,6 +62,10 @@ pub fn widget(mut context: WidgetContext) -> WidgetNode {
 			.with_props(ButtonNotifyProps(id.to_owned().into()))
 			// need to manually indicate that this is a text field until https://github.com/RAUI-labs/raui/pull/73 is fixed
 			.with_props(TextInputMode::Text)
+			.with_props(TextInputProps {
+				allow_new_line: true,
+				..Default::default()
+			})
 			.named_slot(
 				"content",
 				make_widget!(text_box).with_props(TextBoxProps {
