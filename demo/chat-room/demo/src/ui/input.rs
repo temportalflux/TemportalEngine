@@ -19,6 +19,7 @@ fn use_message_input(context: &mut WidgetContext) {
 							context.state.read_cloned_or_default::<TextInputProps>();
 						input_state.text = "".to_string();
 						let _ = context.state.write(input_state);
+						
 					}
 					_ => {}
 				}

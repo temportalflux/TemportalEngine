@@ -1,6 +1,7 @@
 use crate::{
 	network::{
 		self,
+		connection::{self, Connection},
 		event::Event,
 		packet::{self, Packet},
 		Socket, SocketIncomingQueue, SocketOutgoingQueue, LOG,
@@ -24,6 +25,7 @@ pub struct Config {
 pub struct Network {
 	access: Option<NetAccess>,
 	mode: EnumSet<network::Kind>,
+	pub(super) connection_list: connection::List,
 	observers: Vec<Weak<RwLock<dyn NetObserver>>>,
 }
 
@@ -82,53 +84,96 @@ impl Network {
 		let mut events = queue.lock().unwrap().drain(..).collect::<VecDeque<_>>();
 		while let Some(event) = events.pop_front() {
 			log::debug!(target: LOG, "received {:?}", event);
-			if let Event::Packet(mut packet) = event {
-				let (kind_id, packet_data, process_fn) = match packet::Registry::read() {
-					Ok(registry) => {
-						let payload = packet.take_payload();
-						match registry.at(payload.kind().as_str()) {
-							Some(entry) => (
-								payload.kind().clone(),
-								entry.deserialize_from(payload.data()),
-								entry.process_fn(),
-							),
-							None => {
-								log::error!(
-									target: LOG,
-									"Failed to parse packet with kind({})",
-									packet.kind()
-								);
-								return Ok(());
-							}
+			match event.clone() {
+				Event::Connected(address) => {
+					if let Ok(mut network) = Self::write() {
+						let conn_id = network.connection_list.add_connection(&address);
+						log::info!(target: LOG, "{} has connected as {}", address, conn_id);
+					}
+				}
+				Event::TimedOut(_address) => {}
+				Event::Disconnected(address) => {
+					if let Ok(mut network) = Self::write() {
+						if let Some(conn_id) = network.connection_list.remove_connection(&address) {
+							log::info!(target: LOG, "{} has disconnected as {}", address, conn_id);
 						}
 					}
-					Err(_) => return Ok(()),
-				};
-				if let Err(e) = (*process_fn)(packet_data, *packet.address(), *packet.guarantees())
-				{
-					log::error!(
-						target: LOG,
-						"Failed to process packet with kind({}): {}",
-						kind_id,
-						e
-					);
 				}
-			} else {
-				let observers = match Self::read() {
-					Ok(network) => network
-						.observers
-						.iter()
-						.filter_map(|o| o.upgrade())
-						.collect::<Vec<_>>(),
-					Err(_) => return Ok(()),
-				};
-				for observer in observers {
-					let mut observer_write = observer.write().unwrap();
-					match event.clone() {
-						Event::Packet(_) => {}
-						Event::Connected(address) => observer_write.on_connect(address)?,
-						Event::TimedOut(address) => observer_write.on_timeout(address)?,
-						Event::Disconnected(address) => observer_write.on_disconnect(address)?,
+				Event::Packet(mut packet) => {
+					let (kind_id, packet_data, process_fn) = match packet::Registry::read() {
+						Ok(registry) => {
+							let payload = packet.take_payload();
+							match registry.at(payload.kind().as_str()) {
+								Some(entry) => (
+									payload.kind().clone(),
+									entry.deserialize_from(payload.data()),
+									entry.process_fn(),
+								),
+								None => {
+									log::error!(
+										target: LOG,
+										"Failed to parse packet with kind({})",
+										packet.kind()
+									);
+									return Ok(());
+								}
+							}
+						}
+						Err(_) => return Ok(()),
+					};
+					if let Err(e) =
+						(*process_fn)(packet_data, *packet.address(), *packet.guarantees())
+					{
+						log::error!(
+							target: LOG,
+							"Failed to process packet with kind({}): {}",
+							kind_id,
+							e
+						);
+					}
+
+					// packets do not notify observers
+					continue;
+				}
+			}
+
+			let get_connection = |address: &SocketAddr| match Self::read() {
+				Ok(ref network) => match network.connection_list.get_id(&address) {
+					Some(&id) => Some(Connection {
+						id,
+						address: *address,
+					}),
+					None => None,
+				},
+				Err(_) => None,
+			};
+
+			let observers = match Self::read() {
+				Ok(network) => network
+					.observers
+					.iter()
+					.filter_map(|o| o.upgrade())
+					.collect::<Vec<_>>(),
+				Err(_) => return Ok(()),
+			};
+			for observer in observers {
+				let mut observer_write = observer.write().unwrap();
+				match event.clone() {
+					Event::Packet(_) => {}
+					Event::Connected(address) => {
+						if let Some(conn) = get_connection(&address) {
+							observer_write.on_connect(&conn)?
+						}
+					}
+					Event::TimedOut(address) => {
+						if let Some(conn) = get_connection(&address) {
+							observer_write.on_timeout(&conn)?
+						}
+					}
+					Event::Disconnected(address) => {
+						if let Some(conn) = get_connection(&address) {
+							observer_write.on_disconnect(&conn)?
+						}
 					}
 				}
 			}
@@ -169,13 +214,13 @@ impl NetAccess {
 }
 
 pub trait NetObserver {
-	fn on_connect(&mut self, address: SocketAddr) -> VoidResult {
+	fn on_connect(&mut self, _conn: &Connection) -> VoidResult {
 		Ok(())
 	}
-	fn on_timeout(&mut self, address: SocketAddr) -> VoidResult {
+	fn on_timeout(&mut self, _conn: &Connection) -> VoidResult {
 		Ok(())
 	}
-	fn on_disconnect(&mut self, address: SocketAddr) -> VoidResult {
+	fn on_disconnect(&mut self, _conn: &Connection) -> VoidResult {
 		Ok(())
 	}
 }

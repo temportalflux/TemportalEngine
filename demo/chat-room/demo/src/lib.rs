@@ -1,4 +1,8 @@
-use engine::{network, utility::VoidResult, Application};
+use engine::{
+	network::{self, connection},
+	utility::VoidResult,
+	Application,
+};
 pub use temportal_engine as engine;
 
 #[path = "packet/mod.rs"]
@@ -89,12 +93,11 @@ pub fn run() -> VoidResult {
 
 struct App();
 impl network::NetObserver for App {
-	fn on_connect(&mut self, source: std::net::SocketAddr) -> VoidResult {
+	fn on_connect(&mut self, source: &connection::Connection) -> VoidResult {
 		if network::mode().contains(network::Kind::Client) {
-			log::info!(target: network::LOG, "Connected to {}", source);
 			network::Network::send(
 				network::packet::Packet::builder()
-					.with_address(source)?
+					.with_address(source.address)?
 					.with_guarantee(
 						network::packet::DeliveryGuarantee::Reliable
 							+ network::packet::OrderGuarantee::Unordered,

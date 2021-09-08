@@ -128,7 +128,7 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
-						network::Network::process();
+						let _ = network::Network::process();
 						audio::System::write().unwrap().update(delta_time);
 						let systems = &mut engine.write().unwrap().systems;
 						for system in systems.iter_mut() {
