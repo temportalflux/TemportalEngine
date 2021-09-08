@@ -12,9 +12,6 @@ pub use packet::*;
 mod payload;
 pub use payload::*;
 
-mod processor;
-pub use processor::*;
-
 mod queue;
 pub use queue::*;
 

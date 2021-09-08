@@ -102,9 +102,7 @@ impl network::NetObserver for App {
 						network::packet::DeliveryGuarantee::Reliable
 							+ network::packet::OrderGuarantee::Unordered,
 					)
-					.with_payload(&packet::Message {
-						content: "This is my first message".to_string(),
-					})
+					.with_payload(&packet::Message::new("This is my first message"))
 					.build(),
 			);
 		}

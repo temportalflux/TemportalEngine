@@ -1,6 +1,8 @@
+mod processor;
+pub use processor::*;
 mod registry;
 pub use registry::*;
 pub use socknet::packet::{
 	AnyBox, DeliveryGuarantee, Guarantee, Kind, KindId, OrderGuarantee, Packet, PacketBuilder,
-	Payload, Processor, Queue, Registerable, Registration,
+	Payload, Queue, Registerable, Registration,
 };

@@ -1,6 +1,7 @@
 use super::{DeliveryGuarantee, Guarantee, Kind, OrderGuarantee, Payload};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 
+#[derive(Clone)]
 pub struct PacketBuilder {
 	address: SocketAddr,
 	guarantee: Guarantee,

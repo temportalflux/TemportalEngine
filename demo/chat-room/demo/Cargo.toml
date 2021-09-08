@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 temportal-engine = { path = "../../../engine" }
+chrono = { version = "0.4", features = ["serde"]}
 log = "0.4"
 # [serialization] expanded serialization support
 rmp = "0.8"

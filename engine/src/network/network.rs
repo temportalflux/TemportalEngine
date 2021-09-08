@@ -3,7 +3,7 @@ use crate::{
 		self,
 		connection::{self, Connection},
 		event::Event,
-		packet::{self, Packet},
+		packet::{self, Packet, PacketBuilder},
 		Socket, SocketIncomingQueue, SocketOutgoingQueue, LOG,
 	},
 	utility::{AnyError, VoidResult},
@@ -70,6 +70,7 @@ impl Network {
 	}
 
 	pub fn process() -> VoidResult {
+		let mode = network::mode();
 		let queue = match Self::write() {
 			Ok(mut network) => {
 				network.observers.retain(|o| o.strong_count() > 0);
@@ -79,6 +80,14 @@ impl Network {
 				}
 			}
 			_ => return Ok(()),
+		};
+
+		let get_connection = |address: &SocketAddr| match Self::read() {
+			Ok(ref network) => Some(Connection {
+				id: network.connection_list.get_id(&address).map(|id| *id),
+				address: *address,
+			}),
+			Err(_) => None,
 		};
 
 		let mut events = queue.lock().unwrap().drain(..).collect::<VecDeque<_>>();
@@ -100,16 +109,18 @@ impl Network {
 					}
 				}
 				Event::Packet(mut packet) => {
-					let (kind_id, packet_data, process_fn) = match packet::Registry::read() {
+					let (kind_id, packet_data, processor) = match packet::Registry::read() {
 						Ok(registry) => {
 							let payload = packet.take_payload();
 							match registry.at(payload.kind().as_str()) {
-								Some(entry) => (
+								(Some(entry), processor) => (
 									payload.kind().clone(),
 									entry.deserialize_from(payload.data()),
-									entry.process_fn(),
+									processor
+										.map(|processor| processor.get_for_mode(&mode))
+										.flatten(),
 								),
-								None => {
+								_ => {
 									log::error!(
 										target: LOG,
 										"Failed to parse packet with kind({})",
@@ -121,14 +132,32 @@ impl Network {
 						}
 						Err(_) => return Ok(()),
 					};
-					if let Err(e) =
-						(*process_fn)(packet_data, *packet.address(), *packet.guarantees())
-					{
-						log::error!(
+					// The first option indicates if the processor has a configuration for the net mode
+					if let Some(process_fn) = processor {
+						// the second option indicates if the processor is explicitly ignoring the mode or not
+						if let Some(process_fn) = process_fn {
+							if let Some(connection) = get_connection(packet.address()) {
+								if let Err(e) =
+									(*process_fn)(packet_data, &connection, *packet.guarantees())
+								{
+									log::debug!(
+										target: LOG,
+										"Failed to process packet with kind({}): {}",
+										kind_id,
+										e
+									);
+								}
+							}
+						}
+					} else {
+						log::warn!(
 							target: LOG,
-							"Failed to process packet with kind({}): {}",
+							"Ignoring packet kind({}) on net mode {}, no processor found.",
 							kind_id,
-							e
+							mode.iter()
+								.map(|kind| kind.to_string())
+								.collect::<Vec<_>>()
+								.join("+")
 						);
 					}
 
@@ -136,17 +165,6 @@ impl Network {
 					continue;
 				}
 			}
-
-			let get_connection = |address: &SocketAddr| match Self::read() {
-				Ok(ref network) => match network.connection_list.get_id(&address) {
-					Some(&id) => Some(Connection {
-						id,
-						address: *address,
-					}),
-					None => None,
-				},
-				Err(_) => None,
-			};
 
 			let observers = match Self::read() {
 				Ok(network) => network
@@ -182,17 +200,40 @@ impl Network {
 		Ok(())
 	}
 
+	fn iter_connections(&self) -> impl std::iter::Iterator<Item = Connection> + '_ {
+		self.connection_list
+			.active_connections
+			.iter()
+			.map(|(id, addr)| Connection {
+				id: Some(*id),
+				address: *addr,
+			})
+	}
+
 	/// Enqueues the packet to be sent in the sending thread
 	pub fn send(packet: Packet) {
-		let queue = match Self::read() {
-			Ok(network) => match network.access.as_ref() {
-				Some(access) => access.outgoing_queue.clone(),
-				None => return,
-			},
-			_ => return,
-		};
-		let mut queue_locked = queue.lock().unwrap();
-		queue_locked.push_back(packet);
+		if let Ok(network) = Self::read() {
+			if let Some(access) = network.access.as_ref() {
+				if let Ok(mut queue) = access.outgoing_queue.lock() {
+					queue.push_back(packet);
+				}
+			}
+		}
+	}
+
+	/// Enqueues a bunch of duplicates of the packet,
+	/// one for each connection, to be sent in the sending thread.
+	pub fn broadcast(packet: PacketBuilder) -> VoidResult {
+		if let Ok(network) = Self::read() {
+			if let Some(access) = network.access.as_ref() {
+				if let Ok(mut queue) = access.outgoing_queue.lock() {
+					for connection in network.iter_connections() {
+						queue.push_back(packet.clone().with_address(connection.address)?.build());
+					}
+				}
+			}
+		}
+		Ok(())
 	}
 }
 

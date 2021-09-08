@@ -23,15 +23,15 @@ impl Id {
 }
 
 pub struct Connection {
-	pub id: Id,
+	pub id: Option<Id>,
 	pub address: SocketAddr,
 }
 
 pub struct List {
-	active_connections: HashMap<Id, SocketAddr>,
+	pub(super) active_connections: HashMap<Id, SocketAddr>,
 	address_connections: HashMap<SocketAddr, Id>,
 	unused_ids: HashSet<usize>,
-	connection_count: usize,
+	pub(super) connection_count: usize,
 }
 
 impl Default for List {
@@ -87,7 +87,7 @@ impl List {
 	pub fn get_connection(&self, connection_id: &Id) -> Option<Connection> {
 		match self.get_address(connection_id) {
 			Some(addr) => Some(Connection {
-				id: *connection_id,
+				id: Some(*connection_id),
 				address: *addr,
 			}),
 			None => None,
