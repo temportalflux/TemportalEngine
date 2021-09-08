@@ -1,9 +1,9 @@
 {
 	"crates": {
-		"../../demo": {
+		"../../../../engine": {
 			"pak_destination": "../../demo/run/paks"
 		},
-		"../../../../engine": {
+		"../../demo": {
 			"pak_destination": "../../demo/run/paks"
 		},
 		"../../../../editor": {

@@ -24,7 +24,8 @@ impl SaveData<Editor> for Editor {
 		Ok(value)
 	}
 	fn to_json(&self) -> Result<String, AnyError> {
-		let json = serde_json::to_string_pretty(self)?;
+		let mut json = serde_json::to_string_pretty(self)?;
+		json = json.replace("  ", "\t");
 		Ok(json)
 	}
 }
