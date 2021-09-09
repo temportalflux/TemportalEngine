@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
 	collections::HashMap,
 	path::{Path, PathBuf},
-	sync::{LockResult, RwLockReadGuard, RwLockWriteGuard},
+	sync::{LockResult, RwLockReadGuard},
 };
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -53,10 +53,6 @@ impl Crates {
 				}
 			})
 		}
-	}
-
-	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
-		Self::get().write()
 	}
 
 	pub fn read() -> LockResult<RwLockReadGuard<'static, Self>> {

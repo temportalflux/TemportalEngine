@@ -3,7 +3,7 @@ use cpal;
 use oddio;
 use std::{
 	collections::HashMap,
-	sync::{LockResult, RwLock, RwLockReadGuard, RwLockWriteGuard},
+	sync::{LockResult, RwLock, RwLockWriteGuard},
 };
 
 pub static LOG: &'static str = "audio";
@@ -98,10 +98,6 @@ impl System {
 
 	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
 		Self::get().write()
-	}
-
-	pub fn read() -> LockResult<RwLockReadGuard<'static, Self>> {
-		Self::get().read()
 	}
 }
 

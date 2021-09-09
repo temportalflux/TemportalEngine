@@ -11,7 +11,7 @@ pub struct GameContext {
 }
 
 impl GameContext {
-	pub fn get() -> &'static std::sync::RwLock<Self> {
+	fn get() -> &'static std::sync::RwLock<Self> {
 		use crate::engine::utility::singleton::*;
 		static mut INSTANCE: Singleton<GameContext> = Singleton::uninit();
 		unsafe { INSTANCE.get_or_default() }

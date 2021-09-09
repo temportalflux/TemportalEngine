@@ -34,7 +34,7 @@ impl Default for Library {
 }
 
 impl Library {
-	pub fn get() -> &'static std::sync::RwLock<Self> {
+	fn get() -> &'static std::sync::RwLock<Self> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Library> = Singleton::uninit();
 		unsafe { INSTANCE.get_or_default() }

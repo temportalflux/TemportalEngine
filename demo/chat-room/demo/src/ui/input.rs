@@ -26,10 +26,9 @@ fn use_message_input(context: &mut WidgetContext) {
 						if let Err(e) = context.state.write(input_state) {
 							log::error!("Failed to write state: {:?}", e);
 						}
-						
+
 						// DEBUG NOTE: Reread the props out of the state
-						let input_state =
-							context.state.read_cloned_or_default::<TextInputProps>();
+						let input_state = context.state.read_cloned_or_default::<TextInputProps>();
 						// DEBUG NOTE: The text outputted here is always the same as `user_input`, even though the state was written/cleared
 						log::debug!("text cleared? \"{}\"", input_state.text);
 

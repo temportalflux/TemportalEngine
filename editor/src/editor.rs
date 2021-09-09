@@ -37,7 +37,7 @@ impl Editor {
 		Ok(())
 	}
 
-	pub fn get() -> &'static std::sync::RwLock<Self> {
+	fn get() -> &'static std::sync::RwLock<Self> {
 		unsafe { Self::instance() }.get()
 	}
 

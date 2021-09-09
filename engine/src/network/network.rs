@@ -30,7 +30,7 @@ pub struct Network {
 }
 
 impl Network {
-	pub fn get() -> &'static RwLock<Network> {
+	fn get() -> &'static RwLock<Network> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Network> = Singleton::uninit();
 		unsafe { INSTANCE.get_or_default() }
@@ -225,7 +225,8 @@ impl Network {
 		if let Ok(network) = Self::read() {
 			if let Some(access) = network.access.as_ref() {
 				if let Ok(mut queue) = access.outgoing_queue.lock() {
-					if let Some(connection) = network.connection_list.get_connection(&connection::Id(0))
+					if let Some(connection) =
+						network.connection_list.get_connection(&connection::Id(0))
 					{
 						queue.push_back(packet.with_address(connection.address)?.build());
 					}

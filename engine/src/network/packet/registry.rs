@@ -16,13 +16,13 @@ impl Default for Registry {
 }
 
 impl Registry {
-	pub fn get() -> &'static RwLock<Registry> {
+	fn get() -> &'static RwLock<Registry> {
 		use crate::utility::singleton::*;
 		static mut INSTANCE: Singleton<Registry> = Singleton::uninit();
 		unsafe { INSTANCE.get_or_default() }
 	}
 
-	pub fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
+	fn write() -> LockResult<RwLockWriteGuard<'static, Self>> {
 		Self::get().write()
 	}
 
