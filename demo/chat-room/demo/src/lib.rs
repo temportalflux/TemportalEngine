@@ -11,6 +11,10 @@ pub mod packet;
 #[path = "ui/mod.rs"]
 pub mod ui;
 
+#[path = "message_history.rs"]
+mod message_history;
+pub use message_history::*;
+
 pub struct ChatRoom();
 impl Application for ChatRoom {
 	fn name() -> &'static str {
@@ -93,19 +97,8 @@ pub fn run() -> VoidResult {
 
 struct App();
 impl network::NetObserver for App {
-	fn on_connect(&mut self, source: &connection::Connection) -> VoidResult {
-		if network::mode().contains(network::Kind::Client) {
-			network::Network::send(
-				network::packet::Packet::builder()
-					.with_address(source.address)?
-					.with_guarantee(
-						network::packet::DeliveryGuarantee::Reliable
-							+ network::packet::OrderGuarantee::Unordered,
-					)
-					.with_payload(&packet::Message::new("This is my first message"))
-					.build(),
-			);
-		}
+	fn on_connect(&mut self, _source: &connection::Connection) -> VoidResult {
+		if network::mode().contains(network::Kind::Client) {}
 		Ok(())
 	}
 }

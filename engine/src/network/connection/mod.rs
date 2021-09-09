@@ -4,7 +4,7 @@ use std::{
 };
 
 #[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Id(usize);
+pub struct Id(pub usize);
 
 impl std::fmt::Display for Id {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

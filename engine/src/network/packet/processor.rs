@@ -24,13 +24,12 @@ impl Default for Processor {
 }
 
 impl Processor {
-
 	/// Marks that the packet is ignored for a given net mode.
-	/// 
+	///
 	/// This is helpful for packets such as a handshake,
 	/// which need to be sent between both ends of a connection,
 	/// but one of the receivers doesn't need to act on it.
-	/// 
+	///
 	/// The net mode is a collection of flags, all of which must be present for the packet to be ignored.
 	/// Example: Specifing `Client + Server` as the net mode says that the packet is ignored only
 	/// if received on a Client-On-Top-Of-Server. It does NOT mean that the packet is ignored
@@ -73,7 +72,7 @@ impl Processor {
 	}
 
 	/// Returns the callback to be used to process the packet based on the provided net mode.
-	/// 
+	///
 	/// This function returns a double optional. The first indicates if there was any configuration
 	/// provided for the net mode (either a valid callback OR marking the packet as ignored).
 	/// The second optional provides the actual callback if the packet is not marked as ignored.

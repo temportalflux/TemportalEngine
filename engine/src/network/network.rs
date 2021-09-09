@@ -221,6 +221,20 @@ impl Network {
 		}
 	}
 
+	pub fn send_to_server(packet: PacketBuilder) -> VoidResult {
+		if let Ok(network) = Self::read() {
+			if let Some(access) = network.access.as_ref() {
+				if let Ok(mut queue) = access.outgoing_queue.lock() {
+					if let Some(connection) = network.connection_list.get_connection(&connection::Id(0))
+					{
+						queue.push_back(packet.with_address(connection.address)?.build());
+					}
+				}
+			}
+		}
+		Ok(())
+	}
+
 	/// Enqueues a bunch of duplicates of the packet,
 	/// one for each connection, to be sent in the sending thread.
 	pub fn broadcast(packet: PacketBuilder) -> VoidResult {

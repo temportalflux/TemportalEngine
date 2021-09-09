@@ -9,6 +9,10 @@ fn use_message_input(context: &mut WidgetContext) {
 						state: TextInputProps { text, .. },
 						..
 					} if text.ends_with("\n") => {
+						use crate::engine::network::prelude::{
+							DeliveryGuarantee::*, OrderGuarantee::*, *,
+						};
+
 						// get the user's input without the newline
 						let mut user_input = text.clone();
 						user_input.pop();
@@ -18,7 +22,22 @@ fn use_message_input(context: &mut WidgetContext) {
 						let mut input_state =
 							context.state.read_cloned_or_default::<TextInputProps>();
 						input_state.text = "".to_string();
-						let _ = context.state.write(input_state);
+						// DEBUG NOTE: No error is ever logged
+						if let Err(e) = context.state.write(input_state) {
+							log::error!("Failed to write state: {:?}", e);
+						}
+						
+						// DEBUG NOTE: Reread the props out of the state
+						let input_state =
+							context.state.read_cloned_or_default::<TextInputProps>();
+						// DEBUG NOTE: The text outputted here is always the same as `user_input`, even though the state was written/cleared
+						log::debug!("text cleared? \"{}\"", input_state.text);
+
+						let _ = Network::send_to_server(
+							Packet::builder()
+								.with_guarantee(Reliable + Ordered)
+								.with_payload(&crate::packet::Message::new(user_input)),
+						);
 					}
 					_ => {}
 				}
@@ -46,12 +65,14 @@ pub fn widget(mut context: WidgetContext) -> WidgetNode {
 	let text = if text.trim().is_empty() {
 		"> Focus here and start typing...".to_owned()
 	} else if focused {
+		log::debug!("text: {}", text);
 		if cursor_position < text.len() {
 			format!("{}|{}", &text[..cursor_position], &text[cursor_position..])
 		} else {
 			format!("{}|", text)
 		}
 	} else {
+		log::debug!("text: {}", text);
 		text
 	};
 	WidgetNode::Component(

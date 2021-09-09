@@ -60,6 +60,13 @@ impl Message {
 			data.content,
 			data.timestamp.to_rfc2822()
 		);
+
+		if let Ok(mut history) = crate::MessageHistory::write() {
+			history.add(crate::Message {
+				content: data.content.clone(),
+			});
+		}
+
 		Ok(())
 	}
 }

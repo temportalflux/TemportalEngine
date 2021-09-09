@@ -9,11 +9,11 @@ use crate::engine::{
 use serde::{Deserialize, Serialize};
 
 /// The very first packet sent to establish a connection between a client and server.
-/// 
-/// Sent by the connecting client when the client detects that it has "connected" with a server.
+///
+/// Sent by the connecting client in order to connect with a server.
 /// Once the client receives the server's response (sending the same packet back again),
 /// the backend heartbeat takes over to maintain the connection.
-/// 
+///
 /// If the packet is dropped either on the way to the server or on the return trip,
 /// the client's connection will timeout.
 #[packet_kind(crate::engine::network)]

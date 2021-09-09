@@ -32,6 +32,8 @@ pub enum SystemShader {
 	MeshImageFragment,
 }
 
+pub type UiContext = sync::Arc<sync::RwLock<dyn std::any::Any + 'static + Send + Sync>>;
+
 /// Handles the rendering of the UI widgets to the screen.
 /// Also updates and processes the UI widgets via the ECS system.
 pub struct System {
@@ -51,6 +53,7 @@ pub struct System {
 	resolution: Vector2<f32>,
 	keyboard_modifiers: EnumSet<input::source::KeyModifier>,
 	interactions: DefaultInteractionsEngine,
+	contexts: Vec<UiContext>,
 	application: Application,
 }
 
@@ -77,6 +80,7 @@ impl System {
 		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
+			contexts: Vec::new(),
 			interactions,
 			keyboard_modifiers: EnumSet::empty(),
 			resolution: [0.0, 0.0].into(),
@@ -106,6 +110,11 @@ impl System {
 	/// Set the ui widget tree to update and render.
 	pub fn apply_tree(&mut self, tree: WidgetNode) {
 		self.application.apply(tree);
+	}
+
+	pub fn with_context(mut self, item: UiContext) -> Self {
+		self.contexts.push(item);
+		self
 	}
 
 	fn mapping(&self) -> CoordsMapping {
@@ -435,7 +444,14 @@ impl EngineSystem for System {
 	#[profiling::function]
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
-		self.application.process();
+		self.application
+			.forced_process_with_context(self.contexts.iter().fold(
+				&mut ProcessContext::new(),
+				|context, item| {
+					context.insert(item);
+					context
+				},
+			));
 		let _res = self.application.layout(&mapping, &mut DefaultLayoutEngine);
 		let _res = self.application.interact(&mut self.interactions);
 	}
