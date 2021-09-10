@@ -1,47 +1,49 @@
 use crate::{build_thread, packet, AnyError};
 use std::{
-	collections::VecDeque,
-	sync,
 	thread::{self, JoinHandle},
 	time::Duration,
 };
 
 pub struct Queue {
-	queue: sync::Arc<sync::Mutex<VecDeque<packet::Packet>>>,
+	sender: crossbeam_channel::Sender<packet::Packet>,
 	thread_send_packets: Option<JoinHandle<()>>,
 }
 
 impl Queue {
 	pub(crate) fn new(
 		name: String,
-		sender: crossbeam_channel::Sender<laminar::Packet>,
+		laminar_sender: crossbeam_channel::Sender<laminar::Packet>,
 	) -> Result<Self, AnyError> {
-		let queue = sync::Arc::new(sync::Mutex::new(VecDeque::new()));
+		let (sender, socknet_to_laminar_receiver) = crossbeam_channel::unbounded();
 
-		let packet_queue = queue.clone();
 		let thread_send_packets = Some(build_thread(name, move || {
-			Self::send_packets(packet_queue, sender);
+			Self::send_packets(socknet_to_laminar_receiver, laminar_sender);
 		})?);
 
 		Ok(Self {
-			queue,
+			sender,
 			thread_send_packets,
 		})
 	}
 
 	fn send_packets(
-		queue: sync::Arc<sync::Mutex<VecDeque<packet::Packet>>>,
+		socknet_to_laminar_receiver: crossbeam_channel::Receiver<packet::Packet>,
 		sender: crossbeam_channel::Sender<laminar::Packet>,
 	) {
-		use crossbeam_channel::TrySendError;
+		use crossbeam_channel::{TrySendError, TryRecvError};
 		let mut next_packet: Option<laminar::Packet> = None;
 		loop {
 			if next_packet.is_none() {
-				next_packet = queue
-					.lock()
-					.unwrap()
-					.pop_front()
-					.map(|packet| packet.into());
+				match socknet_to_laminar_receiver.try_recv() {
+					// found event, add to queue and continue the loop
+					Ok(socknet_packet) => {
+						next_packet = Some(socknet_packet.into());
+					}
+					// no events, continue the loop after a short nap
+					Err(TryRecvError::Empty) => {}
+					// If disconnected, then kill the thread
+					Err(TryRecvError::Disconnected) => return,
+				}
 			}
 			if let Some(packet) = next_packet.take() {
 				match sender.try_send(packet) {
@@ -57,8 +59,8 @@ impl Queue {
 		}
 	}
 
-	pub fn handle(&self) -> &sync::Arc<sync::Mutex<VecDeque<packet::Packet>>> {
-		&self.queue
+	pub fn channel(&self) -> &crossbeam_channel::Sender<packet::Packet> {
+		&self.sender
 	}
 }
 

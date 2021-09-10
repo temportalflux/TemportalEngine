@@ -4,7 +4,7 @@ use crate::{
 		connection::{self, Connection},
 		event::Event,
 		packet::{self, Packet, PacketBuilder},
-		Socket, SocketIncomingQueue, SocketOutgoingQueue, LOG,
+		SocketIncomingQueue, SocketOutgoingQueue, LOG,
 	},
 	utility::{AnyError, VoidResult},
 };

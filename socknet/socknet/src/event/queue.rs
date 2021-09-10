@@ -1,36 +1,33 @@
 use crate::{build_thread, event::Event, AnyError};
 use std::{
-	collections::VecDeque,
-	sync,
 	thread::{self, JoinHandle},
 	time::{Duration, Instant},
 };
 
 pub struct Queue {
-	queue: sync::Arc<sync::Mutex<VecDeque<Event>>>,
+	receiver: crossbeam_channel::Receiver<Event>,
 	thread_poll_events: Option<JoinHandle<()>>,
 }
 
 impl Queue {
 	pub(crate) fn new(name: String, socket: laminar::Socket) -> Result<Self, AnyError> {
-		let queue = sync::Arc::new(sync::Mutex::new(VecDeque::new()));
+		let (laminar_to_socknet_sender, receiver) = crossbeam_channel::unbounded();
 
-		let event_queue = queue.clone();
 		let thread_poll_events = Some(build_thread(name, move || {
-			Self::poll_events(socket, event_queue);
+			Self::poll_events(socket, laminar_to_socknet_sender);
 		})?);
 
 		Ok(Self {
-			queue,
+			receiver,
 			thread_poll_events,
 		})
 	}
 
 	fn poll_events(
 		mut socket: laminar::Socket,
-		destination_queue: sync::Arc<sync::Mutex<VecDeque<Event>>>,
+		laminar_to_socknet_sender: crossbeam_channel::Sender<Event>,
 	) {
-		use crossbeam_channel::TryRecvError;
+		use crossbeam_channel::{TryRecvError, TrySendError};
 		// equivalent to `laminar::Socket::start_polling`, with the addition of moving packets into the destination queue
 		loop {
 			socket.manual_poll(Instant::now());
@@ -38,7 +35,11 @@ impl Queue {
 				// found event, add to queue and continue the loop
 				Ok(event) => {
 					let event = event.into();
-					destination_queue.lock().unwrap().push_back(event);
+					match laminar_to_socknet_sender.try_send(event) {
+						Ok(_) => {} // success case is no-op
+						Err(TrySendError::Full(_packet)) => {} // no-op, the channel is unbounded
+						Err(TrySendError::Disconnected(_packet)) => return,
+					}
 				}
 				// no events, continue the loop after a short nap
 				Err(TryRecvError::Empty) => thread::sleep(Duration::from_millis(1)),
@@ -48,8 +49,8 @@ impl Queue {
 		}
 	}
 
-	pub fn handle(&self) -> &sync::Arc<sync::Mutex<VecDeque<Event>>> {
-		&self.queue
+	pub fn channel(&self) -> &crossbeam_channel::Receiver<Event> {
+		&self.receiver
 	}
 }
 

@@ -3,23 +3,35 @@ pub static LOG: &'static str = "network";
 pub use socknet::*;
 
 pub mod connection;
-pub mod packet;
 
-mod kind;
-pub use kind::*;
+pub mod event;
+
+pub mod mode;
 
 mod network;
 pub use network::*;
+
+pub mod packet {
+	pub use socknet::packet::{
+		AnyBox, DeliveryGuarantee, Guarantee, Kind, KindId, OrderGuarantee, Packet, PacketBuilder,
+		Payload, Queue, Registerable, Registration, Registry,
+	};
+}
 
 pub mod prelude {
 	pub use super::{
 		connection::Connection,
 		network::Network,
 		packet::{DeliveryGuarantee, Guarantee, OrderGuarantee, Packet},
-		Kind,
+		mode,
 	};
 }
 
-pub fn mode() -> enumset::EnumSet<Kind> {
+pub mod processor;
+
+mod receiver;
+pub use receiver::*;
+
+pub fn mode() -> mode::Set {
 	Network::read().unwrap().mode().clone()
 }

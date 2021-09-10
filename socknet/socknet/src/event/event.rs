@@ -7,6 +7,7 @@ pub enum Event {
 	TimedOut(SocketAddr),
 	Disconnected(SocketAddr),
 	Packet(Packet),
+	Stop,
 }
 
 impl From<laminar::SocketEvent> for Event {

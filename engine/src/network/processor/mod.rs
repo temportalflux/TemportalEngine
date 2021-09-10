@@ -1,19 +1,16 @@
-use super::{super::connection::Connection, Guarantee, Kind};
-use crate::network;
+use super::{connection::Connection, packet, mode, event};
 use crate::utility::VoidResult;
-use socknet::packet::AnyBox;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
+use temportal_engine_utilities::registry::Registry as GenericRegistry;
 
-pub type FnProcessAny = Arc<Box<dyn Fn(AnyBox, &Connection, Guarantee) -> VoidResult>>;
+pub type FnProcessEvent = Arc<Box<dyn Fn(event::Data) -> VoidResult>>;
+pub type Registry = GenericRegistry<event::Kind, Processor>;
 
 /// Saves information about how a packet is handled/processed,
 /// so the proper function can be executed when the packet is received.
 pub struct Processor {
-	process_functions: HashMap<network::KindSet, Option<FnProcessAny>>,
+	process_functions: HashMap<mode::Set, Option<FnProcessEvent>>,
 }
-pub(super) type ProcessorRegistry =
-	temportal_engine_utilities::registry::Registry<socknet::packet::KindId, Processor>;
 
 impl Default for Processor {
 	fn default() -> Self {
@@ -36,7 +33,7 @@ impl Processor {
 	/// for both Dedicated Clients AND Dedicated Servers. That can be achieved by using `.ignore(Client).ignore(Server)`.
 	pub fn ignore<TNetMode>(mut self, net_mode: TNetMode) -> Self
 	where
-		TNetMode: Into<network::KindSet>,
+		TNetMode: Into<mode::Set>,
 	{
 		self.process_functions.insert(net_mode.into(), None);
 		self
@@ -45,26 +42,33 @@ impl Processor {
 	/// Associates a net mode with a specific callback,
 	/// allowing packets to have different callbacks
 	/// based on what net mode the receiver is on.
-	pub fn with<TPacketKind, TNetMode, TProcessCallback>(
+	pub fn with_packet<TPacketKind, TNetMode, TProcessCallback>(
 		mut self,
 		net_mode: TNetMode,
 		process_fn: TProcessCallback,
 	) -> Self
 	where
-		TNetMode: Into<network::KindSet>,
-		TPacketKind: Kind + 'static,
-		TProcessCallback: Fn(&mut TPacketKind, &Connection, Guarantee) -> VoidResult + 'static,
+		TNetMode: Into<mode::Set>,
+		TPacketKind: packet::Kind + 'static,
+		TProcessCallback: Fn(&mut TPacketKind, &Connection, packet::Guarantee) -> VoidResult + 'static,
 	{
 		let boxed_process_fn = Arc::new(Box::new(process_fn));
 		self.process_functions.insert(
 			net_mode.into(),
 			Some(Arc::new(Box::new(
-				move |boxed: AnyBox, source: &Connection, guarantee: Guarantee| -> VoidResult {
-					(*boxed_process_fn)(
-						&mut *boxed.downcast::<TPacketKind>().unwrap(),
-						source,
-						guarantee,
-					)
+				move |event_data: event::Data| -> VoidResult {
+					if let event::Data::Packet(source, guarantee, boxed) = event_data {
+						// boxed: packet::AnyBox, source: &Connection, guarantee: packet::Guarantee
+						(*boxed_process_fn)(
+							&mut *boxed.downcast::<TPacketKind>().unwrap(),
+							source,
+							guarantee,
+						)
+					}
+					else
+					{
+						Err(Box::new("Processor cannot handle non-packet event"))
+					}
 				},
 			))),
 		);
@@ -76,7 +80,7 @@ impl Processor {
 	/// This function returns a double optional. The first indicates if there was any configuration
 	/// provided for the net mode (either a valid callback OR marking the packet as ignored).
 	/// The second optional provides the actual callback if the packet is not marked as ignored.
-	pub fn get_for_mode(&self, net_mode: &network::KindSet) -> Option<Option<FnProcessAny>> {
+	pub fn get_for_mode(&self, net_mode: &mode::Set) -> Option<Option<FnProcessAny>> {
 		self.process_functions.get(net_mode).map(|v| v.clone())
 	}
 }
