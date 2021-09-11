@@ -11,7 +11,7 @@ pub fn widget(mut _context: WidgetContext) -> WidgetNode {
 		for message in history.iter_messages() {
 			let widget = make_widget!(text_box)
 				.with_props(TextBoxProps {
-					text: message.content.clone(),
+					text: message.to_display_text(),
 					font: TextBoxFont {
 						name: crate::engine::asset::statics::font::unispace::REGULAR.to_owned(),
 						size: 20.0,

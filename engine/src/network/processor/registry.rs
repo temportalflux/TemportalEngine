@@ -8,13 +8,13 @@ pub type Registry = GenericRegistry<event::Kind, EventProcessors>;
 /// Saves information about how a packet is handled/processed,
 /// so the proper function can be executed when the packet is received.
 pub struct EventProcessors {
-	processor_by_mode: HashMap<mode::Set, Option<Box<dyn Processor + 'static>>>,
+	procs_by_mode: HashMap<mode::Set, Vec<Box<dyn Processor + 'static>>>,
 }
 
 impl Default for EventProcessors {
 	fn default() -> Self {
 		Self {
-			processor_by_mode: HashMap::new(),
+			procs_by_mode: HashMap::new(),
 		}
 	}
 }
@@ -34,7 +34,7 @@ impl EventProcessors {
 	where
 		TNetMode: Into<mode::Set>,
 	{
-		self.processor_by_mode.insert(net_mode.into(), None);
+		self.procs_by_mode.insert(net_mode.into(), vec![]);
 		self
 	}
 
@@ -52,8 +52,7 @@ impl EventProcessors {
 		TNetMode: Into<mode::Set>,
 		TProc: Processor + 'static,
 	{
-		self.processor_by_mode
-			.insert(net_mode.into(), Some(Box::new(processor)));
+		self.insert_box(net_mode, Box::new(processor));
 	}
 
 	pub fn insert_box<TNetMode>(
@@ -63,20 +62,20 @@ impl EventProcessors {
 	) where
 		TNetMode: Into<mode::Set>,
 	{
-		self.processor_by_mode
-			.insert(net_mode.into(), Some(processor));
+		let mode = net_mode.into();
+		if !self.procs_by_mode.contains_key(&mode) {
+			self.procs_by_mode.insert(mode.clone(), vec![]);
+		}
+		self.procs_by_mode.get_mut(&mode).unwrap().push(processor);
 	}
 
 	/// Returns the callback to be used to process the packet based on the provided net mode.
 	///
-	/// This function returns a double optional. The first indicates if there was any configuration
+	/// This function returns an optional-vec. The first indicates if there was any configuration
 	/// provided for the net mode (either a valid callback OR marking the packet as ignored).
-	/// The second optional provides the actual callback if the packet is not marked as ignored.
-	pub fn get_for_mode(
-		&self,
-		net_mode: &mode::Set,
-	) -> Option<&Option<Box<dyn Processor + 'static>>> {
-		self.processor_by_mode.get(net_mode)
+	/// The vec provides the actual callbacks if the packet is not marked as ignored.
+	pub fn get_for_mode(&self, net_mode: &mode::Set) -> Option<&Vec<Box<dyn Processor + 'static>>> {
+		self.procs_by_mode.get(net_mode)
 	}
 }
 
@@ -84,8 +83,8 @@ impl EventProcessors {
 pub trait Processor {
 	fn process(
 		&self,
-		kind: event::Kind,
-		data: Option<event::Data>,
+		kind: &event::Kind,
+		data: &mut Option<event::Data>,
 		local_data: &LocalData,
 	) -> VoidResult;
 }
@@ -95,29 +94,31 @@ pub trait Processor {
 pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
 	fn process_as(
 		&self,
-		kind: event::Kind,
-		data: Option<event::Data>,
+		kind: &event::Kind,
+		data: &mut Option<event::Data>,
 		local_data: &LocalData,
 	) -> VoidResult {
 		if let Some(event::Data::Packet(source, guarantee, boxed)) = data {
 			self.process_packet(
 				kind,
-				*boxed.downcast::<TPacketKind>().unwrap(),
+				&mut *boxed.downcast_mut::<TPacketKind>().unwrap(),
 				source,
 				guarantee,
 				local_data,
 			)
 		} else {
-			Err(Box::new(super::super::Error::EncounteredNonPacket(kind)))
+			Err(Box::new(super::super::Error::EncounteredNonPacket(
+				kind.clone(),
+			)))
 		}
 	}
 
 	fn process_packet(
 		&self,
-		kind: event::Kind,
-		data: TPacketKind,
-		connection: Connection,
-		guarantee: packet::Guarantee,
+		kind: &event::Kind,
+		data: &mut TPacketKind,
+		connection: &Connection,
+		guarantee: &packet::Guarantee,
 		local_data: &LocalData,
 	) -> VoidResult;
 }

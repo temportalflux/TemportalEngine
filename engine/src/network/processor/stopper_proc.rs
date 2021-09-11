@@ -23,8 +23,8 @@ impl EndNetwork {
 impl Processor for EndNetwork {
 	fn process(
 		&self,
-		kind: event::Kind,
-		_data: Option<event::Data>,
+		kind: &event::Kind,
+		_data: &mut Option<event::Data>,
 		_local_data: &LocalData,
 	) -> VoidResult {
 		if let event::Kind::Stop = kind {

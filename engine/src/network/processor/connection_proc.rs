@@ -21,14 +21,14 @@ impl CreateConnection {
 impl Processor for CreateConnection {
 	fn process(
 		&self,
-		_kind: event::Kind,
-		data: Option<event::Data>,
+		_kind: &event::Kind,
+		data: &mut Option<event::Data>,
 		_local_data: &LocalData,
 	) -> VoidResult {
-		if let Some(event::Data::Connection(Connection { address, .. })) = data {
+		if let Some(event::Data::Connection(Connection { address, id })) = data {
 			if let Ok(mut list) = self.connection_list.write() {
-				let conn_id = list.add_connection(&address);
-				log::info!(target: LOG, "{} has connected as {}", address, conn_id);
+				*id = Some(list.add_connection(&address));
+				log::info!(target: LOG, "{} has connected as {}", address, id.unwrap());
 			}
 		}
 		Ok(())
@@ -48,8 +48,8 @@ impl DestroyConnection {
 impl Processor for DestroyConnection {
 	fn process(
 		&self,
-		_kind: event::Kind,
-		data: Option<event::Data>,
+		_kind: &event::Kind,
+		data: &mut Option<event::Data>,
 		_local_data: &LocalData,
 	) -> VoidResult {
 		if let Some(event::Data::Connection(Connection { address, .. })) = data {

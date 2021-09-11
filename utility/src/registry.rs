@@ -52,4 +52,12 @@ where
 	pub fn insert(&mut self, key: TKey, value: TRegistration) {
 		self.types.insert(key, value);
 	}
+
+	pub fn contains(&self, key: &TKey) -> bool {
+		self.types.contains_key(key)
+	}
+
+	pub fn get_mut(&mut self, key: &TKey) -> Option<&mut TRegistration> {
+		self.types.get_mut(key)
+	}
 }

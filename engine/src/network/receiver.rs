@@ -80,7 +80,7 @@ impl Receiver {
 		loop {
 			match self.queue.channel().try_recv() {
 				Ok(event) => {
-					let (event_kind, event_data) = self.parse_event(event)?;
+					let (event_kind, mut event_data) = self.parse_event(event)?;
 
 					match (&event_kind, &event_data) {
 						(event::Kind::Packet(packet_kind), None) => {
@@ -99,13 +99,13 @@ impl Receiver {
 						Ok(guard) => guard,
 						Err(_) => continue,
 					};
-					let opt_processor = (*reg_guard)
+					let opt_processors = (*reg_guard)
 						.types
 						.get(&event_kind)
 						.map(|processor| processor.get_for_mode(&self.local_data.mode))
 						.flatten();
-					let opt_processor = match opt_processor {
-						Some(processor) => processor,
+					let processors = match opt_processors {
+						Some(processors) => processors,
 						None => {
 							log::warn!(
 								target: LOG,
@@ -123,7 +123,7 @@ impl Receiver {
 					};
 
 					// the second option indicates if the processor is explicitly ignoring the mode or not
-					if let Some(processor) = opt_processor {
+					if !processors.is_empty() {
 						log::debug!(
 							target: LOG,
 							"Processing {} {}",
@@ -133,8 +133,10 @@ impl Receiver {
 								None => "None".to_owned(),
 							}
 						);
+					}
+					for processor in processors.iter() {
 						if let Err(err) =
-							processor.process(event_kind, event_data, &self.local_data)
+							processor.process(&event_kind, &mut event_data, &self.local_data)
 						{
 							log::error!(target: LOG, "{}", err);
 						}

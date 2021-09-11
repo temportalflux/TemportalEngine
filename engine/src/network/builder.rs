@@ -74,6 +74,25 @@ impl Builder {
 		}
 	}
 
+	pub fn add_processor<TNetMode, TProc>(
+		&mut self,
+		event: event::Kind,
+		net_modes: impl std::iter::Iterator<Item = TNetMode>,
+		processor: TProc,
+	) where
+		TNetMode: Into<mode::Set>,
+		TProc: processor::Processor + Clone + 'static,
+	{
+		let mut reg_guard = self.processor_registry.lock().unwrap();
+		if !(*reg_guard).contains(&event) {
+			(*reg_guard).insert(event.clone(), processor::EventProcessors::default());
+		}
+		let event_procs = (*reg_guard).get_mut(&event).unwrap();
+		for mode in net_modes {
+			event_procs.insert(mode.into(), processor.clone());
+		}
+	}
+
 	pub fn register_bundle<T>(&mut self, processors: processor::EventProcessors)
 	where
 		T: Registerable<packet::KindId, packet::Registration> + 'static,
