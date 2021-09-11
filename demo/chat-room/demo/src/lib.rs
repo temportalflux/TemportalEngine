@@ -42,14 +42,15 @@ pub fn run() -> VoidResult {
 		})
 		.unwrap_or(25565);
 
-	let mut network_builder = network::Builder::default().with_port(network_port);
+	let mut network_builder = network::Builder::default()
+		.with_port(network_port)
+		.with_registrations_in(packet::register_types);
 	if is_server {
 		network_builder.insert_modes(network::mode::Kind::Server);
 	}
 	if is_client {
 		network_builder.insert_modes(network::mode::Kind::Client);
 	}
-	packet::register_types(&mut network_builder);
 	network_builder.spawn()?;
 
 	if is_client {

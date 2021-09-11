@@ -3,18 +3,33 @@ use std::{
 	net::SocketAddr,
 };
 
-#[derive(Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Id(pub usize);
 
 impl std::fmt::Display for Id {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f, "Connection({})", self.0)
+		write!(f, "Id({})", self.0)
 	}
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Connection {
 	pub id: Option<Id>,
 	pub address: SocketAddr,
+}
+
+impl std::fmt::Display for Connection {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(
+			f,
+			"Connection(Id:{}, Address:{})",
+			match self.id {
+				Some(id) => id.to_string(),
+				None => "None".to_owned(),
+			},
+			self.address
+		)
+	}
 }
 
 pub struct List {

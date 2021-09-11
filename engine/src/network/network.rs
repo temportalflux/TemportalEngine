@@ -2,7 +2,7 @@ use super::{packet, Receiver, Sender, LOG};
 use crate::utility::VoidResult;
 use std::{
 	mem::MaybeUninit,
-	sync::{Mutex, Once},
+	sync::{atomic, Mutex, Once},
 };
 
 #[derive(Default)]
@@ -58,6 +58,14 @@ impl Network {
 	pub fn destroy() -> VoidResult {
 		log::info!(target: LOG, "Destroying network");
 		if let Ok(mut guard) = Network::receiver().lock() {
+			// If destroy is called by natural process completion (instead of the Stop event),
+			// then the exit flag may not have been signaled, leaving network threads hanging.
+			// So lets just ensure that the exit flag is always marked before dropping stuff.
+			if let Some(receiver) = &*guard {
+				receiver
+					.flag_should_be_destroyed
+					.store(true, atomic::Ordering::Relaxed);
+			}
 			(*guard) = None;
 		}
 		if let Ok(mut guard) = Network::sender().lock() {

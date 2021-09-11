@@ -39,6 +39,12 @@ pub struct Guarantee {
 	pub(super) order: OrderGuarantee,
 }
 
+impl std::fmt::Display for Guarantee {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(f, "Guarantee({:?}, {:?})", self.delivery, self.order)
+	}
+}
+
 impl std::ops::Add<DeliveryGuarantee> for OrderGuarantee {
 	type Output = Guarantee;
 	fn add(self, other: DeliveryGuarantee) -> Self::Output {

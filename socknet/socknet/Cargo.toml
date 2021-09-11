@@ -15,6 +15,7 @@ socknet-derive = { version = "0.1.0", optional = true, path = "../derive" }
 crossbeam-channel = "0.5"
 # [networking] for making socket connections and polling for data
 laminar = "0.5.0"
+log = "0.4"
 # [serialization] expanded serialization support
 rmp = "0.8"
 # [serialization] expanded serialization support for serde

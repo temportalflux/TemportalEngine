@@ -1,5 +1,8 @@
 use super::{
-	super::{connection, event, LOG},
+	super::{
+		connection::{self, Connection},
+		event, LOG,
+	},
 	Processor,
 };
 use crate::utility::VoidResult;
@@ -17,7 +20,7 @@ impl CreateConnection {
 
 impl Processor for CreateConnection {
 	fn process(&self, _kind: event::Kind, data: Option<event::Data>) -> VoidResult {
-		if let Some(event::Data::Address(address)) = data {
+		if let Some(event::Data::Connection(Connection { address, .. })) = data {
 			if let Ok(mut list) = self.connection_list.write() {
 				let conn_id = list.add_connection(&address);
 				log::info!(target: LOG, "{} has connected as {}", address, conn_id);
@@ -39,7 +42,7 @@ impl DestroyConnection {
 
 impl Processor for DestroyConnection {
 	fn process(&self, _kind: event::Kind, data: Option<event::Data>) -> VoidResult {
-		if let Some(event::Data::Address(address)) = data {
+		if let Some(event::Data::Connection(Connection { address, .. })) = data {
 			if let Ok(mut list) = self.connection_list.write() {
 				if let Some(conn_id) = list.remove_connection(&address) {
 					log::info!(target: LOG, "{} has disconnected as {}", address, conn_id);

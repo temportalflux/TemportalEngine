@@ -49,6 +49,14 @@ impl Builder {
 		self.port = port;
 	}
 
+	pub fn with_registrations_in<F>(mut self, callback: F) -> Self
+	where
+		F: Fn(&mut Self),
+	{
+		callback(&mut self);
+		self
+	}
+
 	pub fn register_packet<T>(&mut self)
 	where
 		T: Registerable<packet::KindId, packet::Registration> + 'static,
@@ -141,7 +149,7 @@ impl Builder {
 			return Err(Box::new(super::Error::NetworkAlreadyActive()));
 		}
 
-		let (send_queue, recv_queue) = socknet::start(self.port)?;
+		let (send_queue, recv_queue) = socknet::start(self.port, &self.flag_should_be_destroyed)?;
 
 		let sender = Sender {
 			mode: self.mode,

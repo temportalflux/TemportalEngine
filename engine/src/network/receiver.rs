@@ -1,4 +1,7 @@
-use super::{connection, event, mode, packet, processor, LOG};
+use super::{
+	connection::{self, Connection},
+	event, mode, packet, processor, LOG,
+};
 use crate::utility::{AnyError, VoidResult};
 use std::sync::{atomic, Arc, Mutex, RwLock};
 
@@ -19,13 +22,30 @@ impl Receiver {
 
 	fn deserialize_packet(&self, mut socknet_packet: packet::Packet) -> Option<packet::AnyBox> {
 		let payload = socknet_packet.take_payload();
-		match self.type_registry.lock() {
-			Ok(reg_guard) => (*reg_guard)
-				.types
-				.get(socknet_packet.kind().as_str())
-				.map(move |entry| entry.deserialize_from(payload.data())),
-			Err(_) => None,
+		if let Ok(guard) = self.type_registry.lock() {
+			if let Some(registration) = (*guard).types.get(socknet_packet.kind().as_str()) {
+				return Some(registration.deserialize_from(payload.data()));
+			} else {
+				log::warn!(
+					target: LOG,
+					"Failed to deserialize packet with id \"{}\", not registered.",
+					socknet_packet.kind()
+				);
+			}
 		}
+		None
+	}
+
+	fn get_connection(&self, address: std::net::SocketAddr) -> Connection {
+		if let Ok(list) = self.connection_list.read() {
+			if let Some(conn) = list.get_connection_by_addr(&address) {
+				return conn;
+			}
+		}
+		// There was no active connection, so this must be the first packet received by the client.
+		// Its ok that there is no id, and processors of the packet
+		// should know what their first packet is and how to handle it.
+		Connection { id: None, address }
 	}
 
 	fn parse_event(
@@ -34,25 +54,22 @@ impl Receiver {
 	) -> Result<(event::Kind, Option<event::Data>), AnyError> {
 		use socknet::event::Event;
 
-		let make_addr_datum = |address| Some(event::Data::Address(address));
+		let make_addr_datum = |address| Some(event::Data::Connection(self.get_connection(address)));
 		return Ok(match event {
 			Event::Connected(addr) => (event::Kind::Connected, make_addr_datum(addr)),
 			Event::TimedOut(addr) => (event::Kind::Timeout, make_addr_datum(addr)),
 			Event::Disconnected(addr) => (event::Kind::Disconnected, make_addr_datum(addr)),
 			Event::Stop => (event::Kind::Stop, None),
 			Event::Packet(packet) => {
-				let connection = if let Ok(list) = self.connection_list.read() {
-					list.get_connection_by_addr(packet.address())
-				} else {
-					None
-				};
+				let connection = self.get_connection(*packet.address());
+				log::debug!(target: LOG, "Received packet {:?}", packet);
 				let guarantee = *packet.guarantees();
 				let packet_kind = packet.kind().clone();
 				let any_packet = self.deserialize_packet(packet);
 				(
 					event::Kind::Packet(packet_kind),
-					connection.zip(any_packet).map(|(conn, parsed_packet)| {
-						event::Data::Packet(conn, guarantee, parsed_packet)
+					any_packet.map(|parsed_packet| {
+						event::Data::Packet(connection, guarantee, parsed_packet)
 					}),
 				)
 			}
@@ -106,6 +123,15 @@ impl Receiver {
 
 					// the second option indicates if the processor is explicitly ignoring the mode or not
 					if let Some(processor) = opt_processor {
+						log::debug!(
+							target: LOG,
+							"Processing {} {}",
+							event_kind,
+							match &event_data {
+								Some(data) => format!("{}", data),
+								None => "None".to_owned(),
+							}
+						);
 						if let Err(err) = processor.process(event_kind, event_data) {
 							log::error!(target: LOG, "{}", err);
 						}
