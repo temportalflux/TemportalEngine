@@ -21,6 +21,24 @@
 			"problemMatcher": []
 		},
 		{
+			"label": "Chat-Room - ClientServer",
+			"command": "cargo",
+			"args": [
+				"run", "--bin", "chat-room",
+				"--", "-v",
+				"-server", "-client",
+				"-log-suffix=_server",
+				"-port=25565"
+			],
+			"options": {
+				"env": {
+					"RUST_BACKTRACE": "1"
+				},
+				"cwd": "./run"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "Chat-Room - Client 1",
 			"command": "cargo",
 			"args": [
