@@ -50,21 +50,40 @@ impl Builder {
 
 	pub fn register_default_connection_processors(&mut self) {
 		if let Ok(mut reg_guard) = self.processor_registry.lock() {
-			let mut connect_processor = processor::EventProcessors::default();
-			let mut disconnect_processor = processor::EventProcessors::default();
-			// Modes: Client, Server, Client + Server
-			for mode in mode::Set::all().iter().chain(mode::Set::all().iter()) {
-				connect_processor = connect_processor.with(
-					mode,
-					processor::CreateConnection::new(self.connection_list.clone()),
-				);
-				disconnect_processor = disconnect_processor.with(
-					mode,
-					processor::DestroyConnection::new(self.connection_list.clone()),
-				);
+			struct ProcEvent {
+				event: event::Kind,
+				processors: processor::EventProcessors,
 			}
-			(*reg_guard).insert(event::Kind::Connected, connect_processor);
-			(*reg_guard).insert(event::Kind::Disconnected, disconnect_processor);
+			let mut procs = vec![
+				ProcEvent {
+					event: event::Kind::Connected,
+					processors: processor::EventProcessors::default(),
+				},
+				ProcEvent {
+					event: event::Kind::Disconnected,
+					processors: processor::EventProcessors::default(),
+				},
+			];
+
+			// Modes: Client, Server, Client + Server
+			let iter_all_modes = mode::Set::all().iter().chain(mode::Set::all().iter());
+			for mode in iter_all_modes {
+				for proc in procs.iter_mut() {
+					let list = self.connection_list.clone();
+					match proc.event {
+						event::Kind::Connected => proc
+							.processors
+							.insert(mode, processor::CreateConnection::new(list)),
+						event::Kind::Disconnected => proc
+							.processors
+							.insert(mode, processor::DestroyConnection::new(list)),
+						_ => {}
+					}
+				}
+			}
+			for proc in procs.drain(..) {
+				(*reg_guard).insert(proc.event, proc.processors);
+			}
 		}
 	}
 

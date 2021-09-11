@@ -43,9 +43,28 @@ impl EventProcessors {
 		TNetMode: Into<mode::Set>,
 		TProc: Processor + 'static,
 	{
+		self.insert(net_mode, processor);
+		self
+	}
+
+	pub fn insert<TNetMode, TProc>(&mut self, net_mode: TNetMode, processor: TProc)
+	where
+		TNetMode: Into<mode::Set>,
+		TProc: Processor + 'static,
+	{
 		self.processor_by_mode
 			.insert(net_mode.into(), Some(Box::new(processor)));
-		self
+	}
+
+	pub fn insert_box<TNetMode>(
+		&mut self,
+		net_mode: TNetMode,
+		processor: Box<dyn Processor + 'static>,
+	) where
+		TNetMode: Into<mode::Set>,
+	{
+		self.processor_by_mode
+			.insert(net_mode.into(), Some(processor));
 	}
 
 	/// Returns the callback to be used to process the packet based on the provided net mode.
