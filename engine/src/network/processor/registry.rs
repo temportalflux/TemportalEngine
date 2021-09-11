@@ -97,7 +97,7 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor {
 				guarantee,
 			);
 		} else {
-			Err(Box::new(Error::EncounteredNonPacket(kind)))
+			Err(Box::new(super::super::Error::EncounteredNonPacket(kind)))
 		}
 	}
 
@@ -109,22 +109,3 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor {
 		guarantee: packet::Guarantee,
 	) -> VoidResult;
 }
-
-#[derive(Debug)]
-enum Error {
-	EncounteredNonPacket(event::Kind),
-}
-
-impl std::fmt::Display for Error {
-	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		match self {
-			Error::EncounteredNonPacket(ref kind) => write!(
-				f,
-				"Packet-Only processor cannot handle non-packet event: {}",
-				kind
-			),
-		}
-	}
-}
-
-impl std::error::Error for Error {}

@@ -110,3 +110,9 @@ impl Receiver {
 		Ok(())
 	}
 }
+
+impl Drop for Receiver {
+	fn drop(&mut self) {
+		log::debug!(target: LOG, "Dropping network receiver");
+	}
+}

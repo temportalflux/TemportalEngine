@@ -9,6 +9,9 @@ pub mod connection;
 
 pub mod event;
 
+mod error;
+pub use error::*;
+
 pub mod mode;
 
 mod network;

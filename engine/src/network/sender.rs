@@ -1,4 +1,4 @@
-use super::{connection, packet};
+use super::{connection, packet, LOG};
 use crate::utility::VoidResult;
 use std::sync::{Arc, RwLock};
 
@@ -39,5 +39,11 @@ impl Sender {
 			}
 		}
 		Ok(())
+	}
+}
+
+impl Drop for Sender {
+	fn drop(&mut self) {
+		log::debug!(target: LOG, "Dropping network dispatch");
 	}
 }

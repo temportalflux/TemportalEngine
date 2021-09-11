@@ -36,3 +36,8 @@ impl std::ops::Add<Set> for Kind {
 		set
 	}
 }
+
+// Modes: Client, Server, Client + Server
+pub fn all() -> Vec<Set> {
+	vec![Kind::Client.into(), Kind::Server.into(), Set::all()]
+}
