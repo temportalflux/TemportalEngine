@@ -1,6 +1,6 @@
 use super::{
 	connection::{self, Connection},
-	event, mode, packet, processor, LOG,
+	event, packet, processor, LocalData, LOG,
 };
 use crate::utility::{AnyError, VoidResult};
 use std::sync::{atomic, Arc, Mutex, RwLock};
@@ -11,7 +11,7 @@ pub struct Receiver {
 	pub(super) flag_should_be_destroyed: Arc<atomic::AtomicBool>,
 	pub(super) processor_registry: Arc<Mutex<processor::Registry>>,
 	pub(super) type_registry: Arc<Mutex<packet::Registry>>,
-	pub(super) mode: mode::Set,
+	pub(super) local_data: LocalData,
 }
 
 impl Receiver {
@@ -102,7 +102,7 @@ impl Receiver {
 					let opt_processor = (*reg_guard)
 						.types
 						.get(&event_kind)
-						.map(|processor| processor.get_for_mode(&self.mode))
+						.map(|processor| processor.get_for_mode(&self.local_data.mode))
 						.flatten();
 					let opt_processor = match opt_processor {
 						Some(processor) => processor,
@@ -111,7 +111,8 @@ impl Receiver {
 								target: LOG,
 								"Ignoring event {} on net mode {}, no processor found.",
 								event_kind,
-								self.mode
+								self.local_data
+									.mode
 									.iter()
 									.map(|kind| kind.to_string())
 									.collect::<Vec<_>>()
@@ -132,7 +133,9 @@ impl Receiver {
 								None => "None".to_owned(),
 							}
 						);
-						if let Err(err) = processor.process(event_kind, event_data) {
+						if let Err(err) =
+							processor.process(event_kind, event_data, &self.local_data)
+						{
 							log::error!(target: LOG, "{}", err);
 						}
 					}

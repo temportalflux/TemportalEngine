@@ -1,11 +1,10 @@
-use super::{connection, event, mode, packet, processor, Network, Receiver, Sender};
+use super::{connection, event, mode, packet, processor, LocalData, Network, Receiver, Sender};
 use crate::utility::{registry::Registerable, VoidResult};
 use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 
 pub struct Builder {
 	connection_list: Arc<RwLock<connection::List>>,
-	mode: mode::Set,
-	port: u16,
+	local_data: LocalData,
 	flag_should_be_destroyed: Arc<AtomicBool>,
 	processor_registry: Arc<Mutex<processor::Registry>>,
 	type_registry: Arc<Mutex<packet::Registry>>,
@@ -23,8 +22,7 @@ impl Builder {
 	pub fn new() -> Self {
 		Self {
 			connection_list: Arc::new(RwLock::new(connection::List::default())),
-			mode: mode::Set::empty(),
-			port: 0,
+			local_data: LocalData::default(),
 			flag_should_be_destroyed: Arc::new(AtomicBool::new(false)),
 			processor_registry: Arc::new(Mutex::new(processor::Registry::new())),
 			type_registry: Arc::new(Mutex::new(packet::Registry::new())),
@@ -37,7 +35,7 @@ impl Builder {
 	}
 
 	pub fn insert_modes<TModeSet: Into<mode::Set>>(&mut self, modes: TModeSet) {
-		self.mode.insert_all(modes.into());
+		self.local_data.insert_modes(modes);
 	}
 
 	pub fn with_port(mut self, port: u16) -> Self {
@@ -46,7 +44,7 @@ impl Builder {
 	}
 
 	pub fn set_port(&mut self, port: u16) {
-		self.port = port;
+		self.local_data.set_port(port);
 	}
 
 	pub fn with_registrations_in<F>(mut self, callback: F) -> Self
@@ -149,17 +147,18 @@ impl Builder {
 			return Err(Box::new(super::Error::NetworkAlreadyActive()));
 		}
 
-		let (send_queue, recv_queue) = socknet::start(self.port, &self.flag_should_be_destroyed)?;
+		let (send_queue, recv_queue) =
+			socknet::start(self.local_data.port(), &self.flag_should_be_destroyed)?;
 
 		let sender = Sender {
-			mode: self.mode,
+			local_data: self.local_data.clone(),
 			queue: send_queue,
 			receiver_event_sender: recv_queue.sender().clone(),
 			connection_list: self.connection_list.clone(),
 		};
 
 		let receiver = Receiver {
-			mode: self.mode,
+			local_data: self.local_data.clone(),
 			processor_registry: self.processor_registry.clone(),
 			type_registry: self.type_registry.clone(),
 			queue: recv_queue,

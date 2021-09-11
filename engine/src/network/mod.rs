@@ -12,6 +12,9 @@ pub mod event;
 mod error;
 pub use error::*;
 
+mod local_data;
+pub use local_data::*;
+
 pub mod mode;
 
 mod network;

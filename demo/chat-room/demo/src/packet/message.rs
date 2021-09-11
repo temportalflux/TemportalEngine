@@ -6,7 +6,7 @@ use crate::engine::{
 		packet::{Guarantee, Packet},
 		packet_kind,
 		processor::{EventProcessors, PacketProcessor, Processor},
-		Network, LOG,
+		LocalData, Network, LOG,
 	},
 	utility::VoidResult,
 };
@@ -25,7 +25,8 @@ impl Message {
 		builder.register_bundle::<Message>(
 			EventProcessors::default()
 				.with(Server, BroadcastMessage())
-				.with(Client, SaveMessageToLog()),
+				.with(Client, SaveMessageToLog())
+				.with(Server + Client, BroadcastAndSaveMessage()),
 		);
 	}
 
@@ -39,9 +40,27 @@ impl Message {
 
 struct BroadcastMessage();
 
+impl BroadcastMessage {
+	fn rebroadcast(data: &mut Message, guarantee: &Guarantee) -> VoidResult {
+		//let sent_at = data.timestamp.clone();
+		data.timestamp = chrono::Utc::now();
+
+		Network::broadcast(
+			Packet::builder()
+				.with_guarantee(*guarantee)
+				.with_payload(data),
+		)
+	}
+}
+
 impl Processor for BroadcastMessage {
-	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
-		self.process_as(kind, data)
+	fn process(
+		&self,
+		kind: event::Kind,
+		data: Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult {
+		self.process_as(kind, data, local_data)
 	}
 }
 
@@ -52,6 +71,7 @@ impl PacketProcessor<Message> for BroadcastMessage {
 		mut data: Message,
 		connection: Connection,
 		guarantee: Guarantee,
+		_local_data: &LocalData,
 	) -> VoidResult {
 		log::debug!(
 			target: LOG,
@@ -60,25 +80,31 @@ impl PacketProcessor<Message> for BroadcastMessage {
 			data.content,
 			data.timestamp.to_rfc2822()
 		);
-
-		//let sent_at = data.timestamp.clone();
-		data.timestamp = chrono::Utc::now();
-
-		Network::broadcast(
-			Packet::builder()
-				.with_guarantee(guarantee)
-				.with_payload(&data),
-		)?;
-
+		BroadcastMessage::rebroadcast(&mut data, &guarantee)?;
 		Ok(())
 	}
 }
 
 struct SaveMessageToLog();
 
+impl SaveMessageToLog {
+	fn save_to_log(data: &Message) {
+		if let Ok(mut history) = crate::MessageHistory::write() {
+			history.add(crate::Message {
+				content: data.content.clone(),
+			});
+		}
+	}
+}
+
 impl Processor for SaveMessageToLog {
-	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
-		self.process_as(kind, data)
+	fn process(
+		&self,
+		kind: event::Kind,
+		data: Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult {
+		self.process_as(kind, data, local_data)
 	}
 }
 
@@ -89,6 +115,7 @@ impl PacketProcessor<Message> for SaveMessageToLog {
 		data: Message,
 		_connection: Connection,
 		_guarantee: Guarantee,
+		_local_data: &LocalData,
 	) -> VoidResult {
 		// NOTE: The source is always the server, so there is no current information about who actually sent the message
 		log::debug!(
@@ -97,13 +124,40 @@ impl PacketProcessor<Message> for SaveMessageToLog {
 			data.content,
 			data.timestamp.to_rfc2822()
 		);
+		SaveMessageToLog::save_to_log(&data);
+		Ok(())
+	}
+}
 
-		if let Ok(mut history) = crate::MessageHistory::write() {
-			history.add(crate::Message {
-				content: data.content.clone(),
-			});
-		}
-
+struct BroadcastAndSaveMessage();
+impl Processor for BroadcastAndSaveMessage {
+	fn process(
+		&self,
+		kind: event::Kind,
+		data: Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult {
+		self.process_as(kind, data, local_data)
+	}
+}
+impl PacketProcessor<Message> for BroadcastAndSaveMessage {
+	fn process_packet(
+		&self,
+		_kind: event::Kind,
+		mut data: Message,
+		connection: Connection,
+		guarantee: Guarantee,
+		_local_data: &LocalData,
+	) -> VoidResult {
+		log::debug!(
+			target: LOG,
+			"{} said: \"{}\" at {}",
+			connection.id.unwrap(),
+			data.content,
+			data.timestamp.to_rfc2822()
+		);
+		BroadcastMessage::rebroadcast(&mut data, &guarantee)?;
+		SaveMessageToLog::save_to_log(&data);
 		Ok(())
 	}
 }

@@ -1,5 +1,5 @@
 use super::{
-	super::{event, LOG},
+	super::{event, LocalData, LOG},
 	Processor,
 };
 use crate::utility::VoidResult;
@@ -21,7 +21,12 @@ impl EndNetwork {
 }
 
 impl Processor for EndNetwork {
-	fn process(&self, kind: event::Kind, _data: Option<event::Data>) -> VoidResult {
+	fn process(
+		&self,
+		kind: event::Kind,
+		_data: Option<event::Data>,
+		_local_data: &LocalData,
+	) -> VoidResult {
 		if let event::Kind::Stop = kind {
 			log::debug!(
 				target: LOG,

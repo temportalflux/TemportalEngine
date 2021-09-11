@@ -25,9 +25,17 @@ impl PacketBuilder {
 	where
 		T: ToSocketAddrs,
 	{
+		self.set_address(address)?;
+		Ok(self)
+	}
+
+	pub fn set_address<T>(&mut self, address: T) -> std::io::Result<()>
+	where
+		T: ToSocketAddrs,
+	{
 		let mut iter = address.to_socket_addrs()?;
 		self.address = iter.next().unwrap();
-		Ok(self)
+		Ok(())
 	}
 
 	pub fn with_guarantee(mut self, guarantee: Guarantee) -> Self {
@@ -41,6 +49,10 @@ impl PacketBuilder {
 	{
 		self.payload = Payload::from(payload);
 		self
+	}
+
+	pub fn packet_kind(&self) -> &String {
+		self.payload.kind()
 	}
 
 	pub fn build(self) -> Packet {

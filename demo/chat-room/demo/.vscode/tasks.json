@@ -28,7 +28,8 @@
 				"--", "-v",
 				"-server", "-client",
 				"-log-suffix=_server",
-				"-port=25565"
+				"-port=25565",
+				"-display_name=Alex"
 			],
 			"options": {
 				"env": {
@@ -46,7 +47,8 @@
 				"--", "-v",
 				"-client",
 				"-log-suffix=_client1",
-				"-port=25566"
+				"-port=25566",
+				"-display_name=Alice"
 			],
 			"options": {
 				"env": {
@@ -64,7 +66,8 @@
 				"--", "-v",
 				"-client",
 				"-log-suffix=_client2",
-				"-port=25567"
+				"-port=25567",
+				"-display_name=Bob"
 			],
 			"options": {
 				"env": {

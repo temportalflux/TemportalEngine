@@ -68,6 +68,10 @@ pub fn run() -> VoidResult {
 			.with_tree_root(engine::ui::make_widget!(ui::root::widget))
 			.attach_system(&mut engine, None)?;
 
+		let client_display_name = std::env::args()
+			.find_map(|arg| arg.strip_prefix("-display_name=").map(|s| s.to_owned()))
+			.unwrap();
+
 		network::Network::send(
 			network::packet::Packet::builder()
 				.with_address("127.0.0.1:25565")?
@@ -75,7 +79,9 @@ pub fn run() -> VoidResult {
 					network::packet::DeliveryGuarantee::Reliable
 						+ network::packet::OrderGuarantee::Unordered,
 				)
-				.with_payload(&packet::Handshake {})
+				.with_payload(&packet::Handshake {
+					display_name: client_display_name,
+				})
 				.build(),
 		)?;
 	}

@@ -1,4 +1,4 @@
-use super::super::{connection::Connection, event, mode, packet};
+use super::super::{connection::Connection, event, mode, packet, LocalData};
 use crate::utility::VoidResult;
 use std::collections::HashMap;
 use temportal_engine_utilities::registry::Registry as GenericRegistry;
@@ -82,19 +82,30 @@ impl EventProcessors {
 
 /// Processes a single [`event`](crate::network::event::Kind) for a given [`net mode`](crate::network::mode::Set).
 pub trait Processor {
-	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult;
+	fn process(
+		&self,
+		kind: event::Kind,
+		data: Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult;
 }
 
 /// Helper class which interprets an event as a type of packet,
 /// automatically downcasting to the indicated type.
 pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
-	fn process_as(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
+	fn process_as(
+		&self,
+		kind: event::Kind,
+		data: Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult {
 		if let Some(event::Data::Packet(source, guarantee, boxed)) = data {
 			self.process_packet(
 				kind,
 				*boxed.downcast::<TPacketKind>().unwrap(),
 				source,
 				guarantee,
+				local_data,
 			)
 		} else {
 			Err(Box::new(super::super::Error::EncounteredNonPacket(kind)))
@@ -107,5 +118,6 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
 		data: TPacketKind,
 		connection: Connection,
 		guarantee: packet::Guarantee,
+		local_data: &LocalData,
 	) -> VoidResult;
 }
