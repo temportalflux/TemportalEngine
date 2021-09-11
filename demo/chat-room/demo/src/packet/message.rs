@@ -1,8 +1,12 @@
 use crate::engine::{
 	network::{
+		self,
 		connection::Connection,
-		packet::{Guarantee, Packet, Processor},
-		packet_kind, Network, LOG,
+		event, mode,
+		packet::{Guarantee, Packet},
+		packet_kind,
+		processor::{EventProcessors, PacketProcessor, Processor},
+		Network, LOG,
 	},
 	utility::VoidResult,
 };
@@ -16,26 +20,43 @@ pub struct Message {
 }
 
 impl Message {
+	pub fn register(builder: &mut network::Builder) {
+		use mode::Kind::*;
+		builder.register_bundle::<Message>(
+			EventProcessors::default()
+				.with(Server, BroadcastMessage())
+				.with(Client, SaveMessageToLog()),
+		);
+	}
+
 	pub fn new<T: Into<String>>(content: T) -> Self {
 		Self {
 			content: content.into(),
 			timestamp: chrono::Utc::now(),
 		}
 	}
+}
 
-	pub fn processor() -> Processor {
-		use crate::engine::network::Kind::*;
-		// NOTE: Does not currently handle client-on-top-of-server
-		Processor::default()
-			.with(Server, Self::process_server)
-			.with(Client, Self::process_client)
+struct BroadcastMessage();
+
+impl Processor for BroadcastMessage {
+	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
+		self.process_as(kind, data)
 	}
+}
 
-	fn process_server(data: &mut Self, source: &Connection, guarantees: Guarantee) -> VoidResult {
+impl PacketProcessor<Message> for BroadcastMessage {
+	fn process_packet(
+		&self,
+		_kind: event::Kind,
+		mut data: Message,
+		connection: Connection,
+		guarantee: Guarantee,
+	) -> VoidResult {
 		log::debug!(
 			target: LOG,
 			"{} said: \"{}\" at {}",
-			source.id.unwrap(),
+			connection.id.unwrap(),
 			data.content,
 			data.timestamp.to_rfc2822()
 		);
@@ -45,14 +66,30 @@ impl Message {
 
 		Network::broadcast(
 			Packet::builder()
-				.with_guarantee(guarantees)
-				.with_payload(&*data),
+				.with_guarantee(guarantee)
+				.with_payload(&data),
 		)?;
 
 		Ok(())
 	}
+}
 
-	fn process_client(data: &mut Self, _source: &Connection, _guarantees: Guarantee) -> VoidResult {
+struct SaveMessageToLog();
+
+impl Processor for SaveMessageToLog {
+	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
+		self.process_as(kind, data)
+	}
+}
+
+impl PacketProcessor<Message> for SaveMessageToLog {
+	fn process_packet(
+		&self,
+		_kind: event::Kind,
+		data: Message,
+		_connection: Connection,
+		_guarantee: Guarantee,
+	) -> VoidResult {
 		// NOTE: The source is always the server, so there is no current information about who actually sent the message
 		log::debug!(
 			target: LOG,

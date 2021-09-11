@@ -1,15 +1,22 @@
 use super::{connection, event, mode, packet, processor, LOG};
 use crate::utility::{AnyError, VoidResult};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{atomic, Arc, Mutex, RwLock};
 
 pub struct Receiver {
 	pub(super) connection_list: Arc<RwLock<connection::List>>,
 	pub(super) queue: socknet::event::Queue,
+	pub(super) flag_should_be_destroyed: Arc<atomic::AtomicBool>,
 	pub(super) processor_registry: Arc<Mutex<processor::Registry>>,
 	pub(super) type_registry: Arc<Mutex<packet::Registry>>,
+	pub(super) mode: mode::Set,
 }
 
 impl Receiver {
+	pub fn should_be_destroyed(&self) -> bool {
+		self.flag_should_be_destroyed
+			.load(atomic::Ordering::Relaxed)
+	}
+
 	fn deserialize_packet(&self, mut socknet_packet: packet::Packet) -> Option<packet::AnyBox> {
 		let payload = socknet_packet.take_payload();
 		match self.type_registry.lock() {
@@ -52,7 +59,7 @@ impl Receiver {
 		});
 	}
 
-	pub fn process(&self, mode: &mode::Set) -> VoidResult {
+	pub fn process(&self) -> VoidResult {
 		loop {
 			match self.queue.channel().try_recv() {
 				Ok(event) => {
@@ -78,7 +85,7 @@ impl Receiver {
 					let opt_processor = (*reg_guard)
 						.types
 						.get(&event_kind)
-						.map(|processor| processor.get_for_mode(&mode))
+						.map(|processor| processor.get_for_mode(&self.mode))
 						.flatten();
 					let opt_processor = match opt_processor {
 						Some(processor) => processor,
@@ -87,7 +94,8 @@ impl Receiver {
 								target: LOG,
 								"Ignoring event {} on net mode {}, no processor found.",
 								event_kind,
-								mode.iter()
+								self.mode
+									.iter()
 									.map(|kind| kind.to_string())
 									.collect::<Vec<_>>()
 									.join("+")

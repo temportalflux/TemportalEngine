@@ -1,8 +1,4 @@
-use engine::{
-	network::{self, connection},
-	utility::VoidResult,
-	Application,
-};
+use engine::{network, utility::VoidResult, Application};
 pub use temportal_engine as engine;
 
 #[path = "packet/mod.rs"]
@@ -27,6 +23,7 @@ impl Application for ChatRoom {
 
 pub fn run() -> VoidResult {
 	let is_server = std::env::args().any(|arg| arg == "-server");
+	let is_client = std::env::args().any(|arg| arg == "-client");
 	let log_path = {
 		let mut log_path = std::env::current_dir().unwrap().to_path_buf();
 		log_path.push(if is_server { "server" } else { "client" });
@@ -34,14 +31,8 @@ pub fn run() -> VoidResult {
 		log_path
 	};
 	engine::logging::init(&log_path)?;
-	packet::register_types();
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
-
-	let app = std::sync::Arc::new(std::sync::RwLock::new(App()));
-	if let Ok(mut network) = network::Network::write() {
-		network.add_observer(std::sync::Arc::downgrade(&app));
-	}
 
 	let network_port = std::env::args()
 		.find_map(|arg| {
@@ -50,21 +41,18 @@ pub fn run() -> VoidResult {
 				.flatten()
 		})
 		.unwrap_or(25565);
-	if let Ok(mut network) = network::Network::write() {
-		network.start(if is_server {
-			network::Config {
-				mode: network::Kind::Server.into(),
-				port: network_port,
-			}
-		} else {
-			network::Config {
-				mode: network::Kind::Client.into(),
-				port: network_port,
-			}
-		})?;
-	}
 
-	if network::mode().contains(network::Kind::Client) {
+	let mut network_builder = network::Builder::default().with_port(network_port);
+	if is_server {
+		network_builder.insert_modes(network::mode::Kind::Server);
+	}
+	if is_client {
+		network_builder.insert_modes(network::mode::Kind::Client);
+	}
+	packet::register_types(&mut network_builder);
+	network_builder.spawn()?;
+
+	if is_client {
 		engine::window::Window::builder()
 			.with_title("Chat Room")
 			.with_size(1280.0, 720.0)
@@ -88,17 +76,9 @@ pub fn run() -> VoidResult {
 				)
 				.with_payload(&packet::Handshake {})
 				.build(),
-		);
+		)?;
 	}
 
 	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
-}
-
-struct App();
-impl network::NetObserver for App {
-	fn on_connect(&mut self, _source: &connection::Connection) -> VoidResult {
-		if network::mode().contains(network::Kind::Client) {}
-		Ok(())
-	}
 }

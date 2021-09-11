@@ -1,5 +1,5 @@
 use crate::{
-	asset, audio, input, task,
+	asset, audio, input, network, task,
 	utility::{AnyError, VoidResult},
 };
 use std::sync::{
@@ -128,7 +128,29 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
-						// TODO: let _ = network::Network::process();
+						let mut should_destroy_network = false;
+						if let Ok(guard) = network::Network::receiver().lock() {
+							if let Some(receiver) = &*guard {
+								if let Err(err) = receiver.process() {
+									log::error!(
+										target: network::LOG,
+										"Failed to process events: {}",
+										err
+									);
+								}
+								should_destroy_network = receiver.should_be_destroyed();
+							}
+						};
+						if should_destroy_network {
+							if let Err(err) = network::Network::destroy() {
+								log::error!(
+									target: network::LOG,
+									"Failed to destroy network: {}",
+									err
+								);
+							}
+						}
+
 						audio::System::write().unwrap().update(delta_time);
 						let systems = &mut engine.write().unwrap().systems;
 						for system in systems.iter_mut() {
@@ -155,6 +177,11 @@ impl Engine {
 				Event::LoopDestroyed => {
 					log::info!(target: "engine", "Engine loop complete");
 					task::watcher().poll_until_empty();
+					if network::Network::is_active() {
+						if let Err(err) = network::Network::destroy() {
+							log::error!(target: network::LOG, "Failed to destroy network: {}", err);
+						}
+					}
 					if let Ok(eng) = engine.read() {
 						if let Some(chain_read) =
 							eng.render_chain().map(|chain| chain.read().unwrap())

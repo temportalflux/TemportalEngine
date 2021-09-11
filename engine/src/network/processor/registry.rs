@@ -87,15 +87,15 @@ pub trait Processor {
 
 /// Helper class which interprets an event as a type of packet,
 /// automatically downcasting to the indicated type.
-pub trait PacketProcessor<TPacketKind: 'static>: Processor {
-	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
+pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
+	fn process_as(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
 		if let Some(event::Data::Packet(source, guarantee, boxed)) = data {
-			return self.process_packet(
+			self.process_packet(
 				kind,
 				*boxed.downcast::<TPacketKind>().unwrap(),
 				source,
 				guarantee,
-			);
+			)
 		} else {
 			Err(Box::new(super::super::Error::EncounteredNonPacket(kind)))
 		}

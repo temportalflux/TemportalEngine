@@ -4,25 +4,40 @@ use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 
 pub struct Builder {
 	connection_list: Arc<RwLock<connection::List>>,
+	mode: mode::Set,
 	port: u16,
+	flag_should_be_destroyed: Arc<AtomicBool>,
 	processor_registry: Arc<Mutex<processor::Registry>>,
 	type_registry: Arc<Mutex<packet::Registry>>,
+}
+
+impl Default for Builder {
+	fn default() -> Self {
+		Self::new()
+			.with_default_connection_processors()
+			.with_default_network_stopper()
+	}
 }
 
 impl Builder {
 	pub fn new() -> Self {
 		Self {
 			connection_list: Arc::new(RwLock::new(connection::List::default())),
+			mode: mode::Set::empty(),
 			port: 0,
+			flag_should_be_destroyed: Arc::new(AtomicBool::new(false)),
 			processor_registry: Arc::new(Mutex::new(processor::Registry::new())),
 			type_registry: Arc::new(Mutex::new(packet::Registry::new())),
 		}
 	}
 
-	pub fn new_with_procs(flag_should_be_destroyed: Arc<AtomicBool>) -> Self {
-		Self::new()
-			.with_default_connection_processors()
-			.with_default_network_stopper(flag_should_be_destroyed)
+	pub fn with_mode<TModeSet: Into<mode::Set>>(mut self, modes: TModeSet) -> Self {
+		self.insert_modes(modes);
+		self
+	}
+
+	pub fn insert_modes<TModeSet: Into<mode::Set>>(&mut self, modes: TModeSet) {
+		self.mode.insert_all(modes.into());
 	}
 
 	pub fn with_port(mut self, port: u16) -> Self {
@@ -41,6 +56,24 @@ impl Builder {
 		if let Ok(mut reg_guard) = self.type_registry.lock() {
 			(*reg_guard).register::<T>();
 		}
+	}
+
+	pub fn register_processors(
+		&mut self,
+		event: event::Kind,
+		processors: processor::EventProcessors,
+	) {
+		if let Ok(mut reg_guard) = self.processor_registry.lock() {
+			(*reg_guard).insert(event, processors);
+		}
+	}
+
+	pub fn register_bundle<T>(&mut self, processors: processor::EventProcessors)
+	where
+		T: Registerable<packet::KindId, packet::Registration> + 'static,
+	{
+		self.register_packet::<T>();
+		self.register_processors(event::Kind::Packet(T::unique_id().to_owned()), processors);
 	}
 
 	pub fn with_default_connection_processors(mut self) -> Self {
@@ -85,20 +118,17 @@ impl Builder {
 		}
 	}
 
-	pub fn with_default_network_stopper(
-		mut self,
-		flag_should_be_destroyed: Arc<AtomicBool>,
-	) -> Self {
-		self.register_default_network_stopper(flag_should_be_destroyed);
+	pub fn with_default_network_stopper(mut self) -> Self {
+		self.register_default_network_stopper();
 		self
 	}
 
-	pub fn register_default_network_stopper(&mut self, flag_should_be_destroyed: Arc<AtomicBool>) {
+	pub fn register_default_network_stopper(&mut self) {
 		let mut processor = processor::EventProcessors::default();
 		for mode in mode::all() {
 			processor.insert(
 				mode,
-				processor::EndNetwork::new(flag_should_be_destroyed.clone()),
+				processor::EndNetwork::new(self.flag_should_be_destroyed.clone()),
 			);
 		}
 
@@ -114,16 +144,19 @@ impl Builder {
 		let (send_queue, recv_queue) = socknet::start(self.port)?;
 
 		let sender = Sender {
-			connection_list: self.connection_list.clone(),
-			receiver_event_sender: recv_queue.sender().clone(),
+			mode: self.mode,
 			queue: send_queue,
+			receiver_event_sender: recv_queue.sender().clone(),
+			connection_list: self.connection_list.clone(),
 		};
 
 		let receiver = Receiver {
-			connection_list: self.connection_list.clone(),
-			queue: recv_queue,
+			mode: self.mode,
 			processor_registry: self.processor_registry.clone(),
 			type_registry: self.type_registry.clone(),
+			queue: recv_queue,
+			flag_should_be_destroyed: self.flag_should_be_destroyed.clone(),
+			connection_list: self.connection_list.clone(),
 		};
 
 		Network::receiver_init(receiver)?;

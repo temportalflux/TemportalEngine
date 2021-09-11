@@ -1,4 +1,4 @@
-use super::{connection, packet, LOG};
+use super::{connection, mode, packet, LOG};
 use crate::utility::VoidResult;
 use std::sync::{Arc, RwLock};
 
@@ -6,6 +6,7 @@ pub struct Sender {
 	pub(super) connection_list: Arc<RwLock<connection::List>>,
 	pub(super) receiver_event_sender: socknet::channel::Sender<socknet::event::Event>,
 	pub(super) queue: socknet::packet::Queue,
+	pub(super) mode: mode::Set,
 }
 
 impl Sender {
@@ -17,6 +18,8 @@ impl Sender {
 
 	/// Enqueues the packet to be sent in the sending thread
 	pub fn send(&self, packet: packet::Packet) -> VoidResult {
+		self.mode;
+		// TODO: If sent to the server and we are the server, just move the packet to the incoming queue
 		self.queue.channel().try_send(packet)?;
 		Ok(())
 	}

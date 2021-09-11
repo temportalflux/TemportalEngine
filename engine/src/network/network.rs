@@ -1,21 +1,21 @@
-use super::{mode, packet, Receiver, Sender};
+use super::{packet, Receiver, Sender, LOG};
 use crate::utility::VoidResult;
-use std::{sync::{Mutex, Once}, mem::MaybeUninit};
-
-#[derive(Debug)]
-pub struct Config {
-	pub mode: mode::Set,
-	pub port: u16,
-}
+use std::{
+	mem::MaybeUninit,
+	sync::{Mutex, Once},
+};
 
 #[derive(Default)]
 pub struct Network {}
 
 impl Network {
-	fn receiver() -> &'static Mutex<Option<Receiver>> {
-		static mut INSTANCE: (MaybeUninit<Mutex<Option<Receiver>>>, Once) = (MaybeUninit::uninit(), Once::new());
+	pub fn receiver() -> &'static Mutex<Option<Receiver>> {
+		static mut INSTANCE: (MaybeUninit<Mutex<Option<Receiver>>>, Once) =
+			(MaybeUninit::uninit(), Once::new());
 		unsafe {
-			INSTANCE.1.call_once(|| INSTANCE.0.as_mut_ptr().write(Mutex::new(None)));
+			INSTANCE
+				.1
+				.call_once(|| INSTANCE.0.as_mut_ptr().write(Mutex::new(None)));
 			&*INSTANCE.0.as_ptr()
 		}
 	}
@@ -27,9 +27,12 @@ impl Network {
 	}
 
 	fn sender() -> &'static Mutex<Option<Sender>> {
-		static mut INSTANCE: (MaybeUninit<Mutex<Option<Sender>>>, Once) = (MaybeUninit::uninit(), Once::new());
+		static mut INSTANCE: (MaybeUninit<Mutex<Option<Sender>>>, Once) =
+			(MaybeUninit::uninit(), Once::new());
 		unsafe {
-			INSTANCE.1.call_once(|| INSTANCE.0.as_mut_ptr().write(Mutex::new(None)));
+			INSTANCE
+				.1
+				.call_once(|| INSTANCE.0.as_mut_ptr().write(Mutex::new(None)));
 			&*INSTANCE.0.as_ptr()
 		}
 	}
@@ -53,6 +56,7 @@ impl Network {
 	}
 
 	pub fn destroy() -> VoidResult {
+		log::info!(target: LOG, "Destroying network");
 		if let Ok(mut guard) = Network::receiver().lock() {
 			(*guard) = None;
 		}

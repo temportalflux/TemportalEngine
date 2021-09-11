@@ -3,7 +3,10 @@ use super::{
 	Processor,
 };
 use crate::utility::VoidResult;
-use std::sync::{atomic::{AtomicBool, Ordering}, Arc};
+use std::sync::{
+	atomic::{AtomicBool, Ordering},
+	Arc,
+};
 
 pub struct EndNetwork(Arc<AtomicBool>);
 

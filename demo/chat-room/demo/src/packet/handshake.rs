@@ -1,8 +1,12 @@
 use crate::engine::{
 	network::{
+		self,
 		connection::Connection,
-		packet::{Guarantee, Packet, Processor},
-		packet_kind, Network,
+		event, mode,
+		packet::{Guarantee, Packet},
+		packet_kind,
+		processor::{EventProcessors, PacketProcessor, Processor},
+		Network,
 	},
 	utility::VoidResult,
 };
@@ -21,25 +25,39 @@ use serde::{Deserialize, Serialize};
 pub struct Handshake {}
 
 impl Handshake {
-	pub fn processor() -> Processor {
-		use crate::engine::network::Kind::*;
-		Processor::default()
-			.with(Server, Self::send_back_to_client)
-			.ignore(Client)
+	pub fn register(builder: &mut network::Builder) {
+		use mode::Kind::*;
+		builder.register_bundle::<Handshake>(
+			EventProcessors::default()
+				.with(Server, SendBackToServer())
+				.ignore(Client),
+		);
 	}
+}
 
-	fn send_back_to_client(
-		data: &mut Self,
-		source: &Connection,
-		guarantees: Guarantee,
+struct SendBackToServer();
+
+impl Processor for SendBackToServer {
+	fn process(&self, kind: event::Kind, data: Option<event::Data>) -> VoidResult {
+		self.process_as(kind, data)
+	}
+}
+
+impl PacketProcessor<Handshake> for SendBackToServer {
+	fn process_packet(
+		&self,
+		_kind: event::Kind,
+		data: Handshake,
+		connection: Connection,
+		guarantee: Guarantee,
 	) -> VoidResult {
 		Network::send(
 			Packet::builder()
-				.with_address(source.address)?
-				.with_guarantee(guarantees)
-				.with_payload(&*data)
+				.with_address(connection.address)?
+				.with_guarantee(guarantee)
+				.with_payload(&data)
 				.build(),
-		);
+		)?;
 		Ok(())
 	}
 }

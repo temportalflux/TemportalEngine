@@ -3,8 +3,8 @@ pub use handshake::*;
 mod message;
 pub use message::*;
 
-pub fn register_types() {
-	use crate::engine::network::packet::Registry;
-	Registry::register::<Handshake>(Handshake::processor());
-	Registry::register::<Message>(Message::processor());
+use crate::engine::network;
+pub fn register_types(builder: &mut network::Builder) {
+	Handshake::register(builder);
+	Message::register(builder);
 }
