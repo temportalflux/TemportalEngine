@@ -2,6 +2,9 @@ pub static LOG: &'static str = "network";
 
 pub use socknet::*;
 
+mod builder;
+pub use builder::*;
+
 pub mod connection;
 
 pub mod event;

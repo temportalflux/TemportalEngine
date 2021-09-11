@@ -3,9 +3,9 @@ use crate::utility::VoidResult;
 use std::sync::{Arc, RwLock};
 
 pub struct Sender {
-	connection_list: Arc<RwLock<connection::List>>,
-	receiver_event_sender: socknet::channel::Sender<socknet::event::Event>,
-	queue: socknet::packet::Queue,
+	pub(super) connection_list: Arc<RwLock<connection::List>>,
+	pub(super) receiver_event_sender: socknet::channel::Sender<socknet::event::Event>,
+	pub(super) queue: socknet::packet::Queue,
 }
 
 impl Sender {

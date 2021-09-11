@@ -14,7 +14,7 @@ impl std::fmt::Display for Kind {
 }
 
 pub enum Data {
-	Connection(super::connection::Connection),
+	Address(std::net::SocketAddr),
 	Packet(
 		super::connection::Connection,
 		super::packet::Guarantee,

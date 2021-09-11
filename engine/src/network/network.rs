@@ -10,24 +10,6 @@ pub struct Config {
 #[derive(Default)]
 pub struct Network {}
 
-/*
-				Event::Connected(address) => {
-					if let Ok(mut network) = Self::write() {
-						let conn_id = network.connection_list.add_connection(&address);
-						log::info!(target: LOG, "{} has connected as {}", address, conn_id);
-					}
-				}
-				Event::TimedOut(_address) => {}
-				Event::Disconnected(address) => {
-					if let Ok(mut network) = Self::write() {
-						if let Some(conn_id) = network.connection_list.remove_connection(&address) {
-							log::info!(target: LOG, "{} has disconnected as {}", address, conn_id);
-						}
-					}
-				}
-
-*/
-
 impl Network {
 	fn get() -> &'static RwLock<Network> {
 		use crate::utility::singleton::*;

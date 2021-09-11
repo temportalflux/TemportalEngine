@@ -7,6 +7,18 @@ where
 	pub types: HashMap<TKey, TRegistration>,
 }
 
+impl<TKey, TRegistration> Clone for Registry<TKey, TRegistration>
+where
+	TKey: std::hash::Hash + std::cmp::Eq + Clone,
+	TRegistration: Clone,
+{
+	fn clone(&self) -> Self {
+		Self {
+			types: self.types.clone(),
+		}
+	}
+}
+
 pub trait Registerable<TKey, TRegistration>
 where
 	TKey: std::hash::Hash + std::cmp::Eq,
