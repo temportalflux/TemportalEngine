@@ -21,3 +21,15 @@ impl From<laminar::SocketEvent> for Event {
 		}
 	}
 }
+
+impl Event {
+	pub fn address(&self) -> Option<SocketAddr> {
+		return match self {
+			Self::Connected(addr) => Some(*addr),
+			Self::TimedOut(addr) => Some(*addr),
+			Self::Disconnected(addr) => Some(*addr),
+			Self::Packet(packet) => Some(*packet.address()),
+			Self::Stop => None,
+		};
+	}
+}

@@ -1,26 +1,25 @@
-use super::{connection::Connection, packet, mode, event};
+use super::{connection::Connection, event, mode, packet};
 use crate::utility::VoidResult;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use temportal_engine_utilities::registry::Registry as GenericRegistry;
 
-pub type FnProcessEvent = Arc<Box<dyn Fn(event::Data) -> VoidResult>>;
-pub type Registry = GenericRegistry<event::Kind, Processor>;
+pub type Registry = GenericRegistry<event::Kind, EventProcessors>;
 
 /// Saves information about how a packet is handled/processed,
 /// so the proper function can be executed when the packet is received.
-pub struct Processor {
-	process_functions: HashMap<mode::Set, Option<FnProcessEvent>>,
+pub struct EventProcessors {
+	processor_by_mode: HashMap<mode::Set, Option<Box<dyn Processor + 'static>>>,
 }
 
-impl Default for Processor {
+impl Default for EventProcessors {
 	fn default() -> Self {
 		Self {
-			process_functions: HashMap::new(),
+			processor_by_mode: HashMap::new(),
 		}
 	}
 }
 
-impl Processor {
+impl EventProcessors {
 	/// Marks that the packet is ignored for a given net mode.
 	///
 	/// This is helpful for packets such as a handshake,
@@ -35,43 +34,17 @@ impl Processor {
 	where
 		TNetMode: Into<mode::Set>,
 	{
-		self.process_functions.insert(net_mode.into(), None);
+		self.processor_by_mode.insert(net_mode.into(), None);
 		self
 	}
 
-	/// Associates a net mode with a specific callback,
-	/// allowing packets to have different callbacks
-	/// based on what net mode the receiver is on.
-	pub fn with_packet<TPacketKind, TNetMode, TProcessCallback>(
-		mut self,
-		net_mode: TNetMode,
-		process_fn: TProcessCallback,
-	) -> Self
+	pub fn with<TNetMode, TProc>(mut self, net_mode: TNetMode, processor: TProc) -> Self
 	where
 		TNetMode: Into<mode::Set>,
-		TPacketKind: packet::Kind + 'static,
-		TProcessCallback: Fn(&mut TPacketKind, &Connection, packet::Guarantee) -> VoidResult + 'static,
+		TProc: Processor + 'static,
 	{
-		let boxed_process_fn = Arc::new(Box::new(process_fn));
-		self.process_functions.insert(
-			net_mode.into(),
-			Some(Arc::new(Box::new(
-				move |event_data: event::Data| -> VoidResult {
-					if let event::Data::Packet(source, guarantee, boxed) = event_data {
-						// boxed: packet::AnyBox, source: &Connection, guarantee: packet::Guarantee
-						(*boxed_process_fn)(
-							&mut *boxed.downcast::<TPacketKind>().unwrap(),
-							source,
-							guarantee,
-						)
-					}
-					else
-					{
-						Err(Box::new("Processor cannot handle non-packet event"))
-					}
-				},
-			))),
-		);
+		self.processor_by_mode
+			.insert(net_mode.into(), Some(Box::new(processor)));
 		self
 	}
 
@@ -80,7 +53,56 @@ impl Processor {
 	/// This function returns a double optional. The first indicates if there was any configuration
 	/// provided for the net mode (either a valid callback OR marking the packet as ignored).
 	/// The second optional provides the actual callback if the packet is not marked as ignored.
-	pub fn get_for_mode(&self, net_mode: &mode::Set) -> Option<Option<FnProcessAny>> {
-		self.process_functions.get(net_mode).map(|v| v.clone())
+	pub fn get_for_mode(&self, net_mode: &mode::Set) -> Option<&Option<Box<dyn Processor + 'static>>> {
+		self.processor_by_mode.get(net_mode)
 	}
 }
+
+/// Processes a single [`event`](super::event::Kind) for a given [`net mode`](super::mode::Set).
+pub trait Processor {
+	fn process(&self, kind: super::event::Kind, data: Option<super::event::Data>) -> VoidResult;
+}
+
+/// Helper class which interprets an event as a type of packet,
+/// automatically downcasting to the indicated type.
+pub trait PacketProcessor<TPacketKind: 'static>: Processor {
+	fn process(&self, kind: super::event::Kind, data: Option<super::event::Data>) -> VoidResult {
+		if let Some(event::Data::Packet(source, guarantee, boxed)) = data {
+			return self.process_packet(
+				kind,
+				*boxed.downcast::<TPacketKind>().unwrap(),
+				source,
+				guarantee,
+			);
+		} else {
+			Err(Box::new(Error::EncounteredNonPacket(kind)))
+		}
+	}
+
+	fn process_packet(
+		&self,
+		kind: super::event::Kind,
+		data: TPacketKind,
+		connection: Connection,
+		guarantee: packet::Guarantee,
+	) -> VoidResult;
+}
+
+#[derive(Debug)]
+enum Error {
+	EncounteredNonPacket(super::event::Kind),
+}
+
+impl std::fmt::Display for Error {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		match self {
+			Error::EncounteredNonPacket(ref kind) => write!(
+				f,
+				"Packet-Only processor cannot handle non-packet event: {}",
+				kind
+			),
+		}
+	}
+}
+
+impl std::error::Error for Error {}

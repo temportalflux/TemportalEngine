@@ -14,4 +14,4 @@ pub mod serde {
 	pub use rmp_serde::{from_read_ref, to_vec};
 }
 
-pub use crossbeam_channel::{TryRecvError, TrySendError};
+pub use crossbeam_channel as channel;

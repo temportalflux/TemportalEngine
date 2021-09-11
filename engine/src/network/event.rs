@@ -1,5 +1,4 @@
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Kind {
 	Connected,
 	Packet(/*packet id*/ String),
@@ -15,6 +14,10 @@ impl std::fmt::Display for Kind {
 }
 
 pub enum Data {
-	Address(std::net::SocketAddr),
-	Packet(std::net::SocketAddr, super::packet::Guarantee, super::packet::AnyBox),
+	Connection(super::connection::Connection),
+	Packet(
+		super::connection::Connection,
+		super::packet::Guarantee,
+		super::packet::AnyBox,
+	),
 }

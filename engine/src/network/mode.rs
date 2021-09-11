@@ -1,6 +1,6 @@
 use enumset::{EnumSet, EnumSetType};
 
-#[derive(Debug, EnumSetType)]
+#[derive(Debug, EnumSetType, Hash)]
 pub enum Kind {
 	Client,
 	Server,

@@ -21,9 +21,9 @@ pub mod packet {
 pub mod prelude {
 	pub use super::{
 		connection::Connection,
+		mode,
 		network::Network,
 		packet::{DeliveryGuarantee, Guarantee, OrderGuarantee, Packet},
-		mode,
 	};
 }
 
@@ -32,6 +32,5 @@ pub mod processor;
 mod receiver;
 pub use receiver::*;
 
-pub fn mode() -> mode::Set {
-	Network::read().unwrap().mode().clone()
-}
+mod sender;
+pub use sender::*;

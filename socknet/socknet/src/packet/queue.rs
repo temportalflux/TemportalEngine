@@ -30,7 +30,7 @@ impl Queue {
 		socknet_to_laminar_receiver: crossbeam_channel::Receiver<packet::Packet>,
 		sender: crossbeam_channel::Sender<laminar::Packet>,
 	) {
-		use crossbeam_channel::{TrySendError, TryRecvError};
+		use crossbeam_channel::{TryRecvError, TrySendError};
 		let mut next_packet: Option<laminar::Packet> = None;
 		loop {
 			if next_packet.is_none() {

@@ -6,19 +6,22 @@ use std::{
 
 pub struct Queue {
 	receiver: crossbeam_channel::Receiver<Event>,
+	sender: crossbeam_channel::Sender<Event>,
 	thread_poll_events: Option<JoinHandle<()>>,
 }
 
 impl Queue {
 	pub(crate) fn new(name: String, socket: laminar::Socket) -> Result<Self, AnyError> {
-		let (laminar_to_socknet_sender, receiver) = crossbeam_channel::unbounded();
+		let (sender, receiver) = crossbeam_channel::unbounded();
 
+		let laminar_to_socknet_sender = sender.clone();
 		let thread_poll_events = Some(build_thread(name, move || {
 			Self::poll_events(socket, laminar_to_socknet_sender);
 		})?);
 
 		Ok(Self {
 			receiver,
+			sender,
 			thread_poll_events,
 		})
 	}
@@ -36,7 +39,7 @@ impl Queue {
 				Ok(event) => {
 					let event = event.into();
 					match laminar_to_socknet_sender.try_send(event) {
-						Ok(_) => {} // success case is no-op
+						Ok(_) => {}                            // success case is no-op
 						Err(TrySendError::Full(_packet)) => {} // no-op, the channel is unbounded
 						Err(TrySendError::Disconnected(_packet)) => return,
 					}
@@ -51,6 +54,10 @@ impl Queue {
 
 	pub fn channel(&self) -> &crossbeam_channel::Receiver<Event> {
 		&self.receiver
+	}
+
+	pub fn sender(&self) -> &crossbeam_channel::Sender<Event> {
+		&self.sender
 	}
 }
 
