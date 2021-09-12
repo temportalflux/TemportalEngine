@@ -63,8 +63,7 @@ impl Sender {
 			for conn in connection_list.iter() {
 				// broadcasts only come from the server,
 				// and should never be sent to themselves if they are also a client
-				if !self.local_data.is_local(&conn)
-				{
+				if !self.local_data.is_local(&conn) {
 					self.send(packet.clone().with_address(conn.address)?.build())?;
 				}
 			}

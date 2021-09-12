@@ -1,4 +1,6 @@
-use super::{connection, event, mode, packet, processor, LocalData, Network, Receiver, Sender};
+use super::{
+	connection, event, mode, packet, processor, LocalData, Network, Receiver, Sender, LOG,
+};
 use crate::utility::{registry::Registerable, VoidResult};
 use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 
@@ -27,6 +29,11 @@ impl Builder {
 			processor_registry: Arc::new(Mutex::new(processor::Registry::new())),
 			type_registry: Arc::new(Mutex::new(packet::Registry::new())),
 		}
+	}
+
+	pub fn with_args(mut self) -> Self {
+		self.local_data.read_from_args();
+		self
 	}
 
 	pub fn with_mode<TModeSet: Into<mode::Set>>(mut self, modes: TModeSet) -> Self {
@@ -165,6 +172,8 @@ impl Builder {
 		if Network::is_active() {
 			return Err(Box::new(super::Error::NetworkAlreadyActive()));
 		}
+
+		log::info!(target: LOG, "Spawning network with {}", self.local_data);
 
 		let (send_queue, recv_queue) =
 			socknet::start(self.local_data.port(), &self.flag_should_be_destroyed)?;

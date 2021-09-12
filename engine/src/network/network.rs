@@ -1,4 +1,4 @@
-use super::{packet, Receiver, Sender, LOG};
+use super::{packet, LocalData, Receiver, Sender, LOG};
 use crate::utility::VoidResult;
 use std::{
 	mem::MaybeUninit,
@@ -53,6 +53,15 @@ impl Network {
 			return (*guard).is_some();
 		}
 		false
+	}
+
+	pub fn local_data() -> LocalData {
+		if let Ok(guard) = Network::sender().lock() {
+			if let Some(sender) = &*guard {
+				return sender.local_data.clone();
+			}
+		}
+		LocalData::default()
 	}
 
 	pub fn destroy() -> VoidResult {

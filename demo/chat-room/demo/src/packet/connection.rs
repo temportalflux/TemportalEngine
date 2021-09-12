@@ -17,7 +17,11 @@ pub fn register_bonus_processors(builder: &mut network::Builder) {
 pub struct ConfirmUser();
 
 impl ConfirmUser {
-	pub fn announce_arrival(local_data: &LocalData, history: &mut crate::MessageHistory, name: &String) -> VoidResult {
+	pub fn announce_arrival(
+		local_data: &LocalData,
+		history: &mut crate::MessageHistory,
+		name: &String,
+	) -> VoidResult {
 		let message = crate::packet::Message {
 			timestamp: chrono::Utc::now(),
 			sender_name: None,

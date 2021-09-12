@@ -16,7 +16,45 @@ impl Default for LocalData {
 	}
 }
 
+impl std::fmt::Display for LocalData {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(
+			f,
+			"NetData(Modes:{}, Port:{})",
+			self.mode
+				.iter()
+				.map(|kind| kind.to_string())
+				.collect::<Vec<_>>()
+				.join("+"),
+			self.port()
+		)
+	}
+}
+
 impl LocalData {
+	pub fn with_args(mut self) -> Self {
+		self.read_from_args();
+		self
+	}
+
+	pub fn read_from_args(&mut self) {
+		if std::env::args().any(|arg| arg == "-server") {
+			self.insert_modes(mode::Kind::Server);
+		}
+		if std::env::args().any(|arg| arg == "-client") {
+			self.insert_modes(mode::Kind::Client);
+		}
+		self.set_port(
+			std::env::args()
+				.find_map(|arg| {
+					arg.strip_prefix("-port=")
+						.map(|s| s.parse::<u16>().ok())
+						.flatten()
+				})
+				.unwrap_or(self.port()),
+		);
+	}
+
 	pub fn insert_modes<TModeSet: Into<mode::Set>>(&mut self, modes: TModeSet) {
 		self.mode.insert_all(modes.into());
 	}

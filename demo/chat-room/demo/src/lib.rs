@@ -23,7 +23,7 @@ impl Application for ChatRoom {
 
 pub fn run() -> VoidResult {
 	let is_server = std::env::args().any(|arg| arg == "-server");
-	let is_client = std::env::args().any(|arg| arg == "-client");
+	//let is_client = std::env::args().any(|arg| arg == "-client");
 	let log_path = {
 		let mut log_path = std::env::current_dir().unwrap().to_path_buf();
 		log_path.push(if is_server { "server" } else { "client" });
@@ -31,29 +31,17 @@ pub fn run() -> VoidResult {
 		log_path
 	};
 	engine::logging::init(&log_path)?;
+
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
 
-	let network_port = std::env::args()
-		.find_map(|arg| {
-			arg.strip_prefix("-port=")
-				.map(|s| s.parse::<u16>().ok())
-				.flatten()
-		})
-		.unwrap_or(25565);
+	network::Builder::default()
+		.with_port(25565)
+		.with_args()
+		.with_registrations_in(packet::register_types)
+		.spawn()?;
 
-	let mut network_builder = network::Builder::default()
-		.with_port(network_port)
-		.with_registrations_in(packet::register_types);
-	if is_server {
-		network_builder.insert_modes(network::mode::Kind::Server);
-	}
-	if is_client {
-		network_builder.insert_modes(network::mode::Kind::Client);
-	}
-	network_builder.spawn()?;
-
-	if is_client {
+	if network::Network::local_data().is_client() {
 		engine::window::Window::builder()
 			.with_title("Chat Room")
 			.with_size(1280.0, 720.0)
