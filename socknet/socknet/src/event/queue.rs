@@ -1,4 +1,4 @@
-use crate::{build_thread, event::Event, AnyError};
+use crate::{socket::{ISocket, build_thread}, event::Event, AnyError};
 use std::{
 	sync::{
 		atomic::{self, AtomicBool},
@@ -17,7 +17,7 @@ pub struct Queue {
 impl Queue {
 	pub(crate) fn new(
 		name: String,
-		socket: laminar::Socket,
+		socket: Box<dyn ISocket + Send>,
 		exit_flag: &Arc<AtomicBool>,
 	) -> Result<Self, AnyError> {
 		let (sender, receiver) = crossbeam_channel::unbounded();
@@ -36,7 +36,7 @@ impl Queue {
 	}
 
 	fn poll_events(
-		mut socket: laminar::Socket,
+		mut socket: Box<dyn ISocket + Send>,
 		laminar_to_socknet_sender: crossbeam_channel::Sender<Event>,
 		exit_flag: Arc<AtomicBool>,
 	) {

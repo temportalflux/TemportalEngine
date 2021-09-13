@@ -135,10 +135,10 @@ impl Builder {
 				match proc.event {
 					event::Kind::Connected => proc
 						.processors
-						.insert(mode, processor::CreateConnection::new(list)),
+						.insert(mode, connection::CreateConnection::new(list)),
 					event::Kind::Disconnected => proc
 						.processors
-						.insert(mode, processor::DestroyConnection::new(list)),
+						.insert(mode, connection::DestroyConnection::new(list)),
 					_ => {}
 				}
 			}
@@ -176,7 +176,7 @@ impl Builder {
 		log::info!(target: LOG, "Spawning network with {}", self.local_data);
 
 		let (send_queue, recv_queue) =
-			socknet::start(self.local_data.port(), &self.flag_should_be_destroyed)?;
+			socknet::socket::start(self.local_data.port(), &self.flag_should_be_destroyed)?;
 
 		let sender = Sender {
 			local_data: self.local_data.clone(),

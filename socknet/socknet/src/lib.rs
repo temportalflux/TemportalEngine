@@ -6,14 +6,14 @@ pub static LOG: &'static str = "socknet";
 #[cfg(feature = "derive")]
 pub use socknet_derive::packet_kind;
 
+pub mod backend {
+	pub use laminar::{Config, Connection, ConnectionManager, Packet, SocketEvent as Event};
+}
+pub use crossbeam_channel as channel;
 pub mod event;
 pub mod packet;
-
-mod socket;
-pub use socket::*;
+pub mod socket;
 
 pub mod serde {
 	pub use rmp_serde::{from_read_ref, to_vec};
 }
-
-pub use crossbeam_channel as channel;
