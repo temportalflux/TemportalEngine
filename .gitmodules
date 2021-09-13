@@ -7,3 +7,6 @@
 [submodule "editor/bin/freetype"]
 	path = editor/bin/freetype
 	url = git@github.com:PistonDevelopers/binaries.git
+[submodule "socknet"]
+	path = socknet
+	url = git@github.com:temportalflux/socknet.git
