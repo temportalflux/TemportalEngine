@@ -121,4 +121,13 @@ impl Network {
 		}
 		Ok(())
 	}
+
+	pub fn kick(address: &std::net::SocketAddr) -> VoidResult {
+		if let Ok(guard) = Network::sender().lock() {
+			if let Some(sender) = &*guard {
+				sender.kick(&address)?;
+			}
+		}
+		Ok(())
+	}
 }

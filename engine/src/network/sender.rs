@@ -70,6 +70,11 @@ impl Sender {
 		}
 		Ok(())
 	}
+
+	pub fn kick(&self, address: &std::net::SocketAddr) -> VoidResult {
+		self.queue.kick(address.clone())?;
+		Ok(())
+	}
 }
 
 impl Drop for Sender {
