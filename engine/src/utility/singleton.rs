@@ -3,11 +3,12 @@ use std::{
 	sync::{Once, RwLock},
 };
 
-pub struct Singleton<T>(MaybeUninit<RwLock<T>>, Once);
+pub struct AutoInit<T>(MaybeUninit<RwLock<T>>, Once);
+pub type Singleton<T> = AutoInit<T>;
 
-impl<T> Singleton<T> {
-	pub const fn uninit() -> Singleton<T> {
-		Singleton(MaybeUninit::uninit(), Once::new())
+impl<T> AutoInit<T> {
+	pub const fn uninit() -> AutoInit<T> {
+		AutoInit(MaybeUninit::uninit(), Once::new())
 	}
 
 	pub fn get(&mut self) -> &'static RwLock<T> {
@@ -47,5 +48,19 @@ impl<T> Singleton<T> {
 
 	pub fn is_initialized(&self) -> bool {
 		self.1.is_completed()
+	}
+}
+
+pub struct RwOptional<T>(MaybeUninit<RwLock<Option<T>>>, Once);
+impl<T> RwOptional<T> {
+	pub const fn uninit() -> RwOptional<T> {
+		RwOptional(MaybeUninit::uninit(), Once::new())
+	}
+
+	pub fn get(&mut self) -> &'static RwLock<Option<T>> {
+		let rwlock = &mut self.0;
+		let once = &mut self.1;
+		once.call_once(|| unsafe { rwlock.as_mut_ptr().write(RwLock::new(None)) });
+		unsafe { &*self.0.as_ptr() }
 	}
 }
