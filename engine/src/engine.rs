@@ -83,6 +83,12 @@ impl Engine {
 		let terminate_signal = Arc::new(AtomicBool::new(false));
 		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
 
+		/* the holy trinity of fixed timestep articles:
+		- https://gafferongames.com/post/fix_your_timestep/ (the one most people reference)
+		- https://gameprogrammingpatterns.com/game-loop.html (the same concept, but more clearly explained)
+		- https://medium.com/@tglaiel/how-to-make-your-game-run-at-60fps-24c61210fe75
+			(various techniques for making a fixed timestep more robust, and some explanations of why non-fixed timestep can be bad)
+		*/
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut prev_render_error = None;
 		let event_loop = engine.write().unwrap().event_loop.take();
