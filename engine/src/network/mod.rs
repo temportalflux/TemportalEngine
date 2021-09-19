@@ -23,7 +23,7 @@ pub use network::*;
 pub mod packet {
 	pub use socknet::packet::{
 		AnyBox, DeliveryGuarantee, Guarantee, Kind, KindId, OrderGuarantee, Packet, PacketBuilder,
-		Payload, Queue, Registerable, Registration, Registry,
+		PacketMode, Payload, Queue, Registerable, Registration, Registry,
 	};
 }
 
@@ -32,8 +32,12 @@ pub mod prelude {
 		connection::Connection,
 		mode,
 		network::Network,
-		packet::{DeliveryGuarantee, Guarantee, OrderGuarantee, Packet},
+		packet::{DeliveryGuarantee, Guarantee, OrderGuarantee, Packet, PacketMode},
 	};
+	pub use mode::Kind::*;
+	pub use DeliveryGuarantee::*;
+	pub use OrderGuarantee::*;
+	pub use PacketMode::*;
 }
 
 pub mod processor;

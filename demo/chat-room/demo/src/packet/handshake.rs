@@ -72,12 +72,11 @@ impl PacketProcessor<Handshake> for SendBackToClient {
 		}
 
 		if !local_data.is_local(&connection) {
-			Network::send(
+			Network::send_packets(
 				Packet::builder()
 					.with_address(connection.address)?
 					.with_guarantee(*guarantee)
-					.with_payload(data)
-					.build(),
+					.with_payload(data),
 			)?;
 		}
 		Ok(())

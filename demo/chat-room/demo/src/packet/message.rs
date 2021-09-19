@@ -3,7 +3,7 @@ use crate::engine::{
 		self,
 		connection::Connection,
 		event, mode,
-		packet::{Guarantee, Packet},
+		packet::{Guarantee, Packet, PacketMode},
 		packet_kind,
 		processor::{EventProcessors, PacketProcessor, Processor},
 		LocalData, Network, LOG,
@@ -61,8 +61,10 @@ impl BroadcastMessage {
 		}
 
 		if data.sender_name.is_some() {
-			Network::broadcast(
+			Network::send_packets(
 				Packet::builder()
+					.with_mode(PacketMode::Broadcast)
+					.ignore_local_address()
 					.with_guarantee(*guarantee)
 					.with_payload(data),
 			)?;
@@ -167,7 +169,7 @@ impl PacketProcessor<Message> for BroadcastAndSaveMessage {
 		data: &mut Message,
 		connection: &Connection,
 		guarantee: &Guarantee,
-		_local_data: &LocalData,
+		local_data: &LocalData,
 	) -> VoidResult {
 		log::debug!(
 			target: LOG,
@@ -176,7 +178,9 @@ impl PacketProcessor<Message> for BroadcastAndSaveMessage {
 			data.content,
 			data.timestamp.to_rfc2822()
 		);
-		BroadcastMessage::rebroadcast(data, &connection, &guarantee)?;
+		if !local_data.is_local(&connection) {
+			BroadcastMessage::rebroadcast(data, &connection, &guarantee)?;
+		}
 		if let Ok(mut history) = crate::MessageHistory::write() {
 			SaveMessageToLog::save_to_log(&mut history, &data);
 		}

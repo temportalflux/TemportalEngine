@@ -67,6 +67,10 @@ impl LocalData {
 		self.address.port()
 	}
 
+	pub fn address(&self) -> &SocketAddr {
+		&self.address
+	}
+
 	pub fn is_local(&self, connection: &Connection) -> bool {
 		self.address == connection.address
 	}

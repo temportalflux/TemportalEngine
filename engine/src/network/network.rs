@@ -93,30 +93,10 @@ impl Network {
 	}
 
 	/// Enqueues the packet to be sent in the sending thread
-	pub fn send(packet: packet::Packet) -> VoidResult {
+	pub fn send_packets(builder: packet::PacketBuilder) -> VoidResult {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
-				sender.send(packet)?;
-			}
-		}
-		Ok(())
-	}
-
-	pub fn send_to_server(packet: packet::PacketBuilder) -> VoidResult {
-		if let Ok(guard) = Network::sender().lock() {
-			if let Some(sender) = &*guard {
-				sender.send_to_server(packet)?;
-			}
-		}
-		Ok(())
-	}
-
-	/// Enqueues a bunch of duplicates of the packet,
-	/// one for each connection, to be sent in the sending thread.
-	pub fn broadcast(packet: packet::PacketBuilder) -> VoidResult {
-		if let Ok(guard) = Network::sender().lock() {
-			if let Some(sender) = &*guard {
-				sender.broadcast(packet)?;
+				sender.send_packets(builder)?;
 			}
 		}
 		Ok(())

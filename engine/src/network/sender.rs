@@ -1,12 +1,46 @@
 use super::{connection, mode, packet, LocalData, LOG};
 use crate::utility::VoidResult;
-use std::sync::{Arc, RwLock};
+use std::{
+	net::SocketAddr,
+	sync::{Arc, RwLock},
+};
 
 pub struct Sender {
 	pub(super) connection_list: Arc<RwLock<connection::List>>,
 	pub(super) receiver_event_sender: socknet::channel::Sender<socknet::event::Event>,
 	pub(super) queue: socknet::packet::Queue,
 	pub(super) local_data: LocalData,
+}
+
+impl socknet::packet::AddressReference for Sender {
+	fn local_address(&self) -> &SocketAddr {
+		self.local_data.address()
+	}
+
+	fn active_addresses(&self) -> Vec<SocketAddr> {
+		let connection_list = self.connection_list.read().unwrap();
+		connection_list
+			.iter()
+			.map(|connection| connection.address.clone())
+			.collect()
+	}
+
+	fn server_address(&self) -> SocketAddr {
+		// i.e. is not a CotoS
+		if self.local_data.is_dedicated(mode::Kind::Client) {
+			match self.connection_list.read() {
+				Ok(connection_list) => match connection_list.get_connection(&connection::Id(0)) {
+					Some(connection) => connection.address.clone(),
+					None => unimplemented!("There is no server connection"),
+				},
+				Err(_) => unimplemented!("Cannot read connection list"),
+			}
+		}
+		// is both a client and a server, so send to specifically our own address (first connection may not be ourself when CotoS).
+		else {
+			self.local_data.address
+		}
+	}
 }
 
 impl Sender {
@@ -17,61 +51,14 @@ impl Sender {
 	}
 
 	/// Enqueues the packet to be sent in the sending thread
-	pub fn send(&self, packet: packet::Packet) -> VoidResult {
-		self.queue.channel().try_send(packet)?;
-		Ok(())
-	}
-
-	pub fn send_to_server(&self, mut packet: packet::PacketBuilder) -> VoidResult {
-		if !self.local_data.is_client() {
-			log::error!(
-				target: LOG,
-				"Can only send_to_server PacketKind({}) if running as a client.",
-				packet.packet_kind()
-			);
-			return Ok(());
-		}
-
-		// i.e. is not a CotoS
-		if self.local_data.is_dedicated(mode::Kind::Client) {
-			if let Ok(connection_list) = self.connection_list.read() {
-				if let Some(connection) = connection_list.get_connection(&connection::Id(0)) {
-					packet.set_address(connection.address)?;
-				}
-			}
-		}
-		// is both a client and a server, so send to specifically our own address (first connection may not be ourself when CotoS).
-		else {
-			packet.set_address(self.local_data.address)?;
-		}
-		self.send(packet.build())?;
-		Ok(())
-	}
-
-	/// Enqueues a bunch of duplicates of the packet,
-	/// one for each connection, to be sent in the sending thread.
-	pub fn broadcast(&self, packet: packet::PacketBuilder) -> VoidResult {
-		if !self.local_data.is_server() {
-			log::error!(
-				target: LOG,
-				"Can only broadcast PacketKind({}) if running as a server.",
-				packet.packet_kind()
-			);
-			return Ok(());
-		}
-		if let Ok(connection_list) = self.connection_list.read() {
-			for conn in connection_list.iter() {
-				// broadcasts only come from the server,
-				// and should never be sent to themselves if they are also a client
-				if !self.local_data.is_local(&conn) {
-					self.send(packet.clone().with_address(conn.address)?.build())?;
-				}
-			}
+	pub fn send_packets(&self, builder: packet::PacketBuilder) -> VoidResult {
+		for packet in builder.into_packets(self) {
+			self.queue.channel().try_send(packet)?;
 		}
 		Ok(())
 	}
 
-	pub fn kick(&self, address: &std::net::SocketAddr) -> VoidResult {
+	pub fn kick(&self, address: &SocketAddr) -> VoidResult {
 		self.queue.kick(address.clone())?;
 		Ok(())
 	}

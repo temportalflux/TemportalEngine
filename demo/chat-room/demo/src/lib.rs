@@ -60,7 +60,7 @@ pub fn run() -> VoidResult {
 			.find_map(|arg| arg.strip_prefix("-display_name=").map(|s| s.to_owned()))
 			.unwrap();
 
-		network::Network::send(
+		network::Network::send_packets(
 			network::packet::Packet::builder()
 				.with_address("127.0.0.1:25565")?
 				.with_guarantee(
@@ -69,8 +69,7 @@ pub fn run() -> VoidResult {
 				)
 				.with_payload(&packet::Handshake {
 					display_name: client_display_name,
-				})
-				.build(),
+				}),
 		)?;
 	}
 

@@ -30,8 +30,9 @@ fn use_message_input(context: &mut WidgetContext) {
 						// DEBUG NOTE: The text outputted here is always the same as `user_input`, even though the state was written/cleared
 						//log::debug!("text cleared? \"{}\"", input_state.text);
 
-						let _ = Network::send_to_server(
+						let _ = Network::send_packets(
 							Packet::builder()
+								.with_mode(PacketMode::ToServer)
 								.with_guarantee(Reliable + Ordered)
 								.with_payload(&crate::packet::Message::new(user_input)),
 						);

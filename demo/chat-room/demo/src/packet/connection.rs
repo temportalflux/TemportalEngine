@@ -1,7 +1,7 @@
 use crate::engine::{
 	network::{
 		self, event, mode,
-		packet::{DeliveryGuarantee::*, OrderGuarantee::*, Packet},
+		packet::{DeliveryGuarantee::*, OrderGuarantee::*, Packet, PacketMode},
 		processor::Processor,
 		LocalData, Network,
 	},
@@ -10,7 +10,14 @@ use crate::engine::{
 
 pub fn register_bonus_processors(builder: &mut network::Builder) {
 	use event::Kind::*;
+	use network::prelude::*;
 	builder.add_processor(Connected, mode::all().into_iter(), ConfirmUser());
+	builder.add_processor(Disconnected, vec![Server].into_iter(), DestroyUser());
+	builder.add_processor(
+		Disconnected,
+		vec![Server + Client].into_iter(),
+		DestroyUser(),
+	);
 }
 
 #[derive(Clone)]
@@ -27,8 +34,10 @@ impl ConfirmUser {
 			sender_name: None,
 			content: format!("{} has joined the server", name),
 		};
-		Network::broadcast(
+		Network::send_packets(
 			Packet::builder()
+				.with_mode(PacketMode::Broadcast)
+				.ignore_local_address()
 				.with_guarantee(Reliable + Ordered)
 				.with_payload(&message),
 		)?;
@@ -70,8 +79,9 @@ impl Processor for DestroyUser {
 	) -> VoidResult {
 		if let Some(event::Data::Connection(connection)) = data {
 			if let Ok(mut history) = crate::MessageHistory::write() {
-				Network::broadcast(
+				Network::send_packets(
 					Packet::builder()
+						.with_mode(PacketMode::Broadcast)
 						.with_guarantee(Reliable + Ordered)
 						.with_payload(&crate::packet::Message {
 							timestamp: chrono::Utc::now(),
