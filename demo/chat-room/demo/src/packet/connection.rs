@@ -1,6 +1,6 @@
 use crate::engine::{
 	network::{
-		self, event, mode,
+		self, event,
 		packet::{DeliveryGuarantee::*, OrderGuarantee::*, Packet, PacketMode},
 		processor::Processor,
 		LocalData, Network,

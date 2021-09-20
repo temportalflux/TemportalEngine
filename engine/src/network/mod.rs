@@ -27,17 +27,21 @@ pub mod packet {
 	};
 }
 
+pub mod enums {
+	pub use super::mode::Kind::*;
+	pub use super::packet::DeliveryGuarantee::*;
+	pub use super::packet::OrderGuarantee::*;
+	pub use super::packet::PacketMode::*;
+}
+
 pub mod prelude {
+	pub use super::enums::*;
 	pub use super::{
 		connection::Connection,
 		mode,
 		network::Network,
 		packet::{DeliveryGuarantee, Guarantee, OrderGuarantee, Packet, PacketMode},
 	};
-	pub use mode::Kind::*;
-	pub use DeliveryGuarantee::*;
-	pub use OrderGuarantee::*;
-	pub use PacketMode::*;
 }
 
 pub mod processor;

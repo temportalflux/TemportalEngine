@@ -87,6 +87,35 @@ pub trait Processor {
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
 	) -> VoidResult;
+
+	fn boxed(self) -> Box<dyn Processor + 'static> where Self: 'static + Sized {
+		Box::new(self)
+	}
+
+}
+
+pub struct AnyProcessor(Vec<Box<dyn Processor + 'static>>);
+impl AnyProcessor {
+	pub fn new(any_of: Vec<Box<dyn Processor + 'static>>) -> Self {
+		Self(any_of)
+	}
+}
+impl Processor for AnyProcessor {
+	fn process(
+		&self,
+		kind: &event::Kind,
+		data: &mut Option<event::Data>,
+		local_data: &LocalData,
+	) -> VoidResult {
+		let mut result = Ok(()); // should having no processors be a warning?
+		for processor in self.0.iter() {
+			result = processor.process(kind, data, local_data);
+			if result.is_ok() {
+				return result;
+			}
+		}
+		result
+	}
 }
 
 /// Helper class which interprets an event as a type of packet,
