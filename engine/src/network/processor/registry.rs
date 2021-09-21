@@ -88,10 +88,12 @@ pub trait Processor {
 		local_data: &LocalData,
 	) -> VoidResult;
 
-	fn boxed(self) -> Box<dyn Processor + 'static> where Self: 'static + Sized {
+	fn boxed(self) -> Box<dyn Processor + 'static>
+	where
+		Self: 'static + Sized,
+	{
 		Box::new(self)
 	}
-
 }
 
 pub struct AnyProcessor(Vec<Box<dyn Processor + 'static>>);
