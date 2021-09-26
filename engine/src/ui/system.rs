@@ -16,7 +16,11 @@ use crate::{
 };
 use enumset::EnumSet;
 use raui::renderer::tesselate::prelude::*;
-use std::{collections::HashMap, sync};
+use std::{
+	any::{Any, TypeId},
+	collections::HashMap,
+	sync,
+};
 
 /// The types of shaders used by the [`ui system`](System).
 pub enum SystemShader {
@@ -32,7 +36,45 @@ pub enum SystemShader {
 	MeshImageFragment,
 }
 
-pub type UiContext = sync::Arc<sync::RwLock<dyn std::any::Any + 'static + Send + Sync>>;
+pub type UiContext = sync::Arc<sync::RwLock<dyn Any + 'static + Send + Sync>>;
+pub struct ContextContainer {
+	items: HashMap<TypeId, UiContext>,
+}
+impl Default for ContextContainer {
+	fn default() -> Self {
+		Self {
+			items: HashMap::new(),
+		}
+	}
+}
+impl ContextContainer {
+	pub fn get<T: 'static>(&self) -> Option<ContextGuard<T>> {
+		self.items
+			.get(&TypeId::of::<T>())
+			.map(|x| {
+				x.read()
+					.map(|guard| ContextGuard(guard, std::marker::PhantomData))
+					.ok()
+			})
+			.flatten()
+	}
+	pub fn insert<T>(&mut self, item: sync::Arc<sync::RwLock<T>>)
+	where
+		T: 'static + Send + Sync,
+	{
+		self.items.insert(TypeId::of::<T>(), item);
+	}
+}
+pub struct ContextGuard<'a, T>(
+	sync::RwLockReadGuard<'a, dyn Any + 'static + Send + Sync>,
+	std::marker::PhantomData<T>,
+);
+impl<'a, T: 'static> std::ops::Deref for ContextGuard<'a, T> {
+	type Target = T;
+	fn deref(&self) -> &Self::Target {
+		&(*self.0).downcast_ref::<T>().unwrap()
+	}
+}
 
 /// Handles the rendering of the UI widgets to the screen.
 /// Also updates and processes the UI widgets via the ECS system.
@@ -53,7 +95,7 @@ pub struct System {
 	resolution: Vector2<f32>,
 	keyboard_modifiers: EnumSet<input::source::KeyModifier>,
 	interactions: DefaultInteractionsEngine,
-	contexts: Vec<UiContext>,
+	contexts: ContextContainer,
 	application: Application,
 }
 
@@ -80,7 +122,7 @@ impl System {
 		let chain_read = render_chain.read().unwrap();
 		Ok(Self {
 			application,
-			contexts: Vec::new(),
+			contexts: ContextContainer::default(),
 			interactions,
 			keyboard_modifiers: EnumSet::empty(),
 			resolution: [0.0, 0.0].into(),
@@ -112,8 +154,11 @@ impl System {
 		self.application.apply(tree);
 	}
 
-	pub fn with_context(mut self, item: UiContext) -> Self {
-		self.contexts.push(item);
+	pub fn with_context<T>(mut self, item: sync::Arc<sync::RwLock<T>>) -> Self
+	where
+		T: 'static + Send + Sync,
+	{
+		self.contexts.insert(item);
 		self
 	}
 
@@ -445,13 +490,7 @@ impl EngineSystem for System {
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
 		self.application
-			.forced_process_with_context(self.contexts.iter().fold(
-				&mut ProcessContext::new(),
-				|context, item| {
-					context.insert(item);
-					context
-				},
-			));
+			.forced_process_with_context(ProcessContext::new().insert(&self.contexts));
 		let _res = self.application.layout(&mapping, &mut DefaultLayoutEngine);
 		let _res = self.application.interact(&mut self.interactions);
 	}
