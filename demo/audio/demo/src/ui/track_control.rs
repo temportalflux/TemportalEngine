@@ -1,4 +1,4 @@
-use super::*;
+use super::raui::*;
 use crate::engine::Application;
 
 fn use_track_control(context: &mut WidgetContext) {
@@ -48,9 +48,9 @@ fn action_button(ctx: &WidgetContext, key: &str, image_id: &str) -> WidgetCompon
 		})
 		.named_slot(
 			"content",
-			make_widget!(image_button::widget)
+			make_widget!(super::image_button::widget)
 				.key(key)
-				.with_props(image_button::Props {
+				.with_props(super::image_button::Props {
 					image_id: image_id.to_owned(),
 				})
 				.with_props(ButtonNotifyProps(ctx.id.to_owned().into())),

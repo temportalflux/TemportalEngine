@@ -6,7 +6,7 @@ use crate::{
 		DescriptorCache, Drawable, ImageCache, Texture,
 	},
 	math::nalgebra::Vector2,
-	ui::{image, mesh},
+	ui::core::{image, mesh},
 	utility::{self, VoidResult},
 };
 use std::sync;

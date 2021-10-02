@@ -12,7 +12,7 @@ use crate::{
 	math::nalgebra::Vector2,
 	ui::{
 		self,
-		text::{self, font},
+		core::text::{self, font},
 	},
 	utility::{self, VoidResult},
 };
@@ -141,7 +141,7 @@ impl DataPipeline {
 		let font_data = self
 			.fonts
 			.get(&text.font)
-			.ok_or(ui::Error::InvalidFont(text.font.clone()))?;
+			.ok_or(ui::core::Error::InvalidFont(text.font.clone()))?;
 		let mut widget = match widget {
 			Some(widget) => widget,
 			None => text::WidgetData::new(Some((*widget_id).to_string()), &text, render_chain)?,
@@ -197,7 +197,7 @@ impl DataPipeline {
 		let font_data = self
 			.fonts
 			.get(widget.font_id())
-			.ok_or(ui::Error::InvalidFont(widget.font_id().clone()))?;
+			.ok_or(ui::core::Error::InvalidFont(widget.font_id().clone()))?;
 
 		self.drawable.bind_pipeline(buffer);
 		self.drawable

@@ -53,7 +53,7 @@ pub fn run() -> VoidResult {
 		engine::ui::System::new(engine.render_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?
-			.with_tree_root(engine::ui::make_widget!(ui::root::widget))
+			.with_tree_root(engine::ui::raui::make_widget!(ui::root::widget))
 			.attach_system(&mut engine, None)?;
 
 		let client_display_name = std::env::args()

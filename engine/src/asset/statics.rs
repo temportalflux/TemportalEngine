@@ -7,8 +7,8 @@ impl UIFont {
 		Self(path)
 	}
 
-	pub fn at_size(&self, size: f32) -> ui::TextBoxFont {
-		ui::TextBoxFont {
+	pub fn at_size(&self, size: f32) -> ui::raui::TextBoxFont {
+		ui::raui::TextBoxFont {
 			name: self.0.to_owned(),
 			size,
 		}

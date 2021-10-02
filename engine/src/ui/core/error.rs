@@ -1,4 +1,4 @@
-use crate::ui::text;
+use crate::ui::core::text;
 
 #[derive(Debug)]
 pub enum Error {

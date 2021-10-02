@@ -10,12 +10,11 @@ use crate::{
 	},
 	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
-	ui::{mesh::*, *},
+	ui::{core::*, raui, LOG},
 	utility::{self, AnyError, VoidResult},
 	EngineSystem, WinitEventListener,
 };
 use enumset::EnumSet;
-use raui::renderer::tesselate::prelude::*;
 use std::{
 	any::{Any, TypeId},
 	collections::HashMap,
@@ -82,26 +81,26 @@ pub struct System {
 	draw_calls_by_frame: Vec<Vec<DrawCall>>,
 
 	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
-	atlas_mapping: HashMap<String, (String, Rect)>,
-	image_sizes: HashMap<String, Vec2>,
+	atlas_mapping: HashMap<String, (String, raui::Rect)>,
+	image_sizes: HashMap<String, raui::Vec2>,
 
-	text_widgets: Vec<HashMap<WidgetId, text::WidgetData>>,
+	text_widgets: Vec<HashMap<raui::WidgetId, text::WidgetData>>,
 	text: text::DataPipeline,
 	image: image::DataPipeline,
 	colored_area: Drawable,
-	frame_meshes: Vec<Mesh>,
+	frame_meshes: Vec<mesh::Mesh>,
 
 	mouse_position_unnormalized: Point2<f32>,
 	resolution: Vector2<f32>,
 	keyboard_modifiers: EnumSet<input::source::KeyModifier>,
-	interactions: DefaultInteractionsEngine,
+	interactions: raui::DefaultInteractionsEngine,
 	contexts: ContextContainer,
-	application: Application,
+	application: raui::Application,
 }
 
 #[derive(Debug, Clone)]
 enum DrawCall {
-	Text(WidgetId),
+	Text(raui::WidgetId),
 	Range(std::ops::Range<usize>),
 	Texture(String, std::ops::Range<usize>),
 	PushClip(Scissor),
@@ -113,10 +112,10 @@ impl System {
 	pub fn new(
 		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
 	) -> utility::Result<Self> {
-		let mut application = Application::new();
-		application.setup(widget::setup);
+		let mut application = raui::Application::new();
+		application.setup(raui::widget::setup);
 
-		let mut interactions = DefaultInteractionsEngine::new();
+		let mut interactions = raui::DefaultInteractionsEngine::new();
 		interactions.deselect_when_no_button_found = true;
 
 		let chain_read = render_chain.read().unwrap();
@@ -139,18 +138,18 @@ impl System {
 		})
 	}
 
-	pub fn with_tree(mut self, tree: WidgetNode) -> Self {
+	pub fn with_tree(mut self, tree: raui::WidgetNode) -> Self {
 		self.apply_tree(tree);
 		self
 	}
 
-	pub fn with_tree_root(mut self, component: WidgetComponent) -> Self {
-		self.apply_tree(WidgetNode::Component(component));
+	pub fn with_tree_root(mut self, component: raui::WidgetComponent) -> Self {
+		self.apply_tree(raui::WidgetNode::Component(component));
 		self
 	}
 
 	/// Set the ui widget tree to update and render.
-	pub fn apply_tree(&mut self, tree: WidgetNode) {
+	pub fn apply_tree(&mut self, tree: raui::WidgetNode) {
 		self.application.apply(tree);
 	}
 
@@ -162,8 +161,8 @@ impl System {
 		self
 	}
 
-	fn mapping(&self) -> CoordsMapping {
-		CoordsMapping::new(Rect {
+	fn mapping(&self) -> raui::CoordsMapping {
+		raui::CoordsMapping::new(raui::Rect {
 			left: 0.0,
 			right: self.resolution.x,
 			top: 0.0,
@@ -171,9 +170,9 @@ impl System {
 		})
 	}
 
-	fn mouse_position(&self) -> Vec2 {
+	fn mouse_position(&self) -> raui::Vec2 {
 		self.mapping().real_to_virtual_vec2(
-			Vec2 {
+			raui::Vec2 {
 				x: self.mouse_position_unnormalized.x,
 				y: self.mouse_position_unnormalized.y,
 			},
@@ -183,9 +182,9 @@ impl System {
 
 	/// Render widgets into interleaved tesselation mesh & batches.
 	#[profiling::function]
-	fn tesselate(&self, coord_mapping: &CoordsMapping) -> Option<Tesselation> {
-		let mut renderer = TesselateRenderer::with_capacity(
-			TesselationVerticesFormat::Interleaved,
+	fn tesselate(&self, coord_mapping: &raui::CoordsMapping) -> Option<raui::Tesselation> {
+		let mut renderer = raui::TesselateRenderer::with_capacity(
+			raui::TesselationVerticesFormat::Interleaved,
 			(),
 			&self.atlas_mapping,
 			&self.image_sizes,
@@ -318,13 +317,14 @@ impl System {
 		Ok(system)
 	}
 
-	fn interact(&mut self, interaction: Interaction) {
+	fn interact(&mut self, interaction: raui::Interaction) {
 		self.interactions.interact(interaction);
 	}
 }
 
 impl WinitEventListener for System {
 	fn on_event(&mut self, event: &winit::event::Event<()>) {
+		use super::raui::*;
 		use crate::input::source::{Key, MouseButton};
 		use std::convert::TryFrom;
 		use winit::event::{
@@ -490,8 +490,10 @@ impl EngineSystem for System {
 	fn update(&mut self, _: std::time::Duration) {
 		let mapping = self.mapping();
 		self.application
-			.forced_process_with_context(ProcessContext::new().insert(&self.contexts));
-		let _res = self.application.layout(&mapping, &mut DefaultLayoutEngine);
+			.forced_process_with_context(raui::ProcessContext::new().insert(&self.contexts));
+		let _res = self
+			.application
+			.layout(&mapping, &mut raui::DefaultLayoutEngine);
 		let _res = self.application.interact(&mut self.interactions);
 	}
 }
@@ -515,7 +517,7 @@ impl graphics::RenderChainElement for System {
 			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
 		for i in 0..render_chain.frame_count() {
 			self.text_widgets.push(HashMap::new());
-			self.frame_meshes.push(Mesh::new(
+			self.frame_meshes.push(mesh::Mesh::new(
 				format!("UI.Frame{}.Mesh", i),
 				&render_chain.allocator(),
 				10,
@@ -594,7 +596,7 @@ impl graphics::RenderChainElement for System {
 	) -> Result<bool, AnyError> {
 		let mapping = self.mapping();
 		// Drain the existing widgets
-		let mut retained_text_widgets: HashMap<WidgetId, text::WidgetData> =
+		let mut retained_text_widgets: HashMap<raui::WidgetId, text::WidgetData> =
 			self.text_widgets[frame].drain().collect();
 		let mut draw_calls = Vec::new();
 
@@ -609,18 +611,18 @@ impl graphics::RenderChainElement for System {
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
 			let (vertices, indices) =
-				Vertex::create_interleaved_buffer_data(&tesselation, resolution);
+				mesh::Vertex::create_interleaved_buffer_data(&tesselation, resolution);
 			let mut mesh_gpu_signals =
 				self.frame_meshes[frame].write(&vertices, &indices, &render_chain)?;
 			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 
 			for batch in tesselation.batches {
 				match batch {
-					Batch::None | Batch::FontTriangles(_, _, _) => {}
-					Batch::ColoredTriangles(range) => {
+					raui::Batch::None | raui::Batch::FontTriangles(_, _, _) => {}
+					raui::Batch::ColoredTriangles(range) => {
 						draw_calls.push(DrawCall::Range(range));
 					}
-					Batch::ImageTriangles(texture_id, range) => {
+					raui::Batch::ImageTriangles(texture_id, range) => {
 						if self.image.has_image(&texture_id) {
 							draw_calls.push(DrawCall::Texture(texture_id, range));
 						} else {
@@ -630,7 +632,7 @@ impl graphics::RenderChainElement for System {
 							);
 						}
 					}
-					Batch::ExternalText(widget_id, text) => {
+					raui::Batch::ExternalText(widget_id, text) => {
 						let (widget_data, mut gpu_signals) = self.text.update_or_create(
 							render_chain,
 							resolution,
@@ -642,7 +644,7 @@ impl graphics::RenderChainElement for System {
 						self.pending_gpu_signals.append(&mut gpu_signals);
 						draw_calls.push(DrawCall::Text(widget_id));
 					}
-					Batch::ClipPush(clip) => {
+					raui::Batch::ClipPush(clip) => {
 						let column_major = Matrix4::<f32>::from_vec_generic(
 							nalgebra::Const::<4>,
 							nalgebra::Const::<4>,
@@ -683,7 +685,7 @@ impl graphics::RenderChainElement for System {
 							},
 						)));
 					}
-					Batch::ClipPop => {
+					raui::Batch::ClipPop => {
 						draw_calls.push(DrawCall::PopClip());
 					}
 				}

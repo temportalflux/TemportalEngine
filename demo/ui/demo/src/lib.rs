@@ -25,7 +25,7 @@ pub fn run() -> VoidResult {
 
 	// Create the UI system and widget tree
 	{
-		use ui::*;
+		use ui::raui::*;
 		ui::System::new(engine.render_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?

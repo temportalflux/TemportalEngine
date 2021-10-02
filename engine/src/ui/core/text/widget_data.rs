@@ -1,11 +1,11 @@
+use super::{font, Vertex};
 use crate::{
 	graphics::{self, buffer, command, flags, utility::NamedObject},
 	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
 	task,
-	ui::text::{font, Vertex},
+	ui::raui::*,
 	utility,
 };
-use raui::renderer::tesselate::prelude::*;
 use std::sync;
 
 /// Data about rendering a specific piece of text

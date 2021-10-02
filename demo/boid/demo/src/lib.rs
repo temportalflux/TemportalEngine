@@ -121,7 +121,7 @@ pub fn run() -> VoidResult {
 		.with_engine_shaders()?
 		.with_all_fonts()?
 		.with_texture(&BoidDemo::get_asset_id("arrow"))?
-		.with_tree_root(engine::ui::make_widget!(crate::ui::root))
+		.with_tree_root(engine::ui::raui::make_widget!(crate::ui::root))
 		.attach_system(&mut engine, None)?;
 
 	let engine = engine.into_arclock();
