@@ -35,7 +35,9 @@ pub fn run() -> VoidResult {
 			.with_texture(&Demo::get_asset_id("ui/fast-forward"))?
 			.with_texture(&Demo::get_asset_id("ui/pause"))?
 			.with_texture(&Demo::get_asset_id("ui/play"))?
-			.with_tree(raui::WidgetNode::Component(raui::make_widget!(ui::root::widget)))
+			.with_tree(raui::WidgetNode::Component(raui::make_widget!(
+				ui::root::widget
+			)))
 			.attach_system(&mut engine, None)?;
 	}
 
