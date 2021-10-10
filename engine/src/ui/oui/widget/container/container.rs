@@ -12,6 +12,10 @@ where
 		Self { slots: Vec::new() }
 	}
 
+	pub fn push(&mut self, slot: TSlot) {
+		self.slots.push(slot);
+	}
+
 	pub fn iter(&self) -> impl std::iter::Iterator<Item = &TSlot> + '_ {
 		self.slots.iter()
 	}

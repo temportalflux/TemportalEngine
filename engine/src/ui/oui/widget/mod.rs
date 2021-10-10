@@ -13,5 +13,11 @@ pub trait Widget: super::AsRAUI {
 
 pub mod container;
 
+mod image_box;
+pub use image_box::*;
+
+mod size_box;
+pub use size_box::*;
+
 mod text;
 pub use text::*;
