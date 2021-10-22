@@ -11,6 +11,7 @@ pub trait Widget: super::AsRAUI {
 	}
 }
 
+pub mod button;
 pub mod container;
 
 mod image_box;
