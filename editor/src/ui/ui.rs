@@ -702,7 +702,7 @@ impl Ui {
 		let clipped_meshes = self.context.tessellate(clipped_shapes);
 		let mut idx_offset: Vector2<usize> = [0, 0].into();
 		for egui::ClippedMesh(rect, mesh) in clipped_meshes {
-			let appended_item_counts: Vector2<usize> =
+			let item_counts: Vector2<usize> =
 				[mesh.vertices.len(), mesh.indices.len()].into();
 			vertices.extend(mesh.vertices.iter().map(|v| {
 				Vertex::default()
@@ -742,12 +742,12 @@ impl Ui {
 						height: (max.y.round() - min.y) as u32,
 					},
 				),
-				index_count: mesh.indices.len(),
-				first_index: idx_offset.x,
-				vertex_offset: idx_offset.y,
+				index_count: item_counts.y,
+				first_index: idx_offset.y,
+				vertex_offset: idx_offset.x,
 			});
 
-			idx_offset += appended_item_counts;
+			idx_offset += item_counts;
 		}
 
 		(vertices, indices, draw_calls)
