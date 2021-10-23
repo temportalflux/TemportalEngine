@@ -702,8 +702,7 @@ impl Ui {
 		let clipped_meshes = self.context.tessellate(clipped_shapes);
 		let mut idx_offset: Vector2<usize> = [0, 0].into();
 		for egui::ClippedMesh(rect, mesh) in clipped_meshes {
-			let item_counts: Vector2<usize> =
-				[mesh.vertices.len(), mesh.indices.len()].into();
+			let item_counts: Vector2<usize> = [mesh.vertices.len(), mesh.indices.len()].into();
 			vertices.extend(mesh.vertices.iter().map(|v| {
 				Vertex::default()
 					.with_position([v.pos.x, v.pos.y].into())

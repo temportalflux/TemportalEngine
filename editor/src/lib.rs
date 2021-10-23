@@ -4,7 +4,7 @@ extern crate shaderc;
 
 pub static LOG: &'static str = "editor";
 
-pub use temportal_engine as engine;
+pub use engine;
 
 pub mod asset;
 pub mod audio;

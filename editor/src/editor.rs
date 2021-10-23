@@ -1,11 +1,11 @@
 use crate::{
 	asset,
-	engine::{
-		self,
-		utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
-		Application,
-	},
 	settings,
+};
+use engine::{
+	self,
+	utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
+	Application,
 };
 
 pub static EDITOR_LOG: &'static str = "Editor";

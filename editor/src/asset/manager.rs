@@ -1,10 +1,10 @@
 use crate::{
 	asset,
-	engine::{
-		self,
-		asset::{AnyBox, Generic, TypeId},
-		utility::AnyError,
-	},
+};
+use engine::{
+	self,
+	asset::{AnyBox, Generic, TypeId},
+	utility::AnyError,
 };
 use serde_json;
 use std::{
@@ -17,7 +17,7 @@ use std::{
 type EditorMetadataBox = Box<dyn asset::TypeEditorMetadata>;
 
 /// Handles creating, saving, loading, moving, and deleting an asset at a given path.
-/// Only accessible during editor-runtime whereas [Loader](temportal_engine::asset::Loader)
+/// Only accessible during editor-runtime whereas [Loader](engine::asset::Loader)
 /// handles loading built assets during game-runtime.
 pub struct Manager {
 	editor_metadata: HashMap<TypeId, EditorMetadataBox>,

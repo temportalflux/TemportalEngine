@@ -1,14 +1,16 @@
-use crate::ui;
+use crate::ui::{self, windows::OpenWindowList};
 use std::sync::{Arc, RwLock};
 
 pub struct Workspace {
-	simulation: ui::windows::Simulation,
+	open_list: Arc<RwLock<OpenWindowList>>,
 }
 
 impl Workspace {
-	pub fn new() -> Arc<RwLock<Workspace>> {
-		Arc::new(RwLock::new(Workspace {
-			simulation: ui::windows::Simulation::new(),
+	pub fn new() -> Arc<RwLock<Self>> {
+		let open_list = Arc::new(RwLock::new(OpenWindowList::new()));
+		OpenWindowList::register_window(&open_list, ui::windows::Simulation::new());
+		Arc::new(RwLock::new(Self {
+			open_list,
 		}))
 	}
 }
@@ -39,23 +41,18 @@ impl ui::Element for Workspace {
 					}
 				});
 				egui::menu::menu(ui, "Windows", |ui| {
-					if ui.button("Simulation").clicked() {
-						/*
-						self.simulation.open_or_bring_to_front();
-						*/	
+					if let Ok(mut guard) = self.open_list.write() {
+						guard.show_options(ui);
 					}
 				});
 			});
 		});
+		if let Ok(mut guard) = self.open_list.write() {
+			guard.show(ctx);
+		}
 		egui::CentralPanel::default().show(ctx, |ui| {
 			ui.label("Hello World!");
 			let _ = ui.button("this is a button");
 		});
-		egui::Window::new("Test Window").show(ctx, |ui| {
-			ui.label("window content goes here");
-		});
-		/*
-		self.simulation.render(ui);
-		*/
 	}
 }

@@ -1,4 +1,4 @@
-use crate::engine::utility::{AnyError, SaveData};
+use engine::utility::{AnyError, SaveData};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -31,13 +31,13 @@ impl SaveData<Editor> for Editor {
 }
 
 impl Editor {
-	pub fn is_window_open(&self, id: &String) -> bool {
-		self.open_windows.contains(id)
+	pub fn get_open_window_list(&self) -> &Vec<String> {
+		&self.open_windows
 	}
 
 	pub fn set_window_open(&mut self, id: &String, is_open: bool) {
 		if is_open {
-			if !self.is_window_open(id) {
+			if !self.open_windows.contains(id) {
 				self.open_windows.push(id.clone());
 			}
 		} else {
