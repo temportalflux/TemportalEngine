@@ -40,11 +40,6 @@ impl Texture {
 	pub fn binary(&self) -> &Vec<u8> {
 		&self.compiled.as_ref().unwrap().binary
 	}
-
-	#[doc(hidden)]
-	pub(crate) fn get_compiled(&self) -> &CompiledTexture {
-		self.compiled.as_ref().unwrap()
-	}
 }
 
 /// The metadata about the [`Texture`] asset type.

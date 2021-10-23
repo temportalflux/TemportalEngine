@@ -1,5 +1,4 @@
 use crate::{engine::utility::SaveData, ui};
-use imgui::{self, im_str};
 
 pub struct Simulation {
 	id: String,
@@ -39,7 +38,8 @@ impl Simulation {
 }
 
 impl ui::Element for Simulation {
-	fn render(&mut self, ui: &imgui::Ui) {
+	fn render(&mut self, ctx: &egui::CtxRef) {
+		/*
 		if !self.is_open {
 			return;
 		}
@@ -58,5 +58,6 @@ impl ui::Element for Simulation {
 		if self.is_open != was_open {
 			self.save_open_state();
 		}
+		*/
 	}
 }

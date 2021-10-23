@@ -13,21 +13,29 @@ pub struct Delegate {
 
 impl Delegate {
 	pub fn new() -> Self {
-		Self { callbacks: Vec::new() }
+		Self {
+			callbacks: Vec::new(),
+		}
 	}
 
-	pub fn add_closure<F>(&mut self, callback: F) where F: 'static + Fn() {
+	pub fn add_closure<F>(&mut self, callback: F)
+	where
+		F: 'static + Fn(),
+	{
 		self.callbacks.push(Box::new(callback))
 	}
 
-	pub fn add_object<T, F>(&mut self, object: Arc<RwLock<T>>, callback: F) where T: 'static, F: 'static + Fn(&mut T) {
+	pub fn add_object<T, F>(&mut self, object: Arc<RwLock<T>>, callback: F)
+	where
+		T: 'static,
+		F: 'static + Fn(&mut T),
+	{
 		self.callbacks.push(Box::new(move || {
 			if let Ok(mut guard) = object.write() {
 				callback(&mut *guard);
 			}
 		}));
 	}
-
 }
 
 pub struct Button {
@@ -80,13 +88,11 @@ pub fn widget(mut ctx: WidgetContext) -> WidgetNode {
 	ctx.life_cycle.change(|ctx| {
 		for msg in ctx.messenger.messages {
 			if let Some(msg) = msg.as_any().downcast_ref::<ButtonNotifyMessage>() {
-				if msg.trigger_start() {
-					
-				}
+				if msg.trigger_start() {}
 			}
 		}
 	});
 	WidgetNode::Component(
-		make_widget!(button).with_props(ButtonNotifyProps(ctx.id.to_owned().into()))
+		make_widget!(button).with_props(ButtonNotifyProps(ctx.id.to_owned().into())),
 	)
 }

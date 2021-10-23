@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 # [utility] for implementing single-producer-multi-receiver (broadcast) delegates
 bus = "2.2"
+bytemuck = "1.7"
 # [audio] for manaing audio devices
 cpal = "0.13"
 # [utility] similar to a bitmap but for any enum with a derive-trait implemented

@@ -1,4 +1,5 @@
-extern crate imgui;
+extern crate bytemuck;
+extern crate egui;
 extern crate shaderc;
 
 pub static LOG: &'static str = "editor";

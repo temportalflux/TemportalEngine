@@ -1,5 +1,4 @@
 use crate::ui;
-use imgui::{self, im_str};
 use std::sync::{Arc, RwLock};
 
 pub struct Workspace {
@@ -15,7 +14,12 @@ impl Workspace {
 }
 
 impl ui::Element for Workspace {
-	fn render(&mut self, ui: &imgui::Ui) {
+	fn render(&mut self, ctx: &egui::CtxRef) {
+		egui::CentralPanel::default().show(ctx, |ui| {
+			ui.label("Hello World!");
+			ui.button("this is a button");
+		});
+		/*
 		if let Some(bar) = ui.begin_main_menu_bar() {
 			ui.menu(im_str!("General"), true, || {
 				let build = imgui::MenuItem::new(im_str!("Build")).build(&ui);
@@ -46,5 +50,6 @@ impl ui::Element for Workspace {
 			bar.end(&ui);
 		}
 		self.simulation.render(ui);
+		*/
 	}
 }

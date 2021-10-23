@@ -17,6 +17,7 @@ use std::sync;
 pub struct Drawable {
 	pipeline: Option<pipeline::Pipeline>,
 	pipeline_layout: Option<pipeline::layout::Layout>,
+	layout_builder: pipeline::layout::Builder,
 	shaders: ShaderSet,
 	name: Option<String>,
 }
@@ -25,6 +26,7 @@ impl Default for Drawable {
 	fn default() -> Self {
 		Self {
 			shaders: ShaderSet::default(),
+			layout_builder: pipeline::layout::Builder::default(),
 			pipeline_layout: None,
 			pipeline: None,
 			name: None,
@@ -39,6 +41,8 @@ impl Drawable {
 	{
 		self.name = Some(name.into());
 		self.shaders.set_name(self.make_subname("Shader"));
+		self.layout_builder
+			.set_optname(self.make_subname("PipelineLayout"));
 		self
 	}
 
@@ -58,6 +62,10 @@ impl Drawable {
 		self.shaders.create_modules(render_chain)
 	}
 
+	pub fn add_push_constant_range(&mut self, range: pipeline::PushConstantRange) {
+		self.layout_builder.add_push_constant_range(range);
+	}
+
 	/// Destroys the pipeline objects so they can be recreated by [`Drawable::create_pipeline`].
 	#[profiling::function]
 	pub fn destroy_pipeline(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
@@ -75,16 +83,14 @@ impl Drawable {
 		pipeline_info: pipeline::Builder,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
-		self.pipeline_layout = Some(
-			descriptor_layouts
-				.iter()
-				.fold(
-					pipeline::layout::Layout::builder()
-						.with_optname(self.make_subname("PipelineLayout")),
-					|builder, layout| builder.with_descriptors(layout),
-				)
-				.build(&render_chain.logical())?,
-		);
+		self.layout_builder.clear_descriptor_layouts();
+		descriptor_layouts
+			.iter()
+			.fold(None, |_: Option<()>, layout| {
+				self.layout_builder.add_descriptor_layout(layout);
+				None
+			});
+		self.pipeline_layout = Some(self.layout_builder.clone().build(&render_chain.logical())?);
 		self.pipeline = Some(
 			pipeline_info
 				.with_optname(self.make_subname("Pipeline"))
@@ -127,7 +133,23 @@ impl Drawable {
 				descriptor_sets,
 			);
 		} else {
-			log::warn!("Cannot bind descriptors to a pipeline that has not been created.");
+			log::warn!("Cannot bind descriptors to a pipeline layout that has not been created.");
+		}
+	}
+
+	pub fn push_constant<T>(
+		&self,
+		buffer: &mut command::Buffer,
+		stage: flags::ShaderKind,
+		offset: usize,
+		data: &T,
+	) where
+		T: Sized + bytemuck::Pod,
+	{
+		if let Some(layout) = self.pipeline_layout.as_ref() {
+			buffer.push_constant(&layout, stage, offset, data);
+		} else {
+			log::warn!("Cannot push constants to a pipeline layout that has not been created.");
 		}
 	}
 }

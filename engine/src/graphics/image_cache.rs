@@ -9,9 +9,60 @@ use crate::{
 };
 use std::{collections::HashMap, sync};
 
-struct PendingEntry {
+pub struct PendingEntry {
 	name: Option<String>,
 	compiled: graphics::CompiledTexture,
+	format: flags::format::Format,
+	sampler: graphics::sampler::Builder,
+}
+
+impl PendingEntry {
+	pub fn new() -> Self {
+		Self {
+			name: None,
+			compiled: graphics::CompiledTexture {
+				size: [0, 0].into(),
+				binary: Vec::new(),
+			},
+			format: flags::format::Format::UNDEFINED,
+			sampler: graphics::sampler::Builder::default(),
+		}
+	}
+
+	pub fn with_name<T>(mut self, name: T) -> Self
+	where
+		T: Into<String>,
+	{
+		self.name = Some(name.into());
+		self
+	}
+
+	pub fn with_size(mut self, size: Vector2<usize>) -> Self {
+		self.compiled.size = size;
+		self
+	}
+
+	pub fn with_binary(mut self, binary: Vec<u8>) -> Self {
+		self.compiled.binary = binary;
+		self
+	}
+
+	pub fn with_format(mut self, format: flags::format::Format) -> Self {
+		self.format = format;
+		self
+	}
+
+	pub fn sampler_mut(&mut self) -> &mut graphics::sampler::Builder {
+		&mut self.sampler
+	}
+
+	pub fn init_sampler<F>(mut self, init: F) -> Self
+	where
+		F: Fn(&mut graphics::sampler::Builder),
+	{
+		init(&mut self.sampler);
+		self
+	}
 }
 
 /// The GPU objects to view and sample from an image.
@@ -63,12 +114,12 @@ where
 	/// Adds an engine asset texture to the cache,
 	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
 	pub fn insert(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
-		self.pending.insert(
+		self.insert_compiled(
 			id,
-			PendingEntry {
-				name,
-				compiled: texture.get_compiled().clone(),
-			},
+			name,
+			*texture.size(),
+			flags::format::SRGB_8BIT,
+			texture.binary().clone(),
 		);
 	}
 
@@ -77,6 +128,7 @@ where
 		id: T,
 		name: Option<String>,
 		size: Vector2<usize>,
+		format: flags::format::Format,
 		binary: Vec<u8>,
 	) {
 		self.pending.insert(
@@ -84,8 +136,17 @@ where
 			PendingEntry {
 				name,
 				compiled: graphics::CompiledTexture { size, binary },
+				format,
+				sampler: graphics::sampler::Builder::default()
+					.with_magnification(flags::Filter::NEAREST)
+					.with_minification(flags::Filter::NEAREST)
+					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3]),
 			},
 		);
+	}
+
+	pub fn insert_pending(&mut self, id: T, entry: PendingEntry) {
+		self.pending.insert(id, entry);
 	}
 
 	/// Returns true if the `id` has been added via [`insert`](ImageCache::insert),
@@ -155,7 +216,7 @@ where
 		let image = sync::Arc::new(image::Image::create_gpu(
 			&render_chain.allocator(),
 			self.make_object_name(&pending.name, "Image"),
-			flags::format::SRGB_8BIT,
+			pending.format,
 			structs::Extent3D {
 				width: pending.compiled.size.x as u32,
 				height: pending.compiled.size.y as u32,
@@ -183,11 +244,10 @@ where
 		);
 
 		let sampler = sync::Arc::new(
-			graphics::sampler::Sampler::builder()
+			pending
+				.sampler
+				.clone()
 				.with_optname(self.make_object_name(&pending.name, "Image.Sampler"))
-				.with_magnification(flags::Filter::NEAREST)
-				.with_minification(flags::Filter::NEAREST)
-				.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
 				.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
 				.build(&render_chain.logical())?,
 		);
