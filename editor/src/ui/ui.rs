@@ -665,12 +665,11 @@ impl Ui {
 
 		let (output, clipped_shapes) = self.context.end_frame();
 
-		// TODO: handle links
-		//if let Some(egui::output::OpenUrl { url, .. }) = &output.open_url {
-		//	if let Err(err) = webbrowser::open(url) {
-		//		eprintln!("Failed to open url: {}", err);
-		//	}
-		//}
+		if let Some(egui::output::OpenUrl { url, .. }) = &output.open_url {
+			if let Err(err) = webbrowser::open(url) {
+				eprintln!("Failed to open url: {}", err);
+			}
+		}
 
 		// handle clipboard
 		if !output.copied_text.is_empty() {
