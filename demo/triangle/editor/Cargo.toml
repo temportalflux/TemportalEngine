@@ -10,5 +10,4 @@ edition = "2018"
 temportal-engine = { path = "../../../engine" }
 temportal-engine-editor = { path = "../../../editor" }
 demo-triangle = { path = "../demo" }
-imgui = "0.7"
 log = "0.4.14"

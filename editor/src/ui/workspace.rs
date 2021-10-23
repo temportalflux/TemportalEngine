@@ -19,6 +19,9 @@ impl ui::Element for Workspace {
 			ui.label("Hello World!");
 			ui.button("this is a button");
 		});
+		egui::Window::new("Test Window").show(ctx, |ui| {
+			ui.label("window content goes here");
+		});
 		/*
 		if let Some(bar) = ui.begin_main_menu_bar() {
 			ui.menu(im_str!("General"), true, || {

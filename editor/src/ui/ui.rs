@@ -3,7 +3,7 @@ use crate::{
 		self,
 		graphics::{
 			self, command, descriptor, flags, pipeline, structs,
-			types::Vec2,
+			types::{Vec2, Vec4},
 			utility::Scissor,
 			utility::{BuildFromDevice, NameableBuilder},
 			vertex_object, DescriptorCache, Drawable, ImageCache, Mesh, RenderChain,
@@ -186,8 +186,8 @@ pub struct Vertex {
 	#[vertex_attribute([R, G], Bit32, SFloat)]
 	tex_coord: Vec2,
 
-	#[vertex_attribute([R, G, B, A], Bit8, UnsignedNorm)]
-	color: Vector4<u8>,
+	#[vertex_attribute([R, G, B, A], Bit32, SFloat)]
+	color: Vec4,
 }
 
 impl Vertex {
@@ -201,8 +201,8 @@ impl Vertex {
 		self
 	}
 
-	pub fn with_color(mut self, color: Vector4<u8>) -> Self {
-		self.color = color;
+	pub fn with_color(mut self, color: Vector4<f32>) -> Self {
+		self.color = color.into();
 		self
 	}
 }
@@ -262,7 +262,7 @@ impl Ui {
 			window_handle,
 			last_frame: Instant::now(),
 			ui_elements: Vec::new(),
-			drawable: Drawable::default().with_name("EditorUI.ImGui"),
+			drawable: Drawable::default().with_name("EditorUI.Gui"),
 			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
 			descriptor_cache: DescriptorCache::new(
 				descriptor::layout::SetLayout::builder()
@@ -416,8 +416,6 @@ impl WinitEventListener for Ui {
 	}
 }
 
-// This isnt good practice, but is necessary because `imgui::Context` contains a raw mutable pointer.
-// It is "safe" to tell rust that Ui is Send because the context is an Arc<Mutex<..>>
 unsafe impl Send for Ui {}
 unsafe impl Sync for Ui {}
 
@@ -440,7 +438,7 @@ impl From<Vector2<f32>> for ScreenSizePushConstant {
 
 impl RenderChainElement for Ui {
 	fn name(&self) -> &'static str {
-		"imgui"
+		"ui"
 	}
 
 	fn initialize_with(
@@ -483,7 +481,7 @@ impl RenderChainElement for Ui {
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
 	) -> Result<(), AnyError> {
-		use flags::blend::{Constant::*, Factor::*, Source::*};
+		use flags::blend::prelude::*;
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
 			chain,
@@ -504,9 +502,7 @@ impl RenderChainElement for Ui {
 				)
 				.set_color_blending(color_blend::ColorBlend::default().add_attachment(
 					color_blend::Attachment {
-						color_flags: flags::ColorComponent::R
-							| flags::ColorComponent::G | flags::ColorComponent::B
-							| flags::ColorComponent::A,
+						color_flags: R | G | B | A,
 						blend: Some(color_blend::Blend {
 							color: One * New + (One - SrcAlpha) * Old,
 							alpha: One * New + Zero * Old,
@@ -515,7 +511,9 @@ impl RenderChainElement for Ui {
 				))
 				.with_depth_stencil(
 					DepthStencil::default()
-						.with_depth_compare_op(flags::CompareOp::ALWAYS)
+						.with_depth_test()
+						.with_depth_write()
+						.with_depth_compare_op(flags::CompareOp::LESS_OR_EQUAL)
 						.with_stencil_front(
 							StencilOpState::default()
 								.with_fail_op(flags::StencilOp::KEEP)
@@ -527,7 +525,7 @@ impl RenderChainElement for Ui {
 								.with_fail_op(flags::StencilOp::KEEP)
 								.with_pass_op(flags::StencilOp::KEEP)
 								.with_compare_op(flags::CompareOp::ALWAYS),
-						)
+						),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
 			subpass_id,
@@ -608,16 +606,13 @@ impl RenderChainElement for Ui {
 		self.ui_elements
 			.retain(|element| element.strong_count() > 0);
 
-		let (buffer_data, draw_calls) = self.build_ui();
-		if let Some(buffer_data) = buffer_data {
-			let mut mesh_gpu_signals =
-				self.frames[frame]
-					.mesh
-					.write(&buffer_data.0, &buffer_data.1, chain)?;
-			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
-		}
+		let (vertices, indices, draw_calls) = self.build_ui();
+		let mesh = &mut self.frames[frame].mesh;
+		let mut mesh_gpu_signals = mesh.write(&vertices, &indices, chain)?;
+		self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 		self.frames[frame].draw_calls = draw_calls;
 
+		// returns true to enforce immediate mode drawing (rerecording every frame)
 		Ok(true)
 	}
 
@@ -659,7 +654,7 @@ impl RenderChainElement for Ui {
 }
 
 impl Ui {
-	fn build_ui(&mut self) -> (Option<(Vec<Vertex>, Vec<u32>)>, Vec<DrawCall>) {
+	fn build_ui(&mut self) -> (Vec<Vertex>, Vec<u32>, Vec<DrawCall>) {
 		for element in self.ui_elements.iter() {
 			if let Some(widget) = element.upgrade() {
 				if let Ok(mut locked) = widget.write() {
@@ -702,25 +697,29 @@ impl Ui {
 		self.last_frame = Instant::now();
 
 		// Transform draw data into vertex and index buffer data (to upload later)
-		let mut buffer_data: Option<(Vec<Vertex>, Vec<u32>)> = None;
+		let mut vertices: Vec<Vertex> = Vec::new();
+		let mut indices: Vec<u32> = Vec::new();
 		let mut draw_calls = Vec::new();
 		let clipped_meshes = self.context.tessellate(clipped_shapes);
 		let mut idx_offset: Vector2<usize> = [0, 0].into();
 		for egui::ClippedMesh(rect, mesh) in clipped_meshes {
-			if !mesh.vertices.is_empty() && !mesh.indices.is_empty() {
-				if buffer_data.is_none() {
-					buffer_data = Some((Vec::new(), Vec::new()));
-				}
-				if let Some((vertices, indices)) = &mut buffer_data {
-					vertices.extend(mesh.vertices.iter().map(|v| {
-						Vertex::default()
-							.with_position([v.pos.x, v.pos.y].into())
-							.with_tex_coord([v.uv.x, v.uv.y].into())
-							.with_color([v.color.r(), v.color.g(), v.color.b(), v.color.a()].into())
-					}));
-					indices.extend(mesh.indices.iter());
-				}
-			}
+			let appended_item_counts: Vector2<usize> =
+				[mesh.vertices.len(), mesh.indices.len()].into();
+			vertices.extend(mesh.vertices.iter().map(|v| {
+				Vertex::default()
+					.with_position([v.pos.x, v.pos.y].into())
+					.with_tex_coord([v.uv.x, v.uv.y].into())
+					.with_color(
+						[
+							(v.color.r() as f32 / 255.0).powf(2.2),
+							(v.color.g() as f32 / 255.0).powf(2.2),
+							(v.color.b() as f32 / 255.0).powf(2.2),
+							(v.color.a() as f32 / 255.0).powf(2.2),
+						]
+						.into(),
+					)
+			}));
+			indices.extend(mesh.indices.iter());
 
 			let mut min: Vector2<f32> = [rect.min.x, rect.min.y].into();
 			min *= self.scale_factor as f32;
@@ -732,30 +731,26 @@ impl Ui {
 			max.x = f32::clamp(max.x, min.x, self.physical_size.width as f32);
 			max.y = f32::clamp(max.y, min.y, self.physical_size.height as f32);
 
-			let scissor = Scissor::new(
-				structs::Offset2D {
-					x: min.x.round() as i32,
-					y: min.y.round() as i32,
-				},
-				structs::Extent2D {
-					width: (max.x.round() - min.x) as u32,
-					height: (max.y.round() - min.y) as u32,
-				},
-			);
-
 			draw_calls.push(DrawCall {
 				texture_id: mesh.texture_id,
-				scissor,
+				scissor: Scissor::new(
+					structs::Offset2D {
+						x: min.x.round() as i32,
+						y: min.y.round() as i32,
+					},
+					structs::Extent2D {
+						width: (max.x.round() - min.x) as u32,
+						height: (max.y.round() - min.y) as u32,
+					},
+				),
 				index_count: mesh.indices.len(),
 				first_index: idx_offset.x,
 				vertex_offset: idx_offset.y,
 			});
 
-			if let Some((vertices, indices)) = &buffer_data {
-				idx_offset = [vertices.len(), indices.len()].into();
-			}
+			idx_offset += appended_item_counts;
 		}
 
-		(buffer_data, draw_calls)
+		(vertices, indices, draw_calls)
 	}
 }
