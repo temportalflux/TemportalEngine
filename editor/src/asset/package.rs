@@ -9,7 +9,7 @@ pub struct Pak {
 	/// Where the binaries are that make up this pak.
 	pub binaries_directory: PathBuf,
 	/// Where the pak file will be put when its created.
-	pub output_directory: PathBuf,
+	pub output_directories: Vec<PathBuf>,
 }
 
 impl Pak {
@@ -17,23 +17,25 @@ impl Pak {
 		Self {
 			name: T::name().to_owned(),
 			binaries_directory: location.join("binaries"),
-			output_directory: {
+			output_directories: {
 				let mut path = std::env::current_dir().unwrap();
 				if let Some(relative) = pak_output {
 					path = path.join(relative);
 				}
-				path.join("paks")
+				vec![path.join("paks")]
 			},
 		}
 	}
 
 	pub fn package(&self) -> VoidResult {
 		let pak_name = format!("{}.pak", self.name);
-		let zip_path = self.output_directory.join(pak_name);
+		let zip_paths = self.output_directories.iter().map(|dir| dir.join(pak_name.clone())).collect::<Vec<_>>();
 
-		if let Some(parent) = zip_path.parent() {
-			if !parent.exists() {
-				std::fs::create_dir_all(&parent)?;
+		for zip_path in zip_paths.iter() {
+			if let Some(parent) = zip_path.parent() {
+				if !parent.exists() {
+					std::fs::create_dir_all(&parent)?;
+				}
 			}
 		}
 
@@ -43,41 +45,43 @@ impl Pak {
 			return Ok(());
 		}
 
-		log::info!(
-			target: asset::LOG,
-			"[{}] Packaging assets into {}",
-			self.name,
-			zip_path.display()
-		);
+		for zip_path in zip_paths.iter() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Packaging assets into {}",
+				self.name,
+				zip_path.display()
+			);
 
-		let zip_file = fs::OpenOptions::new()
-			.write(true)
-			.create(true)
-			.truncate(true)
-			.open(&zip_path)?;
-		let mut zipper = zip::ZipWriter::new(zip_file);
-		let zip_options =
-			zip::write::FileOptions::default().compression_method(zip::CompressionMethod::BZIP2);
+			let zip_file = fs::OpenOptions::new()
+				.write(true)
+				.create(true)
+				.truncate(true)
+				.open(&zip_path)?;
+			let mut zipper = zip::ZipWriter::new(zip_file);
+			let zip_options =
+				zip::write::FileOptions::default().compression_method(zip::CompressionMethod::BZIP2);
 
-		for file_path in files.iter() {
-			let relative_path = file_path
-				.as_path()
-				.strip_prefix(&self.binaries_directory)?
-				.to_str()
-				.unwrap();
-			let bytes = fs::read(&file_path)?;
-			zipper.start_file(relative_path, zip_options)?;
-			zipper.write_all(&bytes[..])?;
+			for file_path in files.iter() {
+				let relative_path = file_path
+					.as_path()
+					.strip_prefix(&self.binaries_directory)?
+					.to_str()
+					.unwrap();
+				let bytes = fs::read(&file_path)?;
+				zipper.start_file(relative_path, zip_options)?;
+				zipper.write_all(&bytes[..])?;
+			}
+
+			zipper.finish()?;
+
+			log::info!(
+				target: asset::LOG,
+				"[{}] - Packaged {} assets",
+				self.name,
+				files.len(),
+			);
 		}
-
-		zipper.finish()?;
-
-		log::info!(
-			target: asset::LOG,
-			"[{}] - Packaged {} assets",
-			self.name,
-			files.len(),
-		);
 
 		Ok(())
 	}

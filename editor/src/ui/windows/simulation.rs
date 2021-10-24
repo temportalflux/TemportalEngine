@@ -1,14 +1,12 @@
-use super::Window;
+use engine::ui::egui::window::{ArcLockOpenWindowList, Window};
 
 pub struct Simulation {
-	open_list: Option<super::ArcLockOpenWindowList>,
+	open_list: Option<ArcLockOpenWindowList>,
 }
 
 impl Simulation {
 	pub fn new() -> Self {
-		Self {
-			open_list: None,
-		}
+		Self { open_list: None }
 	}
 }
 
@@ -17,7 +15,7 @@ impl Window for Simulation {
 		"simulation"
 	}
 
-	fn set_open_list(&mut self, open_list: super::ArcLockOpenWindowList) {
+	fn set_open_list(&mut self, open_list: ArcLockOpenWindowList) {
 		self.open_list = Some(open_list);
 	}
 
@@ -25,8 +23,10 @@ impl Window for Simulation {
 		if !*is_open {
 			return;
 		}
-		egui::Window::new(self.name()).open(is_open).show(ctx, |ui| {
-			ui.label("This is the simulation");
-		});
+		egui::Window::new(self.name())
+			.open(is_open)
+			.show(ctx, |ui| {
+				ui.label("This is the simulation");
+			});
 	}
 }

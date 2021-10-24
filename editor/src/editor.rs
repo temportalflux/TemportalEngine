@@ -1,7 +1,4 @@
-use crate::{
-	asset,
-	settings,
-};
+use crate::{asset, settings};
 use engine::{
 	self,
 	utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
@@ -79,7 +76,7 @@ impl Editor {
 		self.add_pak(asset::Pak {
 			name: manifest.name.clone(),
 			binaries_directory: manifest.location.join("binaries"),
-			output_directory: manifest.config.pak_destination.clone(),
+			output_directories: manifest.config.pak_destinations.clone(),
 		});
 	}
 

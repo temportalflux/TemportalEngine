@@ -1,6 +1,4 @@
-use crate::{
-	asset,
-};
+use crate::asset;
 use engine::{
 	self,
 	asset::{AnyBox, Generic, TypeId},

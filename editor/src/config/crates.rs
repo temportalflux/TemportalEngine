@@ -15,7 +15,7 @@ pub struct Crates {
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 pub struct CrateConfig {
 	#[serde(default)]
-	pub pak_destination: PathBuf,
+	pub pak_destinations: Vec<PathBuf>,
 }
 
 impl SaveData<Crates> for Crates {

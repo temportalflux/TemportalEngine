@@ -1,4 +1,5 @@
-use crate::ui::{self, windows::OpenWindowList};
+use crate::ui;
+use engine::ui::egui::{window::OpenWindowList, Element};
 use std::sync::{Arc, RwLock};
 
 pub struct Workspace {
@@ -7,15 +8,27 @@ pub struct Workspace {
 
 impl Workspace {
 	pub fn new() -> Arc<RwLock<Self>> {
-		let open_list = Arc::new(RwLock::new(OpenWindowList::new()));
+		let editor = crate::Editor::read();
+		let open_list = Arc::new(RwLock::new(
+			OpenWindowList::new()
+				.with_open_windows(editor.settings.get_open_window_list().clone().into_iter())
+				.with_save_fn(|ids| {
+					use engine::utility::SaveData;
+					let mut editor = crate::Editor::write();
+					for (id, is_open) in ids.into_iter() {
+						editor.settings.set_window_open(&id, is_open);
+					}
+					if let Err(e) = editor.settings.save() {
+						log::error!(target: "ui", "Failed to save editor settings, {}", e);
+					}
+				}),
+		));
 		OpenWindowList::register_window(&open_list, ui::windows::Simulation::new());
-		Arc::new(RwLock::new(Self {
-			open_list,
-		}))
+		Arc::new(RwLock::new(Self { open_list }))
 	}
 }
 
-impl ui::Element for Workspace {
+impl Element for Workspace {
 	fn render(&mut self, ctx: &egui::CtxRef) {
 		egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
 			egui::menu::bar(ui, |ui| {
@@ -48,7 +61,7 @@ impl ui::Element for Workspace {
 			});
 		});
 		if let Ok(mut guard) = self.open_list.write() {
-			guard.show(ctx);
+			guard.render(ctx);
 		}
 		egui::CentralPanel::default().show(ctx, |ui| {
 			ui.label("Hello World!");

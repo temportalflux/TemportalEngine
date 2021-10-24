@@ -2,21 +2,39 @@ use std::{
 	collections::{BTreeSet, HashMap},
 	sync::{Arc, RwLock},
 };
+use crate::ui::egui::Element;
 
 pub type ArcLockOpenWindowList = Arc<RwLock<OpenWindowList>>;
 
 pub struct OpenWindowList {
 	all_windows: HashMap<String, Box<dyn super::Window>>,
 	open_window_names: BTreeSet<String>,
+	save_open_windows: Option<Box<dyn Fn(Vec<(String, bool)>)>>,
 }
 
 impl OpenWindowList {
 	pub fn new() -> Self {
-		let editor = crate::Editor::read();
 		Self {
 			all_windows: HashMap::new(),
-			open_window_names: editor.settings.get_open_window_list().clone().into_iter().collect(),
+			open_window_names: BTreeSet::new(),
+			save_open_windows: None,
 		}
+	}
+
+	pub fn with_open_windows<T>(mut self, iter: T) -> Self
+	where
+		T: std::iter::Iterator<Item = String>,
+	{
+		self.open_window_names = iter.collect();
+		self
+	}
+
+	pub fn with_save_fn<F>(mut self, callback: F) -> Self
+	where
+		F: 'static + Fn(Vec<(String, bool)>),
+	{
+		self.save_open_windows = Some(Box::new(callback));
+		self
 	}
 
 	pub fn register_window<T>(arclock: &Arc<RwLock<Self>>, window: T)
@@ -46,13 +64,13 @@ impl OpenWindowList {
 	}
 
 	fn save_open_state(&self) {
-		use engine::utility::SaveData;
-		let mut editor = crate::Editor::write();
-		for (id, is_open) in self.all_windows.keys().map(|id| (id, self.is_window_open(&id))) {
-			editor.settings.set_window_open(&id, is_open);
-		}
-		if let Err(e) = editor.settings.save() {
-			log::error!(target: "ui", "Failed to save editor settings, {}", e);
+		if let Some(save_open_windows) = &self.save_open_windows {
+			save_open_windows(
+				self.all_windows
+					.keys()
+					.map(|id| (id.clone(), self.is_window_open(&id)))
+					.collect(),
+			);
 		}
 	}
 
@@ -70,8 +88,10 @@ impl OpenWindowList {
 			self.open(id);
 		}
 	}
+}
 
-	pub fn show(&mut self, ctx: &egui::CtxRef) {
+impl Element for OpenWindowList {
+	fn render(&mut self, ctx: &egui::CtxRef) {
 		let mut open_ids = BTreeSet::new();
 		for (id, window) in self.all_windows.iter_mut() {
 			let mut is_open = self.open_window_names.contains(id);
@@ -85,5 +105,4 @@ impl OpenWindowList {
 			self.save_open_state();
 		}
 	}
-
 }

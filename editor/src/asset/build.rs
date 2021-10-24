@@ -93,7 +93,7 @@ impl Module {
 					target: asset::LOG,
 					"[{}] - Building {:?}",
 					self.name,
-					relative_path.file_stem().unwrap()
+					relative_path
 				);
 				let (type_id, asset) = asset_manager.read_sync(&asset_file_path.as_path())?;
 				asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
@@ -116,7 +116,7 @@ impl Module {
 					target: asset::LOG,
 					"[{}]   {:?}",
 					self.name,
-					relative_path.file_stem().unwrap()
+					relative_path
 				);
 			}
 		}
