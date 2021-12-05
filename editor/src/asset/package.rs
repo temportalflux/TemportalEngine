@@ -29,7 +29,11 @@ impl Pak {
 
 	pub fn package(&self) -> VoidResult {
 		let pak_name = format!("{}.pak", self.name);
-		let zip_paths = self.output_directories.iter().map(|dir| dir.join(pak_name.clone())).collect::<Vec<_>>();
+		let zip_paths = self
+			.output_directories
+			.iter()
+			.map(|dir| dir.join(pak_name.clone()))
+			.collect::<Vec<_>>();
 
 		for zip_path in zip_paths.iter() {
 			if let Some(parent) = zip_path.parent() {
@@ -59,8 +63,8 @@ impl Pak {
 				.truncate(true)
 				.open(&zip_path)?;
 			let mut zipper = zip::ZipWriter::new(zip_file);
-			let zip_options =
-				zip::write::FileOptions::default().compression_method(zip::CompressionMethod::BZIP2);
+			let zip_options = zip::write::FileOptions::default()
+				.compression_method(zip::CompressionMethod::BZIP2);
 
 			for file_path in files.iter() {
 				let relative_path = file_path

@@ -43,7 +43,7 @@ pub struct Ui {
 	descriptor_cache: DescriptorCache<TextureId>,
 	image_cache: ImageCache<TextureId>,
 	drawable: Drawable,
-	render_callbacks: Vec<(Box<dyn Fn(&egui::CtxRef)->bool>, /*retained*/ bool)>,
+	render_callbacks: Vec<(Box<dyn Fn(&egui::CtxRef) -> bool>, /*retained*/ bool)>,
 	last_frame: Instant,
 	window_handle: Weak<RwLock<winit::window::Window>>,
 }
@@ -93,10 +93,18 @@ impl Vertex {
 
 impl Ui {
 	pub fn create(engine: &mut Engine) -> Result<Arc<RwLock<Self>>, AnyError> {
+		Self::create_with_subpass(engine, None)
+	}
+
+	pub fn create_with_subpass(
+		engine: &mut Engine,
+		subpass_id: Option<String>,
+	) -> Result<Arc<RwLock<Self>>, AnyError> {
 		let strong = Arc::new(RwLock::new(Self::new(engine)?));
-		if let Some(mut chain) = engine.render_chain_write() {
-			chain.add_render_chain_element(None, &strong)?;
-		}
+		engine
+			.render_chain_write()
+			.unwrap()
+			.add_render_chain_element(subpass_id, &strong)?;
 		engine.add_winit_listener(&strong);
 		Ok(strong)
 	}
@@ -193,7 +201,8 @@ impl Ui {
 	}
 
 	pub fn add_owned_element<T>(&mut self, element: T)
-	where T: Element + 'static
+	where
+		T: Element + 'static,
 	{
 		let arctex = std::sync::Arc::new(std::sync::Mutex::new(element));
 		self.add_render_callback(move |ctx| -> bool {
@@ -206,11 +215,11 @@ impl Ui {
 
 	/// Adds a callback to be executed each frame, which returns false when it should be removed from future rendering.
 	pub fn add_render_callback<F>(&mut self, callback: F)
-	where F: 'static + Fn(&egui::CtxRef) -> bool
+	where
+		F: 'static + Fn(&egui::CtxRef) -> bool,
 	{
 		self.render_callbacks.push((Box::new(callback), true));
 	}
-
 }
 
 impl WinitEventListener for Ui {
@@ -353,7 +362,7 @@ impl From<Vector2<f32>> for ScreenSizePushConstant {
 
 impl RenderChainElement for Ui {
 	fn name(&self) -> &'static str {
-		"ui"
+		"egui"
 	}
 
 	fn initialize_with(

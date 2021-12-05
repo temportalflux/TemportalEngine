@@ -1,8 +1,8 @@
+use crate::ui::egui::Element;
 use std::{
 	collections::{BTreeSet, HashMap},
 	sync::{Arc, RwLock},
 };
-use crate::ui::egui::Element;
 
 pub type ArcLockOpenWindowList = Arc<RwLock<OpenWindowList>>;
 

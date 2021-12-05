@@ -112,12 +112,7 @@ impl Module {
 				skipped_paths.len()
 			);
 			for relative_path in skipped_paths.iter() {
-				log::info!(
-					target: asset::LOG,
-					"[{}]   {:?}",
-					self.name,
-					relative_path
-				);
+				log::info!(target: asset::LOG, "[{}]   {:?}", self.name, relative_path);
 			}
 		}
 
