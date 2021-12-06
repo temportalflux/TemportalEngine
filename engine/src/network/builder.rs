@@ -54,6 +54,10 @@ impl Builder {
 		self.local_data.set_port(port);
 	}
 
+	pub fn data(&self) -> &LocalData {
+		&self.local_data
+	}
+
 	pub fn with_registrations_in<F>(mut self, callback: F) -> Self
 	where
 		F: Fn(&mut Self),
