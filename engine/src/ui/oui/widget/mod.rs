@@ -9,6 +9,9 @@ pub trait Widget: super::AsRAUI {
 	{
 		Arc::new(RwLock::new(self))
 	}
+	fn get_image_ids(&self) -> Vec<crate::asset::Id> {
+		vec![]
+	}
 }
 
 pub mod button;

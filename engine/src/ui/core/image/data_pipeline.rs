@@ -48,6 +48,10 @@ impl DataPipeline {
 		self.image_cache.insert(id.name(), Some(id.name()), texture);
 	}
 
+	pub fn contains(&self, id: &asset::Id) -> bool {
+		self.image_cache.contains(&id.name()) || self.descriptor_cache.contains(&id.name())
+	}
+
 	#[profiling::function]
 	pub fn create_pending_images(
 		&mut self,

@@ -285,6 +285,9 @@ impl System {
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
 	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
+		if self.image.contains(id) {
+			return Ok(());
+		}
 		if let Ok(asset) = asset::Loader::load_sync(&id) {
 			let texture = asset.downcast::<Texture>().unwrap();
 			log::info!(target: LOG, "Adding texture '{}'", id.as_string());
