@@ -4,11 +4,15 @@ use super::{
 };
 use std::sync::{Arc, RwLock};
 
-pub struct Viewport {
+pub trait Viewport {
+	fn get_root(&self) -> &Option<ArcLockWidget>;
+}
+
+pub struct DefaultViewport {
 	root_widget: Option<ArcLockWidget>,
 }
 
-impl Viewport {
+impl DefaultViewport {
 	pub fn new() -> Self {
 		Self { root_widget: None }
 	}
@@ -31,17 +35,29 @@ impl Viewport {
 	}
 }
 
-pub fn read_root_widget(ctx: &WidgetContext) -> Option<ArcLockWidget> {
+impl Viewport for DefaultViewport {
+	fn get_root(&self) -> &Option<ArcLockWidget> {
+		&self.root_widget
+	}
+}
+
+pub fn read_root_widget<TViewport>(ctx: &WidgetContext) -> Option<ArcLockWidget>
+where
+	TViewport: 'static + Viewport,
+{
 	if let Some(ctx_container) = ctx.process_context.get::<ContextContainer>() {
-		if let Some(guard) = ctx_container.get::<Viewport>() {
-			return guard.root_widget.clone();
+		if let Some(guard) = ctx_container.get::<TViewport>() {
+			return (*guard).get_root().clone();
 		}
 	}
 	None
 }
 
-pub fn widget(ctx: WidgetContext) -> WidgetNode {
-	if let Some(root) = read_root_widget(&ctx) {
+pub fn widget<TViewport>(ctx: WidgetContext) -> WidgetNode
+where
+	TViewport: 'static + Viewport,
+{
+	if let Some(root) = read_root_widget::<TViewport>(&ctx) {
 		if let Ok(guard) = root.read() {
 			return WidgetNode::Component(guard.as_raui());
 		}
