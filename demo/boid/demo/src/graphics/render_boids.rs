@@ -473,6 +473,7 @@ impl RenderBoids {
 		instances: Vec<Instance>,
 		expansion_step: usize,
 	) -> Result<(), AnyError> {
+		use engine::task::ScheduledTask;
 		use graphics::alloc::Object;
 
 		let supported_instance_count =

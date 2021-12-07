@@ -274,6 +274,7 @@ impl Frame {
 		chain: &graphics::RenderChain,
 		objects: &Vec<DebugDraw>,
 	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
+		use crate::task::ScheduledTask;
 		let mut gpu_signals = Vec::new();
 
 		let mut vertices: Vec<LineSegmentVertex> = Vec::new();

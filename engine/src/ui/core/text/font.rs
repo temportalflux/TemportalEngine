@@ -57,6 +57,7 @@ impl PendingAtlas {
 		self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
+		use crate::task::ScheduledTask;
 		use graphics::{
 			alloc, image,
 			structs::subresource,

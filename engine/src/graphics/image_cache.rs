@@ -209,6 +209,7 @@ where
 		render_chain: &graphics::RenderChain,
 		pending: &PendingEntry,
 	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
+		use crate::task::ScheduledTask;
 		use graphics::{image, structs::subresource, utility::BuildFromDevice, TaskGpuCopy};
 
 		let mut signals = Vec::new();

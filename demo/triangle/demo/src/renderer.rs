@@ -93,6 +93,7 @@ impl graphics::RenderChainElement for Triangle {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> Result<Vec<sync::Arc<command::Semaphore>>, AnyError> {
+		use engine::task::ScheduledTask;
 		self.vert_shader = Some(sync::Arc::new(shader::Module::create(
 			render_chain.logical().clone(),
 			shader::Info {

@@ -114,6 +114,7 @@ impl WidgetData {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+		use crate::task::ScheduledTask;
 		// Update the buffer objects if we need more space than is currently allocated
 		sync::Arc::get_mut(&mut self.vertex_buffer)
 			.unwrap()

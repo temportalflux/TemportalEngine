@@ -43,3 +43,18 @@ impl From<crate::ui::core::Error> for Error {
 		Error::UI(err)
 	}
 }
+
+pub fn spawn_thread<F, R, E>(target: &'static str, f: F)
+where
+	F: Fn() -> std::result::Result<R, E> + 'static + Send,
+	E: std::fmt::Display,
+{
+	std::thread::spawn(move || {
+		match f() {
+			Ok(_) => {}
+			Err(err) => {
+				log::error!(target: target, "{}", err);
+			}
+		}
+	});
+}

@@ -1,21 +1,20 @@
+use crate::task::{ArctexState, ScheduledTask};
 use crate::{
 	graphics::{
 		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
 	},
 	utility,
 };
-use futures::future::Future;
-use std::sync;
-
-struct State {
-	is_complete: bool,
-	waker: Option<std::task::Waker>,
-}
+use std::{
+	pin::Pin,
+	sync,
+	task::{Context, Poll},
+};
 
 /// A copy from CPU to GPU operation that happens asynchronously.
 pub struct TaskGpuCopy {
 	/// Indicates if the task is complete and how to tell the futures package when the task wakes up.
-	state: sync::Arc<sync::Mutex<State>>,
+	state: ArctexState,
 	/// The gpu signal (semaphore) that can be waited on to know when the operation is complete.
 	gpu_signal_on_complete: sync::Arc<command::Semaphore>,
 	/// The cpu signal (fence) that can be waited on to know when the operation is complete.
@@ -35,14 +34,21 @@ pub struct TaskGpuCopy {
 	name: Option<String>,
 }
 
+impl ScheduledTask for TaskGpuCopy {
+	fn state(&self) -> &ArctexState {
+		&self.state
+	}
+}
+impl futures::future::Future for TaskGpuCopy {
+	type Output = ();
+	fn poll(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
+		self.poll_state(ctx)
+	}
+}
+
 impl TaskGpuCopy {
 	pub fn new(name: Option<String>, render_chain: &RenderChain) -> utility::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
-
-		let state = sync::Arc::new(sync::Mutex::new(State {
-			is_complete: false,
-			waker: None,
-		}));
 
 		let task_name = name.as_ref().map(|v| format!("Task.{}", v));
 
@@ -69,18 +75,9 @@ impl TaskGpuCopy {
 				name.as_ref()
 					.map(|v| format!("Task.{}.Signals.GPU.OnComplete", v)),
 			)?),
-			state,
+			state: ArctexState::default(),
 			name: task_name,
 		})
-	}
-
-	/// Sends the task to the engine task management,
-	/// where it will run until the operation is complete,
-	/// and then be dropped (thereby dropping all of its contents).
-	///
-	/// Can only be called after [`end`](TaskGpuCopy::end).
-	pub fn send_to(self, spawner: &sync::Arc<crate::task::Sender>) {
-		spawner.spawn(self)
 	}
 
 	fn cmd(&self) -> &command::Buffer {
@@ -125,10 +122,7 @@ impl TaskGpuCopy {
 				.wait_for(&thread_cpu_signal, u64::MAX)
 				.unwrap();
 			let mut state = thread_state.lock().unwrap();
-			state.is_complete = true;
-			if let Some(waker) = state.waker.take() {
-				waker.wake();
-			}
+			state.mark_complete();
 		});
 
 		Ok(self)
@@ -318,22 +312,5 @@ impl Drop for TaskGpuCopy {
 	fn drop(&mut self) {
 		self.command_pool
 			.free_buffers(vec![self.command_buffer.take().unwrap()]);
-	}
-}
-
-impl Future for TaskGpuCopy {
-	type Output = ();
-	fn poll(
-		self: std::pin::Pin<&mut Self>,
-		ctx: &mut std::task::Context<'_>,
-	) -> std::task::Poll<Self::Output> {
-		use std::task::Poll;
-		let mut state = self.state.lock().unwrap();
-		if !state.is_complete {
-			state.waker = Some(ctx.waker().clone());
-			Poll::Pending
-		} else {
-			Poll::Ready(())
-		}
 	}
 }
