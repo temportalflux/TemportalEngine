@@ -1,7 +1,7 @@
 mod future;
 pub use future::*;
 mod task;
-pub use task::*;
+pub(super) use task::*;
 mod sender;
 pub use sender::*;
 mod watcher;

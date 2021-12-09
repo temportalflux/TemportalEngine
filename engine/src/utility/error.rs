@@ -49,12 +49,10 @@ where
 	F: Fn() -> std::result::Result<R, E> + 'static + Send,
 	E: std::fmt::Display,
 {
-	std::thread::spawn(move || {
-		match f() {
-			Ok(_) => {}
-			Err(err) => {
-				log::error!(target: target, "{}", err);
-			}
+	std::thread::spawn(move || match f() {
+		Ok(_) => {}
+		Err(err) => {
+			log::error!(target: target, "{}", err);
 		}
 	});
 }
