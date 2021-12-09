@@ -16,16 +16,20 @@ pub struct TaskState {
 	is_complete: bool,
 	waker: Option<Waker>,
 	strong_semaphore: Arc<()>,
+	on_complete_delegates: Vec<Box<dyn Fn() + Send + Sync>>,
 }
+
 impl Default for TaskState {
 	fn default() -> Self {
 		Self {
 			is_complete: false,
 			waker: None,
 			strong_semaphore: Arc::new(()),
+			on_complete_delegates: Vec::new(),
 		}
 	}
 }
+
 impl TaskState {
 	fn poll(&mut self, ctx: &mut Context<'_>) -> Poll<()> {
 		if !self.is_complete {
@@ -44,8 +48,29 @@ impl TaskState {
 	}
 }
 
+impl Drop for TaskState {
+	fn drop(&mut self) {
+		for callback in self.on_complete_delegates.iter() {
+			callback();
+		}
+	}
+}
+
 pub trait ScheduledTask {
 	fn state(&self) -> &ArctexState;
+
+	fn add_on_complete_callback<F>(self, callback: F) -> Self
+	where
+		Self: 'static + Sized,
+		F: Fn() + 'static + Send + Sync,
+	{
+		self.state()
+			.lock()
+			.unwrap()
+			.on_complete_delegates
+			.push(Box::new(callback));
+		self
+	}
 
 	fn semaphore(&self) -> Semaphore {
 		let state = self.state().lock().unwrap();
