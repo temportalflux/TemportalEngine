@@ -7,7 +7,6 @@ use crate::{
 		utility::AnyError,
 	},
 };
-use serde_json;
 use std::{
 	path::{Path, PathBuf},
 	time::SystemTime,
@@ -36,8 +35,8 @@ impl TypeEditorMetadata for TextureEditorMetadata {
 			.max(Self::image_file_path(path).metadata()?.modified()?))
 	}
 
-	fn read(&self, _path: &Path, json_str: &str) -> AssetResult {
-		Ok(Box::new(serde_json::from_str::<Texture>(json_str)?))
+	fn read(&self, path: &Path, content: &str) -> AssetResult {
+		crate::asset::deserialize::<Texture>(&path, &content)
 	}
 
 	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {

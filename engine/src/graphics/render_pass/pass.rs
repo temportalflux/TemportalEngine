@@ -24,10 +24,7 @@ pub struct Pass {
 
 impl Pass {
 	fn init_asset_type(&mut self, node: &kdl::KdlNode) {
-		self.asset_type = match &node.values[0] {
-			kdl::KdlValue::String(asset_str) => asset_str.clone(),
-			_ => unimplemented!(),
-		};
+		self.asset_type = asset::kdl::asset_type::get(node);
 	}
 	fn insert_subpass_mapping(&mut self, node: &kdl::KdlNode) {
 		use std::convert::TryFrom;
@@ -88,8 +85,7 @@ impl Pass {
 	fn finalize_kdl_deserialization(&mut self) {
 		self.dependencies.clear();
 		let kdl_deps = self.kdl_subpass_dependencies.drain(..).collect::<Vec<_>>();
-		for (first_name, then_name, mut dependency) in kdl_deps.into_iter()
-		{
+		for (first_name, then_name, mut dependency) in kdl_deps.into_iter() {
 			dependency.first.subpass = first_name
 				.map(|alias| self.kdl_subpass_aliases.get(&alias))
 				.flatten()
@@ -138,11 +134,12 @@ impl TypeMetadata for PassMetadata {
 	}
 }
 
-impl Pass {
-	pub fn kdl_schema() -> kdl_schema::Schema<Pass> {
+impl crate::asset::kdl::Asset<Pass> for Pass {
+	fn kdl_schema() -> kdl_schema::Schema<Pass> {
 		use kdl_schema::*;
-		Schema::<Pass> {
-			nodes: vec![
+		Schema {
+			nodes: Items::Ordered(vec![
+				asset::kdl::asset_type::schema::<Pass>(Pass::init_asset_type),
 				Node {
 					name: Name::Defined("asset-type"),
 					values: Items::Ordered(vec![Value::String(None)]),
@@ -237,11 +234,13 @@ impl Pass {
 					}]),
 					..Default::default()
 				},
-			],
+			]),
 			on_validation_successful: Some(Pass::finalize_kdl_deserialization),
 		}
 	}
+}
 
+impl Pass {
 	pub fn as_graphics(&self) -> Result<GraphicsPassInfo, AnyError> {
 		use crate::{
 			asset::Loader,

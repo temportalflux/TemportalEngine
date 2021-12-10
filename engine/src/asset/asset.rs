@@ -30,3 +30,24 @@ where
 {
 	Ok(Box::new(rmp_serde::from_read_ref::<'a, Vec<u8>, T>(&bin)?))
 }
+
+pub mod kdl {
+	pub trait Asset<T> {
+		fn kdl_schema() -> kdl_schema::Schema<T>;
+	}
+
+	pub mod asset_type {
+		use kdl_schema::*;
+		pub fn schema<T>(on_validation_successful: fn(&mut T, &kdl::KdlNode)) -> Node<T> {
+			Node {
+				name: Name::Defined("asset-type"),
+				values: Items::Ordered(vec![Value::String(None)]),
+				on_validation_successful: Some(on_validation_successful),
+				..Default::default()
+			}
+		}
+		pub fn get(node: &kdl::KdlNode) -> String {
+			utility::value_as_string(&node, 0).unwrap().clone()
+		}
+	}
+}

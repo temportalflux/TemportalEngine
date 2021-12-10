@@ -5,7 +5,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 
 /// The engine asset representation of [`images`](crate::graphics::image::Image).
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Texture {
 	asset_type: String,
 	compiled: Option<CompiledTexture>,
@@ -39,6 +39,18 @@ impl Texture {
 	/// in row major format (where `index = (y * width * 4) + (x * 4) + component`).
 	pub fn binary(&self) -> &Vec<u8> {
 		&self.compiled.as_ref().unwrap().binary
+	}
+}
+
+impl crate::asset::kdl::Asset<Texture> for Texture {
+	fn kdl_schema() -> kdl_schema::Schema<Texture> {
+		use kdl_schema::*;
+		Schema {
+			nodes: Items::Select(vec![asset::kdl::asset_type::schema::<Texture>(|asset, node| {
+				asset.asset_type = asset::kdl::asset_type::get(node);
+			})]),
+			..Default::default()
+		}
 	}
 }
 
