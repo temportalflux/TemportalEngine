@@ -11,16 +11,16 @@ pub struct Font {
 	sdf: Option<SDF>,
 }
 
-/// https://www.freetype.org/freetype2/docs/glyphs/glyphs-2.html
-/// https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html
-/// https://freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_facerec
+/// `<https://www.freetype.org/freetype2/docs/glyphs/glyphs-2.html>`
+/// `<https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html>`
+/// `<https://freetype.org/freetype2/docs/reference/ft2-base_interface.html#ft_facerec>`
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SDF {
 	pub size: Vector2<usize>,
 	pub binary: Vec<Vec<u8>>,
 	pub glyphs: Vec<Glyph>,
 	/// The y-distance from the previous baseline to the next.
-	/// Derived from the `Scaled Global Metrics` https://www.freetype.org/freetype2/docs/tutorial/step2.html#section-3
+	/// Derived from the [`Scaled Global Metrics`](https://www.freetype.org/freetype2/docs/tutorial/step2.html#section-3)
 	/// Expressed as a scalar value to be multiplied by the font size.
 	pub line_height: f32,
 }

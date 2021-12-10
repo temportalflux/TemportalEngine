@@ -10,3 +10,6 @@
 [submodule "socknet"]
 	path = socknet
 	url = git@github.com:temportalflux/socknet.git
+[submodule "crates/kdl-schema"]
+	path = crates/kdl-schema
+	url = git@github.com:temportalflux/kdl-schema.git

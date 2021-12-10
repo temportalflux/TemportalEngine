@@ -74,7 +74,7 @@ impl SDFBuilder {
 	}
 
 	/// Compiles the font ttf at `path` into a signed-distance-field.
-	/// Algorithm based on https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-introduction-code-setup-25lh.
+	/// Algorithm based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-introduction-code-setup-25lh>`.
 	pub fn build(self, font_library: &freetype::Library) -> Result<font::SDF, AnyError> {
 		use freetype::{face::LoadFlag, outline::Curve};
 		assert!(self.font_path.exists());

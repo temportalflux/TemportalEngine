@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 /// The engine asset representation of a [`render pass`](crate::graphics::renderpass::Pass).
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Pass {
 	asset_type: String,
 	/// Defines the order that subpasses will be recorded in the [`RenderChain`](crate::graphics::RenderChain).
@@ -16,6 +16,87 @@ pub struct Pass {
 	/// Defines what subpasses are required by other subpasses (and which is first) so the GPU
 	/// knows how to composite the subpasses together.
 	dependencies: Vec<Dependency>,
+	#[serde(skip)]
+	kdl_subpass_aliases: std::collections::HashMap<String, asset::Id>,
+	#[serde(skip)]
+	kdl_subpass_dependencies: Vec<(Option<String>, Option<String>, Dependency)>,
+}
+
+impl Pass {
+	fn insert_subpass_mapping(&mut self, node: &kdl::KdlNode) {
+		use std::convert::TryFrom;
+		let asset_str = match &node.values[0] {
+			kdl::KdlValue::String(asset_str) => asset_str.as_str(),
+			_ => unimplemented!(),
+		};
+		let subpass_id = asset::Id::try_from(asset_str).unwrap();
+		self.kdl_subpass_aliases
+			.insert(node.name.clone(), subpass_id.clone());
+		self.subpass_order.push(subpass_id);
+	}
+	fn insert_dependency(&mut self, node: &kdl::KdlNode) {
+		let (first_name, first) = self.create_dependency_item(&node.children[0]);
+		let (then_name, then) = self.create_dependency_item(&node.children[1]);
+		self.kdl_subpass_dependencies
+			.push((first_name, then_name, Dependency { first, then }));
+	}
+	fn create_dependency_item(&self, node: &kdl::KdlNode) -> (Option<String>, DependencyItem) {
+		use std::convert::TryFrom;
+		let mut subpass = None;
+		let mut item = DependencyItem {
+			subpass: None,
+			stage: vec![],
+			access: vec![],
+		};
+		if !node.values.is_empty() {
+			let subpass_alias = match &node.values[0] {
+				kdl::KdlValue::String(asset_str) => asset_str.as_str(),
+				_ => unimplemented!(),
+			};
+			subpass = Some(subpass_alias.to_owned());
+		}
+		for (name, value) in node.properties.iter() {
+			match name.as_str() {
+				"stage" => {
+					let flag = flags::PipelineStage::try_from(match &value {
+						kdl::KdlValue::String(asset_str) => asset_str.as_str(),
+						_ => unimplemented!(),
+					})
+					.unwrap();
+					item.stage.push(flag);
+				}
+				"access" => {
+					let flag = flags::Access::try_from(match &value {
+						kdl::KdlValue::String(asset_str) => asset_str.as_str(),
+						_ => unimplemented!(),
+					})
+					.unwrap();
+					item.access.push(flag);
+				}
+				_ => {}
+			}
+		}
+		(subpass, item)
+	}
+
+	fn finalize_kdl_deserialization(&mut self) {
+		self.dependencies.clear();
+		let kdl_deps = self.kdl_subpass_dependencies.drain(..).collect::<Vec<_>>();
+		for (first_name, then_name, mut dependency) in kdl_deps.into_iter()
+		{
+			dependency.first.subpass = first_name
+				.map(|alias| self.kdl_subpass_aliases.get(&alias))
+				.flatten()
+				.map(|id| id.clone());
+			dependency.then.subpass = then_name
+				.map(|alias| self.kdl_subpass_aliases.get(&alias))
+				.flatten()
+				.map(|id| id.clone());
+			self.dependencies.push(dependency);
+		}
+		self.kdl_subpass_aliases.clear();
+		self.kdl_subpass_dependencies.clear();
+	}
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -52,6 +133,108 @@ impl TypeMetadata for PassMetadata {
 }
 
 impl Pass {
+	pub fn kdl_schema() -> kdl_schema::Schema<Pass> {
+		use kdl_schema::*;
+		Schema::<Pass> {
+			nodes: vec![
+				Node {
+					name: Name::Defined("asset-type"),
+					values: Items::Ordered(vec![Value::String(None)]),
+					..Default::default()
+				},
+				/*
+				subpasses {
+					subpass1name "asset-module:path/to/subpass1_asset"
+					subpass2name "asset-module:path/to/subpass2_asset"
+					...
+				}
+				*/
+				Node {
+					name: Name::Defined("subpasses"),
+					children: Items::Select(vec![Node {
+						name: Name::Variable("subpasses"),
+						values: Items::Ordered(vec![Value::String(None)]),
+						on_validation_successful: Some(Pass::insert_subpass_mapping),
+						..Default::default()
+					}]),
+					..Default::default()
+				},
+				/*
+				dependencies {
+					link {
+						first stage="ColorAttachmentOutput"
+						then "subpass1name" stage="ColorAttachmentOutput" access="ColorAttachmentWrite"
+					}
+					link {
+						first "subpass1name" stage="ColorAttachmentOutput" access="ColorAttachmentWrite"
+						then "subpass2name" stage="ColorAttachmentOutput" access="ColorAttachmentWrite"
+					}
+				}
+				*/
+				Node {
+					name: Name::Defined("dependencies"),
+					children: Items::Select(vec![Node {
+						name: Name::Defined("link"),
+						children: Items::Ordered(vec![
+							Node {
+								name: Name::Defined("first"),
+								values: Items::Select(vec![
+									Value::Null,
+									Value::String(Some(Validation::IsInVariable("subpasses"))),
+								]),
+								properties: vec![
+									Property {
+										name: "stage",
+										value: Value::String(Some(Validation::InList(
+											flags::PipelineStage::all_serialized(),
+										))),
+										optional: false,
+									},
+									Property {
+										name: "access",
+										value: Value::String(Some(Validation::InList(
+											flags::Access::all_serialized(),
+										))),
+										optional: true,
+									},
+								],
+								..Default::default()
+							},
+							Node {
+								name: Name::Defined("then"),
+								values: Items::Select(vec![
+									Value::Null,
+									Value::String(Some(Validation::IsInVariable("subpasses"))),
+								]),
+								properties: vec![
+									Property {
+										name: "stage",
+										value: Value::String(Some(Validation::InList(
+											flags::PipelineStage::all_serialized(),
+										))),
+										optional: false,
+									},
+									Property {
+										name: "access",
+										value: Value::String(Some(Validation::InList(
+											flags::Access::all_serialized(),
+										))),
+										optional: true,
+									},
+								],
+								..Default::default()
+							},
+						]),
+						on_validation_successful: Some(Pass::insert_dependency),
+						..Default::default()
+					}]),
+					..Default::default()
+				},
+			],
+			on_validation_successful: Some(Pass::finalize_kdl_deserialization),
+		}
+	}
+
 	pub fn as_graphics(&self) -> Result<GraphicsPassInfo, AnyError> {
 		use crate::{
 			asset::Loader,

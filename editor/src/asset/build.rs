@@ -56,9 +56,9 @@ impl Module {
 
 		let asset_paths = collect_file_paths(&self.assets_directory, &Vec::new())?
 			.into_iter()
-			.filter(|file_path| match file_path.extension() {
-				Some(ext) => ext == "json",
-				None => false,
+			.filter(|file_path| {
+				let ext = file_path.extension().map(|ext| ext.to_str()).flatten();
+				super::SupportedFileTypes::parse_extension(ext).is_some()
 			})
 			.collect::<Vec<_>>();
 		if asset_paths.is_empty() {
@@ -75,6 +75,7 @@ impl Module {
 
 		let mut intended_binaries: Vec<PathBuf> = Vec::new();
 		let mut skipped_paths = Vec::new();
+		let mut failed_asset_paths = Vec::new();
 		for asset_file_path in asset_paths.iter() {
 			let relative_path = asset_file_path
 				.as_path()
@@ -95,13 +96,24 @@ impl Module {
 					self.name,
 					relative_path
 				);
-				let (type_id, asset) = asset_manager.read_sync(&asset_file_path.as_path())?;
+				let (type_id, asset) = match asset_manager.read_sync(&asset_file_path.as_path()) {
+					Ok(success) => success,
+					Err(err) => {
+						log::error!(target: asset::LOG, "{}", err);
+						failed_asset_paths.push(asset_file_path.clone());
+						continue;
+					}
+				};
 				asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
 			} else {
 				skipped_paths.push(relative_path.to_owned());
 			}
 
 			intended_binaries.push(binary_file_path);
+		}
+
+		if !failed_asset_paths.is_empty() {
+			return Err(Box::new(super::Error::FailedToBuild(failed_asset_paths)));
 		}
 
 		if !skipped_paths.is_empty() {

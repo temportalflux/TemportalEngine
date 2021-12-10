@@ -15,8 +15,18 @@ impl TypeEditorMetadata for PassEditorMetadata {
 		Box::new(PassEditorMetadata {})
 	}
 
-	fn read(&self, _path: &Path, json_str: &str) -> AssetResult {
-		Ok(Box::new(serde_json::from_str::<Pass>(json_str)?))
+	fn read(&self, path: &Path, content: &str) -> AssetResult {
+		use crate::asset::SupportedFileTypes;
+		let ext = path.extension().map(|ext| ext.to_str()).flatten();
+		match SupportedFileTypes::parse_extension(ext) {
+			Some(SupportedFileTypes::Json) => Ok(Box::new(serde_json::from_str::<Pass>(content)?)),
+			Some(SupportedFileTypes::Kdl) => {
+				Ok(Box::new(Pass::kdl_schema().parse_and_validate(&content)?))
+			}
+			_ => Err(Box::new(engine::asset::Error::ExtensionNotSupported(
+				ext.map(|ext| ext.to_owned()),
+			))),
+		}
 	}
 
 	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {

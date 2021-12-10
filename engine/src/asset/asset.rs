@@ -10,6 +10,7 @@ pub type TypeIdOwned = String;
 pub trait TypeMetadata {
 	fn name(&self) -> TypeId;
 	fn decompile(&self, bin: &Vec<u8>) -> AssetResult;
+	fn kdl_schema(&self) {}
 }
 
 pub trait Asset: std::fmt::Debug {

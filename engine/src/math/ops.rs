@@ -21,8 +21,8 @@ pub fn look_at_3d(
 }
 
 /// Projects a point onto a line segment, returning the distance from the point to the line segment.
-/// Based on https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-distance-33io
-/// https://dev-to-uploads.s3.amazonaws.com/i/dkggpi3kk1co139fxpey.png
+/// Based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-distance-33io>`
+/// `<https://dev-to-uploads.s3.amazonaws.com/i/dkggpi3kk1co139fxpey.png>`
 pub fn distance_point_to_line_segment(
 	point: Vector2<f32>,
 	segment_start: Vector2<f32>,
@@ -47,7 +47,7 @@ pub fn distance_point_to_line_segment(
 }
 
 /// Returns true if the point is to the right of / has crossed a line.
-/// Based on https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-sign-of-the-distance-6g6
+/// Based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-sign-of-the-distance-6g6>`
 pub fn has_crossed_line_segment(
 	point: Vector2<f32>,
 	segment_start: Vector2<f32>,
@@ -71,7 +71,7 @@ pub fn has_crossed_line_segment(
 }
 
 /// Returns the distance from a point to the closest point on a bezier curve.
-/// Based on https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-distance-33io
+/// Based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-distance-33io>`
 pub fn distance_point_to_bezier(
 	point: Vector2<f32>,
 	start: Vector2<f32>,
@@ -133,7 +133,7 @@ pub fn distance_point_to_bezier(
 }
 
 /// Returns the number of times a point-ray crosses a bezier curve.
-/// Based on https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-sign-of-the-distance-6g6
+/// Based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-calculating-the-sign-of-the-distance-6g6>`
 pub fn count_intercepts_on_bezier(
 	point: Vector2<f32>,
 	start: Vector2<f32>,

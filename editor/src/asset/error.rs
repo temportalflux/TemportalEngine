@@ -3,6 +3,7 @@ pub enum Error {
 	InvalidJson(std::path::PathBuf, String),
 	MissingTypeId(std::path::PathBuf),
 	UnregisteredAssetType(std::path::PathBuf, String),
+	FailedToBuild(Vec<std::path::PathBuf>),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -22,6 +23,9 @@ impl std::fmt::Display for Error {
 				type_id,
 				path.to_str().unwrap()
 			),
+			Self::FailedToBuild(ref paths) => {
+				write!(f, "Failed to build {} assets: {:?}", paths.len(), paths)
+			}
 		}
 	}
 }

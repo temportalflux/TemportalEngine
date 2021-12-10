@@ -25,6 +25,8 @@ futures = "0.3"
 hound = "3.4"
 # [input] for processing user input from winit and gamepads using a user-defined configuration
 input-actions = { path = "../input-actions", features = ["winit", "log"] }
+kdl = "3.0"
+kdl-schema = { path = "../crates/kdl-schema" }
 # [audio] for parsing vorbis/ogg audio binaries
 lewton = "0.10"
 # [log] log allows for logging formatted text to multiple outputs and provides a generic interface
