@@ -23,6 +23,12 @@ pub struct Pass {
 }
 
 impl Pass {
+	fn init_asset_type(&mut self, node: &kdl::KdlNode) {
+		self.asset_type = match &node.values[0] {
+			kdl::KdlValue::String(asset_str) => asset_str.clone(),
+			_ => unimplemented!(),
+		};
+	}
 	fn insert_subpass_mapping(&mut self, node: &kdl::KdlNode) {
 		use std::convert::TryFrom;
 		let asset_str = match &node.values[0] {
@@ -140,6 +146,7 @@ impl Pass {
 				Node {
 					name: Name::Defined("asset-type"),
 					values: Items::Ordered(vec![Value::String(None)]),
+					on_validation_successful: Some(Pass::init_asset_type),
 					..Default::default()
 				},
 				/*
