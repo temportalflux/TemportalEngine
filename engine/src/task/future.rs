@@ -93,6 +93,24 @@ pub trait ScheduledTask {
 		spawner.spawn(self);
 		semaphore
 	}
+
+	fn join(self, delay_between_queries: std::time::Duration, timeout: Option<std::time::Duration>)
+	where
+		Self: Sized,
+	{
+		let start = std::time::Instant::now();
+		let mut is_complete = self.state().lock().unwrap().is_complete;
+		while !is_complete {
+			let runtime = std::time::Instant::now().duration_since(start);
+			if let Some(timeout) = timeout {
+				if runtime >= timeout {
+					break;
+				}
+			}
+			std::thread::sleep(delay_between_queries);
+			is_complete = self.state().lock().unwrap().is_complete;
+		}
+	}
 }
 
 pub fn wait_for_all(semaphores: &mut Vec<Semaphore>, delay: std::time::Duration) {
