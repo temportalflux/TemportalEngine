@@ -44,15 +44,15 @@ impl LocalData {
 		if std::env::args().any(|arg| arg == "-client") {
 			self.insert_modes(mode::Kind::Client);
 		}
-		self.set_port(
-			std::env::args()
-				.find_map(|arg| {
-					arg.strip_prefix("-port=")
-						.map(|s| s.parse::<u16>().ok())
-						.flatten()
-				})
-				.unwrap_or(self.port()),
-		);
+		self.set_port(Self::get_port_from_args().unwrap_or(self.port()));
+	}
+
+	pub fn get_port_from_args() -> Option<u16> {
+		std::env::args().find_map(|arg| {
+			arg.strip_prefix("-port=")
+				.map(|s| s.parse::<u16>().ok())
+				.flatten()
+		})
 	}
 
 	pub fn insert_modes<TModeSet: Into<mode::Set>>(&mut self, modes: TModeSet) {

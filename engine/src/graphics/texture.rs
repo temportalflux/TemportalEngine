@@ -46,9 +46,11 @@ impl crate::asset::kdl::Asset<Texture> for Texture {
 	fn kdl_schema() -> kdl_schema::Schema<Texture> {
 		use kdl_schema::*;
 		Schema {
-			nodes: Items::Select(vec![asset::kdl::asset_type::schema::<Texture>(|asset, node| {
-				asset.asset_type = asset::kdl::asset_type::get(node);
-			})]),
+			nodes: Items::Select(vec![asset::kdl::asset_type::schema::<Texture>(
+				|asset, node| {
+					asset.asset_type = asset::kdl::asset_type::get(node);
+				},
+			)]),
 			..Default::default()
 		}
 	}
