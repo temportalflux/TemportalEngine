@@ -44,12 +44,13 @@ impl LocalData {
 		if std::env::args().any(|arg| arg == "-client") {
 			self.insert_modes(mode::Kind::Client);
 		}
-		self.set_port(Self::get_port_from_args().unwrap_or(self.port()));
+		self.set_port(Self::get_named_arg("port").unwrap_or(self.port()));
 	}
 
-	pub fn get_port_from_args() -> Option<u16> {
+	pub fn get_named_arg(name: &str) -> Option<u16> {
 		std::env::args().find_map(|arg| {
-			arg.strip_prefix("-port=")
+			let prefix = format!("-{}=", name);
+			arg.strip_prefix(&prefix)
 				.map(|s| s.parse::<u16>().ok())
 				.flatten()
 		})
