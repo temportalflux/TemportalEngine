@@ -350,9 +350,10 @@ impl RenderChain {
 			.retain(|_, element| element.strong_count() > 0);
 		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
 			for element in elements.iter() {
-				let arc = element.upgrade().unwrap();
-				let mut locked = arc.write().unwrap();
-				locked.destroy_render_chain(self)?;
+				if let Some(arc) = element.upgrade() {
+					let mut locked = arc.write().unwrap();
+					locked.destroy_render_chain(self)?;
+				}
 			}
 		}
 
@@ -436,14 +437,15 @@ impl RenderChain {
 
 		for (subpass_id, elements) in self.initialized_render_chain_elements.iter_all() {
 			for element in elements.iter() {
-				let arc = element.upgrade().unwrap();
-				let mut locked = arc.write().unwrap();
-				log::info!(
-					target: graphics::LOG,
-					"Constructing render chain for {}",
-					locked.name()
-				);
-				locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
+				if let Some(arc) = element.upgrade() {
+					let mut locked = arc.write().unwrap();
+					log::info!(
+						target: graphics::LOG,
+						"Constructing render chain for {}",
+						locked.name()
+					);
+					locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
+				}
 			}
 		}
 
@@ -508,9 +510,10 @@ impl RenderChain {
 		let record_elements =
 			|buffer: &mut command::Buffer, elements: &Vec<ChainElement>| -> Result<(), AnyError> {
 				for element in elements.iter() {
-					let arc = element.upgrade().unwrap();
-					let locked = arc.read().unwrap();
-					locked.record_to_buffer(buffer, buffer_index)?;
+					if let Some(arc) = element.upgrade() {
+						let locked = arc.read().unwrap();
+						locked.record_to_buffer(buffer, buffer_index)?;
+					}
 				}
 				Ok(())
 			};
@@ -568,30 +571,31 @@ impl RenderChain {
 		self.pending_render_chain_elements.clear();
 		for (subpass_id, elements) in uninitialized_elements.iter_all() {
 			for element in elements.iter() {
-				let rc = element.upgrade().unwrap();
-				let mut locked = rc.write().unwrap();
-				// initialize the item
-				{
-					log::info!(
-						target: graphics::LOG,
-						"Initializing {} for subpass {:?}",
-						locked.name(),
-						subpass_id
-					);
-					let mut found_semaphores = locked.initialize_with(self)?;
-					required_semaphores.append(&mut found_semaphores);
-					self.initialized_render_chain_elements
-						.insert(subpass_id.clone(), element.clone());
-				}
-				// construct the chain if the chain already exists
-				if !self.is_dirty {
-					log::info!(
-						target: graphics::LOG,
-						"Constructing render chain for {}",
-						locked.name()
-					);
-					locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
-					has_constructed_new_elements = true;
+				if let Some(arc) = element.upgrade() {
+					let mut locked = arc.write().unwrap();
+					// initialize the item
+					{
+						log::info!(
+							target: graphics::LOG,
+							"Initializing {} for subpass {:?}",
+							locked.name(),
+							subpass_id
+						);
+						let mut found_semaphores = locked.initialize_with(self)?;
+						required_semaphores.append(&mut found_semaphores);
+						self.initialized_render_chain_elements
+							.insert(subpass_id.clone(), element.clone());
+					}
+					// construct the chain if the chain already exists
+					if !self.is_dirty {
+						log::info!(
+							target: graphics::LOG,
+							"Constructing render chain for {}",
+							locked.name()
+						);
+						locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
+						has_constructed_new_elements = true;
+					}
 				}
 			}
 		}
@@ -607,9 +611,10 @@ impl RenderChain {
 
 		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
 			for element in elements.iter() {
-				let rc = element.upgrade().unwrap();
-				let mut locked = rc.write().unwrap();
-				locked.preframe_update(self)?;
+				if let Some(arc) = element.upgrade() {
+					let mut locked = arc.write().unwrap();
+					locked.preframe_update(self)?;
+				}
 			}
 		}
 
@@ -667,15 +672,16 @@ impl RenderChain {
 		{
 			for (_, elements) in self.initialized_render_chain_elements.iter_all() {
 				for element in elements.iter() {
-					let arc = element.upgrade().unwrap();
-					let mut locked = arc.write().unwrap();
-					if locked.prerecord_update(
-						&self,
-						&self.command_buffers[next_image_idx],
-						next_image_idx,
-						&self.resolution,
-					)? {
-						self.frame_command_buffer_requires_recording[next_image_idx] = true;
+					if let Some(arc) = element.upgrade() {
+						let mut locked = arc.write().unwrap();
+						if locked.prerecord_update(
+							&self,
+							&self.command_buffers[next_image_idx],
+							next_image_idx,
+							&self.resolution,
+						)? {
+							self.frame_command_buffer_requires_recording[next_image_idx] = true;
+						}
 					}
 				}
 			}
@@ -696,10 +702,11 @@ impl RenderChain {
 
 		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
 			for element in elements.iter() {
-				let rc = element.upgrade().unwrap();
-				let mut locked = rc.write().unwrap();
-				let mut found_semaphores = locked.take_gpu_signals();
-				required_semaphores.append(&mut found_semaphores);
+				if let Some(arc) = element.upgrade() {
+					let mut locked = arc.write().unwrap();
+					let mut found_semaphores = locked.take_gpu_signals();
+					required_semaphores.append(&mut found_semaphores);
+				}
 			}
 		}
 
