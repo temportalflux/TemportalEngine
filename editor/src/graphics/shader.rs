@@ -1,12 +1,11 @@
 use crate::{
-	asset::TypeEditorMetadata,
+	asset::{deserialize_typed, TypeEditorMetadata},
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics,
 		utility::AnyError,
 	},
 };
-use serde_json;
 use std::{
 	path::{Path, PathBuf},
 	time::SystemTime,
@@ -37,8 +36,8 @@ impl TypeEditorMetadata for ShaderEditorMetadata {
 		Ok(asset_last_modified_at.max(glsl_last_modified_at))
 	}
 
-	fn read(&self, path: &std::path::Path, json_str: &str) -> AssetResult {
-		let mut shader: graphics::Shader = serde_json::from_str(json_str)?;
+	fn read(&self, path: &std::path::Path, content: &str) -> AssetResult {
+		let mut shader = deserialize_typed::<graphics::Shader>(&path, &content)?;
 		shader.set_contents(std::fs::read(self.glsl_path(&path))?);
 		Ok(Box::new(shader))
 	}

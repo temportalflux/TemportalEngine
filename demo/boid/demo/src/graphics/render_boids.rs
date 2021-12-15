@@ -1,7 +1,9 @@
 use crate::{
 	engine::{self, asset, math::nalgebra::Vector2, utility::AnyError, Application},
 	graphics::{
-		self, buffer, camera, command,
+		self, buffer,
+		camera::{self, Camera},
+		command,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
@@ -33,6 +35,7 @@ pub struct RenderBoids {
 	image_view: Arc<image_view::View>,
 
 	camera_uniform: camera::Uniform,
+	camera: Camera,
 
 	vert_shader: Arc<shader::Module>,
 	frag_shader: Arc<shader::Module>,
@@ -46,6 +49,8 @@ pub struct RenderBoids {
 impl RenderBoids {
 	pub fn new(
 		render_chain: &Arc<RwLock<RenderChain>>,
+		wrapping_world_bounds_min: &Vector2<f32>,
+		wrapping_world_bounds_max: &Vector2<f32>,
 	) -> Result<Arc<RwLock<RenderBoids>>, AnyError> {
 		let vert_shader = Arc::new(Self::load_shader(
 			&render_chain.read().unwrap(),
@@ -122,10 +127,19 @@ impl RenderBoids {
 			pipeline: None,
 			vert_shader,
 			frag_shader,
-			camera_uniform: camera::Uniform::new(
+			camera_uniform: camera::Uniform::new::<camera::ViewProjection, &str>(
 				"RenderBoids.Camera",
 				&render_chain.read().unwrap(),
 			)?,
+			camera: camera::Camera::default()
+				.with_position([0.0, 0.0, -10.0].into())
+				.with_projection(camera::Projection::Orthographic(
+					camera::OrthographicBounds {
+						x: [wrapping_world_bounds_min.x, wrapping_world_bounds_max.x].into(),
+						y: [wrapping_world_bounds_min.y, wrapping_world_bounds_max.y].into(),
+						z: [0.01, 100.0].into(),
+					},
+				)),
 			image_view,
 			image_sampler,
 			image_descriptor_layout,
@@ -442,13 +456,13 @@ impl graphics::RenderChainElement for RenderBoids {
 
 	fn prerecord_update(
 		&mut self,
-		chain: &graphics::RenderChain,
+		_chain: &graphics::RenderChain,
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
 	) -> Result<bool, AnyError> {
 		self.camera_uniform
-			.write_camera(frame, resolution, &chain.camera())?;
+			.write_camera(frame, resolution, &self.camera)?;
 
 		let mut requires_rerecording = false;
 		if !Arc::ptr_eq(

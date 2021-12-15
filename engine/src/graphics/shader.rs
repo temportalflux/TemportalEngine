@@ -17,6 +17,17 @@ pub struct Shader {
 	contents: Option<Vec<u8>>,
 }
 
+impl Default for Shader {
+	fn default() -> Self {
+		use asset::Asset;
+		Self {
+			asset_type: Self::metadata().name().to_owned(),
+			kind: ShaderKind::Vertex,
+			contents: None,
+		}
+	}
+}
+
 impl asset::Asset for Shader {
 	fn metadata() -> Box<dyn TypeMetadata> {
 		Box::new(ShaderMetadata {})
@@ -24,6 +35,10 @@ impl asset::Asset for Shader {
 }
 
 impl Shader {
+	fn set_kind_kdl(&mut self, node: &kdl::KdlNode) {
+		self.kind = asset::kdl::typed_enum::get::<ShaderKind>(node);
+	}
+
 	/// The shader stage/kind this shader can be used in.
 	pub fn kind(&self) -> ShaderKind {
 		self.kind
@@ -47,6 +62,24 @@ impl Shader {
 	#[doc(hidden)]
 	pub fn set_contents_from_string(&mut self, contents: String) {
 		self.contents = Some(contents.into_bytes());
+	}
+}
+
+impl asset::kdl::Asset<Shader> for Shader {
+	fn kdl_schema() -> kdl_schema::Schema<Shader> {
+		use kdl_schema::*;
+		Schema {
+			nodes: Items::Select(vec![
+				asset::kdl::asset_type::schema::<Shader>(|asset, node| {
+					asset.asset_type = asset::kdl::asset_type::get(node);
+				}),
+				asset::kdl::typed_enum::schema::<Shader, ShaderKind>(
+					Name::Defined("kind"),
+					Shader::set_kind_kdl,
+				),
+			]),
+			..Default::default()
+		}
 	}
 }
 

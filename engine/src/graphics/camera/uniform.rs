@@ -18,9 +18,10 @@ pub struct Uniform {
 }
 
 impl Uniform {
-	pub fn new<T>(name: T, chain: &RenderChain) -> Result<Self, AnyError>
+	pub fn new<TData, TStr>(name: TStr, chain: &RenderChain) -> Result<Self, AnyError>
 	where
-		T: Into<String>,
+		TStr: Into<String>,
+		TData: Default + Sized,
 	{
 		let uniform_name: String = name.into();
 
@@ -56,7 +57,7 @@ impl Uniform {
 			let buffer = buffer::Buffer::builder()
 				.with_name(format!("{}.Frame{}", uniform_name, i))
 				.with_usage(flags::BufferUsage::UNIFORM_BUFFER)
-				.with_size(std::mem::size_of::<camera::ViewProjection>())
+				.with_size(std::mem::size_of::<TData>())
 				.with_alloc(
 					alloc::Builder::default()
 						.with_usage(flags::MemoryUsage::CpuToGpu)
@@ -73,7 +74,7 @@ impl Uniform {
 			descriptor_sets,
 			buffers,
 		};
-		let default_view_proj = camera::ViewProjection::default();
+		let default_view_proj = TData::default();
 		for frame in 0..chain.frame_count() {
 			inst.write_data(frame, &default_view_proj)?;
 		}
@@ -110,7 +111,10 @@ impl Uniform {
 		self.descriptor_sets[frame].upgrade()
 	}
 
-	fn write_data(&self, frame: usize, camera: &camera::ViewProjection) -> utility::Result<()> {
+	pub fn write_data<TData>(&self, frame: usize, camera: &TData) -> utility::Result<()>
+	where
+		TData: Sized,
+	{
 		let mut mem = self.buffers[frame].memory()?;
 		let wrote_all = mem
 			.write_item(camera)

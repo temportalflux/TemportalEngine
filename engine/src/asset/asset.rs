@@ -38,6 +38,7 @@ pub mod kdl {
 
 	pub mod asset_type {
 		use kdl_schema::*;
+
 		pub fn schema<T>(on_validation_successful: fn(&mut T, &kdl::KdlNode)) -> Node<T> {
 			Node {
 				name: Name::Defined("asset-type"),
@@ -46,8 +47,45 @@ pub mod kdl {
 				..Default::default()
 			}
 		}
+
 		pub fn get(node: &kdl::KdlNode) -> String {
 			utility::value_as_string(&node, 0).unwrap().clone()
+		}
+	}
+
+	pub mod typed_enum {
+		use kdl_schema::*;
+		use std::convert::TryFrom;
+
+		pub fn schema<TStruct, TEnum>(
+			name: Name,
+			on_validation_successful: fn(&mut TStruct, &kdl::KdlNode),
+		) -> Node<TStruct>
+		where
+			TEnum: Into<String> + enumset::EnumSetType,
+		{
+			Node {
+				name,
+				values: Items::Ordered(vec![Value::String(Some(Validation::InList(
+					enumset::EnumSet::all()
+						.iter()
+						.map(|value: TEnum| value.into())
+						.collect(),
+				)))]),
+				on_validation_successful: Some(on_validation_successful),
+				..Default::default()
+			}
+		}
+
+		pub fn get<'a, TEnum>(node: &'a kdl::KdlNode) -> TEnum
+		where
+			TEnum: TryFrom<&'a str>,
+		{
+			let kind_string = utility::value_as_string(&node, 0).unwrap();
+			match TEnum::try_from(kind_string.as_str()) {
+				Ok(e) => e,
+				Err(_err) => unimplemented!(),
+			}
 		}
 	}
 }

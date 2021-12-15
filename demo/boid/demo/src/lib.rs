@@ -1,4 +1,4 @@
-use engine::{graphics::camera, math::nalgebra, utility::VoidResult, Application};
+use engine::{math::nalgebra, utility::VoidResult, Application};
 use std::sync::{Arc, RwLock};
 pub use temportal_engine as engine;
 
@@ -79,20 +79,13 @@ pub fn run() -> VoidResult {
 		.with_application::<BoidDemo>()
 		.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
 		.build(&mut engine)?;
-	engine.render_chain_write().unwrap().set_camera(
-		camera::Camera::default()
-			.with_position([0.0, 0.0, -10.0].into())
-			.with_projection(camera::Projection::Orthographic(
-				camera::OrthographicBounds {
-					x: [wrapping_world_bounds_min.x, wrapping_world_bounds_max.x].into(),
-					y: [wrapping_world_bounds_min.y, wrapping_world_bounds_max.y].into(),
-					z: [0.01, 100.0].into(),
-				},
-			)),
-	);
 
 	ecs_context.add_system(ecs::systems::InstanceCollector::new(
-		graphics::RenderBoids::new(engine.render_chain().unwrap())?,
+		graphics::RenderBoids::new(
+			engine.render_chain().unwrap(),
+			&wrapping_world_bounds_min,
+			&wrapping_world_bounds_max,
+		)?,
 		100,
 	));
 

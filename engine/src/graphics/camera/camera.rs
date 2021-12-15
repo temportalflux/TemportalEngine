@@ -113,7 +113,7 @@ impl Camera {
 		}
 	}
 
-	fn vertical_to_horizontal_fov(vertical: f32, xy_aspect_ratio: f32) -> f32 {
+	pub fn vertical_to_horizontal_fov(vertical: f32, xy_aspect_ratio: f32) -> f32 {
 		// According to this calculator http://themetalmuncher.github.io/fov-calc/
 		// whose source code is https://github.com/themetalmuncher/fov-calc/blob/gh-pages/index.html#L24
 		// the equation to get verticalFOV from horizontalFOV is: verticalFOV = 2 * atan(tan(horizontalFOV / 2) * height / width)
@@ -121,7 +121,7 @@ impl Camera {
 		2.0 * f32::atan(f32::tan(vertical / 2.0) * xy_aspect_ratio)
 	}
 
-	fn orthographic(
+	pub fn orthographic(
 		left: f32,
 		right: f32,
 		bottom: f32,
@@ -139,7 +139,7 @@ impl Camera {
 		matrix
 	}
 
-	fn perspective_right_hand_depth_zero_to_one(
+	pub fn perspective_right_hand_depth_zero_to_one(
 		y_fov: f32,
 		aspect_ratio: f32,
 		near_plane: f32,

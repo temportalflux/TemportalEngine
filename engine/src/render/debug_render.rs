@@ -66,7 +66,10 @@ impl DebugRender {
 		Ok(Self {
 			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
-			camera_uniform: camera::Uniform::new("DebugRender.Camera", chain)?,
+			camera_uniform: camera::Uniform::new::<camera::ViewProjection, &str>(
+				"DebugRender.Camera",
+				chain,
+			)?,
 			pending_objects: Vec::new(),
 			pending_gpu_signals: Vec::new(),
 		})
@@ -237,7 +240,7 @@ impl graphics::RenderChainElement for DebugRender {
 		resolution: &Vector2<f32>,
 	) -> Result<bool, AnyError> {
 		self.camera_uniform
-			.write_camera(frame, resolution, &chain.camera())?;
+			.write_camera(frame, resolution, &camera::Camera::default())?;
 
 		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
 		self.pending_gpu_signals.append(&mut signals);
