@@ -39,6 +39,8 @@ impl PendingAtlas {
 			id,
 			size: *font.size(),
 			binary: font.binary().iter().flatten().map(|alpha| *alpha).collect(),
+			// TODO: not supported on surface pro, but 8Bit SRGB is the only valid SRGB, so for this to work, the values have to be SFLOAT
+			// If the combination of parameters to vkGetPhysicalDeviceImageFormatProperties is not supported by the implementation for use in vkCreateImage, then all members of VkImageFormatProperties will be filled with zero.
 			format: flags::format::SRGB_8BIT_R,
 			glyph_map: font
 				.glyphs()
