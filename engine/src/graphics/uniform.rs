@@ -1,12 +1,11 @@
 use crate::{
 	graphics::{
-		alloc, buffer, camera,
+		alloc, buffer,
 		descriptor::{self, layout::SetLayout},
 		flags,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
 		RenderChain,
 	},
-	math::nalgebra::Vector2,
 	utility::{self, AnyError},
 };
 use std::sync::{Arc, Weak};
@@ -111,24 +110,15 @@ impl Uniform {
 		self.descriptor_sets[frame].upgrade()
 	}
 
-	pub fn write_data<TData>(&self, frame: usize, camera: &TData) -> utility::Result<()>
+	pub fn write_data<TData>(&self, frame: usize, data: &TData) -> utility::Result<()>
 	where
 		TData: Sized,
 	{
 		let mut mem = self.buffers[frame].memory()?;
 		let wrote_all = mem
-			.write_item(camera)
+			.write_item(data)
 			.map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
 		assert!(wrote_all);
 		Ok(())
-	}
-
-	pub fn write_camera(
-		&self,
-		frame: usize,
-		resolution: &Vector2<f32>,
-		camera: &camera::DefaultCamera,
-	) -> utility::Result<()> {
-		self.write_data(frame, &camera.as_uniform_matrix(resolution))
 	}
 }

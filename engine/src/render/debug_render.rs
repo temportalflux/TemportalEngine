@@ -4,7 +4,7 @@ use crate::{
 		self, buffer, camera, command, flags, pipeline, structs,
 		types::{Vec3, Vec4},
 		utility::NamedObject,
-		vertex_object, Drawable,
+		vertex_object, Drawable, Uniform,
 	},
 	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
 	task,
@@ -50,7 +50,7 @@ pub struct Point {
 pub struct DebugRender {
 	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 	pending_objects: Vec<DebugDraw>,
-	camera_uniform: camera::Uniform,
+	camera_uniform: Uniform,
 	frames: Vec<Frame>,
 	line_drawable: Drawable,
 }
@@ -66,7 +66,7 @@ impl DebugRender {
 		Ok(Self {
 			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
-			camera_uniform: camera::Uniform::new::<camera::ViewProjection, &str>(
+			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
 				"DebugRender.Camera",
 				chain,
 			)?,
@@ -239,8 +239,10 @@ impl graphics::RenderChainElement for DebugRender {
 		frame: usize,
 		resolution: &Vector2<f32>,
 	) -> Result<bool, AnyError> {
-		self.camera_uniform
-			.write_camera(frame, resolution, &camera::DefaultCamera::default())?;
+		self.camera_uniform.write_data(
+			frame,
+			&camera::DefaultCamera::default().as_uniform_matrix(resolution),
+		)?;
 
 		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
 		self.pending_gpu_signals.append(&mut signals);

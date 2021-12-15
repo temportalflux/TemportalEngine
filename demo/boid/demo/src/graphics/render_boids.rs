@@ -4,6 +4,7 @@ use crate::{
 		self, buffer,
 		camera::{self, DefaultCamera},
 		command,
+		Uniform,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
@@ -34,7 +35,7 @@ pub struct RenderBoids {
 	image_sampler: Arc<sampler::Sampler>,
 	image_view: Arc<image_view::View>,
 
-	camera_uniform: camera::Uniform,
+	camera_uniform: Uniform,
 	camera: DefaultCamera,
 
 	vert_shader: Arc<shader::Module>,
@@ -127,7 +128,7 @@ impl RenderBoids {
 			pipeline: None,
 			vert_shader,
 			frag_shader,
-			camera_uniform: camera::Uniform::new::<camera::ViewProjection, &str>(
+			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
 				"RenderBoids.Camera",
 				&render_chain.read().unwrap(),
 			)?,
@@ -462,7 +463,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		resolution: &Vector2<f32>,
 	) -> Result<bool, AnyError> {
 		self.camera_uniform
-			.write_camera(frame, resolution, &self.camera)?;
+			.write_data(frame, &self.camera.as_uniform_matrix(resolution))?;
 
 		let mut requires_rerecording = false;
 		if !Arc::ptr_eq(
