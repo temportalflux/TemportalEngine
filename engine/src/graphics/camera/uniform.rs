@@ -127,7 +127,7 @@ impl Uniform {
 		&self,
 		frame: usize,
 		resolution: &Vector2<f32>,
-		camera: &camera::Camera,
+		camera: &camera::DefaultCamera,
 	) -> utility::Result<()> {
 		self.write_data(frame, &camera.as_uniform_matrix(resolution))
 	}

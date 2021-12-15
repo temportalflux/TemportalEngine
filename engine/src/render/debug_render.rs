@@ -240,7 +240,7 @@ impl graphics::RenderChainElement for DebugRender {
 		resolution: &Vector2<f32>,
 	) -> Result<bool, AnyError> {
 		self.camera_uniform
-			.write_camera(frame, resolution, &camera::Camera::default())?;
+			.write_camera(frame, resolution, &camera::DefaultCamera::default())?;
 
 		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
 		self.pending_gpu_signals.append(&mut signals);

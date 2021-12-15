@@ -2,7 +2,7 @@ use crate::{
 	engine::{self, asset, math::nalgebra::Vector2, utility::AnyError, Application},
 	graphics::{
 		self, buffer,
-		camera::{self, Camera},
+		camera::{self, DefaultCamera},
 		command,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
@@ -35,7 +35,7 @@ pub struct RenderBoids {
 	image_view: Arc<image_view::View>,
 
 	camera_uniform: camera::Uniform,
-	camera: Camera,
+	camera: DefaultCamera,
 
 	vert_shader: Arc<shader::Module>,
 	frag_shader: Arc<shader::Module>,
@@ -131,7 +131,7 @@ impl RenderBoids {
 				"RenderBoids.Camera",
 				&render_chain.read().unwrap(),
 			)?,
-			camera: camera::Camera::default()
+			camera: camera::DefaultCamera::default()
 				.with_position([0.0, 0.0, -10.0].into())
 				.with_projection(camera::Projection::Orthographic(
 					camera::OrthographicBounds {
