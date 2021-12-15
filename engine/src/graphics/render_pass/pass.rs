@@ -140,12 +140,6 @@ impl crate::asset::kdl::Asset<Pass> for Pass {
 		Schema {
 			nodes: Items::Ordered(vec![
 				asset::kdl::asset_type::schema::<Pass>(Pass::init_asset_type),
-				Node {
-					name: Name::Defined("asset-type"),
-					values: Items::Ordered(vec![Value::String(None)]),
-					on_validation_successful: Some(Pass::init_asset_type),
-					..Default::default()
-				},
 				/*
 				subpasses {
 					subpass1name "asset-module:path/to/subpass1_asset"
