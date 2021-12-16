@@ -130,10 +130,6 @@ impl Ui {
 		// Create context
 		let context = CtxRef::default();
 
-		// Tesseract: PhysicalSize { width: 1280, height: 720 } 1.0
-		// SurfacePro: PhysicalSize { width: 2560, height: 1440 } 2.0
-		log::debug!("{:?} {:?}", physical_size, scale_factor);
-
 		let raw_input = egui::RawInput {
 			pixels_per_point: Some(scale_factor as f32),
 			screen_rect: Some(Self::get_screen_rect(&physical_size, scale_factor)),
@@ -186,7 +182,7 @@ impl Ui {
 			self.physical_size.height as f32,
 		]
 		.into();
-		size *= self.scale_factor as f32;
+		size /= self.scale_factor as f32;
 		size
 	}
 
