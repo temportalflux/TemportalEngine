@@ -109,6 +109,13 @@ impl Ui {
 		Ok(strong)
 	}
 
+	fn get_screen_rect(physical_size: &winit::dpi::PhysicalSize<u32>, scale_factor: f64) -> egui::Rect {
+		egui::Rect::from_min_size(
+			Default::default(),
+			vec2(physical_size.width as f32, physical_size.height as f32) / scale_factor as f32,
+		)
+	}
+
 	fn new(engine: &mut Engine) -> crate::utility::Result<Ui> {
 		let window_handle = engine.window().unwrap().unwrap();
 
@@ -123,12 +130,13 @@ impl Ui {
 		// Create context
 		let context = CtxRef::default();
 
+		// Tesseract: PhysicalSize { width: 1280, height: 720 } 1.0
+		// SurfacePro: PhysicalSize { width: 2560, height: 1440 } 2.0
+		log::debug!("{:?} {:?}", physical_size, scale_factor);
+
 		let raw_input = egui::RawInput {
 			pixels_per_point: Some(scale_factor as f32),
-			screen_rect: Some(egui::Rect::from_min_size(
-				Default::default(),
-				vec2(physical_size.width as f32, physical_size.height as f32) / scale_factor as f32,
-			)),
+			screen_rect: Some(Self::get_screen_rect(&physical_size, scale_factor)),
 			time: Some(0.0),
 			..Default::default()
 		};
@@ -235,11 +243,7 @@ impl WinitEventListener for Ui {
 						.raw_input
 						.pixels_per_point
 						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(egui::Rect::from_min_size(
-						Default::default(),
-						vec2(physical_size.width as f32, physical_size.height as f32)
-							/ pixels_per_point,
-					));
+					self.raw_input.screen_rect = Some(Self::get_screen_rect(&physical_size, pixels_per_point as f64));
 				}
 				// dpi changed
 				WindowEvent::ScaleFactorChanged {
@@ -252,11 +256,7 @@ impl WinitEventListener for Ui {
 						.raw_input
 						.pixels_per_point
 						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(egui::Rect::from_min_size(
-						Default::default(),
-						vec2(new_inner_size.width as f32, new_inner_size.height as f32)
-							/ pixels_per_point,
-					));
+					self.raw_input.screen_rect = Some(Self::get_screen_rect(&new_inner_size, pixels_per_point as f64));
 				}
 				// mouse click
 				WindowEvent::MouseInput { state, button, .. } => {
