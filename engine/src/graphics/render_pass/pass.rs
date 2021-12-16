@@ -271,9 +271,13 @@ impl Pass {
 		for id in attachment_ids.iter() {
 			let asset = Loader::load_sync(id)?;
 			let attachment = asset.downcast::<render_pass::Attachment>().unwrap();
+			let image_format = attachment.format().as_format();
+			if image_format == Default::default() {
+				log::error!("Failed to parse attachment format: {:?}", attachment.format());
+			}
 			rp_info.attach(
 				renderpass::Attachment::new(id.as_string())
-					.with_format(attachment.format().as_format())
+					.with_format(image_format)
 					.with_sample_count(*attachment.sample_count())
 					.with_general_ops(*attachment.general_ops())
 					.with_stencil_ops(*attachment.stencil_ops())

@@ -35,13 +35,26 @@ pub struct Loaded {
 
 impl PendingAtlas {
 	pub fn from(id: String, font: Box<Font>) -> Self {
+		use flags::format::prelude::*;
+
+		let binary = {
+			let font_binary = font.binary().iter().flatten().collect::<Vec<_>>();
+			let mut binary = Vec::with_capacity(font_binary.len() * 4);
+			for alpha in font_binary.into_iter() {
+				binary.push(*alpha); // r
+				binary.push(0); // g
+				binary.push(0); // b
+				binary.push(*alpha);
+			}
+			binary
+		};
+
 		Self {
 			id,
 			size: *font.size(),
-			binary: font.binary().iter().flatten().map(|alpha| *alpha).collect(),
-			// TODO: not supported on surface pro, but 8Bit SRGB is the only valid SRGB, so for this to work, the values have to be SFLOAT
-			// If the combination of parameters to vkGetPhysicalDeviceImageFormatProperties is not supported by the implementation for use in vkCreateImage, then all members of VkImageFormatProperties will be filled with zero.
-			format: flags::format::SRGB_8BIT_R,
+			binary: binary,
+			// Only need the red channel, but "Intel Iris Pro Graphics" doesnt suppport R8_SRGB (it does support RGBA 8-bit SRGB)
+			format: flags::format::format(&[R, G, B, A], Bit8, SRGB),
 			glyph_map: font
 				.glyphs()
 				.iter()

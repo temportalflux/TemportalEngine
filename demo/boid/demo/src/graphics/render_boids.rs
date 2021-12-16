@@ -4,11 +4,10 @@ use crate::{
 		self, buffer,
 		camera::{self, DefaultCamera},
 		command,
-		Uniform,
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-		Instance, RenderChain, Vertex,
+		Instance, RenderChain, Uniform, Vertex,
 	},
 	BoidDemo,
 };
