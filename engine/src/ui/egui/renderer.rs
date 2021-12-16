@@ -109,7 +109,10 @@ impl Ui {
 		Ok(strong)
 	}
 
-	fn get_screen_rect(physical_size: &winit::dpi::PhysicalSize<u32>, scale_factor: f64) -> egui::Rect {
+	fn get_screen_rect(
+		physical_size: &winit::dpi::PhysicalSize<u32>,
+		scale_factor: f64,
+	) -> egui::Rect {
 		egui::Rect::from_min_size(
 			Default::default(),
 			vec2(physical_size.width as f32, physical_size.height as f32) / scale_factor as f32,
@@ -239,7 +242,10 @@ impl WinitEventListener for Ui {
 						.raw_input
 						.pixels_per_point
 						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(Self::get_screen_rect(&physical_size, pixels_per_point as f64));
+					self.raw_input.screen_rect = Some(Self::get_screen_rect(
+						&physical_size,
+						pixels_per_point as f64,
+					));
 				}
 				// dpi changed
 				WindowEvent::ScaleFactorChanged {
@@ -252,7 +258,10 @@ impl WinitEventListener for Ui {
 						.raw_input
 						.pixels_per_point
 						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(Self::get_screen_rect(&new_inner_size, pixels_per_point as f64));
+					self.raw_input.screen_rect = Some(Self::get_screen_rect(
+						&new_inner_size,
+						pixels_per_point as f64,
+					));
 				}
 				// mouse click
 				WindowEvent::MouseInput { state, button, .. } => {

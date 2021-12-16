@@ -273,7 +273,10 @@ impl Pass {
 			let attachment = asset.downcast::<render_pass::Attachment>().unwrap();
 			let image_format = attachment.format().as_format();
 			if image_format == Default::default() {
-				log::error!("Failed to parse attachment format: {:?}", attachment.format());
+				log::error!(
+					"Failed to parse attachment format: {:?}",
+					attachment.format()
+				);
 			}
 			rp_info.attach(
 				renderpass::Attachment::new(id.as_string())
