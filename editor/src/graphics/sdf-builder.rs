@@ -78,7 +78,10 @@ impl SDFBuilder {
 	pub fn build(self, font_library: &freetype::Library) -> Result<font::SDF, AnyError> {
 		use freetype::{face::LoadFlag, outline::Curve};
 		assert!(self.font_path.exists());
-		profiling::scope!("build-font-sdf", self.font_path.file_name().unwrap().to_str().unwrap());
+		profiling::scope!(
+			"build-font-sdf",
+			self.font_path.file_name().unwrap().to_str().unwrap()
+		);
 		log::debug!(
 			target: FONT_LOG,
 			"Creating SDF for font {:?}",
