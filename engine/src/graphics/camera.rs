@@ -52,6 +52,23 @@ impl Default for Projection {
 	}
 }
 
+impl std::fmt::Display for Projection {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		match self {
+			Self::Orthographic(ortho) => write!(
+				f,
+				"Orthographic(x=<{}, {}> y=<{}, {}> z=<{}, {}>)",
+				ortho.x[0], ortho.x[1], ortho.y[0], ortho.y[1], ortho.z[0], ortho.z[1],
+			),
+			Self::Perspective(persp) => write!(
+				f,
+				"Perspective(fov={} near={} far={})",
+				persp.vertical_fov, persp.near_plane, persp.far_plane
+			),
+		}
+	}
+}
+
 #[derive(Debug, Default, Clone, Copy)]
 pub struct OrthographicBounds {
 	pub x: Vector2<f32>,
