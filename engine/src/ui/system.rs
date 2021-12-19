@@ -308,7 +308,7 @@ impl System {
 		subpass_id: Option<String>,
 	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
-		engine.add_system(&system);
+		engine.add_system(system.clone());
 		engine.add_winit_listener(&system);
 		if let Some(mut chain_write) = engine
 			.render_chain()

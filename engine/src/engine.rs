@@ -39,11 +39,11 @@ impl Engine {
 		self.event_loop.as_ref().unwrap()
 	}
 
-	pub fn add_system<T>(&mut self, system: &Arc<RwLock<T>>)
+	pub fn add_system<T>(&mut self, system: Arc<RwLock<T>>)
 	where
 		T: EngineSystem + 'static,
 	{
-		self.systems.push(system.clone());
+		self.systems.push(system);
 	}
 
 	pub fn add_winit_listener<T>(&mut self, system: &Arc<RwLock<T>>)

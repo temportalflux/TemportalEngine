@@ -94,7 +94,7 @@ pub fn run() -> VoidResult {
 			engine::render::DebugRender::create(engine.render_chain().unwrap(), |debug| {
 				debug.with_engine_shaders()
 			})?;
-		engine.add_system(&debug_render);
+		engine.add_system(debug_render.clone());
 		ecs_context.add_system(ecs::systems::DrawForward::new(debug_render.clone()));
 		//ecs_context.add_system(ecs::systems::ai::DrawWanderDebug::new(debug_render.clone()));
 		ecs_context.add_system(
@@ -108,7 +108,7 @@ pub fn run() -> VoidResult {
 
 	ecs_context.setup();
 	let ecs_context = Arc::new(RwLock::new(ecs_context));
-	engine.add_system(&ecs_context);
+	engine.add_system(ecs_context);
 
 	engine::ui::System::new(engine.render_chain().unwrap())?
 		.with_engine_shaders()?

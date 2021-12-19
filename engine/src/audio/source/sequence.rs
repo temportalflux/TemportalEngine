@@ -30,7 +30,7 @@ impl Sequence {
 
 	pub fn register_to(self, engine: &mut Engine) -> Arc<RwLock<Self>> {
 		let strong = Arc::new(RwLock::new(self));
-		engine.add_system(&strong);
+		engine.add_system(strong.clone());
 		strong
 	}
 
