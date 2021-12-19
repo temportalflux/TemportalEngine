@@ -46,12 +46,16 @@ impl System {
 		// - https://github.com/RustAudio/cpal/pull/504
 		// - https://github.com/RustAudio/cpal/pull/330
 		// - https://github.com/RustAudio/rodio/issues/214
-		let thread = std::thread::spawn(|| match Self::new() {
-			Ok(sys) => {
-				unsafe { Self::instance() }.init_with(sys);
-			}
-			Err(e) => {
-				log::error!(target: LOG, "Failed to initialize system: {}", e);
+		let thread = std::thread::spawn(|| {
+			profiling::register_thread!("audio-init");
+			profiling::scope!("audio-init");
+			match Self::new() {
+				Ok(sys) => {
+					unsafe { Self::instance() }.init_with(sys);
+				}
+				Err(e) => {
+					log::error!(target: LOG, "Failed to initialize system: {}", e);
+				}
 			}
 		});
 		let _ = thread.join();
@@ -107,6 +111,8 @@ impl System {
 		F: Fn(&mut Self, Box<source::Asset>) + Send + 'static,
 	{
 		std::thread::spawn(move || {
+			profiling::register_thread!("audio-load");
+			profiling::scope!("audio-load");
 			log::info!(target: LOG, "Loading asset {} for playing", id);
 			let asset = match asset::Loader::load_sync(&id) {
 				Ok(asset) => asset.downcast::<Sound>().unwrap(),

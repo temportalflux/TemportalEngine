@@ -76,6 +76,7 @@ impl Receiver {
 		});
 	}
 
+	#[profiling::function]
 	pub fn process(&self) -> VoidResult {
 		loop {
 			match self.queue.channel().try_recv() {

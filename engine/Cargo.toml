@@ -42,7 +42,7 @@ nalgebra = { version = "0.27", features = ["serde-serialize"] }
 # [audio] for managing audio playback and mixing
 oddio = "0.4"
 # [utility] for getting performance information and rendering via any chosen viewer
-profiling = { version = "1.0", features = ["profile-with-optick"] }
+profiling = "1.0"
 # [utility] pseudo/generated randomness
 rand = "0.8"
 # [ui] for handling UI widgets - rendering is built-into the engine and leverages tesselation

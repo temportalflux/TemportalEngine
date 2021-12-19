@@ -47,6 +47,7 @@ impl futures::future::Future for TaskGpuCopy {
 }
 
 impl TaskGpuCopy {
+	#[profiling::function]
 	pub fn new(name: Option<String>, render_chain: &RenderChain) -> utility::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
 
@@ -117,7 +118,12 @@ impl TaskGpuCopy {
 		let thread_device = self.device.clone();
 		let thread_cpu_signal = self.cpu_signal_on_complete.clone();
 		let thread_state = self.state.clone();
-		std::thread::spawn(move || {
+
+		let mut builder = std::thread::Builder::new();
+		if let Some(name) = &self.name {
+			builder = builder.name(name.clone());
+		}
+		let _ = builder.spawn(move || {
 			thread_device
 				.wait_for(&thread_cpu_signal, u64::MAX)
 				.unwrap();

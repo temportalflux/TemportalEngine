@@ -66,6 +66,8 @@ impl Asset {
 		let arc_handle = self.handle.clone();
 		let decoding_state = self.decoding_state.clone();
 		std::thread::spawn(move || {
+			profiling::register_thread!("audio-decode");
+			profiling::scope!("audio-decode");
 			let asset = match asset::Loader::load_sync(&id) {
 				Ok(asset) => asset.downcast::<Sound>().unwrap(),
 				Err(e) => {

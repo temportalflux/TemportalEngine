@@ -172,6 +172,7 @@ impl Builder {
 		(*reg_guard).insert(event::Kind::Stop, processor);
 	}
 
+	#[profiling::function]
 	pub fn spawn(&self) -> VoidResult {
 		if Network::is_active() {
 			return Err(Box::new(super::Error::NetworkAlreadyActive()));

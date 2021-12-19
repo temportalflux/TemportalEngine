@@ -134,6 +134,7 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
+						profiling::scope!("network");
 						let mut should_destroy_network = false;
 						if let Ok(guard) = network::Network::receiver().lock() {
 							if let Some(receiver) = &*guard {
@@ -165,6 +166,7 @@ impl Engine {
 					}
 					if let Ok(eng) = engine.read() {
 						if let Some(mut chain_write) = eng.render_chain_write() {
+							profiling::scope!("render");
 							match (*chain_write).render_frame() {
 								Ok(_) => prev_render_error = None,
 								Err(error) => {

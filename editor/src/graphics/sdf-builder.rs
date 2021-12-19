@@ -5,7 +5,7 @@ use crate::{
 			self,
 			nalgebra::{self, vector, Vector2, Vector4},
 		},
-		profiling::{self, optick},
+		profiling,
 		utility::AnyError,
 	},
 	graphics::font::LOG as FONT_LOG,
@@ -78,19 +78,7 @@ impl SDFBuilder {
 	pub fn build(self, font_library: &freetype::Library) -> Result<font::SDF, AnyError> {
 		use freetype::{face::LoadFlag, outline::Curve};
 		assert!(self.font_path.exists());
-		profiling::scope!("build-font-sdf");
-		optick::tag!(
-			"font-name",
-			self.font_path.file_name().unwrap().to_str().unwrap()
-		);
-		optick::tag!("glyph-height", self.glyph_height);
-		optick::tag!("field-spread", self.field_spread as u32);
-		optick::tag!("padding.left", self.padding_per_char.x as u32);
-		optick::tag!("padding.right", self.padding_per_char.y as u32);
-		optick::tag!("padding.top", self.padding_per_char.z as u32);
-		optick::tag!("padding.bottom", self.padding_per_char.w as u32);
-		optick::tag!("min-atlas-size.x", self.minimum_atlas_size.x as u32);
-		optick::tag!("min-atlas-size.y", self.minimum_atlas_size.y as u32);
+		profiling::scope!("build-font-sdf", self.font_path.file_name().unwrap().to_str().unwrap());
 		log::debug!(
 			target: FONT_LOG,
 			"Creating SDF for font {:?}",
@@ -109,8 +97,8 @@ impl SDFBuilder {
 		{
 			profiling::scope!("calc-sdf-all");
 			for unicode in self.unicode_ranges.iter().flat_map(|codes| codes.clone()) {
-				profiling::scope!("calc-sdf");
-				optick::tag!("code", unicode);
+				let profiling_tag = format!("{}", unicode);
+				profiling::scope!("calc-sdf", profiling_tag.as_str());
 
 				face.load_char(unicode as usize, LoadFlag::empty())?;
 				// https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html
@@ -118,8 +106,6 @@ impl SDFBuilder {
 				let outline = face.glyph().outline().unwrap();
 
 				let metric_size = vector![metrics.width as usize, metrics.height as usize] / 64;
-				optick::tag!("size.x", metric_size.x as u32);
-				optick::tag!("size.y", metric_size.y as u32);
 				let metric_bearing =
 					vector![metrics.horiBearingX as usize, metrics.horiBearingY as usize] / 64;
 
@@ -257,9 +243,6 @@ impl SDFBuilder {
 		&self,
 		sorted_fields: &Vec<SDFGlyph>,
 	) -> (Vector2<usize>, Vec<Vec<u8>>, Vec<font::Glyph>) {
-		optick::tag!("glyph-count", sorted_fields.len() as u32);
-		optick::tag!("min-atlas-size.x", self.minimum_atlas_size.x as u32);
-		optick::tag!("min-atlas-size.y", self.minimum_atlas_size.y as u32);
 		let mut atlas_size: Vector2<usize> = self.minimum_atlas_size;
 		let padding_offset = self.padding_per_char.xz();
 		let padding_on_axis = Vector2::new(
@@ -325,9 +308,6 @@ impl SDFBuilder {
 		atlas_size: Vector2<usize>,
 		cell_item_sizes: &Vec</*size*/ Vector2<usize>>,
 	) -> Option<Vec</*position*/ Vector2<usize>>> {
-		optick::tag!("atlas-size.x", atlas_size.x as u32);
-		optick::tag!("atlas-size.y", atlas_size.y as u32);
-
 		let min_item_size = cell_item_sizes
 			.iter()
 			.fold(vector![usize::MAX, usize::MAX], |acc, size| {
@@ -374,13 +354,12 @@ impl SDFBuilder {
 			}
 		};
 
-		for (idx_item, (item_size, item_pos_out)) in cell_item_sizes
+		for (_idx_item, (item_size, item_pos_out)) in cell_item_sizes
 			.iter()
 			.zip(cell_item_positions.iter_mut())
 			.enumerate()
 		{
 			profiling::scope!("pack-item");
-			optick::tag!("item", idx_item as u32);
 			match cells
 				.iter()
 				.enumerate()
