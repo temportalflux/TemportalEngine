@@ -106,6 +106,11 @@ impl Window {
 		sync::Arc::downgrade(&self.internal)
 	}
 
+	pub fn read_size(&self) -> (winit::dpi::PhysicalSize<u32>, f64) {
+		let handle = self.internal.read().unwrap();
+		(handle.inner_size(), handle.scale_factor())
+	}
+
 	fn find_physical_device(
 		vulkan: &sync::Arc<instance::Instance>,
 		surface: &sync::Arc<Surface>,

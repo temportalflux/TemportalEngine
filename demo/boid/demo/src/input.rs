@@ -8,18 +8,17 @@ pub static ACTION_SELECT_NONE_BOID: &'static str = "SelectBoid-None";
 
 pub fn init() {
 	use crate::engine::input::{
-		action::Action,
 		binding::{ActionMap, ActionSet, ActionSetId, Gamepad::*, LayoutId, Source::*},
 		device::GamepadKind::*,
 		source::{Button::*, Key::*, Kind},
 	};
 	input::write()
 		.add_users(1)
-		.add_action(ACTION_CREATE_BOID, Action::new(Kind::Button))
-		.add_action(ACTION_DESTROY_BOID, Action::new(Kind::Button))
-		.add_action(ACTION_SELECT_PREV_BOID, Action::new(Kind::Button))
-		.add_action(ACTION_SELECT_NEXT_BOID, Action::new(Kind::Button))
-		.add_action(ACTION_SELECT_NONE_BOID, Action::new(Kind::Button))
+		.add_action(ACTION_CREATE_BOID, Kind::Button)
+		.add_action(ACTION_DESTROY_BOID, Kind::Button)
+		.add_action(ACTION_SELECT_PREV_BOID, Kind::Button)
+		.add_action(ACTION_SELECT_NEXT_BOID, Kind::Button)
+		.add_action(ACTION_SELECT_NONE_BOID, Kind::Button)
 		.add_layout(LayoutId::default())
 		.add_action_set(
 			ActionSetId::default(),
@@ -28,19 +27,15 @@ pub fn init() {
 				ActionMap::default()
 					.bind(
 						ACTION_CREATE_BOID,
-						vec![
-							Keyboard(Equals).bound(),
-							Keyboard(NumpadPlus).bound(),
-							Gamepad(DualAxisGamepad, Button(VirtualConfirm)).bound(),
-						],
+						Keyboard(Equals) + Keyboard(NumpadPlus) + Gamepad(DualAxisGamepad, Button(VirtualConfirm))
 					)
 					.bind(
 						ACTION_DESTROY_BOID,
-						vec![Keyboard(Minus).bound(), Keyboard(NumpadMinus).bound()],
+						Keyboard(Minus) + Keyboard(NumpadMinus)
 					)
-					.bind(ACTION_SELECT_PREV_BOID, vec![Keyboard(Comma).bound()])
-					.bind(ACTION_SELECT_NEXT_BOID, vec![Keyboard(Period).bound()])
-					.bind(ACTION_SELECT_NONE_BOID, vec![Keyboard(Slash).bound()]),
+					.bind(ACTION_SELECT_PREV_BOID, Keyboard(Comma))
+					.bind(ACTION_SELECT_NEXT_BOID, Keyboard(Period))
+					.bind(ACTION_SELECT_NONE_BOID, Keyboard(Slash)),
 			),
 		)
 		.enable_action_set_for_all(ActionSetId::default());

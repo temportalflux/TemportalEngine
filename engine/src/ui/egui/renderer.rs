@@ -121,14 +121,7 @@ impl Ui {
 
 	fn new(engine: &mut Engine) -> crate::utility::Result<Ui> {
 		let window_handle = engine.window().unwrap().unwrap();
-
-		let (physical_size, scale_factor) = match window_handle.upgrade() {
-			Some(arc) => match arc.read() {
-				Ok(guard) => (guard.inner_size(), guard.scale_factor()),
-				_ => unimplemented!(),
-			},
-			_ => unimplemented!(),
-		};
+		let (physical_size, scale_factor) = engine.window().unwrap().read_size();
 
 		// Create context
 		let context = CtxRef::default();
