@@ -96,7 +96,7 @@ impl std::iter::FromIterator<asset::Id> for Sequence {
 }
 
 impl EngineSystem for Sequence {
-	fn update(&mut self, _: std::time::Duration) {
+	fn update(&mut self, _: std::time::Duration, _: bool) {
 		use super::Source;
 		let should_play_next = match &self.current_source {
 			Some(source) => source.is_stopped(),

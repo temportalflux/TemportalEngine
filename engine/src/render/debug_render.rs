@@ -139,7 +139,7 @@ impl DebugRender {
 }
 
 impl EngineSystem for DebugRender {
-	fn update(&mut self, _: std::time::Duration) {
+	fn update(&mut self, _: std::time::Duration, _: bool) {
 		self.clear();
 	}
 }

@@ -8,11 +8,12 @@ use crate::{
 		NamedSystem,
 	},
 	engine::{
+		input,
 		math::nalgebra::{UnitQuaternion, Vector2},
 		rand::{self, Rng},
 		world,
 	},
-	input, Archetype,
+	Archetype,
 };
 
 pub type MessageReceiver = std::sync::mpsc::Receiver<CreateEntityMessage>;
@@ -23,14 +24,16 @@ pub struct CreateEntityMessage {
 }
 
 pub struct InputCreateEntity {
+	weak_action: input::action::WeakLockState,
 	receiver: MessageReceiver,
 	min: Vector2<f32>,
 	max: Vector2<f32>,
 }
 
 impl InputCreateEntity {
-	pub fn new(receiver: MessageReceiver) -> Self {
+	pub fn new(weak_action: input::action::WeakLockState, receiver: MessageReceiver) -> Self {
 		Self {
+			weak_action,
 			receiver,
 			min: Default::default(),
 			max: Default::default(),
@@ -138,8 +141,9 @@ impl<'a> ecs::System<'a> for InputCreateEntity {
 			spawn_batch(msg);
 		}
 
-		if let Some(action) = input::read().get_user_action(0, input::ACTION_CREATE_BOID) {
-			if action.on_button_pressed() {
+		if let Some(arc_state) = self.weak_action.upgrade() {
+			let action_state = arc_state.read().unwrap();
+			if action_state.on_button_pressed() {
 				spawn_batch(CreateEntityMessage {
 					count: 10,
 					archetype: Archetype::Wander,

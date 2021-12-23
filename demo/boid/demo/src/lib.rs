@@ -1,6 +1,6 @@
+pub use engine;
 use engine::{math::nalgebra, utility::VoidResult, Application};
 use std::sync::{Arc, RwLock};
-pub use temportal_engine as engine;
 
 #[path = "graphics/mod.rs"]
 pub mod graphics;
@@ -36,11 +36,27 @@ pub fn run() -> VoidResult {
 	engine::logging::init(&engine::logging::default_path(BoidDemo::name(), None))?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;
-	input::init();
+	let arc_user = input::init();
+	let (
+		action_create_boid,
+		action_destroy_boid,
+		action_select_prev,
+		action_select_next,
+		action_select_none,
+	) = {
+		let user = arc_user.read().unwrap();
+		(
+			user.get_action(input::ACTION_CREATE_BOID).unwrap(),
+			user.get_action(input::ACTION_DESTROY_BOID).unwrap(),
+			user.get_action(input::ACTION_SELECT_PREV_BOID),
+			user.get_action(input::ACTION_SELECT_NEXT_BOID),
+			user.get_action(input::ACTION_SELECT_NONE_BOID),
+		)
+	};
 
 	// 25px = 1m
 	let pixels_per_unit: f32 = 25.0;
-	let resolution = nalgebra::vector![1920.0, 1080.0];
+	let resolution = nalgebra::vector![1280.0, 720.0];
 	let world_size = resolution / pixels_per_unit;
 	let wrapping_world_bounds_min = -world_size / 2.0;
 	let wrapping_world_bounds_max = world_size / 2.0;
@@ -66,10 +82,13 @@ pub fn run() -> VoidResult {
 	let (destroy_sender, destroy_receiver) =
 		std::sync::mpsc::sync_channel::<ecs::systems::DestroyEntityMessage>(100);
 	ecs_context.add_system(
-		ecs::systems::InputCreateEntity::new(create_receiver)
+		ecs::systems::InputCreateEntity::new(action_create_boid, create_receiver)
 			.with_bounds(wrapping_world_bounds_min, wrapping_world_bounds_max),
 	);
-	ecs_context.add_system(ecs::systems::InputDestroyEntity::new(destroy_receiver));
+	ecs_context.add_system(ecs::systems::InputDestroyEntity::new(
+		action_destroy_boid,
+		destroy_receiver,
+	));
 	GameContext::write().with_senders(create_sender, destroy_sender);
 
 	engine::window::Window::builder()
@@ -99,9 +118,9 @@ pub fn run() -> VoidResult {
 		//ecs_context.add_system(ecs::systems::ai::DrawWanderDebug::new(debug_render.clone()));
 		ecs_context.add_system(
 			ecs::systems::ai::DrawNeighborhoods::new(debug_render.clone()).with_select_actions(
-				input::ACTION_SELECT_PREV_BOID,
-				input::ACTION_SELECT_NEXT_BOID,
-				input::ACTION_SELECT_NONE_BOID,
+				action_select_prev,
+				action_select_next,
+				action_select_none,
 			),
 		);
 	}

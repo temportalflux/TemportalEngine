@@ -87,14 +87,13 @@ impl Builder {
 		{
 			use crate::input::{self, event};
 			let (physical_size, scale_factor) = window.read_size();
-			input::write().send_event(
-				event::Source::Window,
-				event::Event::Window(event::WindowEvent::ScaleFactorChanged(
+			input::send_event(event::Event::Window(
+				event::WindowEvent::ScaleFactorChanged(
 					physical_size.width,
 					physical_size.height,
 					scale_factor,
-				)),
-			);
+				),
+			));
 		}
 
 		Ok(engine.set_window(window))

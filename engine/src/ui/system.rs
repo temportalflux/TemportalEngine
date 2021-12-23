@@ -490,7 +490,7 @@ impl WinitEventListener for System {
 
 impl EngineSystem for System {
 	#[profiling::function]
-	fn update(&mut self, _: std::time::Duration) {
+	fn update(&mut self, _: std::time::Duration, _: bool) {
 		let mapping = self.mapping();
 		self.application
 			.forced_process_with_context(raui::ProcessContext::new().insert(&self.contexts));

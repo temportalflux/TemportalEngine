@@ -172,7 +172,7 @@ impl System {
 
 impl EngineSystem for System {
 	#[profiling::function]
-	fn update(&mut self, _: std::time::Duration) {
+	fn update(&mut self, _: std::time::Duration, _: bool) {
 		self.active_sources.retain(|source| !source.is_stopped());
 	}
 }

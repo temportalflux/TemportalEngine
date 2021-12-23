@@ -1,7 +1,7 @@
-use crate::{
-	ecs::{self, NamedSystem},
-	engine::rand::{self, Rng},
+use crate::ecs::{self, NamedSystem};
+use engine::{
 	input,
+	rand::{self, Rng},
 };
 
 pub type MessageReceiver = std::sync::mpsc::Receiver<DestroyEntityMessage>;
@@ -11,12 +11,16 @@ pub struct DestroyEntityMessage {
 }
 
 pub struct InputDestroyEntity {
+	weak_action: input::action::WeakLockState,
 	receiver: MessageReceiver,
 }
 
 impl InputDestroyEntity {
-	pub fn new(receiver: MessageReceiver) -> Self {
-		Self { receiver }
+	pub fn new(weak_action: input::action::WeakLockState, receiver: MessageReceiver) -> Self {
+		Self {
+			weak_action,
+			receiver,
+		}
 	}
 }
 
@@ -64,8 +68,9 @@ impl<'a> ecs::System<'a> for InputDestroyEntity {
 			destroy_batch(msg);
 		}
 
-		if let Some(action) = input::read().get_user_action(0, input::ACTION_DESTROY_BOID) {
-			if action.on_button_pressed() {
+		if let Some(arc_state) = self.weak_action.upgrade() {
+			let action_state = arc_state.read().unwrap();
+			if action_state.on_button_pressed() {
 				destroy_batch(DestroyEntityMessage { count: 10 });
 			}
 		}

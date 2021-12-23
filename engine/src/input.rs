@@ -1,16 +1,48 @@
 pub use input_actions::*;
-use std::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::{
+	mem::MaybeUninit,
+	sync::{Arc, Once, RwLock},
+};
 
-fn get() -> &'static RwLock<System> {
-	use crate::utility::singleton::*;
-	static mut INSTANCE: Singleton<System> = Singleton::uninit();
-	unsafe { INSTANCE.get_or_init(System::new) }
+fn config() -> &'static mut Option<Arc<RwLock<Config>>> {
+	static mut INSTANCE: Option<Arc<RwLock<Config>>> = None;
+	unsafe { &mut INSTANCE }
 }
 
-pub fn read() -> RwLockReadGuard<'static, System> {
-	get().read().unwrap()
+pub fn set_config(configuration: Config) {
+	*config() = Some(Arc::new(RwLock::new(configuration)));
 }
 
-pub fn write() -> RwLockWriteGuard<'static, System> {
-	get().write().unwrap()
+pub(crate) fn device_cache() -> &'static Arc<RwLock<DeviceCache>> {
+	static mut INSTANCE: (MaybeUninit<Arc<RwLock<DeviceCache>>>, Once) =
+		(MaybeUninit::uninit(), Once::new());
+	unsafe {
+		INSTANCE
+			.1
+			.call_once(|| INSTANCE.0.as_mut_ptr().write(Default::default()));
+	}
+
+	unsafe { &*INSTANCE.0.as_ptr() }
+}
+
+pub fn create_user<T: Into<String>>(name: T) -> ArcLockUser {
+	let config = match config().as_ref() {
+		Some(config) => Arc::downgrade(&config),
+		None => unimplemented!(),
+	};
+	let user = User::new(name.into())
+		.with_config(config)
+		.with_devices(Arc::downgrade(device_cache()))
+		.arclocked();
+	device_cache()
+		.write()
+		.unwrap()
+		.add_user(Arc::downgrade(&user));
+	user
+}
+
+pub(crate) fn send_event(event: event::Event) {
+	if let Ok(mut cache) = device_cache().write() {
+		cache.send_event(event);
+	}
 }

@@ -102,8 +102,8 @@ impl Engine {
 				return;
 			}
 			if engine_has_focus {
-				if let Ok((source, input_event)) = input::winit::parse_winit_event(&event) {
-					input::write().send_event(source, input_event);
+				if let Ok(event) = input::winit::parse_winit_event(&event) {
+					input::send_event(event);
 				}
 				{
 					let systems = &mut engine.write().unwrap().winit_listeners;
@@ -129,8 +129,24 @@ impl Engine {
 					profiling::scope!("update");
 					let frame_time = std::time::Instant::now();
 					task::watcher().poll();
+
 					if engine_has_focus {
-						input::write().update();
+						profiling::scope!("input");
+						let users = if let Ok(mut cache) = input::device_cache().write() {
+							cache.update();
+							cache.users()
+						} else {
+							vec![]
+						};
+
+						let now = std::time::Instant::now();
+						for weak_user in users.into_iter() {
+							if let Some(arc_user) = weak_user.upgrade() {
+								if let Ok(mut user) = arc_user.write() {
+									user.update(&now);
+								}
+							}
+						}
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
@@ -158,10 +174,12 @@ impl Engine {
 							}
 						}
 
-						audio::System::write().unwrap().update(delta_time);
+						audio::System::write()
+							.unwrap()
+							.update(delta_time, engine_has_focus);
 						let systems = &mut engine.write().unwrap().systems;
 						for system in systems.iter_mut() {
-							system.write().unwrap().update(delta_time);
+							system.write().unwrap().update(delta_time, engine_has_focus);
 						}
 					}
 					if let Ok(eng) = engine.read() {
@@ -210,5 +228,5 @@ pub trait WinitEventListener {
 }
 
 pub trait EngineSystem {
-	fn update(&mut self, delta_time: std::time::Duration);
+	fn update(&mut self, delta_time: std::time::Duration, has_focus: bool);
 }
