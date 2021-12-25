@@ -4,7 +4,7 @@ use crate::{
 };
 use std::sync::{
 	atomic::{self, AtomicBool},
-	Arc, RwLock, RwLockWriteGuard,
+	Arc, RwLock, RwLockWriteGuard, Weak,
 };
 use winit::event_loop::EventLoop;
 
@@ -12,6 +12,7 @@ pub struct Engine {
 	event_loop: Option<EventLoop<()>>,
 	winit_listeners: Vec<Arc<RwLock<dyn WinitEventListener>>>,
 	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
+	weak_systems: Vec<Weak<RwLock<dyn EngineSystem>>>,
 	window: Option<crate::window::Window>,
 }
 
@@ -24,6 +25,7 @@ impl Engine {
 			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),
 			systems: Vec::new(),
+			weak_systems: Vec::new(),
 			window: None,
 		})
 	}
@@ -44,6 +46,13 @@ impl Engine {
 		T: EngineSystem + 'static,
 	{
 		self.systems.push(system);
+	}
+
+	pub fn add_weak_system<T>(&mut self, system: Weak<RwLock<T>>)
+	where
+		T: EngineSystem + 'static,
+	{
+		self.weak_systems.push(system);
 	}
 
 	pub fn add_winit_listener<T>(&mut self, system: &Arc<RwLock<T>>)
@@ -76,10 +85,21 @@ impl Engine {
 		Arc::new(RwLock::new(self))
 	}
 
+	fn singleton() -> &'static mut std::mem::MaybeUninit<Arc<RwLock<Self>>> {
+		use std::mem::MaybeUninit;
+		static mut INSTANCE: MaybeUninit<Arc<RwLock<Engine>>> = MaybeUninit::uninit();
+		unsafe { &mut INSTANCE }
+	}
+
+	pub fn get() -> &'static Arc<RwLock<Self>> {
+		unsafe { &*Self::singleton().as_ptr() }
+	}
+
 	pub fn run<F>(engine: Arc<RwLock<Self>>, on_complete: F) -> !
 	where
 		F: 'static + Fn() -> (),
 	{
+		Self::singleton().write(engine.clone());
 		let terminate_signal = Arc::new(AtomicBool::new(false));
 		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
 
@@ -106,8 +126,8 @@ impl Engine {
 					input::send_event(event);
 				}
 				{
-					let systems = &mut engine.write().unwrap().winit_listeners;
-					for system in systems.iter_mut() {
+					let engine = engine.read().unwrap();
+					for system in engine.winit_listeners.iter() {
 						system.write().unwrap().on_event(&event);
 					}
 				}
@@ -174,12 +194,20 @@ impl Engine {
 							}
 						}
 
-						audio::System::write()
-							.unwrap()
-							.update(delta_time, engine_has_focus);
-						let systems = &mut engine.write().unwrap().systems;
-						for system in systems.iter_mut() {
-							system.write().unwrap().update(delta_time, engine_has_focus);
+						{
+							let mut engine = engine.write().unwrap();
+							engine.weak_systems.retain(|sys| sys.strong_count() > 0);
+						}
+						{
+							audio::System::write()
+								.unwrap()
+								.update(delta_time, engine_has_focus);
+							let engine = engine.read().unwrap();
+							let strong = engine.systems.iter().cloned();
+							let weak = engine.weak_systems.iter().filter_map(|weak| weak.upgrade());
+							for system in strong.chain(weak) {
+								system.write().unwrap().update(delta_time, engine_has_focus);
+							}
 						}
 					}
 					if let Ok(eng) = engine.read() {
