@@ -62,7 +62,7 @@ impl Receiver {
 			Event::Stop => (event::Kind::Stop, None),
 			Event::Packet(packet) => {
 				let connection = self.get_connection(*packet.address());
-				log::debug!(target: LOG, "Received packet {:?}", packet);
+				//log::debug!(target: LOG, "Received packet {:?}", packet);
 				let guarantee = *packet.guarantees();
 				let packet_kind = packet.kind().clone();
 				let any_packet = self.deserialize_packet(packet);
@@ -125,6 +125,7 @@ impl Receiver {
 
 					// the second option indicates if the processor is explicitly ignoring the mode or not
 					if !processors.is_empty() {
+						/*
 						log::debug!(
 							target: LOG,
 							"Processing {} {}",
@@ -134,6 +135,7 @@ impl Receiver {
 								None => "None".to_owned(),
 							}
 						);
+						*/
 					}
 					for processor in processors.iter() {
 						if let Err(err) =
