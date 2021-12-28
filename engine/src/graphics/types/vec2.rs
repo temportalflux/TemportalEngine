@@ -1,4 +1,4 @@
-use crate::math::nalgebra::Vector2;
+use crate::math::nalgebra::{Point2, Vector2};
 
 /// An array of 2 f32 values, aligned to a 16-byte boundary,
 /// (so it takes up 16 bytes instead of 8 bytes).
@@ -20,6 +20,13 @@ impl std::ops::Deref for Vec2 {
 impl From<Vector2<f32>> for Vec2 {
 	fn from(vec: Vector2<f32>) -> Self {
 		Self(vec)
+	}
+}
+
+/// Wraps the provided [`Point2`] nalgebra vector.
+impl From<Point2<f32>> for Vec2 {
+	fn from(vec: Point2<f32>) -> Self {
+		Self(Vector2::new(vec.x, vec.y))
 	}
 }
 
