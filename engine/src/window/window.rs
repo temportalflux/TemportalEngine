@@ -132,6 +132,7 @@ impl Window {
 	#[profiling::function]
 	pub fn create_render_chain(
 		&mut self,
+		create_depth_image: bool,
 	) -> Result<sync::Arc<sync::RwLock<graphics::RenderChain>>, utility::AnyError> {
 		let permitted_frame_count = self
 			.physical_device
@@ -162,6 +163,27 @@ impl Window {
 			self.render_pass_clear_color.z,
 			self.render_pass_clear_color.w,
 		]));
+		chain.add_clear_value(renderpass::ClearValue::DepthStencil(1.0, 0));
+
+		if create_depth_image {
+			let tiling = flags::ImageTiling::OPTIMAL;
+			let format_flags = flags::FormatFeatureFlags::DEPTH_STENCIL_ATTACHMENT;
+			let format = self.physical_device.query_supported_image_formats(
+				&vec![
+					flags::format::Format::D32_SFLOAT,
+					flags::format::Format::D32_SFLOAT_S8_UINT,
+					flags::format::Format::D24_UNORM_S8_UINT,
+				],
+				tiling,
+				format_flags,
+			);
+			if let Some(format) = format {
+				chain.set_depth_format(format, tiling);
+			} else {
+				log::error!("Failed to find valid depth-buffer image format");
+			}
+		}
+
 		self.render_chain = Some(sync::Arc::new(sync::RwLock::new(chain)));
 
 		Ok(self.render_chain().clone())

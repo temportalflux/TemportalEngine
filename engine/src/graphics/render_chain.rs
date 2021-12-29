@@ -1,13 +1,13 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command,
+		self, alloc, command,
 		device::{
 			logical, physical,
 			swapchain::{self, Swapchain},
 		},
-		flags, image, image_view, renderpass, structs,
-		utility::{BuildFromDevice, NameableBuilder},
+		flags, image, image_view, render_pass, renderpass, structs,
+		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
 		Surface,
 	},
 	math::nalgebra::Vector2,
@@ -105,10 +105,13 @@ pub struct RenderChain {
 	render_finished_semaphores: Vec<command::Semaphore>,
 	img_available_semaphores: Vec<command::Semaphore>,
 	frame_command_buffer_requires_recording: Vec<bool>,
+	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
 
 	command_buffers: Vec<command::Buffer>,
 	frame_command_pool: Option<command::Pool>,
 	frame_buffers: Vec<command::framebuffer::Framebuffer>,
+	depth_view: Option<sync::Arc<image_view::View>>,
+	depth_format: Option<(flags::format::Format, flags::ImageTiling)>,
 	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<sync::Arc<image::Image>>,
 	swapchain: Option<Swapchain>,
@@ -205,8 +208,11 @@ impl RenderChain {
 			swapchain: None,
 			frame_images: Vec::new(),
 			frame_image_views: Vec::new(),
+			depth_format: None,
+			depth_view: None,
 			frame_buffers: Vec::new(),
 
+			pending_gpu_signals: Vec::new(),
 			frame_command_buffer_requires_recording: vec![true; frame_count],
 			img_available_semaphores: Vec::new(),
 			render_finished_semaphores: Vec::new(),
@@ -274,6 +280,21 @@ impl RenderChain {
 		self.render_pass_instruction.add_clear_value(clear);
 	}
 
+	pub fn set_depth_format(&mut self, format: flags::format::Format, tiling: flags::ImageTiling) {
+		self.depth_format = Some((format, tiling));
+	}
+
+	pub fn get_attachment_format(
+		&self,
+		format: render_pass::AttachmentFormat,
+	) -> Option<flags::format::Format> {
+		use render_pass::AttachmentFormat;
+		match format {
+			AttachmentFormat::Viewport => Some(self.swapchain_info.format()),
+			AttachmentFormat::Depth => self.depth_format.map(|(format, _tiling)| format),
+		}
+	}
+
 	/// Returns the number of frames that are being used/rendered.
 	pub fn frame_count(&self) -> usize {
 		self.frame_count
@@ -324,6 +345,7 @@ impl RenderChain {
 		self.render_finished_semaphores.clear();
 		self.img_available_semaphores.clear();
 
+		self.depth_view = None;
 		self.frame_buffers.clear();
 		self.frame_image_views.clear();
 		self.frame_images.clear();
@@ -385,12 +407,60 @@ impl RenderChain {
 					.build(&logical)?,
 			);
 		}
+
+		if let Some((format, tiling)) = self.depth_format {
+			use crate::task::ScheduledTask;
+
+			let image = Arc::new(
+				image::Image::builder()
+					.with_optname(Some("RenderChain.DepthBuffer".to_owned()))
+					.with_alloc(
+						alloc::Builder::default()
+							.with_usage(flags::MemoryUsage::GpuOnly)
+							.requires(flags::MemoryProperty::DEVICE_LOCAL),
+					)
+					.with_format(format)
+					.with_tiling(tiling)
+					.with_usage(flags::ImageUsage::DEPTH_STENCIL_ATTACHMENT)
+					.with_size(structs::Extent3D {
+						width: extent.width,
+						height: extent.height,
+						depth: 1,
+					})
+					.build(&self.allocator())?,
+			);
+
+			graphics::TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &self)?
+				.begin()?
+				.format_depth_image(&image)
+				.end()?
+				.add_signal_to(&mut self.pending_gpu_signals)
+				.send_to(crate::task::sender());
+
+			self.depth_view = Some(Arc::new(
+				image_view::View::builder()
+					.with_optname(image.wrap_name(|v| format!("{}.View", v)))
+					.for_image(image)
+					.with_view_type(flags::ImageViewType::TYPE_2D)
+					.with_range(
+						structs::subresource::Range::default()
+							.with_aspect(flags::ImageAspect::DEPTH),
+					)
+					.build(&self.logical())?,
+			));
+		}
+
 		for (i, image_view) in self.frame_image_views.iter().enumerate() {
+			let mut attachments: Vec<&image_view::View> = Vec::with_capacity(2);
+			attachments.push(&*image_view);
+			if let Some(depth_view) = &self.depth_view {
+				attachments.push(&*depth_view);
+			}
 			self.frame_buffers.push(
 				command::framebuffer::Framebuffer::builder()
 					.with_name(format!("RenderChain.Frame{}.Framebuffer", i))
 					.set_extent(extent)
-					.build(&image_view, &self.render_pass(), &logical)?,
+					.build(attachments, &self.render_pass(), &logical)?,
 			);
 		}
 
@@ -548,7 +618,7 @@ impl RenderChain {
 		use graphics::debug;
 		let logical = self.logical.upgrade().unwrap();
 
-		let mut required_semaphores = Vec::new();
+		let mut required_semaphores = self.pending_gpu_signals.drain(..).collect::<Vec<_>>();
 		let mut has_constructed_new_elements = false;
 		let uninitialized_elements = self.pending_render_chain_elements.clone();
 		self.pending_render_chain_elements.clear();

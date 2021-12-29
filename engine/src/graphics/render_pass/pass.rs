@@ -1,15 +1,15 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	graphics::{flags, renderpass::Info as GraphicsPassInfo},
+	graphics::{flags, renderpass::Info as GraphicsPassInfo, RenderChain},
 	utility::AnyError,
 };
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 
 /// The engine asset representation of a [`render pass`](crate::graphics::renderpass::Pass).
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Pass {
 	asset_type: String,
+	attachment_order: Vec<asset::Id>,
 	/// Defines the order that subpasses will be recorded in the [`RenderChain`](crate::graphics::RenderChain).
 	/// This is not the order that the GPU will process the commands - that is defined by [`dependencies`](Pass::dependencies).
 	subpass_order: Vec<asset::Id>,
@@ -25,6 +25,17 @@ pub struct Pass {
 impl Pass {
 	fn init_asset_type(&mut self, node: &kdl::KdlNode) {
 		self.asset_type = asset::kdl::asset_type::get(node);
+	}
+	fn insert_attachments(&mut self, node: &kdl::KdlNode) {
+		use std::convert::TryFrom;
+		for value in node.values.iter() {
+			let asset_str = match &value {
+				kdl::KdlValue::String(asset_str) => asset_str.as_str(),
+				_ => unimplemented!(),
+			};
+			let asset_id = asset::Id::try_from(asset_str).unwrap();
+			self.attachment_order.push(asset_id);
+		}
 	}
 	fn insert_subpass_mapping(&mut self, node: &kdl::KdlNode) {
 		use std::convert::TryFrom;
@@ -58,10 +69,10 @@ impl Pass {
 			};
 			subpass = Some(subpass_alias.to_owned());
 		}
-		for (name, value) in node.properties.iter() {
-			match name.as_str() {
+		for node in node.children.iter() {
+			match node.name.as_str() {
 				"stage" => {
-					let flag = flags::PipelineStage::try_from(match &value {
+					let flag = flags::PipelineStage::try_from(match &node.values[0] {
 						kdl::KdlValue::String(asset_str) => asset_str.as_str(),
 						_ => unimplemented!(),
 					})
@@ -69,7 +80,7 @@ impl Pass {
 					item.stage.push(flag);
 				}
 				"access" => {
-					let flag = flags::Access::try_from(match &value {
+					let flag = flags::Access::try_from(match &node.values[0] {
 						kdl::KdlValue::String(asset_str) => asset_str.as_str(),
 						_ => unimplemented!(),
 					})
@@ -140,6 +151,12 @@ impl crate::asset::kdl::Asset<Pass> for Pass {
 		Schema {
 			nodes: Items::Ordered(vec![
 				asset::kdl::asset_type::schema::<Pass>(Pass::init_asset_type),
+				Node {
+					name: Name::Defined("attachments"),
+					values: Items::Select(vec![Value::String(None)]), // TODO: Create a validator for asset ids
+					on_validation_successful: Some(Pass::insert_attachments),
+					..Default::default()
+				},
 				/*
 				subpasses {
 					subpass1name "asset-module:path/to/subpass1_asset"
@@ -180,22 +197,24 @@ impl crate::asset::kdl::Asset<Pass> for Pass {
 									Value::Null,
 									Value::String(Some(Validation::IsInVariable("subpasses"))),
 								]),
-								properties: vec![
-									Property {
-										name: "stage",
-										value: Value::String(Some(Validation::InList(
-											flags::PipelineStage::all_serialized(),
-										))),
-										optional: false,
+								children: Items::Select(vec![
+									Node {
+										name: Name::Defined("stage"),
+										values: Items::Ordered(vec![Value::String(Some(
+											Validation::InList(
+												flags::PipelineStage::all_serialized(),
+											),
+										))]),
+										..Default::default()
 									},
-									Property {
-										name: "access",
-										value: Value::String(Some(Validation::InList(
-											flags::Access::all_serialized(),
-										))),
-										optional: true,
+									Node {
+										name: Name::Defined("access"),
+										values: Items::Ordered(vec![Value::String(Some(
+											Validation::InList(flags::Access::all_serialized()),
+										))]),
+										..Default::default()
 									},
-								],
+								]),
 								..Default::default()
 							},
 							Node {
@@ -204,22 +223,24 @@ impl crate::asset::kdl::Asset<Pass> for Pass {
 									Value::Null,
 									Value::String(Some(Validation::IsInVariable("subpasses"))),
 								]),
-								properties: vec![
-									Property {
-										name: "stage",
-										value: Value::String(Some(Validation::InList(
-											flags::PipelineStage::all_serialized(),
-										))),
-										optional: false,
+								children: Items::Select(vec![
+									Node {
+										name: Name::Defined("stage"),
+										values: Items::Ordered(vec![Value::String(Some(
+											Validation::InList(
+												flags::PipelineStage::all_serialized(),
+											),
+										))]),
+										..Default::default()
 									},
-									Property {
-										name: "access",
-										value: Value::String(Some(Validation::InList(
-											flags::Access::all_serialized(),
-										))),
-										optional: true,
+									Node {
+										name: Name::Defined("access"),
+										values: Items::Ordered(vec![Value::String(Some(
+											Validation::InList(flags::Access::all_serialized()),
+										))]),
+										..Default::default()
 									},
-								],
+								]),
 								..Default::default()
 							},
 						]),
@@ -235,14 +256,21 @@ impl crate::asset::kdl::Asset<Pass> for Pass {
 }
 
 impl Pass {
-	pub fn as_graphics(&self) -> Result<GraphicsPassInfo, AnyError> {
+	pub fn as_graphics(
+		&self,
+		asset_id: &asset::Id,
+		render_chain: &RenderChain,
+	) -> Result<GraphicsPassInfo, AnyError> {
 		use crate::{
 			asset::Loader,
 			graphics::{render_pass, renderpass},
 		};
 		let mut rp_info = GraphicsPassInfo::empty();
 
-		let mut attachment_ids = HashSet::new();
+		log::debug!("{:?}", self.attachment_order);
+		log::debug!("{:?}", self.subpass_order);
+		log::debug!("{:?}", self.dependencies);
+
 		for id in self.subpass_order.iter() {
 			let subpass = Loader::load_sync(id)?
 				.downcast::<render_pass::Subpass>()
@@ -250,17 +278,35 @@ impl Pass {
 			let mut graphics = renderpass::Subpass::new(id.as_string());
 
 			for attachment in subpass.attachments.input.iter() {
-				attachment_ids.insert(attachment.id.clone());
+				if !self.attachment_order.contains(&attachment.id) {
+					return Err(Box::new(MissingAttachmentReference(
+						attachment.id.clone(),
+						id.clone(),
+						asset_id.clone(),
+					)));
+				}
 				graphics =
 					graphics.add_input_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			for attachment in subpass.attachments.color.iter() {
-				attachment_ids.insert(attachment.id.clone());
+				if !self.attachment_order.contains(&attachment.id) {
+					return Err(Box::new(MissingAttachmentReference(
+						attachment.id.clone(),
+						id.clone(),
+						asset_id.clone(),
+					)));
+				}
 				graphics =
 					graphics.add_color_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			if let Some(attachment) = &subpass.attachments.depth_stencil {
-				attachment_ids.insert(attachment.id.clone());
+				if !self.attachment_order.contains(&attachment.id) {
+					return Err(Box::new(MissingAttachmentReference(
+						attachment.id.clone(),
+						id.clone(),
+						asset_id.clone(),
+					)));
+				}
 				graphics = graphics
 					.with_depth_stencil_attachment(attachment.id.as_string(), attachment.layout);
 			}
@@ -268,16 +314,19 @@ impl Pass {
 			rp_info.add_subpass(graphics);
 		}
 
-		for id in attachment_ids.iter() {
+		for id in self.attachment_order.iter() {
 			let asset = Loader::load_sync(id)?;
 			let attachment = asset.downcast::<render_pass::Attachment>().unwrap();
-			let image_format = attachment.format().as_format();
-			if image_format == Default::default() {
-				log::error!(
-					"Failed to parse attachment format: {:?}",
-					attachment.format()
-				);
-			}
+			let image_format = match render_chain.get_attachment_format(*attachment.format()) {
+				Some(format) => format,
+				None => {
+					log::error!(
+						"Failed to parse attachment format: {:?}",
+						attachment.format()
+					);
+					continue;
+				}
+			};
 			rp_info.attach(
 				renderpass::Attachment::new(id.as_string())
 					.with_format(image_format)
@@ -313,5 +362,22 @@ impl Pass {
 		}
 
 		Ok(rp_info)
+	}
+}
+
+struct MissingAttachmentReference(asset::Id, asset::Id, asset::Id);
+impl std::error::Error for MissingAttachmentReference {}
+impl std::fmt::Debug for MissingAttachmentReference {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		<Self as std::fmt::Display>::fmt(&self, f)
+	}
+}
+impl std::fmt::Display for MissingAttachmentReference {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(
+			f,
+			"MissingAttachmentReference({} is in {} but not in {} attachments)",
+			self.0, self.1, self.2
+		)
 	}
 }

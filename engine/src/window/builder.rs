@@ -11,6 +11,7 @@ pub struct Builder {
 	app_info: AppInfo,
 	constraints: Vec<physical::Constraint>,
 	render_pass_clear_color: Vector4<f32>,
+	create_depth_image: bool,
 }
 
 impl Default for Builder {
@@ -22,6 +23,7 @@ impl Default for Builder {
 			app_info: AppInfo::default(),
 			constraints: physical::default_constraints(),
 			render_pass_clear_color: [0.0, 0.0, 0.0, 1.0].into(),
+			create_depth_image: false,
 		}
 	}
 }
@@ -57,6 +59,11 @@ impl Builder {
 		self
 	}
 
+	pub fn with_depth_attachment(mut self) -> Self {
+		self.create_depth_image = true;
+		self
+	}
+
 	#[profiling::function]
 	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window, utility::AnyError> {
 		log::info!(
@@ -82,7 +89,7 @@ impl Builder {
 			self.constraints,
 			self.render_pass_clear_color,
 		)?;
-		window.create_render_chain()?;
+		window.create_render_chain(self.create_depth_image)?;
 
 		{
 			use crate::input::{self, event};

@@ -233,6 +233,34 @@ impl TaskGpuCopy {
 		self
 	}
 
+	#[profiling::function]
+	pub fn format_depth_image(self, image: &sync::Arc<image::Image>) -> Self {
+		use command::barrier::{Image, Kind, Pipeline};
+		let mut subresource_range =
+			subresource::Range::default().with_aspect(flags::ImageAspect::DEPTH);
+		if flags::format::stencilable(image.format()) {
+			subresource_range = subresource_range.with_aspect(flags::ImageAspect::STENCIL);
+		}
+		self.cmd().mark_pipeline_barrier(
+			Pipeline::new(
+				flags::PipelineStage::TopOfPipe,
+				flags::PipelineStage::EarlyFragmentTests,
+			)
+			.with(Kind::Image(
+				Image::default()
+					.prevents(flags::Access::DepthStencilAttachmentRead)
+					.prevents(flags::Access::DepthStencilAttachmentWrite)
+					.with_image(sync::Arc::downgrade(&image))
+					.with_range(subresource_range)
+					.with_layout(
+						flags::ImageLayout::Undefined,
+						flags::ImageLayout::DepthStencilAttachmentOptimal,
+					),
+			)),
+		);
+		self
+	}
+
 	fn staging_buffer(&self) -> &buffer::Buffer {
 		self.staging_buffer.as_ref().unwrap()
 	}

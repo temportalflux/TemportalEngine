@@ -1,18 +1,26 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
 	graphics::{
-		flags::{format, ImageLayout, SampleCount},
+		flags::{ImageLayout, SampleCount},
 		renderpass::AttachmentOps,
 	},
 };
 use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum AttachmentFormat {
+	/// The [`Format`](format::Format) of the [`swapchain`](crate::graphics::Swapchain) images.
+	Viewport,
+	/// The [`Format`](format::Format) of the depth-buffer image.
+	Depth,
+}
 
 /// The engine asset representation of a [`render pass`](crate::graphics::renderpass::Attachment).
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Attachment {
 	asset_type: String,
 
-	format: format::Components,
+	format: AttachmentFormat,
 
 	#[serde(default)]
 	sample_count: SampleCount,
@@ -35,7 +43,7 @@ struct Ops {
 }
 
 impl Attachment {
-	pub fn format(&self) -> &format::Components {
+	pub fn format(&self) -> &AttachmentFormat {
 		&self.format
 	}
 
