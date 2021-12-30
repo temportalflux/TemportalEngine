@@ -2,7 +2,7 @@ use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 
 /// A unique identifier given to each instance of a class which implements [`Asset`](crate::asset::Asset).
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Id {
 	module_name: String,
 	asset_path: std::path::PathBuf,

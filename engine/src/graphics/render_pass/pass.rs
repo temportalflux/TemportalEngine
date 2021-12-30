@@ -267,10 +267,6 @@ impl Pass {
 		};
 		let mut rp_info = GraphicsPassInfo::empty();
 
-		log::debug!("{:?}", self.attachment_order);
-		log::debug!("{:?}", self.subpass_order);
-		log::debug!("{:?}", self.dependencies);
-
 		for id in self.subpass_order.iter() {
 			let subpass = Loader::load_sync(id)?
 				.downcast::<render_pass::Subpass>()
