@@ -66,14 +66,8 @@ impl Module {
 			return Ok(());
 		}
 
-		log::info!(
-			target: asset::LOG,
-			"[{}] Building {} assets",
-			self.name,
-			asset_paths.len()
-		);
-
 		let mut intended_binaries: Vec<PathBuf> = Vec::new();
+		let mut dirty_paths = Vec::new();
 		let mut skipped_paths = Vec::new();
 		let mut failed_asset_paths = Vec::new();
 		for asset_file_path in asset_paths.iter() {
@@ -90,26 +84,41 @@ impl Module {
 				|| (asset_manager.last_modified(&asset_file_path)?
 					> binary_file_path.metadata()?.modified()?)
 			{
-				log::info!(
-					target: asset::LOG,
-					"[{}] - Building {:?}",
-					self.name,
-					relative_path
-				);
-				let (type_id, asset) = match asset_manager.read_sync(&asset_file_path.as_path()) {
-					Ok(success) => success,
-					Err(err) => {
-						log::error!(target: asset::LOG, "{}", err);
-						failed_asset_paths.push(asset_file_path.clone());
-						continue;
-					}
-				};
-				asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
+				dirty_paths.push((
+					asset_file_path.to_owned(),
+					relative_path.to_owned(),
+					binary_file_path.to_owned(),
+				));
 			} else {
 				skipped_paths.push(relative_path.to_owned());
 			}
 
 			intended_binaries.push(binary_file_path);
+		}
+
+		log::info!(
+			target: asset::LOG,
+			"[{}] Building {} assets",
+			self.name,
+			dirty_paths.len()
+		);
+
+		for (asset_file_path, relative_path, binary_file_path) in dirty_paths.into_iter() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] - Building {:?}",
+				self.name,
+				relative_path
+			);
+			let (type_id, asset) = match asset_manager.read_sync(&asset_file_path.as_path()) {
+				Ok(success) => success,
+				Err(err) => {
+					log::error!(target: asset::LOG, "{}", err);
+					failed_asset_paths.push(asset_file_path.clone());
+					continue;
+				}
+			};
+			asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
 		}
 
 		if !failed_asset_paths.is_empty() {
@@ -123,9 +132,6 @@ impl Module {
 				self.name,
 				skipped_paths.len()
 			);
-			for relative_path in skipped_paths.iter() {
-				log::info!(target: asset::LOG, "[{}]   {:?}", self.name, relative_path);
-			}
 		}
 
 		let old_binaries = collect_file_paths(&self.binaries_directory, &intended_binaries)?;
