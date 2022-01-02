@@ -621,52 +621,65 @@ impl RenderChain {
 		let mut required_semaphores = self.pending_gpu_signals.drain(..).collect::<Vec<_>>();
 		let mut has_constructed_new_elements = false;
 		let uninitialized_elements = self.pending_render_chain_elements.clone();
-		self.pending_render_chain_elements.clear();
-		for (subpass_id, elements) in uninitialized_elements.iter_all() {
-			for element in elements.iter() {
-				if let Some(arc) = element.upgrade() {
-					let mut locked = arc.write().unwrap();
-					// initialize the item
-					{
-						log::info!(
-							target: graphics::LOG,
-							"Initializing {} for subpass {:?}",
-							locked.name(),
-							subpass_id
-						);
-						let mut found_semaphores = locked.initialize_with(self)?;
-						required_semaphores.append(&mut found_semaphores);
-						self.initialized_render_chain_elements
-							.insert(subpass_id.clone(), element.clone());
-					}
-					// construct the chain if the chain already exists
-					if !self.is_dirty {
-						log::info!(
-							target: graphics::LOG,
-							"Constructing render chain for {}",
-							locked.name()
-						);
-						locked.on_render_chain_constructed(self, &self.resolution, subpass_id)?;
-						has_constructed_new_elements = true;
+		{
+			profiling::scope!("intialize-new-elements");
+			self.pending_render_chain_elements.clear();
+			for (subpass_id, elements) in uninitialized_elements.iter_all() {
+				for element in elements.iter() {
+					if let Some(arc) = element.upgrade() {
+						let mut locked = arc.write().unwrap();
+						// initialize the item
+						{
+							log::info!(
+								target: graphics::LOG,
+								"Initializing {} for subpass {:?}",
+								locked.name(),
+								subpass_id
+							);
+							let mut found_semaphores = locked.initialize_with(self)?;
+							required_semaphores.append(&mut found_semaphores);
+							self.initialized_render_chain_elements
+								.insert(subpass_id.clone(), element.clone());
+						}
+						// construct the chain if the chain already exists
+						if !self.is_dirty {
+							log::info!(
+								target: graphics::LOG,
+								"Constructing render chain for {}",
+								locked.name()
+							);
+							locked.on_render_chain_constructed(
+								self,
+								&self.resolution,
+								subpass_id,
+							)?;
+							has_constructed_new_elements = true;
+						}
 					}
 				}
 			}
 		}
 
-		let pre_retain_element_count = self.initialized_render_chain_elements.len();
-		self.initialized_render_chain_elements
-			.retain(|_, element| element.strong_count() > 0);
-		if has_constructed_new_elements
-			|| pre_retain_element_count > self.initialized_render_chain_elements.len()
 		{
-			self.mark_commands_dirty();
+			profiling::scope!("prune-dropped-elements");
+			let pre_retain_element_count = self.initialized_render_chain_elements.len();
+			self.initialized_render_chain_elements
+				.retain(|_, element| element.strong_count() > 0);
+			if has_constructed_new_elements
+				|| pre_retain_element_count > self.initialized_render_chain_elements.len()
+			{
+				self.mark_commands_dirty();
+			}
 		}
 
-		for (_, elements) in self.initialized_render_chain_elements.iter_all() {
-			for element in elements.iter() {
-				if let Some(arc) = element.upgrade() {
-					let mut locked = arc.write().unwrap();
-					locked.preframe_update(self)?;
+		{
+			profiling::scope!("preframe-update");
+			for (_, elements) in self.initialized_render_chain_elements.iter_all() {
+				for element in elements.iter() {
+					if let Some(arc) = element.upgrade() {
+						let mut locked = arc.write().unwrap();
+						locked.preframe_update(self)?;
+					}
 				}
 			}
 		}
@@ -686,7 +699,10 @@ impl RenderChain {
 		}
 
 		// Wait for the previous frame/image to no longer be displayed
-		logical.wait_for(&self.in_flight_fences[self.current_frame], u64::MAX)?;
+		{
+			profiling::scope!("wait-for-frame-fence");
+			logical.wait_for(&self.in_flight_fences[self.current_frame], u64::MAX)?;
+		}
 
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain().acquire_next_image(
@@ -712,6 +728,7 @@ impl RenderChain {
 
 		// Ensure that the image for the next index is not being written to or displayed
 		{
+			profiling::scope!("wait-for-image-fence");
 			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
 			if fence_index_for_img_in_flight.is_some() {
 				logical.wait_for(
@@ -723,6 +740,7 @@ impl RenderChain {
 
 		// Update any uniforms on pre-submit
 		{
+			profiling::scope!("prerecord-update");
 			for (_, elements) in self.initialized_render_chain_elements.iter_all() {
 				for element in elements.iter() {
 					if let Some(arc) = element.upgrade() {
@@ -763,45 +781,51 @@ impl RenderChain {
 			}
 		}
 
-		self.graphics_queue.submit(
-			vec![command::SubmitInfo::default()
-				// tell the gpu to wait until the image is available
-				.wait_for(
-					&self.img_available_semaphores[self.current_frame],
-					flags::PipelineStage::ColorAttachmentOutput,
-				)
-				.wait_for_semaphores(&required_semaphores)
-				// denote which command buffer is being executed
-				.add_buffer(&self.command_buffers[next_image_idx])
-				// tell the gpu to signal a semaphore when the image is available again
-				.signal_when_complete(&self.render_finished_semaphores[self.current_frame])],
-			Some(&self.in_flight_fences[self.current_frame]),
-		)?;
+		{
+			profiling::scope!("submit-queue");
+			self.graphics_queue.submit(
+				vec![command::SubmitInfo::default()
+					// tell the gpu to wait until the image is available
+					.wait_for(
+						&self.img_available_semaphores[self.current_frame],
+						flags::PipelineStage::ColorAttachmentOutput,
+					)
+					.wait_for_semaphores(&required_semaphores)
+					// denote which command buffer is being executed
+					.add_buffer(&self.command_buffers[next_image_idx])
+					// tell the gpu to signal a semaphore when the image is available again
+					.signal_when_complete(&self.render_finished_semaphores[self.current_frame])],
+				Some(&self.in_flight_fences[self.current_frame]),
+			)?;
+		}
 		self.graphics_queue.end_label();
 
-		self.graphics_queue
-			.begin_label("Present", debug::LABEL_COLOR_PRESENT);
-		let present_result = self.graphics_queue.present(
-			command::PresentInfo::default()
-				.wait_for(&self.render_finished_semaphores[self.current_frame])
-				.add_swapchain(self.swapchain())
-				.add_image_index(next_image_idx as u32),
-		);
-		self.graphics_queue.end_label();
-		match present_result {
-			Ok(is_suboptimal) => {
-				if is_suboptimal {
-					self.is_dirty = true;
-					return Ok(());
+		{
+			profiling::scope!("present-queue");
+			self.graphics_queue
+				.begin_label("Present", debug::LABEL_COLOR_PRESENT);
+			let present_result = self.graphics_queue.present(
+				command::PresentInfo::default()
+					.wait_for(&self.render_finished_semaphores[self.current_frame])
+					.add_swapchain(self.swapchain())
+					.add_image_index(next_image_idx as u32),
+			);
+			self.graphics_queue.end_label();
+			match present_result {
+				Ok(is_suboptimal) => {
+					if is_suboptimal {
+						self.is_dirty = true;
+						return Ok(());
+					}
 				}
+				Err(e) => match e {
+					crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
+						self.is_dirty = true;
+						return Ok(());
+					}
+					_ => return Err(utility::Error::Graphics(e))?,
+				},
 			}
-			Err(e) => match e {
-				crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
-					self.is_dirty = true;
-					return Ok(());
-				}
-				_ => return Err(utility::Error::Graphics(e))?,
-			},
 		}
 
 		self.current_frame =
