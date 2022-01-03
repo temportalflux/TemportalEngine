@@ -280,10 +280,7 @@ impl TaskGpuCopy {
 	}
 
 	#[profiling::function]
-	pub fn stage_any<F>(mut self, memory_size: usize, write: F) -> utility::Result<Self>
-	where
-		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
-	{
+	pub fn stage_start(&mut self, memory_size: usize) -> utility::Result<()> {
 		let buffer = buffer::Buffer::create_staging(
 			self.name
 				.as_ref()
@@ -291,12 +288,25 @@ impl TaskGpuCopy {
 			&self.allocator,
 			memory_size,
 		)?;
+		self.staging_buffer = Some(buffer);
+		Ok(())
+	}
+
+	pub fn staging_memory(&mut self) -> utility::Result<alloc::Memory> {
+		Ok(self.staging_buffer.as_ref().unwrap().memory()?)
+	}
+
+	#[profiling::function]
+	pub fn stage_any<F>(mut self, memory_size: usize, write: F) -> utility::Result<Self>
+	where
+		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
+	{
+		self.stage_start(memory_size)?;
 		{
-			let mut mem = buffer.memory()?;
+			let mut mem = self.staging_buffer.as_ref().unwrap().memory()?;
 			let wrote_all = write(&mut mem).map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
 			assert!(wrote_all);
 		}
-		self.staging_buffer = Some(buffer);
 		Ok(self)
 	}
 
@@ -329,15 +339,22 @@ impl TaskGpuCopy {
 	#[profiling::function]
 	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
 		use alloc::Object;
-		self.cmd().copy_buffer_to_buffer(
-			&self.staging_buffer(),
-			&buffer,
-			vec![command::CopyBufferRange {
-				start_in_src: 0,
-				start_in_dst: 0,
-				size: self.staging_buffer().size(),
-			}],
-		);
+		let range = command::CopyBufferRange {
+			start_in_src: 0,
+			start_in_dst: 0,
+			size: self.staging_buffer().size(),
+		};
+		self.copy_stage_to_buffer_ranges(&buffer, vec![range])
+	}
+
+	#[profiling::function]
+	pub fn copy_stage_to_buffer_ranges(
+		self,
+		buffer: &buffer::Buffer,
+		ranges: Vec<command::CopyBufferRange>,
+	) -> Self {
+		self.cmd()
+			.copy_buffer_to_buffer(&self.staging_buffer(), &buffer, ranges);
 		self
 	}
 }
