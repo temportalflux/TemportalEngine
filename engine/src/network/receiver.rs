@@ -20,6 +20,7 @@ impl Receiver {
 			.load(atomic::Ordering::Relaxed)
 	}
 
+	#[profiling::function]
 	fn deserialize_packet(&self, mut socknet_packet: packet::Packet) -> Option<packet::AnyBox> {
 		let payload = socknet_packet.take_payload();
 		if let Ok(guard) = self.type_registry.lock() {
@@ -48,6 +49,7 @@ impl Receiver {
 		Connection { id: None, address }
 	}
 
+	#[profiling::function]
 	fn parse_event(
 		&self,
 		event: socknet::event::Event,
@@ -79,10 +81,10 @@ impl Receiver {
 	#[profiling::function]
 	pub fn process(&self) -> VoidResult {
 		loop {
+			profiling::scope!("receive-event");
 			match self.queue.channel().try_recv() {
 				Ok(event) => {
-					let (event_kind, mut event_data) = self.parse_event(event)?;
-
+					let (event_kind, event_data) = self.parse_event(event)?;
 					match (&event_kind, &event_data) {
 						(event::Kind::Packet(packet_kind), None) => {
 							log::error!(
@@ -94,62 +96,51 @@ impl Receiver {
 						}
 						(_, _) => {}
 					}
-
-					// The first option indicates if the processor has a configuration for the net mode
-					let reg_guard = match self.processor_registry.lock() {
-						Ok(guard) => guard,
-						Err(_) => continue,
-					};
-					let opt_processors = (*reg_guard)
-						.types
-						.get(&event_kind)
-						.map(|processor| processor.get_for_mode(&self.local_data.mode))
-						.flatten();
-					let processors = match opt_processors {
-						Some(processors) => processors,
-						None => {
-							log::warn!(
-								target: LOG,
-								"Ignoring event {} on net mode {}, no processor found.",
-								event_kind,
-								self.local_data
-									.mode
-									.iter()
-									.map(|kind| kind.to_string())
-									.collect::<Vec<_>>()
-									.join("+")
-							);
-							continue;
-						}
-					};
-
-					// the second option indicates if the processor is explicitly ignoring the mode or not
-					if !processors.is_empty() {
-						/*
-						log::debug!(
-							target: LOG,
-							"Processing {} {}",
-							event_kind,
-							match &event_data {
-								Some(data) => format!("{}", data),
-								None => "None".to_owned(),
-							}
-						);
-						*/
-					}
-					for processor in processors.iter() {
-						if let Err(err) =
-							processor.process(&event_kind, &mut event_data, &self.local_data)
-						{
-							log::error!(target: LOG, "{}", err);
-						}
-					}
+					self.process_event(event_kind, event_data);
 				}
 				Err(socknet::channel::TryRecvError::Empty) => break,
 				Err(socknet::channel::TryRecvError::Disconnected) => break,
 			}
 		}
 		Ok(())
+	}
+
+	#[profiling::function]
+	fn process_event(&self, event_kind: event::Kind, mut event_data: Option<event::Data>) {
+		let reg_guard = match self.processor_registry.lock() {
+			Ok(guard) => guard,
+			Err(_) => return,
+		};
+		let opt_processors = (*reg_guard)
+			.types
+			.get(&event_kind)
+			.map(|processor| processor.get_for_mode(&self.local_data.mode))
+			.flatten();
+		let processors = match opt_processors {
+			Some(processors) => processors,
+			None => {
+				log::warn!(
+					target: LOG,
+					"Ignoring event {} on net mode {}, no processor found.",
+					event_kind,
+					self.local_data
+						.mode
+						.iter()
+						.map(|kind| kind.to_string())
+						.collect::<Vec<_>>()
+						.join("+")
+				);
+				return;
+			}
+		};
+
+		for processor in processors.iter() {
+			if let Err(err) =
+				processor.process(&event_kind, &mut event_data, &self.local_data)
+			{
+				log::error!(target: LOG, "{}", err);
+			}
+		}
 	}
 }
 
