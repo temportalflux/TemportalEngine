@@ -135,9 +135,7 @@ impl Receiver {
 		};
 
 		for processor in processors.iter() {
-			if let Err(err) =
-				processor.process(&event_kind, &mut event_data, &self.local_data)
-			{
+			if let Err(err) = processor.process(&event_kind, &mut event_data, &self.local_data) {
 				log::error!(target: LOG, "{}", err);
 			}
 		}
