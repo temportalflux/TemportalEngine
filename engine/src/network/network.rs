@@ -93,6 +93,7 @@ impl Network {
 	}
 
 	/// Enqueues the packet to be sent in the sending thread
+	#[profiling::function]
 	pub fn send_packets(builder: packet::PacketBuilder) -> VoidResult {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
