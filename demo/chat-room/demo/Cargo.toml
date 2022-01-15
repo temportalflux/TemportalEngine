@@ -18,3 +18,4 @@ rmp-serde = "0.15"
 semver = "1.0"
 # [serialization]
 serde = { version = "1.0", features = ["derive"] }
+profiling = "1.0"
