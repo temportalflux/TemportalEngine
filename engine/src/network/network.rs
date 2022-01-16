@@ -103,6 +103,18 @@ impl Network {
 		Ok(())
 	}
 
+	#[profiling::function]
+	pub fn send_all_packets(builders: Vec<packet::PacketBuilder>) -> VoidResult {
+		if let Ok(guard) = Network::sender().lock() {
+			if let Some(sender) = &*guard {
+				for builder in builders.into_iter() {
+					sender.send_packets(builder)?;
+				}
+			}
+		}
+		Ok(())
+	}
+
 	pub fn kick(address: &std::net::SocketAddr) -> VoidResult {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
