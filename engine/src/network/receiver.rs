@@ -20,9 +20,9 @@ impl Receiver {
 			.load(atomic::Ordering::Relaxed)
 	}
 
-	#[profiling::function]
 	fn deserialize_packet(&self, mut socknet_packet: packet::Packet) -> Option<packet::AnyBox> {
 		let payload = socknet_packet.take_payload();
+		profiling::scope!("deserialize_packet", &format!("{:?}", payload));
 		if let Ok(guard) = self.type_registry.lock() {
 			if let Some(registration) = (*guard).types.get(socknet_packet.kind().as_str()) {
 				return Some(registration.deserialize_from(payload.data()));
