@@ -11,3 +11,4 @@ temportal-engine = { path = "../../../engine" }
 temportal-engine-editor = { path = "../../../editor" }
 boid = { path = "../demo" }
 log = "0.4.14"
+tokio = "1.15"

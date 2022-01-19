@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 mod application;
 pub use application::*;
 pub mod asset;
@@ -41,4 +43,55 @@ pub fn register_asset_types() {
 	let mut locked = asset::TypeRegistry::get().write().unwrap();
 	audio::register_asset_types(&mut locked);
 	graphics::register_asset_types(&mut locked);
+}
+
+pub fn run<F>(f: F)
+where
+	F: Fn() -> utility::VoidResult,
+{
+	profiling::register_thread!();
+	let runtime = {
+		profiling::scope!("setup-runtime");
+		let thread_count = num_cpus::get();
+		let mut builder = tokio::runtime::Builder::new_multi_thread();
+		builder.enable_all();
+		builder.worker_threads(thread_count);
+		builder.thread_name_fn(|| {
+			use std::sync::atomic::{AtomicUsize, Ordering};
+			static THREAD_ID: AtomicUsize = AtomicUsize::new(0);
+			let id = THREAD_ID.fetch_add(1, Ordering::SeqCst);
+			format!("task-worker:{}", id)
+		});
+		let runtime = builder.build().unwrap();
+		// Thread Registration
+		{
+			profiling::scope!("spawn-registration-tasks");
+			let arclock = Arc::new(RwLock::new(0));
+			for _ in 0..thread_count {
+				let thread_counter = arclock.clone();
+				runtime.spawn(async move {
+					register_worker_thread(thread_counter, thread_count);
+				});
+			}
+		}
+		runtime
+	};
+	runtime.block_on(async {
+		if let Err(err) = f() {
+			log::error!(target: "main", "{}", err);
+		}
+	});
+}
+
+fn register_worker_thread(thread_counter: Arc<RwLock<usize>>, thread_count: usize) {
+	profiling::register_thread!();
+	profiling::scope!("register_worker_thread");
+	static THREAD_DELAY: std::time::Duration = std::time::Duration::from_millis(1);
+	if let Ok(mut counter) = thread_counter.write() {
+		*counter += 1;
+	}
+	// Block the worker thread until all threads have been registered.
+	while *thread_counter.read().unwrap() < thread_count {
+		std::thread::sleep(THREAD_DELAY);
+	}
 }

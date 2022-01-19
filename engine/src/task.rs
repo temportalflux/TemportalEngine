@@ -9,6 +9,28 @@ pub use watcher::*;
 
 use std::sync::{mpsc, Arc, Once};
 
+pub fn spawn<T>(target: &'static str, future: T)
+where
+	T: futures::future::Future<Output = anyhow::Result<()>> + Send + 'static,
+{
+	tokio::task::spawn(async move {
+		if let Err(err) = future.await {
+			log::error!(target: target, "{}", err);
+		}
+	});
+}
+
+pub fn spawn_blocking<F>(target: &'static str, callback: F)
+where
+	F: FnOnce() -> anyhow::Result<()> + Send + 'static,
+{
+	tokio::task::spawn_blocking(move || {
+		if let Err(err) = callback() {
+			log::error!(target: target, "{}", err);
+		}
+	});
+}
+
 pub fn initialize_system() -> &'static Watcher {
 	static mut ONCE: Once = Once::new();
 	unsafe {

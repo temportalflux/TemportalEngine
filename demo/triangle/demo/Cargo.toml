@@ -10,3 +10,4 @@ edition = "2018"
 temportal-engine = { path = "../../../engine" }
 log = "0.4.14"
 semver = "1.0"
+tokio = "1.15"
