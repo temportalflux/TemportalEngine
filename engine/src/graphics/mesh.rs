@@ -1,9 +1,9 @@
 use crate::{
 	graphics::{
-		alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, RenderChain,
-		TaskGpuCopy,
+		alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject,
+		GpuOperationBuilder, RenderChain,
 	},
-	task, utility,
+	utility,
 };
 use std::sync;
 
@@ -135,15 +135,13 @@ where
 		render_chain: &RenderChain,
 		signals: &mut Vec<sync::Arc<command::Semaphore>>,
 	) -> utility::Result<()> {
-		use crate::task::ScheduledTask;
 		buffer.expand(std::mem::size_of::<T>() * data.len())?;
-		TaskGpuCopy::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
+		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)
-			.end()?
 			.add_signal_to(signals)
-			.send_to(task::sender());
+			.end()?;
 		Ok(())
 	}
 

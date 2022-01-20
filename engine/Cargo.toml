@@ -15,6 +15,7 @@ bytemuck = "1.7"
 copypasta = "0.7"
 # [audio] for manaing audio devices
 cpal = "0.13"
+crossbeam-channel = "0.5"
 # [ui] immediate mode widget handling for editor and debug game uis
 egui = "0.15"
 # [utility] similar to a bitmap but for any enum with a derive-trait implemented

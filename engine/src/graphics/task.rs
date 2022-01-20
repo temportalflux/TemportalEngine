@@ -1,20 +1,14 @@
-use crate::task::{ArctexState, ScheduledTask};
+use crate::task::{self};
 use crate::{
 	graphics::{
 		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
 	},
 	utility,
 };
-use std::{
-	pin::Pin,
-	sync,
-	task::{Context, Poll},
-};
+use std::sync;
 
 /// A copy from CPU to GPU operation that happens asynchronously.
-pub struct TaskGpuCopy {
-	/// Indicates if the task is complete and how to tell the futures package when the task wakes up.
-	state: ArctexState,
+pub struct GpuOperationBuilder {
 	/// The gpu signal (semaphore) that can be waited on to know when the operation is complete.
 	gpu_signal_on_complete: sync::Arc<command::Semaphore>,
 	/// The cpu signal (fence) that can be waited on to know when the operation is complete.
@@ -34,19 +28,7 @@ pub struct TaskGpuCopy {
 	name: Option<String>,
 }
 
-impl ScheduledTask for TaskGpuCopy {
-	fn state(&self) -> &ArctexState {
-		&self.state
-	}
-}
-impl futures::future::Future for TaskGpuCopy {
-	type Output = ();
-	fn poll(self: Pin<&mut Self>, ctx: &mut Context<'_>) -> Poll<Self::Output> {
-		self.poll_state(ctx)
-	}
-}
-
-impl TaskGpuCopy {
+impl GpuOperationBuilder {
 	#[profiling::function]
 	pub fn new(name: Option<String>, render_chain: &RenderChain) -> utility::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
@@ -76,7 +58,6 @@ impl TaskGpuCopy {
 				name.as_ref()
 					.map(|v| format!("Task.{}.Signals.GPU.OnComplete", v)),
 			)?),
-			state: ArctexState::default(),
 			name: task_name,
 		})
 	}
@@ -86,7 +67,7 @@ impl TaskGpuCopy {
 	}
 
 	/// Begins the copy operation command.
-	/// The [`end`](TaskGpuCopy::end) MUST be called once complete.
+	/// The [`end`](GpuOperationBuilder::end) MUST be called once complete.
 	#[profiling::function]
 	pub fn begin(self) -> utility::Result<Self> {
 		if let Some(name) = self.name.as_ref() {
@@ -99,10 +80,8 @@ impl TaskGpuCopy {
 	}
 
 	/// Ends the copy operation command and submits it to the GPU for processing.
-	/// If sent to the task manager via [`sent_to`](TaskGpuCopy::send_to),
-	/// the task will be woken up when the commands are complete.
 	#[profiling::function]
-	pub fn end(self) -> utility::Result<Self> {
+	pub fn end(self) -> utility::Result<task::JoinHandle<()>> {
 		self.cmd().end()?;
 
 		self.queue.submit(
@@ -115,23 +94,18 @@ impl TaskGpuCopy {
 			self.queue.end_label();
 		}
 
-		let thread_device = self.device.clone();
-		let thread_cpu_signal = self.cpu_signal_on_complete.clone();
-		let thread_state = self.state.clone();
-
-		let mut builder = std::thread::Builder::new();
-		if let Some(name) = &self.name {
-			builder = builder.name(name.clone());
-		}
-		let _ = builder.spawn(move || {
-			thread_device
-				.wait_for(&thread_cpu_signal, u64::MAX)
-				.unwrap();
-			let mut state = thread_state.lock().unwrap();
-			state.mark_complete();
+		let arc_self = sync::Arc::new(self);
+		let async_handle = task::spawn("gpu-operation", async move {
+			// Wait for the command to be complete
+			arc_self
+				.device
+				.wait_for(&arc_self.cpu_signal_on_complete, u64::MAX)?;
+			// Send the arc to be dropped on the main thread because thats where the graphics objects need to be.
+			task::send_to_main_thread(arc_self)?;
+			Ok(())
 		});
 
-		Ok(self)
+		Ok(async_handle)
 	}
 
 	/// Returns the [`cpu-signal (fence)`](command::Fence) which
@@ -144,14 +118,13 @@ impl TaskGpuCopy {
 	/// will be signalled when the operation is complete.
 	///
 	/// If you wish to stall the thread until the operation
-	/// is complete, see [`wait_until_idle`](TaskGpuCopy::wait_until_idle).
+	/// is complete, see [`wait_until_idle`](GpuOperationBuilder::wait_until_idle).
 	pub fn gpu_signal_on_complete(&self) -> sync::Arc<command::Semaphore> {
 		self.gpu_signal_on_complete.clone()
 	}
 
 	/// Adds the [`gpu-signal (semaphore)`](command::Semaphore) to the provided vec.
-	/// Can be called any time before [`send_to`](TaskGpuCopy::send_to),
-	/// but should not be called if using [`wait_until_idle`](TaskGpuCopy::wait_until_idle).
+	/// Should not be called if using [`wait_until_idle`](GpuOperationBuilder::wait_until_idle).
 	pub fn add_signal_to(self, signals: &mut Vec<sync::Arc<command::Semaphore>>) -> Self {
 		signals.push(self.gpu_signal_on_complete());
 		self
@@ -159,9 +132,6 @@ impl TaskGpuCopy {
 
 	/// Stalls the current thread until the [`cpu-signal (fence)`](command::Fence)
 	/// has been signalled by the GPU to indicate that the operation is complete.
-	///
-	/// Cannot be called if using [`send_to`](TaskGpuCopy::send_to),
-	/// as the task would be immediately complete once `wait_until_idle` is done.
 	#[profiling::function]
 	pub fn wait_until_idle(self) -> utility::Result<()> {
 		Ok(self
@@ -172,11 +142,11 @@ impl TaskGpuCopy {
 	/// Instructs the task to try to move an image from an
 	/// [`undefined`](flags::ImageLayout::Undefined) layout to the
 	/// [`transfer destination`](flags::ImageLayout::TransferDstOptimal) layout.
-	/// This format prepares the image for writing by [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
+	/// This format prepares the image for writing by [`copy_stage_to_image`](GpuOperationBuilder::copy_stage_to_image).
 	///
-	/// Can only be called after [`begin`](TaskGpuCopy::begin) and before [`end`](TaskGpuCopy::end).
+	/// Can only be called after [`begin`](GpuOperationBuilder::begin) and before [`end`](GpuOperationBuilder::end).
 	///
-	/// Should be called before initializing image data via [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
+	/// Should be called before initializing image data via [`copy_stage_to_image`](GpuOperationBuilder::copy_stage_to_image).
 	#[profiling::function]
 	pub fn format_image_for_write(self, image: &sync::Arc<image::Image>) -> Self {
 		use command::barrier::{Image, Kind, Pipeline};
@@ -205,9 +175,9 @@ impl TaskGpuCopy {
 	/// [`transfer destination`](flags::ImageLayout::TransferDstOptimal) layout
 	/// to the [`read only`](flags::ImageLayout::ShaderReadOnlyOptimal) format.
 	///
-	/// Can only be called after [`begin`](TaskGpuCopy::begin) and before [`end`](TaskGpuCopy::end).
+	/// Can only be called after [`begin`](GpuOperationBuilder::begin) and before [`end`](GpuOperationBuilder::end).
 	///
-	/// Should be called after initializing image data via [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image).
+	/// Should be called after initializing image data via [`copy_stage_to_image`](GpuOperationBuilder::copy_stage_to_image).
 	#[profiling::function]
 	pub fn format_image_for_read(self, image: &sync::Arc<image::Image>) -> Self {
 		use command::barrier::{Image, Kind, Pipeline};
@@ -270,8 +240,8 @@ impl TaskGpuCopy {
 	/// so that said data can be copied to a GPU-only buffer or image.
 	///
 	/// If performing a buffer or image write/copy operation, this must be called before
-	/// [`copy_stage_to_buffer`](TaskGpuCopy::copy_stage_to_buffer)
-	/// or [`copy_stage_to_image`](TaskGpuCopy::copy_stage_to_image) respectively.
+	/// [`copy_stage_to_buffer`](GpuOperationBuilder::copy_stage_to_buffer)
+	/// or [`copy_stage_to_image`](GpuOperationBuilder::copy_stage_to_image) respectively.
 	#[profiling::function]
 	pub fn stage<T: Sized>(self, data: &[T]) -> utility::Result<Self> {
 		self.stage_any(data.len() * std::mem::size_of::<T>(), |mem| {
@@ -310,11 +280,11 @@ impl TaskGpuCopy {
 		Ok(self)
 	}
 
-	/// Copies the contents of the staging buffer created by [`stage`](TaskGpuCopy::stage),
+	/// Copies the contents of the staging buffer created by [`stage`](GpuOperationBuilder::stage),
 	/// into the provided image.
 	///
-	/// Can only be called after [`begin`](TaskGpuCopy::begin) & [`stage`](TaskGpuCopy::stage)
-	/// and before [`end`](TaskGpuCopy::end).
+	/// Can only be called after [`begin`](GpuOperationBuilder::begin) & [`stage`](GpuOperationBuilder::stage)
+	/// and before [`end`](GpuOperationBuilder::end).
 	#[profiling::function]
 	pub fn copy_stage_to_image(self, image: &sync::Arc<image::Image>) -> Self {
 		self.cmd().copy_buffer_to_image(
@@ -331,11 +301,11 @@ impl TaskGpuCopy {
 		self
 	}
 
-	/// Copies the contents of the staging buffer created by [`stage`](TaskGpuCopy::stage),
+	/// Copies the contents of the staging buffer created by [`stage`](GpuOperationBuilder::stage),
 	/// into the provided buffer.
 	///
-	/// Can only be called after [`begin`](TaskGpuCopy::begin) & [`stage`](TaskGpuCopy::stage)
-	/// and before [`end`](TaskGpuCopy::end).
+	/// Can only be called after [`begin`](GpuOperationBuilder::begin) & [`stage`](GpuOperationBuilder::stage)
+	/// and before [`end`](GpuOperationBuilder::end).
 	#[profiling::function]
 	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
 		use alloc::Object;
@@ -359,7 +329,7 @@ impl TaskGpuCopy {
 	}
 }
 
-impl Drop for TaskGpuCopy {
+impl Drop for GpuOperationBuilder {
 	fn drop(&mut self) {
 		self.command_pool
 			.free_buffers(vec![self.command_buffer.take().unwrap()]);

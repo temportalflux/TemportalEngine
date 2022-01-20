@@ -4,7 +4,7 @@ use crate::{
 		graphics::{
 			self, buffer, command, flags, pipeline, shader, structs,
 			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-			RenderChain,
+			GpuOperationBuilder, RenderChain,
 		},
 		math::nalgebra::Vector2,
 		utility::Result,
@@ -93,7 +93,6 @@ impl graphics::RenderChainElement for Triangle {
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
 	) -> Result<Vec<sync::Arc<command::Semaphore>>> {
-		use engine::task::ScheduledTask;
 		self.vert_shader = Some(sync::Arc::new(shader::Module::create(
 			render_chain.logical().clone(),
 			shader::Info {
@@ -130,7 +129,7 @@ impl graphics::RenderChainElement for Triangle {
 		));
 
 		let vertex_buffer_copy_signal = {
-			let copy_task = graphics::TaskGpuCopy::new(
+			let copy_task = GpuOperationBuilder::new(
 				self.vertex_buffer
 					.as_ref()
 					.unwrap()
@@ -141,9 +140,7 @@ impl graphics::RenderChainElement for Triangle {
 			.stage(&self.vertices[..])?
 			.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
 			.end()?;
-			let gpu_signal = copy_task.gpu_signal_on_complete();
-			copy_task.send_to(engine::task::sender());
-			gpu_signal
+			copy_task.gpu_signal_on_complete()
 		};
 
 		self.index_buffer = Some(sync::Arc::new(
@@ -163,7 +160,7 @@ impl graphics::RenderChainElement for Triangle {
 		));
 
 		let index_buffer_copy_signal = {
-			let copy_task = graphics::TaskGpuCopy::new(
+			let copy_task = GpuOperationBuilder::new(
 				self.index_buffer
 					.as_ref()
 					.unwrap()
@@ -174,9 +171,7 @@ impl graphics::RenderChainElement for Triangle {
 			.stage(&self.indices[..])?
 			.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
 			.end()?;
-			let gpu_signal = copy_task.gpu_signal_on_complete();
-			copy_task.send_to(engine::task::sender());
-			gpu_signal
+			copy_task.gpu_signal_on_complete()
 		};
 
 		Ok(vec![vertex_buffer_copy_signal, index_buffer_copy_signal])

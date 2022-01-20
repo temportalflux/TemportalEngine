@@ -7,7 +7,7 @@ use crate::{
 		descriptor::{self, layout::SetLayout},
 		flags, image, image_view, pipeline, sampler, shader, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-		Instance, RenderChain, Uniform, Vertex,
+		GpuOperationBuilder, Instance, RenderChain, Uniform, Vertex,
 	},
 	BoidDemo,
 };
@@ -207,7 +207,7 @@ impl RenderBoids {
 				.with_usage(flags::ImageUsage::SAMPLED)
 				.build(&render_chain.allocator())?,
 		);
-		graphics::TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&texture.binary()[..])?
@@ -265,7 +265,7 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		graphics::TaskGpuCopy::new(
+		GpuOperationBuilder::new(
 			vertex_buffer.wrap_name(|v| format!("Write({})", v)),
 			&render_chain,
 		)?
@@ -289,7 +289,7 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		graphics::TaskGpuCopy::new(
+		GpuOperationBuilder::new(
 			index_buffer.wrap_name(|v| format!("Write({})", v)),
 			&render_chain,
 		)?
@@ -483,7 +483,6 @@ impl graphics::RenderChainElement for RenderBoids {
 
 impl RenderBoids {
 	pub fn set_instances(&mut self, instances: Vec<Instance>, expansion_step: usize) -> Result<()> {
-		use engine::task::ScheduledTask;
 		use graphics::alloc::Object;
 
 		let supported_instance_count =
@@ -504,7 +503,7 @@ impl RenderBoids {
 
 		// Update buffer with data
 		if instances.len() > 0 {
-			let copy_task = graphics::TaskGpuCopy::new(
+			GpuOperationBuilder::new(
 				self.active_instance_buffer
 					.wrap_name(|v| format!("Write({})", v)),
 				&mut chain,
@@ -512,10 +511,8 @@ impl RenderBoids {
 			.begin()?
 			.stage(&instances[..])?
 			.copy_stage_to_buffer(&self.active_instance_buffer)
+			.add_signal_to(&mut self.pending_gpu_signals)
 			.end()?;
-			self.pending_gpu_signals
-				.push(copy_task.gpu_signal_on_complete());
-			copy_task.send_to(engine::task::sender());
 		}
 
 		if instances.len() != self.active_instance_count {

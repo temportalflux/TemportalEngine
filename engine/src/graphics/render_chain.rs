@@ -8,7 +8,7 @@ use crate::{
 		},
 		flags, image, image_view, render_pass, renderpass, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-		Surface,
+		GpuOperationBuilder, Surface,
 	},
 	math::nalgebra::Vector2,
 	utility::{self, Result},
@@ -409,8 +409,6 @@ impl RenderChain {
 		}
 
 		if let Some((format, tiling)) = self.depth_format {
-			use crate::task::ScheduledTask;
-
 			let image = Arc::new(
 				image::Image::builder()
 					.with_optname(Some("RenderChain.DepthBuffer".to_owned()))
@@ -430,12 +428,11 @@ impl RenderChain {
 					.build(&self.allocator())?,
 			);
 
-			graphics::TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &self)?
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &self)?
 				.begin()?
 				.format_depth_image(&image)
-				.end()?
 				.add_signal_to(&mut self.pending_gpu_signals)
-				.send_to(crate::task::sender());
+				.end()?;
 
 			self.depth_view = Some(Arc::new(
 				image_view::View::builder()

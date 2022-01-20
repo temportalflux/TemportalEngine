@@ -145,7 +145,7 @@ impl Engine {
 				Event::MainEventsCleared => {
 					profiling::scope!("update");
 					let frame_time = std::time::Instant::now();
-					task::watcher().poll();
+					task::poll_until_empty();
 
 					if engine_has_focus {
 						profiling::scope!("input");
@@ -227,7 +227,7 @@ impl Engine {
 				Event::RedrawRequested(_) => {}
 				Event::LoopDestroyed => {
 					log::info!(target: "engine", "Engine loop complete");
-					task::watcher().poll_until_empty();
+					task::poll_until_empty();
 					if network::Network::is_active() {
 						if let Err(err) = network::Network::destroy() {
 							log::error!(target: network::LOG, "Failed to destroy network: {}", err);

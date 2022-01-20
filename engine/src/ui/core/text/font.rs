@@ -6,7 +6,7 @@ use crate::{
 		utility::{NameableBuilder, NamedObject},
 	},
 	math::nalgebra::Vector2,
-	task, utility,
+	utility,
 };
 use std::{collections::HashMap, sync};
 
@@ -72,12 +72,11 @@ impl PendingAtlas {
 		self,
 		render_chain: &graphics::RenderChain,
 	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
-		use crate::task::ScheduledTask;
 		use graphics::{
 			alloc, image,
 			structs::subresource,
 			utility::{BuildFromAllocator, BuildFromDevice},
-			TaskGpuCopy,
+			GpuOperationBuilder,
 		};
 		let mut signals = Vec::new();
 
@@ -102,16 +101,14 @@ impl PendingAtlas {
 				.build(&render_chain.allocator())?,
 		);
 
-		let copy_task =
-			TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
-				.begin()?
-				.format_image_for_write(&image)
-				.stage(&self.binary[..])?
-				.copy_stage_to_image(&image)
-				.format_image_for_read(&image)
-				.end()?;
-		signals.push(copy_task.gpu_signal_on_complete());
-		copy_task.send_to(task::sender());
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+			.begin()?
+			.format_image_for_write(&image)
+			.stage(&self.binary[..])?
+			.copy_stage_to_image(&image)
+			.format_image_for_read(&image)
+			.add_signal_to(&mut signals)
+			.end()?;
 
 		let view = sync::Arc::new(
 			image_view::View::builder()

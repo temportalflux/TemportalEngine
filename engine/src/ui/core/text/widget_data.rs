@@ -2,7 +2,6 @@ use super::{font, Vertex};
 use crate::{
 	graphics::{self, buffer, command, flags, utility::NamedObject},
 	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
-	task,
 	ui::raui::*,
 	utility,
 };
@@ -114,7 +113,6 @@ impl WidgetData {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
-		use crate::task::ScheduledTask;
 		// Update the buffer objects if we need more space than is currently allocated
 		sync::Arc::get_mut(&mut self.vertex_buffer)
 			.unwrap()
@@ -137,27 +135,25 @@ impl WidgetData {
 		let (vertices, indices) = self.build_buffer_data(column_major, font, resolution);
 		self.index_count = indices.len();
 
-		graphics::TaskGpuCopy::new(
+		graphics::GpuOperationBuilder::new(
 			self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
 			&render_chain,
 		)?
 		.begin()?
 		.stage(&vertices[..])?
 		.copy_stage_to_buffer(&self.vertex_buffer)
-		.end()?
 		.add_signal_to(&mut gpu_signals)
-		.send_to(task::sender());
+		.end()?;
 
-		graphics::TaskGpuCopy::new(
+		graphics::GpuOperationBuilder::new(
 			self.index_buffer.wrap_name(|v| format!("Write({})", v)),
 			&render_chain,
 		)?
 		.begin()?
 		.stage(&indices[..])?
 		.copy_stage_to_buffer(&self.index_buffer)
-		.end()?
 		.add_signal_to(&mut gpu_signals)
-		.send_to(task::sender());
+		.end()?;
 
 		Ok(gpu_signals)
 	}

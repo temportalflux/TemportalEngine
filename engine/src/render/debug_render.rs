@@ -4,10 +4,9 @@ use crate::{
 		self, buffer, camera, command, flags, pipeline, structs,
 		types::{Vec3, Vec4},
 		utility::NamedObject,
-		vertex_object, Drawable, Uniform,
+		vertex_object, Drawable, GpuOperationBuilder, Uniform,
 	},
 	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
-	task,
 	utility::{self, Result},
 	EngineSystem,
 };
@@ -272,7 +271,6 @@ impl Frame {
 		chain: &graphics::RenderChain,
 		objects: &Vec<DebugDraw>,
 	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
-		use crate::task::ScheduledTask;
 		let mut gpu_signals = Vec::new();
 
 		let mut vertices: Vec<LineSegmentVertex> = Vec::new();
@@ -307,32 +305,30 @@ impl Frame {
 			if let Some(vbuf) = Arc::get_mut(&mut self.vertex_buffer) {
 				vbuf.expand(vbuff_size)?;
 			}
-			graphics::TaskGpuCopy::new(
+			GpuOperationBuilder::new(
 				self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
 				&chain,
 			)?
 			.begin()?
 			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
 			.copy_stage_to_buffer(&self.vertex_buffer)
-			.end()?
 			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+			.end()?;
 		}
 
 		if ibuff_size > 0 {
 			if let Some(ibuf) = Arc::get_mut(&mut self.index_buffer) {
 				ibuf.expand(ibuff_size)?;
 			}
-			graphics::TaskGpuCopy::new(
+			GpuOperationBuilder::new(
 				self.index_buffer.wrap_name(|v| format!("Write({})", v)),
 				&chain,
 			)?
 			.begin()?
 			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
 			.copy_stage_to_buffer(&self.index_buffer)
-			.end()?
 			.add_signal_to(&mut gpu_signals)
-			.send_to(task::sender());
+			.end()?;
 		}
 
 		Ok(gpu_signals)

@@ -5,7 +5,7 @@ use crate::{
 		Texture,
 	},
 	math::nalgebra::Vector2,
-	task, utility,
+	utility,
 };
 use std::{collections::HashMap, sync};
 
@@ -209,8 +209,9 @@ where
 		render_chain: &graphics::RenderChain,
 		pending: &PendingEntry,
 	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
-		use crate::task::ScheduledTask;
-		use graphics::{image, structs::subresource, utility::BuildFromDevice, TaskGpuCopy};
+		use graphics::{
+			image, structs::subresource, utility::BuildFromDevice, GpuOperationBuilder,
+		};
 
 		let mut signals = Vec::new();
 
@@ -225,15 +226,14 @@ where
 			},
 		)?);
 
-		TaskGpuCopy::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&pending.compiled.binary[..])?
 			.copy_stage_to_image(&image)
 			.format_image_for_read(&image)
-			.end()?
 			.add_signal_to(&mut signals)
-			.send_to(task::sender());
+			.end()?;
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
