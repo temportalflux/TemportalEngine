@@ -1,9 +1,9 @@
-use crate::utility;
+use crate::utility::Result;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 pub type AnyBox = Box<dyn Any + Send + Sync>;
-pub type AssetResult = Result<AnyBox, utility::AnyError>;
+pub type AssetResult = Result<AnyBox>;
 
 pub type TypeId = &'static str;
 pub type TypeIdOwned = String;

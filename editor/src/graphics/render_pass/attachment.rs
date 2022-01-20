@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::render_pass::Attachment,
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use serde_json;
@@ -19,7 +19,7 @@ impl TypeEditorMetadata for AttachmentEditorMetadata {
 		Ok(Box::new(serde_json::from_str::<Attachment>(json_str)?))
 	}
 
-	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>> {
 		Ok(rmp_serde::to_vec(&asset.downcast::<Attachment>().unwrap())?)
 	}
 }

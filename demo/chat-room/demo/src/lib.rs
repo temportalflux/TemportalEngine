@@ -1,4 +1,4 @@
-use engine::{network, utility::VoidResult, Application};
+use engine::{network, utility::Result, Application};
 pub use temportal_engine as engine;
 
 #[path = "packet/mod.rs"]
@@ -21,7 +21,7 @@ impl Application for ChatRoom {
 	}
 }
 
-pub fn run() -> VoidResult {
+pub fn run() -> Result<()> {
 	let is_server = std::env::args().any(|arg| arg == "-server");
 	//let is_client = std::env::args().any(|arg| arg == "-client");
 	let log_path = {

@@ -7,7 +7,7 @@ use crate::{
 			RenderChain,
 		},
 		math::nalgebra::Vector2,
-		utility::AnyError,
+		utility::Result,
 	},
 	Vertex,
 };
@@ -29,7 +29,7 @@ pub struct Triangle {
 impl Triangle {
 	pub fn new(
 		render_chain: &sync::Arc<sync::RwLock<RenderChain>>,
-	) -> Result<sync::Arc<sync::RwLock<Triangle>>, AnyError> {
+	) -> Result<sync::Arc<sync::RwLock<Triangle>>> {
 		let vert_bytes: Vec<u8>;
 		let frag_bytes: Vec<u8>;
 		{
@@ -92,7 +92,7 @@ impl graphics::RenderChainElement for Triangle {
 	fn initialize_with(
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<sync::Arc<command::Semaphore>>, AnyError> {
+	) -> Result<Vec<sync::Arc<command::Semaphore>>> {
 		use engine::task::ScheduledTask;
 		self.vert_shader = Some(sync::Arc::new(shader::Module::create(
 			render_chain.logical().clone(),
@@ -182,7 +182,7 @@ impl graphics::RenderChainElement for Triangle {
 		Ok(vec![vertex_buffer_copy_signal, index_buffer_copy_signal])
 	}
 
-	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<(), AnyError> {
+	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<()> {
 		self.pipeline = None;
 		self.pipeline_layout = None;
 		Ok(())
@@ -193,7 +193,7 @@ impl graphics::RenderChainElement for Triangle {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError> {
+	) -> Result<()> {
 		use pipeline::state::*;
 		self.pipeline_layout = Some(
 			pipeline::layout::Layout::builder()
@@ -244,7 +244,7 @@ impl graphics::RenderChainElement for Triangle {
 		Ok(())
 	}
 
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, _: usize) -> Result<(), AnyError> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, _: usize) -> Result<()> {
 		use graphics::debug;
 		buffer.begin_label("Draw:Triangle", debug::LABEL_COLOR_DRAW);
 		buffer.bind_pipeline(

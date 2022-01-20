@@ -8,7 +8,7 @@ use crate::{
 	},
 	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
 	task,
-	utility::{self, AnyError, VoidResult},
+	utility::{self, Result},
 	EngineSystem,
 };
 use std::sync::{Arc, RwLock};
@@ -62,7 +62,7 @@ struct Frame {
 }
 
 impl DebugRender {
-	pub fn new(chain: &graphics::RenderChain) -> Result<Self, AnyError> {
+	pub fn new(chain: &graphics::RenderChain) -> Result<Self> {
 		Ok(Self {
 			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
@@ -78,9 +78,9 @@ impl DebugRender {
 	pub fn create<F>(
 		chain: &Arc<RwLock<graphics::RenderChain>>,
 		initializer: F,
-	) -> Result<Arc<RwLock<Self>>, AnyError>
+	) -> Result<Arc<RwLock<Self>>>
 	where
-		F: Fn(Self) -> Result<Self, AnyError>,
+		F: Fn(Self) -> Result<Self>,
 	{
 		let mut chain_write = chain.write().unwrap();
 		let inst = initializer(Self::new(&chain_write)?)?;
@@ -89,12 +89,12 @@ impl DebugRender {
 		Ok(render)
 	}
 
-	pub fn with_engine_shaders(mut self) -> Result<Self, AnyError> {
+	pub fn with_engine_shaders(mut self) -> Result<Self> {
 		self.initialize_engine_shaders()?;
 		Ok(self)
 	}
 
-	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
+	pub fn initialize_engine_shaders(&mut self) -> Result<()> {
 		use crate::{Application, EngineApp};
 		self.add_shader(
 			DebugRenderPipeline::LineSegment,
@@ -107,16 +107,12 @@ impl DebugRender {
 		Ok(())
 	}
 
-	pub fn with_shader(
-		mut self,
-		key: DebugRenderPipeline,
-		id: &asset::Id,
-	) -> Result<Self, AnyError> {
+	pub fn with_shader(mut self, key: DebugRenderPipeline, id: &asset::Id) -> Result<Self> {
 		self.add_shader(key, id)?;
 		Ok(self)
 	}
 
-	pub fn add_shader(&mut self, key: DebugRenderPipeline, id: &asset::Id) -> VoidResult {
+	pub fn add_shader(&mut self, key: DebugRenderPipeline, id: &asset::Id) -> Result<()> {
 		use DebugRenderPipeline::*;
 		match key {
 			LineSegment => self.line_drawable.add_shader(id),
@@ -153,7 +149,7 @@ impl graphics::RenderChainElement for DebugRender {
 	fn initialize_with(
 		&mut self,
 		chain: &mut graphics::RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
+	) -> Result<Vec<Arc<command::Semaphore>>> {
 		let mut gpu_signals = Vec::new();
 
 		self.camera_uniform.write_descriptor_sets(chain);
@@ -188,10 +184,7 @@ impl graphics::RenderChainElement for DebugRender {
 	}
 
 	#[profiling::function]
-	fn destroy_render_chain(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> Result<(), AnyError> {
+	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
 		self.line_drawable.destroy_pipeline(render_chain)?;
 		Ok(())
 	}
@@ -202,7 +195,7 @@ impl graphics::RenderChainElement for DebugRender {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError> {
+	) -> Result<()> {
 		use pipeline::state::*;
 		Ok(self.line_drawable.create_pipeline(
 			render_chain,
@@ -238,7 +231,7 @@ impl graphics::RenderChainElement for DebugRender {
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
-	) -> Result<bool, AnyError> {
+	) -> Result<bool> {
 		self.camera_uniform.write_data(
 			frame,
 			&camera::DefaultCamera::default().as_uniform_matrix(resolution),
@@ -252,7 +245,7 @@ impl graphics::RenderChainElement for DebugRender {
 
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
 		use graphics::debug;
 		let frame_data = &self.frames[frame];
 		buffer.begin_label("Draw:Debug", debug::LABEL_COLOR_DRAW);

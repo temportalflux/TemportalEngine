@@ -8,7 +8,7 @@ use crate::engine::{
 		processor::{EventProcessors, PacketProcessor, Processor},
 		LocalData, Network, LOG,
 	},
-	utility::VoidResult,
+	utility::Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -47,7 +47,7 @@ impl BroadcastMessage {
 		data: &mut Message,
 		connection: &Connection,
 		guarantee: &Guarantee,
-	) -> VoidResult {
+	) -> Result<()> {
 		//let sent_at = data.timestamp.clone();
 		data.timestamp = chrono::Utc::now();
 
@@ -80,7 +80,7 @@ impl Processor for BroadcastMessage {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		self.process_as(kind, data, local_data)
 	}
 }
@@ -93,7 +93,7 @@ impl PacketProcessor<Message> for BroadcastMessage {
 		connection: &Connection,
 		guarantee: &Guarantee,
 		_local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		log::debug!(
 			target: LOG,
 			"{} said: \"{}\" at {}",
@@ -123,7 +123,7 @@ impl Processor for SaveMessageToLog {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		self.process_as(kind, data, local_data)
 	}
 }
@@ -136,7 +136,7 @@ impl PacketProcessor<Message> for SaveMessageToLog {
 		_connection: &Connection,
 		_guarantee: &Guarantee,
 		_local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		// NOTE: The source is always the server, so there is no current information about who actually sent the message
 		log::debug!(
 			target: LOG,
@@ -158,7 +158,7 @@ impl Processor for BroadcastAndSaveMessage {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		self.process_as(kind, data, local_data)
 	}
 }
@@ -170,7 +170,7 @@ impl PacketProcessor<Message> for BroadcastAndSaveMessage {
 		connection: &Connection,
 		guarantee: &Guarantee,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		log::debug!(
 			target: LOG,
 			"{} said: \"{}\" at {}",

@@ -7,7 +7,7 @@ use crate::{
 		utility::{BuildFromDevice, NameableBuilder},
 		ShaderSet,
 	},
-	utility::{self, VoidResult},
+	utility::{self, Result},
 };
 use std::sync;
 
@@ -52,13 +52,13 @@ impl Drawable {
 
 	/// Adds a shader by its asset id to the drawable.
 	/// Offloads logic to [`ShaderSet::insert`].
-	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn add_shader(&mut self, id: &asset::Id) -> Result<()> {
 		self.shaders.insert(id)
 	}
 
 	/// Creates the shader modules from any pending shaders added via [`Drawable::add_shader`].
 	/// Offloads logic to [`ShaderSet::create_modules`].
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
 		self.shaders.create_modules(render_chain)
 	}
 

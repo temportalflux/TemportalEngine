@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::font::Font,
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use serde_json;
@@ -34,7 +34,7 @@ impl TypeEditorMetadata for EditorMetadata {
 		Box::new(Self {})
 	}
 
-	fn last_modified(&self, path: &Path) -> Result<SystemTime, AnyError> {
+	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
 		let mut max_last_modified_at = path.metadata()?.modified()?;
 		let ttf_path = self.font_path(&path);
 		if ttf_path.exists() {
@@ -49,7 +49,7 @@ impl TypeEditorMetadata for EditorMetadata {
 		Ok(Box::new(font))
 	}
 
-	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>> {
 		use freetype::Library;
 		let mut font = asset.downcast::<Font>().unwrap();
 

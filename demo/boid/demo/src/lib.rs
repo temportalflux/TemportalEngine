@@ -1,5 +1,5 @@
 pub use engine;
-use engine::{math::nalgebra, utility::VoidResult, Application};
+use engine::{math::nalgebra, utility::Result, Application};
 use std::sync::{Arc, RwLock};
 
 #[path = "graphics/mod.rs"]
@@ -32,7 +32,7 @@ impl Application for BoidDemo {
 	}
 }
 
-pub fn run() -> VoidResult {
+pub fn run() -> Result<()> {
 	engine::logging::init(&engine::logging::default_path(BoidDemo::name(), None))?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;

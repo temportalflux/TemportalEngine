@@ -2,7 +2,7 @@ use super::{
 	super::{event, processor::Processor, LocalData, LOG},
 	Connection, List,
 };
-use crate::utility::VoidResult;
+use crate::utility::Result;
 use std::sync::{Arc, RwLock};
 
 pub struct CreateConnection {
@@ -21,7 +21,7 @@ impl Processor for CreateConnection {
 		_kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		_local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		if let Some(event::Data::Connection(Connection { address, id })) = data {
 			if let Ok(mut list) = self.connection_list.write() {
 				*id = Some(list.add_connection(&address));

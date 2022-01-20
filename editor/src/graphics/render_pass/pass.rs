@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::render_pass::Pass,
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use std::path::Path;
@@ -18,7 +18,7 @@ impl TypeEditorMetadata for PassEditorMetadata {
 		crate::asset::deserialize::<Pass>(&path, &content)
 	}
 
-	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>> {
 		Ok(rmp_serde::to_vec(&asset.downcast::<Pass>().unwrap())?)
 	}
 }

@@ -2,7 +2,7 @@ use crate::asset;
 use engine::{
 	self,
 	asset::{AnyBox, Generic, TypeId},
-	utility::AnyError,
+	utility::Result,
 };
 use serde_json;
 use std::{
@@ -90,28 +90,28 @@ impl Manager {
 		}
 	}
 
-	fn metadata<'r>(&self, type_id: &'r str) -> Result<&EditorMetadataBox, AnyError> {
+	fn metadata<'r>(&self, type_id: &'r str) -> Result<&EditorMetadataBox> {
 		let metadata = self.editor_metadata.get(type_id).ok_or(
 			engine::asset::Error::UnregisteredAssetType(type_id.to_string()),
 		)?;
 		Ok(metadata)
 	}
 
-	fn read_type_id_sync(&self, path: &Path) -> Result<String, AnyError> {
+	fn read_type_id_sync(&self, path: &Path) -> Result<String> {
 		let absolute_path = path.canonicalize()?;
 		let raw_file = fs::read_to_string(&absolute_path)?;
 		let type_id = Manager::read_asset_type(path.extension(), raw_file.as_str())?;
 		Ok(type_id)
 	}
 
-	pub fn last_modified(&self, path: &Path) -> Result<SystemTime, AnyError> {
+	pub fn last_modified(&self, path: &Path) -> Result<SystemTime> {
 		let type_id = self.read_type_id_sync(path)?;
 		let metadata = self.metadata(&type_id)?;
 		metadata.last_modified(&path)
 	}
 
 	/// Synchronously reads an asset json from a provided path, returning relevant asset loading errors.
-	pub fn read_sync(&self, path: &Path) -> Result<(String, AnyBox), AnyError> {
+	pub fn read_sync(&self, path: &Path) -> Result<(String, AnyBox)> {
 		let absolute_path = path.canonicalize()?;
 		let raw_file = fs::read_to_string(&absolute_path)?;
 		let type_id = Manager::read_asset_type(path.extension(), raw_file.as_str())?;
@@ -125,10 +125,7 @@ impl Manager {
 		Ok((type_id, asset))
 	}
 
-	fn read_asset_type(
-		extension: Option<&std::ffi::OsStr>,
-		content: &str,
-	) -> Result<String, AnyError> {
+	fn read_asset_type(extension: Option<&std::ffi::OsStr>, content: &str) -> Result<String> {
 		let ext = extension.map(|ext| ext.to_str()).flatten();
 		match SupportedFileTypes::parse_extension(ext) {
 			Some(SupportedFileTypes::Json) => {
@@ -154,9 +151,9 @@ impl Manager {
 					)),
 				}?)
 			}
-			None => Err(Box::new(engine::asset::Error::ExtensionNotSupported(
+			None => Err(engine::asset::Error::ExtensionNotSupported(
 				ext.map(|ext| ext.to_owned()),
-			))),
+			))?,
 		}
 	}
 
@@ -166,7 +163,7 @@ impl Manager {
 		type_id: &String,
 		asset: engine::asset::AnyBox,
 		write_to: &PathBuf,
-	) -> engine::utility::VoidResult {
+	) -> engine::utility::Result<()> {
 		fs::create_dir_all(&write_to.parent().unwrap())?;
 		let metadata = self.editor_metadata.get(type_id.as_str()).unwrap();
 		let bytes = metadata.compile(&json_path, asset)?;

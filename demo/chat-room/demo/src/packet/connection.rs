@@ -5,7 +5,7 @@ use crate::engine::{
 		processor::Processor,
 		LocalData, Network,
 	},
-	utility::VoidResult,
+	utility::Result,
 };
 
 pub fn register_bonus_processors(builder: &mut network::Builder) {
@@ -28,7 +28,7 @@ impl ConfirmUser {
 		local_data: &LocalData,
 		history: &mut crate::MessageHistory,
 		name: &String,
-	) -> VoidResult {
+	) -> Result<()> {
 		let message = crate::packet::Message {
 			timestamp: chrono::Utc::now(),
 			sender_name: None,
@@ -54,7 +54,7 @@ impl Processor for ConfirmUser {
 		_kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		if let Some(event::Data::Connection(connection)) = data {
 			if let Ok(mut history) = crate::MessageHistory::write() {
 				history.confirm_user(&connection);
@@ -76,7 +76,7 @@ impl Processor for DestroyUser {
 		_kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		_local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		if let Some(event::Data::Connection(connection)) = data {
 			if let Ok(mut history) = crate::MessageHistory::write() {
 				Network::send_packets(

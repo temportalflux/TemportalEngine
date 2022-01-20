@@ -1,3 +1,6 @@
+use crate::utility::Result;
+use std::sync::{mpsc, Arc, Once};
+
 mod future;
 pub use future::*;
 mod task;
@@ -7,11 +10,9 @@ pub use sender::*;
 mod watcher;
 pub use watcher::*;
 
-use std::sync::{mpsc, Arc, Once};
-
 pub fn spawn<T>(target: &'static str, future: T)
 where
-	T: futures::future::Future<Output = anyhow::Result<()>> + Send + 'static,
+	T: futures::future::Future<Output = Result<()>> + Send + 'static,
 {
 	tokio::task::spawn(async move {
 		if let Err(err) = future.await {
@@ -22,7 +23,7 @@ where
 
 pub fn spawn_blocking<F>(target: &'static str, callback: F)
 where
-	F: FnOnce() -> anyhow::Result<()> + Send + 'static,
+	F: FnOnce() -> Result<()> + Send + 'static,
 {
 	tokio::task::spawn_blocking(move || {
 		if let Err(err) = callback() {

@@ -9,7 +9,7 @@ use crate::{
 		RenderChainElement,
 	},
 	math::nalgebra::{Vector2, Vector4},
-	utility::AnyError,
+	utility::Result,
 	Engine, WinitEventListener,
 };
 use bytemuck::{Pod, Zeroable};
@@ -92,14 +92,14 @@ impl Vertex {
 }
 
 impl Ui {
-	pub fn create(engine: &mut Engine) -> Result<Arc<RwLock<Self>>, AnyError> {
+	pub fn create(engine: &mut Engine) -> Result<Arc<RwLock<Self>>> {
 		Self::create_with_subpass(engine, None)
 	}
 
 	pub fn create_with_subpass(
 		engine: &mut Engine,
 		subpass_id: Option<String>,
-	) -> Result<Arc<RwLock<Self>>, AnyError> {
+	) -> Result<Arc<RwLock<Self>>> {
 		let strong = Arc::new(RwLock::new(Self::new(engine)?));
 		engine
 			.render_chain_write()
@@ -363,10 +363,7 @@ impl RenderChainElement for Ui {
 		"egui"
 	}
 
-	fn initialize_with(
-		&mut self,
-		chain: &mut RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
+	fn initialize_with(&mut self, chain: &mut RenderChain) -> Result<Vec<Arc<command::Semaphore>>> {
 		use crate::{Application, EngineApp};
 		let vertex = EngineApp::get_asset_id("shaders/debug/egui/vertex");
 		let fragment = EngineApp::get_asset_id("shaders/debug/egui/fragment");
@@ -395,7 +392,7 @@ impl RenderChainElement for Ui {
 		Ok(self.take_gpu_signals())
 	}
 
-	fn destroy_render_chain(&mut self, chain: &RenderChain) -> Result<(), AnyError> {
+	fn destroy_render_chain(&mut self, chain: &RenderChain) -> Result<()> {
 		self.drawable.destroy_pipeline(chain)?;
 		Ok(())
 	}
@@ -405,7 +402,7 @@ impl RenderChainElement for Ui {
 		chain: &RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError> {
+	) -> Result<()> {
 		use flags::blend::prelude::*;
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
@@ -458,7 +455,7 @@ impl RenderChainElement for Ui {
 		Ok(())
 	}
 
-	fn preframe_update(&mut self, chain: &RenderChain) -> Result<(), AnyError> {
+	fn preframe_update(&mut self, chain: &RenderChain) -> Result<()> {
 		self.context.begin_frame(self.raw_input.take());
 
 		{
@@ -526,7 +523,7 @@ impl RenderChainElement for Ui {
 		_buffer: &command::Buffer,
 		frame: usize,
 		_resolution: &Vector2<f32>,
-	) -> Result<bool, AnyError> {
+	) -> Result<bool> {
 		self.render_callbacks.retain(|(_, retained)| *retained);
 
 		let (vertices, indices, draw_calls) = self.build_ui();
@@ -539,7 +536,7 @@ impl RenderChainElement for Ui {
 		Ok(true)
 	}
 
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
 		let frame = &self.frames[frame];
 
 		buffer.begin_label("Draw:EditorUI", graphics::debug::LABEL_COLOR_DRAW);

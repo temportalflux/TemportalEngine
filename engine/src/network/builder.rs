@@ -1,7 +1,7 @@
 use super::{
 	connection, event, mode, packet, processor, LocalData, Network, Receiver, Sender, LOG,
 };
-use crate::utility::{registry::Registerable, VoidResult};
+use crate::utility::{registry::Registerable, Result};
 use std::sync::{atomic::AtomicBool, Arc, Mutex, RwLock};
 
 pub struct Builder {
@@ -173,9 +173,9 @@ impl Builder {
 	}
 
 	#[profiling::function]
-	pub fn spawn(&self) -> VoidResult {
+	pub fn spawn(&self) -> Result<()> {
 		if Network::is_active() {
-			return Err(Box::new(super::Error::NetworkAlreadyActive()));
+			return Err(super::Error::NetworkAlreadyActive())?;
 		}
 
 		log::info!(target: LOG, "Spawning network with {}", self.local_data);
@@ -199,8 +199,8 @@ impl Builder {
 			connection_list: self.connection_list.clone(),
 		};
 
-		Network::receiver_init(receiver)?;
-		Network::sender_init(sender)?;
+		Network::receiver_init(receiver);
+		Network::sender_init(sender);
 
 		Ok(())
 	}

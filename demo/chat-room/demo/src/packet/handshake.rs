@@ -8,7 +8,7 @@ use crate::engine::{
 		processor::{EventProcessors, PacketProcessor, Processor},
 		LocalData, Network,
 	},
-	utility::VoidResult,
+	utility::Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -46,7 +46,7 @@ impl Processor for SendBackToClient {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		self.process_as(kind, data, local_data)
 	}
 }
@@ -59,7 +59,7 @@ impl PacketProcessor<Handshake> for SendBackToClient {
 		connection: &Connection,
 		guarantee: &Guarantee,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		// Save the name of this connection for future messages
 		if let Ok(mut history) = crate::MessageHistory::write() {
 			history.add_pending_user(connection.address.clone(), data.display_name.clone());

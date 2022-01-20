@@ -1,4 +1,4 @@
-use crate::engine::{asset, utility::VoidResult, Application};
+use crate::engine::{asset, utility::Result, Application};
 use std::{self, fs, io::Write, path::PathBuf};
 use zip;
 
@@ -27,7 +27,7 @@ impl Pak {
 		}
 	}
 
-	pub fn package(&self) -> VoidResult {
+	pub fn package(&self) -> Result<()> {
 		let pak_name = format!("{}.pak", self.name);
 		let zip_paths = self
 			.output_directories

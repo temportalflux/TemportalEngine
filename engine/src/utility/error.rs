@@ -1,63 +1,23 @@
-use crate::graphics::{device::physical, utility};
+use crate::graphics::device::physical;
 
-#[derive(Debug)]
-pub enum Error {
-	FailedToFindPhysicalDevice(Option<physical::Constraint>),
-	Graphics(utility::Error),
-	GraphicsBufferWrite(std::io::Error),
-	UI(crate::ui::core::Error),
-}
+pub use anyhow::{Error, Result};
 
-pub type Result<T> = std::result::Result<T, Error>;
-pub type AnyError = Box<dyn std::error::Error>;
-pub type VoidResult = std::result::Result<(), AnyError>;
-
-impl std::fmt::Display for Error {
+pub struct FailedToFindPhysicalDevice(pub Option<physical::Constraint>);
+impl std::error::Error for FailedToFindPhysicalDevice {}
+impl std::fmt::Debug for FailedToFindPhysicalDevice {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		match *self {
-			Error::FailedToFindPhysicalDevice(ref constraint) => match constraint {
-				Some(constraint) => write!(
-					f,
-					"Failed to find physical device due to constraint {:?}",
-					constraint
-				),
-				None => write!(f, "Failed to find any physical devices, do you have a GPU?"),
-			},
-			Error::Graphics(ref graphics_error) => graphics_error.fmt(f),
-			Error::GraphicsBufferWrite(ref io_error) => io_error.fmt(f),
-			Error::UI(ref ui_error) => ui_error.fmt(f),
+		<Self as std::fmt::Display>::fmt(&self, f)
+	}
+}
+impl std::fmt::Display for FailedToFindPhysicalDevice {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		match &self.0 {
+			Some(constraint) => write!(
+				f,
+				"Failed to find physical device due to constraint {:?}",
+				constraint
+			),
+			None => write!(f, "Failed to find any physical devices, do you have a GPU?"),
 		}
 	}
-}
-
-impl std::error::Error for Error {}
-
-impl From<utility::Error> for Error {
-	fn from(err: utility::Error) -> Error {
-		Error::Graphics(err)
-	}
-}
-
-impl From<crate::ui::core::Error> for Error {
-	fn from(err: crate::ui::core::Error) -> Error {
-		Error::UI(err)
-	}
-}
-
-pub fn spawn_thread<F, R, E>(target: &'static str, f: F)
-where
-	F: Fn() -> std::result::Result<R, E> + 'static + Send,
-	E: std::fmt::Display,
-{
-	let _ = std::thread::Builder::new()
-		.name(target.to_owned())
-		.spawn(move || {
-			profiling::register_thread!();
-			match f() {
-				Ok(_) => {}
-				Err(err) => {
-					log::error!(target: target, "{}", err);
-				}
-			}
-		});
 }

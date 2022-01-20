@@ -6,7 +6,7 @@ use crate::{
 			nalgebra::{self, vector, Vector2, Vector4},
 		},
 		profiling,
-		utility::AnyError,
+		utility::Result,
 	},
 	graphics::font::LOG as FONT_LOG,
 };
@@ -75,7 +75,7 @@ impl SDFBuilder {
 
 	/// Compiles the font ttf at `path` into a signed-distance-field.
 	/// Algorithm based on `<https://dev.to/thatkyleburke/generating-signed-distance-fields-from-truetype-fonts-introduction-code-setup-25lh>`.
-	pub fn build(self, font_library: &freetype::Library) -> Result<font::SDF, AnyError> {
+	pub fn build(self, font_library: &freetype::Library) -> Result<font::SDF> {
 		use freetype::{face::LoadFlag, outline::Curve};
 		assert!(self.font_path.exists());
 		profiling::scope!(
@@ -172,7 +172,7 @@ impl SDFBuilder {
 										curve_start = curve_end;
 									}
 									Curve::Bezier3(_, _, _) => {
-										return Err(Box::new(FontError::CubicBezier()));
+										return Err(FontError::CubicBezier())?;
 									}
 								};
 							}

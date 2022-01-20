@@ -1,8 +1,8 @@
-use engine::{utility::VoidResult, Application};
+use engine::{utility::Result, Application};
 use temportal_engine as engine;
 use temportal_engine_editor as editor;
 
-fn main() -> VoidResult {
+fn main() -> Result<()> {
 	engine::logging::init(&engine::logging::default_path(
 		chat_room::ChatRoom::name(),
 		Some("_editor"),

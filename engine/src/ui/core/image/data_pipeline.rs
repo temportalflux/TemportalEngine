@@ -7,7 +7,7 @@ use crate::{
 	},
 	math::nalgebra::Vector2,
 	ui::core::{image, mesh},
-	utility::{self, VoidResult},
+	utility::{self, Result},
 };
 use std::sync;
 
@@ -36,7 +36,7 @@ impl DataPipeline {
 		})
 	}
 
-	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn add_shader(&mut self, id: &asset::Id) -> Result<()> {
 		self.drawable.add_shader(id)
 	}
 

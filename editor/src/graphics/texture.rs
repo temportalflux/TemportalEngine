@@ -4,7 +4,7 @@ use crate::{
 		asset::{AnyBox, AssetResult},
 		graphics::Texture,
 		math::nalgebra,
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use std::{
@@ -28,7 +28,7 @@ impl TypeEditorMetadata for TextureEditorMetadata {
 		Box::new(TextureEditorMetadata {})
 	}
 
-	fn last_modified(&self, path: &Path) -> Result<SystemTime, AnyError> {
+	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
 		Ok(path
 			.metadata()?
 			.modified()?
@@ -39,7 +39,7 @@ impl TypeEditorMetadata for TextureEditorMetadata {
 		crate::asset::deserialize::<Texture>(&path, &content)
 	}
 
-	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>> {
 		use image::Pixel;
 		let mut texture = asset.downcast::<Texture>().unwrap();
 

@@ -14,7 +14,7 @@ use crate::{
 		self,
 		core::text::{self, font},
 	},
-	utility::{self, VoidResult},
+	utility::{self, Result},
 };
 use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
 use std::{collections::HashMap, sync};
@@ -62,7 +62,7 @@ impl DataPipeline {
 		})
 	}
 
-	pub fn add_shader(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn add_shader(&mut self, id: &asset::Id) -> Result<()> {
 		self.drawable.add_shader(id)
 	}
 

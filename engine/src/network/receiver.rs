@@ -2,7 +2,7 @@ use super::{
 	connection::{self, Connection},
 	event, packet, processor, LocalData, LOG,
 };
-use crate::utility::{AnyError, VoidResult};
+use crate::utility::Result;
 use std::sync::{atomic, Arc, Mutex, RwLock};
 
 pub struct Receiver {
@@ -53,7 +53,7 @@ impl Receiver {
 	fn parse_event(
 		&self,
 		event: socknet::event::Event,
-	) -> Result<(event::Kind, Option<event::Data>), AnyError> {
+	) -> Result<(event::Kind, Option<event::Data>)> {
 		use socknet::event::Event;
 
 		let make_addr_datum = |address| Some(event::Data::Connection(self.get_connection(address)));
@@ -79,7 +79,7 @@ impl Receiver {
 	}
 
 	#[profiling::function]
-	pub fn process(&self) -> VoidResult {
+	pub fn process(&self) -> Result<()> {
 		loop {
 			profiling::scope!("receive-event");
 			match self.queue.channel().try_recv() {

@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics,
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use std::{
@@ -26,7 +26,7 @@ impl TypeEditorMetadata for ShaderEditorMetadata {
 		Box::new(ShaderEditorMetadata {})
 	}
 
-	fn last_modified(&self, path: &Path) -> Result<SystemTime, AnyError> {
+	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
 		let glsl_path = self.glsl_path(&path);
 		let asset_last_modified_at = path.metadata()?.modified()?;
 		if !glsl_path.exists() {
@@ -42,7 +42,7 @@ impl TypeEditorMetadata for ShaderEditorMetadata {
 		Ok(Box::new(shader))
 	}
 
-	fn compile(&self, json_path: &std::path::Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, json_path: &std::path::Path, asset: AnyBox) -> Result<Vec<u8>> {
 		let shader = asset.downcast::<graphics::Shader>().unwrap();
 
 		let mut compiler = shaderc::Compiler::new().unwrap();

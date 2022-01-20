@@ -1,7 +1,7 @@
 use crate::{
 	asset,
 	audio::{self, LOG},
-	utility::AnyError,
+	utility::Result,
 	Engine, EngineSystem,
 };
 use std::{
@@ -51,7 +51,7 @@ impl Sequence {
 		shuffled.into_iter().collect::<VecDeque<_>>()
 	}
 
-	fn next_source(&mut self) -> Result<Option<super::Asset>, AnyError> {
+	fn next_source(&mut self) -> Result<Option<super::Asset>> {
 		if self.queue.is_empty() {
 			let should_play_next_set = match self.playback_count {
 				Some(mut loops_remaining) => {

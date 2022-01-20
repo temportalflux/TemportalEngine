@@ -11,7 +11,7 @@ use crate::{
 	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
 	ui::{core::*, raui, LOG},
-	utility::{self, AnyError, VoidResult},
+	utility::{self, Result},
 	EngineSystem, WinitEventListener,
 };
 use enumset::EnumSet;
@@ -196,14 +196,14 @@ impl System {
 			.ok()
 	}
 
-	pub fn with_engine_shaders(mut self) -> Result<Self, utility::AnyError> {
+	pub fn with_engine_shaders(mut self) -> Result<Self> {
 		self.initialize_engine_shaders()?;
 		Ok(self)
 	}
 
 	/// Initializes the ui system with shaders from [`EngineApp`](crate::EngineApp),
 	/// instead of manually applying shaders for each [`SystemShader`] type.
-	pub fn initialize_engine_shaders(&mut self) -> VoidResult {
+	pub fn initialize_engine_shaders(&mut self) -> Result<()> {
 		use crate::{Application, EngineApp};
 		log::info!(target: LOG, "Initializing engine shaders");
 		self.add_shader(
@@ -231,7 +231,7 @@ impl System {
 
 	/// Adds a shader to the ui system so that the various kinda of meshes can render.
 	/// The system must be provided with one of each system shader before it can run properly.
-	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> VoidResult {
+	pub fn add_shader(&mut self, key: SystemShader, id: &asset::Id) -> Result<()> {
 		match key {
 			SystemShader::TextVertex | SystemShader::TextFragment => self.text.add_shader(id),
 			SystemShader::MeshVertex => {
@@ -244,12 +244,12 @@ impl System {
 		}
 	}
 
-	pub fn with_font(mut self, id: &asset::Id) -> Result<Self, utility::AnyError> {
+	pub fn with_font(mut self, id: &asset::Id) -> Result<Self> {
 		self.add_font(id)?;
 		Ok(self)
 	}
 
-	pub fn with_all_fonts(mut self) -> Result<Self, utility::AnyError> {
+	pub fn with_all_fonts(mut self) -> Result<Self> {
 		let library = crate::asset::Library::read();
 		let font_asset_ids = library.get_ids_of_type::<Font>();
 		if let Some(asset_ids) = font_asset_ids {
@@ -263,7 +263,7 @@ impl System {
 	/// Adds a font to the text rendering system.
 	/// Fonts must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
-	pub fn add_font(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn add_font(&mut self, id: &asset::Id) -> Result<()> {
 		let asset = asset::Loader::load_sync(&id)?.downcast::<Font>().unwrap();
 		log::info!(
 			target: LOG,
@@ -276,7 +276,7 @@ impl System {
 		Ok(())
 	}
 
-	pub fn with_texture(mut self, id: &asset::Id) -> Result<Self, utility::AnyError> {
+	pub fn with_texture(mut self, id: &asset::Id) -> Result<Self> {
 		self.add_texture(id)?;
 		Ok(self)
 	}
@@ -284,7 +284,7 @@ impl System {
 	/// Adds a texture to the image rendering system.
 	/// Images must be registered/added before they can be used in a widget,
 	/// but can be added at any point in the lifecycle of the renderer.
-	pub fn add_texture(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn add_texture(&mut self, id: &asset::Id) -> Result<()> {
 		if self.image.contains(id) {
 			return Ok(());
 		}
@@ -306,7 +306,7 @@ impl System {
 		self,
 		engine: &mut crate::Engine,
 		subpass_id: Option<String>,
-	) -> Result<sync::Arc<sync::RwLock<Self>>, utility::AnyError> {
+	) -> Result<sync::Arc<sync::RwLock<Self>>> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(system.clone());
 		engine.add_winit_listener(&system);
@@ -510,7 +510,7 @@ impl graphics::RenderChainElement for System {
 	fn initialize_with(
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<sync::Arc<command::Semaphore>>, AnyError> {
+	) -> Result<Vec<sync::Arc<command::Semaphore>>> {
 		self.draw_calls_by_frame
 			.resize(render_chain.frame_count(), Vec::new());
 		self.colored_area.create_shaders(&render_chain)?;
@@ -530,10 +530,7 @@ impl graphics::RenderChainElement for System {
 	}
 
 	#[profiling::function]
-	fn destroy_render_chain(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> Result<(), AnyError> {
+	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
 		self.colored_area.destroy_pipeline(render_chain)?;
 		self.image.destroy_pipeline(render_chain)?;
 		self.text.destroy_render_chain(render_chain)?;
@@ -546,7 +543,7 @@ impl graphics::RenderChainElement for System {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError> {
+	) -> Result<()> {
 		use pipeline::state::*;
 		self.resolution = *resolution;
 		self.colored_area.create_pipeline(
@@ -575,7 +572,7 @@ impl graphics::RenderChainElement for System {
 		Ok(())
 	}
 
-	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> Result<(), AnyError> {
+	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
 		self.pending_gpu_signals
 			.append(&mut self.image.create_pending_images(&render_chain)?);
 		self.pending_gpu_signals
@@ -596,7 +593,7 @@ impl graphics::RenderChainElement for System {
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
-	) -> Result<bool, AnyError> {
+	) -> Result<bool> {
 		let mapping = self.mapping();
 		// Drain the existing widgets
 		let mut retained_text_widgets: HashMap<raui::WidgetId, text::WidgetData> =
@@ -702,7 +699,7 @@ impl graphics::RenderChainElement for System {
 
 	/// Record to the primary command buffer for a given frame
 	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
 		use graphics::debug;
 		let mut clips = Vec::new();
 		buffer.begin_label("Draw:UI", debug::LABEL_COLOR_DRAW);

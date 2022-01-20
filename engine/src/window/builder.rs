@@ -1,7 +1,8 @@
 use crate::{
 	graphics::{device::physical, AppInfo},
 	math::nalgebra::{Vector2, Vector4},
-	utility, window, Application, Engine,
+	utility::Result,
+	window, Application, Engine,
 };
 
 pub struct Builder {
@@ -65,7 +66,7 @@ impl Builder {
 	}
 
 	#[profiling::function]
-	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window, utility::AnyError> {
+	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window> {
 		log::info!(
 			target: window::LOG,
 			"Creating window \"{}\" with size <{},{}>",

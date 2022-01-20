@@ -1,5 +1,5 @@
 use super::{packet, LocalData, Receiver, Sender, LOG};
-use crate::utility::VoidResult;
+use crate::utility::Result;
 use std::{
 	mem::MaybeUninit,
 	sync::{atomic, Mutex, Once},
@@ -20,10 +20,9 @@ impl Network {
 		}
 	}
 
-	pub(super) fn receiver_init(receiver: Receiver) -> VoidResult {
-		let mut guard = Network::receiver().lock()?;
+	pub(super) fn receiver_init(receiver: Receiver) {
+		let mut guard = Network::receiver().lock().unwrap();
 		(*guard) = Some(receiver);
-		Ok(())
 	}
 
 	fn sender() -> &'static Mutex<Option<Sender>> {
@@ -37,10 +36,9 @@ impl Network {
 		}
 	}
 
-	pub(super) fn sender_init(sender: Sender) -> VoidResult {
-		let mut guard = Network::sender().lock()?;
+	pub(super) fn sender_init(sender: Sender) {
+		let mut guard = Network::sender().lock().unwrap();
 		(*guard) = Some(sender);
-		Ok(())
 	}
 
 	pub fn is_active() -> bool {
@@ -64,7 +62,7 @@ impl Network {
 		LocalData::default()
 	}
 
-	pub fn destroy() -> VoidResult {
+	pub fn destroy() -> Result<()> {
 		log::info!(target: LOG, "Destroying network");
 		if let Ok(mut guard) = Network::receiver().lock() {
 			// If destroy is called by natural process completion (instead of the Stop event),
@@ -83,7 +81,7 @@ impl Network {
 		Ok(())
 	}
 
-	pub fn stop() -> VoidResult {
+	pub fn stop() -> Result<()> {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
 				sender.stop()?;
@@ -94,7 +92,7 @@ impl Network {
 
 	/// Enqueues the packet to be sent in the sending thread
 	#[profiling::function]
-	pub fn send_packets(builder: packet::PacketBuilder) -> VoidResult {
+	pub fn send_packets(builder: packet::PacketBuilder) -> Result<()> {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
 				sender.send_packets(builder)?;
@@ -104,7 +102,7 @@ impl Network {
 	}
 
 	#[profiling::function]
-	pub fn send_all_packets(builders: Vec<packet::PacketBuilder>) -> VoidResult {
+	pub fn send_all_packets(builders: Vec<packet::PacketBuilder>) -> Result<()> {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
 				for builder in builders.into_iter() {
@@ -115,7 +113,7 @@ impl Network {
 		Ok(())
 	}
 
-	pub fn kick(address: &std::net::SocketAddr) -> VoidResult {
+	pub fn kick(address: &std::net::SocketAddr) -> Result<()> {
 		if let Ok(guard) = Network::sender().lock() {
 			if let Some(sender) = &*guard {
 				sender.kick(&address)?;

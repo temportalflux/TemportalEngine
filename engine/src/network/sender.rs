@@ -1,5 +1,5 @@
 use super::{connection, mode, packet, LocalData, LOG};
-use crate::utility::VoidResult;
+use crate::utility::Result;
 use std::{
 	net::SocketAddr,
 	sync::{Arc, RwLock},
@@ -44,21 +44,21 @@ impl socknet::packet::AddressReference for Sender {
 }
 
 impl Sender {
-	pub fn stop(&self) -> VoidResult {
+	pub fn stop(&self) -> Result<()> {
 		self.receiver_event_sender
 			.try_send(socknet::event::Event::Stop)?;
 		Ok(())
 	}
 
 	/// Enqueues the packet to be sent in the sending thread
-	pub fn send_packets(&self, builder: packet::PacketBuilder) -> VoidResult {
+	pub fn send_packets(&self, builder: packet::PacketBuilder) -> Result<()> {
 		for packet in builder.into_packets(self) {
 			self.queue.channel().try_send(packet)?;
 		}
 		Ok(())
 	}
 
-	pub fn kick(&self, address: &SocketAddr) -> VoidResult {
+	pub fn kick(&self, address: &SocketAddr) -> Result<()> {
 		self.queue.kick(address.clone())?;
 		Ok(())
 	}

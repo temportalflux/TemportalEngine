@@ -1,4 +1,4 @@
-use crate::{asset, utility::VoidResult};
+use crate::{asset, utility::Result};
 use std::{collections::HashMap, fs};
 use zip;
 
@@ -53,7 +53,7 @@ impl Library {
 
 impl Library {
 	#[profiling::function]
-	pub fn scan_pak_directory(&mut self) -> VoidResult {
+	pub fn scan_pak_directory(&mut self) -> Result<()> {
 		let pak_dir = std::env::current_dir().unwrap().join("paks");
 		log::info!(
 			target: asset::LOG,
@@ -80,7 +80,7 @@ impl Library {
 	/// Scans a specific file at a provided path.
 	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
 	#[profiling::function]
-	pub fn scan_pak(&mut self, path: &std::path::Path) -> VoidResult {
+	pub fn scan_pak(&mut self, path: &std::path::Path) -> Result<()> {
 		use std::io::Read;
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 

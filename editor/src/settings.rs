@@ -1,4 +1,4 @@
-use engine::utility::{AnyError, SaveData};
+use engine::utility::{Result, SaveData};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -19,11 +19,11 @@ impl SaveData<Editor> for Editor {
 	fn path() -> &'static str {
 		"config/editor.json"
 	}
-	fn from_json(json: &str) -> Result<Self, AnyError> {
+	fn from_json(json: &str) -> Result<Self> {
 		let value: Self = serde_json::from_str(json)?;
 		Ok(value)
 	}
-	fn to_json(&self) -> Result<String, AnyError> {
+	fn to_json(&self) -> Result<String> {
 		let mut json = serde_json::to_string_pretty(self)?;
 		json = json.replace("  ", "\t");
 		Ok(json)

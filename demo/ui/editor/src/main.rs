@@ -1,8 +1,6 @@
 use engine::Application;
-use temportal_engine as engine;
-use temportal_engine_editor as editor;
 
-fn main() -> engine::utility::VoidResult {
+fn main() -> engine::utility::Result<()> {
 	engine::logging::init(&engine::logging::default_path(
 		demo_ui::UIDemo::name(),
 		Some("_editor"),

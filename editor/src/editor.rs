@@ -1,7 +1,7 @@
 use crate::{asset, settings};
 use engine::{
 	self,
-	utility::{singleton::Singleton, AnyError, SaveData, VoidResult},
+	utility::{singleton::Singleton, Result, SaveData},
 	Application,
 };
 
@@ -29,7 +29,7 @@ impl Editor {
 		&mut INSTANCE
 	}
 
-	pub fn initialize<T: Application>() -> VoidResult {
+	pub fn initialize<T: Application>() -> Result<()> {
 		unsafe { Self::instance() }.init_with(Self::new::<T>()?);
 		Ok(())
 	}
@@ -46,7 +46,7 @@ impl Editor {
 		Self::get().write().unwrap()
 	}
 
-	fn new<T: Application>() -> Result<Self, AnyError> {
+	fn new<T: Application>() -> Result<Self> {
 		log::info!(target: EDITOR_LOG, "Initializing editor");
 		let mut editor = Self {
 			asset_manager: asset::Manager::new(),
@@ -102,7 +102,7 @@ impl Editor {
 		&mut self.asset_manager
 	}
 
-	pub fn run_commandlets(&self) -> Result<bool, AnyError> {
+	pub fn run_commandlets(&self) -> Result<bool> {
 		let mut args = std::env::args();
 		let should_build_assets = args.any(|arg| arg == "-build-assets");
 		let should_package_assets = args.any(|arg| arg == "-package");

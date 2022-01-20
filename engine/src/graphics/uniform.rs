@@ -6,7 +6,7 @@ use crate::{
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
 		RenderChain,
 	},
-	utility::{self, AnyError},
+	utility::Result,
 };
 use std::sync::{Arc, Weak};
 
@@ -17,7 +17,7 @@ pub struct Uniform {
 }
 
 impl Uniform {
-	pub fn new<TData, TStr>(name: TStr, chain: &RenderChain) -> Result<Self, AnyError>
+	pub fn new<TData, TStr>(name: TStr, chain: &RenderChain) -> Result<Self>
 	where
 		TStr: Into<String>,
 		TData: Default + Sized,
@@ -110,14 +110,12 @@ impl Uniform {
 		self.descriptor_sets[frame].upgrade()
 	}
 
-	pub fn write_data<TData>(&self, frame: usize, data: &TData) -> utility::Result<()>
+	pub fn write_data<TData>(&self, frame: usize, data: &TData) -> Result<()>
 	where
 		TData: Sized,
 	{
 		let mut mem = self.buffers[frame].memory()?;
-		let wrote_all = mem
-			.write_item(data)
-			.map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
+		let wrote_all = mem.write_item(data)?;
 		assert!(wrote_all);
 		Ok(())
 	}

@@ -1,7 +1,7 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
 	graphics::{flags, renderpass::Info as GraphicsPassInfo, RenderChain},
-	utility::AnyError,
+	utility::Result,
 };
 use serde::{Deserialize, Serialize};
 
@@ -260,7 +260,7 @@ impl Pass {
 		&self,
 		asset_id: &asset::Id,
 		render_chain: &RenderChain,
-	) -> Result<GraphicsPassInfo, AnyError> {
+	) -> Result<GraphicsPassInfo> {
 		use crate::{
 			asset::Loader,
 			graphics::{render_pass, renderpass},
@@ -275,33 +275,33 @@ impl Pass {
 
 			for attachment in subpass.attachments.input.iter() {
 				if !self.attachment_order.contains(&attachment.id) {
-					return Err(Box::new(MissingAttachmentReference(
+					return Err(MissingAttachmentReference(
 						attachment.id.clone(),
 						id.clone(),
 						asset_id.clone(),
-					)));
+					))?;
 				}
 				graphics =
 					graphics.add_input_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			for attachment in subpass.attachments.color.iter() {
 				if !self.attachment_order.contains(&attachment.id) {
-					return Err(Box::new(MissingAttachmentReference(
+					return Err(MissingAttachmentReference(
 						attachment.id.clone(),
 						id.clone(),
 						asset_id.clone(),
-					)));
+					))?;
 				}
 				graphics =
 					graphics.add_color_attachment(attachment.id.as_string(), attachment.layout);
 			}
 			if let Some(attachment) = &subpass.attachments.depth_stencil {
 				if !self.attachment_order.contains(&attachment.id) {
-					return Err(Box::new(MissingAttachmentReference(
+					return Err(MissingAttachmentReference(
 						attachment.id.clone(),
 						id.clone(),
 						asset_id.clone(),
-					)));
+					))?;
 				}
 				graphics = graphics
 					.with_depth_stencil_attachment(attachment.id.as_string(), attachment.layout);

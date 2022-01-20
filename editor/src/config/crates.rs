@@ -1,4 +1,4 @@
-use crate::engine::utility::{AnyError, SaveData};
+use crate::engine::utility::{Result, SaveData};
 use serde::{Deserialize, Serialize};
 use std::{
 	collections::HashMap,
@@ -22,11 +22,11 @@ impl SaveData<Crates> for Crates {
 	fn path() -> &'static str {
 		"config/crates.json"
 	}
-	fn from_json(json: &str) -> Result<Self, AnyError> {
+	fn from_json(json: &str) -> Result<Self> {
 		let value: Self = serde_json::from_str(json)?;
 		Ok(value)
 	}
-	fn to_json(&self) -> Result<String, AnyError> {
+	fn to_json(&self) -> Result<String> {
 		let mut json = serde_json::to_string_pretty(self)?;
 		json = json.replace("  ", "\t");
 		Ok(json)

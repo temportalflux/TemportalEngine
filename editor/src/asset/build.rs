@@ -1,4 +1,4 @@
-use engine::{self, asset, Application};
+use engine::{self, asset, utility::Result, Application};
 use std::{
 	self, fs,
 	io::{self},
@@ -25,7 +25,7 @@ impl Module {
 		&self,
 		asset_manager: &crate::asset::Manager,
 		force_build: bool,
-	) -> engine::utility::VoidResult {
+	) -> engine::utility::Result<()> {
 		if !self.assets_directory.exists() {
 			log::info!(
 				target: asset::LOG,
@@ -122,7 +122,7 @@ impl Module {
 		}
 
 		if !failed_asset_paths.is_empty() {
-			return Err(Box::new(super::Error::FailedToBuild(failed_asset_paths)));
+			return Err(super::Error::FailedToBuild(failed_asset_paths))?;
 		}
 
 		if !skipped_paths.is_empty() {
@@ -175,7 +175,7 @@ pub fn collect_file_paths(path: &Path, ignore: &Vec<PathBuf>) -> io::Result<Vec<
 	Ok(file_paths)
 }
 
-pub fn get_output_dir(module: &str) -> Result<std::path::PathBuf, engine::utility::AnyError> {
+pub fn get_output_dir(module: &str) -> Result<std::path::PathBuf> {
 	let mut workspace_path = std::env::current_dir()?;
 	workspace_path.push(module);
 	workspace_path.push("src");

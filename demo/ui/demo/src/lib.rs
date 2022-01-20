@@ -1,4 +1,4 @@
-use engine::{asset::statics, ui, utility::VoidResult, Application};
+use engine::{asset::statics, ui, utility::Result, Application};
 pub use temportal_engine as engine;
 
 pub struct UIDemo();
@@ -11,7 +11,7 @@ impl Application for UIDemo {
 	}
 }
 
-pub fn run() -> VoidResult {
+pub fn run() -> Result<()> {
 	engine::logging::init(&engine::logging::default_path(UIDemo::name(), None))?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;

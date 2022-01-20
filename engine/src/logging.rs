@@ -1,4 +1,4 @@
-use crate::utility::VoidResult;
+use crate::utility::Result;
 pub use log::Level;
 
 pub fn default_path(app_name: &str, suffix: Option<&str>) -> std::path::PathBuf {
@@ -15,7 +15,7 @@ pub fn default_path(app_name: &str, suffix: Option<&str>) -> std::path::PathBuf 
 }
 
 #[profiling::function]
-pub fn init(log_path: &std::path::Path) -> VoidResult {
+pub fn init(log_path: &std::path::Path) -> Result<()> {
 	use simplelog::*;
 	if let Some(parent) = log_path.parent() {
 		std::fs::create_dir_all(parent)?;

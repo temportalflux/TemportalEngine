@@ -7,7 +7,8 @@ use crate::{
 		AppInfo, Context, Surface,
 	},
 	math::nalgebra::Vector4,
-	utility, window,
+	utility::{self, Result},
+	window,
 };
 use std::sync;
 
@@ -40,7 +41,7 @@ impl Window {
 		app_info: AppInfo,
 		constraints: Vec<physical::Constraint>,
 		render_pass_clear_color: Vector4<f32>,
-	) -> Result<Window, utility::AnyError> {
+	) -> Result<Window> {
 		let graphics_context = Context::new()?;
 		let instance = instance::Info::default()
 			.set_app_info(app_info)
@@ -123,9 +124,9 @@ impl Window {
 		));
 		match instance::Instance::find_physical_device(&vulkan, &constraints, &surface) {
 			Ok(device) => Ok(device),
-			Err(failed_constraint) => Err(utility::Error::FailedToFindPhysicalDevice(
+			Err(failed_constraint) => Err(utility::error::FailedToFindPhysicalDevice(
 				failed_constraint,
-			)),
+			))?,
 		}
 	}
 
@@ -133,7 +134,7 @@ impl Window {
 	pub fn create_render_chain(
 		&mut self,
 		create_depth_image: bool,
-	) -> Result<sync::Arc<sync::RwLock<graphics::RenderChain>>, utility::AnyError> {
+	) -> Result<sync::Arc<sync::RwLock<graphics::RenderChain>>> {
 		let permitted_frame_count = self
 			.physical_device
 			.query_surface_support()
@@ -193,7 +194,7 @@ impl Window {
 		self.render_chain.as_ref().unwrap()
 	}
 
-	pub fn wait_until_idle(&self) -> Result<(), utility::AnyError> {
+	pub fn wait_until_idle(&self) -> Result<()> {
 		Ok(self
 			.render_chain()
 			.read()

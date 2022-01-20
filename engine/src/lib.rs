@@ -47,7 +47,7 @@ pub fn register_asset_types() {
 
 pub fn run<F>(f: F)
 where
-	F: Fn() -> utility::VoidResult,
+	F: Fn() -> utility::Result<()>,
 {
 	profiling::register_thread!();
 	let runtime = {

@@ -1,5 +1,5 @@
 use super::super::{connection::Connection, event, mode, packet, LocalData};
-use crate::utility::VoidResult;
+use crate::utility::Result;
 use std::collections::HashMap;
 use temportal_engine_utilities::registry::Registry as GenericRegistry;
 
@@ -86,7 +86,7 @@ pub trait Processor {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult;
+	) -> Result<()>;
 
 	fn boxed(self) -> Box<dyn Processor + 'static>
 	where
@@ -108,7 +108,7 @@ impl Processor for AnyProcessor {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		let mut result = Ok(()); // should having no processors be a warning?
 		for processor in self.0.iter() {
 			result = processor.process(kind, data, local_data);
@@ -128,7 +128,7 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
 		kind: &event::Kind,
 		data: &mut Option<event::Data>,
 		local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		if let Some(event::Data::Packet(source, guarantee, boxed)) = data {
 			self.process_packet(
 				kind,
@@ -138,9 +138,7 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
 				local_data,
 			)
 		} else {
-			Err(Box::new(super::super::Error::EncounteredNonPacket(
-				kind.clone(),
-			)))
+			Err(super::super::Error::EncounteredNonPacket(kind.clone()))?
 		}
 	}
 
@@ -151,5 +149,5 @@ pub trait PacketProcessor<TPacketKind: 'static>: Processor + 'static {
 		connection: &Connection,
 		guarantee: &packet::Guarantee,
 		local_data: &LocalData,
-	) -> VoidResult;
+	) -> Result<()>;
 }

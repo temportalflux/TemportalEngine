@@ -7,8 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-temportal-engine = { path = "../../../engine" }
-temportal-engine-editor = { path = "../../../editor" }
+engine = { path = "../../../engine", package = "temportal-engine" }
+editor = { path = "../../../editor", package = "temportal-engine-editor" }
 demo-ui = { path = "../demo" }
 log = "0.4.14"
 tokio = "1.15"

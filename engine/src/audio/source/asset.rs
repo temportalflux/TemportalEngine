@@ -1,5 +1,5 @@
 use crate::audio::{decoder, Sound, System, LOG};
-use crate::{asset, utility::AnyError};
+use crate::{asset, utility::Result};
 use oddio;
 use std::sync::{Arc, Mutex, RwLock};
 
@@ -29,12 +29,12 @@ pub struct Asset {
 static BUFFER_SIZE: usize = 1024;
 
 impl Asset {
-	pub fn from_id(id: asset::Id, system: &mut System) -> Result<Self, AnyError> {
+	pub fn from_id(id: asset::Id, system: &mut System) -> Result<Self> {
 		let asset = asset::Loader::load_sync(&id)?.downcast::<Sound>().unwrap();
 		Self::create(id, asset, system)
 	}
 
-	pub fn create(id: asset::Id, asset: Box<Sound>, system: &mut System) -> Result<Self, AnyError> {
+	pub fn create(id: asset::Id, asset: Box<Sound>, system: &mut System) -> Result<Self> {
 		let sample_rate = Self::create_track(asset)?.sample_rate()?;
 		let stream = oddio::Stream::new(sample_rate, BUFFER_SIZE);
 		// TODO: Figure out a better way to convert the signal into a control handle than starting and pausing the audio
@@ -54,7 +54,7 @@ impl Asset {
 		&self.id
 	}
 
-	fn create_track(asset: Box<Sound>) -> Result<decoder::Track, AnyError> {
+	fn create_track(asset: Box<Sound>) -> Result<decoder::Track> {
 		Ok(decoder::Track::new(
 			asset.kind(),
 			std::io::Cursor::new(asset.binary().clone()),

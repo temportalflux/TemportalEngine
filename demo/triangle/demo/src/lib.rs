@@ -1,4 +1,4 @@
-use engine::{utility::VoidResult, Application};
+use engine::{utility::Result, Application};
 pub use temportal_engine as engine;
 
 #[path = "renderer.rs"]
@@ -17,7 +17,7 @@ impl Application for TriangleDemo {
 	}
 }
 
-pub fn run() -> VoidResult {
+pub fn run() -> Result<()> {
 	engine::logging::init(&engine::logging::default_path(TriangleDemo::name(), None))?;
 	let mut engine = engine::Engine::new()?;
 	engine.scan_paks()?;

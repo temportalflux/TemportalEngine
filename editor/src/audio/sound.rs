@@ -3,7 +3,7 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		audio::{Sound, SourceKind},
-		utility::AnyError,
+		utility::Result,
 	},
 };
 use serde_json;
@@ -31,7 +31,7 @@ impl TypeEditorMetadata for SoundEditorMetadata {
 		Ok(Box::new(sound))
 	}
 
-	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>, AnyError> {
+	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>> {
 		Ok(rmp_serde::to_vec(&asset.downcast::<Sound>().unwrap())?)
 	}
 }

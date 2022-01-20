@@ -1,5 +1,5 @@
-mod error;
-pub use error::*;
+pub mod error;
+pub use error::{Error, Result};
 
 pub use temportal_engine_utilities::*;
 pub use vulkan_rs::utility::make_version;
@@ -19,3 +19,21 @@ mod save_data;
 pub use save_data::*;
 
 pub mod kdl;
+
+pub fn spawn_thread<F, R, E>(target: &'static str, f: F)
+where
+	F: Fn() -> std::result::Result<R, E> + 'static + Send,
+	E: std::fmt::Display,
+{
+	let _ = std::thread::Builder::new()
+		.name(target.to_owned())
+		.spawn(move || {
+			profiling::register_thread!();
+			match f() {
+				Ok(_) => {}
+				Err(err) => {
+					log::error!(target: target, "{}", err);
+				}
+			}
+		});
+}

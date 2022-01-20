@@ -1,4 +1,4 @@
-use crate::{asset, utility};
+use crate::{asset, utility::Result};
 use rmp_serde;
 use std::{fs, io::Read, path::PathBuf};
 use zip;
@@ -20,7 +20,7 @@ impl Loader {
 	}
 
 	#[profiling::function]
-	pub fn load_sync(id: &asset::Id) -> Result<asset::AnyBox, utility::AnyError> {
+	pub fn load_sync(id: &asset::Id) -> Result<asset::AnyBox> {
 		let location = asset::Library::read()
 			.find_location(&id)
 			.ok_or(asset::Error::AssetNotFound(id.clone()))?;

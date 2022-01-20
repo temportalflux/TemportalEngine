@@ -1,5 +1,5 @@
 use crate::{
-	engine::{self, asset, math::nalgebra::Vector2, utility::AnyError, Application},
+	engine::{self, asset, math::nalgebra::Vector2, utility::Result, Application},
 	graphics::{
 		self, buffer,
 		camera::{self, DefaultCamera},
@@ -51,7 +51,7 @@ impl RenderBoids {
 		render_chain: &Arc<RwLock<RenderChain>>,
 		wrapping_world_bounds_min: &Vector2<f32>,
 		wrapping_world_bounds_max: &Vector2<f32>,
-	) -> Result<Arc<RwLock<RenderBoids>>, AnyError> {
+	) -> Result<Arc<RwLock<RenderBoids>>> {
 		let vert_shader = Arc::new(Self::load_shader(
 			&render_chain.read().unwrap(),
 			engine::asset::Id::new(BoidDemo::name(), "vertex"),
@@ -161,7 +161,7 @@ impl RenderBoids {
 		Ok(strong)
 	}
 
-	fn load_shader(render_chain: &RenderChain, id: asset::Id) -> Result<shader::Module, AnyError> {
+	fn load_shader(render_chain: &RenderChain, id: asset::Id) -> Result<shader::Module> {
 		let shader = asset::Loader::load_sync(&id)?
 			.downcast::<engine::graphics::Shader>()
 			.unwrap();
@@ -177,7 +177,7 @@ impl RenderBoids {
 		)?)
 	}
 
-	fn load_boid_texture() -> Result<Box<graphics::Texture>, AnyError> {
+	fn load_boid_texture() -> Result<Box<graphics::Texture>> {
 		Ok(
 			asset::Loader::load_sync(&engine::asset::Id::new(BoidDemo::name(), "boid"))?
 				.downcast::<graphics::Texture>()
@@ -188,7 +188,7 @@ impl RenderBoids {
 	fn create_boid_image(
 		render_chain: &RenderChain,
 		texture: Box<graphics::Texture>,
-	) -> Result<Arc<image::Image>, AnyError> {
+	) -> Result<Arc<image::Image>> {
 		let image = Arc::new(
 			graphics::image::Image::builder()
 				.with_name("BoidModel.Image")
@@ -221,7 +221,7 @@ impl RenderBoids {
 	fn create_image_view(
 		render_chain: &RenderChain,
 		image: Arc<image::Image>,
-	) -> Result<image_view::View, AnyError> {
+	) -> Result<image_view::View> {
 		Ok(image_view::View::builder()
 			.with_name("BoidModel.Image.View")
 			.for_image(image.clone())
@@ -234,7 +234,7 @@ impl RenderBoids {
 
 	fn create_boid_model(
 		render_chain: &RenderChain,
-	) -> Result<(buffer::Buffer, buffer::Buffer, usize), AnyError> {
+	) -> Result<(buffer::Buffer, buffer::Buffer, usize)> {
 		let half_unit = 0.5;
 		let vertices = vec![
 			Vertex::default()
@@ -305,7 +305,7 @@ impl RenderBoids {
 	fn create_instance_buffer(
 		render_chain: &RenderChain,
 		instance_count: usize,
-	) -> Result<buffer::Buffer, AnyError> {
+	) -> Result<buffer::Buffer> {
 		Ok(graphics::buffer::Buffer::builder()
 			.with_name("RenderBoids.InstanceBuffer")
 			.with_usage(flags::BufferUsage::VERTEX_BUFFER)
@@ -329,7 +329,7 @@ impl graphics::RenderChainElement for RenderBoids {
 	fn initialize_with(
 		&mut self,
 		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
+	) -> Result<Vec<Arc<command::Semaphore>>> {
 		use graphics::descriptor::update::*;
 
 		Queue::default()
@@ -353,7 +353,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		Ok(Vec::new())
 	}
 
-	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<(), AnyError> {
+	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<()> {
 		self.pipeline = None;
 		self.pipeline_layout = None;
 		Ok(())
@@ -364,7 +364,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError> {
+	) -> Result<()> {
 		use flags::blend::{Constant::*, Factor::*, Source::*};
 		use pipeline::state::*;
 		self.pipeline_layout = Some(
@@ -426,7 +426,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		self.pending_gpu_signals.drain(..).collect()
 	}
 
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError> {
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
 		use graphics::debug;
 
 		buffer.begin_label("Draw:Boids", debug::LABEL_COLOR_DRAW);
@@ -460,7 +460,7 @@ impl graphics::RenderChainElement for RenderBoids {
 		_buffer: &command::Buffer,
 		frame: usize,
 		resolution: &Vector2<f32>,
-	) -> Result<bool, AnyError> {
+	) -> Result<bool> {
 		self.camera_uniform
 			.write_data(frame, &self.camera.as_uniform_matrix(resolution))?;
 
@@ -482,11 +482,7 @@ impl graphics::RenderChainElement for RenderBoids {
 }
 
 impl RenderBoids {
-	pub fn set_instances(
-		&mut self,
-		instances: Vec<Instance>,
-		expansion_step: usize,
-	) -> Result<(), AnyError> {
+	pub fn set_instances(&mut self, instances: Vec<Instance>, expansion_step: usize) -> Result<()> {
 		use engine::task::ScheduledTask;
 		use graphics::alloc::Object;
 

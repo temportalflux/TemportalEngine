@@ -304,7 +304,7 @@ impl TaskGpuCopy {
 		self.stage_start(memory_size)?;
 		{
 			let mut mem = self.staging_buffer.as_ref().unwrap().memory()?;
-			let wrote_all = write(&mut mem).map_err(|e| utility::Error::GraphicsBufferWrite(e))?;
+			let wrote_all = write(&mut mem)?;
 			assert!(wrote_all);
 		}
 		Ok(self)

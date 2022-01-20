@@ -23,7 +23,7 @@ where
 pub fn deserialize_typed<'a, T>(
 	path: &std::path::Path,
 	content: &'a str,
-) -> std::result::Result<T, engine::utility::AnyError>
+) -> engine::utility::Result<T>
 where
 	T: 'static + Send + Sync + serde::Deserialize<'a> + engine::asset::kdl::Asset<T> + Default,
 {
@@ -31,8 +31,8 @@ where
 	match SupportedFileTypes::parse_extension(ext) {
 		Some(SupportedFileTypes::Json) => Ok(serde_json::from_str::<T>(content)?),
 		Some(SupportedFileTypes::Kdl) => Ok(T::kdl_schema().parse_and_validate(&content)?),
-		_ => Err(Box::new(engine::asset::Error::ExtensionNotSupported(
+		_ => Err(engine::asset::Error::ExtensionNotSupported(
 			ext.map(|ext| ext.to_owned()),
-		))),
+		))?,
 	}
 }

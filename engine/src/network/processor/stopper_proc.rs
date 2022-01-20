@@ -2,7 +2,7 @@ use super::{
 	super::{event, LocalData, LOG},
 	Processor,
 };
-use crate::utility::VoidResult;
+use crate::utility::Result;
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
 	Arc,
@@ -26,7 +26,7 @@ impl Processor for EndNetwork {
 		kind: &event::Kind,
 		_data: &mut Option<event::Data>,
 		_local_data: &LocalData,
-	) -> VoidResult {
+	) -> Result<()> {
 		if let event::Kind::Stop = kind {
 			log::debug!(
 				target: LOG,

@@ -1,7 +1,4 @@
-use crate::{
-	asset, audio, input, network, task,
-	utility::{AnyError, VoidResult},
-};
+use crate::{asset, audio, input, network, task, utility::Result};
 use std::sync::{
 	atomic::{self, AtomicBool},
 	Arc, RwLock, RwLockWriteGuard, Weak,
@@ -17,7 +14,7 @@ pub struct Engine {
 }
 
 impl Engine {
-	pub fn new() -> Result<Self, AnyError> {
+	pub fn new() -> Result<Self> {
 		task::initialize_system();
 		crate::register_asset_types();
 		audio::System::initialize();
@@ -31,7 +28,7 @@ impl Engine {
 	}
 
 	/// Scans the engine pak file and any pak file names provided.
-	pub fn scan_paks(&self) -> VoidResult {
+	pub fn scan_paks(&self) -> Result<()> {
 		let mut library = asset::Library::write();
 		library.scan_pak_directory()?;
 		Ok(())

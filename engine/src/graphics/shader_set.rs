@@ -1,7 +1,7 @@
 use crate::{
 	asset,
 	graphics::{self, flags, shader},
-	utility::{self, VoidResult},
+	utility::{self, Result},
 };
 use std::{collections::HashMap, sync};
 
@@ -42,7 +42,7 @@ impl ShaderSet {
 	/// If a shader of the same kind already exists, it will be dropped the next time
 	/// [`create_modules`](ShaderSet::create_modules) is called.
 	#[profiling::function]
-	pub fn insert(&mut self, id: &asset::Id) -> VoidResult {
+	pub fn insert(&mut self, id: &asset::Id) -> Result<()> {
 		let shader = asset::Loader::load_sync(&id)?
 			.downcast::<graphics::Shader>()
 			.unwrap();

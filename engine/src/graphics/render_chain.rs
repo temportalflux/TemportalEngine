@@ -11,7 +11,7 @@ use crate::{
 		Surface,
 	},
 	math::nalgebra::Vector2,
-	utility::{self, AnyError},
+	utility::{self, Result},
 };
 use multimap::MultiMap;
 use std::sync::{self, Arc, RwLock, Weak};
@@ -28,7 +28,7 @@ pub trait RenderChainElement: Send + Sync {
 	fn initialize_with(
 		&mut self,
 		_render_chain: &mut RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>, AnyError> {
+	) -> Result<Vec<Arc<command::Semaphore>>> {
 		Ok(vec![])
 	}
 
@@ -41,21 +41,21 @@ pub trait RenderChainElement: Send + Sync {
 		render_chain: &RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> Result<(), AnyError>;
+	) -> Result<()>;
 
 	/// Performs any changes to data that need to happen before the frame begins to be processed
 	/// (but after an uninitialized elements have been initialized).
 	/// There is no frame-specific information provided to this function,
 	/// see [`prerecord_update`](RenderChainElement::prerecord_update),
 	/// if you need to make data changes for a specific frame.
-	fn preframe_update(&mut self, _render_chain: &RenderChain) -> Result<(), AnyError> {
+	fn preframe_update(&mut self, _render_chain: &RenderChain) -> Result<()> {
 		Ok(())
 	}
 
 	/// Destroys any objects which are created during `on_render_chain_constructed`.
 	/// The render chain may be reconstructed soon after this is called, or it may just be dropped entirely.
 	/// This function is not garunteed to be called when the render chain is dropped.
-	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> Result<(), AnyError>;
+	fn destroy_render_chain(&mut self, render_chain: &RenderChain) -> Result<()>;
 
 	/// Performs any tweaks that need to be made to data before the frame may be recorded.
 	/// The frame may not be recorded after all elements have been processed,
@@ -67,7 +67,7 @@ pub trait RenderChainElement: Send + Sync {
 		_buffer: &command::Buffer,
 		_frame: usize,
 		_resolution: &Vector2<f32>,
-	) -> Result<bool, AnyError> {
+	) -> Result<bool> {
 		Ok(false)
 	}
 
@@ -81,7 +81,7 @@ pub trait RenderChainElement: Send + Sync {
 	/// Records commands to the command buffer for a given frame.
 	/// Only called if the frame has been marked as dirty, either by [`mark_commands_dirty`](RenderChain::mark_commands_dirty),
 	/// or by any element returning `true` from [`prerecord_update`](RenderChainElement::prerecord_update).
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<(), AnyError>;
+	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()>;
 }
 
 type ChainElement = Weak<RwLock<dyn graphics::RenderChainElement>>;
@@ -312,7 +312,7 @@ impl RenderChain {
 		&mut self,
 		subpass_id: Option<String>,
 		element: &Arc<RwLock<T>>,
-	) -> Result<(), AnyError>
+	) -> Result<()>
 	where
 		T: 'static + graphics::RenderChainElement,
 	{
@@ -332,7 +332,7 @@ impl RenderChain {
 	/// (and [`destroy_render_chain`](RenderChainElement::destroy_render_chain) will be called on any initialized elements).
 	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
-	fn construct_render_chain(&mut self, extent: structs::Extent2D) -> Result<(), AnyError> {
+	fn construct_render_chain(&mut self, extent: structs::Extent2D) -> Result<()> {
 		log::info!(
 			target: graphics::LOG,
 			"{}Constructing render chain with resolution <{},{}>",
@@ -546,7 +546,7 @@ impl RenderChain {
 
 	/// Records commands for one frame to a command buffer.
 	#[profiling::function]
-	fn record_commands(&mut self, buffer_index: usize) -> Result<(), AnyError> {
+	fn record_commands(&mut self, buffer_index: usize) -> Result<()> {
 		use graphics::debug;
 		use std::convert::TryFrom;
 		let use_secondary_buffers = false;
@@ -561,7 +561,7 @@ impl RenderChain {
 		);
 
 		let record_elements =
-			|buffer: &mut command::Buffer, elements: &Vec<ChainElement>| -> Result<(), AnyError> {
+			|buffer: &mut command::Buffer, elements: &Vec<ChainElement>| -> Result<()> {
 				for element in elements.iter() {
 					if let Some(arc) = element.upgrade() {
 						let locked = arc.read().unwrap();
@@ -614,7 +614,7 @@ impl RenderChain {
 	/// destroy the display objects and reconstruct them
 	/// (thereby causing all frames to be marked as dirty).
 	#[profiling::function]
-	pub fn render_frame(&mut self) -> Result<(), AnyError> {
+	pub fn render_frame(&mut self) -> Result<()> {
 		use graphics::debug;
 		let logical = self.logical.upgrade().unwrap();
 
@@ -717,7 +717,7 @@ impl RenderChain {
 					self.is_dirty = true;
 					return Ok(());
 				}
-				_ => return Err(utility::Error::Graphics(e))?,
+				_ => return Err(e)?,
 			},
 		};
 		let next_image_idx = next_image_idx as usize;
@@ -823,7 +823,7 @@ impl RenderChain {
 						self.is_dirty = true;
 						return Ok(());
 					}
-					_ => return Err(utility::Error::Graphics(e))?,
+					_ => return Err(e)?,
 				},
 			}
 		}
