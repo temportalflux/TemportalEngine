@@ -207,14 +207,15 @@ impl RenderBoids {
 				.with_usage(flags::ImageUsage::SAMPLED)
 				.build(&render_chain.allocator())?,
 		);
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
-			.begin()?
-			.format_image_for_write(&image)
-			.stage(&texture.binary()[..])?
-			.copy_stage_to_image(&image)
-			.format_image_for_read(&image)
-			.end()?
-			.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+				.begin()?
+				.format_image_for_write(&image)
+				.stage(&texture.binary()[..])?
+				.copy_stage_to_image(&image)
+				.format_image_for_read(&image)
+				.end()?,
+		);
 		Ok(image)
 	}
 
@@ -265,15 +266,16 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		GpuOperationBuilder::new(
-			vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
-		)?
-		.begin()?
-		.stage(&vertices[..])?
-		.copy_stage_to_buffer(&vertex_buffer)
-		.end()?
-		.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(
+				vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.stage(&vertices[..])?
+			.copy_stage_to_buffer(&vertex_buffer)
+			.end()?,
+		);
 
 		let index_buffer = graphics::buffer::Buffer::builder()
 			.with_name("BoidModel.IndexBuffer")
@@ -289,15 +291,16 @@ impl RenderBoids {
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
 			.build(&render_chain.allocator())?;
 
-		GpuOperationBuilder::new(
-			index_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
-		)?
-		.begin()?
-		.stage(&indices[..])?
-		.copy_stage_to_buffer(&index_buffer)
-		.end()?
-		.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(
+				index_buffer.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.stage(&indices[..])?
+			.copy_stage_to_buffer(&index_buffer)
+			.end()?,
+		);
 
 		Ok((vertex_buffer, index_buffer, indices.len()))
 	}

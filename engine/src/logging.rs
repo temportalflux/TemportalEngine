@@ -36,6 +36,7 @@ pub fn init(log_path: &std::path::Path) -> Result<()> {
 		for input_dep in crate::input::DEPENDENCY_LOG_TARGETS.iter() {
 			builder.add_filter_ignore_str(input_dep);
 		}
+		builder.add_filter_ignore_str("mio"); // for quinn networking
 		builder.build()
 	};
 	CombinedLogger::init(vec![

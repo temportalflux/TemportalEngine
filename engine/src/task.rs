@@ -7,6 +7,10 @@ use std::{
 
 pub use tokio::task::JoinHandle;
 
+pub fn current() -> tokio::runtime::Handle {
+	tokio::runtime::Handle::current()
+}
+
 pub fn spawn<T>(target: &'static str, future: T) -> JoinHandle<()>
 where
 	T: futures::future::Future<Output = Result<()>> + Send + 'static,

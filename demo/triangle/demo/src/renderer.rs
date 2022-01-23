@@ -138,9 +138,10 @@ impl graphics::RenderChainElement for Triangle {
 			)?
 			.begin()?
 			.stage(&self.vertices[..])?
-			.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
-			.end()?;
-			copy_task.gpu_signal_on_complete()
+			.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap());
+			let signal = copy_task.gpu_signal_on_complete();
+			copy_task.end()?;
+			signal
 		};
 
 		self.index_buffer = Some(sync::Arc::new(
@@ -169,9 +170,10 @@ impl graphics::RenderChainElement for Triangle {
 			)?
 			.begin()?
 			.stage(&self.indices[..])?
-			.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
-			.end()?;
-			copy_task.gpu_signal_on_complete()
+			.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap());
+			let signal = copy_task.gpu_signal_on_complete();
+			copy_task.end()?;
+			signal
 		};
 
 		Ok(vec![vertex_buffer_copy_signal, index_buffer_copy_signal])
