@@ -13,6 +13,7 @@ pub mod logging;
 pub mod math;
 pub mod network;
 pub use profiling;
+pub use socknet;
 pub mod task;
 pub mod ui;
 pub mod utility;
