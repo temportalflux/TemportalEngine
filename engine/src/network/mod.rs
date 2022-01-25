@@ -1,5 +1,6 @@
 pub static LOG: &'static str = "network";
 
+pub use socknet;
 pub use socknet::*;
 
 mod builder;
