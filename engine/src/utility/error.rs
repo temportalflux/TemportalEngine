@@ -1,6 +1,6 @@
 use crate::graphics::device::physical;
 
-pub use anyhow::{Error, Result};
+pub use anyhow::{Context, Error, Result};
 
 pub struct FailedToFindPhysicalDevice(pub Option<physical::Constraint>);
 impl std::error::Error for FailedToFindPhysicalDevice {}

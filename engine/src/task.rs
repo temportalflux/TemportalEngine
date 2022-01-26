@@ -17,7 +17,7 @@ where
 {
 	tokio::task::spawn(async move {
 		if let Err(err) = future.await {
-			log::error!(target: target, "{}", err);
+			log::error!(target: target, "{:?}", err);
 		}
 	})
 }
@@ -28,7 +28,7 @@ where
 {
 	tokio::task::spawn_blocking(move || {
 		if let Err(err) = callback() {
-			log::error!(target: target, "{}", err);
+			log::error!(target: target, "{:?}", err);
 		}
 	});
 }
