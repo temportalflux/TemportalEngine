@@ -88,6 +88,10 @@ impl Engine {
 		unsafe { &mut INSTANCE }
 	}
 
+	pub fn set(engine: Arc<RwLock<Self>>) {
+		Self::singleton().write(engine);
+	}
+
 	pub fn get() -> &'static Arc<RwLock<Self>> {
 		unsafe { &*Self::singleton().as_ptr() }
 	}
@@ -96,7 +100,7 @@ impl Engine {
 	where
 		F: 'static + Fn() -> (),
 	{
-		Self::singleton().write(engine.clone());
+		Self::set(engine.clone());
 		let terminate_signal = Arc::new(AtomicBool::new(false));
 		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
 

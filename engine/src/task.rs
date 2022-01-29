@@ -11,24 +11,24 @@ pub fn current() -> tokio::runtime::Handle {
 	tokio::runtime::Handle::current()
 }
 
-pub fn spawn<T>(target: &'static str, future: T) -> JoinHandle<()>
+pub fn spawn<T>(target: String, future: T) -> JoinHandle<()>
 where
 	T: futures::future::Future<Output = Result<()>> + Send + 'static,
 {
 	tokio::task::spawn(async move {
 		if let Err(err) = future.await {
-			log::error!(target: target, "{:?}", err);
+			log::error!(target: &target, "{:?}", err);
 		}
 	})
 }
 
-pub fn spawn_blocking<F>(target: &'static str, callback: F)
+pub fn spawn_blocking<F>(target: String, callback: F)
 where
 	F: FnOnce() -> Result<()> + Send + 'static,
 {
 	tokio::task::spawn_blocking(move || {
 		if let Err(err) = callback() {
-			log::error!(target: target, "{:?}", err);
+			log::error!(target: &target, "{:?}", err);
 		}
 	});
 }

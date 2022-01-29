@@ -95,7 +95,7 @@ impl GpuOperationBuilder {
 		}
 
 		let arc_self = sync::Arc::new(self);
-		let async_handle = task::spawn("gpu-operation", async move {
+		let async_handle = task::spawn("gpu-operation".to_string(), async move {
 			// Wait for the command to be complete
 			arc_self
 				.device
