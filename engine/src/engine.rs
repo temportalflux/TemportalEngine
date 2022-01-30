@@ -123,6 +123,7 @@ impl Engine {
 				return;
 			}
 			if engine_has_focus {
+				profiling::scope!("parse-input");
 				if let Ok(event) = input::winit::parse_winit_event(&event) {
 					input::send_event(event);
 				}
@@ -194,27 +195,39 @@ impl Engine {
 								);
 							}
 						}
-
-						{
-							let mut engine = engine.write().unwrap();
-							engine.weak_systems.retain(|sys| sys.strong_count() > 0);
-						}
-						{
-							audio::System::write()
-								.unwrap()
-								.update(delta_time, engine_has_focus);
+					}
+					{
+						let mut engine = engine.write().unwrap();
+						engine.weak_systems.retain(|sys| sys.strong_count() > 0);
+					}
+					{
+						profiling::scope!("audio");
+						audio::System::write()
+							.unwrap()
+							.update(delta_time, engine_has_focus);
+					}
+					{
+						profiling::scope!(
+							"update-systems",
+							&format!("Δt={:.3}", delta_time.as_secs_f32())
+						);
+						let systems = {
 							let engine = engine.read().unwrap();
 							let strong = engine.systems.iter().cloned();
 							let weak = engine.weak_systems.iter().filter_map(|weak| weak.upgrade());
-							for system in strong.chain(weak) {
-								system.write().unwrap().update(delta_time, engine_has_focus);
-							}
+							strong.chain(weak).collect::<Vec<_>>()
+						};
+						for system in systems.into_iter() {
+							system.write().unwrap().update(delta_time, engine_has_focus);
 						}
 					}
-					if let Ok(eng) = engine.read() {
-						if let Some(mut chain_write) = eng.render_chain_write() {
+
+					{
+						let render_chain = engine.read().unwrap().render_chain().cloned();
+						if let Some(render_chain) = render_chain {
 							profiling::scope!("render");
-							match (*chain_write).render_frame() {
+							let mut chain = render_chain.write().unwrap();
+							match chain.render_frame() {
 								Ok(_) => prev_render_error = None,
 								Err(error) => {
 									if prev_render_error.is_none() {
@@ -228,8 +241,11 @@ impl Engine {
 					}
 					prev_frame_time = frame_time;
 				}
-				Event::RedrawRequested(_) => {}
+				Event::RedrawRequested(_) => {
+					profiling::scope!("redraw");
+				}
 				Event::LoopDestroyed => {
+					profiling::scope!("shutdown");
 					log::info!(target: "engine", "Engine loop complete");
 					task::poll_until_empty();
 					if network::Network::is_active() {
@@ -246,7 +262,9 @@ impl Engine {
 					}
 					on_complete();
 				}
-				_ => {}
+				_ => {
+					profiling::scope!("unknown");
+				}
 			}
 		})
 	}
