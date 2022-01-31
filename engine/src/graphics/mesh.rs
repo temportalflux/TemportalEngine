@@ -111,7 +111,7 @@ where
 
 		if !vertices.is_empty() {
 			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
+				&mut self.vertex_buffer,
 				&vertices[..],
 				render_chain,
 				&mut gpu_signals,
@@ -119,7 +119,7 @@ where
 		}
 		if !indices.is_empty() {
 			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
+				&mut self.index_buffer,
 				&indices[..],
 				render_chain,
 				&mut gpu_signals,
@@ -130,12 +130,14 @@ where
 	}
 
 	fn write_buffer<T: Sized>(
-		buffer: &mut buffer::Buffer,
+		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],
 		render_chain: &RenderChain,
 		signals: &mut Vec<sync::Arc<command::Semaphore>>,
 	) -> utility::Result<()> {
-		buffer.expand(std::mem::size_of::<T>() * data.len())?;
+		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
+			*buffer = sync::Arc::new(reallocated);
+		}
 		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
 			.begin()?
 			.stage(data)?
@@ -145,7 +147,7 @@ where
 		Ok(())
 	}
 
-	pub fn bind_buffers(&self, buffer: &command::Buffer) {
+	pub fn bind_buffers(&self, buffer: &mut command::Buffer) {
 		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
 	}

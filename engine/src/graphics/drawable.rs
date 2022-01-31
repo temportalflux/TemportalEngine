@@ -9,13 +9,13 @@ use crate::{
 	},
 	utility::{self, Result},
 };
-use std::sync;
+use std::sync::Arc;
 
 /// A grouping of pipeline and [`shader objects`](ShaderSet) that can be drawn with a set of buffers and descriptors.
 /// This is largely an engine-level abstraction around the graphics pipeline and shaders that is meant
 /// to take the mental load off of pipeline creation and management.
 pub struct Drawable {
-	pipeline: Option<pipeline::Pipeline>,
+	pipeline: Option<Arc<pipeline::Pipeline>>,
 	pipeline_layout: Option<pipeline::layout::Layout>,
 	layout_builder: pipeline::layout::Builder,
 	shaders: ShaderSet,
@@ -79,7 +79,7 @@ impl Drawable {
 	pub fn create_pipeline(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-		descriptor_layouts: Vec<&sync::Arc<SetLayout>>,
+		descriptor_layouts: Vec<&Arc<SetLayout>>,
 		pipeline_info: pipeline::Builder,
 		subpass_id: &Option<String>,
 	) -> utility::Result<()> {
@@ -91,22 +91,18 @@ impl Drawable {
 				None
 			});
 		self.pipeline_layout = Some(self.layout_builder.clone().build(&render_chain.logical())?);
-		self.pipeline = Some(
+		self.pipeline = Some(Arc::new(
 			pipeline_info
 				.with_optname(self.make_subname("Pipeline"))
-				.add_shader(sync::Arc::downgrade(
-					&self.shaders[flags::ShaderKind::Vertex],
-				))
-				.add_shader(sync::Arc::downgrade(
-					&self.shaders[flags::ShaderKind::Fragment],
-				))
+				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Vertex]))
+				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Fragment]))
 				.build(
 					render_chain.logical().clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
 					&render_chain.render_pass(),
 					subpass_id,
 				)?,
-		);
+		));
 		Ok(())
 	}
 

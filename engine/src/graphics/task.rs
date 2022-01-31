@@ -66,15 +66,19 @@ impl GpuOperationBuilder {
 		self.command_buffer.as_ref().unwrap()
 	}
 
+	fn cmd_mut(&mut self) -> &mut command::Buffer {
+		self.command_buffer.as_mut().unwrap()
+	}
+
 	/// Begins the copy operation command.
 	/// The [`end`](GpuOperationBuilder::end) MUST be called once complete.
 	#[profiling::function]
-	pub fn begin(self) -> utility::Result<Self> {
+	pub fn begin(mut self) -> utility::Result<Self> {
 		if let Some(name) = self.name.as_ref() {
 			self.queue
 				.begin_label(name.clone(), [0.957, 0.855, 0.298, 1.0]); // #f4da4c
 		}
-		self.cmd()
+		self.cmd_mut()
 			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
 	}
