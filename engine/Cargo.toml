@@ -63,8 +63,6 @@ serde = { version = "1.0", features = ["derive"] }
 signal-hook = "0.3"
 # [log] backend for the log crate to output logging to multiple locations
 simplelog = "0.11"
-# [network] backend-agnostic wrapper for socket-based networking with packet support
-socknet = { path = "../socknet/socknet", features = ["derive"] }
 # [ecs] backend for entity-componment-system - may eventually replace with hecs
 specs = { version = "0.16", features = ["shred-derive"] }
 temportal-engine-utilities = { path = "../utility" }

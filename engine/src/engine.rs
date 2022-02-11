@@ -1,4 +1,4 @@
-use crate::{asset, audio, input, network, task, utility::Result};
+use crate::{asset, audio, input, task, utility::Result};
 use std::sync::{
 	atomic::{self, AtomicBool},
 	Arc, RwLock, RwLockWriteGuard, Weak,
@@ -172,31 +172,6 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
-						profiling::scope!("network");
-						let mut should_destroy_network = false;
-						if let Ok(guard) = network::Network::receiver().lock() {
-							if let Some(receiver) = &*guard {
-								if let Err(err) = receiver.process() {
-									log::error!(
-										target: network::LOG,
-										"Failed to process events: {}",
-										err
-									);
-								}
-								should_destroy_network = receiver.should_be_destroyed();
-							}
-						};
-						if should_destroy_network {
-							if let Err(err) = network::Network::destroy() {
-								log::error!(
-									target: network::LOG,
-									"Failed to destroy network: {}",
-									err
-								);
-							}
-						}
-					}
-					{
 						let mut engine = engine.write().unwrap();
 						engine.weak_systems.retain(|sys| sys.strong_count() > 0);
 					}
@@ -248,11 +223,6 @@ impl Engine {
 					profiling::scope!("shutdown");
 					log::info!(target: "engine", "Engine loop complete");
 					task::poll_until_empty();
-					if network::Network::is_active() {
-						if let Err(err) = network::Network::destroy() {
-							log::error!(target: network::LOG, "Failed to destroy network: {}", err);
-						}
-					}
 					if let Ok(eng) = engine.read() {
 						if let Some(chain_read) =
 							eng.render_chain().map(|chain| chain.read().unwrap())
