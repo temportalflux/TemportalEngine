@@ -12,3 +12,4 @@ log = "0.4.14"
 serde = { version = "1.0", features = ["derive"]  }
 semver = "1.0"
 tokio = "1.15"
+anyhow = "1.0"

@@ -7,9 +7,9 @@ use crate::{
 		vertex_object, Drawable, GpuOperationBuilder, Uniform,
 	},
 	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
-	utility::{self, Result},
 	EngineSystem,
 };
+use anyhow::Result;
 use std::sync::{Arc, RwLock};
 
 pub enum DebugRenderPipeline {
@@ -270,7 +270,7 @@ impl Frame {
 		&mut self,
 		chain: &graphics::RenderChain,
 		objects: &Vec<DebugDraw>,
-	) -> utility::Result<Vec<Arc<command::Semaphore>>> {
+	) -> anyhow::Result<Vec<Arc<command::Semaphore>>> {
 		let mut gpu_signals = Vec::new();
 
 		let mut vertices: Vec<LineSegmentVertex> = Vec::new();

@@ -1,4 +1,4 @@
-use crate::utility::Result;
+use anyhow::Result;
 use crossbeam_channel;
 use std::{
 	mem::MaybeUninit,

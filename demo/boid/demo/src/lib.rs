@@ -1,5 +1,6 @@
+use anyhow::Result;
 pub use engine;
-use engine::{math::nalgebra, utility::Result, Application};
+use engine::{math::nalgebra, Application};
 use std::sync::{Arc, RwLock};
 
 #[path = "graphics/mod.rs"]

@@ -7,10 +7,10 @@ use crate::{
 			GpuOperationBuilder, RenderChain,
 		},
 		math::nalgebra::Vector2,
-		utility::Result,
 	},
 	Vertex,
 };
+use anyhow::Result;
 use std::sync::{Arc, RwLock};
 
 pub struct Triangle {

@@ -12,8 +12,8 @@ use crate::{
 		GpuOperationBuilder, Surface,
 	},
 	math::nalgebra::Vector2,
-	utility::{self, Result},
 };
+use anyhow::Result;
 use multimap::MultiMap;
 use std::sync::{self, Arc, RwLock, Weak};
 
@@ -155,7 +155,7 @@ impl RenderChain {
 		graphics_queue: logical::Queue,
 		surface: &sync::Arc<Surface>,
 		frame_count: usize,
-	) -> utility::Result<RenderChain> {
+	) -> anyhow::Result<RenderChain> {
 		let swapchain_info = Swapchain::builder()
 			.with_name("RenderChain.Swapchain")
 			.with_image_count(frame_count as u32)
@@ -516,7 +516,7 @@ impl RenderChain {
 		logical: &sync::Arc<logical::Device>,
 		name: &str,
 		amount: usize,
-	) -> utility::Result<Vec<command::Semaphore>> {
+	) -> anyhow::Result<Vec<command::Semaphore>> {
 		let mut vec: Vec<command::Semaphore> = Vec::new();
 		for i in 0..amount {
 			vec.push((command::Semaphore::new(logical, Some(format!("{}.{}", name, i))))?);
@@ -528,7 +528,7 @@ impl RenderChain {
 		logical: &sync::Arc<logical::Device>,
 		name: &str,
 		amount: usize,
-	) -> utility::Result<Vec<command::Fence>> {
+	) -> anyhow::Result<Vec<command::Fence>> {
 		let mut vec: Vec<command::Fence> = Vec::new();
 		for i in 0..amount {
 			vec.push(

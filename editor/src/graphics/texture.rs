@@ -4,9 +4,9 @@ use crate::{
 		asset::{AnyBox, AssetResult},
 		graphics::Texture,
 		math::nalgebra,
-		utility::Result,
 	},
 };
+use anyhow::Result;
 use std::{
 	path::{Path, PathBuf},
 	time::SystemTime,

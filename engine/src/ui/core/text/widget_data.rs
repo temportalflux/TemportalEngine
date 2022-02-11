@@ -3,7 +3,6 @@ use crate::{
 	graphics::{self, buffer, command, flags, utility::NamedObject},
 	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
 	ui::raui::*,
-	utility,
 };
 use std::sync;
 
@@ -24,7 +23,7 @@ impl WidgetData {
 		id: Option<String>,
 		text: &BatchExternalText,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		// matches: "/.", "/<*>",
 		// and the series "/<0>", "/<1>", "/<2>", ..., "/<n>"
 		let id_regex = regex::Regex::new(r"(/\.)|(?:/<\*>)|(?:/<[0-9]*>)").unwrap();
@@ -80,7 +79,7 @@ impl WidgetData {
 		usage: flags::BufferUsage,
 		content: &String,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<sync::Arc<buffer::Buffer>> {
+	) -> anyhow::Result<sync::Arc<buffer::Buffer>> {
 		use graphics::utility::{BuildFromAllocator, NameableBuilder};
 		Ok(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
@@ -112,7 +111,7 @@ impl WidgetData {
 		font: &font::Loaded,
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
 		// Update the buffer objects if we need more space than is currently allocated
 		if let Some(reallocated) = self
 			.vertex_buffer

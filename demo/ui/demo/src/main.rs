@@ -1,6 +1,5 @@
 mod lib;
-use lib::*;
-fn main() -> engine::utility::Result<()> {
+fn main() -> anyhow::Result<()> {
 	lib::run()?;
 	Ok(())
 }

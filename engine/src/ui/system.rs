@@ -11,9 +11,9 @@ use crate::{
 	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
 	ui::{core::*, raui, LOG},
-	utility::{self, Result},
 	EngineSystem, WinitEventListener,
 };
+use anyhow::Result;
 use enumset::EnumSet;
 use std::{
 	any::{Any, TypeId},
@@ -111,7 +111,7 @@ impl System {
 	/// Constructs a ui rendering system for the provided render chain.
 	pub fn new(
 		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		let mut application = raui::Application::new();
 		application.setup(raui::widget::setup);
 

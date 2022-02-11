@@ -58,7 +58,7 @@ fn create_task_thread_name(idx: usize) -> String {
 
 pub fn run<F>(f: F)
 where
-	F: Fn() -> utility::Result<()>,
+	F: Fn() -> anyhow::Result<()>,
 {
 	profiling::register_thread!();
 	let runtime = {

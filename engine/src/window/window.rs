@@ -7,9 +7,10 @@ use crate::{
 		AppInfo, Context, Surface,
 	},
 	math::nalgebra::Vector4,
-	utility::{self, Result},
+	utility::{self},
 	window,
 };
+use anyhow::Result;
 use std::sync;
 
 fn is_vulkan_validation_enabled() -> bool {
@@ -116,7 +117,7 @@ impl Window {
 		vulkan: &sync::Arc<instance::Instance>,
 		surface: &sync::Arc<Surface>,
 		constraints: Vec<physical::Constraint>,
-	) -> utility::Result<physical::Device> {
+	) -> anyhow::Result<physical::Device> {
 		let mut constraints = constraints.clone();
 		constraints.push(physical::Constraint::HasQueueFamily(
 			flags::QueueFlags::GRAPHICS,

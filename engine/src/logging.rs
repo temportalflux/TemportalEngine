@@ -1,4 +1,4 @@
-use crate::utility::Result;
+use anyhow::Result;
 pub use log::Level;
 
 pub fn default_path(app_name: &str, suffix: Option<&str>) -> std::path::PathBuf {

@@ -1,8 +1,8 @@
 use crate::{
 	asset,
 	graphics::{self, flags, shader},
-	utility::{self, Result},
 };
+use anyhow::Result;
 use std::{collections::HashMap, sync};
 
 /// A discrete collection of shaders which will be or have been created on the GPU.
@@ -54,7 +54,7 @@ impl ShaderSet {
 	/// Creates [`shader modules`](shader::Module) from pending shaders added by [`insert`](ShaderSet::insert),
 	/// thereby dropping any existing modules with the same kind.
 	#[profiling::function]
-	pub fn create_modules(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+	pub fn create_modules(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
 		for (kind, binary) in self.pending_shaders.drain() {
 			let kind_string: String = kind.into();
 			self.shaders.insert(

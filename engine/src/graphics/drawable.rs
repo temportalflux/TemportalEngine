@@ -7,8 +7,8 @@ use crate::{
 		utility::{BuildFromDevice, NameableBuilder},
 		ShaderSet,
 	},
-	utility::{self, Result},
 };
+use anyhow::Result;
 use std::sync::Arc;
 
 /// A grouping of pipeline and [`shader objects`](ShaderSet) that can be drawn with a set of buffers and descriptors.
@@ -68,7 +68,7 @@ impl Drawable {
 
 	/// Destroys the pipeline objects so they can be recreated by [`Drawable::create_pipeline`].
 	#[profiling::function]
-	pub fn destroy_pipeline(&mut self, _: &graphics::RenderChain) -> utility::Result<()> {
+	pub fn destroy_pipeline(&mut self, _: &graphics::RenderChain) -> anyhow::Result<()> {
 		self.pipeline = None;
 		self.pipeline_layout = None;
 		Ok(())
@@ -82,7 +82,7 @@ impl Drawable {
 		descriptor_layouts: Vec<&Arc<SetLayout>>,
 		pipeline_info: pipeline::Builder,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()> {
+	) -> anyhow::Result<()> {
 		self.layout_builder.clear_descriptor_layouts();
 		descriptor_layouts
 			.iter()

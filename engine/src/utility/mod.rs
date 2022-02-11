@@ -1,5 +1,4 @@
 pub mod error;
-pub use error::{Context, Error, Result};
 
 pub use temportal_engine_utilities::*;
 pub use vulkan_rs::utility::make_version;

@@ -3,9 +3,9 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::font::Font,
-		utility::Result,
 	},
 };
+use anyhow::Result;
 use serde_json;
 use std::{
 	path::{Path, PathBuf},

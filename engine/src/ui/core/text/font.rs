@@ -6,7 +6,6 @@ use crate::{
 		utility::{NameableBuilder, NamedObject},
 	},
 	math::nalgebra::Vector2,
-	utility,
 };
 use std::{collections::HashMap, sync};
 
@@ -71,7 +70,7 @@ impl PendingAtlas {
 	pub fn load(
 		self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
 		use graphics::{
 			alloc, image,
 			structs::subresource,

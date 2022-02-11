@@ -3,9 +3,9 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::render_pass::Pass,
-		utility::Result,
 	},
 };
+use anyhow::Result;
 use std::path::Path;
 
 pub struct PassEditorMetadata;

@@ -14,8 +14,8 @@ use crate::{
 		self,
 		core::text::{self, font},
 	},
-	utility::{self, Result},
 };
+use anyhow::Result;
 use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
 use std::{collections::HashMap, sync};
 
@@ -35,7 +35,7 @@ pub struct DataPipeline {
 
 impl DataPipeline {
 	#[profiling::function]
-	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
+	pub fn new(render_chain: &graphics::RenderChain) -> anyhow::Result<Self> {
 		let descriptor_layout = sync::Arc::new(
 			SetLayout::builder()
 				.with_name("UI.Text.DescriptorLayout")
@@ -72,7 +72,7 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
 		self.drawable.create_shaders(render_chain)
 	}
 
@@ -80,7 +80,7 @@ impl DataPipeline {
 	pub fn create_pending_font_atlases(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
 		let mut pending_gpu_signals = Vec::new();
 		if !self.pending_font_atlases.is_empty() {
 			for (id, pending) in self.pending_font_atlases.drain() {
@@ -137,7 +137,7 @@ impl DataPipeline {
 		widget_id: &WidgetId,
 		text: BatchExternalText,
 		widget: Option<text::WidgetData>,
-	) -> utility::Result<(text::WidgetData, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<(text::WidgetData, Vec<sync::Arc<command::Semaphore>>)> {
 		let font_data = self
 			.fonts
 			.get(&text.font)
@@ -155,7 +155,7 @@ impl DataPipeline {
 	pub fn destroy_render_chain(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<()> {
+	) -> anyhow::Result<()> {
 		self.drawable.destroy_pipeline(render_chain)
 	}
 
@@ -164,7 +164,7 @@ impl DataPipeline {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()> {
+	) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
 			render_chain,
@@ -193,7 +193,7 @@ impl DataPipeline {
 		&self,
 		buffer: &mut command::Buffer,
 		widget: &text::WidgetData,
-	) -> utility::Result<()> {
+	) -> anyhow::Result<()> {
 		let font_data = self
 			.fonts
 			.get(widget.font_id())

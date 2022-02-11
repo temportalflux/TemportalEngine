@@ -1,6 +1,6 @@
 use engine::Application;
 
-fn main() -> engine::utility::Result<()> {
+fn main() -> anyhow::Result<()> {
 	engine::logging::init(&engine::logging::default_path(
 		demo_ui::UIDemo::name(),
 		Some("_editor"),

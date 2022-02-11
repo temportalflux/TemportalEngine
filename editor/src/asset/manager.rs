@@ -1,8 +1,8 @@
 use crate::asset;
+use anyhow::Result;
 use engine::{
 	self,
 	asset::{AnyBox, Generic, TypeId},
-	utility::Result,
 };
 use serde_json;
 use std::{
@@ -163,7 +163,7 @@ impl Manager {
 		type_id: &String,
 		asset: engine::asset::AnyBox,
 		write_to: &PathBuf,
-	) -> engine::utility::Result<()> {
+	) -> anyhow::Result<()> {
 		fs::create_dir_all(&write_to.parent().unwrap())?;
 		let metadata = self.editor_metadata.get(type_id.as_str()).unwrap();
 		let bytes = metadata.compile(&json_path, asset)?;

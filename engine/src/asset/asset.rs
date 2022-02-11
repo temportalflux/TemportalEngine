@@ -1,4 +1,4 @@
-use crate::utility::Result;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 

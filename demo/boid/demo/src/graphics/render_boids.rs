@@ -1,5 +1,5 @@
 use crate::{
-	engine::{self, asset, math::nalgebra::Vector2, utility::Result, Application},
+	engine::{self, asset, math::nalgebra::Vector2, Application},
 	graphics::{
 		self, buffer,
 		camera::{self, DefaultCamera},
@@ -11,6 +11,7 @@ use crate::{
 	},
 	BoidDemo,
 };
+use anyhow::Result;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]

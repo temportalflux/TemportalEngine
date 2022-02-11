@@ -5,7 +5,6 @@ use crate::{
 		Texture,
 	},
 	math::nalgebra::Vector2,
-	utility,
 };
 use std::{collections::HashMap, sync};
 
@@ -172,7 +171,7 @@ where
 	pub fn load_pending(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<(Vec<(T, Option<String>)>, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<(Vec<(T, Option<String>)>, Vec<sync::Arc<command::Semaphore>>)> {
 		let mut ids = Vec::new();
 		let mut pending_gpu_signals = Vec::new();
 		if !self.pending.is_empty() {
@@ -208,7 +207,7 @@ where
 		&self,
 		render_chain: &graphics::RenderChain,
 		pending: &PendingEntry,
-	) -> utility::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
 		use graphics::{
 			image, structs::subresource, utility::BuildFromDevice, GpuOperationBuilder,
 		};
