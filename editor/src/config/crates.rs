@@ -1,4 +1,5 @@
-use crate::engine::utility::{Result, SaveData};
+use crate::engine::utility::SaveData;
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::{
 	collections::HashMap,

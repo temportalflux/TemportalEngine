@@ -1,4 +1,5 @@
-use engine::{utility::Result, Application};
+use anyhow::Result;
+use engine::Application;
 pub use temportal_engine as engine;
 
 #[path = "ui/mod.rs"]

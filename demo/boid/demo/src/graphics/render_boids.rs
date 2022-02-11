@@ -1,5 +1,5 @@
 use crate::{
-	engine::{self, asset, math::nalgebra::Vector2, utility::Result, Application},
+	engine::{self, asset, math::nalgebra::Vector2, Application},
 	graphics::{
 		self, buffer,
 		camera::{self, DefaultCamera},
@@ -11,6 +11,7 @@ use crate::{
 	},
 	BoidDemo,
 };
+use anyhow::Result;
 use std::sync::{Arc, RwLock, Weak};
 
 #[derive(Clone)]
@@ -26,8 +27,8 @@ pub struct RenderBoids {
 	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 
 	index_count: usize,
-	index_buffer: buffer::Buffer,
-	vertex_buffer: buffer::Buffer,
+	index_buffer: Arc<buffer::Buffer>,
+	vertex_buffer: Arc<buffer::Buffer>,
 
 	image_descriptor_set: Weak<descriptor::Set>,
 	image_descriptor_layout: Arc<SetLayout>,
@@ -40,7 +41,7 @@ pub struct RenderBoids {
 	vert_shader: Arc<shader::Module>,
 	frag_shader: Arc<shader::Module>,
 
-	pipeline: Option<pipeline::Pipeline>,
+	pipeline: Option<Arc<pipeline::Pipeline>>,
 	pipeline_layout: Option<pipeline::layout::Layout>,
 
 	render_chain: Arc<RwLock<RenderChain>>,
@@ -207,14 +208,15 @@ impl RenderBoids {
 				.with_usage(flags::ImageUsage::SAMPLED)
 				.build(&render_chain.allocator())?,
 		);
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
-			.begin()?
-			.format_image_for_write(&image)
-			.stage(&texture.binary()[..])?
-			.copy_stage_to_image(&image)
-			.format_image_for_read(&image)
-			.end()?
-			.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+				.begin()?
+				.format_image_for_write(&image)
+				.stage(&texture.binary()[..])?
+				.copy_stage_to_image(&image)
+				.format_image_for_read(&image)
+				.end()?,
+		);
 		Ok(image)
 	}
 
@@ -234,7 +236,7 @@ impl RenderBoids {
 
 	fn create_boid_model(
 		render_chain: &RenderChain,
-	) -> Result<(buffer::Buffer, buffer::Buffer, usize)> {
+	) -> Result<(Arc<buffer::Buffer>, Arc<buffer::Buffer>, usize)> {
 		let half_unit = 0.5;
 		let vertices = vec![
 			Vertex::default()
@@ -252,52 +254,58 @@ impl RenderBoids {
 		];
 		let indices = vec![0, 1, 2, 2, 3, 0];
 
-		let vertex_buffer = graphics::buffer::Buffer::builder()
-			.with_name("BoidModel.VertexBuffer")
-			.with_usage(flags::BufferUsage::VERTEX_BUFFER)
-			.with_usage(flags::BufferUsage::TRANSFER_DST)
-			.with_size_of(&vertices[..])
-			.with_alloc(
-				graphics::alloc::Builder::default()
-					.with_usage(flags::MemoryUsage::GpuOnly)
-					.requires(flags::MemoryProperty::DEVICE_LOCAL),
-			)
-			.with_sharing(flags::SharingMode::EXCLUSIVE)
-			.build(&render_chain.allocator())?;
+		let vertex_buffer = Arc::new(
+			graphics::buffer::Buffer::builder()
+				.with_name("BoidModel.VertexBuffer")
+				.with_usage(flags::BufferUsage::VERTEX_BUFFER)
+				.with_usage(flags::BufferUsage::TRANSFER_DST)
+				.with_size_of(&vertices[..])
+				.with_alloc(
+					graphics::alloc::Builder::default()
+						.with_usage(flags::MemoryUsage::GpuOnly)
+						.requires(flags::MemoryProperty::DEVICE_LOCAL),
+				)
+				.with_sharing(flags::SharingMode::EXCLUSIVE)
+				.build(&render_chain.allocator())?,
+		);
 
-		GpuOperationBuilder::new(
-			vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
-		)?
-		.begin()?
-		.stage(&vertices[..])?
-		.copy_stage_to_buffer(&vertex_buffer)
-		.end()?
-		.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(
+				vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.stage(&vertices[..])?
+			.copy_stage_to_buffer(&vertex_buffer)
+			.end()?,
+		);
 
-		let index_buffer = graphics::buffer::Buffer::builder()
-			.with_name("BoidModel.IndexBuffer")
-			.with_usage(flags::BufferUsage::INDEX_BUFFER)
-			.with_index_type(Some(flags::IndexType::UINT32))
-			.with_usage(flags::BufferUsage::TRANSFER_DST)
-			.with_size_of(&indices[..])
-			.with_alloc(
-				graphics::alloc::Builder::default()
-					.with_usage(flags::MemoryUsage::GpuOnly)
-					.requires(flags::MemoryProperty::DEVICE_LOCAL),
-			)
-			.with_sharing(flags::SharingMode::EXCLUSIVE)
-			.build(&render_chain.allocator())?;
+		let index_buffer = Arc::new(
+			graphics::buffer::Buffer::builder()
+				.with_name("BoidModel.IndexBuffer")
+				.with_usage(flags::BufferUsage::INDEX_BUFFER)
+				.with_index_type(Some(flags::IndexType::UINT32))
+				.with_usage(flags::BufferUsage::TRANSFER_DST)
+				.with_size_of(&indices[..])
+				.with_alloc(
+					graphics::alloc::Builder::default()
+						.with_usage(flags::MemoryUsage::GpuOnly)
+						.requires(flags::MemoryProperty::DEVICE_LOCAL),
+				)
+				.with_sharing(flags::SharingMode::EXCLUSIVE)
+				.build(&render_chain.allocator())?,
+		);
 
-		GpuOperationBuilder::new(
-			index_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
-		)?
-		.begin()?
-		.stage(&indices[..])?
-		.copy_stage_to_buffer(&index_buffer)
-		.end()?
-		.wait_until_idle()?;
+		let _ = engine::task::current().block_on(
+			GpuOperationBuilder::new(
+				index_buffer.wrap_name(|v| format!("Write({})", v)),
+				&render_chain,
+			)?
+			.begin()?
+			.stage(&indices[..])?
+			.copy_stage_to_buffer(&index_buffer)
+			.end()?,
+		);
 
 		Ok((vertex_buffer, index_buffer, indices.len()))
 	}
@@ -374,7 +382,7 @@ impl graphics::RenderChainElement for RenderBoids {
 				.with_descriptors(&self.image_descriptor_layout)
 				.build(&render_chain.logical())?,
 		);
-		self.pipeline = Some(
+		self.pipeline = Some(Arc::new(
 			pipeline::Pipeline::builder()
 				.with_name("RenderBoids.Pipeline")
 				.add_shader(Arc::downgrade(&self.vert_shader))
@@ -417,7 +425,7 @@ impl graphics::RenderChainElement for RenderBoids {
 					&render_chain.render_pass(),
 					subpass_id,
 				)?,
-		);
+		));
 
 		Ok(())
 	}

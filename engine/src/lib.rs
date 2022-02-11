@@ -11,7 +11,6 @@ pub mod graphics;
 pub mod input;
 pub mod logging;
 pub mod math;
-pub mod network;
 pub use profiling;
 pub mod task;
 pub mod ui;
@@ -45,9 +44,21 @@ pub fn register_asset_types() {
 	graphics::register_asset_types(&mut locked);
 }
 
+fn create_task_thread_name(idx: usize) -> String {
+	static NAMES: [&'static str; 16] = [
+		"alpha", "bravo", "canon", "delta", "ephor", "flump", "gnome", "hedge", "igloo", "julep",
+		"knoll", "liege", "magic", "novel", "omega", "panda",
+	];
+	if idx < NAMES.len() {
+		NAMES[idx].to_owned()
+	} else {
+		format!("task-worker:{}", idx)
+	}
+}
+
 pub fn run<F>(f: F)
 where
-	F: Fn() -> utility::Result<()>,
+	F: Fn() -> anyhow::Result<()>,
 {
 	profiling::register_thread!();
 	let runtime = {
@@ -60,7 +71,7 @@ where
 			use std::sync::atomic::{AtomicUsize, Ordering};
 			static THREAD_ID: AtomicUsize = AtomicUsize::new(0);
 			let id = THREAD_ID.fetch_add(1, Ordering::SeqCst);
-			format!("task-worker:{}", id)
+			create_task_thread_name(id)
 		});
 		let runtime = builder.build().unwrap();
 		// Thread Registration

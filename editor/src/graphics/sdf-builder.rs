@@ -6,10 +6,10 @@ use crate::{
 			nalgebra::{self, vector, Vector2, Vector4},
 		},
 		profiling,
-		utility::Result,
 	},
 	graphics::font::LOG as FONT_LOG,
 };
+use anyhow::Result;
 use std::path::{Path, PathBuf};
 
 pub struct SDFBuilder {

@@ -1,7 +1,5 @@
-use engine::{
-	asset::{AnyBox, AssetResult},
-	utility::Result,
-};
+use anyhow::Result;
+use engine::asset::{AnyBox, AssetResult};
 use std::{path::Path, time::SystemTime};
 
 pub trait TypeEditorMetadata {

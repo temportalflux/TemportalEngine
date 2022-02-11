@@ -1,4 +1,5 @@
-use engine::{self, asset, utility::Result, Application};
+use anyhow::Result;
+use engine::{self, asset, Application};
 use std::{
 	self, fs,
 	io::{self},
@@ -25,7 +26,7 @@ impl Module {
 		&self,
 		asset_manager: &crate::asset::Manager,
 		force_build: bool,
-	) -> engine::utility::Result<()> {
+	) -> anyhow::Result<()> {
 		if !self.assets_directory.exists() {
 			log::info!(
 				target: asset::LOG,

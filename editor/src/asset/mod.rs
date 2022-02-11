@@ -20,10 +20,7 @@ where
 	Ok(deserialize_typed::<T>(&path, &content).map(|t| Box::new(t))?)
 }
 
-pub fn deserialize_typed<'a, T>(
-	path: &std::path::Path,
-	content: &'a str,
-) -> engine::utility::Result<T>
+pub fn deserialize_typed<'a, T>(path: &std::path::Path, content: &'a str) -> anyhow::Result<T>
 where
 	T: 'static + Send + Sync + serde::Deserialize<'a> + engine::asset::kdl::Asset<T> + Default,
 {

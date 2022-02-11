@@ -1,4 +1,5 @@
-use engine::utility::{Result, SaveData};
+use anyhow::Result;
+use engine::utility::SaveData;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]

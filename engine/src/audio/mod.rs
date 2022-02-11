@@ -46,19 +46,22 @@ impl System {
 		// - https://github.com/RustAudio/cpal/pull/504
 		// - https://github.com/RustAudio/cpal/pull/330
 		// - https://github.com/RustAudio/rodio/issues/214
-		let thread = std::thread::spawn(|| {
-			profiling::register_thread!("audio-init");
-			profiling::scope!("audio-init");
-			match Self::new() {
-				Ok(sys) => {
-					unsafe { Self::instance() }.init_with(sys);
+		let _ = std::thread::Builder::new()
+			.name("audio".to_owned())
+			.spawn(|| {
+				profiling::register_thread!();
+				profiling::scope!("init");
+				match Self::new() {
+					Ok(sys) => {
+						unsafe { Self::instance() }.init_with(sys);
+					}
+					Err(e) => {
+						log::error!(target: LOG, "Failed to initialize system: {}", e);
+					}
 				}
-				Err(e) => {
-					log::error!(target: LOG, "Failed to initialize system: {}", e);
-				}
-			}
-		});
-		let _ = thread.join();
+			})
+			.unwrap()
+			.join();
 	}
 
 	fn new() -> Result<Self, Error> {

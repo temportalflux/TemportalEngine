@@ -1,9 +1,6 @@
-use crate::{
-	graphics::{
-		alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject,
-		GpuOperationBuilder, RenderChain,
-	},
-	utility,
+use crate::graphics::{
+	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject,
+	GpuOperationBuilder, RenderChain,
 };
 use std::sync;
 
@@ -27,7 +24,7 @@ where
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 		index_type: flags::IndexType,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		Self::new_internal(name, allocator, item_count, index_type)
 	}
 }
@@ -40,7 +37,7 @@ where
 		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT16)
 	}
 }
@@ -53,7 +50,7 @@ where
 		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT32)
 	}
 }
@@ -68,7 +65,7 @@ where
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 		index_type: flags::IndexType,
-	) -> utility::Result<Self> {
+	) -> anyhow::Result<Self> {
 		Ok(Self {
 			vertex_t: std::marker::PhantomData,
 			index_t: std::marker::PhantomData,
@@ -104,14 +101,14 @@ where
 		vertices: &Vec<Vertex>,
 		indices: &Vec<Index>,
 		render_chain: &RenderChain,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
 		self.index_count = indices.len();
 
 		let mut gpu_signals = Vec::with_capacity(2);
 
 		if !vertices.is_empty() {
 			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.vertex_buffer).unwrap(),
+				&mut self.vertex_buffer,
 				&vertices[..],
 				render_chain,
 				&mut gpu_signals,
@@ -119,7 +116,7 @@ where
 		}
 		if !indices.is_empty() {
 			Self::write_buffer(
-				sync::Arc::get_mut(&mut self.index_buffer).unwrap(),
+				&mut self.index_buffer,
 				&indices[..],
 				render_chain,
 				&mut gpu_signals,
@@ -130,12 +127,14 @@ where
 	}
 
 	fn write_buffer<T: Sized>(
-		buffer: &mut buffer::Buffer,
+		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],
 		render_chain: &RenderChain,
 		signals: &mut Vec<sync::Arc<command::Semaphore>>,
-	) -> utility::Result<()> {
-		buffer.expand(std::mem::size_of::<T>() * data.len())?;
+	) -> anyhow::Result<()> {
+		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
+			*buffer = sync::Arc::new(reallocated);
+		}
 		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
 			.begin()?
 			.stage(data)?
@@ -145,7 +144,7 @@ where
 		Ok(())
 	}
 
-	pub fn bind_buffers(&self, buffer: &command::Buffer) {
+	pub fn bind_buffers(&self, buffer: &mut command::Buffer) {
 		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
 	}

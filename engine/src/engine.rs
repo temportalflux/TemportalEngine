@@ -1,4 +1,5 @@
-use crate::{asset, audio, input, network, task, utility::Result};
+use crate::{asset, audio, input, task};
+use anyhow::Result;
 use std::sync::{
 	atomic::{self, AtomicBool},
 	Arc, RwLock, RwLockWriteGuard, Weak,
@@ -88,6 +89,10 @@ impl Engine {
 		unsafe { &mut INSTANCE }
 	}
 
+	pub fn set(engine: Arc<RwLock<Self>>) {
+		Self::singleton().write(engine);
+	}
+
 	pub fn get() -> &'static Arc<RwLock<Self>> {
 		unsafe { &*Self::singleton().as_ptr() }
 	}
@@ -96,7 +101,7 @@ impl Engine {
 	where
 		F: 'static + Fn() -> (),
 	{
-		Self::singleton().write(engine.clone());
+		Self::set(engine.clone());
 		let terminate_signal = Arc::new(AtomicBool::new(false));
 		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
 
@@ -119,6 +124,7 @@ impl Engine {
 				return;
 			}
 			if engine_has_focus {
+				profiling::scope!("parse-input");
 				if let Ok(event) = input::winit::parse_winit_event(&event) {
 					input::send_event(event);
 				}
@@ -167,50 +173,37 @@ impl Engine {
 					}
 					let delta_time = frame_time - prev_frame_time;
 					{
-						profiling::scope!("network");
-						let mut should_destroy_network = false;
-						if let Ok(guard) = network::Network::receiver().lock() {
-							if let Some(receiver) = &*guard {
-								if let Err(err) = receiver.process() {
-									log::error!(
-										target: network::LOG,
-										"Failed to process events: {}",
-										err
-									);
-								}
-								should_destroy_network = receiver.should_be_destroyed();
-							}
-						};
-						if should_destroy_network {
-							if let Err(err) = network::Network::destroy() {
-								log::error!(
-									target: network::LOG,
-									"Failed to destroy network: {}",
-									err
-								);
-							}
-						}
-
-						{
-							let mut engine = engine.write().unwrap();
-							engine.weak_systems.retain(|sys| sys.strong_count() > 0);
-						}
-						{
-							audio::System::write()
-								.unwrap()
-								.update(delta_time, engine_has_focus);
+						let mut engine = engine.write().unwrap();
+						engine.weak_systems.retain(|sys| sys.strong_count() > 0);
+					}
+					{
+						profiling::scope!("audio");
+						audio::System::write()
+							.unwrap()
+							.update(delta_time, engine_has_focus);
+					}
+					{
+						profiling::scope!(
+							"update-systems",
+							&format!("Δt={:.3}", delta_time.as_secs_f32())
+						);
+						let systems = {
 							let engine = engine.read().unwrap();
 							let strong = engine.systems.iter().cloned();
 							let weak = engine.weak_systems.iter().filter_map(|weak| weak.upgrade());
-							for system in strong.chain(weak) {
-								system.write().unwrap().update(delta_time, engine_has_focus);
-							}
+							strong.chain(weak).collect::<Vec<_>>()
+						};
+						for system in systems.into_iter() {
+							system.write().unwrap().update(delta_time, engine_has_focus);
 						}
 					}
-					if let Ok(eng) = engine.read() {
-						if let Some(mut chain_write) = eng.render_chain_write() {
+
+					{
+						let render_chain = engine.read().unwrap().render_chain().cloned();
+						if let Some(render_chain) = render_chain {
 							profiling::scope!("render");
-							match (*chain_write).render_frame() {
+							let mut chain = render_chain.write().unwrap();
+							match chain.render_frame() {
 								Ok(_) => prev_render_error = None,
 								Err(error) => {
 									if prev_render_error.is_none() {
@@ -224,15 +217,13 @@ impl Engine {
 					}
 					prev_frame_time = frame_time;
 				}
-				Event::RedrawRequested(_) => {}
+				Event::RedrawRequested(_) => {
+					profiling::scope!("redraw");
+				}
 				Event::LoopDestroyed => {
+					profiling::scope!("shutdown");
 					log::info!(target: "engine", "Engine loop complete");
 					task::poll_until_empty();
-					if network::Network::is_active() {
-						if let Err(err) = network::Network::destroy() {
-							log::error!(target: network::LOG, "Failed to destroy network: {}", err);
-						}
-					}
 					if let Ok(eng) = engine.read() {
 						if let Some(chain_read) =
 							eng.render_chain().map(|chain| chain.read().unwrap())
@@ -242,7 +233,9 @@ impl Engine {
 					}
 					on_complete();
 				}
-				_ => {}
+				_ => {
+					profiling::scope!("unknown");
+				}
 			}
 		})
 	}

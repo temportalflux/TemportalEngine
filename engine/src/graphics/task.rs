@@ -1,10 +1,7 @@
-use crate::task::{self};
-use crate::{
-	graphics::{
-		alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
-	},
-	utility,
+use crate::graphics::{
+	alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
 };
+use crate::task::{self};
 use std::sync;
 
 /// A copy from CPU to GPU operation that happens asynchronously.
@@ -30,7 +27,7 @@ pub struct GpuOperationBuilder {
 
 impl GpuOperationBuilder {
 	#[profiling::function]
-	pub fn new(name: Option<String>, render_chain: &RenderChain) -> utility::Result<Self> {
+	pub fn new(name: Option<String>, render_chain: &RenderChain) -> anyhow::Result<Self> {
 		let command_pool = render_chain.transient_command_pool();
 
 		let task_name = name.as_ref().map(|v| format!("Task.{}", v));
@@ -66,22 +63,26 @@ impl GpuOperationBuilder {
 		self.command_buffer.as_ref().unwrap()
 	}
 
+	fn cmd_mut(&mut self) -> &mut command::Buffer {
+		self.command_buffer.as_mut().unwrap()
+	}
+
 	/// Begins the copy operation command.
 	/// The [`end`](GpuOperationBuilder::end) MUST be called once complete.
 	#[profiling::function]
-	pub fn begin(self) -> utility::Result<Self> {
+	pub fn begin(mut self) -> anyhow::Result<Self> {
 		if let Some(name) = self.name.as_ref() {
 			self.queue
 				.begin_label(name.clone(), [0.957, 0.855, 0.298, 1.0]); // #f4da4c
 		}
-		self.cmd()
+		self.cmd_mut()
 			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
 	}
 
 	/// Ends the copy operation command and submits it to the GPU for processing.
 	#[profiling::function]
-	pub fn end(self) -> utility::Result<task::JoinHandle<()>> {
+	pub fn end(self) -> anyhow::Result<task::JoinHandle<()>> {
 		self.cmd().end()?;
 
 		self.queue.submit(
@@ -95,7 +96,7 @@ impl GpuOperationBuilder {
 		}
 
 		let arc_self = sync::Arc::new(self);
-		let async_handle = task::spawn("gpu-operation", async move {
+		let async_handle = task::spawn("gpu-operation".to_string(), async move {
 			// Wait for the command to be complete
 			arc_self
 				.device
@@ -133,7 +134,7 @@ impl GpuOperationBuilder {
 	/// Stalls the current thread until the [`cpu-signal (fence)`](command::Fence)
 	/// has been signalled by the GPU to indicate that the operation is complete.
 	#[profiling::function]
-	pub fn wait_until_idle(self) -> utility::Result<()> {
+	pub fn wait_until_idle(self) -> anyhow::Result<()> {
 		Ok(self
 			.device
 			.wait_for(&self.cpu_signal_on_complete, u64::MAX)?)
@@ -243,14 +244,14 @@ impl GpuOperationBuilder {
 	/// [`copy_stage_to_buffer`](GpuOperationBuilder::copy_stage_to_buffer)
 	/// or [`copy_stage_to_image`](GpuOperationBuilder::copy_stage_to_image) respectively.
 	#[profiling::function]
-	pub fn stage<T: Sized>(self, data: &[T]) -> utility::Result<Self> {
+	pub fn stage<T: Sized>(self, data: &[T]) -> anyhow::Result<Self> {
 		self.stage_any(data.len() * std::mem::size_of::<T>(), |mem| {
 			mem.write_slice(data)
 		})
 	}
 
 	#[profiling::function]
-	pub fn stage_start(&mut self, memory_size: usize) -> utility::Result<()> {
+	pub fn stage_start(&mut self, memory_size: usize) -> anyhow::Result<()> {
 		let buffer = buffer::Buffer::create_staging(
 			self.name
 				.as_ref()
@@ -262,12 +263,12 @@ impl GpuOperationBuilder {
 		Ok(())
 	}
 
-	pub fn staging_memory(&mut self) -> utility::Result<alloc::Memory> {
+	pub fn staging_memory(&mut self) -> anyhow::Result<alloc::Memory> {
 		Ok(self.staging_buffer.as_ref().unwrap().memory()?)
 	}
 
 	#[profiling::function]
-	pub fn stage_any<F>(mut self, memory_size: usize, write: F) -> utility::Result<Self>
+	pub fn stage_any<F>(mut self, memory_size: usize, write: F) -> anyhow::Result<Self>
 	where
 		F: Fn(&mut alloc::Memory) -> std::io::Result<bool>,
 	{

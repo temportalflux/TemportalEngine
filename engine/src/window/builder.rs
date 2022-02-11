@@ -1,9 +1,9 @@
 use crate::{
 	graphics::{device::physical, AppInfo},
 	math::nalgebra::{Vector2, Vector4},
-	utility::Result,
 	window, Application, Engine,
 };
+use anyhow::Result;
 
 pub struct Builder {
 	title: String,

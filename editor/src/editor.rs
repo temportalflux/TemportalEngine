@@ -1,7 +1,8 @@
 use crate::{asset, settings};
+use anyhow::Result;
 use engine::{
 	self,
-	utility::{singleton::Singleton, Result, SaveData},
+	utility::{singleton::Singleton, SaveData},
 	Application,
 };
 

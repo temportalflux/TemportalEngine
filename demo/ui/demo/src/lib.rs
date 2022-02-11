@@ -1,4 +1,5 @@
-use engine::{asset::statics, ui, utility::Result, Application};
+use anyhow::Result;
+use engine::{asset::statics, ui, Application};
 pub use temportal_engine as engine;
 
 pub struct UIDemo();

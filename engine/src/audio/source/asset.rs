@@ -1,5 +1,6 @@
+use crate::asset;
 use crate::audio::{decoder, Sound, System, LOG};
-use crate::{asset, utility::Result};
+use anyhow::Result;
 use oddio;
 use std::sync::{Arc, Mutex, RwLock};
 

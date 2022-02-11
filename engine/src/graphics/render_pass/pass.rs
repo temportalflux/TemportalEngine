@@ -1,8 +1,8 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
 	graphics::{flags, renderpass::Info as GraphicsPassInfo, RenderChain},
-	utility::Result,
 };
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 /// The engine asset representation of a [`render pass`](crate::graphics::renderpass::Pass).

@@ -1,5 +1,6 @@
+use anyhow::Result;
 use boid;
-use engine::{utility::Result, Application};
+use engine::Application;
 use temportal_engine as engine;
 use temportal_engine_editor as editor;
 

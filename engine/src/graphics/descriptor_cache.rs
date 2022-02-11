@@ -1,9 +1,6 @@
-use crate::{
-	graphics::{
-		descriptor::{self, layout::SetLayout},
-		RenderChain,
-	},
-	utility,
+use crate::graphics::{
+	descriptor::{self, layout::SetLayout},
+	RenderChain,
 };
 use std::{collections::HashMap, sync};
 
@@ -42,7 +39,7 @@ where
 		id: T,
 		name: Option<String>,
 		render_chain: &RenderChain,
-	) -> utility::Result<sync::Weak<descriptor::Set>> {
+	) -> anyhow::Result<sync::Weak<descriptor::Set>> {
 		let descriptor_set = render_chain
 			.persistent_descriptor_pool()
 			.write()

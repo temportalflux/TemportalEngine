@@ -9,9 +9,9 @@ use crate::{
 		RenderChainElement,
 	},
 	math::nalgebra::{Vector2, Vector4},
-	utility::Result,
 	Engine, WinitEventListener,
 };
+use anyhow::Result;
 use bytemuck::{Pod, Zeroable};
 use copypasta::{ClipboardContext, ClipboardProvider};
 use egui::{
@@ -119,7 +119,7 @@ impl Ui {
 		)
 	}
 
-	fn new(engine: &mut Engine) -> crate::utility::Result<Ui> {
+	fn new(engine: &mut Engine) -> anyhow::Result<Ui> {
 		let window_handle = engine.window().unwrap().unwrap();
 		let (physical_size, scale_factor) = engine.window().unwrap().read_size();
 

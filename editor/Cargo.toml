@@ -18,6 +18,7 @@ serde = { version = "1.0", features = ["derive"] }
 webbrowser = "0.5.5"
 winit = "0.25"
 zip = "0.5"
+anyhow = "1.0"
 
 cargo_toml = "0.9"
 freetype-rs = "0.28"

@@ -1,4 +1,4 @@
-use crate::utility::Result;
+use anyhow::Result;
 use std::{fs, path::PathBuf};
 
 /// Helper trait to aid in the creation of settings/config files that are loaded at runtime.

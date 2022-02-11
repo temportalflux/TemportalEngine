@@ -1,4 +1,4 @@
-use crate::utility::Result;
+use anyhow::Result;
 pub use log::Level;
 
 pub fn default_path(app_name: &str, suffix: Option<&str>) -> std::path::PathBuf {
@@ -30,12 +30,24 @@ pub fn init(log_path: &std::path::Path) -> Result<()> {
 		builder
 			.set_max_level(log::LevelFilter::Error)
 			.set_time_format_str("%Y.%m.%d-%H.%M.%S")
-			.set_thread_level(log::LevelFilter::Debug)
+			// Pads the names of levels so that they line up in the log.
+			// [ERROR]
+			// [ WARN]
+			// [ INFO]
+			// [DEBUG]
+			// [TRACE]
+			.set_level_padding(LevelPadding::Left)
+			// Thread IDs/Names are logged for ALL statements (that aren't on main)
+			.set_thread_level(log::LevelFilter::Error)
+			.set_thread_mode(ThreadLogMode::Names)
+			.set_thread_padding(ThreadPadding::Left(5))
+			// Target is always logged so that readers know what owner logged each line
 			.set_target_level(log::LevelFilter::Error)
 			.set_location_level(log::LevelFilter::Off);
 		for input_dep in crate::input::DEPENDENCY_LOG_TARGETS.iter() {
 			builder.add_filter_ignore_str(input_dep);
 		}
+		builder.add_filter_ignore_str("mio"); // for quinn networking
 		builder.build()
 	};
 	CombinedLogger::init(vec![

@@ -7,8 +7,8 @@ use crate::{
 	},
 	math::nalgebra::Vector2,
 	ui::core::{image, mesh},
-	utility::{self, Result},
 };
+use anyhow::Result;
 use std::sync;
 
 pub struct DataPipeline {
@@ -18,7 +18,7 @@ pub struct DataPipeline {
 }
 
 impl DataPipeline {
-	pub fn new(render_chain: &graphics::RenderChain) -> utility::Result<Self> {
+	pub fn new(render_chain: &graphics::RenderChain) -> anyhow::Result<Self> {
 		Ok(Self {
 			drawable: Drawable::default().with_name("UI.Image"),
 			descriptor_cache: DescriptorCache::new(
@@ -40,7 +40,7 @@ impl DataPipeline {
 		self.drawable.add_shader(id)
 	}
 
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> utility::Result<()> {
+	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
 		self.drawable.create_shaders(render_chain)
 	}
 
@@ -56,7 +56,7 @@ impl DataPipeline {
 	pub fn create_pending_images(
 		&mut self,
 		render_chain: &graphics::RenderChain,
-	) -> utility::Result<Vec<sync::Arc<command::Semaphore>>> {
+	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
 		use graphics::descriptor::update::*;
 
 		let mut pending_gpu_signals = Vec::new();
@@ -91,10 +91,7 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn destroy_pipeline(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> utility::Result<()> {
+	pub fn destroy_pipeline(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
 		self.drawable.destroy_pipeline(render_chain)
 	}
 
@@ -104,7 +101,7 @@ impl DataPipeline {
 		render_chain: &graphics::RenderChain,
 		resolution: &Vector2<f32>,
 		subpass_id: &Option<String>,
-	) -> utility::Result<()> {
+	) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
 			render_chain,

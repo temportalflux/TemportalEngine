@@ -3,9 +3,9 @@ use crate::{
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics,
-		utility::Result,
 	},
 };
+use anyhow::Result;
 use std::{
 	path::{Path, PathBuf},
 	time::SystemTime,
