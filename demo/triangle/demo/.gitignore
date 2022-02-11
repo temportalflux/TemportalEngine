@@ -1,3 +1,4 @@
 target/
 binaries/
 run/
+Cargo.lock

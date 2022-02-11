@@ -7,74 +7,93 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# [utility] for implementing single-producer-multi-receiver (broadcast) delegates
+temportal-engine-utilities = { path = "../utility" }
+
+# [log] backend for the log crate to output logging to multiple locations
+simplelog = "0.11"
+# [metrics] for writing runtime information to log file/console
+log = { version = "0.4", features = ["std"] }
+# [metrics] for getting performance information and rendering via any chosen viewer
+profiling = "1.0"
+
+# [error] collapsing any error into one result type
+anyhow = "1.0"
+
+# [channel] [ sync] single-producer multi-consumer  multi-consumption
 bus = "2.2"
+# [channel] [ sync]  multi-producer multi-consumer single-consumption
+crossbeam-channel = "0.5"
+
+# [async] base async traits
+futures = "0.3"
+# [async] async/await syntax and multithreading
+tokio = { version = "1.15", features = ["full"] }
+# [async] helper for getting the number of CPS for multithreading
+num_cpus = { version = "1.8" }
+
+# [ui] debug immediate-mode UI
+egui = "0.15"
+# [ui] for handling UI widgets - rendering is built-into the engine and leverages tesselation
+raui = { version = ">=0.35", features = ["material", "tesselate"] }
+
+# [serialization] general usage
+serde = { version = "1.0", features = ["derive"] }
+# [serialization] RustMessagePack binary
+rmp = "0.8"
+# [serialization] RustMessagePack binary
+rmp-serde = "0.15"
+# [serialization] node-like syntax
+kdl = "3.0"
+# [serialization] kdl wrapper for enforcing schemas
+kdl-schema = { path = "../crates/kdl-schema" }
+
+# [collections] similar to a bitmap but for any enum with a derive-trait implemented
+enumset = { version = "1.0", features = ["serde"] }
+# [collections] one-to-many_of<T> relationship data structure
+multimap = "0.8"
+
+# [audio] for managing audio playback and mixing
+oddio = "0.4"
+# [audio] for manaing audio devices
+cpal = "0.13"
+# [audio] for parsing wav audio binaries
+hound = "3.4"
+# [audio] for parsing vorbis/ogg audio binaries
+lewton = "0.10"
+# [audio] for parsing mp3 audio binaries
+minimp3 = "0.5"
+
+# [input] for processing user input from winit and gamepads using a user-defined configuration
+input-actions = { path = "../input-actions", features = ["winit", "log"] }
+
+# [math] for math interoperability
+mint = "0.5"
+# [math] for math types and functions
+nalgebra = { version = "0.27", features = ["serde-serialize"] }
+
+# [window] for interoperability of winit and vulkan-rs
+raw-window-handle = "0.3"
+# [window] for opening a window and getting user input
+winit = "0.25"
+# [graphics] backend for rendering graphics to a window / working with the GPU
+vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
+
 # [utility] helpers for managing bytes - required for egui
 bytemuck = "1.7"
 # [utility] interacting with the clipcoard - required for egui
 copypasta = "0.7"
-# [audio] for manaing audio devices
-cpal = "0.13"
-crossbeam-channel = "0.5"
-# [ui] immediate mode widget handling for editor and debug game uis
-egui = "0.15"
-# [utility] similar to a bitmap but for any enum with a derive-trait implemented
-enumset = { version = "1.0", features = ["serde"] } 
-# [rust] async/future support in rust (for thinks like ongoing/background tasks)
-futures = "0.3"
-# [audio] for parsing wav audio binaries
-hound = "3.4"
-# [input] for processing user input from winit and gamepads using a user-defined configuration
-input-actions = { path = "../input-actions", features = ["winit", "log"] }
-kdl = "3.0"
-kdl-schema = { path = "../crates/kdl-schema" }
-# [audio] for parsing vorbis/ogg audio binaries
-lewton = "0.10"
-# [log] log allows for logging formatted text to multiple outputs and provides a generic interface
-log = { version = "0.4", features = ["std"] }
-# [audio] for parsing mp3 audio binaries
-minimp3 = "0.5"
-# [math] for math interoperability
-mint = "0.5"
-# [utility] for mapping a single key to multiple values
-multimap = "0.8"
-# [math] for math types and functions
-nalgebra = { version = "0.27", features = ["serde-serialize"] }
-# [audio] for managing audio playback and mixing
-oddio = "0.4"
-# [utility] for getting performance information and rendering via any chosen viewer
-profiling = "1.0"
-# [utility] pseudo/generated randomness
-rand = "0.8"
-# [ui] for handling UI widgets - rendering is built-into the engine and leverages tesselation
-raui = { version = ">=0.35", features = ["material", "tesselate"] }
-# [window] for interoperability of winit and vulkan-rs
-raw-window-handle = "0.3"
-regex = "1.5"
-# [serialization] expanded serialization support
-rmp = "0.8"
-# [serialization] expanded serialization support for serde
-rmp-serde = "0.15"
-# [utility] semantic versioning
-semver = "1.0"
-# [serialization]
-serde = { version = "1.0", features = ["derive"] }
-# [utility] catching signals like CTRL+C from the terminal
-signal-hook = "0.3"
-# [log] backend for the log crate to output logging to multiple locations
-simplelog = "0.11"
-# [ecs] backend for entity-componment-system - may eventually replace with hecs
-specs = { version = "0.16", features = ["shred-derive"] }
-temportal-engine-utilities = { path = "../utility" }
-# [graphics] backend for rendering graphics to a window / working with the GPU
-vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
 # [utility] interacting with hyperlinks/web browsers - required for egui
 webbrowser = "0.5.5"
-# [window] for opening a window and getting user input
-winit = "0.25"
+
+# [utility] pseudo/generated randomness
+rand = "0.8"
+regex = "1.5"
+# [utility] catching signals like CTRL+C from the terminal
+signal-hook = "0.3"
+# [utility] semantic versioning
+semver = "1.0"
 # [utility] for managing zip (and thereby pak) files
 zip = "0.5"
 
-tokio = { version = "1.15", features = ["full"] }
-num_cpus = { version = "1.8" }
-anyhow = "1.0"
+# DEPRECATED
+specs = { version = "0.16", features = ["shred-derive"] }
