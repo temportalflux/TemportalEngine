@@ -30,14 +30,12 @@ pub fn create_user<T: Into<String>>(name: T) -> ArcLockUser {
 		Some(config) => Arc::downgrade(&config),
 		None => unimplemented!(),
 	};
+	let mut device_cache = device_cache().write().unwrap();
 	let user = User::new(name.into())
 		.with_config(config)
-		.with_devices(Arc::downgrade(device_cache()))
+		.with_consts(device_cache.consts())
 		.arclocked();
-	device_cache()
-		.write()
-		.unwrap()
-		.add_user(Arc::downgrade(&user));
+	device_cache.add_user(Arc::downgrade(&user));
 	user
 }
 
