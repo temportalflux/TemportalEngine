@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub enum AttachmentFormat {
-	/// The [`Format`](format::Format) of the [`swapchain`](crate::graphics::Swapchain) images.
+	/// The [`Format`](crate::graphics::flags::format::Format) of the [`swapchain`](crate::graphics::device::swapchain::Swapchain) images.
 	Viewport,
-	/// The [`Format`](format::Format) of the depth-buffer image.
+	/// The [`Format`](crate::graphics::flags::format::Format) of the depth-buffer image.
 	Depth,
 }
 
