@@ -159,12 +159,21 @@ impl Window {
 			&self.surface,
 			frame_count,
 		)?;
+		// Frame view
 		chain.add_clear_value(renderpass::ClearValue::Color([
 			self.render_pass_clear_color.x,
 			self.render_pass_clear_color.y,
 			self.render_pass_clear_color.z,
 			self.render_pass_clear_color.w,
 		]));
+		// Color view
+		chain.add_clear_value(renderpass::ClearValue::Color([
+			self.render_pass_clear_color.x,
+			self.render_pass_clear_color.y,
+			self.render_pass_clear_color.z,
+			self.render_pass_clear_color.w,
+		]));
+		// Depth buffer view
 		chain.add_clear_value(renderpass::ClearValue::DepthStencil(1.0, 0));
 
 		if create_depth_image {

@@ -2,7 +2,7 @@ use crate::{
 	asset::{self, AssetResult, TypeMetadata},
 	graphics::{
 		flags::{ImageLayout, SampleCount},
-		renderpass::AttachmentOps,
+		renderpass::{AttachmentOps, SampleKind},
 	},
 };
 use serde::{Deserialize, Serialize};
@@ -24,6 +24,8 @@ pub struct Attachment {
 
 	#[serde(default)]
 	sample_count: SampleCount,
+	#[serde(default)]
+	use_max_common_samples: bool,
 
 	#[serde(default)]
 	operations: Ops,
@@ -47,8 +49,11 @@ impl Attachment {
 		&self.format
 	}
 
-	pub fn sample_count(&self) -> &SampleCount {
-		&self.sample_count
+	pub fn sample_kind(&self) -> SampleKind {
+		match self.use_max_common_samples {
+			true => SampleKind::MaxCommon,
+			false => SampleKind::Fixed(self.sample_count),
+		}
 	}
 
 	pub fn general_ops(&self) -> &AttachmentOps {

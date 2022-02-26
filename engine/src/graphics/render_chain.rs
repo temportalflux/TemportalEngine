@@ -7,7 +7,8 @@ use crate::{
 			logical, physical,
 			swapchain::{self, Swapchain},
 		},
-		flags, image, image_view, render_pass, renderpass, structs,
+		flags::{self, ImageSampleKind},
+		image, image_view, render_pass, renderpass, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
 		GpuOperationBuilder, Surface,
 	},
@@ -113,6 +114,7 @@ pub struct RenderChain {
 	frame_buffers: Vec<sync::Arc<Framebuffer>>,
 	depth_view: Option<sync::Arc<image_view::View>>,
 	depth_format: Option<(flags::format::Format, flags::ImageTiling)>,
+	color_view: Option<sync::Arc<image_view::View>>,
 	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<sync::Arc<image::Image>>,
 	swapchain: Option<Swapchain>,
@@ -211,6 +213,7 @@ impl RenderChain {
 			frame_image_views: Vec::new(),
 			depth_format: None,
 			depth_view: None,
+			color_view: None,
 			frame_buffers: Vec::new(),
 
 			pending_gpu_signals: Vec::new(),
@@ -346,6 +349,7 @@ impl RenderChain {
 		self.render_finished_semaphores.clear();
 		self.img_available_semaphores.clear();
 
+		self.color_view = None;
 		self.depth_view = None;
 		self.frame_buffers.clear();
 		self.frame_image_views.clear();
@@ -382,6 +386,12 @@ impl RenderChain {
 			.frame_command_pool()
 			.allocate_buffers(self.frame_count, flags::CommandBufferLevel::PRIMARY)?;
 
+		let sample_count = physical
+			.max_common_sample_count(ImageSampleKind::Color | ImageSampleKind::Depth)
+			.unwrap_or(flags::SampleCount::_1);
+		self.render_pass_info
+			.set_max_common_sample_count(sample_count);
+
 		self.render_pass = Some(self.render_pass_info.clone().build(&logical)?);
 		self.swapchain = Some(self.swapchain_info.clone().build(
 			&logical,
@@ -409,6 +419,40 @@ impl RenderChain {
 			);
 		}
 
+		self.color_view = {
+			let image = Arc::new(
+				image::Image::builder()
+					.with_optname(Some("RenderChain.ColorBuffer".to_owned()))
+					.with_alloc(
+						alloc::Builder::default()
+							.with_usage(flags::MemoryUsage::GpuOnly)
+							.requires(flags::MemoryProperty::DEVICE_LOCAL),
+					)
+					.with_format(self.swapchain_info.format())
+					.with_sample_count(sample_count)
+					.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)
+					.with_usage(flags::ImageUsage::TRANSIENT_ATTACHMENT)
+					.with_size(structs::Extent3D {
+						width: extent.width,
+						height: extent.height,
+						depth: 1,
+					})
+					.build(&self.allocator())?,
+			);
+
+			Some(Arc::new(
+				image_view::View::builder()
+					.with_optname(image.wrap_name(|v| format!("{}.View", v)))
+					.for_image(image)
+					.with_view_type(flags::ImageViewType::TYPE_2D)
+					.with_range(
+						structs::subresource::Range::default()
+							.with_aspect(flags::ImageAspect::COLOR),
+					)
+					.build(&self.logical())?,
+			))
+		};
+
 		if let Some((format, tiling)) = self.depth_format {
 			let image = Arc::new(
 				image::Image::builder()
@@ -420,6 +464,7 @@ impl RenderChain {
 					)
 					.with_format(format)
 					.with_tiling(tiling)
+					.with_sample_count(sample_count)
 					.with_usage(flags::ImageUsage::DEPTH_STENCIL_ATTACHMENT)
 					.with_size(structs::Extent3D {
 						width: extent.width,
@@ -451,8 +496,11 @@ impl RenderChain {
 		for (i, image_view) in self.frame_image_views.iter().enumerate() {
 			let mut attachments: Vec<&image_view::View> = Vec::with_capacity(2);
 			attachments.push(&*image_view);
-			if let Some(depth_view) = &self.depth_view {
-				attachments.push(&*depth_view);
+			if let Some(view) = &self.color_view {
+				attachments.push(&*view);
+			}
+			if let Some(view) = &self.depth_view {
+				attachments.push(&*view);
 			}
 			self.frame_buffers.push(Arc::new(
 				command::framebuffer::Framebuffer::builder()
@@ -599,6 +647,10 @@ impl RenderChain {
 		cmd.end()?;
 
 		Ok(())
+	}
+
+	pub fn max_common_sample_count(&self) -> flags::SampleCount {
+		self.render_pass_info.max_common_sample_count()
 	}
 
 	/// Renders the next frame, thereby performing mutations like:

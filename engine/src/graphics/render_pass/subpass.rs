@@ -1,6 +1,6 @@
 use crate::{
 	asset::{self, AssetResult, TypeMetadata},
-	graphics::flags::ImageLayout,
+	graphics::flags::{AttachmentKind, ImageLayout},
 };
 use serde::{Deserialize, Serialize};
 
@@ -8,23 +8,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Subpass {
 	asset_type: String,
-	pub(crate) attachments: AttachmentSet,
-}
-
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-pub(crate) struct AttachmentSet {
-	#[serde(default)]
-	pub input: Vec<AttachmentItem>,
-	#[serde(default)]
-	pub color: Vec<AttachmentItem>,
-	#[serde(default)]
-	pub depth_stencil: Option<AttachmentItem>,
+	pub(crate) attachments: Vec<AttachmentItem>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub(crate) struct AttachmentItem {
 	pub id: asset::Id,
-	pub layout: ImageLayout,
+	pub kind: AttachmentKind,
+	pub layout: Option<ImageLayout>,
 }
 
 impl asset::Asset for Subpass {

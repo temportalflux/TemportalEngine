@@ -273,7 +273,7 @@ impl Pass {
 				.unwrap();
 			let mut graphics = renderpass::Subpass::new(id.as_string());
 
-			for attachment in subpass.attachments.input.iter() {
+			for attachment in subpass.attachments.iter() {
 				if !self.attachment_order.contains(&attachment.id) {
 					return Err(MissingAttachmentReference(
 						attachment.id.clone(),
@@ -281,30 +281,11 @@ impl Pass {
 						asset_id.clone(),
 					))?;
 				}
-				graphics =
-					graphics.add_input_attachment(attachment.id.as_string(), attachment.layout);
-			}
-			for attachment in subpass.attachments.color.iter() {
-				if !self.attachment_order.contains(&attachment.id) {
-					return Err(MissingAttachmentReference(
-						attachment.id.clone(),
-						id.clone(),
-						asset_id.clone(),
-					))?;
-				}
-				graphics =
-					graphics.add_color_attachment(attachment.id.as_string(), attachment.layout);
-			}
-			if let Some(attachment) = &subpass.attachments.depth_stencil {
-				if !self.attachment_order.contains(&attachment.id) {
-					return Err(MissingAttachmentReference(
-						attachment.id.clone(),
-						id.clone(),
-						asset_id.clone(),
-					))?;
-				}
-				graphics = graphics
-					.with_depth_stencil_attachment(attachment.id.as_string(), attachment.layout);
+				graphics = graphics.add_attachment(
+					attachment.id.as_string(),
+					attachment.kind,
+					attachment.layout,
+				);
 			}
 
 			rp_info.add_subpass(graphics);
@@ -326,7 +307,7 @@ impl Pass {
 			rp_info.attach(
 				renderpass::Attachment::new(id.as_string())
 					.with_format(image_format)
-					.with_sample_count(*attachment.sample_count())
+					.with_sample_kind(attachment.sample_kind())
 					.with_general_ops(*attachment.general_ops())
 					.with_stencil_ops(*attachment.stencil_ops())
 					.with_initial_layout(*attachment.initial_layout())
