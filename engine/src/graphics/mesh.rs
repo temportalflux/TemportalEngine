@@ -126,6 +126,7 @@ where
 		Ok(gpu_signals)
 	}
 
+	#[profiling::function]
 	fn write_buffer<T: Sized>(
 		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],

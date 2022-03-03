@@ -114,6 +114,7 @@ pub struct RenderChain {
 	frame_buffers: Vec<sync::Arc<Framebuffer>>,
 	depth_view: Option<sync::Arc<image_view::View>>,
 	depth_format: Option<(flags::format::Format, flags::ImageTiling)>,
+	use_color_buffer: bool,
 	color_view: Option<sync::Arc<image_view::View>>,
 	frame_image_views: Vec<image_view::View>,
 	frame_images: Vec<sync::Arc<image::Image>>,
@@ -213,6 +214,7 @@ impl RenderChain {
 			frame_image_views: Vec::new(),
 			depth_format: None,
 			depth_view: None,
+			use_color_buffer: false,
 			color_view: None,
 			frame_buffers: Vec::new(),
 
@@ -286,6 +288,10 @@ impl RenderChain {
 
 	pub fn set_depth_format(&mut self, format: flags::format::Format, tiling: flags::ImageTiling) {
 		self.depth_format = Some((format, tiling));
+	}
+
+	pub fn enable_color_buffer(&mut self) {
+		self.use_color_buffer = true;
 	}
 
 	pub fn get_attachment_format(
@@ -419,38 +425,41 @@ impl RenderChain {
 			);
 		}
 
-		self.color_view = {
-			let image = Arc::new(
-				image::Image::builder()
-					.with_optname(Some("RenderChain.ColorBuffer".to_owned()))
-					.with_alloc(
-						alloc::Builder::default()
-							.with_usage(flags::MemoryUsage::GpuOnly)
-							.requires(flags::MemoryProperty::DEVICE_LOCAL),
-					)
-					.with_format(self.swapchain_info.format())
-					.with_sample_count(sample_count)
-					.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)
-					.with_usage(flags::ImageUsage::TRANSIENT_ATTACHMENT)
-					.with_size(structs::Extent3D {
-						width: extent.width,
-						height: extent.height,
-						depth: 1,
-					})
-					.build(&self.allocator())?,
-			);
+		self.color_view = match self.use_color_buffer {
+			true => {
+				let image = Arc::new(
+					image::Image::builder()
+						.with_optname(Some("RenderChain.ColorBuffer".to_owned()))
+						.with_alloc(
+							alloc::Builder::default()
+								.with_usage(flags::MemoryUsage::GpuOnly)
+								.requires(flags::MemoryProperty::DEVICE_LOCAL),
+						)
+						.with_format(self.swapchain_info.format())
+						.with_sample_count(sample_count)
+						.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)
+						.with_usage(flags::ImageUsage::TRANSIENT_ATTACHMENT)
+						.with_size(structs::Extent3D {
+							width: extent.width,
+							height: extent.height,
+							depth: 1,
+						})
+						.build(&self.allocator())?,
+				);
 
-			Some(Arc::new(
-				image_view::View::builder()
-					.with_optname(image.wrap_name(|v| format!("{}.View", v)))
-					.for_image(image)
-					.with_view_type(flags::ImageViewType::TYPE_2D)
-					.with_range(
-						structs::subresource::Range::default()
-							.with_aspect(flags::ImageAspect::COLOR),
-					)
-					.build(&self.logical())?,
-			))
+				Some(Arc::new(
+					image_view::View::builder()
+						.with_optname(image.wrap_name(|v| format!("{}.View", v)))
+						.for_image(image)
+						.with_view_type(flags::ImageViewType::TYPE_2D)
+						.with_range(
+							structs::subresource::Range::default()
+								.with_aspect(flags::ImageAspect::COLOR),
+						)
+						.build(&self.logical())?,
+				))
+			}
+			false => None,
 		};
 
 		if let Some((format, tiling)) = self.depth_format {

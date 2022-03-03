@@ -517,6 +517,7 @@ impl RenderChainElement for Ui {
 		Ok(())
 	}
 
+	#[profiling::function]
 	fn prerecord_update(
 		&mut self,
 		chain: &RenderChain,
@@ -536,6 +537,7 @@ impl RenderChainElement for Ui {
 		Ok(true)
 	}
 
+	#[profiling::function]
 	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
 		let frame = &self.frames[frame];
 
@@ -574,6 +576,7 @@ impl RenderChainElement for Ui {
 }
 
 impl Ui {
+	#[profiling::function]
 	fn build_ui(&mut self) -> (Vec<Vertex>, Vec<u32>, Vec<DrawCall>) {
 		for (callback, retained) in self.render_callbacks.iter_mut() {
 			*retained = callback(&self.context);
