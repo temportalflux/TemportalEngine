@@ -3,10 +3,7 @@ use crate::{
 	graphics::{
 		self, alloc,
 		command::{self, framebuffer::Framebuffer},
-		device::{
-			logical, physical,
-			swapchain::{self, Swapchain},
-		},
+		device::{logical, physical, swapchain},
 		flags::{self, ImageSampleKind},
 		image, image_view, render_pass, renderpass, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
@@ -117,11 +114,10 @@ pub struct RenderChain {
 	use_color_buffer: bool,
 	color_view: Option<sync::Arc<image_view::View>>,
 	frame_image_views: Vec<image_view::View>,
-	frame_images: Vec<sync::Arc<image::Image>>,
-	swapchain: Option<Swapchain>,
+	swapchain: Option<swapchain::khr::Swapchain>,
 	render_pass: Option<renderpass::Pass>,
 
-	swapchain_info: swapchain::Builder,
+	swapchain_info: swapchain::khr::Builder,
 	transient_command_pool: sync::Arc<command::Pool>,
 
 	resolution: Vector2<f32>,
@@ -159,7 +155,7 @@ impl RenderChain {
 		surface: &sync::Arc<Surface>,
 		frame_count: usize,
 	) -> anyhow::Result<RenderChain> {
-		let swapchain_info = Swapchain::builder()
+		let swapchain_info = swapchain::khr::Swapchain::builder()
 			.with_name("RenderChain.Swapchain")
 			.with_image_count(frame_count as u32)
 			.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
@@ -210,7 +206,6 @@ impl RenderChain {
 			render_pass: None,
 			swapchain_info,
 			swapchain: None,
-			frame_images: Vec::new(),
 			frame_image_views: Vec::new(),
 			depth_format: None,
 			depth_view: None,
@@ -343,6 +338,7 @@ impl RenderChain {
 	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
 	fn construct_render_chain(&mut self, extent: structs::Extent2D) -> Result<()> {
+		use swapchain::Swapchain;
 		log::info!(
 			target: graphics::LOG,
 			"{}Constructing render chain with resolution <{},{}>",
@@ -359,7 +355,6 @@ impl RenderChain {
 		self.depth_view = None;
 		self.frame_buffers.clear();
 		self.frame_image_views.clear();
-		self.frame_images.clear();
 		self.command_buffers.clear();
 
 		self.initialized_render_chain_elements
@@ -405,25 +400,7 @@ impl RenderChain {
 			self.swapchain.as_ref(),
 		)?);
 
-		self.frame_images = self
-			.swapchain()
-			.get_images()?
-			.into_iter()
-			.map(|image| sync::Arc::new(image))
-			.collect();
-		for (i, image) in self.frame_images.iter().enumerate() {
-			self.frame_image_views.push(
-				image_view::View::builder()
-					.with_name(format!("RenderChain.Frame{}.View", i))
-					.for_image(image.clone())
-					.with_view_type(flags::ImageViewType::TYPE_2D)
-					.with_range(
-						structs::subresource::Range::default()
-							.with_aspect(flags::ImageAspect::COLOR),
-					)
-					.build(&logical)?,
-			);
-		}
+		self.frame_image_views = self.swapchain().get_image_views()?;
 
 		self.color_view = match self.use_color_buffer {
 			true => {
@@ -565,7 +542,7 @@ impl RenderChain {
 		self.frame_command_buffer_requires_recording = vec![true; self.frame_count];
 	}
 
-	fn swapchain(&self) -> &Swapchain {
+	fn swapchain(&self) -> &swapchain::khr::Swapchain {
 		self.swapchain.as_ref().unwrap()
 	}
 
@@ -675,6 +652,7 @@ impl RenderChain {
 	#[profiling::function]
 	pub fn render_frame(&mut self) -> Result<()> {
 		use graphics::debug;
+		use swapchain::Swapchain;
 		let logical = self.logical.upgrade().unwrap();
 
 		let mut required_semaphores = self.pending_gpu_signals.drain(..).collect::<Vec<_>>();
@@ -766,24 +744,22 @@ impl RenderChain {
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain().acquire_next_image(
 			u64::MAX,
-			Some(&self.img_available_semaphores[self.current_frame]),
-			None,
+			swapchain::ImageAcquisitionBarrier::Semaphore(&self.img_available_semaphores[self.current_frame]),
 		);
-		let (next_image_idx, is_suboptimal) = match acquisition_result {
-			Ok(data) => data,
-			Err(e) => match e {
-				crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
+		let next_image_idx = match acquisition_result {
+			Ok(swapchain::AcquiredImage::Available(index)) => index,
+			Ok(swapchain::AcquiredImage::Suboptimal(_index)) => {
+				self.is_dirty = true;
+				return Ok(());
+			}
+			Err(e) => match e.downcast_ref::<crate::graphics::utility::Error>() {
+				Some(crate::graphics::utility::Error::RequiresRenderChainUpdate) => {
 					self.is_dirty = true;
 					return Ok(());
 				}
 				_ => return Err(e)?,
 			},
 		};
-		let next_image_idx = next_image_idx as usize;
-		if is_suboptimal {
-			self.is_dirty = true;
-			return Ok(());
-		}
 
 		// Ensure that the image for the next index is not being written to or displayed
 		{
@@ -878,7 +854,7 @@ impl RenderChain {
 					}
 				}
 				Err(e) => match e {
-					crate::graphics::utility::Error::RequiresRenderChainUpdate() => {
+					crate::graphics::utility::Error::RequiresRenderChainUpdate => {
 						self.is_dirty = true;
 						return Ok(());
 					}
