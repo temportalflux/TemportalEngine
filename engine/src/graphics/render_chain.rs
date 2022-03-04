@@ -2,7 +2,7 @@ use crate::{
 	asset,
 	graphics::{
 		self, alloc,
-		command::{self, framebuffer::Framebuffer},
+		command::{self, frame},
 		device::{logical, physical, swapchain},
 		flags::{self, ImageSampleKind},
 		image, image_view, render_pass, renderpass, structs,
@@ -108,12 +108,12 @@ pub struct RenderChain {
 
 	command_buffers: Vec<command::Buffer>,
 	frame_command_pool: Option<command::Pool>,
-	frame_buffers: Vec<sync::Arc<Framebuffer>>,
+	framebuffers: Vec<Arc<frame::Buffer>>,
 	depth_view: Option<sync::Arc<image_view::View>>,
 	depth_format: Option<(flags::format::Format, flags::ImageTiling)>,
 	use_color_buffer: bool,
 	color_view: Option<sync::Arc<image_view::View>>,
-	frame_image_views: Vec<image_view::View>,
+	frame_image_views: Vec<sync::Arc<image_view::View>>,
 	swapchain: Option<swapchain::khr::Swapchain>,
 	render_pass: Option<renderpass::Pass>,
 
@@ -211,7 +211,7 @@ impl RenderChain {
 			depth_view: None,
 			use_color_buffer: false,
 			color_view: None,
-			frame_buffers: Vec::new(),
+			framebuffers: Vec::new(),
 
 			pending_gpu_signals: Vec::new(),
 			frame_command_buffer_requires_recording: vec![true; frame_count],
@@ -353,7 +353,7 @@ impl RenderChain {
 
 		self.color_view = None;
 		self.depth_view = None;
-		self.frame_buffers.clear();
+		self.framebuffers.clear();
 		self.frame_image_views.clear();
 		self.command_buffers.clear();
 
@@ -479,22 +479,20 @@ impl RenderChain {
 			));
 		}
 
-		for (i, image_view) in self.frame_image_views.iter().enumerate() {
-			let mut attachments: Vec<&image_view::View> = Vec::with_capacity(2);
-			attachments.push(&*image_view);
+		self.framebuffers = {
+			let mut builder = frame::Buffer::multi_builder()
+				.with_name("RenderChain.Frames")
+				.with_extent(extent)
+				.with_frame_count(self.frame_image_views.len())
+				.attach_by_frame(self.frame_image_views.clone());
 			if let Some(view) = &self.color_view {
-				attachments.push(&*view);
+				builder = builder.attach(view.clone());
 			}
 			if let Some(view) = &self.depth_view {
-				attachments.push(&*view);
+				builder = builder.attach(view.clone());
 			}
-			self.frame_buffers.push(Arc::new(
-				command::framebuffer::Framebuffer::builder()
-					.with_name(format!("RenderChain.Frame{}.Framebuffer", i))
-					.set_extent(extent)
-					.build(attachments, &self.render_pass(), &logical)?,
-			));
-		}
+			builder.build(&logical, &self.render_pass())?
+		};
 
 		let max_frames_in_flight = RenderChain::max_frames_in_flight(self.frame_count);
 		self.img_available_semaphores = RenderChain::create_semaphores(
@@ -586,7 +584,7 @@ impl RenderChain {
 
 		cmd.begin(None, None)?;
 		cmd.start_render_pass(
-			&self.frame_buffers[buffer_index],
+			&self.framebuffers[buffer_index],
 			self.render_pass.as_ref().unwrap(),
 			self.render_pass_instruction.clone(),
 			use_secondary_buffers,
@@ -744,7 +742,9 @@ impl RenderChain {
 		// Get the index of the next image to display
 		let acquisition_result = self.swapchain().acquire_next_image(
 			u64::MAX,
-			swapchain::ImageAcquisitionBarrier::Semaphore(&self.img_available_semaphores[self.current_frame]),
+			swapchain::ImageAcquisitionBarrier::Semaphore(
+				&self.img_available_semaphores[self.current_frame],
+			),
 		);
 		let next_image_idx = match acquisition_result {
 			Ok(swapchain::AcquiredImage::Available(index)) => index,
