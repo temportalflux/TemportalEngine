@@ -1,5 +1,7 @@
 use crate::graphics::{
-	alloc, command, descriptor,
+	alloc,
+	chain::ArcResolutionProvider,
+	command, descriptor,
 	device::{logical, physical, swapchain::SwapchainBuilder},
 	renderpass,
 };
@@ -14,6 +16,7 @@ pub struct ChainBuilder {
 	transient_command_pool: Option<Arc<command::Pool>>,
 	persistent_descriptor_pool: Option<Arc<RwLock<descriptor::Pool>>>,
 	swapchain_builder: Option<Box<dyn SwapchainBuilder + 'static>>,
+	resolution_provider: Option<ArcResolutionProvider>,
 }
 
 impl ChainBuilder {
@@ -55,8 +58,14 @@ impl ChainBuilder {
 		self
 	}
 
+	pub fn with_resolution_provider(mut self, provider: ArcResolutionProvider) -> Self {
+		self.resolution_provider = Some(provider);
+		self
+	}
+
 	pub fn build(self) -> Result<super::Chain, ChainBuilderError> {
 		use ChainBuilderError::*;
+		let (outgoing_signals, incoming_signals) = crossbeam_channel::unbounded();
 		Ok(super::Chain {
 			physical: Arc::downgrade(&self.physical_device.ok_or(NoPhysicalDevice)?),
 			logical: Arc::downgrade(&self.logical_device.ok_or(NoLogicalDevice)?),
@@ -65,6 +74,9 @@ impl ChainBuilder {
 			transient_command_pool: self.transient_command_pool.ok_or(NoTransientCommandPool)?,
 			persistent_descriptor_pool: self.persistent_descriptor_pool.ok_or(NoDescriptorPool)?,
 			swapchain_builder: self.swapchain_builder.ok_or(NoSwapchainBuilder)?,
+			resolution_provider: self.resolution_provider.unwrap(),
+			incoming_signals,
+			outgoing_signals,
 
 			record_instruction: renderpass::RecordInstruction::default(),
 			pass: None,
@@ -73,10 +85,19 @@ impl ChainBuilder {
 			frame_command_pool: None,
 			command_buffers: Vec::new(),
 			procedure: Default::default(),
+			swapchain_attachment: None,
 			framebuffers: Vec::new(),
+			frame_signal_view_acquired: Vec::new(),
+			frame_signal_render_finished: Vec::new(),
+			frame_signal_view_available: Vec::new(),
+			view_in_flight_frame: Vec::new(),
 
 			resources: Default::default(),
 			operations: Default::default(),
+
+			requires_construction: true,
+			requires_recording_by_view: vec![],
+			next_frame: 0,
 		})
 	}
 }

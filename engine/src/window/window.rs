@@ -1,7 +1,8 @@
 use crate::{
 	graphics::{
 		self,
-		device::{logical, physical},
+		chain::DisplayResolution,
+		device::{logical, physical, swapchain::khr},
 		flags, instance, renderpass,
 		utility::HandledObject,
 		AppInfo, Context, Surface,
@@ -210,6 +211,18 @@ impl Window {
 				)))
 				.with_transient_command_pool(chain.transient_command_pool().clone())
 				.with_persistent_descriptor_pool(chain.persistent_descriptor_pool().clone())
+				.with_swapchain(
+					khr::Swapchain::builder()
+						.with_image_count(frame_count as u32)
+						.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
+						.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
+						.with_image_array_layer_count(1)
+						.with_image_usage(flags::ImageUsageFlags::COLOR_ATTACHMENT)
+						.with_image_sharing_mode(flags::SharingMode::EXCLUSIVE)
+						.with_composite_alpha(flags::CompositeAlpha::OPAQUE)
+						.with_is_clipped(true),
+				)
+				.with_resolution_provider(Arc::new(DisplayResolution))
 				.build()?,
 		)));
 		self.render_chain = Some(sync::Arc::new(sync::RwLock::new(chain)));

@@ -100,7 +100,7 @@ impl GpuOperationBuilder {
 			// Wait for the command to be complete
 			arc_self
 				.device
-				.wait_for(&arc_self.cpu_signal_on_complete, u64::MAX)?;
+				.wait_for(vec![&arc_self.cpu_signal_on_complete], u64::MAX)?;
 			// Send the arc to be dropped on the main thread because thats where the graphics objects need to be.
 			task::send_to_main_thread(arc_self)?;
 			Ok(())
@@ -137,7 +137,7 @@ impl GpuOperationBuilder {
 	pub fn wait_until_idle(self) -> anyhow::Result<()> {
 		Ok(self
 			.device
-			.wait_for(&self.cpu_signal_on_complete, u64::MAX)?)
+			.wait_for(vec![&self.cpu_signal_on_complete], u64::MAX)?)
 	}
 
 	/// Instructs the task to try to move an image from an

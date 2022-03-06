@@ -1,8 +1,9 @@
+use vulkan_rs::command::frame::AttachedView;
+
 use super::{Id, Resource};
 use crate::graphics::{
 	alloc,
-	device::physical,
-	flags::{self, format::Format, FormatFeatureFlags, ImageTiling},
+	flags::{self},
 	image::Image,
 	image_view::View,
 	procedure::Attachment,
@@ -84,9 +85,11 @@ impl Resource for ColorBuffer {
 		Ok(())
 	}
 
-	fn get_attachment_view(&self) -> Option<(Weak<Attachment>, &Arc<View>)> {
-		self.view
-			.as_ref()
-			.map(|view| (Arc::downgrade(&self.attachment), view))
+	fn get_attachments(&self) -> Vec<(Weak<Attachment>, AttachedView)> {
+		let view = self.view.as_ref().unwrap();
+		vec![(
+			Arc::downgrade(&self.attachment),
+			AttachedView::Shared(view.clone()),
+		)]
 	}
 }

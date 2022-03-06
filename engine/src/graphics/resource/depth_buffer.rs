@@ -1,3 +1,5 @@
+use vulkan_rs::command::frame::AttachedView;
+
 use super::{Id, Resource};
 use crate::graphics::{
 	alloc, command,
@@ -167,10 +169,12 @@ impl Resource for DepthBuffer {
 		Ok(())
 	}
 
-	fn get_attachment_view(&self) -> Option<(Weak<Attachment>, &Arc<View>)> {
-		self.view
-			.as_ref()
-			.map(|view| (Arc::downgrade(&self.attachment), view))
+	fn get_attachments(&self) -> Vec<(Weak<Attachment>, AttachedView)> {
+		let view = self.view.as_ref().unwrap();
+		vec![(
+			Arc::downgrade(&self.attachment),
+			AttachedView::Shared(view.clone()),
+		)]
 	}
 
 	fn take_pending_signals(&mut self) -> Vec<Arc<command::Semaphore>> {

@@ -483,20 +483,20 @@ impl RenderChain {
 			));
 		}
 
-		self.framebuffers = {
-			let mut builder = frame::Buffer::multi_builder()
-				.with_name("RenderChain.Frames")
-				.with_extent(extent)
-				.with_frame_count(self.frame_image_views.len())
-				.attach_by_frame(self.frame_image_views.clone());
-			if let Some(view) = &self.color_view {
-				builder = builder.attach(view.clone());
-			}
-			if let Some(view) = &self.depth_view {
-				builder = builder.attach(view.clone());
-			}
-			builder.build(&logical, &self.render_pass())?
-		};
+		//self.framebuffers = {
+		//	let mut builder = frame::Buffer::multi_builder()
+		//		.with_name("RenderChain.Frames")
+		//		.with_extent(extent)
+		//		.with_frame_count(self.frame_image_views.len())
+		//		.attach_by_frame(self.frame_image_views.clone());
+		//	if let Some(view) = &self.color_view {
+		//		builder = builder.attach(view.clone());
+		//	}
+		//	if let Some(view) = &self.depth_view {
+		//		builder = builder.attach(view.clone());
+		//	}
+		//	builder.build(&logical, &self.render_pass())?
+		//};
 
 		let max_frames_in_flight = RenderChain::max_frames_in_flight(self.frame_count);
 		self.img_available_semaphores = RenderChain::create_semaphores(
@@ -740,7 +740,7 @@ impl RenderChain {
 		// Wait for the previous frame/image to no longer be displayed
 		{
 			profiling::scope!("wait-for-frame-fence");
-			logical.wait_for(&self.in_flight_fences[self.current_frame], u64::MAX)?;
+			logical.wait_for(vec![&self.in_flight_fences[self.current_frame]], u64::MAX)?;
 		}
 
 		// Get the index of the next image to display
@@ -771,7 +771,7 @@ impl RenderChain {
 			let fence_index_for_img_in_flight = &self.images_in_flight[next_image_idx];
 			if fence_index_for_img_in_flight.is_some() {
 				logical.wait_for(
-					&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()],
+					vec![&self.in_flight_fences[fence_index_for_img_in_flight.unwrap()]],
 					u64::MAX,
 				)?;
 			}

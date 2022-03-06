@@ -1,4 +1,8 @@
-use crate::graphics::{command, image_view::View, procedure::Attachment, Chain};
+use crate::graphics::{
+	command::{self, frame::AttachedView},
+	procedure::Attachment,
+	Chain,
+};
 use std::{
 	any::Any,
 	collections::HashMap,
@@ -17,12 +21,12 @@ pub trait Resource {
 	where
 		Self: Sized;
 
-	fn construct(&mut self, chain: &Chain) -> anyhow::Result<()> {
+	fn construct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
 		Ok(())
 	}
 
-	fn get_attachment_view(&self) -> Option<(Weak<Attachment>, &Arc<View>)> {
-		None
+	fn get_attachments(&self) -> Vec<(Weak<Attachment>, AttachedView)> {
+		Vec::new()
 	}
 
 	fn take_pending_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
