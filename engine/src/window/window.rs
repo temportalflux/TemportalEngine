@@ -11,7 +11,7 @@ use crate::{
 	window,
 };
 use anyhow::Result;
-use std::sync;
+use std::sync::{self, Arc, RwLock};
 
 fn is_vulkan_validation_enabled() -> bool {
 	cfg!(debug_assertions)
@@ -20,8 +20,9 @@ fn is_vulkan_validation_enabled() -> bool {
 pub struct Window {
 	graphics_queue_index: usize,
 
-	// This is at the bottom to ensure that rust deallocates it last
+	// These are at the bottom to ensure that rust deallocates them last
 	render_chain: Option<graphics::ArcRenderChain>,
+	chain: Option<Arc<RwLock<graphics::Chain>>>,
 	render_pass_clear_color: Vector4<f32>,
 	graphics_allocator: sync::Arc<graphics::alloc::Allocator>,
 	logical_device: sync::Arc<logical::Device>,
@@ -100,6 +101,7 @@ impl Window {
 			logical_device,
 			render_pass_clear_color,
 			render_chain: None,
+			chain: None,
 			graphics_queue_index,
 		})
 	}
@@ -159,6 +161,7 @@ impl Window {
 			&self.surface,
 			frame_count,
 		)?;
+
 		// Frame view
 		chain.add_clear_value(renderpass::ClearValue::Color([
 			self.render_pass_clear_color.x,
@@ -195,6 +198,20 @@ impl Window {
 			}
 		}
 
+		self.chain = Some(Arc::new(RwLock::new(
+			graphics::Chain::builder()
+				.with_physical_device(self.physical_device.clone())
+				.with_logical_device(self.logical_device.clone())
+				.with_allocator(self.graphics_allocator.clone())
+				.with_graphics_queue(Arc::new(logical::Device::create_queue(
+					&self.logical_device,
+					Some("Queue.Graphics".to_string()),
+					self.graphics_queue_index,
+				)))
+				.with_transient_command_pool(chain.transient_command_pool().clone())
+				.with_persistent_descriptor_pool(chain.persistent_descriptor_pool().clone())
+				.build()?,
+		)));
 		self.render_chain = Some(sync::Arc::new(sync::RwLock::new(chain)));
 
 		Ok(self.render_chain().clone())
@@ -202,6 +219,10 @@ impl Window {
 
 	pub fn render_chain(&self) -> &sync::Arc<sync::RwLock<graphics::RenderChain>> {
 		self.render_chain.as_ref().unwrap()
+	}
+
+	pub fn graphics_chain(&self) -> &Arc<RwLock<graphics::Chain>> {
+		&self.chain.as_ref().unwrap()
 	}
 
 	pub fn wait_until_idle(&self) -> Result<()> {

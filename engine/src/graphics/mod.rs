@@ -29,6 +29,9 @@ pub use mesh::*;
 
 mod render_chain;
 pub use render_chain::*;
+pub mod chain;
+pub use chain::Chain;
+pub mod resource;
 
 pub mod render_pass;
 

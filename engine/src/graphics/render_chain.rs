@@ -114,7 +114,7 @@ pub struct RenderChain {
 	use_color_buffer: bool,
 	color_view: Option<sync::Arc<image_view::View>>,
 	frame_image_views: Vec<sync::Arc<image_view::View>>,
-	swapchain: Option<swapchain::khr::Swapchain>,
+	swapchain: Option<Box<swapchain::khr::Swapchain>>,
 	render_pass: Option<renderpass::Pass>,
 
 	swapchain_info: swapchain::khr::Builder,
@@ -294,8 +294,9 @@ impl RenderChain {
 		format: render_pass::AttachmentFormat,
 	) -> Option<flags::format::Format> {
 		use render_pass::AttachmentFormat;
+		use swapchain::SwapchainBuilder;
 		match format {
-			AttachmentFormat::Viewport => Some(self.swapchain_info.format()),
+			AttachmentFormat::Viewport => Some(self.swapchain_info.image_format()),
 			AttachmentFormat::Depth => self.depth_format.map(|(format, _tiling)| format),
 		}
 	}
@@ -338,7 +339,7 @@ impl RenderChain {
 	/// Initialized elements will get [`on_render_chain_constructed`](RenderChainElement::on_render_chain_constructed) called.
 	#[profiling::function]
 	fn construct_render_chain(&mut self, extent: structs::Extent2D) -> Result<()> {
-		use swapchain::Swapchain;
+		use swapchain::{Swapchain, SwapchainBuilder};
 		log::info!(
 			target: graphics::LOG,
 			"{}Constructing render chain with resolution <{},{}>",
@@ -373,7 +374,6 @@ impl RenderChain {
 		let logical = self.logical.upgrade().unwrap();
 		let surface = self.surface.upgrade().unwrap();
 
-		self.swapchain_info.fill_from_physical(&physical);
 		self.render_pass_instruction.set_extent(extent);
 
 		self.frame_command_pool = Some(
@@ -394,13 +394,17 @@ impl RenderChain {
 			.set_max_common_sample_count(sample_count);
 
 		self.render_pass = Some(self.render_pass_info.clone().build(&logical)?);
-		self.swapchain = Some(self.swapchain_info.clone().build(
-			&logical,
-			&surface,
-			self.swapchain.as_ref(),
-		)?);
 
-		self.frame_image_views = self.swapchain().get_image_views()?;
+		{
+			let surface_support = physical.query_surface_support();
+			self.swapchain_info.set_image_extent(extent);
+			self.swapchain_info
+				.set_surface_transform(surface_support.current_transform());
+			self.swapchain_info
+				.set_present_mode(physical.selected_present_mode);
+		}
+		//self.swapchain = Some(self.swapchain_info.build(self.swapchain.take())?);
+		self.frame_image_views = self.swapchain().create_image_views()?;
 
 		self.color_view = match self.use_color_buffer {
 			true => {
@@ -412,7 +416,7 @@ impl RenderChain {
 								.with_usage(flags::MemoryUsage::GpuOnly)
 								.requires(flags::MemoryProperty::DEVICE_LOCAL),
 						)
-						.with_format(self.swapchain_info.format())
+						.with_format(self.swapchain_info.image_format())
 						.with_sample_count(sample_count)
 						.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)
 						.with_usage(flags::ImageUsage::TRANSIENT_ATTACHMENT)
