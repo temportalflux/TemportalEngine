@@ -213,6 +213,8 @@ impl Window {
 				.with_persistent_descriptor_pool(chain.persistent_descriptor_pool().clone())
 				.with_swapchain(
 					khr::Swapchain::builder()
+						.with_logical_device(&self.logical_device)
+						.with_surface(&self.surface)
 						.with_image_count(frame_count as u32)
 						.with_image_format(flags::format::Format::B8G8R8A8_SRGB)
 						.with_image_color_space(flags::ColorSpace::SRGB_NONLINEAR)
@@ -236,14 +238,5 @@ impl Window {
 
 	pub fn graphics_chain(&self) -> &Arc<RwLock<graphics::Chain>> {
 		&self.chain.as_ref().unwrap()
-	}
-
-	pub fn wait_until_idle(&self) -> Result<()> {
-		Ok(self
-			.render_chain()
-			.read()
-			.unwrap()
-			.logical()
-			.wait_until_idle()?)
 	}
 }

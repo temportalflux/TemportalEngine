@@ -1,5 +1,5 @@
 use crate::graphics::{
-	command::{self, frame::AttachedView},
+	command::{frame::AttachedView},
 	procedure::Attachment,
 	Chain,
 };

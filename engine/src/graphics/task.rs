@@ -1,5 +1,5 @@
 use crate::graphics::{
-	alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
+	alloc, buffer, command, device::logical, flags, image, structs::subresource,
 };
 use crate::task::{self};
 use std::sync::{self, Arc};
@@ -141,9 +141,9 @@ impl GpuOperationBuilder {
 		self
 	}
 
-	pub fn send_signal_to(self, sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>) -> Self {
-		sender.send(self.gpu_signal_on_complete());
-		self
+	pub fn send_signal_to(self, sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>) -> anyhow::Result<Self> {
+		sender.send(self.gpu_signal_on_complete())?;
+		Ok(self)
 	}
 
 	/// Stalls the current thread until the [`cpu-signal (fence)`](command::Fence)

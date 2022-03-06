@@ -232,17 +232,18 @@ impl Chain {
 
 		self.requires_construction = false;
 
-		// These only need to be updated if the procedure changes
-		{
-			self.pass = Some(self.procedure.build(&self.logical()?)?);
-			self.record_instruction = self.create_record_instruction()?;
-		}
+		let logical = self.logical()?;
+		// Only need to be updated if the procedure changes
+		self.pass = Some(self.procedure.build(&logical)?);
 
 		let frame_count = self.swapchain_builder.image_count();
 		self.create_commands(frame_count)?;
 
 		self.update_swapchain_info(extent)?;
 		self.swapchain = Some(self.swapchain_builder.build(self.swapchain.take())?);
+		
+		// Only need to be updated if the procedure changes
+		self.record_instruction = self.create_record_instruction()?;
 
 		self.frame_image_views = self.swapchain().create_image_views()?;
 
@@ -464,8 +465,10 @@ impl Chain {
 		if self.requires_construction || self.resolution_provider.has_changed() {
 			profiling::scope!("reconstruct-chain");
 
-			let all_frames_complete = self.frame_signal_view_available.iter().collect::<Vec<_>>();
-			logical.wait_for(all_frames_complete, u64::MAX)?;
+			if !self.frame_signal_view_available.is_empty() {
+				let all_frames_complete = self.frame_signal_view_available.iter().collect::<Vec<_>>();
+				logical.wait_for(all_frames_complete, u64::MAX)?;
+			}
 
 			let extent = self.resolution_provider.query(&self.physical()?);
 			if extent.width > 0 && extent.height > 0 {

@@ -2,7 +2,7 @@ use vulkan_rs::command::frame::AttachedView;
 
 use super::{Id, Resource};
 use crate::graphics::{
-	alloc, command,
+	alloc,
 	device::physical,
 	flags::{self, format::Format, FormatFeatureFlags, ImageTiling},
 	image::Image,
@@ -149,7 +149,7 @@ impl Resource for DepthBuffer {
 		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), chain)?
 			.begin()?
 			.format_depth_image(&image)
-			.send_signal_to(chain.signal_sender())
+			.send_signal_to(chain.signal_sender())?
 			.end()?;
 
 		self.view = Some(Arc::new(

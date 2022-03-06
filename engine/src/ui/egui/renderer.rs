@@ -138,6 +138,7 @@ impl Ui {
 		let modifiers_state = winit::event::ModifiersState::default();
 
 		let clipboard = ClipboardContext::new().expect("Failed to initialize ClipboardContext.");
+		let logical = engine.display_chain().unwrap().read().unwrap().logical()?;
 
 		Ok(Ui {
 			physical_size,
@@ -165,7 +166,7 @@ impl Ui {
 						1,
 						flags::ShaderKind::Fragment,
 					)
-					.build(&engine.render_chain().unwrap().read().unwrap().logical())?,
+					.build(&logical)?,
 			),
 			frames: Vec::new(),
 			pending_gpu_signals: Vec::new(),
