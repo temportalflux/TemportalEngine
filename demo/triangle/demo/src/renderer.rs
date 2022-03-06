@@ -132,7 +132,7 @@ impl graphics::RenderChainElement for Triangle {
 					.as_ref()
 					.unwrap()
 					.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
+				render_chain,
 			)?
 			.begin()?
 			.stage(&self.vertices[..])?
@@ -164,7 +164,7 @@ impl graphics::RenderChainElement for Triangle {
 					.as_ref()
 					.unwrap()
 					.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
+				render_chain,
 			)?
 			.begin()?
 			.stage(&self.indices[..])?

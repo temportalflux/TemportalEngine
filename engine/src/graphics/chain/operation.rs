@@ -131,7 +131,11 @@ impl ProcedureOperations {
 	}
 
 	#[profiling::function]
-	pub fn initialize_new_operations(&self, uninitialized: Vec<WeakOperation>, chain: &Chain) -> anyhow::Result<bool> {
+	pub fn initialize_new_operations(
+		&self,
+		uninitialized: Vec<WeakOperation>,
+		chain: &Chain,
+	) -> anyhow::Result<bool> {
 		let mut has_changed = false;
 
 		// Initialize any of the operations which have been added

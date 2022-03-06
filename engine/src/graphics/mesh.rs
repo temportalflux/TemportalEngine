@@ -136,7 +136,7 @@ where
 		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
 			*buffer = sync::Arc::new(reallocated);
 		}
-		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
+		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), render_chain)?
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)

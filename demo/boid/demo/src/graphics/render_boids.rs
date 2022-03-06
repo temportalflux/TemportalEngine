@@ -209,7 +209,7 @@ impl RenderBoids {
 				.build(&render_chain.allocator())?,
 		);
 		let _ = engine::task::current().block_on(
-			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), render_chain)?
 				.begin()?
 				.format_image_for_write(&image)
 				.stage(&texture.binary()[..])?
@@ -272,7 +272,7 @@ impl RenderBoids {
 		let _ = engine::task::current().block_on(
 			GpuOperationBuilder::new(
 				vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
+				render_chain,
 			)?
 			.begin()?
 			.stage(&vertices[..])?
@@ -299,7 +299,7 @@ impl RenderBoids {
 		let _ = engine::task::current().block_on(
 			GpuOperationBuilder::new(
 				index_buffer.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
+				render_chain,
 			)?
 			.begin()?
 			.stage(&indices[..])?
@@ -514,7 +514,7 @@ impl RenderBoids {
 			GpuOperationBuilder::new(
 				self.active_instance_buffer
 					.wrap_name(|v| format!("Write({})", v)),
-				&mut chain,
+				&*chain,
 			)?
 			.begin()?
 			.stage(&instances[..])?

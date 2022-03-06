@@ -142,7 +142,7 @@ impl WidgetData {
 
 		graphics::GpuOperationBuilder::new(
 			self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
+			render_chain,
 		)?
 		.begin()?
 		.stage(&vertices[..])?
@@ -152,7 +152,7 @@ impl WidgetData {
 
 		graphics::GpuOperationBuilder::new(
 			self.index_buffer.wrap_name(|v| format!("Write({})", v)),
-			&render_chain,
+			render_chain,
 		)?
 		.begin()?
 		.stage(&indices[..])?

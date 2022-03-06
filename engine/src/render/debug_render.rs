@@ -307,7 +307,7 @@ impl Frame {
 			}
 			GpuOperationBuilder::new(
 				self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-				&chain,
+				chain,
 			)?
 			.begin()?
 			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
@@ -322,7 +322,7 @@ impl Frame {
 			}
 			GpuOperationBuilder::new(
 				self.index_buffer.wrap_name(|v| format!("Write({})", v)),
-				&chain,
+				chain,
 			)?
 			.begin()?
 			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?

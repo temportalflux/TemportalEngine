@@ -28,10 +28,6 @@ pub trait Resource {
 	fn get_attachments(&self) -> Vec<(Weak<Attachment>, AttachedView)> {
 		Vec::new()
 	}
-
-	fn take_pending_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		Vec::new()
-	}
 }
 
 type AnyResource = Arc<dyn Any + 'static + Send + Sync>;

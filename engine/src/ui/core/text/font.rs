@@ -100,7 +100,7 @@ impl PendingAtlas {
 				.build(&render_chain.allocator())?,
 		);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&self.binary[..])?

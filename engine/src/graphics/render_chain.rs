@@ -5,7 +5,7 @@ use crate::{
 		command::{self, frame},
 		device::{logical, physical, swapchain},
 		flags::{self, ImageSampleKind},
-		image, image_view, render_pass, renderpass, structs,
+		image, image_view, render_pass, renderpass, structs, task,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
 		GpuOperationBuilder, Surface,
 	},
@@ -133,6 +133,24 @@ pub struct RenderChain {
 	allocator: sync::Weak<graphics::alloc::Allocator>,
 	logical: sync::Weak<logical::Device>,
 	physical: sync::Weak<physical::Device>,
+}
+
+impl task::GpuOpContext for RenderChain {
+	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>> {
+		Ok(self.logical())
+	}
+
+	fn object_allocator(&self) -> anyhow::Result<Arc<alloc::Allocator>> {
+		Ok(self.allocator())
+	}
+
+	fn logical_queue(&self) -> &Arc<logical::Queue> {
+		self.graphics_queue()
+	}
+
+	fn task_command_pool(&self) -> &Arc<command::Pool> {
+		self.transient_command_pool()
+	}
 }
 
 impl RenderChain {
@@ -464,7 +482,7 @@ impl RenderChain {
 					.build(&self.allocator())?,
 			);
 
-			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &self)?
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), self)?
 				.begin()?
 				.format_depth_image(&image)
 				.add_signal_to(&mut self.pending_gpu_signals)

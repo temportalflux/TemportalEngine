@@ -1,7 +1,7 @@
 use crate::graphics::{
 	alloc,
 	chain::{
-		operation::{ProcedureOperations, WeakOperation, RequiresRecording},
+		operation::{ProcedureOperations, RequiresRecording, WeakOperation},
 		ArcResolutionProvider,
 	},
 	command::{
@@ -17,13 +17,11 @@ use crate::graphics::{
 	image_view::View,
 	procedure::{Attachment, Phase, Procedure},
 	renderpass::{self, RecordInstruction},
-	resource, structs,
+	resource, structs, task,
 	utility::{BuildFromDevice, NameableBuilder},
 };
 use crossbeam_channel::{Receiver, Sender};
-use std::{
-	sync::{Arc, RwLock, Weak},
-};
+use std::sync::{Arc, RwLock, Weak};
 
 /// The core logic behind handling rendering data via a render pass to some result.
 /// Chain extensions and drawable elements can be attached to the chain
@@ -110,8 +108,26 @@ impl Chain {
 		&self.persistent_descriptor_pool
 	}
 
-	pub fn signal_sender(&self) -> Sender<Arc<command::Semaphore>> {
-		self.outgoing_signals.clone()
+	pub fn signal_sender(&self) -> &Sender<Arc<command::Semaphore>> {
+		&self.outgoing_signals
+	}
+}
+
+impl task::GpuOpContext for Chain {
+	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>> {
+		Ok(self.logical()?)
+	}
+
+	fn object_allocator(&self) -> anyhow::Result<Arc<alloc::Allocator>> {
+		Ok(self.allocator()?)
+	}
+
+	fn logical_queue(&self) -> &Arc<logical::Queue> {
+		self.graphics_queue()
+	}
+
+	fn task_command_pool(&self) -> &Arc<command::Pool> {
+		self.transient_command_pool()
 	}
 }
 
@@ -437,7 +453,9 @@ impl Chain {
 		{
 			let removed_operations = self.operations.remove_dropped();
 			let uninitialized_operations = self.operations.take_unintialized();
-			let initialized_operations = self.operations.initialize_new_operations(uninitialized_operations, &self)?;
+			let initialized_operations = self
+				.operations
+				.initialize_new_operations(uninitialized_operations, &self)?;
 			if removed_operations || initialized_operations {
 				self.mark_commands_dirty();
 			}

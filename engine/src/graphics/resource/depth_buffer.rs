@@ -90,7 +90,6 @@ impl DepthBufferBuilder {
 			tiling: self.tiling,
 			attachment: self.attachment.unwrap(),
 			view: None,
-			pending_gpu_signals: Vec::new(),
 		}
 	}
 }
@@ -99,7 +98,6 @@ pub struct DepthBuffer {
 	tiling: ImageTiling,
 	attachment: Arc<Attachment>,
 	view: Option<Arc<View>>,
-	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 }
 
 impl DepthBuffer {
@@ -148,12 +146,11 @@ impl Resource for DepthBuffer {
 				.build(&chain.allocator()?)?,
 		);
 
-		// TODO: Enable this when the render chain is removed - right now an operation relies on that type instead of the new chain
-		//GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &chain)?
-		//	.begin()?
-		//	.format_depth_image(&image)
-		//	.add_signal_to(&mut self.pending_gpu_signals)
-		//	.end()?;
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), chain)?
+			.begin()?
+			.format_depth_image(&image)
+			.send_signal_to(chain.signal_sender())
+			.end()?;
 
 		self.view = Some(Arc::new(
 			View::builder()
@@ -175,10 +172,6 @@ impl Resource for DepthBuffer {
 			Arc::downgrade(&self.attachment),
 			AttachedView::Shared(view.clone()),
 		)]
-	}
-
-	fn take_pending_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		self.pending_gpu_signals.drain(..).collect()
 	}
 }
 

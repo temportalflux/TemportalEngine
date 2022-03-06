@@ -225,7 +225,7 @@ where
 			},
 		)?);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), render_chain)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&pending.compiled.binary[..])?
