@@ -1,10 +1,14 @@
 use crate::graphics::{
-	alloc, buffer, command, device::logical, flags, image, structs::subresource,
+	alloc, buffer, command,
+	device::{logical, physical},
+	flags, image,
+	structs::subresource,
 };
 use crate::task::{self};
 use std::sync::{self, Arc};
 
 pub trait GpuOpContext {
+	fn physical_device(&self) -> anyhow::Result<Arc<physical::Device>>;
 	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>>;
 	fn object_allocator(&self) -> anyhow::Result<Arc<alloc::Allocator>>;
 	fn logical_queue(&self) -> &Arc<logical::Queue>;
@@ -141,7 +145,10 @@ impl GpuOperationBuilder {
 		self
 	}
 
-	pub fn send_signal_to(self, sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>) -> anyhow::Result<Self> {
+	pub fn send_signal_to(
+		self,
+		sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<Self> {
 		sender.send(self.gpu_signal_on_complete())?;
 		Ok(self)
 	}

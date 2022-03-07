@@ -2,7 +2,7 @@ use crate::graphics::{
 	alloc,
 	chain::{
 		operation::{ProcedureOperations, RequiresRecording, WeakOperation},
-		ArcResolutionProvider,
+		ArcResolutionProvider, Operation,
 	},
 	command::{
 		self,
@@ -21,7 +21,9 @@ use crate::graphics::{
 	utility::{BuildFromDevice, NameableBuilder},
 };
 use crossbeam_channel::{Receiver, Sender};
+use nalgebra::Vector2;
 use std::sync::{Arc, RwLock, Weak};
+use vulkan_rs::structs::Extent2D;
 
 /// The core logic behind handling rendering data via a render pass to some result.
 /// Chain extensions and drawable elements can be attached to the chain
@@ -33,7 +35,7 @@ pub struct Chain {
 	pub(crate) graphics_queue: Arc<logical::Queue>,
 	pub(crate) transient_command_pool: Arc<command::Pool>,
 	pub(crate) persistent_descriptor_pool: Arc<RwLock<descriptor::Pool>>,
-	pub(crate) swapchain_builder: Box<dyn SwapchainBuilder + 'static>,
+	pub(crate) swapchain_builder: Box<dyn SwapchainBuilder + 'static + Send + Sync>,
 	pub(crate) resolution_provider: ArcResolutionProvider,
 	pub(crate) incoming_signals: Receiver<Arc<command::Semaphore>>,
 	pub(crate) outgoing_signals: Sender<Arc<command::Semaphore>>,
@@ -42,7 +44,7 @@ pub struct Chain {
 	pub(crate) frame_command_pool: Option<command::Pool>,
 	pub(crate) command_buffers: Vec<command::Buffer>,
 	pub(crate) pass: Option<renderpass::Pass>,
-	pub(crate) swapchain: Option<Box<dyn Swapchain + 'static>>,
+	pub(crate) swapchain: Option<Box<dyn Swapchain + 'static + Send + Sync>>,
 	pub(crate) frame_image_views: Vec<Arc<View>>,
 	pub(crate) procedure: Procedure,
 	pub(crate) swapchain_attachment: Option<Arc<Attachment>>,
@@ -114,6 +116,10 @@ impl Chain {
 }
 
 impl task::GpuOpContext for Chain {
+	fn physical_device(&self) -> anyhow::Result<Arc<physical::Device>> {
+		Ok(self.physical()?)
+	}
+
 	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>> {
 		Ok(self.logical()?)
 	}
@@ -167,11 +173,14 @@ impl Chain {
 		self.swapchain_attachment = Some(swapchain_attachment);
 	}
 
-	pub fn add_operation(
+	pub fn add_operation<T>(
 		&mut self,
 		phase: &Arc<Phase>,
-		operation: WeakOperation,
-	) -> Result<(), PhaseNotInProcedure> {
+		operation: Weak<RwLock<T>>,
+	) -> Result<(), PhaseNotInProcedure>
+	where
+		T: Operation + 'static + Send + Sync,
+	{
 		let phase_index = self.procedure.position(phase).ok_or(PhaseNotInProcedure)?;
 		self.operations.insert(phase_index, operation);
 		Ok(())
@@ -181,8 +190,8 @@ impl Chain {
 		self.swapchain_builder.image_format()
 	}
 
-	pub fn swapchain(&self) -> &Box<dyn Swapchain> {
-		self.swapchain.as_ref().unwrap()
+	pub fn swapchain(&self) -> Result<&Box<dyn Swapchain + 'static + Send + Sync>, SwapchainNotConstructed> {
+		self.swapchain.as_ref().ok_or(SwapchainNotConstructed)
 	}
 
 	pub fn resources(&self) -> &resource::Registry {
@@ -197,6 +206,10 @@ impl Chain {
 impl Chain {
 	pub fn is_constructed(&self) -> bool {
 		self.swapchain.is_some()
+	}
+
+	pub fn view_count(&self) -> usize {
+		self.swapchain_builder.image_count()
 	}
 
 	/// Constructs the resolution-dependent objects in the chain and drawable elements.
@@ -236,16 +249,15 @@ impl Chain {
 		// Only need to be updated if the procedure changes
 		self.pass = Some(self.procedure.build(&logical)?);
 
-		let frame_count = self.swapchain_builder.image_count();
-		self.create_commands(frame_count)?;
+		self.create_commands(self.view_count())?;
 
 		self.update_swapchain_info(extent)?;
 		self.swapchain = Some(self.swapchain_builder.build(self.swapchain.take())?);
-		
+
 		// Only need to be updated if the procedure changes
 		self.record_instruction = self.create_record_instruction()?;
 
-		self.frame_image_views = self.swapchain().create_image_views()?;
+		self.frame_image_views = self.swapchain()?.create_image_views()?;
 
 		// Update the resources and collect their attachments
 		let attachments = {
@@ -289,7 +301,7 @@ impl Chain {
 				builder.attach(index, view);
 			}
 
-			builder.build(&self.logical()?, &self.pass.as_ref().unwrap())?
+			builder.build(&self.logical()?, &self.render_pass())?
 		};
 
 		// TODO: Next up is creating all of the semaphors and fences
@@ -347,7 +359,7 @@ impl Chain {
 
 	fn create_record_instruction(&self) -> Result<RecordInstruction, MissingClearValues> {
 		let mut instruction = RecordInstruction::default();
-		instruction.set_extent(*self.swapchain().image_extent());
+		instruction.set_extent(*self.extent());
 		for attachment in self.procedure.attachments().iter() {
 			let attachment = attachment.upgrade().unwrap();
 			if let Some(clear_value) = attachment.clear_value() {
@@ -393,6 +405,19 @@ impl Chain {
 		Ok(vec)
 	}
 
+	pub fn render_pass(&self) -> &renderpass::Pass {
+		self.pass.as_ref().unwrap()
+	}
+
+	pub fn extent(&self) -> &Extent2D {
+		self.swapchain_builder.image_extent()
+	}
+
+	pub fn resolution(&self) -> Vector2<f32> {
+		let &Extent2D { width, height } = self.extent();
+		Vector2::new(width as f32, height as f32)
+	}
+
 	/// Records commands to the command buffer for a given frame.
 	#[profiling::function]
 	fn record_commands(&mut self, buffer_index: usize) -> anyhow::Result<()> {
@@ -436,13 +461,13 @@ impl Chain {
 
 	/// Marks all frames dirty, which results in the frames being re-recorded the next time they are rendered.
 	pub fn mark_commands_dirty(&mut self) {
-		self.requires_recording_by_view = vec![true; self.swapchain().image_count()];
+		self.requires_recording_by_view = vec![true; self.view_count()];
 	}
 
 	/// Returns the number of frames/images that can be in flight
 	/// (being recorded to, being processed by the GPU commands, or being currently presented) at any given time.
 	fn max_frame_count(&self) -> usize {
-		std::cmp::max(self.swapchain().image_count() - 1, 1)
+		std::cmp::max(self.view_count() - 1, 1)
 	}
 
 	#[profiling::function]
@@ -466,7 +491,8 @@ impl Chain {
 			profiling::scope!("reconstruct-chain");
 
 			if !self.frame_signal_view_available.is_empty() {
-				let all_frames_complete = self.frame_signal_view_available.iter().collect::<Vec<_>>();
+				let all_frames_complete =
+					self.frame_signal_view_available.iter().collect::<Vec<_>>();
 				logical.wait_for(all_frames_complete, u64::MAX)?;
 			}
 
@@ -503,7 +529,7 @@ impl Chain {
 			self.view_in_flight_frame[next_image_idx] = None;
 		}
 
-		match self.operations.prepare_for_submit(&self)? {
+		match self.operations.prepare_for_submit(&self, next_image_idx)? {
 			RequiresRecording::NotRequired => {} // NO-OP
 			RequiresRecording::CurrentFrame => {
 				self.requires_recording_by_view[next_image_idx] = true;
@@ -548,7 +574,7 @@ impl Chain {
 	#[profiling::function]
 	fn acquire_frame_view(&self, frame: usize) -> anyhow::Result<Option<usize>> {
 		use swapchain::{AcquiredImage, ImageAcquisitionBarrier};
-		let acquisition_result = self.swapchain().acquire_next_image(
+		let acquisition_result = self.swapchain()?.acquire_next_image(
 			u64::MAX,
 			ImageAcquisitionBarrier::Semaphore(&self.frame_signal_view_acquired[frame]),
 		);
@@ -609,13 +635,13 @@ impl Chain {
 
 	#[profiling::function]
 	fn present(&self, buffer_idx: usize, view_idx: usize) -> anyhow::Result<bool> {
-		if !self.swapchain().can_present() {
+		if !self.swapchain()?.can_present() {
 			return Ok(false);
 		}
 
 		self.graphics_queue
 			.begin_label("Present", debug::LABEL_COLOR_PRESENT);
-		let present_result = self.swapchain().present(
+		let present_result = self.swapchain()?.present(
 			&self.graphics_queue,
 			command::PresentInfo::default()
 				.wait_for(&self.frame_signal_render_finished[buffer_idx])
@@ -661,5 +687,13 @@ pub struct PhaseNotInProcedure;
 impl std::fmt::Display for PhaseNotInProcedure {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(f, "The provided phase is not in the current procedure.")
+	}
+}
+
+#[derive(thiserror::Error, Debug)]
+pub struct SwapchainNotConstructed;
+impl std::fmt::Display for SwapchainNotConstructed {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(f, "The swapchain has not been constructed.")
 	}
 }

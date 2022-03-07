@@ -136,6 +136,10 @@ pub struct RenderChain {
 }
 
 impl task::GpuOpContext for RenderChain {
+	fn physical_device(&self) -> anyhow::Result<Arc<physical::Device>> {
+		Ok(self.physical())
+	}
+
 	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>> {
 		Ok(self.logical())
 	}

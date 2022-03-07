@@ -67,7 +67,10 @@ impl DebugRender {
 			frames: Vec::new(),
 			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
 				"DebugRender.Camera",
-				chain,
+				&chain.logical(),
+				&chain.allocator(),
+				chain.persistent_descriptor_pool(),
+				chain.frame_count(),
 			)?,
 			pending_objects: Vec::new(),
 			pending_gpu_signals: Vec::new(),
@@ -151,8 +154,8 @@ impl graphics::RenderChainElement for DebugRender {
 	) -> Result<Vec<Arc<command::Semaphore>>> {
 		let mut gpu_signals = Vec::new();
 
-		self.camera_uniform.write_descriptor_sets(chain);
-		self.line_drawable.create_shaders(chain)?;
+		self.camera_uniform.write_descriptor_sets(&chain.logical());
+		self.line_drawable.create_shaders(&chain.logical())?;
 
 		self.frames.clear();
 		for i in 0..chain.frame_count() {
@@ -184,7 +187,7 @@ impl graphics::RenderChainElement for DebugRender {
 
 	#[profiling::function]
 	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.line_drawable.destroy_pipeline(render_chain)?;
+		self.line_drawable.destroy_pipeline()?;
 		Ok(())
 	}
 
@@ -197,7 +200,7 @@ impl graphics::RenderChainElement for DebugRender {
 	) -> Result<()> {
 		use pipeline::state::*;
 		Ok(self.line_drawable.create_pipeline(
-			render_chain,
+			&render_chain.logical(),
 			vec![self.camera_uniform.layout()],
 			pipeline::Pipeline::builder()
 				.with_topology(
@@ -218,7 +221,8 @@ impl graphics::RenderChainElement for DebugRender {
 					color_blend::ColorBlend::default()
 						.add_attachment(color_blend::Attachment::default()),
 				),
-			subpass_id,
+			render_chain.render_pass(),
+			render_chain.render_pass().subpass_index(subpass_id) as usize,
 		)?)
 	}
 

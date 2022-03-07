@@ -124,7 +124,7 @@ impl Resource for DepthBuffer {
 	}
 
 	fn construct(&mut self, chain: &Chain) -> anyhow::Result<()> {
-		let extent = chain.swapchain().image_extent();
+		let extent = chain.extent();
 
 		let image = Arc::new(
 			Image::builder()

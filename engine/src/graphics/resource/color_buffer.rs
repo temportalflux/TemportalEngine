@@ -1,8 +1,8 @@
-use vulkan_rs::command::frame::AttachedView;
-
 use super::{Id, Resource};
 use crate::graphics::{
 	alloc,
+	command::frame::AttachedView,
+	flags::SampleCount,
 	flags::{self},
 	image::Image,
 	image_view::View,
@@ -41,6 +41,10 @@ impl ColorBuffer {
 	pub fn builder() -> ColorBufferBuilder {
 		ColorBufferBuilder::default()
 	}
+
+	pub fn sample_count(&self) -> SampleCount {
+		self.attachment.sample_count()
+	}
 }
 
 impl Resource for ColorBuffer {
@@ -49,7 +53,7 @@ impl Resource for ColorBuffer {
 	}
 
 	fn construct(&mut self, chain: &Chain) -> anyhow::Result<()> {
-		let extent = chain.swapchain().image_extent();
+		let extent = chain.extent();
 
 		let image = Arc::new(
 			Image::builder()
@@ -60,7 +64,7 @@ impl Resource for ColorBuffer {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_format(self.attachment.format())
-				.with_sample_count(self.attachment.sample_count())
+				.with_sample_count(self.sample_count())
 				.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)
 				.with_usage(flags::ImageUsage::TRANSIENT_ATTACHMENT)
 				.with_size(structs::Extent3D {

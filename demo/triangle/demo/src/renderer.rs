@@ -232,7 +232,7 @@ impl graphics::RenderChainElement for Triangle {
 					render_chain.logical().clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
 					&render_chain.render_pass(),
-					subpass_id,
+					render_chain.render_pass().subpass_index(subpass_id) as usize,
 				)?,
 		));
 

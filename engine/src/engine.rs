@@ -1,4 +1,4 @@
-use crate::{asset, audio, input, graphics::Chain, task};
+use crate::{asset, audio, graphics::Chain, input, task};
 use anyhow::Result;
 use std::sync::{
 	atomic::{self, AtomicBool},

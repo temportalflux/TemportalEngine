@@ -128,10 +128,16 @@ impl RenderBoids {
 			pipeline: None,
 			vert_shader,
 			frag_shader,
-			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
-				"RenderBoids.Camera",
-				&render_chain.read().unwrap(),
-			)?,
+			camera_uniform: {
+				let chain = render_chain.read().unwrap();
+				Uniform::new::<camera::ViewProjection, &str>(
+					"RenderBoids.Camera",
+					&chain.logical(),
+					&chain.allocator(),
+					chain.persistent_descriptor_pool(),
+					chain.frame_count(),
+				)?
+			},
 			camera: camera::DefaultCamera::default()
 				.with_position([0.0, 0.0, -10.0].into())
 				.with_projection(camera::Projection::Orthographic(
@@ -356,7 +362,8 @@ impl graphics::RenderChainElement for RenderBoids {
 			}))
 			.apply(&render_chain.logical());
 
-		self.camera_uniform.write_descriptor_sets(render_chain);
+		self.camera_uniform
+			.write_descriptor_sets(&render_chain.logical());
 
 		Ok(Vec::new())
 	}
@@ -423,7 +430,7 @@ impl graphics::RenderChainElement for RenderBoids {
 					render_chain.logical().clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
 					&render_chain.render_pass(),
-					subpass_id,
+					render_chain.render_pass().subpass_index(subpass_id) as usize,
 				)?,
 		));
 

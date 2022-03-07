@@ -2,7 +2,10 @@ use crate::graphics::{
 	descriptor::{self, layout::SetLayout},
 	RenderChain,
 };
-use std::{collections::HashMap, sync};
+use std::{
+	collections::HashMap,
+	sync::{self, Arc, RwLock},
+};
 
 /// An engine-level abstraction to handle creating/managing [`Descriptor Sets`](descriptor::Set)
 /// which all have the same [`Layout`](SetLayout).
@@ -38,10 +41,9 @@ where
 		&mut self,
 		id: T,
 		name: Option<String>,
-		render_chain: &RenderChain,
+		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
 	) -> anyhow::Result<sync::Weak<descriptor::Set>> {
-		let descriptor_set = render_chain
-			.persistent_descriptor_pool()
+		let descriptor_set = descriptor_pool
 			.write()
 			.unwrap()
 			.allocate_named_descriptor_sets(&vec![(

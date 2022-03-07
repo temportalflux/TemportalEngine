@@ -31,7 +31,7 @@ pub trait Operation: 'static + Send + Sync {
 	/// Never called before the operation's [`initialize`] function.
 	///
 	/// Use this to create any per-frame or resolution dependent resources.
-	fn construct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+	fn construct(&mut self, _chain: &Chain, _subpass_index: usize) -> anyhow::Result<()> {
 		Ok(())
 	}
 
@@ -58,7 +58,11 @@ pub trait Operation: 'static + Send + Sync {
 	/// command buffer to be recorded (regardless of if it already needed recording).
 	///
 	/// Use this to update any immediate-mode rendering or update uniforms.
-	fn prepare_for_submit(&mut self, _chain: &Chain) -> anyhow::Result<RequiresRecording> {
+	fn prepare_for_submit(
+		&mut self,
+		_chain: &Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
 		Ok(RequiresRecording::NotRequired)
 	}
 
@@ -79,7 +83,7 @@ pub type WeakOperation = Weak<RwLock<dyn Operation + 'static + Send + Sync>>;
 pub struct ProcedureOperations {
 	// A list of operations to record for each phase of a render procedure.
 	operations: Vec<Vec<WeakOperation>>,
-	uninitialized: Vec<WeakOperation>,
+	uninitialized: Vec<(usize, WeakOperation)>,
 }
 
 impl ProcedureOperations {
@@ -91,7 +95,7 @@ impl ProcedureOperations {
 	pub fn insert(&mut self, phase_index: usize, operation: WeakOperation) {
 		assert!(phase_index < self.operations.len());
 		self.operations[phase_index].push(operation.clone());
-		self.uninitialized.push(operation);
+		self.uninitialized.push((phase_index, operation));
 	}
 
 	pub fn iter_all(&self) -> impl std::iter::Iterator<Item = ArcOperation> + '_ {
@@ -126,21 +130,21 @@ impl ProcedureOperations {
 		has_changed
 	}
 
-	pub fn take_unintialized(&mut self) -> Vec<WeakOperation> {
+	pub fn take_unintialized(&mut self) -> Vec<(usize, WeakOperation)> {
 		self.uninitialized.drain(..).collect()
 	}
 
 	#[profiling::function]
 	pub fn initialize_new_operations(
 		&self,
-		uninitialized: Vec<WeakOperation>,
+		uninitialized: Vec<(usize, WeakOperation)>,
 		chain: &Chain,
 	) -> anyhow::Result<bool> {
 		let mut has_changed = false;
 
 		// Initialize any of the operations which have been added
 		// since the last call, and which are still held somewhere.
-		for weak in uninitialized.into_iter() {
+		for (subpass_index, weak) in uninitialized.into_iter() {
 			let arc = match weak.upgrade() {
 				Some(arc) => arc,
 				// operations which were added but dont actually exist anymore are inconsequential and can be ignored.
@@ -156,7 +160,7 @@ impl ProcedureOperations {
 				// and the operation was added after the first frame of the application,
 				// then construct the resources for the operation as well.
 				if chain.is_constructed() {
-					locked.construct(&chain)?;
+					locked.construct(&chain, subpass_index)?;
 				}
 			}; // ; here forces the write-result to be dropped before the arc
 		}
@@ -166,9 +170,13 @@ impl ProcedureOperations {
 
 	#[profiling::function]
 	pub fn construct(&self, chain: &Chain) -> anyhow::Result<()> {
-		for operation in self.iter_all() {
-			if let Ok(mut locked) = operation.write() {
-				locked.construct(&chain)?;
+		for (subpass_index, operations) in self.operations.iter().enumerate() {
+			for weak in operations.iter() {
+				if let Some(operation) = weak.upgrade() {
+					if let Ok(mut locked) = operation.write() {
+						locked.construct(&chain, subpass_index)?;
+					}
+				}
 			}
 		}
 		Ok(())
@@ -195,12 +203,16 @@ impl ProcedureOperations {
 	}
 
 	#[profiling::function]
-	pub fn prepare_for_submit(&self, chain: &Chain) -> anyhow::Result<RequiresRecording> {
+	pub fn prepare_for_submit(
+		&self,
+		chain: &Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
 		use std::cmp::Ord;
 		let mut requires_recording = RequiresRecording::NotRequired;
 		for operation in self.iter_all() {
 			if let Ok(mut locked) = operation.write() {
-				let should_record = locked.prepare_for_submit(&chain)?;
+				let should_record = locked.prepare_for_submit(&chain, frame_image)?;
 				requires_recording = requires_recording.max(should_record);
 			}
 		}

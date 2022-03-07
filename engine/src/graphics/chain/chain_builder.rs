@@ -15,7 +15,7 @@ pub struct ChainBuilder {
 	graphics_queue: Option<Arc<logical::Queue>>,
 	transient_command_pool: Option<Arc<command::Pool>>,
 	persistent_descriptor_pool: Option<Arc<RwLock<descriptor::Pool>>>,
-	swapchain_builder: Option<Box<dyn SwapchainBuilder + 'static>>,
+	swapchain_builder: Option<Box<dyn SwapchainBuilder + 'static + Send + Sync>>,
 	resolution_provider: Option<ArcResolutionProvider>,
 }
 
@@ -52,7 +52,7 @@ impl ChainBuilder {
 
 	pub fn with_swapchain<T>(mut self, builder: T) -> Self
 	where
-		T: SwapchainBuilder + 'static,
+		T: SwapchainBuilder + 'static + Send + Sync,
 	{
 		self.swapchain_builder = Some(Box::new(builder));
 		self

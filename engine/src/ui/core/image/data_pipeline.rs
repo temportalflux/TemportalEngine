@@ -41,7 +41,7 @@ impl DataPipeline {
 	}
 
 	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
-		self.drawable.create_shaders(render_chain)
+		self.drawable.create_shaders(&render_chain.logical())
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) {
@@ -60,6 +60,7 @@ impl DataPipeline {
 		use graphics::descriptor::update::*;
 
 		let mut pending_gpu_signals = Vec::new();
+		/*
 		let (image_ids, mut signals) = self.image_cache.load_pending(render_chain)?;
 		pending_gpu_signals.append(&mut signals);
 
@@ -86,13 +87,14 @@ impl DataPipeline {
 				}))
 				.apply(&render_chain.logical());
 		}
+		*/
 
 		Ok(pending_gpu_signals)
 	}
 
 	#[profiling::function]
-	pub fn destroy_pipeline(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
-		self.drawable.destroy_pipeline(render_chain)
+	pub fn destroy_pipeline(&mut self) -> anyhow::Result<()> {
+		self.drawable.destroy_pipeline()
 	}
 
 	#[profiling::function]
@@ -104,7 +106,7 @@ impl DataPipeline {
 	) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
-			render_chain,
+			&render_chain.logical(),
 			vec![self.descriptor_cache.layout()],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
@@ -123,7 +125,8 @@ impl DataPipeline {
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			subpass_id,
+			render_chain.render_pass(),
+			render_chain.render_pass().subpass_index(subpass_id) as usize,
 		)
 	}
 

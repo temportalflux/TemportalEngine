@@ -73,7 +73,7 @@ impl DataPipeline {
 
 	#[profiling::function]
 	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
-		self.drawable.create_shaders(render_chain)
+		self.drawable.create_shaders(&render_chain.logical())
 	}
 
 	#[profiling::function]
@@ -152,11 +152,8 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn destroy_render_chain(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<()> {
-		self.drawable.destroy_pipeline(render_chain)
+	pub fn destroy_render_chain(&mut self) -> anyhow::Result<()> {
+		self.drawable.destroy_pipeline()
 	}
 
 	pub fn on_render_chain_constructed(
@@ -167,7 +164,7 @@ impl DataPipeline {
 	) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
-			render_chain,
+			&render_chain.logical(),
 			vec![&self.descriptor_layout],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
@@ -184,7 +181,8 @@ impl DataPipeline {
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			subpass_id,
+			render_chain.render_pass(),
+			render_chain.render_pass().subpass_index(subpass_id) as usize,
 		)
 	}
 

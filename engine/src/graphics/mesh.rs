@@ -1,5 +1,5 @@
 use crate::graphics::{
-	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject,
+	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, GpuOpContext,
 	GpuOperationBuilder, RenderChain,
 };
 use std::sync;
@@ -100,7 +100,7 @@ where
 		&mut self,
 		vertices: &Vec<Vertex>,
 		indices: &Vec<Index>,
-		render_chain: &RenderChain,
+		context: &impl GpuOpContext,
 	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
 		self.index_count = indices.len();
 
@@ -110,7 +110,7 @@ where
 			Self::write_buffer(
 				&mut self.vertex_buffer,
 				&vertices[..],
-				render_chain,
+				context,
 				&mut gpu_signals,
 			)?;
 		}
@@ -118,7 +118,7 @@ where
 			Self::write_buffer(
 				&mut self.index_buffer,
 				&indices[..],
-				render_chain,
+				context,
 				&mut gpu_signals,
 			)?;
 		}
@@ -127,16 +127,19 @@ where
 	}
 
 	#[profiling::function]
-	fn write_buffer<T: Sized>(
+	fn write_buffer<T: Sized, C>(
 		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],
-		render_chain: &RenderChain,
+		context: &C,
 		signals: &mut Vec<sync::Arc<command::Semaphore>>,
-	) -> anyhow::Result<()> {
+	) -> anyhow::Result<()>
+	where
+		C: GpuOpContext,
+	{
 		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
 			*buffer = sync::Arc::new(reallocated);
 		}
-		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), render_chain)?
+		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), context)?
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)

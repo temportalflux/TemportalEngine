@@ -1,9 +1,10 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command,
+		command,
 		descriptor::{self, layout::SetLayout},
-		flags, pipeline,
+		device::logical,
+		flags, pipeline, renderpass,
 		utility::{BuildFromDevice, NameableBuilder},
 		ShaderSet,
 	},
@@ -58,8 +59,8 @@ impl Drawable {
 
 	/// Creates the shader modules from any pending shaders added via [`Drawable::add_shader`].
 	/// Offloads logic to [`ShaderSet::create_modules`].
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.shaders.create_modules(render_chain)
+	pub fn create_shaders(&mut self, logical: &Arc<logical::Device>) -> Result<()> {
+		self.shaders.create_modules(logical)
 	}
 
 	pub fn add_push_constant_range(&mut self, range: pipeline::PushConstantRange) {
@@ -68,7 +69,7 @@ impl Drawable {
 
 	/// Destroys the pipeline objects so they can be recreated by [`Drawable::create_pipeline`].
 	#[profiling::function]
-	pub fn destroy_pipeline(&mut self, _: &graphics::RenderChain) -> anyhow::Result<()> {
+	pub fn destroy_pipeline(&mut self) -> anyhow::Result<()> {
 		self.pipeline = None;
 		self.pipeline_layout = None;
 		Ok(())
@@ -78,10 +79,11 @@ impl Drawable {
 	#[profiling::function]
 	pub fn create_pipeline(
 		&mut self,
-		render_chain: &graphics::RenderChain,
+		logical: &Arc<logical::Device>,
 		descriptor_layouts: Vec<&Arc<SetLayout>>,
 		pipeline_info: pipeline::Builder,
-		subpass_id: &Option<String>,
+		render_pass: &renderpass::Pass,
+		subpass_index: usize,
 	) -> anyhow::Result<()> {
 		self.layout_builder.clear_descriptor_layouts();
 		descriptor_layouts
@@ -90,17 +92,17 @@ impl Drawable {
 				self.layout_builder.add_descriptor_layout(layout);
 				None
 			});
-		self.pipeline_layout = Some(self.layout_builder.clone().build(&render_chain.logical())?);
+		self.pipeline_layout = Some(self.layout_builder.clone().build(logical)?);
 		self.pipeline = Some(Arc::new(
 			pipeline_info
 				.with_optname(self.make_subname("Pipeline"))
 				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Vertex]))
 				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Fragment]))
 				.build(
-					render_chain.logical().clone(),
+					logical.clone(),
 					&self.pipeline_layout.as_ref().unwrap(),
-					&render_chain.render_pass(),
-					subpass_id,
+					&render_pass,
+					subpass_index,
 				)?,
 		));
 		Ok(())

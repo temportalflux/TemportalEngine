@@ -1,16 +1,12 @@
-use crate::graphics::{
-	command::{frame::AttachedView},
-	procedure::Attachment,
-	Chain,
-};
+use crate::graphics::{command::frame::AttachedView, procedure::Attachment, Chain};
 use std::{
 	any::Any,
 	collections::HashMap,
 	sync::{Arc, RwLock, Weak},
 };
 
-mod depth_buffer;
-pub use depth_buffer::*;
+pub mod depth_buffer;
+pub use depth_buffer::DepthBuffer;
 mod color_buffer;
 pub use color_buffer::*;
 

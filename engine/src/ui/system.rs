@@ -513,7 +513,7 @@ impl graphics::RenderChainElement for System {
 	) -> Result<Vec<sync::Arc<command::Semaphore>>> {
 		self.draw_calls_by_frame
 			.resize(render_chain.frame_count(), Vec::new());
-		self.colored_area.create_shaders(&render_chain)?;
+		self.colored_area.create_shaders(&render_chain.logical())?;
 		self.image.create_shaders(&render_chain)?;
 		self.text.create_shaders(&render_chain)?;
 		self.pending_gpu_signals
@@ -531,9 +531,9 @@ impl graphics::RenderChainElement for System {
 
 	#[profiling::function]
 	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.colored_area.destroy_pipeline(render_chain)?;
-		self.image.destroy_pipeline(render_chain)?;
-		self.text.destroy_render_chain(render_chain)?;
+		self.colored_area.destroy_pipeline()?;
+		self.image.destroy_pipeline()?;
+		self.text.destroy_render_chain()?;
 		Ok(())
 	}
 
@@ -547,7 +547,7 @@ impl graphics::RenderChainElement for System {
 		use pipeline::state::*;
 		self.resolution = *resolution;
 		self.colored_area.create_pipeline(
-			render_chain,
+			&render_chain.logical(),
 			vec![],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
@@ -563,7 +563,8 @@ impl graphics::RenderChainElement for System {
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			subpass_id,
+			render_chain.render_pass(),
+			render_chain.render_pass().subpass_index(subpass_id) as usize,
 		)?;
 		self.image
 			.create_pipeline(render_chain, resolution, subpass_id)?;
@@ -613,7 +614,7 @@ impl graphics::RenderChainElement for System {
 			let (vertices, indices) =
 				mesh::Vertex::create_interleaved_buffer_data(&tesselation, resolution);
 			let mut mesh_gpu_signals =
-				self.frame_meshes[frame].write(&vertices, &indices, &render_chain)?;
+				self.frame_meshes[frame].write(&vertices, &indices, render_chain)?;
 			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
 
 			for batch in tesselation.batches {
