@@ -394,7 +394,6 @@ impl RenderChain {
 		self.is_dirty = false;
 		let physical = self.physical.upgrade().unwrap();
 		let logical = self.logical.upgrade().unwrap();
-		let surface = self.surface.upgrade().unwrap();
 
 		self.render_pass_instruction.set_extent(extent);
 

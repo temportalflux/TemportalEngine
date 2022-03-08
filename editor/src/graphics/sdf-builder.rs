@@ -100,8 +100,7 @@ impl SDFBuilder {
 		{
 			profiling::scope!("calc-sdf-all");
 			for unicode in self.unicode_ranges.iter().flat_map(|codes| codes.clone()) {
-				let profiling_tag = format!("{}", unicode);
-				profiling::scope!("calc-sdf", profiling_tag.as_str());
+				profiling::scope!("calc-sdf", &format!("{}", unicode));
 
 				face.load_char(unicode as usize, LoadFlag::empty())?;
 				// https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html

@@ -69,16 +69,6 @@ impl Engine {
 		self.window.as_ref()
 	}
 
-	pub fn render_chain(&self) -> Option<&crate::graphics::ArcRenderChain> {
-		self.window.as_ref().map(|win| win.render_chain())
-	}
-
-	pub fn render_chain_write(&self) -> Option<RwLockWriteGuard<crate::graphics::RenderChain>> {
-		self.render_chain()
-			.map(|chain| chain.write().ok())
-			.flatten()
-	}
-
 	pub fn display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
 		self.window.as_ref().map(|win| win.graphics_chain())
 	}

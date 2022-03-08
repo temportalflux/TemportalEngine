@@ -97,7 +97,7 @@ pub fn run() -> Result<()> {
 		.with_size(resolution.x as f64, resolution.y as f64)
 		.with_resizable(true)
 		.with_application::<BoidDemo>()
-		.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
+		//.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
 		.build(&mut engine)?;
 
 	let render_phase = {
@@ -108,7 +108,8 @@ pub fn run() -> Result<()> {
 
 	ecs_context.add_system(ecs::systems::InstanceCollector::new(
 		graphics::RenderBoids::new(
-			engine.render_chain().unwrap(),
+			engine.display_chain().unwrap(),
+			&render_phase,
 			&wrapping_world_bounds_min,
 			&wrapping_world_bounds_max,
 		)?,
@@ -116,10 +117,11 @@ pub fn run() -> Result<()> {
 	));
 
 	{
-		let debug_render =
-			engine::render::DebugRender::create(engine.render_chain().unwrap(), |debug| {
-				debug.with_engine_shaders()
-			})?;
+		let debug_render = engine::render::DebugRender::create(
+			engine.display_chain().unwrap(),
+			&render_phase,
+			|debug| debug.with_engine_shaders(),
+		)?;
 		engine.add_system(debug_render.clone());
 		ecs_context.add_system(ecs::systems::DrawForward::new(debug_render.clone()));
 		//ecs_context.add_system(ecs::systems::ai::DrawWanderDebug::new(debug_render.clone()));

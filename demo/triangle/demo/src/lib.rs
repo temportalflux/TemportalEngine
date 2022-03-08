@@ -1,5 +1,5 @@
 use anyhow::Result;
-use engine::Application;
+use engine::{graphics::chain::procedure::DefaultProcedure, Application};
 pub use temportal_engine as engine;
 
 #[path = "renderer.rs"]
@@ -30,7 +30,13 @@ pub fn run() -> Result<()> {
 		.with_application::<TriangleDemo>()
 		.build(&mut engine)?;
 
-	let _renderer = renderer::Triangle::new(engine.render_chain().unwrap());
+	let render_phase = {
+		let arc = engine.display_chain().unwrap();
+		let mut chain = arc.write().unwrap();
+		chain.apply_procedure::<DefaultProcedure>()?.into_inner()
+	};
+
+	let _renderer = renderer::Triangle::new(engine.display_chain().unwrap(), &render_phase);
 
 	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})
