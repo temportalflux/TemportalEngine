@@ -1,15 +1,16 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, descriptor, flags, pipeline, structs,
+		self, command, descriptor,
+		device::logical,
+		flags, pipeline,
 		utility::{BuildFromDevice, NameableBuilder},
-		DescriptorCache, Drawable, ImageCache, Texture,
+		Chain, DescriptorCache, Drawable, GpuOpContext, ImageCache, Texture,
 	},
-	math::nalgebra::Vector2,
 	ui::core::{image, mesh},
 };
 use anyhow::Result;
-use std::sync;
+use std::sync::Arc;
 
 pub struct DataPipeline {
 	descriptor_cache: DescriptorCache<String>,
@@ -18,7 +19,7 @@ pub struct DataPipeline {
 }
 
 impl DataPipeline {
-	pub fn new(render_chain: &graphics::RenderChain) -> anyhow::Result<Self> {
+	pub fn new(context: &impl GpuOpContext) -> anyhow::Result<Self> {
 		Ok(Self {
 			drawable: Drawable::default().with_name("UI.Image"),
 			descriptor_cache: DescriptorCache::new(
@@ -30,7 +31,7 @@ impl DataPipeline {
 						1,
 						flags::ShaderKind::Fragment,
 					)
-					.build(&render_chain.logical())?,
+					.build(&context.logical_device()?)?,
 			),
 			image_cache: ImageCache::default().with_cache_name("UI.Image"),
 		})
@@ -40,8 +41,8 @@ impl DataPipeline {
 		self.drawable.add_shader(id)
 	}
 
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
-		self.drawable.create_shaders(&render_chain.logical())
+	pub fn create_shaders(&mut self, logical: &Arc<logical::Device>) -> anyhow::Result<()> {
+		self.drawable.create_shaders(logical)
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) {
@@ -53,23 +54,17 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn create_pending_images(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
+	pub fn create_pending_images(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		use graphics::descriptor::update::*;
-
-		let mut pending_gpu_signals = Vec::new();
-		/*
-		let (image_ids, mut signals) = self.image_cache.load_pending(render_chain)?;
-		pending_gpu_signals.append(&mut signals);
-
+		let image_ids = self
+			.image_cache
+			.load_pending(chain, chain.signal_sender())?;
 		for (image_id, image_name) in image_ids.into_iter() {
 			let cached_image = &self.image_cache[&image_id];
 			let descriptor_set = self.descriptor_cache.insert(
 				image_id,
 				image_name.map(|v| format!("UI.Image.{}", v)),
-				render_chain,
+				chain.persistent_descriptor_pool(),
 			)?;
 			Queue::default()
 				.with(Operation::Write(WriteOp {
@@ -85,11 +80,9 @@ impl DataPipeline {
 						layout: flags::ImageLayout::ShaderReadOnlyOptimal,
 					}]),
 				}))
-				.apply(&render_chain.logical());
+				.apply(&*chain.logical()?);
 		}
-		*/
-
-		Ok(pending_gpu_signals)
+		Ok(())
 	}
 
 	#[profiling::function]
@@ -98,25 +91,17 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn create_pipeline(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> anyhow::Result<()> {
+	pub fn create_pipeline(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
-			&render_chain.logical(),
+			&chain.logical()?,
 			vec![self.descriptor_cache.layout()],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
 					vertex::Layout::default()
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(structs::Extent2D {
-					width: resolution.x as u32,
-					height: resolution.y as u32,
-				}))
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(
 					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)
@@ -125,8 +110,8 @@ impl DataPipeline {
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			render_chain.render_pass(),
-			render_chain.render_pass().subpass_index(subpass_id) as usize,
+			chain.render_pass(),
+			subpass_index,
 		)
 	}
 

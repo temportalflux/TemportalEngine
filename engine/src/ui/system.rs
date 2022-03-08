@@ -1,12 +1,15 @@
 use crate::{
 	asset,
 	graphics::{
-		self, command, flags,
+		self,
+		chain::{operation::RequiresRecording, Operation},
+		command, flags,
 		font::Font,
-		pipeline, structs,
+		pipeline,
+		procedure::Phase,
 		structs::{Extent2D, Offset2D},
 		utility::Scissor,
-		Drawable, Texture,
+		Chain, Drawable, Texture,
 	},
 	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
@@ -18,7 +21,7 @@ use enumset::EnumSet;
 use std::{
 	any::{Any, TypeId},
 	collections::HashMap,
-	sync,
+	sync::{self, Arc},
 };
 
 /// The types of shaders used by the [`ui system`](System).
@@ -80,7 +83,6 @@ impl<'a, T: 'static> std::ops::Deref for ContextGuard<'a, T> {
 pub struct System {
 	draw_calls_by_frame: Vec<Vec<DrawCall>>,
 
-	pending_gpu_signals: Vec<sync::Arc<command::Semaphore>>,
 	atlas_mapping: HashMap<String, (String, raui::Rect)>,
 	image_sizes: HashMap<String, raui::Vec2>,
 
@@ -109,16 +111,14 @@ enum DrawCall {
 
 impl System {
 	/// Constructs a ui rendering system for the provided render chain.
-	pub fn new(
-		render_chain: &sync::Arc<sync::RwLock<graphics::RenderChain>>,
-	) -> anyhow::Result<Self> {
+	pub fn new(chain: &sync::Arc<sync::RwLock<Chain>>) -> anyhow::Result<Self> {
 		let mut application = raui::Application::new();
 		application.setup(raui::widget::setup);
 
 		let mut interactions = raui::DefaultInteractionsEngine::new();
 		interactions.deselect_when_no_button_found = true;
 
-		let chain_read = render_chain.read().unwrap();
+		let chain_read = chain.read().unwrap();
 		Ok(Self {
 			application,
 			contexts: ContextContainer::default(),
@@ -128,12 +128,11 @@ impl System {
 			mouse_position_unnormalized: [0.0, 0.0].into(),
 			frame_meshes: Vec::new(),
 			colored_area: Drawable::default().with_name("UI.ColoredArea"),
-			image: image::DataPipeline::new(&chain_read)?,
-			text: text::DataPipeline::new(&chain_read)?,
+			image: image::DataPipeline::new(&*chain_read)?,
+			text: text::DataPipeline::new(&*chain_read)?,
 			text_widgets: Vec::new(),
 			atlas_mapping: HashMap::new(),
 			image_sizes: HashMap::new(),
-			pending_gpu_signals: Vec::new(),
 			draw_calls_by_frame: Vec::new(),
 		})
 	}
@@ -305,17 +304,15 @@ impl System {
 	pub fn attach_system(
 		self,
 		engine: &mut crate::Engine,
-		subpass_id: Option<String>,
+		phase: &Arc<Phase>,
 	) -> Result<sync::Arc<sync::RwLock<Self>>> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(system.clone());
 		engine.add_winit_listener(&system);
-		if let Some(mut chain_write) = engine
-			.render_chain()
-			.map(|chain| chain.write().ok())
-			.flatten()
-		{
-			chain_write.add_render_chain_element(subpass_id, &system)?;
+		if let Some(arc) = engine.display_chain() {
+			if let Ok(mut chain) = arc.write() {
+				chain.add_operation(phase, Arc::downgrade(&system))?;
+			}
 		}
 		Ok(system)
 	}
@@ -501,121 +498,97 @@ impl EngineSystem for System {
 	}
 }
 
-impl graphics::RenderChainElement for System {
-	fn name(&self) -> &'static str {
-		"render-ui"
-	}
-
-	#[profiling::function]
-	fn initialize_with(
-		&mut self,
-		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<sync::Arc<command::Semaphore>>> {
+impl Operation for System {
+	fn initialize(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		self.draw_calls_by_frame
-			.resize(render_chain.frame_count(), Vec::new());
-		self.colored_area.create_shaders(&render_chain.logical())?;
-		self.image.create_shaders(&render_chain)?;
-		self.text.create_shaders(&render_chain)?;
-		self.pending_gpu_signals
-			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
-		for i in 0..render_chain.frame_count() {
+			.resize(chain.view_count(), Vec::new());
+		self.colored_area.create_shaders(&chain.logical()?)?;
+		self.image.create_shaders(&chain.logical()?)?;
+		self.text.create_shaders(&chain.logical()?)?;
+		self.text.create_pending_font_atlases(
+			chain,
+			chain.persistent_descriptor_pool(),
+			chain.signal_sender(),
+		)?;
+		for i in 0..chain.view_count() {
 			self.text_widgets.push(HashMap::new());
 			self.frame_meshes.push(mesh::Mesh::new(
 				format!("UI.Frame{}.Mesh", i),
-				&render_chain.allocator(),
+				&chain.allocator()?,
 				10,
 			)?);
 		}
-		Ok(self.take_gpu_signals())
-	}
-
-	#[profiling::function]
-	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.colored_area.destroy_pipeline()?;
-		self.image.destroy_pipeline()?;
-		self.text.destroy_render_chain()?;
 		Ok(())
 	}
 
-	#[profiling::function]
-	fn on_render_chain_constructed(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> Result<()> {
+	fn construct(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use pipeline::state::*;
-		self.resolution = *resolution;
+		self.resolution = chain.resolution();
 		self.colored_area.create_pipeline(
-			&render_chain.logical(),
+			&chain.logical()?,
 			vec![],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
 					vertex::Layout::default()
 						.with_object::<mesh::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(structs::Extent2D {
-					width: resolution.x as u32,
-					height: resolution.y as u32,
-				}))
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_color_blending(
 					color_blend::ColorBlend::default()
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			render_chain.render_pass(),
-			render_chain.render_pass().subpass_index(subpass_id) as usize,
+			chain.render_pass(),
+			subpass_index,
 		)?;
-		self.image
-			.create_pipeline(render_chain, resolution, subpass_id)?;
-		self.text
-			.on_render_chain_constructed(render_chain, resolution, subpass_id)?;
+		self.image.create_pipeline(chain, subpass_index)?;
+		self.text.create_pipeline(chain, subpass_index)?;
 		Ok(())
 	}
 
-	fn preframe_update(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.pending_gpu_signals
-			.append(&mut self.image.create_pending_images(&render_chain)?);
-		self.pending_gpu_signals
-			.append(&mut self.text.create_pending_font_atlases(&render_chain)?);
+	fn deconstruct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+		self.colored_area.destroy_pipeline()?;
+		self.image.destroy_pipeline()?;
+		self.text.destroy_render_chain()?;
 		Ok(())
 	}
 
-	fn take_gpu_signals(&mut self) -> Vec<sync::Arc<command::Semaphore>> {
-		self.pending_gpu_signals.drain(..).collect()
+	fn prepare_for_frame(&mut self, chain: &Chain) -> anyhow::Result<()> {
+		self.image.create_pending_images(&chain)?;
+		self.text.create_pending_font_atlases(
+			chain,
+			chain.persistent_descriptor_pool(),
+			chain.signal_sender(),
+		)?;
+		Ok(())
 	}
 
-	/// Update the data (like uniforms) for a given frame -
-	/// Or in the case of the UI Render, record changes to the secondary command buffer.
-	#[profiling::function]
-	fn prerecord_update(
+	fn prepare_for_submit(
 		&mut self,
-		render_chain: &graphics::RenderChain,
-		_buffer: &command::Buffer,
-		frame: usize,
-		resolution: &Vector2<f32>,
-	) -> Result<bool> {
+		chain: &Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
 		let mapping = self.mapping();
 		// Drain the existing widgets
 		let mut retained_text_widgets: HashMap<raui::WidgetId, text::WidgetData> =
-			self.text_widgets[frame].drain().collect();
+			self.text_widgets[frame_image].drain().collect();
 		let mut draw_calls = Vec::new();
 
 		// Garuntee that there will always be a scissor clip available for the recording to use
 		draw_calls.push(DrawCall::PushClip(Scissor::new(
 			Offset2D::default(),
-			Extent2D {
-				width: resolution.x as u32,
-				height: resolution.y as u32,
-			},
+			*chain.extent(),
 		)));
 
 		if let Some(tesselation) = self.tesselate(&mapping) {
 			let (vertices, indices) =
-				mesh::Vertex::create_interleaved_buffer_data(&tesselation, resolution);
-			let mut mesh_gpu_signals =
-				self.frame_meshes[frame].write(&vertices, &indices, render_chain)?;
-			self.pending_gpu_signals.append(&mut mesh_gpu_signals);
+				mesh::Vertex::create_interleaved_buffer_data(&tesselation, &self.resolution);
+			self.frame_meshes[frame_image].write(
+				&vertices,
+				&indices,
+				chain,
+				chain.signal_sender(),
+			)?;
 
 			for batch in tesselation.batches {
 				match batch {
@@ -634,15 +607,13 @@ impl graphics::RenderChainElement for System {
 						}
 					}
 					raui::Batch::ExternalText(widget_id, text) => {
-						let (widget_data, mut gpu_signals) = self.text.update_or_create(
-							render_chain,
-							resolution,
+						let widget_data = self.text.update_or_create(
+							chain,
 							&widget_id,
 							text,
 							retained_text_widgets.remove(&widget_id),
 						)?;
-						self.text_widgets[frame].insert(widget_id.clone(), widget_data);
-						self.pending_gpu_signals.append(&mut gpu_signals);
+						self.text_widgets[frame_image].insert(widget_id.clone(), widget_data);
 						draw_calls.push(DrawCall::Text(widget_id));
 					}
 					raui::Batch::ClipPush(clip) => {
@@ -693,18 +664,16 @@ impl graphics::RenderChainElement for System {
 			}
 		}
 
-		self.draw_calls_by_frame[frame] = draw_calls;
+		self.draw_calls_by_frame[frame_image] = draw_calls;
 
-		Ok(true) // the ui uses immediate mode, and therefore requires re-recording every frame
+		Ok(RequiresRecording::CurrentFrame)
 	}
 
-	/// Record to the primary command buffer for a given frame
-	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
+	fn record(&mut self, buffer: &mut command::Buffer, buffer_index: usize) -> anyhow::Result<()> {
 		use graphics::debug;
 		let mut clips = Vec::new();
 		buffer.begin_label("Draw:UI", debug::LABEL_COLOR_DRAW);
-		for call in self.draw_calls_by_frame[frame].iter() {
+		for call in self.draw_calls_by_frame[buffer_index].iter() {
 			match call {
 				DrawCall::PushClip(scissor) => clips.push(scissor),
 				DrawCall::PopClip() => {
@@ -712,7 +681,7 @@ impl graphics::RenderChainElement for System {
 				}
 
 				DrawCall::Text(widget_id) => {
-					let widget_data = &self.text_widgets[frame][widget_id];
+					let widget_data = &self.text_widgets[buffer_index][widget_id];
 					if let Some(name) = widget_data.name().as_ref() {
 						buffer
 							.begin_label(format!("Draw:UI/Text {}", name), debug::LABEL_COLOR_DRAW);
@@ -727,7 +696,7 @@ impl graphics::RenderChainElement for System {
 					buffer.begin_label("Draw:UI/ColoredArea", debug::LABEL_COLOR_DRAW);
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.colored_area.bind_pipeline(buffer);
-					self.frame_meshes[frame].bind_buffers(buffer);
+					self.frame_meshes[buffer_index].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
 					buffer.end_label();
 				}
@@ -739,7 +708,7 @@ impl graphics::RenderChainElement for System {
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.image.bind_pipeline(buffer);
 					self.image.bind_texture(buffer, texture_id);
-					self.frame_meshes[frame].bind_buffers(buffer);
+					self.frame_meshes[buffer_index].bind_buffers(buffer);
 					buffer.draw(range.end - range.start, range.start, 1, 0, 0);
 					buffer.end_label();
 				}

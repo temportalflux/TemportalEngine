@@ -61,7 +61,7 @@ pub trait Operation: 'static + Send + Sync {
 	fn prepare_for_submit(
 		&mut self,
 		_chain: &Chain,
-		frame_image: usize,
+		_frame_image: usize,
 	) -> anyhow::Result<RequiresRecording> {
 		Ok(RequiresRecording::NotRequired)
 	}

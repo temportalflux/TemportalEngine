@@ -1,8 +1,10 @@
+use crossbeam_channel::Sender;
+
 use crate::graphics::{
 	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, GpuOpContext,
-	GpuOperationBuilder, RenderChain,
+	GpuOperationBuilder,
 };
-use std::sync;
+use std::sync::{self, Arc};
 
 pub struct Mesh<Index, Vertex>
 where
@@ -101,29 +103,23 @@ where
 		vertices: &Vec<Vertex>,
 		indices: &Vec<Index>,
 		context: &impl GpuOpContext,
-	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<()> {
 		self.index_count = indices.len();
-
-		let mut gpu_signals = Vec::with_capacity(2);
 
 		if !vertices.is_empty() {
 			Self::write_buffer(
 				&mut self.vertex_buffer,
 				&vertices[..],
 				context,
-				&mut gpu_signals,
+				signal_sender,
 			)?;
 		}
 		if !indices.is_empty() {
-			Self::write_buffer(
-				&mut self.index_buffer,
-				&indices[..],
-				context,
-				&mut gpu_signals,
-			)?;
+			Self::write_buffer(&mut self.index_buffer, &indices[..], context, signal_sender)?;
 		}
 
-		Ok(gpu_signals)
+		Ok(())
 	}
 
 	#[profiling::function]
@@ -131,7 +127,7 @@ where
 		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],
 		context: &C,
-		signals: &mut Vec<sync::Arc<command::Semaphore>>,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
 	) -> anyhow::Result<()>
 	where
 		C: GpuOpContext,
@@ -143,7 +139,7 @@ where
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)
-			.add_signal_to(signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 		Ok(())
 	}

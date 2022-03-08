@@ -1,7 +1,4 @@
-use crate::graphics::{
-	descriptor::{self, layout::SetLayout},
-	RenderChain,
-};
+use crate::graphics::descriptor::{self, layout::SetLayout};
 use std::{
 	collections::HashMap,
 	sync::{self, Arc, RwLock},

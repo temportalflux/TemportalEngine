@@ -9,13 +9,11 @@ use crate::{
 		types::{Vec2, Vec4},
 		utility::Scissor,
 		utility::{BuildFromDevice, NameableBuilder},
-		vertex_object, Chain, DescriptorCache, Drawable, ImageCache, Mesh, RenderChain,
-		RenderChainElement,
+		vertex_object, Chain, DescriptorCache, Drawable, ImageCache, Mesh,
 	},
 	math::nalgebra::{Vector2, Vector4},
 	Engine, WinitEventListener,
 };
-use anyhow::Result;
 use bytemuck::{Pod, Zeroable};
 use copypasta::{ClipboardContext, ClipboardProvider};
 use egui::{
@@ -511,9 +509,7 @@ impl Operation for Ui {
 
 		let (vertices, indices, draw_calls) = self.build_ui();
 		let mesh = &mut self.frames[frame_image].mesh;
-		for signal in mesh.write(&vertices, &indices, chain)? {
-			chain.signal_sender().send(signal)?;
-		}
+		mesh.write(&vertices, &indices, chain, chain.signal_sender())?;
 		self.frames[frame_image].draw_calls = draw_calls;
 
 		// returns true to enforce immediate mode drawing (rerecording every frame)

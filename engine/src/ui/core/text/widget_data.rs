@@ -1,10 +1,12 @@
+use crossbeam_channel::Sender;
+
 use super::{font, Vertex};
 use crate::{
-	graphics::{self, buffer, command, flags, utility::NamedObject},
+	graphics::{self, alloc, buffer, command, flags, utility::NamedObject, GpuOpContext},
 	math::nalgebra::{vector, Matrix4, Vector2, Vector4},
 	ui::raui::*,
 };
-use std::sync;
+use std::sync::{self, Arc};
 
 /// Data about rendering a specific piece of text
 pub struct WidgetData {
@@ -22,7 +24,7 @@ impl WidgetData {
 	pub fn new(
 		id: Option<String>,
 		text: &BatchExternalText,
-		render_chain: &graphics::RenderChain,
+		allocator: &Arc<alloc::Allocator>,
 	) -> anyhow::Result<Self> {
 		// matches: "/.", "/<*>",
 		// and the series "/<0>", "/<1>", "/<2>", ..., "/<n>"
@@ -39,7 +41,7 @@ impl WidgetData {
 					.map(|name| format!("UI.{}.VertexBuffer", name)),
 				flags::BufferUsage::VERTEX_BUFFER,
 				&text.text,
-				render_chain,
+				allocator,
 			)?,
 			index_buffer: Self::allocate_buffer(
 				short_name
@@ -47,7 +49,7 @@ impl WidgetData {
 					.map(|name| format!("UI.{}.IndexBuffer", name)),
 				flags::BufferUsage::INDEX_BUFFER,
 				&text.text,
-				render_chain,
+				allocator,
 			)?,
 			index_count: 0,
 			name: short_name.map(|v| v.to_string()),
@@ -78,7 +80,7 @@ impl WidgetData {
 		name: Option<String>,
 		usage: flags::BufferUsage,
 		content: &String,
-		render_chain: &graphics::RenderChain,
+		allocator: &Arc<alloc::Allocator>,
 	) -> anyhow::Result<sync::Arc<buffer::Buffer>> {
 		use graphics::utility::{BuildFromAllocator, NameableBuilder};
 		Ok(sync::Arc::new(
@@ -101,7 +103,7 @@ impl WidgetData {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&render_chain.allocator())?,
+				.build(allocator)?,
 		))
 	}
 
@@ -109,9 +111,10 @@ impl WidgetData {
 		&mut self,
 		text: &BatchExternalText,
 		font: &font::Loaded,
-		render_chain: &graphics::RenderChain,
+		context: &impl GpuOpContext,
 		resolution: &Vector2<f32>,
-	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<()> {
 		// Update the buffer objects if we need more space than is currently allocated
 		if let Some(reallocated) = self
 			.vertex_buffer
@@ -131,36 +134,35 @@ impl WidgetData {
 		self.font_size = text.size;
 		self.color = vector![text.color.r, text.color.g, text.color.b, text.color.a];
 
-		let mut gpu_signals = Vec::with_capacity(2);
 		let column_major = Matrix4::<f32>::from_vec_generic(
 			nalgebra::Const::<4>,
 			nalgebra::Const::<4>,
 			text.matrix.to_vec(),
 		);
-		let (vertices, indices) = self.build_buffer_data(column_major, font, resolution);
+		let (vertices, indices) = self.build_buffer_data(column_major, font, &resolution);
 		self.index_count = indices.len();
 
 		graphics::GpuOperationBuilder::new(
 			self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-			render_chain,
+			context,
 		)?
 		.begin()?
 		.stage(&vertices[..])?
 		.copy_stage_to_buffer(&self.vertex_buffer)
-		.add_signal_to(&mut gpu_signals)
+		.send_signal_to(signal_sender)?
 		.end()?;
 
 		graphics::GpuOperationBuilder::new(
 			self.index_buffer.wrap_name(|v| format!("Write({})", v)),
-			render_chain,
+			context,
 		)?
 		.begin()?
 		.stage(&indices[..])?
 		.copy_stage_to_buffer(&self.index_buffer)
-		.add_signal_to(&mut gpu_signals)
+		.send_signal_to(signal_sender)?
 		.end()?;
 
-		Ok(gpu_signals)
+		Ok(())
 	}
 
 	fn build_buffer_data(

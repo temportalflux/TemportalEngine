@@ -1,7 +1,8 @@
 use crate::graphics::{
 	alloc,
 	chain::{
-		operation::{ProcedureOperations, RequiresRecording, WeakOperation},
+		operation::{ProcedureOperations, RequiresRecording},
+		procedure::ProcedureConfig,
 		ArcResolutionProvider, Operation,
 	},
 	command::{
@@ -173,6 +174,13 @@ impl Chain {
 		self.swapchain_attachment = Some(swapchain_attachment);
 	}
 
+	pub fn apply_procedure<T>(&mut self) -> anyhow::Result<<T as ProcedureConfig>::Phases>
+	where
+		T: ProcedureConfig,
+	{
+		T::apply_to(self)
+	}
+
 	pub fn add_operation<T>(
 		&mut self,
 		phase: &Arc<Phase>,
@@ -190,7 +198,9 @@ impl Chain {
 		self.swapchain_builder.image_format()
 	}
 
-	pub fn swapchain(&self) -> Result<&Box<dyn Swapchain + 'static + Send + Sync>, SwapchainNotConstructed> {
+	pub fn swapchain(
+		&self,
+	) -> Result<&Box<dyn Swapchain + 'static + Send + Sync>, SwapchainNotConstructed> {
 		self.swapchain.as_ref().ok_or(SwapchainNotConstructed)
 	}
 
