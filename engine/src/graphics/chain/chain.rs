@@ -583,7 +583,7 @@ impl Chain {
 	/// signalling the [`frame_signal_view_acquired`] at `frame` when the acquisition has completed on the GPU.
 	#[profiling::function]
 	fn acquire_frame_view(&self, frame: usize) -> anyhow::Result<Option<usize>> {
-		use swapchain::{AcquiredImage};
+		use swapchain::AcquiredImage;
 		let acquisition_result = self.swapchain()?.acquire_next_image(
 			u64::MAX,
 			command::SyncObject::Semaphore(&self.frame_signal_view_acquired[frame]),
