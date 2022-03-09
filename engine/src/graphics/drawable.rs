@@ -75,7 +75,7 @@ impl Drawable {
 		Ok(())
 	}
 
-	/// Creates the [`Pipeline`](graphics::pipeline::Pipeline) objects with a provided descriptor layout and pipline info.
+	/// Creates the [`Pipeline`](pipeline::Pipeline) objects with a provided descriptor layout and pipline info.
 	#[profiling::function]
 	pub fn create_pipeline(
 		&mut self,

@@ -61,7 +61,7 @@ pub struct Chain {
 	/// Signaled when the frame's view target is not currently being used.
 	/// Signal is reset/off while the view is being written to or currently presented.
 	pub(crate) frame_signal_view_available: Vec<command::Fence>,
-	/// Mapping of a given [frame view](`frame_image_views`) to the index of the frame which is using it.
+	/// Mapping of a given [frame view](Chain::frame_image_views) to the index of the frame which is using it.
 	pub(crate) view_in_flight_frame: Vec<Option<usize>>,
 
 	pub(crate) resources: resource::Registry,
@@ -583,10 +583,10 @@ impl Chain {
 	/// signalling the [`frame_signal_view_acquired`] at `frame` when the acquisition has completed on the GPU.
 	#[profiling::function]
 	fn acquire_frame_view(&self, frame: usize) -> anyhow::Result<Option<usize>> {
-		use swapchain::{AcquiredImage, ImageAcquisitionBarrier};
+		use swapchain::{AcquiredImage};
 		let acquisition_result = self.swapchain()?.acquire_next_image(
 			u64::MAX,
-			ImageAcquisitionBarrier::Semaphore(&self.frame_signal_view_acquired[frame]),
+			command::SyncObject::Semaphore(&self.frame_signal_view_acquired[frame]),
 		);
 		match acquisition_result {
 			Ok(AcquiredImage::Available(index)) => Ok(Some(index)),
@@ -645,13 +645,14 @@ impl Chain {
 
 	#[profiling::function]
 	fn present(&self, buffer_idx: usize, view_idx: usize) -> anyhow::Result<bool> {
-		if !self.swapchain()?.can_present() {
-			return Ok(false);
-		}
+		let khr_swapchain = match self.swapchain()?.as_khr() {
+			Some(khr) => khr,
+			None => return Ok(false),
+		};
 
 		self.graphics_queue
 			.begin_label("Present", debug::LABEL_COLOR_PRESENT);
-		let present_result = self.swapchain()?.present(
+		let present_result = khr_swapchain.present(
 			&self.graphics_queue,
 			command::PresentInfo::default()
 				.wait_for(&self.frame_signal_render_finished[buffer_idx])

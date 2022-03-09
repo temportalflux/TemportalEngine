@@ -12,7 +12,7 @@ pub enum RequiresRecording {
 
 pub trait Operation: 'static + Send + Sync {
 	/// Initialize the operation on the first possible frame.
-	/// Garunteed to be called before [`construct`] and [`prepare_for_frame`].
+	/// Garunteed to be called before [`construct`](Operation::construct) and [`prepare_for_frame`](Operation::prepare_for_frame).
 	///
 	/// This function is only called once after the operation has been added to the chain
 	/// (though if it is removed/dropped and re-added, it will be called again).
@@ -20,7 +20,7 @@ pub trait Operation: 'static + Send + Sync {
 	/// and pull relevant structural data from the chain.
 	///
 	/// If an operation is added to the chain after the first frame,
-	/// this function will still be called before [`construct`],
+	/// this function will still be called before [`construct`](Operation::construct),
 	/// but the chain itself will have already been constructed.
 	fn initialize(&mut self, _chain: &Chain) -> anyhow::Result<()> {
 		Ok(())
@@ -28,7 +28,7 @@ pub trait Operation: 'static + Send + Sync {
 
 	/// Called on the first frame after the operation is added to the chain,
 	/// or any time the chain is reconstructed (i.e. chain resolution changed).
-	/// Never called before the operation's [`initialize`] function.
+	/// Never called before the operation's [`initialize`](Operation::initialize) function.
 	///
 	/// Use this to create any per-frame or resolution dependent resources.
 	fn construct(&mut self, _chain: &Chain, _subpass_index: usize) -> anyhow::Result<()> {
@@ -37,7 +37,7 @@ pub trait Operation: 'static + Send + Sync {
 
 	/// Called when the chain gets reconstructed (e.g. chain resolution changed)
 	/// to cause all frame-dependent resources to be dropped.
-	/// Never called before the first call to [`construct`].
+	/// Never called before the first call to [`construct`](Operation::initialize).
 	/// This function is not called when the chain is dropped.
 	///
 	/// Use this to drop any frame-dependent resources (like pipelines).

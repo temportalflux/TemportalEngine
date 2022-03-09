@@ -32,7 +32,7 @@ where
 	}
 
 	/// Allocates a new descriptor set using the provided layout from the
-	/// [`Chain`]'s [`persistant descriptor pool`](Chain::persistent_descriptor_pool),
+	/// [`Chain`](crate::graphics::Chain)'s [`persistant descriptor pool`](crate::graphics::Chain::persistent_descriptor_pool),
 	/// inserting the set into the cache and returning the thread-safe weak pointer.
 	pub fn insert(
 		&mut self,
