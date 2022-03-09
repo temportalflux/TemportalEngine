@@ -1,5 +1,5 @@
 use anyhow::Result;
-use engine::Application;
+use engine::{graphics::chain::procedure::DefaultProcedure, Application};
 pub use temportal_engine as engine;
 
 #[path = "ui/mod.rs"]
@@ -27,9 +27,15 @@ pub fn run() -> Result<()> {
 		.with_application::<Demo>()
 		.build(&mut engine)?;
 
+	let render_phase = {
+		let arc = engine.display_chain().unwrap();
+		let mut chain = arc.write().unwrap();
+		chain.apply_procedure::<DefaultProcedure>()?.into_inner()
+	};
+
 	{
 		use ui::*;
-		ui::System::new(engine.render_chain().unwrap())?
+		ui::System::new(engine.display_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?
 			.with_texture(&Demo::get_asset_id("ui/cycle"))?
@@ -39,7 +45,7 @@ pub fn run() -> Result<()> {
 			.with_tree(raui::WidgetNode::Component(raui::make_widget!(
 				ui::root::widget
 			)))
-			.attach_system(&mut engine, None)?;
+			.attach_system(&mut engine, &render_phase)?;
 	}
 
 	crate::engine::audio::System::add_source(crate::Demo::get_asset_id("audio/music-for-manatees"));

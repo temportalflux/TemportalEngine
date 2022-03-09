@@ -18,6 +18,8 @@ profiling = "1.0"
 
 # [error] collapsing any error into one result type
 anyhow = "1.0"
+# [error] easy implementation of new errors
+thiserror = "1.0"
 
 # [channel] [ sync] single-producer multi-consumer  multi-consumption
 bus = "2.2"
@@ -94,6 +96,8 @@ signal-hook = "0.3"
 semver = "1.0"
 # [utility] for managing zip (and thereby pak) files
 zip = "0.5"
+# [utility] one-line implementation for builder pattern
+derive_builder = "0.10"
 
 # DEPRECATED
 specs = { version = "0.16", features = ["shred-derive"] }

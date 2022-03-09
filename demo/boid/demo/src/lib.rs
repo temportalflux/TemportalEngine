@@ -1,6 +1,6 @@
 use anyhow::Result;
 pub use engine;
-use engine::{math::nalgebra, Application};
+use engine::{graphics::chain::procedure::DefaultProcedure, math::nalgebra, Application};
 use std::sync::{Arc, RwLock};
 
 #[path = "graphics/mod.rs"]
@@ -97,12 +97,19 @@ pub fn run() -> Result<()> {
 		.with_size(resolution.x as f64, resolution.y as f64)
 		.with_resizable(true)
 		.with_application::<BoidDemo>()
-		.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
+		//.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
 		.build(&mut engine)?;
+
+	let render_phase = {
+		let arc = engine.display_chain().unwrap();
+		let mut chain = arc.write().unwrap();
+		chain.apply_procedure::<DefaultProcedure>()?.into_inner()
+	};
 
 	ecs_context.add_system(ecs::systems::InstanceCollector::new(
 		graphics::RenderBoids::new(
-			engine.render_chain().unwrap(),
+			engine.display_chain().unwrap(),
+			&render_phase,
 			&wrapping_world_bounds_min,
 			&wrapping_world_bounds_max,
 		)?,
@@ -110,10 +117,11 @@ pub fn run() -> Result<()> {
 	));
 
 	{
-		let debug_render =
-			engine::render::DebugRender::create(engine.render_chain().unwrap(), |debug| {
-				debug.with_engine_shaders()
-			})?;
+		let debug_render = engine::render::DebugRender::create(
+			engine.display_chain().unwrap(),
+			&render_phase,
+			|debug| debug.with_engine_shaders(),
+		)?;
 		engine.add_system(debug_render.clone());
 		ecs_context.add_system(ecs::systems::DrawForward::new(debug_render.clone()));
 		//ecs_context.add_system(ecs::systems::ai::DrawWanderDebug::new(debug_render.clone()));
@@ -130,12 +138,12 @@ pub fn run() -> Result<()> {
 	let ecs_context = Arc::new(RwLock::new(ecs_context));
 	engine.add_system(ecs_context);
 
-	engine::ui::System::new(engine.render_chain().unwrap())?
+	engine::ui::System::new(engine.display_chain().unwrap())?
 		.with_engine_shaders()?
 		.with_all_fonts()?
 		.with_texture(&BoidDemo::get_asset_id("arrow"))?
 		.with_tree_root(engine::ui::raui::make_widget!(crate::ui::root))
-		.attach_system(&mut engine, None)?;
+		.attach_system(&mut engine, &render_phase)?;
 
 	let engine = engine.into_arclock();
 	engine::Engine::run(engine.clone(), || {})

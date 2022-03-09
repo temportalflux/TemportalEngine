@@ -1,17 +1,19 @@
 use super::Element;
 use crate::{
 	graphics::{
-		self, command, descriptor, flags, pipeline, structs,
+		self,
+		chain::{operation::RequiresRecording, Operation},
+		command, descriptor, flags, pipeline,
+		procedure::Phase,
+		structs,
 		types::{Vec2, Vec4},
 		utility::Scissor,
 		utility::{BuildFromDevice, NameableBuilder},
-		vertex_object, DescriptorCache, Drawable, ImageCache, Mesh, RenderChain,
-		RenderChainElement,
+		vertex_object, Chain, DescriptorCache, Drawable, ImageCache, Mesh,
 	},
 	math::nalgebra::{Vector2, Vector4},
 	Engine, WinitEventListener,
 };
-use anyhow::Result;
 use bytemuck::{Pod, Zeroable};
 use copypasta::{ClipboardContext, ClipboardProvider};
 use egui::{
@@ -38,7 +40,6 @@ pub struct Ui {
 	current_cursor_icon: egui::CursorIcon,
 	font_image_version: u64,
 
-	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 	frames: Vec<Frame>,
 	descriptor_cache: DescriptorCache<TextureId>,
 	image_cache: ImageCache<TextureId>,
@@ -92,20 +93,12 @@ impl Vertex {
 }
 
 impl Ui {
-	pub fn create(engine: &mut Engine) -> Result<Arc<RwLock<Self>>> {
-		Self::create_with_subpass(engine, None)
-	}
-
-	pub fn create_with_subpass(
-		engine: &mut Engine,
-		subpass_id: Option<String>,
-	) -> Result<Arc<RwLock<Self>>> {
+	pub fn create(engine: &mut Engine, phase: &Arc<Phase>) -> anyhow::Result<Arc<RwLock<Self>>> {
 		let strong = Arc::new(RwLock::new(Self::new(engine)?));
-		engine
-			.render_chain_write()
-			.unwrap()
-			.add_render_chain_element(subpass_id, &strong)?;
 		engine.add_winit_listener(&strong);
+		if let Ok(mut chain) = engine.window().unwrap().graphics_chain().write() {
+			chain.add_operation(phase, Arc::downgrade(&strong))?;
+		}
 		Ok(strong)
 	}
 
@@ -138,6 +131,7 @@ impl Ui {
 		let modifiers_state = winit::event::ModifiersState::default();
 
 		let clipboard = ClipboardContext::new().expect("Failed to initialize ClipboardContext.");
+		let logical = engine.display_chain().unwrap().read().unwrap().logical()?;
 
 		Ok(Ui {
 			physical_size,
@@ -165,10 +159,9 @@ impl Ui {
 						1,
 						flags::ShaderKind::Fragment,
 					)
-					.build(&engine.render_chain().unwrap().read().unwrap().logical())?,
+					.build(&logical)?,
 			),
 			frames: Vec::new(),
-			pending_gpu_signals: Vec::new(),
 		})
 	}
 
@@ -358,19 +351,15 @@ impl From<Vector2<f32>> for ScreenSizePushConstant {
 	}
 }
 
-impl RenderChainElement for Ui {
-	fn name(&self) -> &'static str {
-		"egui"
-	}
-
-	fn initialize_with(&mut self, chain: &mut RenderChain) -> Result<Vec<Arc<command::Semaphore>>> {
+impl Operation for Ui {
+	fn initialize(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		use crate::{Application, EngineApp};
 		let vertex = EngineApp::get_asset_id("shaders/debug/egui/vertex");
 		let fragment = EngineApp::get_asset_id("shaders/debug/egui/fragment");
 
 		self.drawable.add_shader(&vertex)?;
 		self.drawable.add_shader(&fragment)?;
-		self.drawable.create_shaders(chain)?;
+		self.drawable.create_shaders(&chain.logical()?)?;
 
 		self.drawable.add_push_constant_range(
 			pipeline::PushConstantRange::default()
@@ -378,45 +367,32 @@ impl RenderChainElement for Ui {
 				.with_size(std::mem::size_of::<ScreenSizePushConstant>()),
 		);
 
-		for i in 0..chain.frame_count() {
+		for i in 0..chain.view_count() {
 			self.frames.push(Frame {
 				mesh: Mesh::<u32, Vertex>::new(
 					format!("EditorUI.Frame{}.Mesh", i),
-					&chain.allocator(),
+					&chain.allocator()?,
 					10,
 				)?,
 				draw_calls: Vec::new(),
 			});
 		}
 
-		Ok(self.take_gpu_signals())
-	}
-
-	fn destroy_render_chain(&mut self, chain: &RenderChain) -> Result<()> {
-		self.drawable.destroy_pipeline(chain)?;
 		Ok(())
 	}
 
-	fn on_render_chain_constructed(
-		&mut self,
-		chain: &RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> Result<()> {
+	fn construct(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use flags::blend::prelude::*;
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
-			chain,
+			&chain.logical()?,
 			vec![self.descriptor_cache.layout()],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
 					vertex::Layout::default()
 						.with_object::<Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(structs::Extent2D {
-					width: resolution.x as u32,
-					height: resolution.y as u32,
-				}))
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(
 					Rasterization::default()
 						.set_cull_mode(flags::CullMode::NONE)
@@ -450,12 +426,18 @@ impl RenderChainElement for Ui {
 						),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			subpass_id,
+			chain.render_pass(),
+			subpass_index,
 		)?;
 		Ok(())
 	}
 
-	fn preframe_update(&mut self, chain: &RenderChain) -> Result<()> {
+	fn deconstruct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+		self.drawable.destroy_pipeline()?;
+		Ok(())
+	}
+
+	fn prepare_for_frame(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		self.context.begin_frame(self.raw_input.take());
 
 		{
@@ -486,8 +468,9 @@ impl RenderChainElement for Ui {
 			}
 		}
 
-		let (image_ids, mut signals) = self.image_cache.load_pending(chain)?;
-		self.pending_gpu_signals.append(&mut signals);
+		let image_ids = self
+			.image_cache
+			.load_pending(chain, chain.signal_sender())?;
 
 		for (image_id, image_name) in image_ids.into_iter() {
 			use descriptor::update::*;
@@ -495,7 +478,7 @@ impl RenderChainElement for Ui {
 			let descriptor_set = self.descriptor_cache.insert(
 				image_id,
 				image_name.map(|v| format!("EditorUI.{}", v)),
-				chain,
+				chain.persistent_descriptor_pool(),
 			)?;
 			Queue::default()
 				.with(Operation::Write(WriteOp {
@@ -511,35 +494,30 @@ impl RenderChainElement for Ui {
 						layout: flags::ImageLayout::ShaderReadOnlyOptimal,
 					}]),
 				}))
-				.apply(&chain.logical());
+				.apply(&*chain.logical()?);
 		}
 
 		Ok(())
 	}
 
-	#[profiling::function]
-	fn prerecord_update(
+	fn prepare_for_submit(
 		&mut self,
-		chain: &RenderChain,
-		_buffer: &command::Buffer,
-		frame: usize,
-		_resolution: &Vector2<f32>,
-	) -> Result<bool> {
+		chain: &graphics::Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
 		self.render_callbacks.retain(|(_, retained)| *retained);
 
 		let (vertices, indices, draw_calls) = self.build_ui();
-		let mesh = &mut self.frames[frame].mesh;
-		let mut mesh_gpu_signals = mesh.write(&vertices, &indices, chain)?;
-		self.pending_gpu_signals.append(&mut mesh_gpu_signals);
-		self.frames[frame].draw_calls = draw_calls;
+		let mesh = &mut self.frames[frame_image].mesh;
+		mesh.write(&vertices, &indices, chain, chain.signal_sender())?;
+		self.frames[frame_image].draw_calls = draw_calls;
 
 		// returns true to enforce immediate mode drawing (rerecording every frame)
-		Ok(true)
+		Ok(RequiresRecording::CurrentFrame)
 	}
 
-	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
-		let frame = &self.frames[frame];
+	fn record(&mut self, buffer: &mut command::Buffer, buffer_index: usize) -> anyhow::Result<()> {
+		let frame = &self.frames[buffer_index];
 
 		buffer.begin_label("Draw:EditorUI", graphics::debug::LABEL_COLOR_DRAW);
 
@@ -568,10 +546,6 @@ impl RenderChainElement for Ui {
 		buffer.end_label();
 
 		Ok(())
-	}
-
-	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		self.pending_gpu_signals.drain(..).collect()
 	}
 }
 

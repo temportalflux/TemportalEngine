@@ -1,8 +1,10 @@
+use crossbeam_channel::Sender;
+
 use crate::graphics::{
-	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject,
-	GpuOperationBuilder, RenderChain,
+	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, GpuOpContext,
+	GpuOperationBuilder,
 };
-use std::sync;
+use std::sync::{self, Arc};
 
 pub struct Mesh<Index, Vertex>
 where
@@ -100,47 +102,44 @@ where
 		&mut self,
 		vertices: &Vec<Vertex>,
 		indices: &Vec<Index>,
-		render_chain: &RenderChain,
-	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<()> {
 		self.index_count = indices.len();
-
-		let mut gpu_signals = Vec::with_capacity(2);
 
 		if !vertices.is_empty() {
 			Self::write_buffer(
 				&mut self.vertex_buffer,
 				&vertices[..],
-				render_chain,
-				&mut gpu_signals,
+				context,
+				signal_sender,
 			)?;
 		}
 		if !indices.is_empty() {
-			Self::write_buffer(
-				&mut self.index_buffer,
-				&indices[..],
-				render_chain,
-				&mut gpu_signals,
-			)?;
+			Self::write_buffer(&mut self.index_buffer, &indices[..], context, signal_sender)?;
 		}
 
-		Ok(gpu_signals)
+		Ok(())
 	}
 
 	#[profiling::function]
-	fn write_buffer<T: Sized>(
+	fn write_buffer<T: Sized, C>(
 		buffer: &mut sync::Arc<buffer::Buffer>,
 		data: &[T],
-		render_chain: &RenderChain,
-		signals: &mut Vec<sync::Arc<command::Semaphore>>,
-	) -> anyhow::Result<()> {
+		context: &C,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<()>
+	where
+		C: GpuOpContext,
+	{
 		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
 			*buffer = sync::Arc::new(reallocated);
 		}
-		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), &render_chain)?
+		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), context)?
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)
-			.add_signal_to(signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 		Ok(())
 	}

@@ -1,4 +1,4 @@
-use crate::{asset, audio, input, task};
+use crate::{asset, audio, graphics::Chain, input, task};
 use anyhow::Result;
 use std::sync::{
 	atomic::{self, AtomicBool},
@@ -69,12 +69,12 @@ impl Engine {
 		self.window.as_ref()
 	}
 
-	pub fn render_chain(&self) -> Option<&crate::graphics::ArcRenderChain> {
-		self.window.as_ref().map(|win| win.render_chain())
+	pub fn display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
+		self.window.as_ref().map(|win| win.graphics_chain())
 	}
 
-	pub fn render_chain_write(&self) -> Option<RwLockWriteGuard<crate::graphics::RenderChain>> {
-		self.render_chain()
+	pub fn display_chain_write(&self) -> Option<RwLockWriteGuard<Chain>> {
+		self.display_chain()
 			.map(|chain| chain.write().ok())
 			.flatten()
 	}
@@ -198,20 +198,16 @@ impl Engine {
 						}
 					}
 
-					{
-						let render_chain = engine.read().unwrap().render_chain().cloned();
-						if let Some(render_chain) = render_chain {
-							profiling::scope!("render");
-							let mut chain = render_chain.write().unwrap();
-							match chain.render_frame() {
-								Ok(_) => prev_render_error = None,
-								Err(error) => {
-									if prev_render_error.is_none() {
-										log::error!("Frame render failed {:?}", error);
-									}
-									prev_render_error = Some(error);
-									*control_flow = winit::event_loop::ControlFlow::Exit;
+					if let Some(mut chain) = engine.read().unwrap().display_chain_write() {
+						profiling::scope!("render");
+						match chain.render_frame() {
+							Ok(_) => prev_render_error = None,
+							Err(error) => {
+								if prev_render_error.is_none() {
+									log::error!("Frame render failed {:?}", error);
 								}
+								prev_render_error = Some(error);
+								*control_flow = winit::event_loop::ControlFlow::Exit;
 							}
 						}
 					}
@@ -225,10 +221,12 @@ impl Engine {
 					log::info!(target: "engine", "Engine loop complete");
 					task::poll_until_empty();
 					if let Ok(eng) = engine.read() {
-						if let Some(chain_read) =
-							eng.render_chain().map(|chain| chain.read().unwrap())
-						{
-							chain_read.logical().wait_until_idle().unwrap();
+						if let Some(arc_chain) = eng.display_chain() {
+							if let Ok(chain) = arc_chain.read() {
+								if let Ok(logical) = chain.logical() {
+									logical.wait_until_idle().unwrap();
+								}
+							}
 						}
 					}
 					on_complete();

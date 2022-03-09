@@ -1,8 +1,19 @@
 use crate::graphics::{
-	alloc, buffer, command, device::logical, flags, image, structs::subresource, RenderChain,
+	alloc, buffer, command,
+	device::{logical, physical},
+	flags, image,
+	structs::subresource,
 };
 use crate::task::{self};
-use std::sync;
+use std::sync::{self, Arc};
+
+pub trait GpuOpContext {
+	fn physical_device(&self) -> anyhow::Result<Arc<physical::Device>>;
+	fn logical_device(&self) -> anyhow::Result<Arc<logical::Device>>;
+	fn object_allocator(&self) -> anyhow::Result<Arc<alloc::Allocator>>;
+	fn logical_queue(&self) -> &Arc<logical::Queue>;
+	fn task_command_pool(&self) -> &Arc<command::Pool>;
+}
 
 /// A copy from CPU to GPU operation that happens asynchronously.
 pub struct GpuOperationBuilder {
@@ -27,15 +38,18 @@ pub struct GpuOperationBuilder {
 
 impl GpuOperationBuilder {
 	#[profiling::function]
-	pub fn new(name: Option<String>, render_chain: &RenderChain) -> anyhow::Result<Self> {
-		let command_pool = render_chain.transient_command_pool();
+	pub fn new<T>(name: Option<String>, context: &T) -> anyhow::Result<Self>
+	where
+		T: GpuOpContext,
+	{
+		let command_pool = context.task_command_pool();
 
 		let task_name = name.as_ref().map(|v| format!("Task.{}", v));
 
 		Ok(Self {
-			device: render_chain.logical().clone(),
-			allocator: render_chain.allocator().clone(),
-			queue: render_chain.graphics_queue().clone(),
+			device: context.logical_device()?.clone(),
+			allocator: context.object_allocator()?.clone(),
+			queue: context.logical_queue().clone(),
 			command_pool: command_pool.clone(),
 			command_buffer: command_pool
 				.allocate_named_buffers(
@@ -45,13 +59,13 @@ impl GpuOperationBuilder {
 				.pop(),
 			staging_buffer: None,
 			cpu_signal_on_complete: sync::Arc::new(command::Fence::new(
-				&render_chain.logical(),
+				&context.logical_device()?,
 				name.as_ref()
 					.map(|v| format!("Task.{}.Signals.CPU.OnComplete", v)),
 				flags::FenceState::default(),
 			)?),
 			gpu_signal_on_complete: sync::Arc::new(command::Semaphore::new(
-				&render_chain.logical(),
+				&context.logical_device()?,
 				name.as_ref()
 					.map(|v| format!("Task.{}.Signals.GPU.OnComplete", v)),
 			)?),
@@ -100,7 +114,7 @@ impl GpuOperationBuilder {
 			// Wait for the command to be complete
 			arc_self
 				.device
-				.wait_for(&arc_self.cpu_signal_on_complete, u64::MAX)?;
+				.wait_for(vec![&arc_self.cpu_signal_on_complete], u64::MAX)?;
 			// Send the arc to be dropped on the main thread because thats where the graphics objects need to be.
 			task::send_to_main_thread(arc_self)?;
 			Ok(())
@@ -131,13 +145,21 @@ impl GpuOperationBuilder {
 		self
 	}
 
+	pub fn send_signal_to(
+		self,
+		sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<Self> {
+		sender.send(self.gpu_signal_on_complete())?;
+		Ok(self)
+	}
+
 	/// Stalls the current thread until the [`cpu-signal (fence)`](command::Fence)
 	/// has been signalled by the GPU to indicate that the operation is complete.
 	#[profiling::function]
 	pub fn wait_until_idle(self) -> anyhow::Result<()> {
 		Ok(self
 			.device
-			.wait_for(&self.cpu_signal_on_complete, u64::MAX)?)
+			.wait_for(vec![&self.cpu_signal_on_complete], u64::MAX)?)
 	}
 
 	/// Instructs the task to try to move an image from an

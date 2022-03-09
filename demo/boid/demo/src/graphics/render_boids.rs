@@ -1,13 +1,18 @@
 use crate::{
 	engine::{self, asset, math::nalgebra::Vector2, Application},
 	graphics::{
-		self, buffer,
+		self, alloc, buffer,
 		camera::{self, DefaultCamera},
+		chain::operation::RequiresRecording,
+		chain::Operation,
 		command,
 		descriptor::{self, layout::SetLayout},
-		flags, image, image_view, pipeline, sampler, shader, structs,
+		device::logical,
+		flags, image, image_view, pipeline,
+		procedure::Phase,
+		sampler, shader, structs,
 		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-		GpuOperationBuilder, Instance, RenderChain, Uniform, Vertex,
+		Chain, GpuOpContext, GpuOperationBuilder, Instance, Uniform, Vertex,
 	},
 	BoidDemo,
 };
@@ -24,7 +29,6 @@ pub struct RenderBoids {
 	frames: Vec<Frame>,
 	active_instance_buffer: Arc<buffer::Buffer>,
 	active_instance_count: usize,
-	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 
 	index_count: usize,
 	index_buffer: Arc<buffer::Buffer>,
@@ -44,131 +48,121 @@ pub struct RenderBoids {
 	pipeline: Option<Arc<pipeline::Pipeline>>,
 	pipeline_layout: Option<pipeline::layout::Layout>,
 
-	render_chain: Arc<RwLock<RenderChain>>,
+	chain: Arc<RwLock<Chain>>,
 }
 
 impl RenderBoids {
 	pub fn new(
-		render_chain: &Arc<RwLock<RenderChain>>,
+		arc_chain: &Arc<RwLock<Chain>>,
+		phase: &Arc<Phase>,
 		wrapping_world_bounds_min: &Vector2<f32>,
 		wrapping_world_bounds_max: &Vector2<f32>,
 	) -> Result<Arc<RwLock<RenderBoids>>> {
-		let vert_shader = Arc::new(Self::load_shader(
-			&render_chain.read().unwrap(),
-			engine::asset::Id::new(BoidDemo::name(), "vertex"),
-		)?);
-		let frag_shader = Arc::new(Self::load_shader(
-			&render_chain.read().unwrap(),
-			engine::asset::Id::new(BoidDemo::name(), "fragment"),
-		)?);
+		let strong = {
+			let chain = arc_chain.read().unwrap();
+			let vert_shader = Arc::new(Self::load_shader(
+				engine::asset::Id::new(BoidDemo::name(), "vertex"),
+				&chain.logical()?,
+			)?);
+			let frag_shader = Arc::new(Self::load_shader(
+				engine::asset::Id::new(BoidDemo::name(), "fragment"),
+				&chain.logical()?,
+			)?);
 
-		let image =
-			Self::create_boid_image(&render_chain.read().unwrap(), Self::load_boid_texture()?)?;
-		let image_view = Arc::new(Self::create_image_view(
-			&render_chain.read().unwrap(),
-			image,
-		)?);
-		let image_sampler = Arc::new(
-			sampler::Sampler::builder()
-				.with_name("BoidModel.Image.Sampler")
-				.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
-				.with_max_anisotropy(Some(
-					render_chain
-						.read()
-						.unwrap()
-						.physical()
-						.max_sampler_anisotropy(),
-				))
-				.build(&render_chain.read().unwrap().logical())?,
-		);
+			let image = Self::create_boid_image(Self::load_boid_texture()?, &*chain)?;
+			let image_view = Arc::new(Self::create_image_view(image, &chain.logical()?)?);
+			let image_sampler = Arc::new(
+				sampler::Sampler::builder()
+					.with_name("BoidModel.Image.Sampler")
+					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
+					.with_max_anisotropy(Some(chain.physical()?.max_sampler_anisotropy()))
+					.build(&chain.logical()?)?,
+			);
 
-		let image_descriptor_layout = Arc::new(
-			SetLayout::builder()
-				.with_name("BoidModel.Image.DescriptorLayout")
-				.with_binding(
-					0,
-					flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
-					1,
-					flags::ShaderKind::Fragment,
-				)
-				.build(&render_chain.read().unwrap().logical())?,
-		);
+			let image_descriptor_layout = Arc::new(
+				SetLayout::builder()
+					.with_name("BoidModel.Image.DescriptorLayout")
+					.with_binding(
+						0,
+						flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
+						1,
+						flags::ShaderKind::Fragment,
+					)
+					.build(&chain.logical()?)?,
+			);
 
-		let image_descriptor_set = render_chain
-			.write()
-			.unwrap()
-			.persistent_descriptor_pool()
-			.write()
-			.unwrap()
-			.allocate_named_descriptor_sets(&vec![(
-				image_descriptor_layout.clone(),
-				Some("BoidModel.Image.Descriptor".to_string()),
-			)])?
-			.pop()
-			.unwrap();
+			let image_descriptor_set = chain
+				.persistent_descriptor_pool()
+				.write()
+				.unwrap()
+				.allocate_named_descriptor_sets(&vec![(
+					image_descriptor_layout.clone(),
+					Some("BoidModel.Image.Descriptor".to_string()),
+				)])?
+				.pop()
+				.unwrap();
 
-		let (vertex_buffer, index_buffer, index_count) =
-			Self::create_boid_model(&render_chain.read().unwrap())?;
-		let active_instance_buffer = Arc::new(Self::create_instance_buffer(
-			&render_chain.read().unwrap(),
-			10,
-		)?);
+			let (vertex_buffer, index_buffer, index_count) = Self::create_boid_model(&*chain)?;
+			let active_instance_buffer =
+				Arc::new(Self::create_instance_buffer(&chain.allocator()?, 10)?);
 
-		let frames = vec![
-			Frame {
-				instance_buffer: active_instance_buffer.clone(),
-				instance_count: 0,
-			};
-			render_chain.read().unwrap().frame_count()
-		];
+			let frames = vec![
+				Frame {
+					instance_buffer: active_instance_buffer.clone(),
+					instance_count: 0,
+				};
+				chain.view_count()
+			];
 
-		let strong = Arc::new(RwLock::new(RenderBoids {
-			render_chain: render_chain.clone(),
-			pipeline_layout: None,
-			pipeline: None,
-			vert_shader,
-			frag_shader,
-			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
+			let camera_uniform = Uniform::new::<camera::ViewProjection, &str>(
 				"RenderBoids.Camera",
-				&render_chain.read().unwrap(),
-			)?,
-			camera: camera::DefaultCamera::default()
-				.with_position([0.0, 0.0, -10.0].into())
-				.with_projection(camera::Projection::Orthographic(
-					camera::OrthographicBounds {
-						x: [wrapping_world_bounds_min.x, wrapping_world_bounds_max.x].into(),
-						y: [wrapping_world_bounds_min.y, wrapping_world_bounds_max.y].into(),
-						z: [0.01, 100.0].into(),
-					},
-				)),
-			image_view,
-			image_sampler,
-			image_descriptor_layout,
-			image_descriptor_set,
-			vertex_buffer,
-			index_buffer,
-			index_count,
-			active_instance_buffer,
-			active_instance_count: 0,
-			frames,
-			pending_gpu_signals: Vec::new(),
-		}));
+				&chain.logical()?,
+				&chain.allocator()?,
+				chain.persistent_descriptor_pool(),
+				chain.view_count(),
+			)?;
 
-		render_chain
-			.write()
-			.unwrap()
-			.add_render_chain_element(None, &strong)?;
-
+			Arc::new(RwLock::new(RenderBoids {
+				chain: arc_chain.clone(),
+				pipeline_layout: None,
+				pipeline: None,
+				vert_shader,
+				frag_shader,
+				camera_uniform,
+				camera: camera::DefaultCamera::default()
+					.with_position([0.0, 0.0, -10.0].into())
+					.with_projection(camera::Projection::Orthographic(
+						camera::OrthographicBounds {
+							x: [wrapping_world_bounds_min.x, wrapping_world_bounds_max.x].into(),
+							y: [wrapping_world_bounds_min.y, wrapping_world_bounds_max.y].into(),
+							z: [0.01, 100.0].into(),
+						},
+					)),
+				image_view,
+				image_sampler,
+				image_descriptor_layout,
+				image_descriptor_set,
+				vertex_buffer,
+				index_buffer,
+				index_count,
+				active_instance_buffer,
+				active_instance_count: 0,
+				frames,
+			}))
+		};
+		if let Ok(mut chain) = arc_chain.write() {
+			chain.add_operation(phase, Arc::downgrade(&strong))?;
+		}
 		Ok(strong)
 	}
 
-	fn load_shader(render_chain: &RenderChain, id: asset::Id) -> Result<shader::Module> {
+	fn load_shader(id: asset::Id, logical: &Arc<logical::Device>) -> Result<shader::Module> {
 		let shader = asset::Loader::load_sync(&id)?
-			.downcast::<engine::graphics::Shader>()
+			.downcast::<graphics::Shader>()
 			.unwrap();
 
 		Ok(shader::Module::create(
-			render_chain.logical().clone(),
+			logical.clone(),
 			shader::Info {
 				name: Some(format!("RenderBoids.Shader.{:?}", shader.kind())),
 				kind: shader.kind(),
@@ -187,8 +181,8 @@ impl RenderBoids {
 	}
 
 	fn create_boid_image(
-		render_chain: &RenderChain,
 		texture: Box<graphics::Texture>,
+		context: &impl GpuOpContext,
 	) -> Result<Arc<image::Image>> {
 		let image = Arc::new(
 			graphics::image::Image::builder()
@@ -206,10 +200,10 @@ impl RenderBoids {
 				})
 				.with_usage(flags::ImageUsage::TRANSFER_DST)
 				.with_usage(flags::ImageUsage::SAMPLED)
-				.build(&render_chain.allocator())?,
+				.build(&context.object_allocator()?)?,
 		);
 		let _ = engine::task::current().block_on(
-			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+			GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
 				.begin()?
 				.format_image_for_write(&image)
 				.stage(&texture.binary()[..])?
@@ -221,8 +215,8 @@ impl RenderBoids {
 	}
 
 	fn create_image_view(
-		render_chain: &RenderChain,
 		image: Arc<image::Image>,
+		logical: &Arc<logical::Device>,
 	) -> Result<image_view::View> {
 		Ok(image_view::View::builder()
 			.with_name("BoidModel.Image.View")
@@ -231,11 +225,11 @@ impl RenderBoids {
 			.with_range(
 				structs::subresource::Range::default().with_aspect(flags::ImageAspect::COLOR),
 			)
-			.build(&render_chain.logical())?)
+			.build(logical)?)
 	}
 
 	fn create_boid_model(
-		render_chain: &RenderChain,
+		context: &impl GpuOpContext,
 	) -> Result<(Arc<buffer::Buffer>, Arc<buffer::Buffer>, usize)> {
 		let half_unit = 0.5;
 		let vertices = vec![
@@ -266,13 +260,13 @@ impl RenderBoids {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&render_chain.allocator())?,
+				.build(&context.object_allocator()?)?,
 		);
 
 		let _ = engine::task::current().block_on(
 			GpuOperationBuilder::new(
 				vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
+				context,
 			)?
 			.begin()?
 			.stage(&vertices[..])?
@@ -293,25 +287,22 @@ impl RenderBoids {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&render_chain.allocator())?,
+				.build(&context.object_allocator()?)?,
 		);
 
 		let _ = engine::task::current().block_on(
-			GpuOperationBuilder::new(
-				index_buffer.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
-			)?
-			.begin()?
-			.stage(&indices[..])?
-			.copy_stage_to_buffer(&index_buffer)
-			.end()?,
+			GpuOperationBuilder::new(index_buffer.wrap_name(|v| format!("Write({})", v)), context)?
+				.begin()?
+				.stage(&indices[..])?
+				.copy_stage_to_buffer(&index_buffer)
+				.end()?,
 		);
 
 		Ok((vertex_buffer, index_buffer, indices.len()))
 	}
 
 	fn create_instance_buffer(
-		render_chain: &RenderChain,
+		allocator: &Arc<alloc::Allocator>,
 		instance_count: usize,
 	) -> Result<buffer::Buffer> {
 		Ok(graphics::buffer::Buffer::builder()
@@ -325,19 +316,12 @@ impl RenderBoids {
 					.requires(flags::MemoryProperty::DEVICE_LOCAL),
 			)
 			.with_sharing(flags::SharingMode::EXCLUSIVE)
-			.build(&render_chain.allocator())?)
+			.build(allocator)?)
 	}
 }
 
-impl graphics::RenderChainElement for RenderBoids {
-	fn name(&self) -> &'static str {
-		"render-boids"
-	}
-
-	fn initialize_with(
-		&mut self,
-		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>> {
+impl Operation for RenderBoids {
+	fn initialize(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		use graphics::descriptor::update::*;
 
 		Queue::default()
@@ -354,25 +338,14 @@ impl graphics::RenderChainElement for RenderBoids {
 					layout: flags::ImageLayout::ShaderReadOnlyOptimal,
 				}]),
 			}))
-			.apply(&render_chain.logical());
+			.apply(&*chain.logical()?);
 
-		self.camera_uniform.write_descriptor_sets(render_chain);
-
-		Ok(Vec::new())
-	}
-
-	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<()> {
-		self.pipeline = None;
-		self.pipeline_layout = None;
+		self.camera_uniform
+			.write_descriptor_sets(&*chain.logical()?);
 		Ok(())
 	}
 
-	fn on_render_chain_constructed(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> Result<()> {
+	fn construct(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use flags::blend::{Constant::*, Factor::*, Source::*};
 		use pipeline::state::*;
 		self.pipeline_layout = Some(
@@ -380,7 +353,7 @@ impl graphics::RenderChainElement for RenderBoids {
 				.with_name("RenderBoids.PipelineLayout")
 				.with_descriptors(self.camera_uniform.layout())
 				.with_descriptors(&self.image_descriptor_layout)
-				.build(&render_chain.logical())?,
+				.build(&chain.logical()?)?,
 		);
 		self.pipeline = Some(Arc::new(
 			pipeline::Pipeline::builder()
@@ -392,21 +365,7 @@ impl graphics::RenderChainElement for RenderBoids {
 						.with_object::<Vertex>(0, flags::VertexInputRate::VERTEX)
 						.with_object::<Instance>(1, flags::VertexInputRate::INSTANCE),
 				)
-				.set_viewport_state(
-					Viewport::default()
-						.add_viewport(graphics::utility::Viewport::default().set_size(
-							structs::Extent2D {
-								width: resolution.x as u32,
-								height: resolution.y as u32,
-							},
-						))
-						.add_scissor(graphics::utility::Scissor::default().set_size(
-							structs::Extent2D {
-								width: resolution.x as u32,
-								height: resolution.y as u32,
-							},
-						)),
-				)
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(Rasterization::default())
 				.set_color_blending(color_blend::ColorBlend::default().add_attachment(
 					color_blend::Attachment {
@@ -420,21 +379,52 @@ impl graphics::RenderChainElement for RenderBoids {
 					},
 				))
 				.build(
-					render_chain.logical().clone(),
+					chain.logical()?,
 					&self.pipeline_layout.as_ref().unwrap(),
-					&render_chain.render_pass(),
-					subpass_id,
+					&chain.render_pass(),
+					subpass_index,
 				)?,
 		));
 
 		Ok(())
 	}
 
-	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		self.pending_gpu_signals.drain(..).collect()
+	fn deconstruct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+		self.pipeline = None;
+		self.pipeline_layout = None;
+		Ok(())
 	}
 
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
+	fn prepare_for_submit(
+		&mut self,
+		chain: &Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
+		self.camera_uniform.write_data(
+			frame_image,
+			&self.camera.as_uniform_matrix(&chain.resolution()),
+		)?;
+
+		let mut requires_rerecording = false;
+		if !Arc::ptr_eq(
+			&self.frames[frame_image].instance_buffer,
+			&self.active_instance_buffer,
+		) {
+			self.frames[frame_image].instance_buffer = self.active_instance_buffer.clone();
+			requires_rerecording = true;
+		}
+		if self.frames[frame_image].instance_count != self.active_instance_count {
+			self.frames[frame_image].instance_count = self.active_instance_count;
+			requires_rerecording = true;
+		}
+
+		Ok(match requires_rerecording {
+			true => RequiresRecording::CurrentFrame,
+			false => RequiresRecording::NotRequired,
+		})
+	}
+
+	fn record(&mut self, buffer: &mut command::Buffer, buffer_index: usize) -> anyhow::Result<()> {
 		use graphics::debug;
 
 		buffer.begin_label("Draw:Boids", debug::LABEL_COLOR_DRAW);
@@ -448,44 +438,23 @@ impl graphics::RenderChainElement for RenderBoids {
 			self.pipeline_layout.as_ref().unwrap(),
 			0,
 			vec![
-				&self.camera_uniform.get_set(frame).unwrap(),
+				&self.camera_uniform.get_set(buffer_index).unwrap(),
 				&self.image_descriptor_set.upgrade().unwrap(),
 			],
 		);
 		buffer.bind_vertex_buffers(0, vec![&self.vertex_buffer], vec![0]);
-		buffer.bind_vertex_buffers(1, vec![&self.frames[frame].instance_buffer], vec![0]);
+		buffer.bind_vertex_buffers(1, vec![&self.frames[buffer_index].instance_buffer], vec![0]);
 		buffer.bind_index_buffer(&self.index_buffer, 0);
-		buffer.draw(self.index_count, 0, self.frames[frame].instance_count, 0, 0);
+		buffer.draw(
+			self.index_count,
+			0,
+			self.frames[buffer_index].instance_count,
+			0,
+			0,
+		);
 
 		buffer.end_label();
-
 		Ok(())
-	}
-
-	fn prerecord_update(
-		&mut self,
-		_chain: &graphics::RenderChain,
-		_buffer: &command::Buffer,
-		frame: usize,
-		resolution: &Vector2<f32>,
-	) -> Result<bool> {
-		self.camera_uniform
-			.write_data(frame, &self.camera.as_uniform_matrix(resolution))?;
-
-		let mut requires_rerecording = false;
-		if !Arc::ptr_eq(
-			&self.frames[frame].instance_buffer,
-			&self.active_instance_buffer,
-		) {
-			self.frames[frame].instance_buffer = self.active_instance_buffer.clone();
-			requires_rerecording = true;
-		}
-		if self.frames[frame].instance_count != self.active_instance_count {
-			self.frames[frame].instance_count = self.active_instance_count;
-			requires_rerecording = true;
-		}
-
-		Ok(requires_rerecording)
 	}
 }
 
@@ -496,7 +465,7 @@ impl RenderBoids {
 		let supported_instance_count =
 			self.active_instance_buffer.size() / std::mem::size_of::<Instance>();
 
-		let mut chain = self.render_chain.write().unwrap();
+		let mut chain = self.chain.write().unwrap();
 
 		if supported_instance_count < instances.len() {
 			log::info!(
@@ -504,7 +473,7 @@ impl RenderBoids {
 				supported_instance_count + expansion_step
 			);
 			self.active_instance_buffer = Arc::new(Self::create_instance_buffer(
-				&chain,
+				&chain.allocator()?,
 				supported_instance_count + expansion_step,
 			)?);
 		}
@@ -514,12 +483,12 @@ impl RenderBoids {
 			GpuOperationBuilder::new(
 				self.active_instance_buffer
 					.wrap_name(|v| format!("Write({})", v)),
-				&mut chain,
+				&*chain,
 			)?
 			.begin()?
 			.stage(&instances[..])?
 			.copy_stage_to_buffer(&self.active_instance_buffer)
-			.add_signal_to(&mut self.pending_gpu_signals)
+			.send_signal_to(chain.signal_sender())?
 			.end()?;
 		}
 

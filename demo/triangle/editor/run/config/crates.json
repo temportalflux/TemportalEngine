@@ -1,13 +1,13 @@
 {
-  "crates": {
-    "../../../../engine": {
-      "pak_destination": "../../demo/run/paks"
-    },
-    "../../../../editor": {
-      "pak_destination": "paks"
-    },
-    "../../demo": {
-      "pak_destination": "../../demo/run/paks"
-    }
-  }
+	"crates": {
+		"../../../../engine": {
+			"pak_destinations": []
+		},
+		"../../demo": {
+			"pak_destinations": []
+		},
+		"../../../../editor": {
+			"pak_destinations": []
+		}
+	}
 }

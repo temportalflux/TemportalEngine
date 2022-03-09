@@ -1,6 +1,6 @@
 use crate::{
 	graphics::{device::physical, AppInfo},
-	math::nalgebra::{Vector2, Vector4},
+	math::nalgebra::Vector2,
 	window, Application, Engine,
 };
 use anyhow::Result;
@@ -11,8 +11,6 @@ pub struct Builder {
 	resizable: bool,
 	app_info: AppInfo,
 	constraints: Vec<physical::Constraint>,
-	render_pass_clear_color: Vector4<f32>,
-	create_depth_image: bool,
 }
 
 impl Default for Builder {
@@ -23,8 +21,6 @@ impl Default for Builder {
 			resizable: false,
 			app_info: AppInfo::default(),
 			constraints: physical::default_constraints(),
-			render_pass_clear_color: [0.0, 0.0, 0.0, 1.0].into(),
-			create_depth_image: false,
 		}
 	}
 }
@@ -55,16 +51,6 @@ impl Builder {
 		self
 	}
 
-	pub fn with_clear_color(mut self, color: Vector4<f32>) -> Self {
-		self.render_pass_clear_color = color;
-		self
-	}
-
-	pub fn with_depth_attachment(mut self) -> Self {
-		self.create_depth_image = true;
-		self
-	}
-
 	#[profiling::function]
 	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window> {
 		log::info!(
@@ -88,9 +74,8 @@ impl Builder {
 				.build(engine.event_loop())?,
 			self.app_info,
 			self.constraints,
-			self.render_pass_clear_color,
 		)?;
-		window.create_render_chain(self.create_depth_image)?;
+		window.create_render_chain()?;
 
 		{
 			use crate::input::{self, event};

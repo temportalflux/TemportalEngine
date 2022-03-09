@@ -1,12 +1,12 @@
 use crate::graphics::{
 	alloc, buffer,
 	descriptor::{self, layout::SetLayout},
+	device::logical,
 	flags,
 	utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder},
-	RenderChain,
 };
 use anyhow::Result;
-use std::sync::{Arc, Weak};
+use std::sync::{Arc, RwLock, Weak};
 
 pub struct Uniform {
 	buffers: Vec<Arc<buffer::Buffer>>,
@@ -15,7 +15,13 @@ pub struct Uniform {
 }
 
 impl Uniform {
-	pub fn new<TData, TStr>(name: TStr, chain: &RenderChain) -> Result<Self>
+	pub fn new<TData, TStr>(
+		name: TStr,
+		logical: &Arc<logical::Device>,
+		allocator: &Arc<alloc::Allocator>,
+		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
+		view_count: usize,
+	) -> Result<Self>
 	where
 		TStr: Into<String>,
 		TData: Default + Sized,
@@ -31,15 +37,14 @@ impl Uniform {
 					1,
 					flags::ShaderKind::Vertex,
 				)
-				.build(&chain.logical())?,
+				.build(logical)?,
 		);
 
-		let descriptor_sets = chain
-			.persistent_descriptor_pool()
+		let descriptor_sets = descriptor_pool
 			.write()
 			.unwrap()
 			.allocate_named_descriptor_sets(
-				&(0..chain.frame_count())
+				&(0..view_count)
 					.map(|i| {
 						(
 							descriptor_layout.clone(),
@@ -50,7 +55,7 @@ impl Uniform {
 			)?;
 
 		let mut buffers = Vec::new();
-		for i in 0..chain.frame_count() {
+		for i in 0..view_count {
 			let buffer = buffer::Buffer::builder()
 				.with_name(format!("{}.Frame{}", uniform_name, i))
 				.with_usage(flags::BufferUsage::UNIFORM_BUFFER)
@@ -62,7 +67,7 @@ impl Uniform {
 						.requires(flags::MemoryProperty::HOST_COHERENT),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&chain.allocator())?;
+				.build(allocator)?;
 
 			buffers.push(Arc::new(buffer));
 		}
@@ -72,13 +77,13 @@ impl Uniform {
 			buffers,
 		};
 		let default_view_proj = TData::default();
-		for frame in 0..chain.frame_count() {
+		for frame in 0..view_count {
 			inst.write_data(frame, &default_view_proj)?;
 		}
 		Ok(inst)
 	}
 
-	pub fn write_descriptor_sets(&self, chain: &RenderChain) {
+	pub fn write_descriptor_sets(&self, logical: &logical::Device) {
 		use alloc::Object;
 		use descriptor::update::*;
 		let mut set_updates = Queue::default();
@@ -97,7 +102,7 @@ impl Uniform {
 				}]),
 			}));
 		}
-		set_updates.apply(&chain.logical());
+		set_updates.apply(logical);
 	}
 
 	pub fn layout(&self) -> &Arc<SetLayout> {

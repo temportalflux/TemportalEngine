@@ -1,9 +1,12 @@
+use crossbeam_channel::Sender;
+
 use crate::{
 	graphics::{
 		self, command, flags,
 		font::{Font, Glyph},
 		image_view, structs,
 		utility::{NameableBuilder, NamedObject},
+		GpuOpContext,
 	},
 	math::nalgebra::Vector2,
 };
@@ -69,15 +72,15 @@ impl PendingAtlas {
 impl PendingAtlas {
 	pub fn load(
 		self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<(Loaded, Vec<sync::Arc<command::Semaphore>>)> {
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<sync::Arc<command::Semaphore>>,
+	) -> anyhow::Result<Loaded> {
 		use graphics::{
 			alloc, image,
 			structs::subresource,
 			utility::{BuildFromAllocator, BuildFromDevice},
 			GpuOperationBuilder,
 		};
-		let mut signals = Vec::new();
 
 		let atlas_name = format!("UI.FontAtlas:{}", self.id);
 
@@ -97,16 +100,16 @@ impl PendingAtlas {
 				})
 				.with_usage(flags::ImageUsage::TRANSFER_DST)
 				.with_usage(flags::ImageUsage::SAMPLED)
-				.build(&render_chain.allocator())?,
+				.build(&context.object_allocator()?)?,
 		);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&self.binary[..])?
 			.copy_stage_to_image(&image)
 			.format_image_for_read(&image)
-			.add_signal_to(&mut signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 
 		let view = sync::Arc::new(
@@ -115,20 +118,17 @@ impl PendingAtlas {
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
-				.build(&render_chain.logical())?,
+				.build(&context.logical_device()?)?,
 		);
 
-		Ok((
-			Loaded {
-				name: atlas_name,
-				view,
-				size: self.size,
-				glyph_map: self.glyph_map,
-				line_height: self.line_height,
-				width_edge: self.width_edge,
-			},
-			signals,
-		))
+		Ok(Loaded {
+			name: atlas_name,
+			view,
+			size: self.size,
+			glyph_map: self.glyph_map,
+			line_height: self.line_height,
+			width_edge: self.width_edge,
+		})
 	}
 }
 

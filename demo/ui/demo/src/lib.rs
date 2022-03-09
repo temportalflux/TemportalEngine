@@ -1,5 +1,5 @@
 use anyhow::Result;
-use engine::{asset::statics, ui, Application};
+use engine::{asset::statics, graphics::chain::procedure::DefaultProcedure, ui, Application};
 pub use temportal_engine as engine;
 
 pub struct UIDemo();
@@ -24,10 +24,16 @@ pub fn run() -> Result<()> {
 		.with_application::<UIDemo>()
 		.build(&mut engine)?;
 
+	let render_phase = {
+		let arc = engine.display_chain().unwrap();
+		let mut chain = arc.write().unwrap();
+		chain.apply_procedure::<DefaultProcedure>()?.into_inner()
+	};
+
 	// Create the UI system and widget tree
 	{
 		use ui::raui::*;
-		ui::System::new(engine.render_chain().unwrap())?
+		ui::System::new(engine.display_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?
 			.with_texture(&UIDemo::get_asset_id("textures/background"))?
@@ -143,7 +149,7 @@ pub fn run() -> Result<()> {
 							)),
 					),
 			))
-			.attach_system(&mut engine, None)?;
+			.attach_system(&mut engine, &render_phase)?;
 	}
 
 	let engine = engine.into_arclock();

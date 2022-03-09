@@ -1,16 +1,20 @@
 use crate::{
 	asset,
 	graphics::{
-		self, buffer, camera, command, flags, pipeline, structs,
+		self, buffer, camera,
+		chain::{operation::RequiresRecording, Chain, Operation},
+		command, flags, pipeline,
 		types::{Vec3, Vec4},
 		utility::NamedObject,
-		vertex_object, Drawable, GpuOperationBuilder, Uniform,
+		vertex_object, Drawable, GpuOpContext, GpuOperationBuilder, Uniform,
 	},
-	math::nalgebra::{Point3, Vector2, Vector3, Vector4},
+	math::nalgebra::{Point3, Vector3, Vector4},
 	EngineSystem,
 };
 use anyhow::Result;
+use crossbeam_channel::Sender;
 use std::sync::{Arc, RwLock};
+use vulkan_rs::procedure::Phase;
 
 pub enum DebugRenderPipeline {
 	LineSegment,
@@ -47,7 +51,6 @@ pub struct Point {
 }
 
 pub struct DebugRender {
-	pending_gpu_signals: Vec<Arc<command::Semaphore>>,
 	pending_objects: Vec<DebugDraw>,
 	camera_uniform: Uniform,
 	frames: Vec<Frame>,
@@ -61,21 +64,24 @@ struct Frame {
 }
 
 impl DebugRender {
-	pub fn new(chain: &graphics::RenderChain) -> Result<Self> {
+	pub fn new(chain: &Chain) -> Result<Self> {
 		Ok(Self {
 			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
 			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
 				"DebugRender.Camera",
-				chain,
+				&chain.logical()?,
+				&chain.allocator()?,
+				chain.persistent_descriptor_pool(),
+				chain.view_count(),
 			)?,
 			pending_objects: Vec::new(),
-			pending_gpu_signals: Vec::new(),
 		})
 	}
 
 	pub fn create<F>(
-		chain: &Arc<RwLock<graphics::RenderChain>>,
+		chain: &Arc<RwLock<Chain>>,
+		phase: &Arc<Phase>,
 		initializer: F,
 	) -> Result<Arc<RwLock<Self>>>
 	where
@@ -84,7 +90,7 @@ impl DebugRender {
 		let mut chain_write = chain.write().unwrap();
 		let inst = initializer(Self::new(&chain_write)?)?;
 		let render = Arc::new(RwLock::new(inst));
-		chain_write.add_render_chain_element(None, &render)?;
+		chain_write.add_operation(phase, Arc::downgrade(&render))?;
 		Ok(render)
 	}
 
@@ -139,34 +145,26 @@ impl EngineSystem for DebugRender {
 	}
 }
 
-impl graphics::RenderChainElement for DebugRender {
-	fn name(&self) -> &'static str {
-		"render-debug"
-	}
-
+impl Operation for DebugRender {
 	#[profiling::function]
-	fn initialize_with(
-		&mut self,
-		chain: &mut graphics::RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>> {
-		let mut gpu_signals = Vec::new();
-
-		self.camera_uniform.write_descriptor_sets(chain);
-		self.line_drawable.create_shaders(chain)?;
+	fn initialize(&mut self, chain: &Chain) -> anyhow::Result<()> {
+		self.camera_uniform
+			.write_descriptor_sets(&*chain.logical()?);
+		self.line_drawable.create_shaders(&chain.logical()?)?;
 
 		self.frames.clear();
-		for i in 0..chain.frame_count() {
+		for i in 0..chain.view_count() {
 			self.frames.push(Frame {
 				vertex_buffer: buffer::Buffer::create_gpu(
 					Some(format!("DebugRender.Frame{}.VertexBuffer", i)),
-					&chain.allocator(),
+					&chain.allocator()?,
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
 					None,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
 					Some(format!("DebugRender.Frame{}.IndexBuffer", i)),
-					&chain.allocator(),
+					&chain.allocator()?,
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
 					Some(flags::IndexType::UINT32),
@@ -175,29 +173,17 @@ impl graphics::RenderChainElement for DebugRender {
 			});
 		}
 		for frame in self.frames.iter_mut() {
-			let mut signals = frame.write_buffer_data(&chain, &self.pending_objects)?;
-			gpu_signals.append(&mut signals);
+			frame.write_buffer_data(chain, chain.signal_sender(), &self.pending_objects)?;
 		}
 
-		Ok(gpu_signals)
-	}
-
-	#[profiling::function]
-	fn destroy_render_chain(&mut self, render_chain: &graphics::RenderChain) -> Result<()> {
-		self.line_drawable.destroy_pipeline(render_chain)?;
 		Ok(())
 	}
 
 	#[profiling::function]
-	fn on_render_chain_constructed(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> Result<()> {
+	fn construct(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use pipeline::state::*;
-		Ok(self.line_drawable.create_pipeline(
-			render_chain,
+		self.line_drawable.create_pipeline(
+			&chain.logical()?,
 			vec![self.camera_uniform.layout()],
 			pipeline::Pipeline::builder()
 				.with_topology(
@@ -207,10 +193,7 @@ impl graphics::RenderChainElement for DebugRender {
 					vertex::Layout::default()
 						.with_object::<LineSegmentVertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(structs::Extent2D {
-					width: resolution.x as u32,
-					height: resolution.y as u32,
-				}))
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(
 					Rasterization::default().set_cull_mode(flags::CullMode::NONE),
 				)
@@ -218,39 +201,46 @@ impl graphics::RenderChainElement for DebugRender {
 					color_blend::ColorBlend::default()
 						.add_attachment(color_blend::Attachment::default()),
 				),
-			subpass_id,
-		)?)
+			chain.render_pass(),
+			subpass_index,
+		)?;
+		Ok(())
 	}
 
-	/// Update the data (like uniforms) for a given frame.
 	#[profiling::function]
-	fn prerecord_update(
+	fn deconstruct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+		self.line_drawable.destroy_pipeline()?;
+		Ok(())
+	}
+
+	fn prepare_for_submit(
 		&mut self,
-		chain: &graphics::RenderChain,
-		_buffer: &command::Buffer,
-		frame: usize,
-		resolution: &Vector2<f32>,
-	) -> Result<bool> {
+		chain: &Chain,
+		frame_image: usize,
+	) -> anyhow::Result<RequiresRecording> {
 		self.camera_uniform.write_data(
-			frame,
-			&camera::DefaultCamera::default().as_uniform_matrix(resolution),
+			frame_image,
+			&camera::DefaultCamera::default().as_uniform_matrix(&chain.resolution()),
 		)?;
 
-		let mut signals = self.frames[frame].write_buffer_data(&chain, &self.pending_objects)?;
-		self.pending_gpu_signals.append(&mut signals);
+		self.frames[frame_image].write_buffer_data(
+			chain,
+			chain.signal_sender(),
+			&self.pending_objects,
+		)?;
 
-		Ok(false)
+		Ok(RequiresRecording::NotRequired)
 	}
 
-	/// Record to the primary command buffer for a given frame
-	#[profiling::function]
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, frame: usize) -> Result<()> {
+	fn record(&mut self, buffer: &mut command::Buffer, buffer_index: usize) -> anyhow::Result<()> {
 		use graphics::debug;
-		let frame_data = &self.frames[frame];
+		let frame_data = &self.frames[buffer_index];
 		buffer.begin_label("Draw:Debug", debug::LABEL_COLOR_DRAW);
 		self.line_drawable.bind_pipeline(buffer);
-		self.line_drawable
-			.bind_descriptors(buffer, vec![&self.camera_uniform.get_set(frame).unwrap()]);
+		self.line_drawable.bind_descriptors(
+			buffer,
+			vec![&self.camera_uniform.get_set(buffer_index).unwrap()],
+		);
 		buffer.bind_vertex_buffers(0, vec![&frame_data.vertex_buffer], vec![0]);
 		buffer.bind_index_buffer(&frame_data.index_buffer, 0);
 		for range in frame_data.index_order.iter() {
@@ -259,20 +249,15 @@ impl graphics::RenderChainElement for DebugRender {
 		buffer.end_label();
 		Ok(())
 	}
-
-	fn take_gpu_signals(&mut self) -> Vec<Arc<command::Semaphore>> {
-		self.pending_gpu_signals.drain(..).collect()
-	}
 }
 
 impl Frame {
 	fn write_buffer_data(
 		&mut self,
-		chain: &graphics::RenderChain,
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
 		objects: &Vec<DebugDraw>,
-	) -> anyhow::Result<Vec<Arc<command::Semaphore>>> {
-		let mut gpu_signals = Vec::new();
-
+	) -> anyhow::Result<()> {
 		let mut vertices: Vec<LineSegmentVertex> = Vec::new();
 		let mut indices: Vec<u32> = Vec::new();
 		self.index_order.clear();
@@ -307,12 +292,12 @@ impl Frame {
 			}
 			GpuOperationBuilder::new(
 				self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-				&chain,
+				context,
 			)?
 			.begin()?
 			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
 			.copy_stage_to_buffer(&self.vertex_buffer)
-			.add_signal_to(&mut gpu_signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 		}
 
@@ -322,15 +307,15 @@ impl Frame {
 			}
 			GpuOperationBuilder::new(
 				self.index_buffer.wrap_name(|v| format!("Write({})", v)),
-				&chain,
+				context,
 			)?
 			.begin()?
 			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
 			.copy_stage_to_buffer(&self.index_buffer)
-			.add_signal_to(&mut gpu_signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 		}
 
-		Ok(gpu_signals)
+		Ok(())
 	}
 }

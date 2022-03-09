@@ -1,8 +1,8 @@
-use crate::graphics::{
-	descriptor::{self, layout::SetLayout},
-	RenderChain,
+use crate::graphics::descriptor::{self, layout::SetLayout};
+use std::{
+	collections::HashMap,
+	sync::{self, Arc, RwLock},
 };
-use std::{collections::HashMap, sync};
 
 /// An engine-level abstraction to handle creating/managing [`Descriptor Sets`](descriptor::Set)
 /// which all have the same [`Layout`](SetLayout).
@@ -32,16 +32,15 @@ where
 	}
 
 	/// Allocates a new descriptor set using the provided layout from the
-	/// [`RenderChain`]'s [`persistant descriptor pool`](RenderChain::persistent_descriptor_pool),
+	/// [`Chain`](crate::graphics::Chain)'s [`persistant descriptor pool`](crate::graphics::Chain::persistent_descriptor_pool),
 	/// inserting the set into the cache and returning the thread-safe weak pointer.
 	pub fn insert(
 		&mut self,
 		id: T,
 		name: Option<String>,
-		render_chain: &RenderChain,
+		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
 	) -> anyhow::Result<sync::Weak<descriptor::Set>> {
-		let descriptor_set = render_chain
-			.persistent_descriptor_pool()
+		let descriptor_set = descriptor_pool
 			.write()
 			.unwrap()
 			.allocate_named_descriptor_sets(&vec![(

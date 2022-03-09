@@ -1,12 +1,17 @@
+use crossbeam_channel::Sender;
+
 use crate::{
 	graphics::{
 		self, command, flags, image_view, sampler, structs,
 		utility::{NameableBuilder, NamedObject},
-		Texture,
+		GpuOpContext, Texture,
 	},
 	math::nalgebra::Vector2,
 };
-use std::{collections::HashMap, sync};
+use std::{
+	collections::HashMap,
+	sync::{self, Arc},
+};
 
 pub struct PendingEntry {
 	name: Option<String>,
@@ -170,25 +175,23 @@ where
 	#[profiling::function]
 	pub fn load_pending(
 		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<(Vec<(T, Option<String>)>, Vec<sync::Arc<command::Semaphore>>)> {
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<Vec<(T, Option<String>)>> {
 		let mut ids = Vec::new();
-		let mut pending_gpu_signals = Vec::new();
 		if !self.pending.is_empty() {
 			// Collect all the pending items into a vector, draining the member so that they arent created ever again.
 			let pending_images = self.pending.drain().collect::<Vec<_>>();
 			// Load/Create the image on GPU for each pending item
 			for (id, pending) in pending_images.into_iter() {
-				let (loaded, mut signals) = self.create_image(render_chain, &pending)?;
-				// promote the required signals so they can be returned by `load_pending`
-				pending_gpu_signals.append(&mut signals);
+				let loaded = self.create_image(context, signal_sender, &pending)?;
 				ids.push((id.clone(), pending.name.clone()));
 				// insert the image into the collection, thereby dropping any item with the same id
 				self.loaded.insert(id, loaded);
 			}
 		}
 
-		Ok((ids, pending_gpu_signals))
+		Ok(ids)
 	}
 
 	fn make_object_name(&self, name: &Option<String>, suffix: &str) -> Option<String> {
@@ -205,17 +208,16 @@ where
 	#[profiling::function]
 	fn create_image(
 		&self,
-		render_chain: &graphics::RenderChain,
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
 		pending: &PendingEntry,
-	) -> anyhow::Result<(CombinedImageSampler, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<CombinedImageSampler> {
 		use graphics::{
 			image, structs::subresource, utility::BuildFromDevice, GpuOperationBuilder,
 		};
 
-		let mut signals = Vec::new();
-
 		let image = sync::Arc::new(image::Image::create_gpu(
-			&render_chain.allocator(),
+			&context.object_allocator()?,
 			self.make_object_name(&pending.name, "Image"),
 			pending.format,
 			structs::Extent3D {
@@ -225,13 +227,13 @@ where
 			},
 		)?);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), &render_chain)?
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&pending.compiled.binary[..])?
 			.copy_stage_to_image(&image)
 			.format_image_for_read(&image)
-			.add_signal_to(&mut signals)
+			.send_signal_to(signal_sender)?
 			.end()?;
 
 		let view = sync::Arc::new(
@@ -240,7 +242,7 @@ where
 				.for_image(image.clone())
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
-				.build(&render_chain.logical())?,
+				.build(&context.logical_device()?)?,
 		);
 
 		let sampler = sync::Arc::new(
@@ -248,11 +250,11 @@ where
 				.sampler
 				.clone()
 				.with_optname(self.make_object_name(&pending.name, "Image.Sampler"))
-				.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
-				.build(&render_chain.logical())?,
+				.with_max_anisotropy(Some(context.physical_device()?.max_sampler_anisotropy()))
+				.build(&context.logical_device()?)?,
 		);
 
-		Ok((CombinedImageSampler { view, sampler }, signals))
+		Ok(CombinedImageSampler { view, sampler })
 	}
 }
 

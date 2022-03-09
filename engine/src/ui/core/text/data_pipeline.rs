@@ -3,21 +3,25 @@ use crate::{
 	graphics::{
 		self, command,
 		descriptor::{self, layout::SetLayout},
+		device::logical,
 		flags,
 		font::Font,
-		pipeline, sampler, structs,
+		pipeline, sampler,
 		utility::{BuildFromDevice, NameableBuilder},
-		Drawable,
+		Chain, Drawable, GpuOpContext,
 	},
-	math::nalgebra::Vector2,
 	ui::{
 		self,
 		core::text::{self, font},
 	},
 };
 use anyhow::Result;
+use crossbeam_channel::Sender;
 use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
-use std::{collections::HashMap, sync};
+use std::{
+	collections::HashMap,
+	sync::{self, Arc, RwLock},
+};
 
 struct FontData {
 	loaded: font::Loaded,
@@ -35,7 +39,7 @@ pub struct DataPipeline {
 
 impl DataPipeline {
 	#[profiling::function]
-	pub fn new(render_chain: &graphics::RenderChain) -> anyhow::Result<Self> {
+	pub fn new(context: &impl GpuOpContext) -> anyhow::Result<Self> {
 		let descriptor_layout = sync::Arc::new(
 			SetLayout::builder()
 				.with_name("UI.Text.DescriptorLayout")
@@ -45,15 +49,15 @@ impl DataPipeline {
 					1,
 					flags::ShaderKind::Fragment,
 				)
-				.build(&render_chain.logical())?,
+				.build(&context.logical_device()?)?,
 		);
 		Ok(Self {
 			sampler: sync::Arc::new(
 				graphics::sampler::Sampler::builder()
 					.with_name("UI.Text.Font.Sampler")
 					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3])
-					.with_max_anisotropy(Some(render_chain.physical().max_sampler_anisotropy()))
-					.build(&render_chain.logical())?,
+					.with_max_anisotropy(Some(context.physical_device()?.max_sampler_anisotropy()))
+					.build(&context.logical_device()?)?,
 			),
 			descriptor_layout,
 			drawable: Drawable::default().with_name("UI.Text"),
@@ -72,23 +76,22 @@ impl DataPipeline {
 	}
 
 	#[profiling::function]
-	pub fn create_shaders(&mut self, render_chain: &graphics::RenderChain) -> anyhow::Result<()> {
-		self.drawable.create_shaders(render_chain)
+	pub fn create_shaders(&mut self, logical: &Arc<logical::Device>) -> anyhow::Result<()> {
+		self.drawable.create_shaders(logical)
 	}
 
 	#[profiling::function]
 	pub fn create_pending_font_atlases(
 		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<Vec<sync::Arc<command::Semaphore>>> {
-		let mut pending_gpu_signals = Vec::new();
+		context: &impl GpuOpContext,
+		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+	) -> anyhow::Result<()> {
 		if !self.pending_font_atlases.is_empty() {
 			for (id, pending) in self.pending_font_atlases.drain() {
-				let (loaded, mut signals) = pending.load(render_chain)?;
-				pending_gpu_signals.append(&mut signals);
+				let loaded = pending.load(context, signal_sender)?;
 
-				let descriptor_set = render_chain
-					.persistent_descriptor_pool()
+				let descriptor_set = descriptor_pool
 					.write()
 					.unwrap()
 					.allocate_named_descriptor_sets(&vec![(
@@ -114,7 +117,7 @@ impl DataPipeline {
 								layout: flags::ImageLayout::ShaderReadOnlyOptimal,
 							}]),
 						}))
-						.apply(&render_chain.logical());
+						.apply(&*context.logical_device()?);
 				}
 
 				self.fonts.insert(
@@ -126,65 +129,61 @@ impl DataPipeline {
 				);
 			}
 		}
-		Ok(pending_gpu_signals)
+		Ok(())
 	}
 
 	#[profiling::function]
 	pub fn update_or_create(
 		&self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
+		chain: &Chain,
 		widget_id: &WidgetId,
 		text: BatchExternalText,
 		widget: Option<text::WidgetData>,
-	) -> anyhow::Result<(text::WidgetData, Vec<sync::Arc<command::Semaphore>>)> {
+	) -> anyhow::Result<text::WidgetData> {
 		let font_data = self
 			.fonts
 			.get(&text.font)
 			.ok_or(ui::core::Error::InvalidFont(text.font.clone()))?;
 		let mut widget = match widget {
 			Some(widget) => widget,
-			None => text::WidgetData::new(Some((*widget_id).to_string()), &text, render_chain)?,
+			None => {
+				text::WidgetData::new(Some((*widget_id).to_string()), &text, &chain.allocator()?)?
+			}
 		};
-		let signals =
-			widget.write_buffer_data(&text, &font_data.loaded, render_chain, resolution)?;
-		Ok((widget, signals))
+		widget.write_buffer_data(
+			&text,
+			&font_data.loaded,
+			chain,
+			&chain.resolution(),
+			chain.signal_sender(),
+		)?;
+		Ok(widget)
 	}
 
 	#[profiling::function]
-	pub fn destroy_render_chain(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-	) -> anyhow::Result<()> {
-		self.drawable.destroy_pipeline(render_chain)
+	pub fn destroy_render_chain(&mut self) -> anyhow::Result<()> {
+		self.drawable.destroy_pipeline()
 	}
 
-	pub fn on_render_chain_constructed(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> anyhow::Result<()> {
+	pub fn create_pipeline(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.drawable.create_pipeline(
-			render_chain,
+			&chain.logical()?,
 			vec![&self.descriptor_layout],
 			pipeline::Pipeline::builder()
 				.with_vertex_layout(
 					vertex::Layout::default()
 						.with_object::<text::Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(structs::Extent2D {
-					width: resolution.x as u32,
-					height: resolution.y as u32,
-				}))
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(Rasterization::default())
 				.set_color_blending(
 					color_blend::ColorBlend::default()
 						.add_attachment(color_blend::Attachment::default()),
 				)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
-			subpass_id,
+			chain.render_pass(),
+			subpass_index,
 		)
 	}
 

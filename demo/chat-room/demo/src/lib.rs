@@ -1,4 +1,4 @@
-use engine::{network,  Application};
+use engine::{network,  Application, graphics::chain::procedure::DefaultProcedure};
 pub use temportal_engine as engine;
 use anyhow::Result;
 
@@ -51,11 +51,17 @@ pub fn run() -> Result<()> {
 			.with_clear_color([0.08, 0.08, 0.08, 1.0].into())
 			.build(&mut engine)?;
 
-		engine::ui::System::new(engine.render_chain().unwrap())?
+		let render_phase = {
+			let arc = engine.display_chain().unwrap();
+			let mut chain = arc.write().unwrap();
+			chain.apply_procedure::<DefaultProcedure>()?.into_inner()
+		};
+
+		engine::ui::System::new(engine.display_chain().unwrap())?
 			.with_engine_shaders()?
 			.with_all_fonts()?
 			.with_tree_root(engine::ui::raui::make_widget!(ui::root::widget))
-			.attach_system(&mut engine, None)?;
+			.attach_system(&mut engine, &render_phase)?;
 
 		let client_display_name = std::env::args()
 			.find_map(|arg| arg.strip_prefix("-display_name=").map(|s| s.to_owned()))

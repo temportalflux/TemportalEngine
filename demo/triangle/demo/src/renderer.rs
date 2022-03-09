@@ -2,15 +2,15 @@ use crate::{
 	engine::{
 		self, asset,
 		graphics::{
-			self, buffer, command, flags, pipeline, shader, structs,
+			self, buffer, command, flags, pipeline, shader,
 			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-			GpuOperationBuilder, RenderChain,
+			GpuOperationBuilder,
 		},
-		math::nalgebra::Vector2,
 	},
 	Vertex,
 };
 use anyhow::Result;
+use engine::graphics::{chain::Operation, procedure::Phase, Chain};
 use std::sync::{Arc, RwLock};
 
 pub struct Triangle {
@@ -27,7 +27,7 @@ pub struct Triangle {
 }
 
 impl Triangle {
-	pub fn new(render_chain: &Arc<RwLock<RenderChain>>) -> Result<Arc<RwLock<Triangle>>> {
+	pub fn new(chain: &Arc<RwLock<Chain>>, phase: &Arc<Phase>) -> Result<Arc<RwLock<Triangle>>> {
 		let vert_bytes: Vec<u8>;
 		let frag_bytes: Vec<u8>;
 		{
@@ -74,25 +74,18 @@ impl Triangle {
 			index_buffer: None,
 		}));
 
-		render_chain
+		chain
 			.write()
 			.unwrap()
-			.add_render_chain_element(None, &strong)?;
+			.add_operation(phase, Arc::downgrade(&strong))?;
 		Ok(strong)
 	}
 }
 
-impl graphics::RenderChainElement for Triangle {
-	fn name(&self) -> &'static str {
-		"render-triangle"
-	}
-
-	fn initialize_with(
-		&mut self,
-		render_chain: &mut graphics::RenderChain,
-	) -> Result<Vec<Arc<command::Semaphore>>> {
+impl Operation for Triangle {
+	fn initialize(&mut self, chain: &Chain) -> anyhow::Result<()> {
 		self.vert_shader = Some(Arc::new(shader::Module::create(
-			render_chain.logical().clone(),
+			chain.logical()?,
 			shader::Info {
 				name: Some("Shader.Vertex".to_string()),
 				kind: flags::ShaderKind::Vertex,
@@ -102,7 +95,7 @@ impl graphics::RenderChainElement for Triangle {
 		)?));
 
 		self.frag_shader = Some(Arc::new(shader::Module::create(
-			render_chain.logical().clone(),
+			chain.logical()?,
 			shader::Info {
 				name: Some("Shader.Fragment".to_string()),
 				kind: flags::ShaderKind::Fragment,
@@ -123,24 +116,21 @@ impl graphics::RenderChainElement for Triangle {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&render_chain.allocator())?,
+				.build(&chain.allocator()?)?,
 		));
 
-		let vertex_buffer_copy_signal = {
-			let copy_task = GpuOperationBuilder::new(
-				self.vertex_buffer
-					.as_ref()
-					.unwrap()
-					.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
-			)?
-			.begin()?
-			.stage(&self.vertices[..])?
-			.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap());
-			let signal = copy_task.gpu_signal_on_complete();
-			copy_task.end()?;
-			signal
-		};
+		GpuOperationBuilder::new(
+			self.vertex_buffer
+				.as_ref()
+				.unwrap()
+				.wrap_name(|v| format!("Write({})", v)),
+			chain,
+		)?
+		.begin()?
+		.stage(&self.vertices[..])?
+		.copy_stage_to_buffer(&self.vertex_buffer.as_ref().unwrap())
+		.send_signal_to(chain.signal_sender())?
+		.end()?;
 
 		self.index_buffer = Some(Arc::new(
 			graphics::buffer::Buffer::builder()
@@ -155,45 +145,31 @@ impl graphics::RenderChainElement for Triangle {
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
-				.build(&render_chain.allocator())?,
+				.build(&chain.allocator()?)?,
 		));
 
-		let index_buffer_copy_signal = {
-			let copy_task = GpuOperationBuilder::new(
-				self.index_buffer
-					.as_ref()
-					.unwrap()
-					.wrap_name(|v| format!("Write({})", v)),
-				&render_chain,
-			)?
-			.begin()?
-			.stage(&self.indices[..])?
-			.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap());
-			let signal = copy_task.gpu_signal_on_complete();
-			copy_task.end()?;
-			signal
-		};
+		GpuOperationBuilder::new(
+			self.index_buffer
+				.as_ref()
+				.unwrap()
+				.wrap_name(|v| format!("Write({})", v)),
+			chain,
+		)?
+		.begin()?
+		.stage(&self.indices[..])?
+		.copy_stage_to_buffer(&self.index_buffer.as_ref().unwrap())
+		.send_signal_to(chain.signal_sender())?
+		.end()?;
 
-		Ok(vec![vertex_buffer_copy_signal, index_buffer_copy_signal])
-	}
-
-	fn destroy_render_chain(&mut self, _: &graphics::RenderChain) -> Result<()> {
-		self.pipeline = None;
-		self.pipeline_layout = None;
 		Ok(())
 	}
 
-	fn on_render_chain_constructed(
-		&mut self,
-		render_chain: &graphics::RenderChain,
-		resolution: &Vector2<f32>,
-		subpass_id: &Option<String>,
-	) -> Result<()> {
+	fn construct(&mut self, chain: &Chain, subpass_index: usize) -> anyhow::Result<()> {
 		use pipeline::state::*;
 		self.pipeline_layout = Some(
 			pipeline::layout::Layout::builder()
 				.with_name("PipelineLayout")
-				.build(&render_chain.logical())?,
+				.build(&chain.logical()?)?,
 		);
 		self.pipeline = Some(Arc::new(
 			pipeline::Pipeline::builder()
@@ -204,21 +180,7 @@ impl graphics::RenderChainElement for Triangle {
 					vertex::Layout::default()
 						.with_object::<Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(
-					Viewport::default()
-						.add_viewport(graphics::utility::Viewport::default().set_size(
-							structs::Extent2D {
-								width: resolution.x as u32,
-								height: resolution.y as u32,
-							},
-						))
-						.add_scissor(graphics::utility::Scissor::default().set_size(
-							structs::Extent2D {
-								width: resolution.x as u32,
-								height: resolution.y as u32,
-							},
-						)),
-				)
+				.set_viewport_state(Viewport::from(*chain.extent()))
 				.set_rasterization_state(Rasterization::default())
 				.set_color_blending(color_blend::ColorBlend::default().add_attachment(
 					color_blend::Attachment {
@@ -229,17 +191,22 @@ impl graphics::RenderChainElement for Triangle {
 					},
 				))
 				.build(
-					render_chain.logical().clone(),
+					chain.logical()?,
 					&self.pipeline_layout.as_ref().unwrap(),
-					&render_chain.render_pass(),
-					subpass_id,
+					&chain.render_pass(),
+					subpass_index,
 				)?,
 		));
-
 		Ok(())
 	}
 
-	fn record_to_buffer(&self, buffer: &mut command::Buffer, _: usize) -> Result<()> {
+	fn deconstruct(&mut self, _chain: &Chain) -> anyhow::Result<()> {
+		self.pipeline = None;
+		self.pipeline_layout = None;
+		Ok(())
+	}
+
+	fn record(&mut self, buffer: &mut command::Buffer, _: usize) -> anyhow::Result<()> {
 		use graphics::debug;
 		buffer.begin_label("Draw:Triangle", debug::LABEL_COLOR_DRAW);
 		buffer.bind_pipeline(
