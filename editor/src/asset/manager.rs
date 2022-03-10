@@ -160,12 +160,14 @@ impl Manager {
 	pub fn compile(
 		&self,
 		json_path: &PathBuf,
+		relative_path: &PathBuf,
 		type_id: &String,
-		asset: engine::asset::AnyBox,
+		mut asset: engine::asset::AnyBox,
 		write_to: &PathBuf,
 	) -> anyhow::Result<()> {
 		fs::create_dir_all(&write_to.parent().unwrap())?;
 		let metadata = self.editor_metadata.get(type_id.as_str()).unwrap();
+		metadata.process_intermediate(&json_path, &relative_path, &mut asset)?;
 		let bytes = metadata.compile(&json_path, asset)?;
 		fs::write(write_to, bytes)?;
 		Ok(())

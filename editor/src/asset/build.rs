@@ -119,7 +119,7 @@ impl Module {
 					continue;
 				}
 			};
-			asset_manager.compile(&asset_file_path, &type_id, asset, &binary_file_path)?;
+			asset_manager.compile(&asset_file_path, &relative_path, &type_id, asset, &binary_file_path)?;
 		}
 
 		if !failed_asset_paths.is_empty() {

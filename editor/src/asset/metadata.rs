@@ -10,5 +10,6 @@ pub trait TypeEditorMetadata {
 		Ok(path.metadata()?.modified()?)
 	}
 	fn read(&self, path: &Path, json_str: &str) -> AssetResult;
+	fn process_intermediate(&self, json_path: &Path, relative_path: &Path, asset: &mut AnyBox) -> Result<()> { Ok(()) }
 	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>>;
 }
