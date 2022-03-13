@@ -1,4 +1,4 @@
-use crate::engine::{asset, Application};
+use crate::engine::asset;
 use anyhow::Result;
 use std::{self, fs, io::Write, path::PathBuf};
 use zip;
@@ -11,23 +11,10 @@ pub struct Pak {
 	pub binaries_directory: PathBuf,
 	/// Where the pak file will be put when its created.
 	pub output_directories: Vec<PathBuf>,
+	pub modules: Vec</*module idx*/ usize>,
 }
 
 impl Pak {
-	pub fn from_app<T: Application>(location: &PathBuf, pak_output: Option<&str>) -> Self {
-		Self {
-			name: T::name().to_owned(),
-			binaries_directory: location.join("binaries"),
-			output_directories: {
-				let mut path = std::env::current_dir().unwrap();
-				if let Some(relative) = pak_output {
-					path = path.join(relative);
-				}
-				vec![path.join("paks")]
-			},
-		}
-	}
-
 	pub fn package(&self) -> Result<()> {
 		let pak_name = format!("{}.pak", self.name);
 		let zip_paths = self

@@ -19,3 +19,8 @@ pub mod ui;
 pub mod settings;
 
 pub mod config;
+
+pub fn register_asset_types(registry: &mut asset::Manager) {
+	audio::register_asset_types(registry);
+	graphics::register_asset_types(registry);
+}

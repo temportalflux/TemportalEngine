@@ -13,6 +13,9 @@ pub use metadata::*;
 mod package;
 pub use package::*;
 
+mod path;
+pub use path::*;
+
 pub fn deserialize<'a, T>(path: &std::path::Path, content: &'a str) -> engine::asset::AssetResult
 where
 	T: 'static + Send + Sync + serde::Deserialize<'a> + engine::asset::kdl::Asset<T> + Default,

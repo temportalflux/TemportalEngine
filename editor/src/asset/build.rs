@@ -4,13 +4,64 @@ use std::{
 	self, fs,
 	io::{self},
 	path::{Path, PathBuf},
+	sync::Arc,
 };
+
+use crate::asset::BuildPath;
 
 #[derive(Debug)]
 pub struct Module {
 	pub name: String,
 	pub assets_directory: PathBuf,
 	pub binaries_directory: PathBuf,
+}
+
+struct AssetUpdatePlanner {
+	source_root: PathBuf,
+	destination_root: PathBuf,
+
+	intended_binaries: Vec<PathBuf>,
+	dirty_paths: Vec<BuildPath>,
+	skipped_paths: Vec<PathBuf>,
+}
+impl AssetUpdatePlanner {
+	fn new(source: PathBuf, destination: PathBuf) -> Self {
+		Self {
+			source_root: source,
+			destination_root: destination,
+			intended_binaries: Vec::new(),
+			dirty_paths: Vec::new(),
+			skipped_paths: Vec::new(),
+		}
+	}
+
+	fn add_asset_path(
+		&mut self,
+		source_path: &Path,
+		last_modified: std::time::SystemTime,
+	) -> anyhow::Result<()> {
+		let relative_path = source_path.strip_prefix(&self.source_root)?;
+
+		let mut dst_path = self.destination_root.clone();
+		if let Some(parent) = relative_path.parent() {
+			dst_path.push(parent);
+		}
+		dst_path.push(relative_path.file_stem().unwrap());
+
+		if !dst_path.exists() || (last_modified > dst_path.metadata()?.modified()?) {
+			self.dirty_paths.push(BuildPath {
+				source: source_path.to_owned(),
+				relative: relative_path.to_owned(),
+				destination: dst_path.to_owned(),
+			});
+		} else {
+			self.skipped_paths.push(relative_path.to_owned());
+		}
+
+		self.intended_binaries.push(dst_path);
+
+		Ok(())
+	}
 }
 
 impl Module {
@@ -22,11 +73,115 @@ impl Module {
 		}
 	}
 
-	pub fn build(
-		&self,
-		asset_manager: &crate::asset::Manager,
+	pub async fn build_async(
+		self: Arc<Self>,
+		manager: Arc<crate::asset::Manager>,
 		force_build: bool,
 	) -> anyhow::Result<()> {
+		self.ensure_directories(force_build)?;
+
+		let asset_paths = self.collect_asset_paths()?;
+		if asset_paths.is_empty() {
+			log::info!(target: asset::LOG, "[{}] No assets to build", self.name);
+			return Ok(());
+		}
+
+		let mut planner = AssetUpdatePlanner::new(
+			self.assets_directory.clone(),
+			self.binaries_directory.clone(),
+		);
+
+		for asset_file_path in asset_paths.iter() {
+			planner.add_asset_path(&asset_file_path, manager.last_modified(&asset_file_path)?)?;
+		}
+
+		log::info!(
+			target: asset::LOG,
+			"[{}] Building {} assets",
+			self.name,
+			planner.dirty_paths.len()
+		);
+
+		let mut build_tasks = Vec::with_capacity(planner.dirty_paths.len());
+		let mut failed_paths: Vec<PathBuf> = Vec::new();
+		for build_path in planner.dirty_paths.into_iter() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Loading {:?}",
+				self.name,
+				build_path.relative
+			);
+			let (type_id, asset) = match manager.read_sync(&build_path.source) {
+				Ok(success) => success,
+				Err(err) => {
+					log::error!(target: asset::LOG, "{}", err);
+					failed_paths.push(build_path.source.clone());
+					continue;
+				}
+			};
+
+			let module_name = self.name.clone();
+			let async_manager = manager.clone();
+			build_tasks.push(engine::task::spawn(asset::LOG.to_owned(), async move {
+				log::info!(
+					target: asset::LOG,
+					"[{}] Building {:?}",
+					module_name,
+					build_path.relative
+				);
+
+				let metadata = async_manager.metadata(&type_id)?;
+
+				let bytes = match metadata.compile(&build_path, asset).await {
+					Ok(bytes) => bytes,
+					Err(err) => {
+						log::error!(target: asset::LOG, "[{module_name}] {:?}", err);
+						return Ok(());
+					}
+				};
+
+				fs::create_dir_all(&build_path.destination.parent().unwrap())?;
+				fs::write(build_path.destination, bytes)?;
+
+				Ok(())
+			}));
+		}
+		futures::future::join_all(build_tasks.into_iter()).await;
+
+		if !failed_paths.is_empty() {
+			return Err(super::Error::FailedToBuild(failed_paths))?;
+		}
+
+		if !planner.skipped_paths.is_empty() {
+			log::info!(
+				target: asset::LOG,
+				"[{}] Skipped {} unchanged assets",
+				self.name,
+				planner.skipped_paths.len()
+			);
+		}
+
+		let old_binaries =
+			collect_file_paths(&self.binaries_directory, &planner.intended_binaries)?;
+		if !old_binaries.is_empty() {
+			log::info!(target: asset::LOG, "[{}] Removing old binaries", self.name,);
+			for binary_file_path in old_binaries.iter() {
+				log::info!(
+					target: asset::LOG,
+					"[{}] Deleting old binary {:?}",
+					self.name,
+					binary_file_path
+						.as_path()
+						.strip_prefix(&self.binaries_directory)?
+				);
+				std::fs::remove_file(binary_file_path)?;
+			}
+		}
+
+		Ok(())
+	}
+
+	fn ensure_directories(&self, clear_binaries: bool) -> anyhow::Result<()> {
 		if !self.assets_directory.exists() {
 			log::info!(
 				target: asset::LOG,
@@ -45,7 +200,7 @@ impl Module {
 				self.binaries_directory
 			);
 			fs::create_dir(&self.binaries_directory)?;
-		} else if force_build {
+		} else if clear_binaries {
 			log::info!(
 				target: asset::LOG,
 				"[{}] Wiping output directory {:?}",
@@ -54,104 +209,17 @@ impl Module {
 			);
 			fs::remove_dir_all(&self.binaries_directory)?;
 		}
+		Ok(())
+	}
 
-		let asset_paths = collect_file_paths(&self.assets_directory, &Vec::new())?
+	fn collect_asset_paths(&self) -> anyhow::Result<Vec<PathBuf>> {
+		Ok(collect_file_paths(&self.assets_directory, &Vec::new())?
 			.into_iter()
 			.filter(|file_path| {
 				let ext = file_path.extension().map(|ext| ext.to_str()).flatten();
 				super::SupportedFileTypes::parse_extension(ext).is_some()
 			})
-			.collect::<Vec<_>>();
-		if asset_paths.is_empty() {
-			log::info!(target: asset::LOG, "[{}] No assets to build", self.name);
-			return Ok(());
-		}
-
-		let mut intended_binaries: Vec<PathBuf> = Vec::new();
-		let mut dirty_paths = Vec::new();
-		let mut skipped_paths = Vec::new();
-		let mut failed_asset_paths = Vec::new();
-		for asset_file_path in asset_paths.iter() {
-			let relative_path = asset_file_path
-				.as_path()
-				.strip_prefix(&self.assets_directory)?;
-			let mut binary_file_path = self.binaries_directory.clone();
-			if let Some(parent) = relative_path.parent() {
-				binary_file_path.push(parent);
-			}
-			binary_file_path.push(relative_path.file_stem().unwrap());
-
-			if !binary_file_path.exists()
-				|| (asset_manager.last_modified(&asset_file_path)?
-					> binary_file_path.metadata()?.modified()?)
-			{
-				dirty_paths.push((
-					asset_file_path.to_owned(),
-					relative_path.to_owned(),
-					binary_file_path.to_owned(),
-				));
-			} else {
-				skipped_paths.push(relative_path.to_owned());
-			}
-
-			intended_binaries.push(binary_file_path);
-		}
-
-		log::info!(
-			target: asset::LOG,
-			"[{}] Building {} assets",
-			self.name,
-			dirty_paths.len()
-		);
-
-		for (asset_file_path, relative_path, binary_file_path) in dirty_paths.into_iter() {
-			log::info!(
-				target: asset::LOG,
-				"[{}] - Building {:?}",
-				self.name,
-				relative_path
-			);
-			let (type_id, asset) = match asset_manager.read_sync(&asset_file_path.as_path()) {
-				Ok(success) => success,
-				Err(err) => {
-					log::error!(target: asset::LOG, "{}", err);
-					failed_asset_paths.push(asset_file_path.clone());
-					continue;
-				}
-			};
-			asset_manager.compile(&asset_file_path, &relative_path, &type_id, asset, &binary_file_path)?;
-		}
-
-		if !failed_asset_paths.is_empty() {
-			return Err(super::Error::FailedToBuild(failed_asset_paths))?;
-		}
-
-		if !skipped_paths.is_empty() {
-			log::info!(
-				target: asset::LOG,
-				"[{}] - Skipped {} unchanged assets",
-				self.name,
-				skipped_paths.len()
-			);
-		}
-
-		let old_binaries = collect_file_paths(&self.binaries_directory, &intended_binaries)?;
-		if !old_binaries.is_empty() {
-			log::info!(target: asset::LOG, "[{}] Removing old binaries", self.name,);
-			for binary_file_path in old_binaries.iter() {
-				log::info!(
-					target: asset::LOG,
-					"[{}] - Deleting old binary {:?}",
-					self.name,
-					binary_file_path
-						.as_path()
-						.strip_prefix(&self.binaries_directory)?
-				);
-				std::fs::remove_file(binary_file_path)?;
-			}
-		}
-
-		Ok(())
+			.collect::<Vec<_>>())
 	}
 }
 

@@ -2,10 +2,15 @@ use anyhow::Result;
 use crossbeam_channel;
 use std::{
 	mem::MaybeUninit,
+	pin::Pin,
 	sync::{Arc, Once},
 };
 
 pub use tokio::task::JoinHandle;
+
+pub type PinFutureResult<T> = PinFutureResultLifetime<'static, T>;
+pub type PinFutureResultLifetime<'l, T> =
+	Pin<Box<dyn futures_util::future::Future<Output = anyhow::Result<T>> + 'l + Send>>;
 
 pub fn current() -> tokio::runtime::Handle {
 	tokio::runtime::Handle::current()

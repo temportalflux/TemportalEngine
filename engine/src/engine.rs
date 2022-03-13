@@ -1,30 +1,25 @@
-use crate::{asset, audio, graphics::Chain, input, task};
+use crate::{asset, audio, input, task};
 use anyhow::Result;
 use std::sync::{
 	atomic::{self, AtomicBool},
-	Arc, RwLock, RwLockWriteGuard, Weak,
+	Arc, RwLock, Weak,
 };
 use winit::event_loop::EventLoop;
 
 pub struct Engine {
-	event_loop: Option<EventLoop<()>>,
-	winit_listeners: Vec<Arc<RwLock<dyn WinitEventListener>>>,
-	systems: Vec<Arc<RwLock<dyn EngineSystem>>>,
-	weak_systems: Vec<Weak<RwLock<dyn EngineSystem>>>,
-	window: Option<crate::window::Window>,
+	winit_listeners: Vec<Arc<RwLock<dyn WinitEventListener + Send + Sync>>>,
+	systems: Vec<Arc<RwLock<dyn EngineSystem + Send + Sync>>>,
+	weak_systems: Vec<Weak<RwLock<dyn EngineSystem + Send + Sync>>>,
 }
 
 impl Engine {
 	pub fn new() -> Result<Self> {
 		task::initialize_system();
-		crate::register_asset_types();
 		audio::System::initialize();
 		Ok(Self {
-			event_loop: Some(EventLoop::new()),
 			winit_listeners: Vec::new(),
 			systems: Vec::new(),
 			weak_systems: Vec::new(),
-			window: None,
 		})
 	}
 
@@ -35,48 +30,25 @@ impl Engine {
 		Ok(())
 	}
 
-	pub fn event_loop(&self) -> &EventLoop<()> {
-		self.event_loop.as_ref().unwrap()
-	}
-
 	pub fn add_system<T>(&mut self, system: Arc<RwLock<T>>)
 	where
-		T: EngineSystem + 'static,
+		T: EngineSystem + 'static + Send + Sync,
 	{
 		self.systems.push(system);
 	}
 
 	pub fn add_weak_system<T>(&mut self, system: Weak<RwLock<T>>)
 	where
-		T: EngineSystem + 'static,
+		T: EngineSystem + 'static + Send + Sync,
 	{
 		self.weak_systems.push(system);
 	}
 
 	pub fn add_winit_listener<T>(&mut self, system: &Arc<RwLock<T>>)
 	where
-		T: WinitEventListener + 'static,
+		T: WinitEventListener + 'static + Send + Sync,
 	{
 		self.winit_listeners.push(system.clone());
-	}
-
-	pub fn set_window(&mut self, window: crate::window::Window) -> &mut crate::window::Window {
-		self.window = Some(window);
-		self.window.as_mut().unwrap()
-	}
-
-	pub fn window(&self) -> Option<&crate::window::Window> {
-		self.window.as_ref()
-	}
-
-	pub fn display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
-		self.window.as_ref().map(|win| win.graphics_chain())
-	}
-
-	pub fn display_chain_write(&self) -> Option<RwLockWriteGuard<Chain>> {
-		self.display_chain()
-			.map(|chain| chain.write().ok())
-			.flatten()
 	}
 
 	pub fn into_arclock(self) -> Arc<RwLock<Self>> {
@@ -97,9 +69,9 @@ impl Engine {
 		unsafe { &*Self::singleton().as_ptr() }
 	}
 
-	pub fn run<F>(engine: Arc<RwLock<Self>>, on_complete: F) -> !
+	pub fn run<TRuntime>(engine: Arc<RwLock<Self>>, mut runtime: TRuntime) -> !
 	where
-		F: 'static + Fn() -> (),
+		TRuntime: crate::Runtime + 'static,
 	{
 		Self::set(engine.clone());
 		let terminate_signal = Arc::new(AtomicBool::new(false));
@@ -113,16 +85,27 @@ impl Engine {
 		*/
 		let mut prev_frame_time = std::time::Instant::now();
 		let mut prev_render_error = None;
-		let event_loop = engine.write().unwrap().event_loop.take();
+
+		let event_loop = EventLoop::new();
+		let create_display_result = runtime.create_display(&engine, &event_loop);
+
 		let mut engine_has_focus = true;
-		event_loop.unwrap().run(move |event, _, control_flow| {
+		event_loop.run(move |event, _, control_flow| {
 			use winit::{event::*, event_loop::*};
 			profiling::scope!("run");
 			*control_flow = ControlFlow::Poll;
+
+			if let Err(err) = &create_display_result {
+				log::error!(target: "main", "{:?}", err);
+				*control_flow = ControlFlow::Exit;
+				return;
+			}
+
 			if terminate_signal.load(atomic::Ordering::Relaxed) {
 				*control_flow = ControlFlow::Exit;
 				return;
 			}
+
 			if engine_has_focus {
 				profiling::scope!("parse-input");
 				if let Ok(event) = input::winit::parse_winit_event(&event) {
@@ -198,16 +181,18 @@ impl Engine {
 						}
 					}
 
-					if let Some(mut chain) = engine.read().unwrap().display_chain_write() {
-						profiling::scope!("render");
-						match chain.render_frame() {
-							Ok(_) => prev_render_error = None,
-							Err(error) => {
-								if prev_render_error.is_none() {
-									log::error!("Frame render failed {:?}", error);
+					if let Some(arc_chain) = runtime.get_display_chain() {
+						if let Ok(mut chain) = arc_chain.write() {
+							profiling::scope!("render");
+							match chain.render_frame() {
+								Ok(_) => prev_render_error = None,
+								Err(error) => {
+									if prev_render_error.is_none() {
+										log::error!("Frame render failed {:?}", error);
+									}
+									prev_render_error = Some(error);
+									*control_flow = winit::event_loop::ControlFlow::Exit;
 								}
-								prev_render_error = Some(error);
-								*control_flow = winit::event_loop::ControlFlow::Exit;
 							}
 						}
 					}
@@ -220,16 +205,19 @@ impl Engine {
 					profiling::scope!("shutdown");
 					log::info!(target: "engine", "Engine loop complete");
 					task::poll_until_empty();
-					if let Ok(eng) = engine.read() {
-						if let Some(arc_chain) = eng.display_chain() {
-							if let Ok(chain) = arc_chain.read() {
-								if let Ok(logical) = chain.logical() {
-									logical.wait_until_idle().unwrap();
-								}
+					if let Some(arc_chain) = runtime.get_display_chain() {
+						if let Ok(chain) = arc_chain.read() {
+							if let Ok(logical) = chain.logical() {
+								logical.wait_until_idle().unwrap();
 							}
 						}
 					}
-					on_complete();
+					if let Ok(mut engine) = engine.write() {
+						engine.winit_listeners.clear();
+						engine.weak_systems.clear();
+						engine.systems.clear();
+					}
+					runtime.on_event_loop_complete();
 				}
 				_ => {
 					profiling::scope!("unknown");

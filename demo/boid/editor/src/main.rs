@@ -10,7 +10,12 @@ fn main() -> Result<()> {
 		Some("_editor"),
 	))?;
 	let _ = engine::Engine::new()?;
-	editor::Editor::initialize::<boid::BoidDemo>()?;
+	editor::Editor::initialize::<boid::BoidDemo>({
+		let mut asset_manager = editor::asset::Manager::new();
+		editor::audio::register_asset_types(&mut asset_manager);
+		editor::graphics::register_asset_types(&mut asset_manager);
+		asset_manager
+	})?;
 	if editor::Editor::read().run_commandlets()? {
 		return Ok(());
 	}

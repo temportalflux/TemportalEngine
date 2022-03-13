@@ -5,14 +5,9 @@ use engine::{
 	asset::{AnyBox, Generic, TypeId},
 };
 use serde_json;
-use std::{
-	collections::HashMap,
-	fs,
-	path::{Path, PathBuf},
-	time::SystemTime,
-};
+use std::{collections::HashMap, fs, path::Path, time::SystemTime};
 
-type EditorMetadataBox = Box<dyn asset::TypeEditorMetadata>;
+type EditorMetadataBox = Box<dyn asset::TypeEditorMetadata + 'static + Send + Sync>;
 
 pub enum SupportedFileTypes {
 	Json,
@@ -70,7 +65,7 @@ impl Manager {
 	pub fn register<TAsset, TEditorMetadata>(&mut self)
 	where
 		TAsset: engine::asset::Asset,
-		TEditorMetadata: asset::TypeEditorMetadata,
+		TEditorMetadata: asset::TypeEditorMetadata + 'static + Send + Sync,
 	{
 		let runtime_metadata = TAsset::metadata();
 		if !self.editor_metadata.contains_key(runtime_metadata.name()) {
@@ -90,7 +85,7 @@ impl Manager {
 		}
 	}
 
-	fn metadata<'r>(&self, type_id: &'r str) -> Result<&EditorMetadataBox> {
+	pub fn metadata<'r>(&self, type_id: &'r str) -> Result<&EditorMetadataBox> {
 		let metadata = self.editor_metadata.get(type_id).ok_or(
 			engine::asset::Error::UnregisteredAssetType(type_id.to_string()),
 		)?;
@@ -155,21 +150,5 @@ impl Manager {
 				ext.map(|ext| ext.to_owned()),
 			))?,
 		}
-	}
-
-	pub fn compile(
-		&self,
-		json_path: &PathBuf,
-		relative_path: &PathBuf,
-		type_id: &String,
-		mut asset: engine::asset::AnyBox,
-		write_to: &PathBuf,
-	) -> anyhow::Result<()> {
-		fs::create_dir_all(&write_to.parent().unwrap())?;
-		let metadata = self.editor_metadata.get(type_id.as_str()).unwrap();
-		metadata.process_intermediate(&json_path, &relative_path, &mut asset)?;
-		let bytes = metadata.compile(&json_path, asset)?;
-		fs::write(write_to, bytes)?;
-		Ok(())
 	}
 }

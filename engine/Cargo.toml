@@ -28,6 +28,8 @@ crossbeam-channel = "0.5"
 
 # [async] base async traits
 futures = "0.3"
+# [async] adv async traits
+futures-util = "0.3"
 # [async] async/await syntax and multithreading
 tokio = { version = "1.15", features = ["full"] }
 # [async] helper for getting the number of CPS for multithreading

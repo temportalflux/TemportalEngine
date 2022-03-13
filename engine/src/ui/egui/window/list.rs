@@ -7,9 +7,9 @@ use std::{
 pub type ArcLockOpenWindowList = Arc<RwLock<OpenWindowList>>;
 
 pub struct OpenWindowList {
-	all_windows: HashMap<String, Box<dyn super::Window>>,
+	all_windows: HashMap<String, Box<dyn super::Window + Send + Sync>>,
 	open_window_names: BTreeSet<String>,
-	save_open_windows: Option<Box<dyn Fn(Vec<(String, bool)>)>>,
+	save_open_windows: Option<Box<dyn Fn(Vec<(String, bool)>) + Send + Sync>>,
 }
 
 impl OpenWindowList {
@@ -31,7 +31,7 @@ impl OpenWindowList {
 
 	pub fn with_save_fn<F>(mut self, callback: F) -> Self
 	where
-		F: 'static + Fn(Vec<(String, bool)>),
+		F: 'static + Fn(Vec<(String, bool)>) + Send + Sync,
 	{
 		self.save_open_windows = Some(Box::new(callback));
 		self
@@ -39,7 +39,7 @@ impl OpenWindowList {
 
 	pub fn register_window<T>(arclock: &Arc<RwLock<Self>>, window: T)
 	where
-		T: 'static + super::Window,
+		T: 'static + super::Window + Send + Sync,
 	{
 		if let Ok(mut guard) = arclock.write() {
 			guard.add_window(window);
@@ -48,7 +48,7 @@ impl OpenWindowList {
 
 	pub fn add_window<T>(&mut self, window: T)
 	where
-		T: 'static + super::Window,
+		T: 'static + super::Window + Send + Sync,
 	{
 		self.all_windows
 			.insert(window.name().to_owned(), Box::new(window));

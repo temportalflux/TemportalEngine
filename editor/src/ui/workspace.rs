@@ -39,10 +39,12 @@ impl Element for Workspace {
 					let editor = crate::Editor::read();
 					if build || rebuild {
 						for module in editor.asset_modules.iter() {
+							/*
 							match module.build(editor.asset_manager(), rebuild) {
 								Ok(_) => {}
 								Err(e) => log::error!(target: "ui", "Failed to build... {:?}", e),
 							}
+							*/
 						}
 					}
 					if package {

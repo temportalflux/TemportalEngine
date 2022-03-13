@@ -5,14 +5,15 @@ use engine::{
 	utility::{singleton::Singleton, SaveData},
 	Application,
 };
+use std::sync::Arc;
 
 pub static EDITOR_LOG: &'static str = "Editor";
 
 pub struct Editor {
-	asset_manager: asset::Manager,
+	asset_manager: Arc<asset::Manager>,
 	pub settings: settings::Editor,
-	pub asset_modules: Vec<asset::Module>,
-	pub paks: Vec<asset::Pak>,
+	pub asset_modules: Vec<Arc<asset::Module>>,
+	pub paks: Vec<Arc<asset::Pak>>,
 }
 
 impl Application for Editor {
@@ -30,8 +31,8 @@ impl Editor {
 		&mut INSTANCE
 	}
 
-	pub fn initialize<T: Application>() -> Result<()> {
-		unsafe { Self::instance() }.init_with(Self::new::<T>()?);
+	pub fn initialize<T: Application>(asset_manager: asset::Manager) -> Result<()> {
+		unsafe { Self::instance() }.init_with(Self::new::<T>(asset_manager)?);
 		Ok(())
 	}
 
@@ -47,16 +48,15 @@ impl Editor {
 		Self::get().write().unwrap()
 	}
 
-	fn new<T: Application>() -> Result<Self> {
+	fn new<T: Application>(asset_manager: asset::Manager) -> Result<Self> {
 		log::info!(target: EDITOR_LOG, "Initializing editor");
+
 		let mut editor = Self {
-			asset_manager: asset::Manager::new(),
+			asset_manager: Arc::new(asset_manager),
 			settings: settings::Editor::load()?,
 			asset_modules: Vec::new(),
 			paks: Vec::new(),
 		};
-		crate::audio::register_asset_types(&mut editor.asset_manager);
-		crate::graphics::register_asset_types(&mut editor.asset_manager);
 		engine::asset::Library::write().scan_pak_directory()?;
 
 		if let Ok(crates_cfg) = crate::config::Crates::read() {
@@ -69,57 +69,58 @@ impl Editor {
 	}
 
 	fn add_crate_manifest(&mut self, manifest: &crate::config::Manifest) {
-		self.add_asset_module(asset::Module {
+		let module_idx = self.asset_modules.len();
+		self.asset_modules.push(Arc::new(asset::Module {
 			name: manifest.name.clone(),
 			assets_directory: manifest.location.join("assets"),
 			binaries_directory: manifest.location.join("binaries"),
-		});
-		self.add_pak(asset::Pak {
+		}));
+		self.paks.push(Arc::new(asset::Pak {
 			name: manifest.name.clone(),
 			binaries_directory: manifest.location.join("binaries"),
 			output_directories: manifest.config.pak_destinations.clone(),
-		});
+			modules: vec![module_idx],
+		}));
 	}
 
-	pub fn add_asset_module(&mut self, module: asset::Module) {
-		log::info!(
-			target: crate::LOG,
-			"Adding asset module \"{}\"",
-			module.name
-		);
-		self.asset_modules.push(module);
-	}
-
-	pub fn add_pak(&mut self, pak: asset::Pak) {
-		log::info!(target: crate::LOG, "Adding pak \"{}\"", pak.name);
-		self.paks.push(pak);
-	}
-
-	pub fn asset_manager(&self) -> &asset::Manager {
-		&self.asset_manager
-	}
-
-	pub fn asset_manager_mut(&mut self) -> &mut asset::Manager {
-		&mut self.asset_manager
-	}
-
-	pub fn run_commandlets(&self) -> Result<bool> {
+	pub fn run_commandlets() -> Option<engine::task::JoinHandle<()>> {
 		let mut args = std::env::args();
 		let should_build_assets = args.any(|arg| arg == "-build-assets");
 		let should_package_assets = args.any(|arg| arg == "-package");
 		if should_build_assets || should_package_assets {
-			if should_build_assets {
-				for module in self.asset_modules.iter() {
-					module.build(self.asset_manager(), args.any(|arg| arg == "-force"))?;
+			let force_build = args.any(|arg| arg == "-force");
+			let handle = engine::task::spawn("editor".to_owned(), async move {
+				if should_build_assets {
+					let handles = {
+						let mut module_build_tasks = Vec::new();
+						let editor = Self::read();
+						for module in editor.asset_modules.iter() {
+							let async_module = module.clone();
+							let async_asset_manager = editor.asset_manager.clone();
+							module_build_tasks.push(engine::task::spawn(
+								"editor".to_owned(),
+								async move {
+									async_module
+										.build_async(async_asset_manager, force_build)
+										.await
+								},
+							));
+						}
+						module_build_tasks
+					};
+					futures::future::join_all(handles.into_iter()).await;
 				}
-			}
-			if should_package_assets {
-				for pak in self.paks.iter() {
-					pak.package()?;
+
+				if should_package_assets {
+					let editor = Self::read();
+					for pak in editor.paks.iter() {
+						pak.package()?;
+					}
 				}
-			}
-			return Ok(true);
+				Ok(())
+			});
+			return Some(handle);
 		}
-		return Ok(false);
+		return None;
 	}
 }

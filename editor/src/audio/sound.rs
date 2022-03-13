@@ -1,11 +1,11 @@
 use crate::{
-	asset::TypeEditorMetadata,
+	asset::{BuildPath, TypeEditorMetadata},
 	engine::{
 		asset::{AnyBox, AssetResult},
 		audio::{Sound, SourceKind},
 	},
 };
-use anyhow::Result;
+use engine::task::PinFutureResultLifetime;
 use serde_json;
 use std::path::{Path, PathBuf};
 
@@ -21,7 +21,7 @@ impl SoundEditorMetadata {
 }
 
 impl TypeEditorMetadata for SoundEditorMetadata {
-	fn boxed() -> Box<dyn TypeEditorMetadata> {
+	fn boxed() -> Box<dyn TypeEditorMetadata + 'static + Send + Sync> {
 		Box::new(SoundEditorMetadata {})
 	}
 
@@ -31,7 +31,11 @@ impl TypeEditorMetadata for SoundEditorMetadata {
 		Ok(Box::new(sound))
 	}
 
-	fn compile(&self, _: &Path, asset: AnyBox) -> Result<Vec<u8>> {
-		Ok(rmp_serde::to_vec(&asset.downcast::<Sound>().unwrap())?)
+	fn compile<'a>(
+		&'a self,
+		_build_path: &'a BuildPath,
+		asset: AnyBox,
+	) -> PinFutureResultLifetime<'a, Vec<u8>> {
+		Box::pin(async move { Ok(rmp_serde::to_vec(&asset.downcast::<Sound>().unwrap())?) })
 	}
 }

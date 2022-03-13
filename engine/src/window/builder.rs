@@ -1,9 +1,10 @@
 use crate::{
 	graphics::{device::physical, AppInfo},
 	math::nalgebra::Vector2,
-	window, Application, Engine,
+	window, Application,
 };
 use anyhow::Result;
+use winit::event_loop::EventLoop;
 
 pub struct Builder {
 	title: String,
@@ -52,7 +53,7 @@ impl Builder {
 	}
 
 	#[profiling::function]
-	pub fn build(self, engine: &mut Engine) -> Result<&mut window::Window> {
+	pub fn build(self, event_loop: &EventLoop<()>) -> Result<window::Window> {
 		log::info!(
 			target: window::LOG,
 			"Creating window \"{}\" with size <{},{}>",
@@ -71,7 +72,7 @@ impl Builder {
 					winit::dpi::LogicalPosition::new(0.0, 0.0),
 				))
 				.with_resizable(self.resizable)
-				.build(engine.event_loop())?,
+				.build(event_loop)?,
 			self.app_info,
 			self.constraints,
 		)?;
@@ -89,6 +90,6 @@ impl Builder {
 			));
 		}
 
-		Ok(engine.set_window(window))
+		Ok(window)
 	}
 }

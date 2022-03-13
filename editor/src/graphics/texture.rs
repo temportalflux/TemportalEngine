@@ -1,5 +1,5 @@
 use crate::{
-	asset::TypeEditorMetadata,
+	asset::{BuildPath, TypeEditorMetadata},
 	engine::{
 		asset::{AnyBox, AssetResult},
 		graphics::Texture,
@@ -7,6 +7,7 @@ use crate::{
 	},
 };
 use anyhow::Result;
+use engine::task::PinFutureResultLifetime;
 use std::{
 	path::{Path, PathBuf},
 	time::SystemTime,
@@ -24,7 +25,7 @@ impl TextureEditorMetadata {
 }
 
 impl TypeEditorMetadata for TextureEditorMetadata {
-	fn boxed() -> Box<dyn TypeEditorMetadata> {
+	fn boxed() -> Box<dyn TypeEditorMetadata + 'static + Send + Sync> {
 		Box::new(TextureEditorMetadata {})
 	}
 
@@ -39,23 +40,29 @@ impl TypeEditorMetadata for TextureEditorMetadata {
 		crate::asset::deserialize::<Texture>(&path, &content)
 	}
 
-	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>> {
-		use image::Pixel;
-		let mut texture = asset.downcast::<Texture>().unwrap();
+	fn compile<'a>(
+		&'a self,
+		build_path: &'a BuildPath,
+		asset: AnyBox,
+	) -> PinFutureResultLifetime<'a, Vec<u8>> {
+		Box::pin(async move {
+			use image::Pixel;
+			let mut texture = asset.downcast::<Texture>().unwrap();
 
-		let rgba_image = image::open(Self::image_file_path(json_path))?.into_rgba8();
-		let size = nalgebra::vector![rgba_image.width() as usize, rgba_image.height() as usize];
-		let mut binary = Vec::with_capacity(size.x * size.y * 4);
-		for (_y, row) in rgba_image.enumerate_rows() {
-			for (_x, _y, pixel) in row {
-				for channel in pixel.channels() {
-					binary.push(*channel);
+			let rgba_image = image::open(Self::image_file_path(&build_path.source))?.into_rgba8();
+			let size = nalgebra::vector![rgba_image.width() as usize, rgba_image.height() as usize];
+			let mut binary = Vec::with_capacity(size.x * size.y * 4);
+			for (_y, row) in rgba_image.enumerate_rows() {
+				for (_x, _y, pixel) in row {
+					for channel in pixel.channels() {
+						binary.push(*channel);
+					}
 				}
 			}
-		}
-		texture.set_compiled(size, binary);
+			texture.set_compiled(size, binary);
 
-		let bytes = rmp_serde::to_vec(&texture)?;
-		Ok(bytes)
+			let bytes = rmp_serde::to_vec(&texture)?;
+			Ok(bytes)
+		})
 	}
 }
