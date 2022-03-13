@@ -4,15 +4,15 @@ use engine::Application;
 struct Runtime;
 impl engine::Runtime for Runtime {
 	fn logging_path() -> std::path::PathBuf {
-		engine::logging::default_path(
-			TriangleDemo::name(),
-			Some("_editor"),
-		)
+		engine::logging::default_path(TriangleDemo::name(), Some("_editor"))
 	}
 
-	fn initialize<'a>(&'a self, _engine: std::sync::Arc<std::sync::RwLock<engine::Engine>>) -> engine::task::PinFutureResultLifetime<'a, bool> {
+	fn initialize<'a>(
+		&'a self,
+		_engine: std::sync::Arc<std::sync::RwLock<engine::Engine>>,
+	) -> engine::task::PinFutureResultLifetime<'a, bool> {
 		Box::pin(async move {
-			self.create_editor()?;
+			self.create_editor().await?;
 			match editor::Editor::run_commandlets() {
 				Some(handle) => {
 					handle.await?;
@@ -25,8 +25,9 @@ impl engine::Runtime for Runtime {
 }
 
 impl Runtime {
-	fn create_editor(&self) -> anyhow::Result<()> {
-		editor::Editor::initialize::<TriangleDemo>(self.create_asset_manager())
+	async fn create_editor(&self) -> anyhow::Result<()> {
+		let editor = editor::Editor::new(self.create_asset_manager()).await?;
+		editor::Editor::initialize(editor)
 	}
 
 	fn create_asset_manager(&self) -> editor::asset::Manager {

@@ -1,4 +1,4 @@
-use crate::{asset, audio, input, task};
+use crate::{audio, input, task};
 use anyhow::Result;
 use std::sync::{
 	atomic::{self, AtomicBool},
@@ -21,13 +21,6 @@ impl Engine {
 			systems: Vec::new(),
 			weak_systems: Vec::new(),
 		})
-	}
-
-	/// Scans the engine pak file and any pak file names provided.
-	pub fn scan_paks(&self) -> Result<()> {
-		let mut library = asset::Library::write();
-		library.scan_pak_directory()?;
-		Ok(())
 	}
 
 	pub fn add_system<T>(&mut self, system: Arc<RwLock<T>>)

@@ -1,7 +1,11 @@
-use crate::engine::asset;
+use crate::{asset::build::collect_file_paths, engine::asset};
 use anyhow::Result;
-use std::{self, fs, io::Write, path::PathBuf};
-use zip;
+use async_zip::{
+	write::{EntryOptions, ZipFileWriter},
+	Compression,
+};
+use std::{self, path::PathBuf};
+use tokio::fs;
 
 #[derive(Debug)]
 pub struct Pak {
@@ -15,7 +19,7 @@ pub struct Pak {
 }
 
 impl Pak {
-	pub fn package(&self) -> Result<()> {
+	pub async fn package(&self) -> Result<()> {
 		let pak_name = format!("{}.pak", self.name);
 		let zip_paths = self
 			.output_directories
@@ -26,12 +30,12 @@ impl Pak {
 		for zip_path in zip_paths.iter() {
 			if let Some(parent) = zip_path.parent() {
 				if !parent.exists() {
-					std::fs::create_dir_all(&parent)?;
+					fs::create_dir_all(&parent).await?;
 				}
 			}
 		}
 
-		let files = crate::asset::build::collect_file_paths(&self.binaries_directory, &Vec::new())?;
+		let files = collect_file_paths(&self.binaries_directory, &Vec::new())?;
 		if files.is_empty() {
 			log::info!(target: asset::LOG, "[{}] No assets to package", self.name,);
 			return Ok(());
@@ -49,27 +53,28 @@ impl Pak {
 				.write(true)
 				.create(true)
 				.truncate(true)
-				.open(&zip_path)?;
-			let mut zipper = zip::ZipWriter::new(zip_file);
-			let zip_options = zip::write::FileOptions::default()
-				.compression_method(zip::CompressionMethod::BZIP2);
+				.open(&zip_path)
+				.await?;
+
+			let mut zipper = ZipFileWriter::new(zip_file);
 
 			for file_path in files.iter() {
 				let relative_path = file_path
 					.as_path()
 					.strip_prefix(&self.binaries_directory)?
 					.to_str()
-					.unwrap();
-				let bytes = fs::read(&file_path)?;
-				zipper.start_file(relative_path, zip_options)?;
-				zipper.write_all(&bytes[..])?;
+					.unwrap()
+					.to_owned();
+				let bytes = fs::read(&file_path).await?;
+				let options = EntryOptions::new(relative_path, Compression::Bz);
+				zipper.write_entry_whole(options, &bytes[..]).await?;
 			}
 
-			zipper.finish()?;
+			zipper.close().await?;
 
 			log::info!(
 				target: asset::LOG,
-				"[{}] - Packaged {} assets",
+				"[{}] Packaged {} assets",
 				self.name,
 				files.len(),
 			);

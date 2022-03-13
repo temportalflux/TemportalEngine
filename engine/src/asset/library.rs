@@ -1,7 +1,12 @@
 use crate::asset;
 use anyhow::Result;
-use std::{collections::HashMap, fs};
-use zip;
+use async_zip::read::fs::ZipFileReader;
+use multimap::MultiMap;
+use std::{
+	collections::HashMap,
+	path::{self, Path},
+};
+use tokio::fs;
 
 #[derive(Debug)]
 struct PakData {
@@ -21,7 +26,7 @@ struct Metadata {
 pub struct Library {
 	paks: HashMap</*module_name*/ String, PakData>,
 	assets: HashMap<asset::Id, Metadata>,
-	ids_by_type: HashMap<asset::TypeIdOwned, Vec<asset::Id>>,
+	ids_by_type: MultiMap<asset::TypeIdOwned, asset::Id>,
 }
 
 impl Default for Library {
@@ -29,7 +34,7 @@ impl Default for Library {
 		Library {
 			paks: HashMap::new(),
 			assets: HashMap::new(),
-			ids_by_type: HashMap::new(),
+			ids_by_type: MultiMap::new(),
 		}
 	}
 }
@@ -53,8 +58,7 @@ impl Library {
 }
 
 impl Library {
-	#[profiling::function]
-	pub fn scan_pak_directory(&mut self) -> Result<()> {
+	pub async fn scan_pak_directory() -> Result<()> {
 		let pak_dir = std::env::current_dir().unwrap().join("paks");
 		log::info!(
 			target: asset::LOG,
@@ -64,12 +68,13 @@ impl Library {
 		if !pak_dir.exists() {
 			return Ok(());
 		}
-		for entry in fs::read_dir(pak_dir)? {
-			let entry_path = entry?.path().to_path_buf();
+		let mut read_dir = fs::read_dir(pak_dir).await?;
+		while let Some(entry) = read_dir.next_entry().await? {
+			let entry_path = entry.path().to_path_buf();
 			if !entry_path.is_dir() {
 				if let Some(ext) = entry_path.extension() {
 					if ext == "pak" {
-						self.scan_pak(&entry_path)?;
+						Self::scan_pak(&entry_path).await?;
 					}
 				}
 			}
@@ -78,11 +83,26 @@ impl Library {
 		Ok(())
 	}
 
+	fn enclose_name<'a>(name: &'a str) -> Option<&'a Path> {
+		if name.contains('\0') {
+			return None;
+		}
+		let path = Path::new(name);
+		let mut depth = 0usize;
+		for component in path.components() {
+			match component {
+				path::Component::Prefix(_) | path::Component::RootDir => return None,
+				path::Component::ParentDir => depth = depth.checked_sub(1)?,
+				path::Component::Normal(_) => depth += 1,
+				path::Component::CurDir => (),
+			}
+		}
+		Some(path)
+	}
+
 	/// Scans a specific file at a provided path.
 	/// Will emit errors if the path does not exist or is not a `.pak` (i.e. zip) file.
-	#[profiling::function]
-	pub fn scan_pak(&mut self, path: &std::path::Path) -> Result<()> {
-		use std::io::Read;
+	pub async fn scan_pak(path: &Path) -> Result<()> {
 		let module_name = path.file_stem().unwrap().to_str().unwrap().to_owned();
 
 		if !path.exists() {
@@ -100,27 +120,31 @@ impl Library {
 			path.file_name().unwrap().to_str().unwrap()
 		);
 
+		let archive = ZipFileReader::new(path.to_str().unwrap().to_owned()).await?;
+		let entry_count = archive.entries().len();
+
+		let mut assets = HashMap::with_capacity(entry_count);
+		let mut ids_by_type = MultiMap::with_capacity(entry_count);
+
 		let mut pak_data = PakData {
 			location: path.to_path_buf(),
 			asset_paths: Vec::new(),
 		};
-
-		let file = fs::File::open(&path)?;
-		let mut archive = zip::ZipArchive::new(file)?;
-		for i in 0..archive.len() {
-			let mut item = archive.by_index(i)?;
-			let item_path = item.enclosed_name().unwrap().to_path_buf();
-			pak_data.asset_paths.push(item_path.clone());
-
+		for i in 0..entry_count {
+			let item = archive.entry_reader(i).await?;
+			if item.entry().dir() {
+				continue;
+			}
+			let item_path = Self::enclose_name(item.entry().name()).unwrap().to_owned();
+			let id = asset::Id::new(module_name.as_str(), item_path.as_path().to_str().unwrap());
 			let type_id = {
-				let mut bytes: Vec<u8> = Vec::new();
-				item.read_to_end(&mut bytes)?;
+				let bytes = item.read_to_end_crc().await?;
 				let generic: asset::Generic = rmp_serde::from_read_ref(&bytes)?;
 				generic.asset_type.to_owned()
 			};
 
-			let id = asset::Id::new(module_name.as_str(), item_path.as_path().to_str().unwrap());
-			self.assets.insert(
+			pak_data.asset_paths.push(item_path);
+			assets.insert(
 				id.clone(),
 				Metadata {
 					type_id: type_id.clone(),
@@ -128,10 +152,7 @@ impl Library {
 				},
 			);
 
-			if !self.ids_by_type.contains_key(&type_id) {
-				self.ids_by_type.insert(type_id.clone(), Vec::new());
-			}
-			self.ids_by_type.get_mut(&type_id).unwrap().push(id);
+			ids_by_type.insert(type_id.clone(), id);
 		}
 
 		log::info!(
@@ -140,7 +161,17 @@ impl Library {
 			pak_data.asset_paths.len(),
 			path.file_name().unwrap().to_str().unwrap()
 		);
-		self.paks.insert(module_name, pak_data);
+
+		{
+			let mut library = Self::write();
+			for (id, metadata) in assets.into_iter() {
+				library.assets.insert(id, metadata);
+			}
+			for (type_id, ids) in ids_by_type.into_iter() {
+				library.ids_by_type.insert_many(type_id, ids.into_iter());
+			}
+			library.paks.insert(module_name, pak_data);
+		}
 
 		Ok(())
 	}
@@ -149,7 +180,7 @@ impl Library {
 	/// Returns `None` if the asset type has not been registered or there are no assets
 	/// of that type that have been scanned by [`scan_pak`](Library::scan_pak).
 	pub fn get_ids_of_type<T: asset::Asset>(&self) -> Option<&Vec<asset::Id>> {
-		self.ids_by_type.get(&T::metadata().name().to_owned())
+		self.ids_by_type.get_vec(&T::metadata().name().to_owned())
 	}
 
 	fn find_asset(&self, id: &asset::Id) -> Option<&Metadata> {

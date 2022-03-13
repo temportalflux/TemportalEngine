@@ -2,7 +2,6 @@ use crate::asset;
 use anyhow::Result;
 use rmp_serde;
 use std::{fs, io::Read, path::PathBuf};
-use zip;
 
 /// Handles the loading of assets by their [`id`](crate::asset::Id),
 /// either synchronously or asynchronously.

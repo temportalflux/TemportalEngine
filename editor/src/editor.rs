@@ -31,8 +31,8 @@ impl Editor {
 		&mut INSTANCE
 	}
 
-	pub fn initialize<T: Application>(asset_manager: asset::Manager) -> Result<()> {
-		unsafe { Self::instance() }.init_with(Self::new::<T>(asset_manager)?);
+	pub fn initialize(editor: Self) -> Result<()> {
+		unsafe { Self::instance() }.init_with(editor);
 		Ok(())
 	}
 
@@ -48,7 +48,7 @@ impl Editor {
 		Self::get().write().unwrap()
 	}
 
-	fn new<T: Application>(asset_manager: asset::Manager) -> Result<Self> {
+	pub async fn new(asset_manager: asset::Manager) -> Result<Self> {
 		log::info!(target: EDITOR_LOG, "Initializing editor");
 
 		let mut editor = Self {
@@ -57,7 +57,7 @@ impl Editor {
 			asset_modules: Vec::new(),
 			paks: Vec::new(),
 		};
-		engine::asset::Library::write().scan_pak_directory()?;
+		engine::asset::Library::scan_pak_directory().await?;
 
 		if let Ok(crates_cfg) = crate::config::Crates::read() {
 			for manifest in crates_cfg.manifests().into_iter() {
@@ -92,12 +92,12 @@ impl Editor {
 			let handle = engine::task::spawn("editor".to_owned(), async move {
 				if should_build_assets {
 					let handles = {
-						let mut module_build_tasks = Vec::new();
+						let mut module_tasks = Vec::new();
 						let editor = Self::read();
 						for module in editor.asset_modules.iter() {
 							let async_module = module.clone();
 							let async_asset_manager = editor.asset_manager.clone();
-							module_build_tasks.push(engine::task::spawn(
+							module_tasks.push(engine::task::spawn(
 								"editor".to_owned(),
 								async move {
 									async_module
@@ -106,16 +106,25 @@ impl Editor {
 								},
 							));
 						}
-						module_build_tasks
+						module_tasks
 					};
 					futures::future::join_all(handles.into_iter()).await;
 				}
 
 				if should_package_assets {
-					let editor = Self::read();
-					for pak in editor.paks.iter() {
-						pak.package()?;
-					}
+					let handles = {
+						let mut module_tasks = Vec::new();
+						let editor = Self::read();
+						for pak in editor.paks.iter() {
+							let async_pak = pak.clone();
+							let task = engine::task::spawn("editor".to_owned(), async move {
+								async_pak.package().await
+							});
+							module_tasks.push(task);
+						}
+						module_tasks
+					};
+					futures::future::join_all(handles.into_iter()).await;
 				}
 				Ok(())
 			});

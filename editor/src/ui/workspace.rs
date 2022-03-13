@@ -49,9 +49,9 @@ impl Element for Workspace {
 					}
 					if package {
 						for pak in editor.paks.iter() {
-							if let Err(e) = pak.package() {
-								log::error!(target: "ui", "Failed to package... {:?}", e);
-							}
+							//if let Err(e) = pak.package() {
+							//	log::error!(target: "ui", "Failed to package... {:?}", e);
+							//}
 						}
 					}
 				});

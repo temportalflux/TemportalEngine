@@ -1,5 +1,13 @@
-use std::{path::PathBuf, sync::{Arc, RwLock}};
-use engine::{graphics::{chain::procedure::DefaultProcedure, Chain}, Application, window::Window, Engine, task::PinFutureResultLifetime, EventLoop};
+use engine::{
+	graphics::{chain::procedure::DefaultProcedure, Chain},
+	task::PinFutureResultLifetime,
+	window::Window,
+	Application, Engine, EventLoop,
+};
+use std::{
+	path::PathBuf,
+	sync::{Arc, RwLock},
+};
 
 #[path = "renderer.rs"]
 mod renderer;
@@ -36,7 +44,7 @@ impl engine::Runtime for Runtime {
 
 	fn initialize<'a>(&'a self, engine: Arc<RwLock<Engine>>) -> PinFutureResultLifetime<'a, bool> {
 		Box::pin(async move {
-			engine.write().unwrap().scan_paks()?;
+			engine::asset::Library::scan_pak_directory().await?;
 			Ok(true)
 		})
 	}
@@ -65,5 +73,4 @@ impl engine::Runtime for Runtime {
 	fn get_display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
 		self.window.as_ref().map(|window| window.graphics_chain())
 	}
-
 }
