@@ -1,5 +1,6 @@
 mod lib;
 pub use lib::*;
-fn main() -> anyhow::Result<()> {
-	lib::run()
+
+fn main() {
+	engine::run(Runtime::new())
 }

@@ -3,10 +3,10 @@
 		"../../../../engine": {
 			"pak_destinations": []
 		},
-		"../../demo": {
+		"../../../../editor": {
 			"pak_destinations": []
 		},
-		"../../../../editor": {
+		"../../demo": {
 			"pak_destinations": []
 		}
 	}
