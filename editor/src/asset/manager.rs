@@ -2,7 +2,7 @@ use crate::asset;
 use anyhow::Result;
 use engine::{
 	self,
-	asset::{AnyBox, Generic, TypeId},
+	asset::{AnyBox, Generic, TypeId, UnregisteredAssetType},
 };
 use serde_json;
 use std::{collections::HashMap, fs, path::Path, time::SystemTime};
@@ -85,11 +85,13 @@ impl Manager {
 		}
 	}
 
-	pub fn metadata<'r>(&self, type_id: &'r str) -> Result<&EditorMetadataBox> {
-		let metadata = self.editor_metadata.get(type_id).ok_or(
-			engine::asset::Error::UnregisteredAssetType(type_id.to_string()),
-		)?;
-		Ok(metadata)
+	pub fn metadata<'r>(
+		&self,
+		type_id: &'r str,
+	) -> Result<&EditorMetadataBox, UnregisteredAssetType> {
+		self.editor_metadata
+			.get(type_id)
+			.ok_or(UnregisteredAssetType(type_id.to_string()))
 	}
 
 	fn read_type_id_sync(&self, path: &Path) -> Result<String> {
@@ -113,9 +115,7 @@ impl Manager {
 		let asset = self
 			.editor_metadata
 			.get(type_id.as_str())
-			.ok_or(engine::asset::Error::UnregisteredAssetType(
-				type_id.to_string(),
-			))?
+			.ok_or(UnregisteredAssetType(type_id.to_string()))?
 			.read(&absolute_path, raw_file.as_str())?;
 		Ok((type_id, asset))
 	}

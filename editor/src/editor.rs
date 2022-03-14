@@ -83,53 +83,47 @@ impl Editor {
 		}));
 	}
 
-	pub fn run_commandlets() -> Option<engine::task::JoinHandle<()>> {
-		let mut args = std::env::args();
-		let should_build_assets = args.any(|arg| arg == "-build-assets");
-		let should_package_assets = args.any(|arg| arg == "-package");
-		if should_build_assets || should_package_assets {
+	pub async fn run_commandlets() -> bool {
+		let (should_build_assets, force_build, should_package_assets) = {
+			let mut args = std::env::args();
+			let should_build_assets = args.any(|arg| arg == "-build-assets");
 			let force_build = args.any(|arg| arg == "-force");
-			let handle = engine::task::spawn("editor".to_owned(), async move {
-				if should_build_assets {
-					let handles = {
-						let mut module_tasks = Vec::new();
-						let editor = Self::read();
-						for module in editor.asset_modules.iter() {
-							let async_module = module.clone();
-							let async_asset_manager = editor.asset_manager.clone();
-							module_tasks.push(engine::task::spawn(
-								"editor".to_owned(),
-								async move {
-									async_module
-										.build_async(async_asset_manager, force_build)
-										.await
-								},
-							));
-						}
-						module_tasks
-					};
-					futures::future::join_all(handles.into_iter()).await;
-				}
+			let should_package_assets = args.any(|arg| arg == "-package");
+			(should_build_assets, force_build, should_package_assets)
+		};
 
-				if should_package_assets {
-					let handles = {
-						let mut module_tasks = Vec::new();
-						let editor = Self::read();
-						for pak in editor.paks.iter() {
-							let async_pak = pak.clone();
-							let task = engine::task::spawn("editor".to_owned(), async move {
-								async_pak.package().await
-							});
-							module_tasks.push(task);
-						}
-						module_tasks
-					};
-					futures::future::join_all(handles.into_iter()).await;
+		if should_build_assets {
+			if let Err(errors) = Self::build_assets(force_build).await {
+				for error in errors.into_iter() {
+					log::error!(target: "editor", "{error:?}");
 				}
-				Ok(())
-			});
-			return Some(handle);
+			}
 		}
-		return None;
+
+		if should_package_assets {
+			if let Err(errors) = Self::package_assets().await {
+				for error in errors.into_iter() {
+					log::error!(target: "editor", "{error:?}");
+				}
+			}
+		}
+
+		should_build_assets || should_package_assets
+	}
+
+	pub async fn build_assets(force_build: bool) -> Result<(), Vec<anyhow::Error>> {
+		let (modules, manager) = {
+			let editor = Self::read();
+			(editor.asset_modules.clone(), editor.asset_manager.clone())
+		};
+		asset::Module::build_all(modules, manager, force_build).await
+	}
+
+	pub async fn package_assets() -> Result<(), Vec<anyhow::Error>> {
+		let paks = {
+			let editor = Self::read();
+			editor.paks.clone()
+		};
+		asset::Pak::package_all(paks).await
 	}
 }

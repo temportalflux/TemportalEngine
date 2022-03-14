@@ -42,7 +42,7 @@ impl engine::Runtime for Runtime {
 		engine::logging::default_path(TriangleDemo::name(), None)
 	}
 
-	fn initialize<'a>(&'a self, engine: Arc<RwLock<Engine>>) -> PinFutureResultLifetime<'a, bool> {
+	fn initialize<'a>(&'a self, _engine: Arc<RwLock<Engine>>) -> PinFutureResultLifetime<'a, bool> {
 		Box::pin(async move {
 			engine::asset::Library::scan_pak_directory().await?;
 			Ok(true)

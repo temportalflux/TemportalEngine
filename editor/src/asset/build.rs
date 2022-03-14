@@ -7,7 +7,7 @@ use std::{
 	sync::Arc,
 };
 
-use crate::asset::BuildPath;
+use crate::asset::{BuildPath, Manager};
 
 #[derive(Debug)]
 pub struct Module {
@@ -73,9 +73,24 @@ impl Module {
 		}
 	}
 
-	pub async fn build_async(
+	pub async fn build_all(
+		modules: Vec<Arc<Self>>,
+		manager: Arc<Manager>,
+		force_build: bool,
+	) -> Result<(), Vec<anyhow::Error>> {
+		let mut handles = Vec::new();
+		for module in modules.into_iter() {
+			let async_manager = manager.clone();
+			let task =
+				tokio::task::spawn(async move { module.build(async_manager, force_build).await });
+			handles.push(task);
+		}
+		engine::task::join_handles(handles).await
+	}
+
+	pub async fn build(
 		self: Arc<Self>,
-		manager: Arc<crate::asset::Manager>,
+		manager: Arc<Manager>,
 		force_build: bool,
 	) -> anyhow::Result<()> {
 		self.ensure_directories(force_build)?;

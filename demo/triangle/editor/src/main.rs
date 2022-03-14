@@ -13,13 +13,8 @@ impl engine::Runtime for Runtime {
 	) -> engine::task::PinFutureResultLifetime<'a, bool> {
 		Box::pin(async move {
 			self.create_editor().await?;
-			match editor::Editor::run_commandlets() {
-				Some(handle) => {
-					handle.await?;
-					Ok(false)
-				}
-				None => Ok(true),
-			}
+			editor::Editor::run_commandlets().await;
+			Ok(false)
 		})
 	}
 }

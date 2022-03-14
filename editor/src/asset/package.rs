@@ -4,7 +4,7 @@ use async_zip::{
 	write::{EntryOptions, ZipFileWriter},
 	Compression,
 };
-use std::{self, path::PathBuf};
+use std::{self, path::PathBuf, sync::Arc};
 use tokio::fs;
 
 #[derive(Debug)]
@@ -19,6 +19,15 @@ pub struct Pak {
 }
 
 impl Pak {
+	pub async fn package_all(paks: Vec<Arc<Self>>) -> Result<(), Vec<anyhow::Error>> {
+		let mut handles = Vec::new();
+		for pak in paks.into_iter() {
+			let task = tokio::task::spawn(async move { pak.package().await });
+			handles.push(task);
+		}
+		engine::task::join_handles(handles.into_iter()).await
+	}
+
 	pub async fn package(&self) -> Result<()> {
 		let pak_name = format!("{}.pak", self.name);
 		let zip_paths = self
