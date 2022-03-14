@@ -10,6 +10,11 @@ pub mod audio;
 pub mod ecs;
 mod engine;
 pub use engine::*;
+pub mod channels {
+	pub use async_channel as future;
+	pub use bus as broadcast;
+	pub use crossbeam_channel as mpsc;
+}
 pub mod graphics;
 pub mod input;
 pub mod logging;

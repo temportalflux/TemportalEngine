@@ -1,5 +1,4 @@
 use anyhow::Result;
-use crossbeam_channel;
 use futures_util::future::Future;
 use std::{
 	mem::MaybeUninit,
@@ -68,13 +67,13 @@ where
 
 type AnyItem = Box<dyn std::any::Any + Send + Sync + 'static>;
 
-type Sender = crossbeam_channel::Sender<AnyItem>;
+type Sender = crate::channels::mpsc::Sender<AnyItem>;
 static mut SENDER: MaybeUninit<Arc<Sender>> = MaybeUninit::uninit();
 fn sender() -> &'static Arc<Sender> {
 	unsafe { &*SENDER.as_ptr() }
 }
 
-type Receiver = crossbeam_channel::Receiver<AnyItem>;
+type Receiver = crate::channels::mpsc::Receiver<AnyItem>;
 static mut RECEIVER: MaybeUninit<Receiver> = MaybeUninit::uninit();
 fn receiver() -> &'static Receiver {
 	unsafe { &*RECEIVER.as_ptr() }
@@ -84,7 +83,7 @@ pub fn initialize_system() {
 	static mut ONCE: Once = Once::new();
 	unsafe {
 		ONCE.call_once(|| {
-			let (sender, receiver) = crossbeam_channel::unbounded();
+			let (sender, receiver) = crate::channels::mpsc::unbounded();
 			SENDER.as_mut_ptr().write(Arc::new(sender));
 			RECEIVER.as_mut_ptr().write(receiver);
 		});
@@ -101,7 +100,7 @@ where
 // Processes all of the items sent to the main thread to be explicitly dropped on the main thread.
 #[profiling::function]
 pub(crate) fn poll_until_empty() {
-	use crossbeam_channel::TryRecvError;
+	use crate::channels::mpsc::TryRecvError;
 	loop {
 		match receiver().try_recv() {
 			Ok(_item) => {

@@ -25,6 +25,8 @@ thiserror = "1.0"
 bus = "2.2"
 # [channel] [ sync]  multi-producer multi-consumer single-consumption
 crossbeam-channel = "0.5"
+# [channel] [async]  multi-producer multi-consumer single-consumption
+async-channel = "1.6"
 
 # [async] base async traits
 futures = "0.3"

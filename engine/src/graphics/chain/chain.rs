@@ -21,7 +21,7 @@ use crate::graphics::{
 	resource, structs, task,
 	utility::{BuildFromDevice, NameableBuilder},
 };
-use crossbeam_channel::{Receiver, Sender};
+use crate::channels::mpsc::{Receiver, Sender};
 use nalgebra::Vector2;
 use std::sync::{Arc, RwLock, Weak};
 use vulkan_rs::structs::Extent2D;

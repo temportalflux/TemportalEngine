@@ -9,8 +9,7 @@ pub struct BuildPath {
 
 impl BuildPath {
 	pub fn source_with_ext(&self, ext: &str) -> PathBuf {
-		let mut path = self.source.parent().unwrap().to_path_buf();
-		path.push(self.source.file_stem().unwrap());
+		let mut path = self.source.clone();
 		path.set_extension(ext);
 		path
 	}

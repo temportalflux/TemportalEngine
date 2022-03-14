@@ -1,4 +1,4 @@
-use crossbeam_channel::Sender;
+use crate::channels::mpsc::Sender;
 
 use super::{font, Vertex};
 use crate::{

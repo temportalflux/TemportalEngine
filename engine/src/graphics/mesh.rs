@@ -1,4 +1,4 @@
-use crossbeam_channel::Sender;
+use crate::channels::mpsc::Sender;
 
 use crate::graphics::{
 	alloc, buffer, command, flags, pipeline::state::vertex, utility::NamedObject, GpuOpContext,

@@ -65,7 +65,7 @@ impl ChainBuilder {
 
 	pub fn build(self) -> Result<super::Chain, ChainBuilderError> {
 		use ChainBuilderError::*;
-		let (outgoing_signals, incoming_signals) = crossbeam_channel::unbounded();
+		let (outgoing_signals, incoming_signals) = crate::channels::mpsc::unbounded();
 		Ok(super::Chain {
 			physical: Arc::downgrade(&self.physical_device.ok_or(NoPhysicalDevice)?),
 			logical: Arc::downgrade(&self.logical_device.ok_or(NoLogicalDevice)?),

@@ -16,7 +16,7 @@ use crate::{
 	},
 };
 use anyhow::Result;
-use crossbeam_channel::Sender;
+use crate::channels::mpsc::Sender;
 use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
 use std::{
 	collections::HashMap,

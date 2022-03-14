@@ -12,7 +12,7 @@ use crate::{
 	EngineSystem,
 };
 use anyhow::Result;
-use crossbeam_channel::Sender;
+use crate::channels::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use vulkan_rs::procedure::Phase;
 

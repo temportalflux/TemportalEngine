@@ -1,3 +1,5 @@
+use crate::channels::mpsc::Sender;
+
 use crate::graphics::{
 	alloc, buffer, command,
 	device::{logical, physical},
@@ -145,10 +147,7 @@ impl GpuOperationBuilder {
 		self
 	}
 
-	pub fn send_signal_to(
-		self,
-		sender: &crossbeam_channel::Sender<Arc<command::Semaphore>>,
-	) -> anyhow::Result<Self> {
+	pub fn send_signal_to(self, sender: &Sender<Arc<command::Semaphore>>) -> anyhow::Result<Self> {
 		sender.send(self.gpu_signal_on_complete())?;
 		Ok(self)
 	}
