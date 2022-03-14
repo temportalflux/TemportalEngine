@@ -1,11 +1,18 @@
 use anyhow::Result;
 use crossbeam_channel;
+use futures_util::future::Future;
 use std::{
 	mem::MaybeUninit,
+	pin::Pin,
 	sync::{Arc, Once},
 };
+use tokio::task::JoinError;
 
 pub use tokio::task::JoinHandle;
+
+pub type PinFutureResult<T> = PinFutureResultLifetime<'static, T>;
+pub type PinFutureResultLifetime<'l, T> =
+	Pin<Box<dyn Future<Output = anyhow::Result<T>> + 'l + Send>>;
 
 pub fn current() -> tokio::runtime::Handle {
 	tokio::runtime::Handle::current()
@@ -31,6 +38,32 @@ where
 			log::error!(target: &target, "{:?}", err);
 		}
 	});
+}
+
+pub async fn join_handles<I>(i: I) -> Result<(), Vec<anyhow::Error>>
+where
+	I: IntoIterator,
+	I::Item: Future<Output = Result<anyhow::Result<()>, JoinError>> + Send,
+{
+	let results = futures::future::join_all(i).await;
+	let mut errors = Vec::with_capacity(results.len());
+	for join_result in results.into_iter() {
+		match join_result {
+			Ok(task_result) => match task_result {
+				Ok(_) => {} // NO-OP
+				Err(task_error) => {
+					errors.push(task_error);
+				}
+			},
+			Err(join_error) => {
+				errors.push(anyhow::Error::from(join_error));
+			}
+		}
+	}
+	match errors.is_empty() {
+		true => Ok(()),
+		false => Err(errors),
+	}
 }
 
 type AnyItem = Box<dyn std::any::Any + Send + Sync + 'static>;

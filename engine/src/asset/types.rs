@@ -1,18 +1,16 @@
-use crate::asset;
+use crate::asset::{AnyBox, Asset, TypeId, UnregisteredAssetType};
 use std::collections::HashMap;
 
 /// Runtime listings of the kinds of assets that exist.
 /// Each asset type corresponds one-to-one with an implementation of the [`Asset`](crate::asset::Asset) trait.
 pub struct TypeRegistry {
-	types: HashMap<asset::TypeId, Box<dyn asset::TypeMetadata>>,
+	registrations: HashMap<TypeId, Registration>,
 }
 
-pub type RegisteredType<'a> = Option<&'a Box<dyn asset::TypeMetadata>>;
-
 impl Default for TypeRegistry {
-	fn default() -> TypeRegistry {
-		TypeRegistry {
-			types: HashMap::new(),
+	fn default() -> Self {
+		Self {
+			registrations: HashMap::new(),
 		}
 	}
 }
@@ -32,26 +30,34 @@ impl TypeRegistry {
 impl TypeRegistry {
 	pub fn register<T>(&mut self)
 	where
-		T: asset::Asset,
+		T: Asset,
 	{
-		let metadata = T::metadata();
-		if !self.types.contains_key(metadata.name()) {
-			log::info!(
-				target: asset::LOG,
-				"Registring asset type \"{}\"",
-				metadata.name()
-			);
-			self.types.insert(metadata.name(), metadata);
-		} else {
-			log::error!(
-				target: asset::LOG,
-				"Encountered duplicate asset type \"{}\"",
-				metadata.name()
-			);
+		assert!(!self.registrations.contains_key(T::asset_type()));
+		self.registrations
+			.insert(T::asset_type(), Registration::from::<T>());
+	}
+
+	pub fn at(&self, type_id: &str) -> Result<&Registration, UnregisteredAssetType> {
+		self.registrations
+			.get(type_id)
+			.ok_or(UnregisteredAssetType(type_id.to_string()))
+	}
+}
+
+pub struct Registration {
+	fn_decompile: Box<dyn Fn(&Vec<u8>) -> anyhow::Result<AnyBox> + 'static + Send + Sync>,
+}
+impl Registration {
+	fn from<T>() -> Self
+	where
+		T: Asset,
+	{
+		Self {
+			fn_decompile: Box::new(|bytes| T::decompile(bytes)),
 		}
 	}
 
-	pub fn at<'a>(&'a self, type_id: &str) -> RegisteredType<'a> {
-		self.types.get(type_id)
+	pub fn decompile(&self, bytes: &Vec<u8>) -> anyhow::Result<AnyBox> {
+		(self.fn_decompile)(bytes)
 	}
 }

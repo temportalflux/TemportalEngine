@@ -14,14 +14,14 @@ use crate::{
 	input,
 	math::nalgebra::{Matrix4, Point2, Vector2, Vector4},
 	ui::{core::*, raui, LOG},
-	EngineSystem, WinitEventListener,
+	Engine, EngineSystem, WinitEventListener,
 };
 use anyhow::Result;
 use enumset::EnumSet;
 use std::{
 	any::{Any, TypeId},
 	collections::HashMap,
-	sync::{self, Arc},
+	sync::{self, Arc, RwLock},
 };
 
 /// The types of shaders used by the [`ui system`](System).
@@ -303,16 +303,15 @@ impl System {
 
 	pub fn attach_system(
 		self,
-		engine: &mut crate::Engine,
+		engine: &mut Engine,
+		chain: &Arc<RwLock<Chain>>,
 		phase: &Arc<Phase>,
 	) -> Result<sync::Arc<sync::RwLock<Self>>> {
 		let system = sync::Arc::new(sync::RwLock::new(self));
 		engine.add_system(system.clone());
 		engine.add_winit_listener(&system);
-		if let Some(arc) = engine.display_chain() {
-			if let Ok(mut chain) = arc.write() {
-				chain.add_operation(phase, Arc::downgrade(&system))?;
-			}
+		if let Ok(mut chain) = chain.write() {
+			chain.add_operation(phase, Arc::downgrade(&system))?;
 		}
 		Ok(system)
 	}

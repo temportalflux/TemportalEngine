@@ -1,16 +1,14 @@
-use crate::{
-	engine::{
-		self, asset,
-		graphics::{
-			self, buffer, command, flags, pipeline, shader,
-			utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
-			GpuOperationBuilder,
-		},
-	},
-	Vertex,
-};
+use crate::Vertex;
 use anyhow::Result;
 use engine::graphics::{chain::Operation, procedure::Phase, Chain};
+use engine::{
+	self, asset,
+	graphics::{
+		self, buffer, command, flags, pipeline, shader,
+		utility::{BuildFromAllocator, BuildFromDevice, NameableBuilder, NamedObject},
+		GpuOperationBuilder,
+	},
+};
 use std::sync::{Arc, RwLock};
 
 pub struct Triangle {

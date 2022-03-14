@@ -1,5 +1,5 @@
 use crate::{
-	asset::{self, AssetResult, TypeMetadata},
+	asset::{self},
 	graphics::flags::ShaderKind,
 };
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ impl Default for Shader {
 	fn default() -> Self {
 		use asset::Asset;
 		Self {
-			asset_type: Self::metadata().name().to_owned(),
+			asset_type: Self::asset_type().to_owned(),
 			kind: ShaderKind::Vertex,
 			contents: None,
 		}
@@ -29,8 +29,12 @@ impl Default for Shader {
 }
 
 impl asset::Asset for Shader {
-	fn metadata() -> Box<dyn TypeMetadata> {
-		Box::new(ShaderMetadata {})
+	fn asset_type() -> asset::TypeId {
+		"shader"
+	}
+
+	fn decompile(bin: &Vec<u8>) -> anyhow::Result<asset::AnyBox> {
+		asset::decompile_asset::<Self>(bin)
 	}
 }
 
@@ -80,18 +84,5 @@ impl asset::kdl::Asset<Shader> for Shader {
 			]),
 			..Default::default()
 		}
-	}
-}
-
-/// The metadata about the [`Shader`] asset type.
-pub struct ShaderMetadata {}
-
-impl TypeMetadata for ShaderMetadata {
-	fn name(&self) -> asset::TypeId {
-		"shader"
-	}
-
-	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		asset::decompile_asset::<Shader>(bin)
 	}
 }

@@ -28,10 +28,16 @@ crossbeam-channel = "0.5"
 
 # [async] base async traits
 futures = "0.3"
+# [async] adv async traits
+futures-util = "0.3"
 # [async] async/await syntax and multithreading
 tokio = { version = "1.15", features = ["full"] }
 # [async] helper for getting the number of CPS for multithreading
 num_cpus = { version = "1.8" }
+# [utility] for managing zip (and thereby pak) files
+zip = "0.5"
+# [utility] for managing zip (and thereby pak) files
+async_zip = "0.0.6"
 
 # [ui] debug immediate-mode UI
 egui = "0.15"
@@ -94,8 +100,6 @@ regex = "1.5"
 signal-hook = "0.3"
 # [utility] semantic versioning
 semver = "1.0"
-# [utility] for managing zip (and thereby pak) files
-zip = "0.5"
 # [utility] one-line implementation for builder pattern
 derive_builder = "0.10"
 

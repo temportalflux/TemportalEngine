@@ -1,7 +1,11 @@
-use crate::engine::{asset, Application};
+use crate::{asset::build::collect_file_paths, engine::asset};
 use anyhow::Result;
-use std::{self, fs, io::Write, path::PathBuf};
-use zip;
+use async_zip::{
+	write::{EntryOptions, ZipFileWriter},
+	Compression,
+};
+use std::{self, path::PathBuf, sync::Arc};
+use tokio::fs;
 
 #[derive(Debug)]
 pub struct Pak {
@@ -11,24 +15,20 @@ pub struct Pak {
 	pub binaries_directory: PathBuf,
 	/// Where the pak file will be put when its created.
 	pub output_directories: Vec<PathBuf>,
+	pub modules: Vec</*module idx*/ usize>,
 }
 
 impl Pak {
-	pub fn from_app<T: Application>(location: &PathBuf, pak_output: Option<&str>) -> Self {
-		Self {
-			name: T::name().to_owned(),
-			binaries_directory: location.join("binaries"),
-			output_directories: {
-				let mut path = std::env::current_dir().unwrap();
-				if let Some(relative) = pak_output {
-					path = path.join(relative);
-				}
-				vec![path.join("paks")]
-			},
+	pub async fn package_all(paks: Vec<Arc<Self>>) -> Result<(), Vec<anyhow::Error>> {
+		let mut handles = Vec::new();
+		for pak in paks.into_iter() {
+			let task = tokio::task::spawn(async move { pak.package().await });
+			handles.push(task);
 		}
+		engine::task::join_handles(handles.into_iter()).await
 	}
 
-	pub fn package(&self) -> Result<()> {
+	pub async fn package(&self) -> Result<()> {
 		let pak_name = format!("{}.pak", self.name);
 		let zip_paths = self
 			.output_directories
@@ -39,12 +39,12 @@ impl Pak {
 		for zip_path in zip_paths.iter() {
 			if let Some(parent) = zip_path.parent() {
 				if !parent.exists() {
-					std::fs::create_dir_all(&parent)?;
+					fs::create_dir_all(&parent).await?;
 				}
 			}
 		}
 
-		let files = crate::asset::build::collect_file_paths(&self.binaries_directory, &Vec::new())?;
+		let files = collect_file_paths(&self.binaries_directory, &Vec::new())?;
 		if files.is_empty() {
 			log::info!(target: asset::LOG, "[{}] No assets to package", self.name,);
 			return Ok(());
@@ -62,27 +62,28 @@ impl Pak {
 				.write(true)
 				.create(true)
 				.truncate(true)
-				.open(&zip_path)?;
-			let mut zipper = zip::ZipWriter::new(zip_file);
-			let zip_options = zip::write::FileOptions::default()
-				.compression_method(zip::CompressionMethod::BZIP2);
+				.open(&zip_path)
+				.await?;
+
+			let mut zipper = ZipFileWriter::new(zip_file);
 
 			for file_path in files.iter() {
 				let relative_path = file_path
 					.as_path()
 					.strip_prefix(&self.binaries_directory)?
 					.to_str()
-					.unwrap();
-				let bytes = fs::read(&file_path)?;
-				zipper.start_file(relative_path, zip_options)?;
-				zipper.write_all(&bytes[..])?;
+					.unwrap()
+					.to_owned();
+				let bytes = fs::read(&file_path).await?;
+				let options = EntryOptions::new(relative_path, Compression::Bz);
+				zipper.write_entry_whole(options, &bytes[..]).await?;
 			}
 
-			zipper.finish()?;
+			zipper.close().await?;
 
 			log::info!(
 				target: asset::LOG,
-				"[{}] - Packaged {} assets",
+				"[{}] Packaged {} assets",
 				self.name,
 				files.len(),
 			);

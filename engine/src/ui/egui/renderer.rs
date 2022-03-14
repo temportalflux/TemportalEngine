@@ -12,7 +12,8 @@ use crate::{
 		vertex_object, Chain, DescriptorCache, Drawable, ImageCache, Mesh,
 	},
 	math::nalgebra::{Vector2, Vector4},
-	Engine, WinitEventListener,
+	window::Window,
+	WinitEventListener,
 };
 use bytemuck::{Pod, Zeroable};
 use copypasta::{ClipboardContext, ClipboardProvider};
@@ -93,10 +94,9 @@ impl Vertex {
 }
 
 impl Ui {
-	pub fn create(engine: &mut Engine, phase: &Arc<Phase>) -> anyhow::Result<Arc<RwLock<Self>>> {
-		let strong = Arc::new(RwLock::new(Self::new(engine)?));
-		engine.add_winit_listener(&strong);
-		if let Ok(mut chain) = engine.window().unwrap().graphics_chain().write() {
+	pub fn create(window: &Window, phase: &Arc<Phase>) -> anyhow::Result<Arc<RwLock<Self>>> {
+		let strong = Arc::new(RwLock::new(Self::new(window)?));
+		if let Ok(mut chain) = window.graphics_chain().write() {
 			chain.add_operation(phase, Arc::downgrade(&strong))?;
 		}
 		Ok(strong)
@@ -112,9 +112,9 @@ impl Ui {
 		)
 	}
 
-	fn new(engine: &mut Engine) -> anyhow::Result<Ui> {
-		let window_handle = engine.window().unwrap().unwrap();
-		let (physical_size, scale_factor) = engine.window().unwrap().read_size();
+	fn new(window: &Window) -> anyhow::Result<Ui> {
+		let window_handle = window.unwrap();
+		let (physical_size, scale_factor) = window.read_size();
 
 		// Create context
 		let context = CtxRef::default();
@@ -131,7 +131,7 @@ impl Ui {
 		let modifiers_state = winit::event::ModifiersState::default();
 
 		let clipboard = ClipboardContext::new().expect("Failed to initialize ClipboardContext.");
-		let logical = engine.display_chain().unwrap().read().unwrap().logical()?;
+		let logical = window.graphics_chain().read().unwrap().logical()?;
 
 		Ok(Ui {
 			physical_size,

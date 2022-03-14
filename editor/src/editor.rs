@@ -5,14 +5,15 @@ use engine::{
 	utility::{singleton::Singleton, SaveData},
 	Application,
 };
+use std::sync::Arc;
 
 pub static EDITOR_LOG: &'static str = "Editor";
 
 pub struct Editor {
-	asset_manager: asset::Manager,
+	asset_manager: Arc<asset::Manager>,
 	pub settings: settings::Editor,
-	pub asset_modules: Vec<asset::Module>,
-	pub paks: Vec<asset::Pak>,
+	pub asset_modules: Vec<Arc<asset::Module>>,
+	pub paks: Vec<Arc<asset::Pak>>,
 }
 
 impl Application for Editor {
@@ -30,8 +31,8 @@ impl Editor {
 		&mut INSTANCE
 	}
 
-	pub fn initialize<T: Application>() -> Result<()> {
-		unsafe { Self::instance() }.init_with(Self::new::<T>()?);
+	pub fn initialize(editor: Self) -> Result<()> {
+		unsafe { Self::instance() }.init_with(editor);
 		Ok(())
 	}
 
@@ -47,17 +48,16 @@ impl Editor {
 		Self::get().write().unwrap()
 	}
 
-	fn new<T: Application>() -> Result<Self> {
+	pub async fn new(asset_manager: asset::Manager) -> Result<Self> {
 		log::info!(target: EDITOR_LOG, "Initializing editor");
+
 		let mut editor = Self {
-			asset_manager: asset::Manager::new(),
+			asset_manager: Arc::new(asset_manager),
 			settings: settings::Editor::load()?,
 			asset_modules: Vec::new(),
 			paks: Vec::new(),
 		};
-		crate::audio::register_asset_types(&mut editor.asset_manager);
-		crate::graphics::register_asset_types(&mut editor.asset_manager);
-		engine::asset::Library::write().scan_pak_directory()?;
+		engine::asset::Library::scan_pak_directory().await?;
 
 		if let Ok(crates_cfg) = crate::config::Crates::read() {
 			for manifest in crates_cfg.manifests().into_iter() {
@@ -69,57 +69,61 @@ impl Editor {
 	}
 
 	fn add_crate_manifest(&mut self, manifest: &crate::config::Manifest) {
-		self.add_asset_module(asset::Module {
+		let module_idx = self.asset_modules.len();
+		self.asset_modules.push(Arc::new(asset::Module {
 			name: manifest.name.clone(),
 			assets_directory: manifest.location.join("assets"),
 			binaries_directory: manifest.location.join("binaries"),
-		});
-		self.add_pak(asset::Pak {
+		}));
+		self.paks.push(Arc::new(asset::Pak {
 			name: manifest.name.clone(),
 			binaries_directory: manifest.location.join("binaries"),
 			output_directories: manifest.config.pak_destinations.clone(),
-		});
+			modules: vec![module_idx],
+		}));
 	}
 
-	pub fn add_asset_module(&mut self, module: asset::Module) {
-		log::info!(
-			target: crate::LOG,
-			"Adding asset module \"{}\"",
-			module.name
-		);
-		self.asset_modules.push(module);
-	}
+	pub async fn run_commandlets() -> bool {
+		let (should_build_assets, force_build, should_package_assets) = {
+			let mut args = std::env::args();
+			let should_build_assets = args.any(|arg| arg == "-build-assets");
+			let force_build = args.any(|arg| arg == "-force");
+			let should_package_assets = args.any(|arg| arg == "-package");
+			(should_build_assets, force_build, should_package_assets)
+		};
 
-	pub fn add_pak(&mut self, pak: asset::Pak) {
-		log::info!(target: crate::LOG, "Adding pak \"{}\"", pak.name);
-		self.paks.push(pak);
-	}
-
-	pub fn asset_manager(&self) -> &asset::Manager {
-		&self.asset_manager
-	}
-
-	pub fn asset_manager_mut(&mut self) -> &mut asset::Manager {
-		&mut self.asset_manager
-	}
-
-	pub fn run_commandlets(&self) -> Result<bool> {
-		let mut args = std::env::args();
-		let should_build_assets = args.any(|arg| arg == "-build-assets");
-		let should_package_assets = args.any(|arg| arg == "-package");
-		if should_build_assets || should_package_assets {
-			if should_build_assets {
-				for module in self.asset_modules.iter() {
-					module.build(self.asset_manager(), args.any(|arg| arg == "-force"))?;
+		if should_build_assets {
+			if let Err(errors) = Self::build_assets(force_build).await {
+				for error in errors.into_iter() {
+					log::error!(target: "editor", "{error:?}");
 				}
 			}
-			if should_package_assets {
-				for pak in self.paks.iter() {
-					pak.package()?;
-				}
-			}
-			return Ok(true);
 		}
-		return Ok(false);
+
+		if should_package_assets {
+			if let Err(errors) = Self::package_assets().await {
+				for error in errors.into_iter() {
+					log::error!(target: "editor", "{error:?}");
+				}
+			}
+		}
+
+		should_build_assets || should_package_assets
+	}
+
+	pub async fn build_assets(force_build: bool) -> Result<(), Vec<anyhow::Error>> {
+		let (modules, manager) = {
+			let editor = Self::read();
+			(editor.asset_modules.clone(), editor.asset_manager.clone())
+		};
+		asset::Module::build_all(modules, manager, force_build).await
+	}
+
+	pub async fn package_assets() -> Result<(), Vec<anyhow::Error>> {
+		let paks = {
+			let editor = Self::read();
+			editor.paks.clone()
+		};
+		asset::Pak::package_all(paks).await
 	}
 }

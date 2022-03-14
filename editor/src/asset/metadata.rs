@@ -1,14 +1,18 @@
-use anyhow::Result;
-use engine::asset::{AnyBox, AssetResult};
-use std::{path::Path, time::SystemTime};
+use crate::asset::BuildPath;
+use engine::{
+	asset::{AnyBox, Asset},
+	task::PinFutureResult,
+};
+use std::path::PathBuf;
 
-pub trait TypeEditorMetadata {
-	fn boxed() -> Box<dyn TypeEditorMetadata>
-	where
-		Self: Sized;
-	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
-		Ok(path.metadata()?.modified()?)
+pub trait EditorOps {
+	type Asset: Asset;
+
+	fn get_related_paths(_path: PathBuf) -> PinFutureResult<Option<Vec<PathBuf>>> {
+		Box::pin(async move { Ok(None) })
 	}
-	fn read(&self, path: &Path, json_str: &str) -> AssetResult;
-	fn compile(&self, json_path: &Path, asset: AnyBox) -> Result<Vec<u8>>;
+
+	fn read(source: PathBuf, file_content: String) -> PinFutureResult<AnyBox>;
+
+	fn compile(build_path: BuildPath, asset: AnyBox) -> PinFutureResult<Vec<u8>>;
 }

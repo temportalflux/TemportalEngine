@@ -1,5 +1,5 @@
 use crate::{
-	asset::{self, AssetResult, TypeMetadata},
+	asset::{self},
 	math::nalgebra::Vector2,
 };
 use serde::{Deserialize, Serialize};
@@ -18,8 +18,12 @@ pub(crate) struct CompiledTexture {
 }
 
 impl asset::Asset for Texture {
-	fn metadata() -> Box<dyn TypeMetadata> {
-		Box::new(TextureMetadata {})
+	fn asset_type() -> asset::TypeId {
+		"texture"
+	}
+
+	fn decompile(bin: &Vec<u8>) -> anyhow::Result<asset::AnyBox> {
+		asset::decompile_asset::<Self>(bin)
 	}
 }
 
@@ -53,18 +57,5 @@ impl crate::asset::kdl::Asset<Texture> for Texture {
 			)]),
 			..Default::default()
 		}
-	}
-}
-
-/// The metadata about the [`Texture`] asset type.
-pub struct TextureMetadata {}
-
-impl TypeMetadata for TextureMetadata {
-	fn name(&self) -> asset::TypeId {
-		"texture"
-	}
-
-	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		asset::decompile_asset::<Texture>(bin)
 	}
 }
