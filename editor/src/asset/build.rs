@@ -107,7 +107,8 @@ impl Module {
 		);
 
 		for asset_file_path in asset_paths.iter() {
-			planner.add_asset_path(&asset_file_path, manager.last_modified(&asset_file_path)?)?;
+			let time = manager.last_modified_at(&asset_file_path).await?;
+			planner.add_asset_path(&asset_file_path, time)?;
 		}
 
 		log::info!(
@@ -126,7 +127,7 @@ impl Module {
 				self.name,
 				build_path.relative
 			);
-			let (type_id, asset) = match manager.read_sync(&build_path.source) {
+			let (type_id, asset) = match manager.read(&build_path.source).await {
 				Ok(success) => success,
 				Err(err) => {
 					log::error!(target: asset::LOG, "{}", err);
@@ -145,9 +146,8 @@ impl Module {
 					build_path.relative
 				);
 
-				let metadata = async_manager.metadata(&type_id)?;
-
-				let bytes = match metadata.compile(&build_path, asset).await {
+				let registration = async_manager.get(&type_id)?;
+				let bytes = match registration.compile(build_path.clone(), asset).await {
 					Ok(bytes) => bytes,
 					Err(err) => {
 						log::error!(target: asset::LOG, "[{module_name}] {:?}", err);

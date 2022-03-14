@@ -1,5 +1,5 @@
 use crate::{
-	asset::{self, AssetResult, TypeMetadata},
+	asset::{self},
 	audio::SourceKind,
 };
 use serde::{Deserialize, Serialize};
@@ -29,19 +29,11 @@ impl Sound {
 }
 
 impl asset::Asset for Sound {
-	fn metadata() -> Box<dyn TypeMetadata> {
-		Box::new(Metadata {})
-	}
-}
-
-struct Metadata;
-
-impl TypeMetadata for Metadata {
-	fn name(&self) -> asset::TypeId {
+	fn asset_type() -> asset::TypeId {
 		"sound"
 	}
 
-	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		asset::decompile_asset::<Sound>(bin)
+	fn decompile(bin: &Vec<u8>) -> anyhow::Result<asset::AnyBox> {
+		asset::decompile_asset::<Self>(bin)
 	}
 }

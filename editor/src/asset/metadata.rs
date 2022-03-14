@@ -1,23 +1,18 @@
 use crate::asset::BuildPath;
-use anyhow::Result;
 use engine::{
-	asset::{AnyBox, AssetResult},
-	task::PinFutureResultLifetime,
+	asset::{AnyBox, Asset},
+	task::PinFutureResult,
 };
-use std::{path::Path, time::SystemTime};
+use std::path::PathBuf;
 
-pub trait TypeEditorMetadata {
-	fn boxed() -> Box<dyn TypeEditorMetadata + 'static + Send + Sync>
-	where
-		Self: Sized;
-	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
-		Ok(path.metadata()?.modified()?)
+pub trait EditorOps {
+	type Asset: Asset;
+
+	fn get_related_paths(_path: PathBuf) -> PinFutureResult<Option<Vec<PathBuf>>> {
+		Box::pin(async move { Ok(None) })
 	}
-	fn read(&self, path: &Path, json_str: &str) -> AssetResult;
 
-	fn compile<'a>(
-		&'a self,
-		build_path: &'a BuildPath,
-		asset: AnyBox,
-	) -> PinFutureResultLifetime<'a, Vec<u8>>;
+	fn read(source: PathBuf, file_content: String) -> PinFutureResult<AnyBox>;
+
+	fn compile(build_path: BuildPath, asset: AnyBox) -> PinFutureResult<Vec<u8>>;
 }

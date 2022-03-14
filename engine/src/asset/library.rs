@@ -179,8 +179,11 @@ impl Library {
 	/// Returns a list of all ids for a given [`asset type`](asset::Asset).
 	/// Returns `None` if the asset type has not been registered or there are no assets
 	/// of that type that have been scanned by [`scan_pak`](Library::scan_pak).
-	pub fn get_ids_of_type<T: asset::Asset>(&self) -> Option<&Vec<asset::Id>> {
-		self.ids_by_type.get_vec(&T::metadata().name().to_owned())
+	pub fn get_ids_of_type<T>(&self) -> Option<&Vec<asset::Id>>
+	where
+		T: asset::Asset,
+	{
+		self.ids_by_type.get_vec(&T::asset_type().to_owned())
 	}
 
 	fn find_asset(&self, id: &asset::Id) -> Option<&Metadata> {

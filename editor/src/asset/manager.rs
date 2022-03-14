@@ -1,13 +1,16 @@
-use crate::asset;
+use crate::asset::{BuildPath, EditorOps};
 use anyhow::Result;
 use engine::{
 	self,
 	asset::{AnyBox, Generic, TypeId, UnregisteredAssetType},
+	task::PinFutureResult,
 };
 use serde_json;
-use std::{collections::HashMap, fs, path::Path, time::SystemTime};
-
-type EditorMetadataBox = Box<dyn asset::TypeEditorMetadata + 'static + Send + Sync>;
+use std::{
+	collections::HashMap,
+	path::{Path, PathBuf},
+	time::SystemTime,
+};
 
 pub enum SupportedFileTypes {
 	Json,
@@ -48,79 +51,106 @@ impl std::fmt::Display for KdlParsingError {
 	}
 }
 
+pub struct Registration {
+	fn_get_related_paths:
+		Box<dyn Fn(PathBuf) -> PinFutureResult<Option<Vec<PathBuf>>> + 'static + Send + Sync>,
+	fn_read: Box<dyn Fn(PathBuf, String) -> PinFutureResult<AnyBox> + 'static + Send + Sync>,
+	fn_compile: Box<dyn Fn(BuildPath, AnyBox) -> PinFutureResult<Vec<u8>> + 'static + Send + Sync>,
+}
+
+impl Registration {
+	fn new<T>() -> Self
+	where
+		T: EditorOps,
+		<T as EditorOps>::Asset: engine::asset::Asset,
+	{
+		Self {
+			fn_get_related_paths: Box::new(|path| T::get_related_paths(path)),
+			fn_read: Box::new(|path, content| T::read(path, content)),
+			fn_compile: Box::new(|build_path, asset| T::compile(build_path, asset)),
+		}
+	}
+
+	pub fn get_related_paths(&self, path: PathBuf) -> PinFutureResult<Option<Vec<PathBuf>>> {
+		(self.fn_get_related_paths)(path)
+	}
+
+	pub fn read(&self, source: PathBuf, file_content: String) -> PinFutureResult<AnyBox> {
+		(self.fn_read)(source, file_content)
+	}
+
+	pub fn compile(&self, build_path: BuildPath, asset: AnyBox) -> PinFutureResult<Vec<u8>> {
+		(self.fn_compile)(build_path, asset)
+	}
+
+	pub async fn last_modified_at(&self, path: &Path) -> anyhow::Result<SystemTime> {
+		assert!(path.exists());
+		let mut last_modified = path.metadata()?.modified()?;
+		if let Some(paths) = self.get_related_paths(path.to_owned()).await? {
+			for path in paths.into_iter() {
+				if path.exists() {
+					last_modified = last_modified.max(path.metadata()?.modified()?);
+				}
+			}
+		}
+		Ok(last_modified)
+	}
+}
+
 /// Handles creating, saving, loading, moving, and deleting an asset at a given path.
 /// Only accessible during editor-runtime whereas [Loader](engine::asset::Loader)
 /// handles loading built assets during game-runtime.
 pub struct Manager {
-	editor_metadata: HashMap<TypeId, EditorMetadataBox>,
+	registrations: HashMap<TypeId, Registration>,
 }
 
 impl Manager {
-	pub fn new() -> Manager {
-		Manager {
-			editor_metadata: HashMap::new(),
+	pub fn new() -> Self {
+		Self {
+			registrations: HashMap::new(),
 		}
 	}
 
-	pub fn register<TAsset, TEditorMetadata>(&mut self)
+	pub fn register<T>(&mut self)
 	where
-		TAsset: engine::asset::Asset,
-		TEditorMetadata: asset::TypeEditorMetadata + 'static + Send + Sync,
+		T: EditorOps,
+		T::Asset: engine::asset::Asset,
 	{
-		let runtime_metadata = TAsset::metadata();
-		if !self.editor_metadata.contains_key(runtime_metadata.name()) {
-			self.editor_metadata
-				.insert(runtime_metadata.name(), TEditorMetadata::boxed());
-			log::info!(
-				target: engine::asset::LOG,
-				"Registering asset type editor metadata \"{}\"",
-				runtime_metadata.name()
-			);
-		} else {
-			log::error!(
-				target: engine::asset::LOG,
-				"Encountered duplicate asset type with editor metadata \"{}\"",
-				runtime_metadata.name()
-			);
-		}
+		use engine::asset::Asset;
+		assert!(!self.registrations.contains_key(T::Asset::asset_type()));
+		self.registrations
+			.insert(T::Asset::asset_type(), Registration::new::<T>());
 	}
 
-	pub fn metadata<'r>(
-		&self,
-		type_id: &'r str,
-	) -> Result<&EditorMetadataBox, UnregisteredAssetType> {
-		self.editor_metadata
+	pub fn get(&self, type_id: &str) -> Result<&Registration, UnregisteredAssetType> {
+		self.registrations
 			.get(type_id)
 			.ok_or(UnregisteredAssetType(type_id.to_string()))
 	}
 
-	fn read_type_id_sync(&self, path: &Path) -> Result<String> {
+	pub async fn last_modified_at(&self, path: &Path) -> anyhow::Result<SystemTime> {
+		let type_id = Self::read_type_id_sync(path).await?;
+		let registration = self.get(&type_id)?;
+		registration.last_modified_at(path).await
+	}
+
+	async fn read_type_id_sync(path: &Path) -> anyhow::Result<String> {
 		let absolute_path = path.canonicalize()?;
-		let raw_file = fs::read_to_string(&absolute_path)?;
-		let type_id = Manager::read_asset_type(path.extension(), raw_file.as_str())?;
+		let raw_file = tokio::fs::read_to_string(&absolute_path).await?;
+		let type_id = Self::parse_asset_type(path.extension(), raw_file.as_str())?;
 		Ok(type_id)
 	}
 
-	pub fn last_modified(&self, path: &Path) -> Result<SystemTime> {
-		let type_id = self.read_type_id_sync(path)?;
-		let metadata = self.metadata(&type_id)?;
-		metadata.last_modified(&path)
-	}
-
-	/// Synchronously reads an asset json from a provided path, returning relevant asset loading errors.
-	pub fn read_sync(&self, path: &Path) -> Result<(String, AnyBox)> {
+	pub async fn read(&self, path: &Path) -> Result<(String, AnyBox)> {
 		let absolute_path = path.canonicalize()?;
-		let raw_file = fs::read_to_string(&absolute_path)?;
-		let type_id = Manager::read_asset_type(path.extension(), raw_file.as_str())?;
-		let asset = self
-			.editor_metadata
-			.get(type_id.as_str())
-			.ok_or(UnregisteredAssetType(type_id.to_string()))?
-			.read(&absolute_path, raw_file.as_str())?;
+		let raw_file = tokio::fs::read_to_string(&absolute_path).await?;
+		let type_id = Self::parse_asset_type(path.extension(), raw_file.as_str())?;
+		let registration = self.get(&type_id)?;
+		let asset = registration.read(absolute_path, raw_file).await?;
 		Ok((type_id, asset))
 	}
 
-	fn read_asset_type(extension: Option<&std::ffi::OsStr>, content: &str) -> Result<String> {
+	fn parse_asset_type(extension: Option<&std::ffi::OsStr>, content: &str) -> Result<String> {
 		let ext = extension.map(|ext| ext.to_str()).flatten();
 		match SupportedFileTypes::parse_extension(ext) {
 			Some(SupportedFileTypes::Json) => {

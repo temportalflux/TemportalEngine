@@ -16,7 +16,10 @@ pub use package::*;
 mod path;
 pub use path::*;
 
-pub fn deserialize<'a, T>(path: &std::path::Path, content: &'a str) -> engine::asset::AssetResult
+pub fn deserialize<'a, T>(
+	path: &std::path::Path,
+	content: &'a str,
+) -> anyhow::Result<engine::asset::AnyBox>
 where
 	T: 'static + Send + Sync + serde::Deserialize<'a> + engine::asset::kdl::Asset<T> + Default,
 {

@@ -1,22 +1,14 @@
-use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 pub type AnyBox = Box<dyn Any + Send + Sync>;
-pub type AssetResult = Result<AnyBox>;
 
 pub type TypeId = &'static str;
 pub type TypeIdOwned = String;
-pub trait TypeMetadata {
-	fn name(&self) -> TypeId;
-	fn decompile(&self, bin: &Vec<u8>) -> AssetResult;
-	fn kdl_schema(&self) {}
-}
 
 pub trait Asset: std::fmt::Debug {
-	fn metadata() -> Box<dyn TypeMetadata>
-	where
-		Self: Sized;
+	fn asset_type() -> TypeId;
+	fn decompile(bin: &Vec<u8>) -> anyhow::Result<AnyBox>;
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -24,7 +16,7 @@ pub struct Generic {
 	pub asset_type: String,
 }
 
-pub fn decompile_asset<'a, T>(bin: &'a Vec<u8>) -> AssetResult
+pub fn decompile_asset<'a, T>(bin: &'a Vec<u8>) -> anyhow::Result<AnyBox>
 where
 	T: Asset + Any + Send + Sync + Deserialize<'a>,
 {

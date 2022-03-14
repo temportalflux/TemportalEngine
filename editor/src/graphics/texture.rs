@@ -1,21 +1,14 @@
+use engine::task::PinFutureResult;
+
 use crate::{
-	asset::{BuildPath, TypeEditorMetadata},
-	engine::{
-		asset::{AnyBox, AssetResult},
-		graphics::Texture,
-		math::nalgebra,
-	},
+	asset::{BuildPath, EditorOps},
+	engine::{asset::AnyBox, graphics::Texture, math::nalgebra},
 };
-use anyhow::Result;
-use engine::task::PinFutureResultLifetime;
-use std::{
-	path::{Path, PathBuf},
-	time::SystemTime,
-};
+use std::path::{Path, PathBuf};
 
-pub struct TextureEditorMetadata {}
+pub struct TextureEditorOps;
 
-impl TextureEditorMetadata {
+impl TextureEditorOps {
 	fn image_file_path(json_path: &Path) -> PathBuf {
 		let mut png_path = json_path.parent().unwrap().to_path_buf();
 		png_path.push(json_path.file_stem().unwrap());
@@ -24,27 +17,18 @@ impl TextureEditorMetadata {
 	}
 }
 
-impl TypeEditorMetadata for TextureEditorMetadata {
-	fn boxed() -> Box<dyn TypeEditorMetadata + 'static + Send + Sync> {
-		Box::new(TextureEditorMetadata {})
+impl EditorOps for TextureEditorOps {
+	type Asset = Texture;
+
+	fn get_related_paths(path: PathBuf) -> PinFutureResult<Option<Vec<PathBuf>>> {
+		Box::pin(async move { Ok(Some(vec![Self::image_file_path(&path)])) })
 	}
 
-	fn last_modified(&self, path: &Path) -> Result<SystemTime> {
-		Ok(path
-			.metadata()?
-			.modified()?
-			.max(Self::image_file_path(path).metadata()?.modified()?))
+	fn read(source: PathBuf, file_content: String) -> PinFutureResult<AnyBox> {
+		Box::pin(async move { crate::asset::deserialize::<Texture>(&source, &file_content) })
 	}
 
-	fn read(&self, path: &Path, content: &str) -> AssetResult {
-		crate::asset::deserialize::<Texture>(&path, &content)
-	}
-
-	fn compile<'a>(
-		&'a self,
-		build_path: &'a BuildPath,
-		asset: AnyBox,
-	) -> PinFutureResultLifetime<'a, Vec<u8>> {
+	fn compile(build_path: BuildPath, asset: AnyBox) -> PinFutureResult<Vec<u8>> {
 		Box::pin(async move {
 			use image::Pixel;
 			let mut texture = asset.downcast::<Texture>().unwrap();

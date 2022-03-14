@@ -1,4 +1,4 @@
-use crate::asset::{self, AssetNotFound, UnregisteredAssetType};
+use crate::asset::{self, AssetNotFound};
 use anyhow::Result;
 use rmp_serde;
 use std::io::Read;
@@ -52,9 +52,8 @@ impl Loader {
 	#[profiling::function]
 	fn decompile_asset(bytes: Vec<u8>) -> Result<asset::AnyBox> {
 		let generic: asset::Generic = rmp_serde::from_read_ref(&bytes)?;
-		asset::TypeRegistry::read()
-			.at(generic.asset_type.as_str())
-			.ok_or(UnregisteredAssetType(generic.asset_type.to_string()))?
-			.decompile(&bytes)
+		let registry = asset::TypeRegistry::read();
+		let registration = registry.at(generic.asset_type.as_str())?;
+		registration.decompile(&bytes)
 	}
 }

@@ -1,5 +1,5 @@
 use crate::{
-	asset::{self, AssetResult, TypeMetadata},
+	asset::{self},
 	math::nalgebra::Vector2,
 };
 use serde::{Deserialize, Serialize};
@@ -69,8 +69,12 @@ impl Glyph {
 }
 
 impl asset::Asset for Font {
-	fn metadata() -> Box<dyn TypeMetadata> {
-		Box::new(FontMetadata {})
+	fn asset_type() -> asset::TypeId {
+		"font"
+	}
+
+	fn decompile(bin: &Vec<u8>) -> anyhow::Result<asset::AnyBox> {
+		asset::decompile_asset::<Self>(bin)
 	}
 }
 
@@ -97,18 +101,6 @@ impl Font {
 
 	pub fn width_edge(&self) -> &Vector2<f32> {
 		&self.width_edge
-	}
-}
-
-pub struct FontMetadata {}
-
-impl TypeMetadata for FontMetadata {
-	fn name(&self) -> asset::TypeId {
-		"font"
-	}
-
-	fn decompile(&self, bin: &Vec<u8>) -> AssetResult {
-		asset::decompile_asset::<Font>(bin)
 	}
 }
 
