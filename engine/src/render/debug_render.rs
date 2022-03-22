@@ -1,3 +1,4 @@
+use crate::channels::mpsc::Sender;
 use crate::{
 	asset,
 	graphics::{
@@ -12,7 +13,6 @@ use crate::{
 	EngineSystem,
 };
 use anyhow::Result;
-use crate::channels::mpsc::Sender;
 use std::sync::{Arc, RwLock};
 use vulkan_rs::procedure::Phase;
 

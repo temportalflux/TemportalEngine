@@ -1,3 +1,3 @@
 pub trait Element {
-	fn render(&mut self, ctx: &egui::CtxRef);
+	fn render(&mut self, ctx: &egui::Context);
 }

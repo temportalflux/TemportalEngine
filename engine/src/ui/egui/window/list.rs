@@ -78,7 +78,7 @@ impl OpenWindowList {
 		let mut id_to_open: Option<String> = None;
 		for (id, _window) in self.all_windows.iter() {
 			let mut is_open = self.is_window_open(&id);
-			if ui.checkbox(&mut is_open, &id).changed() {
+			if ui.checkbox(&mut is_open, id.clone()).changed() {
 				if is_open {
 					id_to_open = Some(id.to_owned());
 				}
@@ -91,7 +91,7 @@ impl OpenWindowList {
 }
 
 impl Element for OpenWindowList {
-	fn render(&mut self, ctx: &egui::CtxRef) {
+	fn render(&mut self, ctx: &egui::Context) {
 		let mut open_ids = BTreeSet::new();
 		for (id, window) in self.all_windows.iter_mut() {
 			let mut is_open = self.open_window_names.contains(id);

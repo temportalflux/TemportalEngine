@@ -1,5 +1,4 @@
 use crate::channels::mpsc::Sender;
-
 use crate::{
 	graphics::{
 		self, command, flags, image_view, sampler, structs,
@@ -8,31 +7,44 @@ use crate::{
 	},
 	math::nalgebra::Vector2,
 };
+use multimap::MultiMap;
 use std::{
 	collections::HashMap,
 	sync::{self, Arc},
 };
+use vulkan_rs::image::Image;
+use vulkan_rs::structs::{Extent3D, Offset3D};
 
-pub struct PendingEntry {
+pub enum PendingOperation {
+	Create(PendingImage),
+	Write(ImageBinary),
+}
+
+pub struct PendingImage {
 	name: Option<String>,
-	compiled: graphics::CompiledTexture,
+	size: Vector2<usize>,
 	format: flags::format::Format,
 	sampler: graphics::sampler::Builder,
 }
 
-impl PendingEntry {
-	pub fn new() -> Self {
+pub struct ImageBinary {
+	offset: Option<Vector2<usize>>,
+	binary: Vec<u8>,
+	size: Vector2<usize>,
+}
+
+impl Default for PendingImage {
+	fn default() -> Self {
 		Self {
 			name: None,
-			compiled: graphics::CompiledTexture {
-				size: [0, 0].into(),
-				binary: Vec::new(),
-			},
+			size: [0, 0].into(),
 			format: flags::format::Format::UNDEFINED,
 			sampler: graphics::sampler::Builder::default(),
 		}
 	}
+}
 
+impl PendingImage {
 	pub fn with_name<T>(mut self, name: T) -> Self
 	where
 		T: Into<String>,
@@ -42,12 +54,7 @@ impl PendingEntry {
 	}
 
 	pub fn with_size(mut self, size: Vector2<usize>) -> Self {
-		self.compiled.size = size;
-		self
-	}
-
-	pub fn with_binary(mut self, binary: Vec<u8>) -> Self {
-		self.compiled.binary = binary;
+		self.size = size;
 		self
 	}
 
@@ -69,6 +76,21 @@ impl PendingEntry {
 	}
 }
 
+impl ImageBinary {
+	pub fn from(size: Vector2<usize>, binary: Vec<u8>) -> Self {
+		Self {
+			offset: None,
+			binary,
+			size,
+		}
+	}
+
+	pub fn with_offset(mut self, offset: Option<Vector2<usize>>) -> Self {
+		self.offset = offset;
+		self
+	}
+}
+
 /// The GPU objects to view and sample from an image.
 /// Created by [`ImageCache::load_pending`].
 pub struct CombinedImageSampler {
@@ -81,7 +103,7 @@ pub struct CombinedImageSampler {
 /// Useful when a collection of images are used frequently by multiple draw calls but in the same pipeline,
 /// or when managing any collection of engine asset textures.
 pub struct ImageCache<T: Eq + std::hash::Hash + Clone> {
-	pending: HashMap<T, PendingEntry>,
+	pending: MultiMap<T, PendingOperation>,
 	loaded: HashMap<T, CombinedImageSampler>,
 	name: Option<String>,
 }
@@ -93,7 +115,7 @@ where
 	fn default() -> Self {
 		Self {
 			loaded: HashMap::new(),
-			pending: HashMap::new(),
+			pending: MultiMap::new(),
 			name: None,
 		}
 	}
@@ -117,7 +139,7 @@ where
 
 	/// Adds an engine asset texture to the cache,
 	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
-	pub fn insert(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
+	pub fn insert_asset(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
 		self.insert_compiled(
 			id,
 			name,
@@ -127,7 +149,7 @@ where
 		);
 	}
 
-	pub fn insert_compiled(
+	fn insert_compiled(
 		&mut self,
 		id: T,
 		name: Option<String>,
@@ -136,20 +158,28 @@ where
 		binary: Vec<u8>,
 	) {
 		self.pending.insert(
-			id,
-			PendingEntry {
+			id.clone(),
+			PendingOperation::Create(PendingImage {
 				name,
-				compiled: graphics::CompiledTexture { size, binary },
 				format,
+				size: size,
 				sampler: graphics::sampler::Builder::default()
 					.with_magnification(flags::Filter::NEAREST)
 					.with_minification(flags::Filter::NEAREST)
 					.with_address_modes([flags::SamplerAddressMode::REPEAT; 3]),
-			},
+			}),
+		);
+		self.pending.insert(
+			id,
+			PendingOperation::Write(ImageBinary {
+				offset: None,
+				binary,
+				size,
+			}),
 		);
 	}
 
-	pub fn insert_pending(&mut self, id: T, entry: PendingEntry) {
+	pub fn insert_operation(&mut self, id: T, entry: PendingOperation) {
 		self.pending.insert(id, entry);
 	}
 
@@ -157,6 +187,10 @@ where
 	/// regardless of if [`load_pending`](ImageCache::load_pending) has been executed since insertion or not.
 	pub fn contains(&self, id: &T) -> bool {
 		self.loaded.contains_key(id) || self.pending.contains_key(id)
+	}
+
+	pub fn remove(&mut self, id: &T) -> Option<CombinedImageSampler> {
+		self.loaded.remove(id)
 	}
 
 	/// Loads all pending images added by [`insert`](ImageCache::insert),
@@ -173,25 +207,47 @@ where
 	///    be signaled when the GPU has finished writing the image data.
 	///    These returned semaphores must be waited on by any commands which read from the image.
 	#[profiling::function]
-	pub fn load_pending(
+	pub fn process_operations(
 		&mut self,
 		context: &impl GpuOpContext,
 		signal_sender: &Sender<Arc<command::Semaphore>>,
 	) -> anyhow::Result<Vec<(T, Option<String>)>> {
 		let mut ids = Vec::new();
 		if !self.pending.is_empty() {
-			// Collect all the pending items into a vector, draining the member so that they arent created ever again.
-			let pending_images = self.pending.drain().collect::<Vec<_>>();
-			// Load/Create the image on GPU for each pending item
-			for (id, pending) in pending_images.into_iter() {
-				let loaded = self.create_image(context, signal_sender, &pending)?;
-				ids.push((id.clone(), pending.name.clone()));
-				// insert the image into the collection, thereby dropping any item with the same id
-				self.loaded.insert(id, loaded);
+			let keys = self.pending.keys().cloned().collect::<Vec<_>>();
+			for id in keys.into_iter() {
+				let ops = self.pending.remove(&id).unwrap();
+				for op in ops.into_iter() {
+					if let Some(out) = self.process_op(context, signal_sender, &id, op)? {
+						ids.push(out);
+					}
+				}
 			}
 		}
-
 		Ok(ids)
+	}
+
+	fn process_op(
+		&mut self,
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+		id: &T,
+		op: PendingOperation,
+	) -> anyhow::Result<Option<(T, Option<String>)>> {
+		match op {
+			PendingOperation::Create(pending) => {
+				let loaded = self.create_image(context, &pending)?;
+				// insert the image into the collection, thereby dropping any item with the same id
+				self.loaded.insert(id.clone(), loaded);
+				Ok(Some((id.clone(), pending.name.clone())))
+			}
+			PendingOperation::Write(data) => {
+				let loaded = self.loaded.get(id).unwrap();
+				let image = loaded.view.image();
+				self.write_image(context, signal_sender, image, data)?;
+				Ok(None)
+			}
+		}
 	}
 
 	fn make_object_name(&self, name: &Option<String>, suffix: &str) -> Option<String> {
@@ -199,6 +255,44 @@ where
 			(Some(cache_name), Some(name)) => Some(format!("{}.{}.{}", cache_name, name, suffix)),
 			_ => None,
 		}
+	}
+
+	fn write_image(
+		&self,
+		context: &impl GpuOpContext,
+		signal_sender: &Sender<Arc<command::Semaphore>>,
+		image: &Arc<Image>,
+		data: ImageBinary,
+	) -> anyhow::Result<()> {
+		use graphics::{command::CopyBufferToImage, structs::subresource, GpuOperationBuilder};
+		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
+			.begin()?
+			.format_image_for_write(&image)
+			.stage(&data.binary[..])?
+			.copy_stage_to_image_regions(
+				&image,
+				vec![CopyBufferToImage {
+					buffer_offset: 0,
+					layers: subresource::Layers::default().with_aspect(flags::ImageAspect::COLOR),
+					offset: data
+						.offset
+						.map(|vec| Offset3D {
+							x: vec.x as i32,
+							y: vec.y as i32,
+							z: 0i32,
+						})
+						.unwrap_or_default(),
+					size: Extent3D {
+						width: data.size.x as u32,
+						height: data.size.y as u32,
+						depth: 1u32,
+					},
+				}],
+			)
+			.format_image_for_read(&image)
+			.send_signal_to(signal_sender)?
+			.end()?;
+		Ok(())
 	}
 
 	/// Creates the image, view, and sampler for each pending item.
@@ -209,37 +303,25 @@ where
 	fn create_image(
 		&self,
 		context: &impl GpuOpContext,
-		signal_sender: &Sender<Arc<command::Semaphore>>,
-		pending: &PendingEntry,
+		pending: &PendingImage,
 	) -> anyhow::Result<CombinedImageSampler> {
-		use graphics::{
-			image, structs::subresource, utility::BuildFromDevice, GpuOperationBuilder,
-		};
+		use graphics::{image, structs::subresource, utility::BuildFromDevice};
 
 		let image = sync::Arc::new(image::Image::create_gpu(
 			&context.object_allocator()?,
 			self.make_object_name(&pending.name, "Image"),
 			pending.format,
 			structs::Extent3D {
-				width: pending.compiled.size.x as u32,
-				height: pending.compiled.size.y as u32,
+				width: pending.size.x as u32,
+				height: pending.size.y as u32,
 				depth: 1,
 			},
 		)?);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
-			.begin()?
-			.format_image_for_write(&image)
-			.stage(&pending.compiled.binary[..])?
-			.copy_stage_to_image(&image)
-			.format_image_for_read(&image)
-			.send_signal_to(signal_sender)?
-			.end()?;
-
 		let view = sync::Arc::new(
 			image_view::View::builder()
 				.with_optname(self.make_object_name(&pending.name, "Image.View"))
-				.for_image(image.clone())
+				.for_image(image)
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
 				.build(&context.logical_device()?)?,

@@ -18,13 +18,14 @@ use crate::{
 use bytemuck::{Pod, Zeroable};
 use copypasta::{ClipboardContext, ClipboardProvider};
 use egui::{
-	math::{pos2, vec2},
-	CtxRef,
+	emath::{pos2, vec2},
+	Context, ImageData,
 };
 use std::{
 	sync::{Arc, RwLock, Weak},
 	time::Instant,
 };
+use vulkan_rs::structs::Extent2D;
 use winit::event::VirtualKeyCode;
 
 type TextureId = egui::TextureId;
@@ -33,19 +34,19 @@ pub struct Ui {
 	physical_size: winit::dpi::PhysicalSize<u32>,
 	scale_factor: f64,
 
-	context: CtxRef,
+	context: Context,
 	raw_input: egui::RawInput,
 	mouse_pos: egui::Pos2,
 	modifiers_state: winit::event::ModifiersState,
 	clipboard: ClipboardContext,
 	current_cursor_icon: egui::CursorIcon,
-	font_image_version: u64,
+	pending_update: PendingUpdate,
 
 	frames: Vec<Frame>,
 	descriptor_cache: DescriptorCache<TextureId>,
 	image_cache: ImageCache<TextureId>,
 	drawable: Drawable,
-	render_callbacks: Vec<(Box<dyn Fn(&egui::CtxRef) -> bool>, /*retained*/ bool)>,
+	render_callbacks: Vec<(Box<dyn Fn(&egui::Context) -> bool>, /*retained*/ bool)>,
 	last_frame: Instant,
 	window_handle: Weak<RwLock<winit::window::Window>>,
 }
@@ -53,6 +54,26 @@ pub struct Ui {
 struct Frame {
 	draw_calls: Vec<DrawCall>,
 	mesh: Mesh<u32, Vertex>,
+	/// TextureIds that were marked as unused/free the last time this frame was submitted
+	unused_texture_ids: Vec<TextureId>,
+}
+
+#[derive(Default)]
+struct PendingUpdate {
+	shapes: Vec<egui::epaint::ClippedShape>,
+	needs_repaint: bool,
+	unused_texture_ids: Vec<TextureId>,
+}
+impl PendingUpdate {
+	fn take(&mut self) -> Self {
+		let needs_repaint = self.needs_repaint;
+		self.needs_repaint = false;
+		Self {
+			shapes: self.shapes.drain(..).collect(),
+			needs_repaint,
+			unused_texture_ids: self.unused_texture_ids.drain(..).collect(),
+		}
+	}
 }
 
 struct DrawCall {
@@ -117,7 +138,7 @@ impl Ui {
 		let (physical_size, scale_factor) = window.read_size();
 
 		// Create context
-		let context = CtxRef::default();
+		let context = Context::default();
 
 		let raw_input = egui::RawInput {
 			pixels_per_point: Some(scale_factor as f32),
@@ -143,7 +164,7 @@ impl Ui {
 			modifiers_state,
 			clipboard,
 			current_cursor_icon: egui::CursorIcon::None,
-			font_image_version: 0,
+			pending_update: PendingUpdate::default(),
 
 			window_handle,
 			last_frame: Instant::now(),
@@ -209,7 +230,7 @@ impl Ui {
 	/// Adds a callback to be executed each frame, which returns false when it should be removed from future rendering.
 	pub fn add_render_callback<F>(&mut self, callback: F)
 	where
-		F: 'static + Fn(&egui::CtxRef) -> bool,
+		F: 'static + Fn(&egui::Context) -> bool,
 	{
 		self.render_callbacks.push((Box::new(callback), true));
 	}
@@ -264,10 +285,16 @@ impl WinitEventListener for Ui {
 				WindowEvent::MouseWheel { delta, .. } => match delta {
 					winit::event::MouseScrollDelta::LineDelta(x, y) => {
 						let line_height = 24.0;
-						self.raw_input.scroll_delta = vec2(*x, *y) * line_height;
+						// NOTE: EGui does not handle horizontal scrolling, it has to be provided a scroll event that uses the X axis.
+						// It was unknown (at time of writing) if LineDelta provides this.
+						self.raw_input
+							.events
+							.push(egui::Event::Scroll(vec2(*x, *y) * line_height));
 					}
 					winit::event::MouseScrollDelta::PixelDelta(delta) => {
-						self.raw_input.scroll_delta = vec2(delta.x as f32, delta.y as f32);
+						self.raw_input
+							.events
+							.push(egui::Event::Scroll(vec2(delta.x as f32, delta.y as f32)));
 					}
 				},
 				// mouse move
@@ -375,6 +402,7 @@ impl Operation for Ui {
 					10,
 				)?,
 				draw_calls: Vec::new(),
+				unused_texture_ids: Vec::new(),
 			});
 		}
 
@@ -392,7 +420,7 @@ impl Operation for Ui {
 					vertex::Layout::default()
 						.with_object::<Vertex>(0, flags::VertexInputRate::VERTEX),
 				)
-				.set_viewport_state(Viewport::from(*chain.extent()))
+				.set_viewport_state(Viewport::dynamic(1, 1))
 				.set_rasterization_state(
 					Rasterization::default()
 						.set_cull_mode(flags::CullMode::NONE)
@@ -425,6 +453,7 @@ impl Operation for Ui {
 								.with_compare_op(flags::CompareOp::ALWAYS),
 						),
 				)
+				.with_dynamic_state(flags::DynamicState::VIEWPORT)
 				.with_dynamic_state(flags::DynamicState::SCISSOR),
 			chain.render_pass(),
 			subpass_index,
@@ -438,64 +467,35 @@ impl Operation for Ui {
 	}
 
 	fn prepare_for_frame(&mut self, chain: &Chain) -> anyhow::Result<()> {
+		self.raw_input.time = Some(self.last_frame.elapsed().as_secs_f64());
+		self.last_frame = Instant::now();
 		self.context.begin_frame(self.raw_input.take());
-
-		{
-			let texture = self.context.fonts().texture();
-			if texture.version != self.font_image_version {
-				use flags::format::prelude::*;
-				self.image_cache.insert_pending(
-					egui::TextureId::Egui,
-					graphics::PendingEntry::new()
-						.with_name("Font.egui".to_owned())
-						.with_size([texture.width as usize, texture.height as usize].into())
-						.with_format(flags::format::format(&[R, G, B, A], Bit8, UnsignedNorm))
-						.with_binary(
-							texture
-								.pixels
-								.iter()
-								.flat_map(|&r| vec![r, r, r, r])
-								.collect(),
-						)
-						.init_sampler(|sampler| {
-							sampler.set_magnification(flags::Filter::LINEAR);
-							sampler.set_minification(flags::Filter::LINEAR);
-							sampler
-								.set_address_modes([flags::SamplerAddressMode::CLAMP_TO_EDGE; 3]);
-						}),
-				);
-				self.font_image_version = texture.version;
-			}
+		for (callback, retained) in self.render_callbacks.iter_mut() {
+			*retained = callback(&self.context);
 		}
+		let egui::output::FullOutput {
+			platform_output,
+			shapes,
+			textures_delta,
+			needs_repaint,
+		} = self.context.end_frame();
 
-		let image_ids = self
-			.image_cache
-			.load_pending(chain, chain.signal_sender())?;
+		let unused_texture_ids = {
+			let egui::TexturesDelta { set, free } = textures_delta;
+			self.insert_image_operations(set.into_iter())?;
+			self.process_image_ops(chain)?;
+			free
+		};
 
-		for (image_id, image_name) in image_ids.into_iter() {
-			use descriptor::update::*;
-			let cached_image = &self.image_cache[&image_id];
-			let descriptor_set = self.descriptor_cache.insert(
-				image_id,
-				image_name.map(|v| format!("EditorUI.{}", v)),
-				chain.persistent_descriptor_pool(),
-			)?;
-			Queue::default()
-				.with(Operation::Write(WriteOp {
-					destination: Descriptor {
-						set: descriptor_set.clone(),
-						binding_index: 0,
-						array_element: 0,
-					},
-					kind: flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
-					object: ObjectKind::Image(vec![ImageKind {
-						sampler: cached_image.sampler.clone(),
-						view: cached_image.view.clone(),
-						layout: flags::ImageLayout::ShaderReadOnlyOptimal,
-					}]),
-				}))
-				.apply(&*chain.logical()?);
-		}
+		self.handle_url_request(&platform_output.open_url);
+		self.update_clipboard(&platform_output.copied_text);
+		self.update_cursor_icon(platform_output.cursor_icon);
+
+		self.pending_update = PendingUpdate {
+			shapes,
+			needs_repaint,
+			unused_texture_ids,
+		};
 
 		Ok(())
 	}
@@ -507,13 +507,26 @@ impl Operation for Ui {
 	) -> anyhow::Result<RequiresRecording> {
 		self.render_callbacks.retain(|(_, retained)| *retained);
 
-		let (vertices, indices, draw_calls) = self.build_ui();
-		let mesh = &mut self.frames[frame_image].mesh;
-		mesh.write(&vertices, &indices, chain, chain.signal_sender())?;
-		self.frames[frame_image].draw_calls = draw_calls;
+		for id in self.frames[frame_image].unused_texture_ids.drain(..) {
+			// remove from cache and drop in this stackframe
+			let _ = self.image_cache.remove(&id);
+		}
 
-		// returns true to enforce immediate mode drawing (rerecording every frame)
-		Ok(RequiresRecording::CurrentFrame)
+		// Take the last pending update (provided by `prepare_for_frame`).
+		let update = self.pending_update.take();
+		// Prepare the frame with the pending update
+		{
+			let (vertices, indices, draw_calls) = self.tesselate_shapes(update.shapes);
+			let mesh = &mut self.frames[frame_image].mesh;
+			mesh.write(&vertices, &indices, chain, chain.signal_sender())?;
+			self.frames[frame_image].draw_calls = draw_calls;
+			self.frames[frame_image].unused_texture_ids = update.unused_texture_ids.clone();
+		}
+
+		Ok(match update.needs_repaint {
+			true => RequiresRecording::CurrentFrame,
+			false => RequiresRecording::NotRequired,
+		})
 	}
 
 	fn record(&mut self, buffer: &mut command::Buffer, buffer_index: usize) -> anyhow::Result<()> {
@@ -523,6 +536,13 @@ impl Operation for Ui {
 
 		self.drawable.bind_pipeline(buffer);
 		frame.mesh.bind_buffers(buffer);
+		buffer.set_dynamic_viewport(
+			0,
+			vec![vulkan_rs::utility::Viewport::default().set_size(Extent2D {
+				width: self.physical_size.width,
+				height: self.physical_size.height,
+			})],
+		);
 		for draw_call in frame.draw_calls.iter() {
 			buffer.set_dynamic_scissors(vec![draw_call.scissor]);
 			let descriptor_set = &self.descriptor_cache[&draw_call.texture_id];
@@ -551,48 +571,138 @@ impl Operation for Ui {
 
 impl Ui {
 	#[profiling::function]
-	fn build_ui(&mut self) -> (Vec<Vertex>, Vec<u32>, Vec<DrawCall>) {
-		for (callback, retained) in self.render_callbacks.iter_mut() {
-			*retained = callback(&self.context);
+	fn insert_image_operations<T>(&mut self, updates: T) -> anyhow::Result<()>
+	where
+		T: std::iter::Iterator<Item = (TextureId, egui::epaint::image::ImageDelta)>,
+	{
+		for (id, delta) in updates {
+			if !self.image_cache.contains(&id) {
+				use flags::format::prelude::*;
+				// The first time the id is encountered, we need the full size of the image
+				assert!(!delta.pos.is_some());
+
+				self.image_cache.insert_operation(
+					id,
+					graphics::PendingOperation::Create(
+						graphics::PendingImage::default()
+							.with_name(format!(
+								"EGui.Texture.{}",
+								match id {
+									TextureId::Managed(id) => format!("Managed({id})"),
+									TextureId::User(id) => format!("User({id})"),
+								}
+							))
+							.with_size(delta.image.size().into())
+							.with_format(flags::format::format(&[R, G, B, A], Bit8, UnsignedNorm))
+							.init_sampler(|sampler| {
+								sampler.set_magnification(flags::Filter::LINEAR);
+								sampler.set_minification(flags::Filter::LINEAR);
+								sampler.set_address_modes(
+									[flags::SamplerAddressMode::CLAMP_TO_EDGE; 3],
+								);
+							}),
+					),
+				);
+			}
+
+			// Convert the delta into its srgba pixels
+			let size = delta.image.size().into();
+			let srgba_pixels = match delta.image {
+				ImageData::Color(image) => image
+					.pixels
+					.iter()
+					.flat_map(|c| c.to_array())
+					.collect::<Vec<_>>(),
+				ImageData::Alpha(image) => image
+					.srgba_pixels(1.0)
+					.flat_map(|c| c.to_array())
+					.collect::<Vec<_>>(),
+			};
+
+			// Write a parial or whole update to a texture that may or may not be pending
+			self.image_cache.insert_operation(
+				id,
+				graphics::PendingOperation::Write(
+					graphics::ImageBinary::from(size, srgba_pixels)
+						.with_offset(delta.pos.map(|xy| xy.into())),
+				),
+			);
 		}
+		Ok(())
+	}
 
-		let (output, clipped_shapes) = self.context.end_frame();
+	fn process_image_ops(&mut self, chain: &Chain) -> anyhow::Result<()> {
+		let new_images = self
+			.image_cache
+			.process_operations(chain, chain.signal_sender())?;
+		for (image_id, image_name) in new_images.into_iter() {
+			use descriptor::update::*;
+			let cached_image = &self.image_cache[&image_id];
+			let descriptor_set = self.descriptor_cache.insert(
+				image_id,
+				image_name.map(|v| format!("EditorUI.{}", v)),
+				chain.persistent_descriptor_pool(),
+			)?;
+			Queue::default()
+				.with(Operation::Write(WriteOp {
+					destination: Descriptor {
+						set: descriptor_set.clone(),
+						binding_index: 0,
+						array_element: 0,
+					},
+					kind: flags::DescriptorKind::COMBINED_IMAGE_SAMPLER,
+					object: ObjectKind::Image(vec![ImageKind {
+						sampler: cached_image.sampler.clone(),
+						view: cached_image.view.clone(),
+						layout: flags::ImageLayout::ShaderReadOnlyOptimal,
+					}]),
+				}))
+				.apply(&*chain.logical()?);
+		}
+		Ok(())
+	}
 
-		if let Some(egui::output::OpenUrl { url, .. }) = &output.open_url {
+	fn handle_url_request(&self, request: &Option<egui::output::OpenUrl>) {
+		if let Some(egui::output::OpenUrl { url, .. }) = request {
 			if let Err(err) = webbrowser::open(url) {
 				eprintln!("Failed to open url: {}", err);
 			}
 		}
+	}
 
-		// handle clipboard
-		if !output.copied_text.is_empty() {
-			if let Err(err) = self.clipboard.set_contents(output.copied_text.clone()) {
+	fn update_clipboard(&mut self, copied_text: &String) {
+		if !copied_text.is_empty() {
+			if let Err(err) = self.clipboard.set_contents(copied_text.clone()) {
 				eprintln!("Copy/Cut error: {}", err);
 			}
 		}
+	}
 
-		// handle cursor icon
-		if self.current_cursor_icon != output.cursor_icon {
+	fn update_cursor_icon(&mut self, cursor_icon: egui::output::CursorIcon) {
+		if self.current_cursor_icon != cursor_icon {
 			if let Some(arc_window) = self.window_handle.upgrade() {
 				let guard = arc_window.write().unwrap();
-				if let Some(cursor_icon) = super::conversions::cursor_icon(output.cursor_icon) {
+				if let Some(cursor_icon) = super::conversions::cursor_icon(cursor_icon) {
 					guard.set_cursor_visible(true);
 					guard.set_cursor_icon(cursor_icon);
 				} else {
 					guard.set_cursor_visible(false);
 				}
 			}
-			self.current_cursor_icon = output.cursor_icon;
+			self.current_cursor_icon = cursor_icon;
 		}
+	}
 
-		self.raw_input.time = Some(self.last_frame.elapsed().as_secs_f64());
-		self.last_frame = Instant::now();
-
+	#[profiling::function]
+	fn tesselate_shapes(
+		&mut self,
+		shapes: Vec<egui::epaint::ClippedShape>,
+	) -> (Vec<Vertex>, Vec<u32>, Vec<DrawCall>) {
 		// Transform draw data into vertex and index buffer data (to upload later)
 		let mut vertices: Vec<Vertex> = Vec::new();
 		let mut indices: Vec<u32> = Vec::new();
 		let mut draw_calls = Vec::new();
-		let clipped_meshes = self.context.tessellate(clipped_shapes);
+		let clipped_meshes = self.context.tessellate(shapes);
 		let mut idx_offset: Vector2<usize> = [0, 0].into();
 		for egui::ClippedMesh(rect, mesh) in clipped_meshes {
 			if mesh.vertices.is_empty() || mesh.indices.is_empty() {
@@ -625,24 +735,22 @@ impl Ui {
 			max.x = f32::clamp(max.x, min.x, self.physical_size.width as f32);
 			max.y = f32::clamp(max.y, min.y, self.physical_size.height as f32);
 
-			if item_counts.y > 0 {
-				draw_calls.push(DrawCall {
-					texture_id: mesh.texture_id,
-					scissor: Scissor::new(
-						structs::Offset2D {
-							x: min.x.round() as i32,
-							y: min.y.round() as i32,
-						},
-						structs::Extent2D {
-							width: (max.x.round() - min.x) as u32,
-							height: (max.y.round() - min.y) as u32,
-						},
-					),
-					index_count: item_counts.y,
-					first_index: idx_offset.y,
-					vertex_offset: idx_offset.x,
-				});
-			}
+			draw_calls.push(DrawCall {
+				texture_id: mesh.texture_id,
+				scissor: Scissor::new(
+					structs::Offset2D {
+						x: min.x.round() as i32,
+						y: min.y.round() as i32,
+					},
+					structs::Extent2D {
+						width: (max.x.round() - min.x) as u32,
+						height: (max.y.round() - min.y) as u32,
+					},
+				),
+				index_count: item_counts.y,
+				first_index: idx_offset.y,
+				vertex_offset: idx_offset.x,
+			});
 
 			idx_offset += item_counts;
 		}

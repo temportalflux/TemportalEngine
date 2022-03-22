@@ -19,7 +19,7 @@ impl Window for Simulation {
 		self.open_list = Some(open_list);
 	}
 
-	fn show(&mut self, ctx: &egui::CtxRef, is_open: &mut bool) {
+	fn show(&mut self, ctx: &egui::Context, is_open: &mut bool) {
 		if !*is_open {
 			return;
 		}

@@ -1,3 +1,4 @@
+use crate::channels::mpsc::Sender;
 use crate::{
 	asset,
 	graphics::{
@@ -16,7 +17,6 @@ use crate::{
 	},
 };
 use anyhow::Result;
-use crate::channels::mpsc::Sender;
 use raui::{core::widget::WidgetId, renderer::tesselate::prelude::*};
 use std::{
 	collections::HashMap,

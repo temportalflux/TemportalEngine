@@ -85,10 +85,9 @@ impl Editor {
 
 	pub async fn run_commandlets() -> bool {
 		let (should_build_assets, force_build, should_package_assets) = {
-			let mut args = std::env::args();
-			let should_build_assets = args.any(|arg| arg == "-build-assets");
-			let force_build = args.any(|arg| arg == "-force");
-			let should_package_assets = args.any(|arg| arg == "-package");
+			let should_build_assets = std::env::args().any(|arg| arg == "-build-assets");
+			let force_build = std::env::args().any(|arg| arg == "-force");
+			let should_package_assets = std::env::args().any(|arg| arg == "-package");
 			(should_build_assets, force_build, should_package_assets)
 		};
 

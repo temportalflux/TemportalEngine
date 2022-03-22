@@ -42,7 +42,7 @@ zip = "0.5"
 async_zip = "0.0.6"
 
 # [ui] debug immediate-mode UI
-egui = "0.15"
+egui = "0.17"
 # [ui] for handling UI widgets - rendering is built-into the engine and leverages tesselation
 raui = { version = ">=0.35", features = ["material", "tesselate"] }
 

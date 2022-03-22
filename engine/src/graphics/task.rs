@@ -323,6 +323,21 @@ impl GpuOperationBuilder {
 		self
 	}
 
+	#[profiling::function]
+	pub fn copy_stage_to_image_regions(
+		self,
+		image: &sync::Arc<image::Image>,
+		regions: Vec<command::CopyBufferToImage>,
+	) -> Self {
+		self.cmd().copy_buffer_to_image(
+			&self.staging_buffer(),
+			&image,
+			flags::ImageLayout::TransferDstOptimal,
+			regions,
+		);
+		self
+	}
+
 	/// Copies the contents of the staging buffer created by [`stage`](GpuOperationBuilder::stage),
 	/// into the provided buffer.
 	///

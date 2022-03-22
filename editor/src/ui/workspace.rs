@@ -36,10 +36,10 @@ impl Workspace {
 }
 
 impl Element for Workspace {
-	fn render(&mut self, ctx: &egui::CtxRef) {
+	fn render(&mut self, ctx: &egui::Context) {
 		egui::TopBottomPanel::top("menu_bar").show(ctx, |ui| {
 			egui::menu::bar(ui, |ui| {
-				egui::menu::menu(ui, "General", |ui| {
+				ui.menu_button("General", |ui| {
 					// NOTE: This ui could be better.
 					// Really what we care about is:
 					// - Are assets being compiled/built?
@@ -96,19 +96,26 @@ impl Element for Workspace {
 						}
 					}
 				});
-				egui::menu::menu(ui, "Windows", |ui| {
+				ui.menu_button("Windows", |ui| {
 					if let Ok(mut guard) = self.open_list.write() {
 						guard.show_options(ui);
 					}
 				});
 			});
 		});
-		if let Ok(mut guard) = self.open_list.write() {
-			guard.render(ctx);
-		}
 		egui::CentralPanel::default().show(ctx, |ui| {
 			ui.label("Hello World!");
 			let _ = ui.button("this is a button");
+			ui.add(egui::Spinner::new());
+			ui.label("footer");
+
+			//egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+			//	ui.with_layout(egui::Layout::right_to_left(), |ui| {
+			//	});
+			//});
 		});
+		if let Ok(mut guard) = self.open_list.write() {
+			guard.render(ctx);
+		}
 	}
 }
