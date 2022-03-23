@@ -1,4 +1,5 @@
 use crate::{ui, Editor};
+use egui::{Align2, vec2};
 use engine::ui::egui::{window::OpenWindowList, Element};
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
@@ -8,6 +9,7 @@ use std::sync::{
 pub struct Workspace {
 	open_list: Arc<RwLock<OpenWindowList>>,
 	is_build_active: Arc<AtomicBool>,
+	is_tasklist_open: bool,
 }
 
 impl Workspace {
@@ -31,6 +33,7 @@ impl Workspace {
 		Arc::new(RwLock::new(Self {
 			open_list,
 			is_build_active: Arc::new(AtomicBool::new(false)),
+			is_tasklist_open: false,
 		}))
 	}
 }
@@ -106,13 +109,35 @@ impl Element for Workspace {
 		egui::CentralPanel::default().show(ctx, |ui| {
 			ui.label("Hello World!");
 			let _ = ui.button("this is a button");
-			ui.add(egui::Spinner::new());
-			ui.label("footer");
 
-			//egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
-			//	ui.with_layout(egui::Layout::right_to_left(), |ui| {
-			//	});
-			//});
+			egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
+				ui.horizontal(|ui| {
+					let task_count = 3;
+					if task_count > 0 {
+						ui.add(egui::Spinner::new());
+						if ui.button(format!("{task_count} active tasks")).clicked() {
+							self.is_tasklist_open = !self.is_tasklist_open;
+						}
+					}
+					else {
+						ui.label("No active tasks");
+						if self.is_tasklist_open {
+							self.is_tasklist_open = false;
+						}
+					}
+				});
+			});
+
+			if self.is_tasklist_open {
+				egui::Window::new("Task List")
+					.open(&mut self.is_tasklist_open)
+					.anchor(Align2::RIGHT_BOTTOM, vec2(0.0, -10.0))
+					.title_bar(false)
+					.resizable(false)
+					.show(ctx, |ui| {
+						ui.label("tasklist popout");
+					});
+			}
 		});
 		if let Ok(mut guard) = self.open_list.write() {
 			guard.render(ctx);
