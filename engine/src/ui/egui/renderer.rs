@@ -47,7 +47,8 @@ pub struct Ui {
 	image_cache: ImageCache<TextureId>,
 	drawable: Drawable,
 	render_callbacks: Vec<(Box<dyn Fn(&egui::Context) -> bool>, /*retained*/ bool)>,
-	last_frame: Instant,
+	/// The timestamp of the first frame render call.
+	start_time: Option<Instant>,
 	window_handle: Weak<RwLock<winit::window::Window>>,
 }
 
@@ -167,7 +168,7 @@ impl Ui {
 			pending_update: PendingUpdate::default(),
 
 			window_handle,
-			last_frame: Instant::now(),
+			start_time: None,
 			render_callbacks: Vec::new(),
 			drawable: Drawable::default().with_name("EditorUI.Gui"),
 			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
@@ -467,8 +468,17 @@ impl Operation for Ui {
 	}
 
 	fn prepare_for_frame(&mut self, chain: &Chain) -> anyhow::Result<()> {
-		self.raw_input.time = Some(self.last_frame.elapsed().as_secs_f64());
-		self.last_frame = Instant::now();
+		match self.start_time {
+			// Save the time that the first frame was rendered/processed at.
+			None => {
+				self.start_time = Some(Instant::now());
+			}
+			// Each successive frame should update the egui time to be the amount of time passed since the first frame
+			Some(time) => {
+				self.raw_input.time = Some(time.elapsed().as_secs_f64());
+			}
+		}
+
 		self.context.begin_frame(self.raw_input.take());
 		for (callback, retained) in self.render_callbacks.iter_mut() {
 			*retained = callback(&self.context);
@@ -517,10 +527,12 @@ impl Operation for Ui {
 		// Prepare the frame with the pending update
 		{
 			let (vertices, indices, draw_calls) = self.tesselate_shapes(update.shapes);
-			let mesh = &mut self.frames[frame_image].mesh;
-			mesh.write(&vertices, &indices, chain, chain.signal_sender())?;
-			self.frames[frame_image].draw_calls = draw_calls;
-			self.frames[frame_image].unused_texture_ids = update.unused_texture_ids.clone();
+			let frame = &mut self.frames[frame_image];
+			frame
+				.mesh
+				.write(&vertices, &indices, chain, chain.signal_sender())?;
+			frame.draw_calls = draw_calls;
+			frame.unused_texture_ids = update.unused_texture_ids.clone();
 		}
 
 		Ok(match update.needs_repaint {
