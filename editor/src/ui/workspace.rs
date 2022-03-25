@@ -1,5 +1,5 @@
 use crate::{ui, Editor};
-use egui::{Align2, vec2};
+use egui::{vec2, Align2};
 use engine::ui::egui::{window::OpenWindowList, Element};
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
@@ -68,34 +68,12 @@ impl Element for Workspace {
 						// But we only allow new build operations if the old one has finished
 						if !self.is_build_active.load(Ordering::Acquire) {
 							// Clone the is-build-active flag so it can be set to false when the build is complete.
-							let async_is_active = self.is_build_active.clone();
-							engine::task::spawn("editor".to_owned(), async move {
-								assert!(!async_is_active.load(std::sync::atomic::Ordering::Acquire));
-								let mut errors = Vec::new();
-
-								// Build the assets (possibly forcibly).
-								if build || rebuild {
-									if let Err(errs) = Editor::build_assets(rebuild).await {
-										errors = errs;
-									}
-								}
-
-								// Pacakge the assets
-								if package && errors.is_empty() {
-									if let Err(errs) = Editor::package_assets().await {
-										errors = errs;
-									}
-								}
-
-								// There were no errors promoted above, so we are guarunteed to always
-								// mark the flag as no-build-active when the operations have finished.
-								async_is_active.store(false, Ordering::Relaxed);
-
-								for error in errors.into_iter() {
-									log::error!(target: "editor", "{error:?}");
-								}
-								Ok(())
-							});
+							let _ = Editor::build_and_package(
+								build || rebuild,
+								package,
+								rebuild,
+								Some(self.is_build_active.clone()),
+							);
 						}
 					}
 				});
@@ -112,14 +90,13 @@ impl Element for Workspace {
 
 			egui::TopBottomPanel::bottom("footer").show(ctx, |ui| {
 				ui.horizontal(|ui| {
-					let task_count = 3;
+					let task_count = engine::task::global_scopes().len();
 					if task_count > 0 {
 						ui.add(egui::Spinner::new());
 						if ui.button(format!("{task_count} active tasks")).clicked() {
 							self.is_tasklist_open = !self.is_tasklist_open;
 						}
-					}
-					else {
+					} else {
 						ui.label("No active tasks");
 						if self.is_tasklist_open {
 							self.is_tasklist_open = false;

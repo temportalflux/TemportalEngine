@@ -9,6 +9,22 @@ use tokio::task::JoinError;
 
 pub use tokio::task::JoinHandle;
 
+pub mod scope;
+
+/// The set of root async tasks that can be observed.
+pub fn global_scopes() -> &'static Arc<scope::List> {
+	static mut SCOPES: (MaybeUninit<Arc<scope::List>>, Once) = (MaybeUninit::uninit(), Once::new());
+	unsafe {
+		SCOPES.1.call_once(|| {
+			SCOPES
+				.0
+				.as_mut_ptr()
+				.write(Arc::new(scope::List::new("global".to_owned())))
+		});
+		&*SCOPES.0.as_ptr()
+	}
+}
+
 pub type PinFutureResult<T> = PinFutureResultLifetime<'static, T>;
 pub type PinFutureResultLifetime<'l, T> =
 	Pin<Box<dyn Future<Output = anyhow::Result<T>> + 'l + Send>>;
@@ -37,6 +53,25 @@ where
 			log::error!(target: &target, "{:?}", err);
 		}
 	});
+}
+
+pub async fn join_all<I, S>(i: I) -> anyhow::Result<bool>
+where
+	I: IntoIterator,
+	I::Item: Future<Output = Result<anyhow::Result<S>, JoinError>> + Send,
+{
+	let mut all_ok = true;
+	let results = futures::future::join_all(i).await;
+	for result in results.into_iter() {
+		match result {
+			Ok(Ok(_s)) => {}
+			// if any are errors, then return that one of the internal items failed
+			_ => {
+				all_ok = false;
+			}
+		}
+	}
+	Ok(all_ok)
 }
 
 pub async fn join_handles<I>(i: I) -> Result<(), Vec<anyhow::Error>>

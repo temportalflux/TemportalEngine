@@ -5,7 +5,7 @@ use engine::{
 	utility::{singleton::Singleton, SaveData},
 	Application,
 };
-use std::sync::Arc;
+use std::sync::{atomic::AtomicBool, Arc};
 
 pub static EDITOR_LOG: &'static str = "Editor";
 
@@ -84,45 +84,86 @@ impl Editor {
 	}
 
 	pub async fn run_commandlets() -> bool {
-		let (should_build_assets, force_build, should_package_assets) = {
-			let should_build_assets = std::env::args().any(|arg| arg == "-build-assets");
-			let force_build = std::env::args().any(|arg| arg == "-force");
-			let should_package_assets = std::env::args().any(|arg| arg == "-package");
-			(should_build_assets, force_build, should_package_assets)
-		};
-
-		if should_build_assets {
-			if let Err(errors) = Self::build_assets(force_build).await {
-				for error in errors.into_iter() {
-					log::error!(target: "editor", "{error:?}");
-				}
-			}
-		}
-
-		if should_package_assets {
-			if let Err(errors) = Self::package_assets().await {
-				for error in errors.into_iter() {
-					log::error!(target: "editor", "{error:?}");
-				}
-			}
-		}
-
-		should_build_assets || should_package_assets
+		let build = std::env::args().any(|arg| arg == "-build-assets");
+		let forced = std::env::args().any(|arg| arg == "-force");
+		let package = std::env::args().any(|arg| arg == "-package");
+		let _ = Self::build_and_package(build, package, forced, None).await;
+		build || package
 	}
 
-	pub async fn build_assets(force_build: bool) -> Result<(), Vec<anyhow::Error>> {
-		let (modules, manager) = {
-			let editor = Self::read();
-			(editor.asset_modules.clone(), editor.asset_manager.clone())
-		};
-		asset::Module::build_all(modules, manager, force_build).await
-	}
+	pub fn build_and_package(
+		build: bool,
+		package: bool,
+		forced: bool,
+		async_is_active: Option<Arc<AtomicBool>>,
+	) -> engine::task::JoinHandle<()> {
+		use engine::task::{global_scopes, scope::*};
+		let task_scope = Scope::named("Build & Package", "build-package");
+		let unattached = task_scope.clone().spawn_silently(async move {
+			if let Some(is_active) = &async_is_active {
+				assert!(!is_active.load(std::sync::atomic::Ordering::Acquire));
+			}
 
-	pub async fn package_assets() -> Result<(), Vec<anyhow::Error>> {
-		let paks = {
-			let editor = Self::read();
-			editor.paks.clone()
-		};
-		asset::Pak::package_all(paks).await
+			// Build the assets (possibly forcibly).
+			let mut all_modules_successful = true;
+			if build {
+				let scope_build_all = Scope::named("Build All", "build-all");
+				let unattached = scope_build_all.clone().spawn(async move {
+					let (modules, manager) = {
+						let editor = Self::read();
+						(editor.asset_modules.clone(), editor.asset_manager.clone())
+					};
+
+					let mut subscopes = Vec::with_capacity(modules.len());
+					for module in modules.into_iter() {
+						let scope = Scope::named(
+							format!("Build {}", module.name),
+							format!("build({})", module.name),
+						);
+						let attached = scope
+							.spawn(module.build(manager.clone(), forced))
+							.attach_to(&scope_build_all);
+						subscopes.push(attached);
+					}
+
+					Ok(engine::task::join_all(subscopes).await?)
+				});
+				let attached = unattached.attach_to(&task_scope);
+				all_modules_successful = attached.await??;
+			}
+
+			// Pacakge the assets
+			if package && all_modules_successful {
+				let scope_package_all = Scope::named("Package All", "package-all");
+				let unattached = scope_package_all.clone().spawn(async move {
+					let paks = {
+						let editor = Self::read();
+						editor.paks.clone()
+					};
+					let mut subscopes = Vec::with_capacity(paks.len());
+					for pak in paks.into_iter() {
+						let scope = Scope::named(
+							format!("Package {}", pak.name),
+							format!("package({})", pak.name),
+						);
+						let attached = scope
+							.spawn(async move { pak.package().await })
+							.attach_to(&scope_package_all);
+						subscopes.push(attached);
+					}
+					Ok(engine::task::join_all(subscopes).await?)
+				});
+				let _ = unattached.attach_to(&task_scope).await??;
+			}
+
+			if let Some(is_active) = &async_is_active {
+				// There were no errors promoted above, so we are guarunteed to always
+				// mark the flag as no-build-active when the operations have finished.
+				is_active.store(false, std::sync::atomic::Ordering::Relaxed);
+			}
+
+			Ok(())
+		});
+		unattached.attach_to(global_scopes())
 	}
 }

@@ -73,21 +73,6 @@ impl Module {
 		}
 	}
 
-	pub async fn build_all(
-		modules: Vec<Arc<Self>>,
-		manager: Arc<Manager>,
-		force_build: bool,
-	) -> Result<(), Vec<anyhow::Error>> {
-		let mut handles = Vec::new();
-		for module in modules.into_iter() {
-			let async_manager = manager.clone();
-			let task =
-				tokio::task::spawn(async move { module.build(async_manager, force_build).await });
-			handles.push(task);
-		}
-		engine::task::join_handles(handles).await
-	}
-
 	pub async fn build(
 		self: Arc<Self>,
 		manager: Arc<Manager>,
