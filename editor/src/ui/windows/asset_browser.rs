@@ -1,20 +1,20 @@
 use engine::ui::egui::window::Window;
 
-pub struct Simulation {
+pub struct AssetBrowser {
 	display_name: String,
 }
 
-impl Simulation {
+impl AssetBrowser {
 	pub fn new() -> Self {
 		Self {
-			display_name: "Simulation".to_owned(),
+			display_name: "Asset Browser".to_string(),
 		}
 	}
 }
 
-impl Window for Simulation {
+impl Window for AssetBrowser {
 	fn base_name(&self) -> &'static str {
-		"simulation"
+		"asset_browser"
 	}
 
 	fn display_name(&self) -> &String {
@@ -26,7 +26,7 @@ impl Window for Simulation {
 			.id(id)
 			.open(is_open)
 			.show(ctx, |ui| {
-				ui.label("This is the simulation");
+				ui.label("browser");
 			});
 	}
 }

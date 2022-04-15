@@ -1,13 +1,12 @@
 use crate::{ui, Editor};
 use egui::{vec2, Align2};
-use engine::ui::egui::{window::OpenWindowList, Element};
+use engine::ui::egui::Element;
 use std::sync::{
 	atomic::{AtomicBool, Ordering},
 	Arc, RwLock,
 };
 
 pub struct Workspace {
-	open_list: Arc<RwLock<OpenWindowList>>,
 	is_build_active: Arc<AtomicBool>,
 	is_tasklist_open: bool,
 }
@@ -15,23 +14,7 @@ pub struct Workspace {
 impl Workspace {
 	pub fn new() -> Arc<RwLock<Self>> {
 		let editor = Editor::read();
-		let open_list = Arc::new(RwLock::new(
-			OpenWindowList::new()
-				.with_open_windows(editor.settings.get_open_window_list().clone().into_iter())
-				.with_save_fn(|ids| {
-					use engine::utility::SaveData;
-					let mut editor = Editor::write();
-					for (id, is_open) in ids.into_iter() {
-						editor.settings.set_window_open(&id, is_open);
-					}
-					if let Err(e) = editor.settings.save() {
-						log::error!(target: "ui", "Failed to save editor settings, {}", e);
-					}
-				}),
-		));
-		OpenWindowList::register_window(&open_list, ui::windows::Simulation::new());
 		Arc::new(RwLock::new(Self {
-			open_list,
 			is_build_active: Arc::new(AtomicBool::new(false)),
 			is_tasklist_open: false,
 		}))
@@ -77,9 +60,14 @@ impl Element for Workspace {
 						}
 					}
 				});
-				ui.menu_button("Windows", |ui| {
-					if let Ok(mut guard) = self.open_list.write() {
-						guard.show_options(ui);
+				ui.menu_button("Create Window", |ui| {
+					use ui::windows::*;
+					let request = global_sender();
+					if ui.button("Simulation").clicked() {
+						request.open(Simulation::new());
+					}
+					if ui.button("Asset Browser").clicked() {
+						request.open(AssetBrowser::new());
 					}
 				});
 			});
@@ -116,8 +104,8 @@ impl Element for Workspace {
 					});
 			}
 		});
-		if let Ok(mut guard) = self.open_list.write() {
-			guard.render(ctx);
+		if let Ok(mut list) = ui::windows::global_list().write() {
+			list.render(ctx);
 		}
 	}
 }
