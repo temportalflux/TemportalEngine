@@ -536,7 +536,7 @@ impl Operation for Ui {
 		}
 
 		Ok(match update.needs_repaint {
-			true => RequiresRecording::CurrentFrame,
+			true => RequiresRecording::AllFrames,
 			false => RequiresRecording::NotRequired,
 		})
 	}
