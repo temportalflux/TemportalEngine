@@ -235,6 +235,10 @@ impl Ui {
 	{
 		self.render_callbacks.push((Box::new(callback), true));
 	}
+
+	pub fn context_mut(&mut self) -> &mut Context {
+		&mut self.context
+	}
 }
 
 impl WinitEventListener for Ui {

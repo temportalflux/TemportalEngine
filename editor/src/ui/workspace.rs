@@ -13,7 +13,6 @@ pub struct Workspace {
 
 impl Workspace {
 	pub fn new() -> Arc<RwLock<Self>> {
-		let editor = Editor::read();
 		Arc::new(RwLock::new(Self {
 			is_build_active: Arc::new(AtomicBool::new(false)),
 			is_tasklist_open: false,
@@ -64,10 +63,10 @@ impl Element for Workspace {
 					use ui::windows::*;
 					let request = global_sender();
 					if ui.button("Simulation").clicked() {
-						request.open(Simulation::new());
+						let _ = request.open(Simulation::new());
 					}
 					if ui.button("Asset Browser").clicked() {
-						request.open(AssetBrowser::new());
+						let _ = request.open(AssetBrowser::new());
 					}
 				});
 			});

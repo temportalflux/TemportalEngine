@@ -45,6 +45,7 @@ impl Parent for List {
 /// A task scope provides the ability for users to report what async tasks were spawned and their lifetimes.
 /// This is useful for debugging tools like looking at what user-spawned tasks are active at any given point of an application.
 pub struct Scope {
+	#[allow(dead_code)]
 	display_name: String,
 	log_target: String,
 	children: Arc<List>,

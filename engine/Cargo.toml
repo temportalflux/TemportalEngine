@@ -82,9 +82,9 @@ mint = "0.5"
 nalgebra = { version = "0.27", features = ["serde-serialize"] }
 
 # [window] for interoperability of winit and vulkan-rs
-raw-window-handle = "0.3"
+raw-window-handle = "0.3.4"
 # [window] for opening a window and getting user input
-winit = "0.25"
+winit = "0.26"
 # [graphics] backend for rendering graphics to a window / working with the GPU
 vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
 

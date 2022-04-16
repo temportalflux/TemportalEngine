@@ -1,4 +1,4 @@
-use engine::ui::egui::window::{List, Receiver, Request, Sender, Window};
+use engine::ui::egui::window::{List, Request, Sender};
 use std::{
 	mem::MaybeUninit,
 	sync::{Arc, Once, RwLock},

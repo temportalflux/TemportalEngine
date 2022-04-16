@@ -4,7 +4,7 @@ use async_zip::{
 	write::{EntryOptions, ZipFileWriter},
 	Compression,
 };
-use std::{self, path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 use tokio::fs;
 
 #[derive(Debug)]
