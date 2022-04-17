@@ -61,8 +61,8 @@ impl Window for AssetBrowser {
 				});
 				egui::ScrollArea::vertical().show(ui, |ui| {
 					AssetExplorer::new(&mut self.current_path)
-					.include_nonassets(self.show_nonassets)
-					.show(ui);
+						.include_nonassets(self.show_nonassets)
+						.show(ui);
 				});
 				ui.checkbox(&mut self.show_nonassets, "Show All Files");
 			});

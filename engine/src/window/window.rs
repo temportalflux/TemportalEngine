@@ -132,10 +132,10 @@ impl Window {
 
 	#[profiling::function]
 	pub fn create_render_chain(&mut self) -> Result<&Arc<RwLock<Chain>>> {
-		let permitted_frame_count = self
-			.physical_device
-			.query_surface_support()
-			.image_count_range();
+		let surface_support = self.physical_device.query_surface_support();
+		log::debug!("{surface_support:?}");
+
+		let permitted_frame_count = surface_support.image_count_range();
 		let frame_count = std::cmp::min(
 			std::cmp::max(3, permitted_frame_count.start as usize),
 			permitted_frame_count.end as usize,
