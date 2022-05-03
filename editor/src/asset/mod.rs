@@ -39,3 +39,7 @@ where
 		))?,
 	}
 }
+
+pub fn open_editor(id: engine::asset::Id) {
+	log::warn!("{id:?}");
+}

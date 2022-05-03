@@ -13,18 +13,21 @@ use std::{
 pub struct AssetBrowser {
 	display_name: String,
 	module_list: ModuleList,
-	module_root: PathBuf,
+	selected_module: Option<Arc<Module>>,
 	current_path: PathBuf,
 	show_nonassets: bool,
 }
 
 impl AssetBrowser {
 	pub fn new() -> Self {
+		let module_list = ModuleList::new();
+		let selected_module = module_list.current().cloned();
+		let current_path = selected_module.as_ref().map(|module| module.assets_directory.clone()).unwrap_or(PathBuf::new());
 		Self {
 			display_name: "Asset Browser".to_string(),
-			module_list: ModuleList::new(),
-			module_root: PathBuf::new(),
-			current_path: PathBuf::new(),
+			module_list,
+			selected_module,
+			current_path,
 			show_nonassets: false,
 		}
 	}
@@ -46,21 +49,23 @@ impl Window for AssetBrowser {
 			.resizable(true)
 			.collapsible(true)
 			.show(ctx, |ui| {
-				if let Some(selected_module) = self.module_list.current() {
-					if self.module_root != selected_module.assets_directory {
-						self.module_root = selected_module.assets_directory.clone();
-					}
-				}
-				if !self.current_path.starts_with(&self.module_root) {
-					self.current_path = self.module_root.clone();
-				}
-
 				ui.horizontal(|ui| {
-					self.module_list.show(ui);
-					Breadcrumb::new(&self.module_root, &mut self.current_path).show(ui);
+					if self.module_list.show(ui) {
+						self.selected_module = self.module_list.current().cloned();
+						if let Some(module) = &self.selected_module {
+							if !self.current_path.starts_with(&module.assets_directory) {
+								self.current_path = module.assets_directory.clone();
+							}
+						}
+					}
+					let assets_root = self.selected_module.as_ref().map(|module| module.assets_directory.as_path());
+					Breadcrumb::new(
+						assets_root,
+						&mut self.current_path
+					).show(ui);
 				});
 				egui::ScrollArea::vertical().show(ui, |ui| {
-					AssetExplorer::new(&mut self.current_path)
+					AssetExplorer::new(self.selected_module.as_ref(), &mut self.current_path)
 						.include_nonassets(self.show_nonassets)
 						.show(ui);
 				});
@@ -89,18 +94,23 @@ impl ModuleList {
 		asset_modules
 	}
 
-	fn show(&mut self, ui: &mut egui::Ui) {
+	fn show(&mut self, ui: &mut egui::Ui) -> bool {
+		let mut changed = false;
 		if let Some(current) = self.current() {
 			egui::ComboBox::from_id_source("Module")
 				.selected_text(current.name.clone())
 				.show_ui(ui, |ui| {
 					for (idx, item) in self.items.iter().enumerate() {
-						ui.selectable_value(&mut self.current_idx, idx, item.name.clone());
+						let response = ui.selectable_value(&mut self.current_idx, idx, item.name.clone());
+						if response.clicked() {
+							changed = true;
+						}
 					}
 				});
 		} else {
 			ui.label("No modules");
 		}
+		changed
 	}
 
 	fn current(&self) -> Option<&Arc<Module>> {
@@ -109,22 +119,26 @@ impl ModuleList {
 }
 
 struct Breadcrumb<'a> {
-	root: &'a Path,
+	root: Option<&'a Path>,
 	current: &'a mut PathBuf,
 }
 impl<'a> Breadcrumb<'a> {
-	fn new(root: &'a Path, current: &'a mut PathBuf) -> Self {
+	fn new(root: Option<&'a Path>, current: &'a mut PathBuf) -> Self {
 		Self { root, current }
 	}
 
 	fn get_subpaths(&self) -> Option<Vec<PathBuf>> {
-		let relative_path = match self.current.strip_prefix(self.root) {
+		let root = match &self.root {
+			Some(root) => *root,
+			None => return None,
+		};
+		let relative_path = match self.current.strip_prefix(root) {
 			Ok(path) => path,
 			Err(_) => return None,
 		};
 
 		let mut subpaths = Vec::new();
-		let mut subpath_builder = self.root.to_owned();
+		let mut subpath_builder = root.to_owned();
 		for dir_item in relative_path.iter() {
 			subpath_builder.push(dir_item);
 			subpaths.push(subpath_builder.clone());
@@ -143,7 +157,9 @@ impl<'a> Breadcrumb<'a> {
 		};
 
 		ui.horizontal(|ui| {
-			self.show_crumb(ui, "Module", &self.root);
+			if let Some(root) = self.root.clone() {
+				self.show_crumb(ui, "Module", root);
+			}
 			for subpath in subpaths.into_iter() {
 				let name = subpath.file_stem().unwrap().to_str().unwrap();
 				self.show_crumb(ui, name, &subpath);
@@ -164,13 +180,15 @@ impl<'a> Breadcrumb<'a> {
 }
 
 struct AssetExplorer<'a> {
+	module: Option<&'a Arc<Module>>,
 	current_path: &'a mut PathBuf,
 	show_nonasset_files: bool,
 }
 
 impl<'a> AssetExplorer<'a> {
-	fn new(current_path: &'a mut PathBuf) -> Self {
+	fn new(module: Option<&'a Arc<Module>>, current_path: &'a mut PathBuf) -> Self {
 		Self {
+			module,
 			current_path,
 			show_nonasset_files: false,
 		}
@@ -229,7 +247,14 @@ impl<'a> AssetExplorer<'a> {
 				if is_dir {
 					*self.current_path = path.clone();
 				} else {
-					log::warn!("open file!");
+					if let Some(module) = &self.module {
+						if let Ok(rel_path) = path.strip_prefix(&module.assets_directory) {
+							crate::asset::open_editor(engine::asset::Id::new(
+								&module.name,
+								rel_path.to_str().unwrap(),
+							));
+						}
+					}
 				}
 			}
 		});
