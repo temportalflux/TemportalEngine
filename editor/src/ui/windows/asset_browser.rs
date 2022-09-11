@@ -22,7 +22,10 @@ impl AssetBrowser {
 	pub fn new() -> Self {
 		let module_list = ModuleList::new();
 		let selected_module = module_list.current().cloned();
-		let current_path = selected_module.as_ref().map(|module| module.assets_directory.clone()).unwrap_or(PathBuf::new());
+		let current_path = selected_module
+			.as_ref()
+			.map(|module| module.assets_directory.clone())
+			.unwrap_or(PathBuf::new());
 		Self {
 			display_name: "Asset Browser".to_string(),
 			module_list,
@@ -58,11 +61,11 @@ impl Window for AssetBrowser {
 							}
 						}
 					}
-					let assets_root = self.selected_module.as_ref().map(|module| module.assets_directory.as_path());
-					Breadcrumb::new(
-						assets_root,
-						&mut self.current_path
-					).show(ui);
+					let assets_root = self
+						.selected_module
+						.as_ref()
+						.map(|module| module.assets_directory.as_path());
+					Breadcrumb::new(assets_root, &mut self.current_path).show(ui);
 				});
 				egui::ScrollArea::vertical().show(ui, |ui| {
 					AssetExplorer::new(self.selected_module.as_ref(), &mut self.current_path)
@@ -101,7 +104,8 @@ impl ModuleList {
 				.selected_text(current.name.clone())
 				.show_ui(ui, |ui| {
 					for (idx, item) in self.items.iter().enumerate() {
-						let response = ui.selectable_value(&mut self.current_idx, idx, item.name.clone());
+						let response =
+							ui.selectable_value(&mut self.current_idx, idx, item.name.clone());
 						if response.clicked() {
 							changed = true;
 						}
