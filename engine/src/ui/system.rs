@@ -311,7 +311,7 @@ impl System {
 		engine.add_system(system.clone());
 		engine.add_winit_listener(&system);
 		if let Ok(mut chain) = chain.write() {
-			chain.add_operation(phase, Arc::downgrade(&system))?;
+			chain.add_operation(phase, Arc::downgrade(&system), None)?;
 		}
 		Ok(system)
 	}

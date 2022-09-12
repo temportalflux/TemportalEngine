@@ -119,7 +119,7 @@ impl Ui {
 	pub fn create(window: &Window, phase: &Arc<Phase>) -> anyhow::Result<Arc<RwLock<Self>>> {
 		let strong = Arc::new(RwLock::new(Self::new(window)?));
 		if let Ok(mut chain) = window.graphics_chain().write() {
-			chain.add_operation(phase, Arc::downgrade(&strong))?;
+			chain.add_operation(phase, Arc::downgrade(&strong), None)?;
 		}
 		Ok(strong)
 	}

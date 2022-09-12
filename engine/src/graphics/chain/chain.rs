@@ -185,12 +185,13 @@ impl Chain {
 		&mut self,
 		phase: &Arc<Phase>,
 		operation: Weak<RwLock<T>>,
+		priority: Option<u32>,
 	) -> Result<(), PhaseNotInProcedure>
 	where
 		T: Operation + 'static + Send + Sync,
 	{
 		let phase_index = self.procedure.position(phase).ok_or(PhaseNotInProcedure)?;
-		self.operations.insert(phase_index, operation);
+		self.operations.insert(phase_index, operation, priority);
 		Ok(())
 	}
 

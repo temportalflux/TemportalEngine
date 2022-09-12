@@ -90,7 +90,7 @@ impl DebugRender {
 		let mut chain_write = chain.write().unwrap();
 		let inst = initializer(Self::new(&chain_write)?)?;
 		let render = Arc::new(RwLock::new(inst));
-		chain_write.add_operation(phase, Arc::downgrade(&render))?;
+		chain_write.add_operation(phase, Arc::downgrade(&render), None)?;
 		Ok(render)
 	}
 

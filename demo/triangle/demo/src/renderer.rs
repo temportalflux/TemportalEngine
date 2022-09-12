@@ -75,7 +75,7 @@ impl Triangle {
 		chain
 			.write()
 			.unwrap()
-			.add_operation(phase, Arc::downgrade(&strong))?;
+			.add_operation(phase, Arc::downgrade(&strong), None)?;
 		Ok(strong)
 	}
 }

@@ -151,7 +151,7 @@ impl RenderBoids {
 			}))
 		};
 		if let Ok(mut chain) = arc_chain.write() {
-			chain.add_operation(phase, Arc::downgrade(&strong))?;
+			chain.add_operation(phase, Arc::downgrade(&strong), None)?;
 		}
 		Ok(strong)
 	}

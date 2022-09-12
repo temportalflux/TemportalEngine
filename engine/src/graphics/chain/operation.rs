@@ -82,7 +82,7 @@ pub type WeakOperation = Weak<RwLock<dyn Operation + 'static + Send + Sync>>;
 #[derive(Default)]
 pub struct ProcedureOperations {
 	// A list of operations to record for each phase of a render procedure.
-	operations: Vec<Vec<WeakOperation>>,
+	operations: Vec<Vec<(u32, WeakOperation)>>,
 	uninitialized: Vec<(usize, WeakOperation)>,
 }
 
@@ -92,9 +92,31 @@ impl ProcedureOperations {
 		self.operations.resize(count, Vec::new());
 	}
 
-	pub fn insert(&mut self, phase_index: usize, operation: WeakOperation) {
+	pub fn insert(&mut self, phase_index: usize, operation: WeakOperation, priority: Option<u32>) {
 		assert!(phase_index < self.operations.len());
-		self.operations[phase_index].push(operation.clone());
+		let end_of_phase = self.operations[phase_index].len();
+		let (priority, first_matched_or_end) = match priority {
+			// no priroty provided, so it always goes at the end
+			None => (u32::MAX, end_of_phase),
+			Some(priority) => {
+				// Find the first operation in the phase which has the same or later priority
+				let idx = self.operations[phase_index]
+					.iter()
+					// link the idx of each entry to its value
+					.enumerate()
+					// Short-circuit at first entry whose priority is at least the provided priority
+					.find(|(_, (p, _))| *p >= priority)
+					// Filter out the value, we only care about the index of the found operation
+					.map(|(idx, _)| idx as usize)
+					// If `find` went past the end, then there are no operations which
+					// match or come after the provided priority, and the operation
+					// being inserted should go at the end.
+					.unwrap_or(end_of_phase);
+				(priority, idx)
+			}
+		};
+		assert!(first_matched_or_end <= end_of_phase);
+		self.operations[phase_index].insert(first_matched_or_end, (priority, operation.clone()));
 		self.uninitialized.push((phase_index, operation));
 	}
 
@@ -110,9 +132,9 @@ impl ProcedureOperations {
 	}
 
 	fn iter_internal(
-		ops: &Vec<WeakOperation>,
+		ops: &Vec<(u32, WeakOperation)>,
 	) -> impl std::iter::Iterator<Item = ArcOperation> + '_ {
-		ops.iter().filter_map(|weak| weak.upgrade())
+		ops.iter().filter_map(|(_, weak)| weak.upgrade())
 	}
 
 	#[profiling::function]
@@ -122,7 +144,7 @@ impl ProcedureOperations {
 		// If any have been dropped, then the chain needs to be re-recorded.
 		for phase_ops in self.operations.iter_mut() {
 			let count = phase_ops.len();
-			phase_ops.retain(|weak| weak.strong_count() > 0);
+			phase_ops.retain(|(_, weak)| weak.strong_count() > 0);
 			if phase_ops.len() != count {
 				has_changed = true;
 			}
@@ -171,7 +193,7 @@ impl ProcedureOperations {
 	#[profiling::function]
 	pub fn construct(&self, chain: &Chain) -> anyhow::Result<()> {
 		for (subpass_index, operations) in self.operations.iter().enumerate() {
-			for weak in operations.iter() {
+			for (_, weak) in operations.iter() {
 				if let Some(operation) = weak.upgrade() {
 					if let Ok(mut locked) = operation.write() {
 						locked.construct(&chain, subpass_index)?;
