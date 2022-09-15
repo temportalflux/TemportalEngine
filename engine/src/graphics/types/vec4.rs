@@ -1,9 +1,10 @@
 use crate::math::nalgebra::Vector4;
+use serde::{Deserialize, Serialize};
 
 /// An array of 4 f32 values, aligned to a 16-byte boundary.
 ///
 /// Often used to represent RGBA color or padded 3-dimensional position.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 // technically redundant since `[f32; 4]` is already aligned to 16 bytes, but kept for the sake of consistency.
 #[repr(C, align(16))]
 pub struct Vec4(Vector4<f32>);

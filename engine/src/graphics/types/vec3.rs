@@ -1,10 +1,11 @@
 use crate::math::nalgebra::{Point3, Vector3};
+use serde::{Deserialize, Serialize};
 
 /// An array of 3 f32 values, aligned to a 16-byte boundary,
 /// (so it takes up 16 bytes instead of 12 bytes).
 ///
 /// Often used to represent 3-dimensional positions or RGB color.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[repr(C, align(16))]
 pub struct Vec3(Vector3<f32>);
 

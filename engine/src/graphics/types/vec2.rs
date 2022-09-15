@@ -1,10 +1,11 @@
 use crate::math::nalgebra::{Point2, Vector2};
+use serde::{Deserialize, Serialize};
 
 /// An array of 2 f32 values, aligned to a 16-byte boundary,
 /// (so it takes up 16 bytes instead of 8 bytes).
 ///
 /// Often used to represent 2-dimensional positions or texture coordinates.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
 #[repr(C, align(16))]
 pub struct Vec2(Vector2<f32>);
 
