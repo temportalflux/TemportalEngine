@@ -44,6 +44,12 @@ impl Texture {
 	pub fn binary(&self) -> &Vec<u8> {
 		&self.compiled.as_ref().unwrap().binary
 	}
+
+	pub fn take_data(&mut self) -> Option<(Vector2<usize>, Vec<u8>)> {
+		self.compiled
+			.take()
+			.map(|compiled| (compiled.size, compiled.binary))
+	}
 }
 
 impl crate::asset::kdl::Asset<Texture> for Texture {

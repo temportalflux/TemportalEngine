@@ -58,6 +58,10 @@ where
 	pub fn contains(&self, id: &T) -> bool {
 		self.sets.contains_key(id)
 	}
+
+	pub fn get(&self, id: &T) -> Option<&sync::Weak<descriptor::Set>> {
+		self.sets.get(id)
+	}
 }
 
 impl<T> std::ops::Index<&T> for DescriptorCache<T>
@@ -66,6 +70,6 @@ where
 {
 	type Output = sync::Weak<descriptor::Set>;
 	fn index(&self, id: &T) -> &Self::Output {
-		&self.sets[id]
+		self.get(id).unwrap()
 	}
 }

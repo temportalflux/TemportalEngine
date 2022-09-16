@@ -1,4 +1,4 @@
-use crate::asset;
+use crate::asset::{self, TypeId};
 
 #[derive(Debug)]
 pub enum Error {
@@ -32,5 +32,17 @@ pub struct UnregisteredAssetType(pub String);
 impl std::fmt::Display for UnregisteredAssetType {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(f, "Asset type id {} has not been registered", self.0)
+	}
+}
+
+#[derive(thiserror::Error, Debug)]
+pub struct AssetTypeMismatch(pub asset::Id, pub TypeId);
+impl std::fmt::Display for AssetTypeMismatch {
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		write!(
+			f,
+			"Asset {:?} does not match the expected type {:?}.",
+			self.0, self.1
+		)
 	}
 }

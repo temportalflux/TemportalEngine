@@ -1,7 +1,7 @@
-use crate::asset::{self, AssetNotFound};
+use crate::asset::{self, Asset, AssetNotFound, AssetTypeMismatch};
 use anyhow::Result;
 use rmp_serde;
-use std::io::Read;
+use std::{any::Any, io::Read};
 
 /// Handles the loading of assets by their [`id`](crate::asset::Id),
 /// either synchronously or asynchronously.
@@ -19,6 +19,16 @@ impl Loader {
 		let location = Self::get_location(id)?;
 		let bytes = Self::read_from_location_async(&location).await?;
 		Self::decompile_asset(bytes)
+	}
+
+	pub async fn load_t<T>(id: &asset::Id) -> Result<Box<T>>
+	where
+		T: Any + Asset,
+	{
+		match Self::load(id).await?.downcast::<T>() {
+			Ok(asset) => Ok(asset),
+			_ => Err(AssetTypeMismatch(id.clone(), T::asset_type()))?,
+		}
 	}
 
 	#[profiling::function]

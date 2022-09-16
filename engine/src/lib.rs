@@ -11,7 +11,10 @@ pub mod ecs;
 mod engine;
 pub use engine::*;
 pub mod channels {
-	pub use async_channel as future;
+	pub mod future {
+		pub use async_channel::*;
+		pub type Pair<T> = (Sender<T>, Receiver<T>);
+	}
 	pub use bus as broadcast;
 	pub use crossbeam_channel as mpsc;
 }
