@@ -6,6 +6,7 @@ pub type AnyBox = Box<dyn Any + Send + Sync>;
 pub type TypeId = &'static str;
 pub type TypeIdOwned = String;
 
+// TODO: downcast-rs would be great for the Asset trait https://docs.rs/downcast-rs/latest/downcast_rs/
 pub trait Asset: std::fmt::Debug {
 	fn asset_type() -> TypeId;
 	fn decompile(bin: &Vec<u8>) -> anyhow::Result<AnyBox>;
