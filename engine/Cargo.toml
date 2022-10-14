@@ -80,6 +80,7 @@ input-actions = { path = "../input-actions", features = ["winit", "log"] }
 mint = "0.5"
 # [math] for math types and functions
 nalgebra = { version = "0.27", features = ["serde-serialize"] }
+approx = "0.5"
 
 # [window] for interoperability of winit and vulkan-rs
 raw-window-handle = "0.3.4"

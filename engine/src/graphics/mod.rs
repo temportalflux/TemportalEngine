@@ -5,6 +5,8 @@ pub use vulkan_rs::*;
 pub static LOG: &'static str = "graphics";
 
 pub mod camera;
+#[cfg(test)]
+pub mod camera_test;
 
 mod drawable;
 pub use drawable::*;

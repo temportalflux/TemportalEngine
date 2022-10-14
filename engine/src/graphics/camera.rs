@@ -1,5 +1,5 @@
 use crate::{
-	math::nalgebra::{Matrix4, Point3, UnitQuaternion, Vector2},
+	math::nalgebra::{Isometry3, Translation3, Matrix4, Point3, UnitQuaternion, Vector2},
 	world,
 };
 
@@ -14,7 +14,7 @@ pub trait Camera {
 		let forward = orientation * world::global_forward();
 		let up = orientation * world::global_up();
 		let target = position + forward.into_inner();
-		Matrix4::look_at_rh(&position, &target, &up)
+		Isometry3::look_at_rh(&position, &target, &up).to_homogeneous()
 	}
 
 	fn projection_matrix(&self, resolution: &Vector2<f32>) -> Matrix4<f32> {
@@ -116,12 +116,21 @@ pub struct PerspectiveProjection {
 
 impl PerspectiveProjection {
 	pub fn as_matrix(&self, aspect_ratio: f32) -> Matrix4<f32> {
+		/*
 		Projection::perspective_right_hand_depth_zero_to_one(
 			Projection::vertical_to_horizontal_fov(self.vertical_fov, aspect_ratio),
 			aspect_ratio,
 			self.near_plane,
 			self.far_plane,
 		)
+		*/
+		nalgebra::geometry::Perspective3::new(
+			aspect_ratio,
+			self.vertical_fov,
+			self.near_plane,
+			self.far_plane,
+		)
+		.to_homogeneous()
 	}
 }
 
