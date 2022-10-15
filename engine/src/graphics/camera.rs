@@ -1,5 +1,5 @@
 use crate::{
-	math::nalgebra::{Isometry3, Translation3, Matrix4, Point3, UnitQuaternion, Vector2},
+	math::nalgebra::{Isometry3, Matrix4, Point3, UnitQuaternion, Vector2},
 	world,
 };
 
@@ -116,21 +116,28 @@ pub struct PerspectiveProjection {
 
 impl PerspectiveProjection {
 	pub fn as_matrix(&self, aspect_ratio: f32) -> Matrix4<f32> {
-		/*
-		Projection::perspective_right_hand_depth_zero_to_one(
-			Projection::vertical_to_horizontal_fov(self.vertical_fov, aspect_ratio),
-			aspect_ratio,
-			self.near_plane,
-			self.far_plane,
-		)
-		*/
-		nalgebra::geometry::Perspective3::new(
+		let perspective = nalgebra::geometry::Perspective3::new(
 			aspect_ratio,
 			self.vertical_fov,
 			self.near_plane,
 			self.far_plane,
-		)
-		.to_homogeneous()
+		);
+		let mut projection = perspective.to_homogeneous();
+		/*
+		According to https://github.com/dimforge/nalgebra/issues/204:
+			"The choice of nalgebra is to flip the z-axis in order to switch to
+			a left-handed coordinate system. This is motivated by OpenGL-based applications."
+		and https://www.nalgebra.org/docs/user_guide/projections:
+			"The actual shape to be transformed depends on the projection itself.
+			Note that projections implemented on nalgebra also flip the z axis. This is a common convention
+			in computer graphics applications for rendering with, e.g., OpenGL,
+			because the coordinate system of the screen is left-handed.
+		In order to correct for this, we need to flip the x-modifier to transform to our
+		right-handed -Z forward +X right coordinate space.
+		https://www.evl.uic.edu/ralph/508S98/coordinates.html
+		*/
+		projection[(0, 0)] *= -1.0;
+		projection
 	}
 }
 
@@ -166,25 +173,6 @@ impl Projection {
 		// the equation to get verticalFOV from horizontalFOV is: verticalFOV = 2 * atan(tan(horizontalFOV / 2) * height / width)
 		// And by shifting the math to get horizontal from vertical, the equation is actually the same except the aspectRatio is flipped.
 		2.0 * f32::atan(f32::tan(vertical / 2.0) * xy_aspect_ratio)
-	}
-
-	pub fn perspective_right_hand_depth_zero_to_one(
-		y_fov: f32,
-		aspect_ratio: f32,
-		near_plane: f32,
-		far_plane: f32,
-	) -> Matrix4<f32> {
-		// Based on GLM https://docs.rs/nalgebra-glm/0.13.0/src/nalgebra_glm/ext/matrix_clip_space.rs.html#665-689
-		// A tweet about handedness in different engines: https://twitter.com/FreyaHolmer/status/644881436982575104
-		assert!(f32::abs(aspect_ratio - f32::EPSILON) > 0.0);
-		let tan_half_fov_y = f32::tan(y_fov / 2.0);
-		let mut perspective = Matrix4::<f32>::default();
-		perspective[(0, 0)] = 1.0 / (aspect_ratio * tan_half_fov_y);
-		perspective[(1, 1)] = 1.0 / (tan_half_fov_y);
-		perspective[(2, 2)] = far_plane / (near_plane - far_plane);
-		perspective[(3, 2)] = -1.0;
-		perspective[(2, 3)] = -(far_plane * near_plane) / (far_plane - near_plane);
-		return perspective;
 	}
 }
 

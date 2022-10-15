@@ -1,8 +1,6 @@
 use crate::math::nalgebra::{Unit, Vector3};
 
-// TODO: I think the X axis in CS is flipped.
 // https://www.evl.uic.edu/ralph/508S98/coordinates.html
-// When navigating the world, the positive X is accidentally left somehow.
 
 /// The unit vector for the world forward direction.
 /// Y-Up Right-Handed is +X, +Y, -Z
