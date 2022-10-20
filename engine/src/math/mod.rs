@@ -38,3 +38,11 @@ where
 
 	value
 }
+
+pub fn face_towards_rh(
+	forward: &nalgebra::Vector3<f32>,
+	up: &nalgebra::Vector3<f32>,
+) -> nalgebra::UnitQuaternion<f32> {
+	// UnitQuaternion::face_towards uses +z as forward
+	nalgebra::UnitQuaternion::face_towards(&-forward, up)
+}
