@@ -94,11 +94,16 @@ fn create_task_thread_name(idx: usize) -> String {
 	}
 }
 
+pub fn register_thread() {
+	// Starting the Tracy client is necessary before any invoking any of its APIs
+	tracy_client::Client::start();
+	profiling::register_thread!();
+}
+
 pub fn run<TRuntime>(runtime: TRuntime)
 where
 	TRuntime: Runtime + 'static,
 {
-	profiling::register_thread!();
 	let async_runtime = {
 		profiling::scope!("setup-runtime");
 		let thread_count = num_cpus::get();
