@@ -17,42 +17,38 @@ pub struct WidgetData {
 	index_count: usize,
 	index_buffer: sync::Arc<buffer::Buffer>,
 	vertex_buffer: sync::Arc<buffer::Buffer>,
-	name: Option<String>,
+	name: String,
 }
 
 impl WidgetData {
 	pub fn new(
-		id: Option<String>,
+		id: String,
 		text: &BatchExternalText,
 		allocator: &Arc<alloc::Allocator>,
 	) -> anyhow::Result<Self> {
 		// matches: "/.", "/<*>",
 		// and the series "/<0>", "/<1>", "/<2>", ..., "/<n>"
 		let id_regex = regex::Regex::new(r"(/\.)|(?:/<\*>)|(?:/<[0-9]*>)").unwrap();
-		let short_name = id.as_ref().map(|name| id_regex.replace_all(name, ""));
+		let short_name = id_regex.replace_all(&id, "");
 		Ok(Self {
 			content: text.text.clone(),
 			font_id: text.font.clone(),
 			font_size: text.size,
 			color: vector![text.color.r, text.color.g, text.color.b, text.color.a],
 			vertex_buffer: Self::allocate_buffer(
-				short_name
-					.as_ref()
-					.map(|name| format!("UI.{}.VertexBuffer", name)),
+				format!("UI.{}.VertexBuffer", short_name),
 				flags::BufferUsage::VERTEX_BUFFER,
 				&text.text,
 				allocator,
 			)?,
 			index_buffer: Self::allocate_buffer(
-				short_name
-					.as_ref()
-					.map(|name| format!("UI.{}.IndexBuffer", name)),
+				format!("UI.{}.IndexBuffer", short_name),
 				flags::BufferUsage::INDEX_BUFFER,
 				&text.text,
 				allocator,
 			)?,
 			index_count: 0,
-			name: short_name.map(|v| v.to_string()),
+			name: short_name.to_owned(),
 		})
 	}
 
@@ -64,7 +60,7 @@ impl WidgetData {
 		&self.index_count
 	}
 
-	pub fn name(&self) -> &Option<String> {
+	pub fn name(&self) -> &String {
 		&self.name
 	}
 
@@ -77,7 +73,7 @@ impl WidgetData {
 	}
 
 	fn allocate_buffer(
-		name: Option<String>,
+		name: String,
 		usage: flags::BufferUsage,
 		content: &String,
 		allocator: &Arc<alloc::Allocator>,
@@ -85,7 +81,7 @@ impl WidgetData {
 		use graphics::utility::{BuildFromAllocator, NameableBuilder};
 		Ok(sync::Arc::new(
 			graphics::buffer::Buffer::builder()
-				.with_optname(name)
+				.with_name(name)
 				.with_usage(usage)
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
 				.with_size(match usage {
@@ -97,11 +93,7 @@ impl WidgetData {
 					flags::BufferUsage::INDEX_BUFFER => Some(flags::IndexType::UINT32),
 					_ => None,
 				})
-				.with_alloc(
-					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
 				.build(allocator)?,
 		))
@@ -143,7 +135,7 @@ impl WidgetData {
 		self.index_count = indices.len();
 
 		graphics::GpuOperationBuilder::new(
-			self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
+			format!("Write({})", self.vertex_buffer.name()),
 			context,
 		)?
 		.begin()?
@@ -153,7 +145,7 @@ impl WidgetData {
 		.end()?;
 
 		graphics::GpuOperationBuilder::new(
-			self.index_buffer.wrap_name(|v| format!("Write({})", v)),
+			format!("Write({})", self.index_buffer.name()),
 			context,
 		)?
 		.begin()?

@@ -45,7 +45,8 @@ async_zip = "0.0.9"
 sanitize-filename = "0.4"
 
 # [ui] debug immediate-mode UI
-egui = "0.17"
+egui = "0.19"
+egui-winit = "0.19"
 # [ui] for handling UI widgets - rendering is built-into the engine and leverages tesselation
 raui = { version = ">=0.35", features = ["material", "tesselate"] }
 
@@ -86,9 +87,9 @@ nalgebra = { version = "0.27", features = ["serde-serialize"] }
 approx = "0.5"
 
 # [window] for interoperability of winit and vulkan-rs
-raw-window-handle = "0.3.4"
+raw-window-handle = "0.5"
 # [window] for opening a window and getting user input
-winit = "0.26"
+winit = "0.27"
 # [graphics] backend for rendering graphics to a window / working with the GPU
 vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
 

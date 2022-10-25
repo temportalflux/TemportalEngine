@@ -96,7 +96,7 @@ impl DataPipeline {
 					.unwrap()
 					.allocate_named_descriptor_sets(&vec![(
 						self.descriptor_layout.clone(),
-						Some(format!("{}.Descriptor", loaded.name())),
+						format!("{}.Descriptor", loaded.name()),
 					)])?
 					.pop()
 					.unwrap();
@@ -146,9 +146,7 @@ impl DataPipeline {
 			.ok_or(ui::core::Error::InvalidFont(text.font.clone()))?;
 		let mut widget = match widget {
 			Some(widget) => widget,
-			None => {
-				text::WidgetData::new(Some((*widget_id).to_string()), &text, &chain.allocator()?)?
-			}
+			None => text::WidgetData::new((*widget_id).to_string(), &text, &chain.allocator()?)?,
 		};
 		widget.write_buffer_data(
 			&text,

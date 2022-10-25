@@ -46,8 +46,7 @@ impl DataPipeline {
 	}
 
 	pub fn add_pending(&mut self, id: &asset::Id, texture: Box<Texture>) {
-		self.image_cache
-			.insert_asset(id.name(), Some(id.name()), texture);
+		self.image_cache.insert_asset(id.name(), id.name(), texture);
 	}
 
 	pub fn contains(&self, id: &asset::Id) -> bool {
@@ -64,7 +63,7 @@ impl DataPipeline {
 			let cached_image = &self.image_cache[&image_id];
 			let descriptor_set = self.descriptor_cache.insert(
 				image_id,
-				image_name.map(|v| format!("UI.Image.{}", v)),
+				format!("UI.Image.{}", image_name),
 				chain.persistent_descriptor_pool(),
 			)?;
 			Queue::default()

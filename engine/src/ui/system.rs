@@ -681,15 +681,13 @@ impl Operation for System {
 
 				DrawCall::Text(widget_id) => {
 					let widget_data = &self.text_widgets[buffer_index][widget_id];
-					if let Some(name) = widget_data.name().as_ref() {
-						buffer
-							.begin_label(format!("Draw:UI/Text {}", name), debug::LABEL_COLOR_DRAW);
-					}
+					buffer.begin_label(
+						format!("Draw:UI/Text {}", widget_data.name()),
+						debug::LABEL_COLOR_DRAW,
+					);
 					buffer.set_dynamic_scissors(vec![**clips.last().unwrap()]);
 					self.text.record_to_buffer(buffer, widget_data)?;
-					if widget_data.name().is_some() {
-						buffer.end_label();
-					}
+					buffer.end_label();
 				}
 				DrawCall::Range(range) => {
 					buffer.begin_label("Draw:UI/ColoredArea", debug::LABEL_COLOR_DRAW);

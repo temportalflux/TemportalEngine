@@ -21,7 +21,7 @@ pub enum PendingOperation {
 }
 
 pub struct PendingImage {
-	name: Option<String>,
+	name: String,
 	size: Vector2<usize>,
 	format: flags::format::Format,
 	sampler: graphics::sampler::Builder,
@@ -36,7 +36,7 @@ pub struct ImageBinary {
 impl Default for PendingImage {
 	fn default() -> Self {
 		Self {
-			name: None,
+			name: String::new(),
 			size: [0, 0].into(),
 			format: flags::format::Format::UNDEFINED,
 			sampler: graphics::sampler::Builder::default(),
@@ -49,7 +49,7 @@ impl PendingImage {
 	where
 		T: Into<String>,
 	{
-		self.name = Some(name.into());
+		self.name = name.into();
 		self
 	}
 
@@ -105,7 +105,7 @@ pub struct CombinedImageSampler {
 pub struct ImageCache<T: Eq + std::hash::Hash + Clone> {
 	pending: MultiMap<T, PendingOperation>,
 	loaded: HashMap<T, CombinedImageSampler>,
-	name: Option<String>,
+	name: String,
 }
 
 impl<T> Default for ImageCache<T>
@@ -116,7 +116,7 @@ where
 		Self {
 			loaded: HashMap::new(),
 			pending: MultiMap::new(),
-			name: None,
+			name: String::new(),
 		}
 	}
 }
@@ -129,17 +129,17 @@ where
 	where
 		TStr: Into<String>,
 	{
-		self.set_cache_name(Some(name.into()));
+		self.set_cache_name(name.into());
 		self
 	}
 
-	pub fn set_cache_name(&mut self, name: Option<String>) {
+	pub fn set_cache_name(&mut self, name: String) {
 		self.name = name;
 	}
 
 	/// Adds an engine asset texture to the cache,
 	/// to be created the next time [`load_pending`](ImageCache::load_pending) is executed.
-	pub fn insert_asset(&mut self, id: T, name: Option<String>, texture: Box<Texture>) {
+	pub fn insert_asset(&mut self, id: T, name: String, texture: Box<Texture>) {
 		self.insert_compiled(
 			id,
 			name,
@@ -152,7 +152,7 @@ where
 	fn insert_compiled(
 		&mut self,
 		id: T,
-		name: Option<String>,
+		name: String,
 		size: Vector2<usize>,
 		format: flags::format::Format,
 		binary: Vec<u8>,
@@ -211,7 +211,7 @@ where
 		&mut self,
 		context: &impl GpuOpContext,
 		signal_sender: &Sender<Arc<command::Semaphore>>,
-	) -> anyhow::Result<Vec<(T, Option<String>)>> {
+	) -> anyhow::Result<Vec<(T, String)>> {
 		let mut ids = Vec::new();
 		if !self.pending.is_empty() {
 			let keys = self.pending.keys().cloned().collect::<Vec<_>>();
@@ -233,7 +233,7 @@ where
 		signal_sender: &Sender<Arc<command::Semaphore>>,
 		id: &T,
 		op: PendingOperation,
-	) -> anyhow::Result<Option<(T, Option<String>)>> {
+	) -> anyhow::Result<Option<(T, String)>> {
 		match op {
 			PendingOperation::Create(pending) => {
 				let loaded = self.create_image(context, &pending)?;
@@ -250,11 +250,8 @@ where
 		}
 	}
 
-	fn make_object_name(&self, name: &Option<String>, suffix: &str) -> Option<String> {
-		match (self.name.as_ref(), name) {
-			(Some(cache_name), Some(name)) => Some(format!("{}.{}.{}", cache_name, name, suffix)),
-			_ => None,
-		}
+	fn make_object_name(&self, name: &String, suffix: &str) -> String {
+		format!("{}.{}.{}", self.name, name, suffix)
 	}
 
 	fn write_image(
@@ -265,7 +262,7 @@ where
 		data: ImageBinary,
 	) -> anyhow::Result<()> {
 		use graphics::{command::CopyBufferToImage, structs::subresource, GpuOperationBuilder};
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
+		GpuOperationBuilder::new(format!("Create({})", image.name()), context)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&data.binary[..])?
@@ -320,7 +317,7 @@ where
 
 		let view = sync::Arc::new(
 			image_view::View::builder()
-				.with_optname(self.make_object_name(&pending.name, "Image.View"))
+				.with_name(self.make_object_name(&pending.name, "Image.View"))
 				.for_image(image)
 				.with_view_type(flags::ImageViewType::TYPE_2D)
 				.with_range(subresource::Range::default().with_aspect(flags::ImageAspect::COLOR))
@@ -331,7 +328,7 @@ where
 			pending
 				.sampler
 				.clone()
-				.with_optname(self.make_object_name(&pending.name, "Image.Sampler"))
+				.with_name(self.make_object_name(&pending.name, "Image.Sampler"))
 				.with_max_anisotropy(Some(context.physical_device()?.max_sampler_anisotropy()))
 				.build(&context.logical_device()?)?,
 		);

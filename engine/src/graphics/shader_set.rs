@@ -15,7 +15,7 @@ use std::{
 pub struct ShaderSet {
 	shaders: HashMap<flags::ShaderKind, sync::Arc<shader::Module>>,
 	pending_shaders: HashMap<flags::ShaderKind, Vec<u8>>,
-	name: Option<String>,
+	name: String,
 }
 
 impl Default for ShaderSet {
@@ -23,7 +23,7 @@ impl Default for ShaderSet {
 		Self {
 			pending_shaders: HashMap::new(),
 			shaders: HashMap::new(),
-			name: None,
+			name: String::new(),
 		}
 	}
 }
@@ -33,11 +33,11 @@ impl ShaderSet {
 	where
 		TStr: Into<String>,
 	{
-		self.set_name(Some(name.into()));
+		self.set_name(name.into());
 		self
 	}
 
-	pub fn set_name(&mut self, name: Option<String>) {
+	pub fn set_name(&mut self, name: String) {
 		self.name = name;
 	}
 
@@ -65,10 +65,7 @@ impl ShaderSet {
 				sync::Arc::new(shader::Module::create(
 					logical.clone(),
 					shader::Info {
-						name: self
-							.name
-							.as_ref()
-							.map(|name| format!("{}.{}", name, kind_string)),
+						name: format!("{}.{}", self.name, kind_string),
 						kind,
 						entry_point: String::from("main"),
 						bytes: binary,

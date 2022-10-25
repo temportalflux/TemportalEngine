@@ -72,14 +72,14 @@ where
 			vertex_t: std::marker::PhantomData,
 			index_t: std::marker::PhantomData,
 			vertex_buffer: buffer::Buffer::create_gpu(
-				Some(format!("{}.VertexBuffer", name)),
+				format!("{}.VertexBuffer", name),
 				allocator,
 				flags::BufferUsage::VERTEX_BUFFER,
 				Self::vertex_buffer_size_for(item_count),
 				None,
 			)?,
 			index_buffer: buffer::Buffer::create_gpu(
-				Some(format!("{}.IndexBuffer", name)),
+				format!("{}.IndexBuffer", name),
 				allocator,
 				flags::BufferUsage::INDEX_BUFFER,
 				Self::index_buffer_size_for(item_count),
@@ -135,7 +135,7 @@ where
 		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
 			*buffer = sync::Arc::new(reallocated);
 		}
-		GpuOperationBuilder::new(buffer.wrap_name(|v| format!("Write({})", v)), context)?
+		GpuOperationBuilder::new(format!("Write({})", buffer.name()), context)?
 			.begin()?
 			.stage(data)?
 			.copy_stage_to_buffer(&buffer)

@@ -12,6 +12,7 @@ use crate::{
 	window,
 };
 use anyhow::Result;
+use raw_window_handle::{HasRawDisplayHandle, HasRawWindowHandle};
 use std::sync::{self, Arc, RwLock};
 use vulkan_rs::command;
 
@@ -46,14 +47,15 @@ impl Window {
 		let graphics_context = Context::new()?;
 		let instance = instance::Info::default()
 			.set_app_info(app_info)
-			.set_window(&internal)
+			.set_window(internal.raw_display_handle())
 			.set_use_validation(is_vulkan_validation_enabled())
 			.create_object(&graphics_context)?;
 		let vulkan = Arc::new(instance);
 		let surface = Arc::new(instance::Instance::create_surface(
 			&graphics_context,
 			&vulkan,
-			&internal,
+			internal.raw_display_handle(),
+			internal.raw_window_handle(),
 		)?);
 
 		let physical_device = Arc::new(Window::find_physical_device(
@@ -110,6 +112,10 @@ impl Window {
 	pub fn read_size(&self) -> (winit::dpi::PhysicalSize<u32>, f64) {
 		let handle = self.internal.read().unwrap();
 		(handle.inner_size(), handle.scale_factor())
+	}
+
+	pub fn max_image_array_layers(&self) -> usize {
+		self.physical_device.max_image_array_layers() as usize
 	}
 
 	fn find_physical_device(

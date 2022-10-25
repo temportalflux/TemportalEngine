@@ -110,7 +110,7 @@ impl Operation for Triangle {
 				.with_size_of(&self.vertices[..])
 				.with_alloc(
 					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
+						.with_usage(flags::MemoryLocation::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
@@ -139,7 +139,7 @@ impl Operation for Triangle {
 				.with_size_of(&self.indices[..])
 				.with_alloc(
 					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
+						.with_usage(flags::MemoryLocation::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)

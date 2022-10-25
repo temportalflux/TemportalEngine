@@ -156,14 +156,14 @@ impl Operation for DebugRender {
 		for i in 0..chain.view_count() {
 			self.frames.push(Frame {
 				vertex_buffer: buffer::Buffer::create_gpu(
-					Some(format!("DebugRender.Frame{}.VertexBuffer", i)),
+					format!("DebugRender.Frame{}.VertexBuffer", i),
 					&chain.allocator()?,
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
 					None,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
-					Some(format!("DebugRender.Frame{}.IndexBuffer", i)),
+					format!("DebugRender.Frame{}.IndexBuffer", i),
 					&chain.allocator()?,
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
@@ -290,30 +290,24 @@ impl Frame {
 			if let Some(vbuf) = Arc::get_mut(&mut self.vertex_buffer) {
 				vbuf.expand(vbuff_size)?;
 			}
-			GpuOperationBuilder::new(
-				self.vertex_buffer.wrap_name(|v| format!("Write({})", v)),
-				context,
-			)?
-			.begin()?
-			.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
-			.copy_stage_to_buffer(&self.vertex_buffer)
-			.send_signal_to(signal_sender)?
-			.end()?;
+			GpuOperationBuilder::new(format!("Write({})", self.vertex_buffer.name()), context)?
+				.begin()?
+				.stage_any(vbuff_size, |mem| mem.write_slice(&vertices))?
+				.copy_stage_to_buffer(&self.vertex_buffer)
+				.send_signal_to(signal_sender)?
+				.end()?;
 		}
 
 		if ibuff_size > 0 {
 			if let Some(ibuf) = Arc::get_mut(&mut self.index_buffer) {
 				ibuf.expand(ibuff_size)?;
 			}
-			GpuOperationBuilder::new(
-				self.index_buffer.wrap_name(|v| format!("Write({})", v)),
-				context,
-			)?
-			.begin()?
-			.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
-			.copy_stage_to_buffer(&self.index_buffer)
-			.send_signal_to(signal_sender)?
-			.end()?;
+			GpuOperationBuilder::new(format!("Write({})", self.index_buffer.name()), context)?
+				.begin()?
+				.stage_any(ibuff_size, |mem| mem.write_slice(&indices))?
+				.copy_stage_to_buffer(&self.index_buffer)
+				.send_signal_to(signal_sender)?
+				.end()?;
 		}
 
 		Ok(())

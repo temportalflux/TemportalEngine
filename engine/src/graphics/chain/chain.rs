@@ -392,7 +392,7 @@ impl Chain {
 		for i in 0..amount {
 			vec.push(command::Semaphore::new(
 				&logical,
-				Some(format!("{}.{}", name, i)),
+				&format!("{}.{}", name, i),
 			)?);
 		}
 		Ok(vec)
@@ -409,7 +409,7 @@ impl Chain {
 		for i in 0..amount {
 			vec.push(command::Fence::new(
 				&logical,
-				Some(format!("{}.{}", name, i)),
+				&format!("{}.{}", name, i),
 				default_state,
 			)?);
 		}

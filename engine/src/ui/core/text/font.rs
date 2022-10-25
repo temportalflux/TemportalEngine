@@ -76,7 +76,7 @@ impl PendingAtlas {
 		signal_sender: &Sender<sync::Arc<command::Semaphore>>,
 	) -> anyhow::Result<Loaded> {
 		use graphics::{
-			alloc, image,
+			image,
 			structs::subresource,
 			utility::{BuildFromAllocator, BuildFromDevice},
 			GpuOperationBuilder,
@@ -87,11 +87,7 @@ impl PendingAtlas {
 		let image = sync::Arc::new(
 			image::Image::builder()
 				.with_name(format!("{}.Image", atlas_name))
-				.with_alloc(
-					alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_format(self.format)
 				.with_size(structs::Extent3D {
 					width: self.size.x as u32,
@@ -103,7 +99,7 @@ impl PendingAtlas {
 				.build(&context.object_allocator()?)?,
 		);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), context)?
+		GpuOperationBuilder::new(format!("Create({})", image.name()), context)?
 			.begin()?
 			.format_image_for_write(&image)
 			.stage(&self.binary[..])?

@@ -20,7 +20,7 @@ pub struct Drawable {
 	pipeline_layout: Option<pipeline::layout::Layout>,
 	layout_builder: pipeline::layout::Builder,
 	shaders: ShaderSet,
-	name: Option<String>,
+	name: String,
 }
 
 impl Default for Drawable {
@@ -30,7 +30,7 @@ impl Default for Drawable {
 			layout_builder: pipeline::layout::Builder::default(),
 			pipeline_layout: None,
 			pipeline: None,
-			name: None,
+			name: String::new(),
 		}
 	}
 }
@@ -40,15 +40,15 @@ impl Drawable {
 	where
 		TStr: Into<String>,
 	{
-		self.name = Some(name.into());
+		self.name = name.into();
 		self.shaders.set_name(self.make_subname("Shader"));
 		self.layout_builder
-			.set_optname(self.make_subname("PipelineLayout"));
+			.set_name(self.make_subname("PipelineLayout"));
 		self
 	}
 
-	fn make_subname(&self, suffix: &str) -> Option<String> {
-		self.name.as_ref().map(|v| format!("{}.{}", v, suffix))
+	fn make_subname(&self, suffix: &str) -> String {
+		format!("{}.{}", self.name, suffix)
 	}
 
 	/// Adds a shader by its asset id to the drawable.
@@ -95,7 +95,7 @@ impl Drawable {
 		self.pipeline_layout = Some(self.layout_builder.clone().build(logical)?);
 		self.pipeline = Some(Arc::new(
 			pipeline_info
-				.with_optname(self.make_subname("Pipeline"))
+				.with_name(self.make_subname("Pipeline"))
 				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Vertex]))
 				.add_shader(Arc::downgrade(&self.shaders[flags::ShaderKind::Fragment]))
 				.build(

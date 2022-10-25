@@ -189,7 +189,7 @@ impl RenderBoids {
 				.with_name("BoidModel.Image")
 				.with_alloc(
 					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
+						.with_usage(flags::MemoryLocation::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_format(flags::format::SRGB_8BIT)
@@ -256,7 +256,7 @@ impl RenderBoids {
 				.with_size_of(&vertices[..])
 				.with_alloc(
 					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
+						.with_usage(flags::MemoryLocation::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
@@ -283,7 +283,7 @@ impl RenderBoids {
 				.with_size_of(&indices[..])
 				.with_alloc(
 					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
+						.with_usage(flags::MemoryLocation::GpuOnly)
 						.requires(flags::MemoryProperty::DEVICE_LOCAL),
 				)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
@@ -312,7 +312,7 @@ impl RenderBoids {
 			.with_size(std::mem::size_of::<Instance>() * instance_count)
 			.with_alloc(
 				graphics::alloc::Builder::default()
-					.with_usage(flags::MemoryUsage::GpuOnly)
+					.with_usage(flags::MemoryLocation::GpuOnly)
 					.requires(flags::MemoryProperty::DEVICE_LOCAL),
 			)
 			.with_sharing(flags::SharingMode::EXCLUSIVE)

@@ -24,7 +24,7 @@ pub struct GpuOperationBuilder {
 	/// The cpu signal (fence) that can be waited on to know when the operation is complete.
 	cpu_signal_on_complete: sync::Arc<command::Fence>,
 	/// The intermediate CPU -> GPU buffer for holding data.
-	staging_buffer: Option<buffer::Buffer>,
+	staging_buffer: Option<Arc<buffer::Buffer>>,
 	/// The command recording to run to copy data from CPU to GPU.
 	command_buffer: Option<command::Buffer>,
 	/// The pool used to create the command buffer.
@@ -35,18 +35,18 @@ pub struct GpuOperationBuilder {
 	allocator: sync::Arc<alloc::Allocator>,
 	/// The logical/virtual graphics device the command happens on.
 	device: sync::Arc<logical::Device>,
-	name: Option<String>,
+	name: String,
 }
 
 impl GpuOperationBuilder {
 	#[profiling::function]
-	pub fn new<T>(name: Option<String>, context: &T) -> anyhow::Result<Self>
+	pub fn new<T>(name: String, context: &T) -> anyhow::Result<Self>
 	where
 		T: GpuOpContext,
 	{
 		let command_pool = context.task_command_pool();
 
-		let task_name = name.as_ref().map(|v| format!("Task.{}", v));
+		let task_name = format!("Task.{}", name);
 
 		Ok(Self {
 			device: context.logical_device()?.clone(),
@@ -55,21 +55,19 @@ impl GpuOperationBuilder {
 			command_pool: command_pool.clone(),
 			command_buffer: command_pool
 				.allocate_named_buffers(
-					vec![task_name.as_ref().map(|v| format!("{}.Command", v))],
+					vec![format!("{}.Command", task_name)],
 					flags::CommandBufferLevel::PRIMARY,
 				)?
 				.pop(),
 			staging_buffer: None,
 			cpu_signal_on_complete: sync::Arc::new(command::Fence::new(
 				&context.logical_device()?,
-				name.as_ref()
-					.map(|v| format!("Task.{}.Signals.CPU.OnComplete", v)),
+				&format!("Task.{}.Signals.CPU.OnComplete", name),
 				flags::FenceState::default(),
 			)?),
 			gpu_signal_on_complete: sync::Arc::new(command::Semaphore::new(
 				&context.logical_device()?,
-				name.as_ref()
-					.map(|v| format!("Task.{}.Signals.GPU.OnComplete", v)),
+				&format!("Task.{}.Signals.GPU.OnComplete", name),
 			)?),
 			name: task_name,
 		})
@@ -87,10 +85,8 @@ impl GpuOperationBuilder {
 	/// The [`end`](GpuOperationBuilder::end) MUST be called once complete.
 	#[profiling::function]
 	pub fn begin(mut self) -> anyhow::Result<Self> {
-		if let Some(name) = self.name.as_ref() {
-			self.queue
-				.begin_label(name.clone(), [0.957, 0.855, 0.298, 1.0]); // #f4da4c
-		}
+		self.queue
+			.begin_label(self.name.clone(), [0.957, 0.855, 0.298, 1.0]); // #f4da4c
 		self.cmd_mut()
 			.begin(Some(flags::CommandBufferUsage::ONE_TIME_SUBMIT), None)?;
 		Ok(self)
@@ -107,9 +103,7 @@ impl GpuOperationBuilder {
 				.add_buffer(&self.cmd())],
 			Some(&self.cpu_signal_on_complete),
 		)?;
-		if self.name.is_some() {
-			self.queue.end_label();
-		}
+		self.queue.end_label();
 
 		let arc_self = sync::Arc::new(self);
 		let async_handle = task::spawn("gpu-operation".to_string(), async move {
@@ -253,7 +247,7 @@ impl GpuOperationBuilder {
 		self
 	}
 
-	fn staging_buffer(&self) -> &buffer::Buffer {
+	fn staging_buffer(&self) -> &Arc<buffer::Buffer> {
 		self.staging_buffer.as_ref().unwrap()
 	}
 
@@ -274,13 +268,11 @@ impl GpuOperationBuilder {
 	#[profiling::function]
 	pub fn stage_start(&mut self, memory_size: usize) -> anyhow::Result<()> {
 		let buffer = buffer::Buffer::create_staging(
-			self.name
-				.as_ref()
-				.map(|name| format!("{}.StagingBuffer", name)),
+			format!("{}.StagingBuffer", self.name),
 			&self.allocator,
 			memory_size,
 		)?;
-		self.staging_buffer = Some(buffer);
+		self.staging_buffer = Some(Arc::new(buffer));
 		Ok(())
 	}
 
@@ -345,7 +337,6 @@ impl GpuOperationBuilder {
 	/// and before [`end`](GpuOperationBuilder::end).
 	#[profiling::function]
 	pub fn copy_stage_to_buffer(self, buffer: &buffer::Buffer) -> Self {
-		use alloc::Object;
 		let range = command::CopyBufferRange {
 			start_in_src: 0,
 			start_in_dst: 0,

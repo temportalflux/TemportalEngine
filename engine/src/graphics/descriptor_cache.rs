@@ -37,7 +37,7 @@ where
 	pub fn insert(
 		&mut self,
 		id: T,
-		name: Option<String>,
+		name: String,
 		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
 	) -> anyhow::Result<sync::Weak<descriptor::Set>> {
 		let descriptor_set = descriptor_pool
@@ -45,7 +45,7 @@ where
 			.unwrap()
 			.allocate_named_descriptor_sets(&vec![(
 				self.layout().clone(),
-				name.map(|v| format!("{}.Descriptor", v)),
+				format!("{}.Descriptor", name),
 			)])?
 			.pop()
 			.unwrap();

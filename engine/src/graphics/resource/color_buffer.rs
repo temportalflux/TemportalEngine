@@ -1,6 +1,5 @@
 use super::{Id, Resource};
 use crate::graphics::{
-	alloc,
 	command::frame::AttachedView,
 	flags::SampleCount,
 	flags::{self},
@@ -58,11 +57,7 @@ impl Resource for ColorBuffer {
 		let image = Arc::new(
 			Image::builder()
 				.with_name(format!("{}.Image", Self::unique_id()))
-				.with_alloc(
-					alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_format(self.attachment.format())
 				.with_sample_count(self.sample_count())
 				.with_usage(flags::ImageUsage::COLOR_ATTACHMENT)

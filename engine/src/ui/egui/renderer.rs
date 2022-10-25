@@ -26,7 +26,7 @@ use std::{
 	time::Instant,
 };
 use vulkan_rs::structs::Extent2D;
-use winit::event::VirtualKeyCode;
+use winit::{event::VirtualKeyCode, event_loop::EventLoopWindowTarget};
 
 type TextureId = egui::TextureId;
 
@@ -116,8 +116,12 @@ impl Vertex {
 }
 
 impl Ui {
-	pub fn create(window: &Window, phase: &Arc<Phase>) -> anyhow::Result<Arc<RwLock<Self>>> {
-		let strong = Arc::new(RwLock::new(Self::new(window)?));
+	pub fn create(
+		window: &Window,
+		event_loop: &EventLoopWindowTarget<()>,
+		phase: &Arc<Phase>,
+	) -> anyhow::Result<Arc<RwLock<Self>>> {
+		let strong = Arc::new(RwLock::new(Self::new(window, event_loop)?));
 		if let Ok(mut chain) = window.graphics_chain().write() {
 			chain.add_operation(phase, Arc::downgrade(&strong), None)?;
 		}
@@ -134,12 +138,19 @@ impl Ui {
 		)
 	}
 
-	fn new(window: &Window) -> anyhow::Result<Ui> {
+	fn new(window: &Window, event_loop: &EventLoopWindowTarget<()>) -> anyhow::Result<Ui> {
 		let window_handle = window.unwrap();
 		let (physical_size, scale_factor) = window.read_size();
 
 		// Create context
 		let context = Context::default();
+
+		let egui_winit_state = {
+			let mut state = egui_winit::State::new(&event_loop);
+			state.set_max_texture_side(window.max_image_array_layers());
+			state.set_pixels_per_point(scale_factor as f32);
+			state
+		};
 
 		let raw_input = egui::RawInput {
 			pixels_per_point: Some(scale_factor as f32),
@@ -656,7 +667,7 @@ impl Ui {
 			let cached_image = &self.image_cache[&image_id];
 			let descriptor_set = self.descriptor_cache.insert(
 				image_id,
-				image_name.map(|v| format!("EditorUI.{}", v)),
+				format!("EditorUI.{}", image_name),
 				chain.persistent_descriptor_pool(),
 			)?;
 			Queue::default()

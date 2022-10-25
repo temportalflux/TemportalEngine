@@ -9,14 +9,14 @@ edition = "2018"
 [dependencies]
 engine = { path = "../engine", package = "temportal-engine" }
 bytemuck = "1.7"
-copypasta = "0.7"
-egui = "0.17"
+copypasta = "0.8"
+egui = "0.19"
 log = { version = "0.4", features = ["std"] }
 rmp = "0.8"
-rmp-serde = "0.15"
+rmp-serde = "1.1"
 serde = { version = "1.0", features = ["derive"] }
-webbrowser = "0.5.5"
-winit = "0.25"
+webbrowser = "0.8"
+winit = "0.27"
 anyhow = "1.0"
 
 # [async] base async traits
@@ -24,13 +24,13 @@ futures = "0.3"
 # [async] async/await syntax and multithreading
 tokio = { version = "1.15", features = ["full"] }
 # [utility] for managing zip (and thereby pak) files
-async_zip = "0.0.6"
+async_zip = "0.0.9"
 # [collections] similar to a bitmap but for any enum with a derive-trait implemented
 enumset = { version = "1.0", features = ["serde"] }
 
-cargo_toml = "0.9"
-freetype-rs = "0.28"
-image = "0.23"
+cargo_toml = "0.13"
+freetype-rs = "0.26"
+image = "0.24"
 kdl = "3.0"
 kdl-schema = { path = "../crates/kdl-schema" }
 semver = "1.0.3"

@@ -1,8 +1,5 @@
-use vulkan_rs::command::frame::AttachedView;
-
 use super::{Id, Resource};
 use crate::graphics::{
-	alloc,
 	device::physical,
 	flags::{self, format::Format, FormatFeatureFlags, ImageTiling},
 	image::Image,
@@ -13,6 +10,7 @@ use crate::graphics::{
 	Chain, GpuOperationBuilder,
 };
 use std::sync::{Arc, Weak};
+use vulkan_rs::command::frame::AttachedView;
 
 pub struct DepthBufferFormatQuery {
 	formats: Vec<Format>,
@@ -129,11 +127,7 @@ impl Resource for DepthBuffer {
 		let image = Arc::new(
 			Image::builder()
 				.with_name(format!("{}.Image", Self::unique_id()))
-				.with_alloc(
-					alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_format(self.attachment.format())
 				.with_tiling(self.tiling)
 				.with_sample_count(self.attachment.sample_count())
@@ -146,7 +140,7 @@ impl Resource for DepthBuffer {
 				.build(&chain.allocator()?)?,
 		);
 
-		GpuOperationBuilder::new(image.wrap_name(|v| format!("Create({})", v)), chain)?
+		GpuOperationBuilder::new(format!("Create({})", image.name()), chain)?
 			.begin()?
 			.format_depth_image(&image)
 			.send_signal_to(chain.signal_sender())?

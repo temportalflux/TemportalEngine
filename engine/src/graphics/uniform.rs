@@ -48,7 +48,7 @@ impl Uniform {
 					.map(|i| {
 						(
 							descriptor_layout.clone(),
-							Some(format!("{}.Frame{}.Descriptor", uniform_name, i)),
+							format!("{}.Frame{}.Descriptor", uniform_name, i),
 						)
 					})
 					.collect(),
@@ -60,12 +60,7 @@ impl Uniform {
 				.with_name(format!("{}.Frame{}", uniform_name, i))
 				.with_usage(flags::BufferUsage::UNIFORM_BUFFER)
 				.with_size(std::mem::size_of::<TData>())
-				.with_alloc(
-					alloc::Builder::default()
-						.with_usage(flags::MemoryUsage::CpuToGpu)
-						.requires(flags::MemoryProperty::HOST_VISIBLE)
-						.requires(flags::MemoryProperty::HOST_COHERENT),
-				)
+				.with_location(flags::MemoryLocation::CpuToGpu)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
 				.build(allocator)?;
 
@@ -84,7 +79,6 @@ impl Uniform {
 	}
 
 	pub fn write_descriptor_sets(&self, logical: &logical::Device) {
-		use alloc::Object;
 		use descriptor::update::*;
 		let mut set_updates = Queue::default();
 		for (set_weak, buffer_rc) in self.descriptor_sets.iter().zip(self.buffers.iter()) {
