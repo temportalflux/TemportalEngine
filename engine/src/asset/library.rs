@@ -83,6 +83,7 @@ impl Library {
 		Ok(())
 	}
 
+	#[allow(dead_code)]
 	fn enclose_name<'a>(name: &'a str) -> Option<&'a Path> {
 		if name.contains('\0') {
 			return None;
@@ -98,6 +99,16 @@ impl Library {
 			}
 		}
 		Some(path)
+	}
+
+	/// Returns a relative path without reserved names, redundant separators, ".", or "..".
+	fn sanitize_file_path(path: &str) -> std::path::PathBuf {
+		// Replaces backwards slashes
+		path.replace('\\', "/")
+			// Sanitizes each component
+			.split('/')
+			.map(sanitize_filename::sanitize)
+			.collect()
 	}
 
 	/// Scans a specific file at a provided path.
@@ -132,14 +143,19 @@ impl Library {
 		};
 		for i in 0..entry_count {
 			let item = archive.entry_reader(i).await?;
-			if item.entry().dir() {
+			// If the filename of the entry ends with '/', it is treated as a directory.
+			// This is implemented by previous versions of this crate and the Python Standard Library.
+			// https://docs.rs/async_zip/0.0.8/src/async_zip/read/mod.rs.html#63-65
+			// https://github.com/python/cpython/blob/820ef62833bd2d84a141adedd9a05998595d6b6d/Lib/zipfile.py#L528
+			let entry_is_dir = item.entry().filename().ends_with('/');
+			if entry_is_dir {
 				continue;
 			}
-			let item_path = Self::enclose_name(item.entry().name()).unwrap().to_owned();
+			let item_path = Self::sanitize_file_path(item.entry().filename()).to_owned();
 			let id = asset::Id::new(module_name.as_str(), item_path.as_path().to_str().unwrap());
 			let type_id = {
 				let bytes = item.read_to_end_crc().await?;
-				let generic: asset::Generic = rmp_serde::from_read_ref(&bytes)?;
+				let generic: asset::Generic = rmp_serde::from_slice(&bytes)?;
 				generic.asset_type.to_owned()
 			};
 

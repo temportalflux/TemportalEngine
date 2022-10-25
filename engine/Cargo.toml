@@ -10,7 +10,8 @@ edition = "2018"
 temportal-engine-utilities = { path = "../utility" }
 
 # [log] backend for the log crate to output logging to multiple locations
-simplelog = "0.11"
+simplelog = "0.12"
+time = "0.3"
 # [metrics] for writing runtime information to log file/console
 log = { version = "0.4", features = ["std"] }
 # [metrics] for getting performance information and rendering via any chosen viewer
@@ -38,9 +39,10 @@ tokio = { version = "1.15", features = ["full"] }
 # [async] helper for getting the number of CPS for multithreading
 num_cpus = { version = "1.8" }
 # [utility] for managing zip (and thereby pak) files
-zip = "0.5"
+zip = "0.6"
 # [utility] for managing zip (and thereby pak) files
-async_zip = "0.0.6"
+async_zip = "0.0.9"
+sanitize-filename = "0.4"
 
 # [ui] debug immediate-mode UI
 egui = "0.17"
@@ -52,7 +54,7 @@ serde = { version = "1.0", features = ["derive"] }
 # [serialization] RustMessagePack binary
 rmp = "0.8"
 # [serialization] RustMessagePack binary
-rmp-serde = "0.15"
+rmp-serde = "1.1"
 # [serialization] node-like syntax
 kdl = "3.0"
 # [serialization] kdl wrapper for enforcing schemas
@@ -64,9 +66,9 @@ enumset = { version = "1.0", features = ["serde"] }
 multimap = "0.8"
 
 # [audio] for managing audio playback and mixing
-oddio = "0.4"
+oddio = "0.6"
 # [audio] for manaing audio devices
-cpal = "0.13"
+cpal = "0.14"
 # [audio] for parsing wav audio binaries
 hound = "3.4"
 # [audio] for parsing vorbis/ogg audio binaries
@@ -93,9 +95,9 @@ vulkan-rs = { path = "../vulkan-rs/vulkan", features = ["derive"] }
 # [utility] helpers for managing bytes - required for egui
 bytemuck = "1.7"
 # [utility] interacting with the clipcoard - required for egui
-copypasta = "0.7"
+copypasta = "0.8"
 # [utility] interacting with hyperlinks/web browsers - required for egui
-webbrowser = "0.5.5"
+webbrowser = "0.8"
 
 # [utility] pseudo/generated randomness
 rand = "0.8"
@@ -105,7 +107,7 @@ signal-hook = "0.3"
 # [utility] semantic versioning
 semver = "1.0"
 # [utility] one-line implementation for builder pattern
-derive_builder = "0.10"
+derive_builder = "0.11"
 
 # DEPRECATED
 specs = { version = "0.16", features = ["shred-derive"] }

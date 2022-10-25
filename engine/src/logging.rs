@@ -29,7 +29,7 @@ pub fn init(log_path: &std::path::Path) -> Result<()> {
 		let mut builder = ConfigBuilder::new();
 		builder
 			.set_max_level(log::LevelFilter::Error)
-			.set_time_format_str("%Y.%m.%d-%H.%M.%S")
+			.set_time_format_custom(format_description!("[year].[month].[day]-[hour].[minute].[second]"))
 			// Pads the names of levels so that they line up in the log.
 			// [ERROR]
 			// [ WARN]

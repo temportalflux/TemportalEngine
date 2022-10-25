@@ -21,7 +21,7 @@ pub fn decompile_asset<'a, T>(bin: &'a Vec<u8>) -> anyhow::Result<AnyBox>
 where
 	T: Asset + Any + Send + Sync + Deserialize<'a>,
 {
-	Ok(Box::new(rmp_serde::from_read_ref::<'a, Vec<u8>, T>(&bin)?))
+	Ok(Box::new(rmp_serde::from_slice::<'a, T>(&bin)?))
 }
 
 pub mod kdl {

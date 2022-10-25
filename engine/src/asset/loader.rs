@@ -61,7 +61,7 @@ impl Loader {
 
 	#[profiling::function]
 	fn decompile_asset(bytes: Vec<u8>) -> Result<asset::AnyBox> {
-		let generic: asset::Generic = rmp_serde::from_read_ref(&bytes)?;
+		let generic: asset::Generic = rmp_serde::from_slice(&bytes)?;
 		let registry = asset::TypeRegistry::read();
 		let registration = registry.at(generic.asset_type.as_str())?;
 		registration.decompile(&bytes)
