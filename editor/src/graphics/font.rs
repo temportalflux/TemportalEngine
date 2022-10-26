@@ -70,7 +70,7 @@ impl EditorOps for FontEditorOps {
 
 			font.set_sdf(sdf);
 
-			let bytes = rmp_serde::to_vec(&font)?;
+			let bytes = rmp_serde::to_vec_named(&font)?;
 			Ok(bytes)
 		})
 	}

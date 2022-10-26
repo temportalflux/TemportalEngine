@@ -277,7 +277,7 @@ impl GpuOperationBuilder {
 	}
 
 	pub fn staging_memory(&mut self) -> anyhow::Result<alloc::Memory> {
-		Ok(self.staging_buffer.as_ref().unwrap().memory()?)
+		Ok(self.staging_buffer.as_ref().cloned().unwrap().memory()?)
 	}
 
 	#[profiling::function]
@@ -287,7 +287,7 @@ impl GpuOperationBuilder {
 	{
 		self.stage_start(memory_size)?;
 		{
-			let mut mem = self.staging_buffer.as_ref().unwrap().memory()?;
+			let mut mem = self.staging_buffer.as_ref().cloned().unwrap().memory()?;
 			let wrote_all = write(&mut mem)?;
 			assert!(wrote_all);
 		}

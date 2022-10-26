@@ -66,6 +66,7 @@ impl Engine {
 	where
 		TRuntime: crate::Runtime + 'static,
 	{
+		log::info!("Running engine");
 		Self::set(engine.clone());
 		let terminate_signal = Arc::new(AtomicBool::new(false));
 		let _ = signal_hook::flag::register(signal_hook::consts::SIGINT, terminate_signal.clone());
@@ -89,7 +90,7 @@ impl Engine {
 			*control_flow = ControlFlow::Poll;
 
 			if let Err(err) = &create_display_result {
-				log::error!(target: "main", "{:?}", err);
+				log::error!(target: "main", "Display error: {:?}", err);
 				*control_flow = ControlFlow::Exit;
 				return;
 			}

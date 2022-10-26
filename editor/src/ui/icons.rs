@@ -71,8 +71,11 @@ impl Icon {
 		};
 		let handle = {
 			let mut ui = ui.write().unwrap();
-			ui.context_mut()
-				.load_texture(asset_id.as_string(), image_data)
+			ui.context_mut().load_texture(
+				asset_id.as_string(),
+				image_data,
+				egui::TextureFilter::Linear,
+			)
 		};
 		if let Ok(mut loaded) = loaded_icons().write() {
 			loaded.insert(self, handle);

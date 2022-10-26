@@ -132,7 +132,7 @@ where
 	};
 	async_runtime.block_on(async {
 		if let Err(err) = crate::execute_runtime(runtime).await {
-			log::error!(target: "main", "{}", err);
+			log::error!(target: "main", "Runtime error: {:?}", err);
 		}
 	});
 }
@@ -154,12 +154,13 @@ async fn execute_runtime<TRuntime>(runtime: TRuntime) -> anyhow::Result<()>
 where
 	TRuntime: Runtime + 'static,
 {
-	logging::init(&TRuntime::logging_path())?;
+	use anyhow::Context;
+	logging::init(&TRuntime::logging_path()).context("initialize logging")?;
 	TRuntime::register_asset_types();
 
-	let engine = Engine::new()?.into_arclock();
+	let engine = Engine::new().context("create engine")?.into_arclock();
 	Engine::set(engine.clone());
-	if runtime.initialize(engine.clone()).await? {
+	if runtime.initialize(engine.clone()).await.context("initialize runtime")? {
 		engine::Engine::run(engine, runtime)
 	} else {
 		Ok(())

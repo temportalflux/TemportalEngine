@@ -40,7 +40,7 @@ impl EditorOps for ShaderEditorOps {
 		Box::pin(async move {
 			let shader = asset.downcast::<graphics::Shader>().unwrap();
 
-			let mut compiler = shaderc::Compiler::new().unwrap();
+			let compiler = shaderc::Compiler::new().unwrap();
 			let mut options = shaderc::CompileOptions::new().unwrap();
 			//options.add_macro_definition("EP", Some("main"));
 			options.set_generate_debug_info();
@@ -64,7 +64,7 @@ impl EditorOps for ShaderEditorOps {
 			let mut shader_out = shader.clone();
 			shader_out.set_contents(binary.as_binary_u8().to_vec());
 
-			let bytes = rmp_serde::to_vec(&shader_out)?;
+			let bytes = rmp_serde::to_vec_named(&shader_out)?;
 			Ok(bytes)
 		})
 	}

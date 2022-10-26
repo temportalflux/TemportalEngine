@@ -45,7 +45,7 @@ impl EditorOps for TextureEditorOps {
 			}
 			texture.set_compiled(size, binary);
 
-			let bytes = rmp_serde::to_vec(&texture)?;
+			let bytes = rmp_serde::to_vec_named(&texture)?;
 			Ok(bytes)
 		})
 	}

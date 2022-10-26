@@ -85,7 +85,7 @@ impl Operation for Triangle {
 		self.vert_shader = Some(Arc::new(shader::Module::create(
 			chain.logical()?,
 			shader::Info {
-				name: Some("Shader.Vertex".to_string()),
+				name: "Shader.Vertex".to_string(),
 				kind: flags::ShaderKind::Vertex,
 				entry_point: String::from("main"),
 				bytes: self.vert_bytes.clone(),
@@ -95,7 +95,7 @@ impl Operation for Triangle {
 		self.frag_shader = Some(Arc::new(shader::Module::create(
 			chain.logical()?,
 			shader::Info {
-				name: Some("Shader.Fragment".to_string()),
+				name: "Shader.Fragment".to_string(),
 				kind: flags::ShaderKind::Fragment,
 				entry_point: String::from("main"),
 				bytes: self.frag_bytes.clone(),
@@ -108,20 +108,13 @@ impl Operation for Triangle {
 				.with_usage(flags::BufferUsage::VERTEX_BUFFER)
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
 				.with_size_of(&self.vertices[..])
-				.with_alloc(
-					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryLocation::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
 				.build(&chain.allocator()?)?,
 		));
 
 		GpuOperationBuilder::new(
-			self.vertex_buffer
-				.as_ref()
-				.unwrap()
-				.wrap_name(|v| format!("Write({})", v)),
+			format!("Write({})", self.vertex_buffer.as_ref().unwrap().name()),
 			chain,
 		)?
 		.begin()?
@@ -137,20 +130,13 @@ impl Operation for Triangle {
 				.with_index_type(Some(flags::IndexType::UINT32))
 				.with_usage(flags::BufferUsage::TRANSFER_DST)
 				.with_size_of(&self.indices[..])
-				.with_alloc(
-					graphics::alloc::Builder::default()
-						.with_usage(flags::MemoryLocation::GpuOnly)
-						.requires(flags::MemoryProperty::DEVICE_LOCAL),
-				)
+				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
 				.build(&chain.allocator()?)?,
 		));
 
 		GpuOperationBuilder::new(
-			self.index_buffer
-				.as_ref()
-				.unwrap()
-				.wrap_name(|v| format!("Write({})", v)),
+			format!("Write({})", self.index_buffer.as_ref().unwrap().name()),
 			chain,
 		)?
 		.begin()?

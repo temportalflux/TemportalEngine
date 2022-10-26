@@ -48,7 +48,7 @@ impl WidgetData {
 				allocator,
 			)?,
 			index_count: 0,
-			name: short_name.to_owned(),
+			name: short_name.to_string(),
 		})
 	}
 

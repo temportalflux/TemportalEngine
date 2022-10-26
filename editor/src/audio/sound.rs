@@ -40,6 +40,6 @@ impl EditorOps for SoundEditorOps {
 	}
 
 	fn compile(_: BuildPath, asset: AnyBox) -> PinFutureResult<Vec<u8>> {
-		Box::pin(async move { Ok(rmp_serde::to_vec(&asset.downcast::<Sound>().unwrap())?) })
+		Box::pin(async move { Ok(rmp_serde::to_vec_named(&asset.downcast::<Sound>().unwrap())?) })
 	}
 }

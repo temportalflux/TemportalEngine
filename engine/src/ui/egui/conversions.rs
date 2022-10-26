@@ -82,34 +82,3 @@ pub fn mouse_button(button: winit::event::MouseButton) -> Option<egui::PointerBu
 		_ => return None,
 	})
 }
-
-/// Convert from [`egui::CursorIcon`] to [`winit::window::CursorIcon`].
-pub fn cursor_icon(cursor_icon: egui::CursorIcon) -> Option<winit::window::CursorIcon> {
-	Some(match cursor_icon {
-		egui::CursorIcon::Default => winit::window::CursorIcon::Default,
-		egui::CursorIcon::PointingHand => winit::window::CursorIcon::Hand,
-		egui::CursorIcon::ResizeHorizontal => winit::window::CursorIcon::ColResize,
-		egui::CursorIcon::ResizeNeSw => winit::window::CursorIcon::NeResize,
-		egui::CursorIcon::ResizeNwSe => winit::window::CursorIcon::NwResize,
-		egui::CursorIcon::ResizeVertical => winit::window::CursorIcon::RowResize,
-		egui::CursorIcon::Text => winit::window::CursorIcon::Text,
-		egui::CursorIcon::Grab => winit::window::CursorIcon::Grab,
-		egui::CursorIcon::Grabbing => winit::window::CursorIcon::Grabbing,
-		egui::CursorIcon::None => return None,
-		egui::CursorIcon::ContextMenu => winit::window::CursorIcon::ContextMenu,
-		egui::CursorIcon::Help => winit::window::CursorIcon::Help,
-		egui::CursorIcon::Progress => winit::window::CursorIcon::Progress,
-		egui::CursorIcon::Wait => winit::window::CursorIcon::Wait,
-		egui::CursorIcon::Cell => winit::window::CursorIcon::Cell,
-		egui::CursorIcon::Crosshair => winit::window::CursorIcon::Crosshair,
-		egui::CursorIcon::VerticalText => winit::window::CursorIcon::VerticalText,
-		egui::CursorIcon::Alias => winit::window::CursorIcon::Alias,
-		egui::CursorIcon::Copy => winit::window::CursorIcon::Copy,
-		egui::CursorIcon::Move => winit::window::CursorIcon::Move,
-		egui::CursorIcon::NoDrop => winit::window::CursorIcon::NoDrop,
-		egui::CursorIcon::NotAllowed => winit::window::CursorIcon::NotAllowed,
-		egui::CursorIcon::AllScroll => winit::window::CursorIcon::AllScroll,
-		egui::CursorIcon::ZoomIn => winit::window::CursorIcon::ZoomIn,
-		egui::CursorIcon::ZoomOut => winit::window::CursorIcon::ZoomOut,
-	})
-}

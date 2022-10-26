@@ -16,17 +16,10 @@ use crate::{
 	WinitEventListener,
 };
 use bytemuck::{Pod, Zeroable};
-use copypasta::{ClipboardContext, ClipboardProvider};
-use egui::{
-	emath::{pos2, vec2},
-	Context, ImageData,
-};
-use std::{
-	sync::{Arc, RwLock, Weak},
-	time::Instant,
-};
+use egui::{Context, ImageData};
+use std::sync::{Arc, RwLock, Weak};
 use vulkan_rs::structs::Extent2D;
-use winit::{event::VirtualKeyCode, event_loop::EventLoopWindowTarget};
+use winit::event_loop::EventLoopWindowTarget;
 
 type TextureId = egui::TextureId;
 
@@ -35,11 +28,7 @@ pub struct Ui {
 	scale_factor: f64,
 
 	context: Context,
-	raw_input: egui::RawInput,
-	mouse_pos: egui::Pos2,
-	modifiers_state: winit::event::ModifiersState,
-	clipboard: ClipboardContext,
-	current_cursor_icon: egui::CursorIcon,
+	egui_winit_state: egui_winit::State,
 	pending_update: PendingUpdate,
 
 	frames: Vec<Frame>,
@@ -47,8 +36,6 @@ pub struct Ui {
 	image_cache: ImageCache<TextureId>,
 	drawable: Drawable,
 	render_callbacks: Vec<(Box<dyn Fn(&egui::Context) -> bool>, /*retained*/ bool)>,
-	/// The timestamp of the first frame render call.
-	start_time: Option<Instant>,
 	window_handle: Weak<RwLock<winit::window::Window>>,
 }
 
@@ -128,16 +115,6 @@ impl Ui {
 		Ok(strong)
 	}
 
-	fn get_screen_rect(
-		physical_size: &winit::dpi::PhysicalSize<u32>,
-		scale_factor: f64,
-	) -> egui::Rect {
-		egui::Rect::from_min_size(
-			Default::default(),
-			vec2(physical_size.width as f32, physical_size.height as f32) / scale_factor as f32,
-		)
-	}
-
 	fn new(window: &Window, event_loop: &EventLoopWindowTarget<()>) -> anyhow::Result<Ui> {
 		let window_handle = window.unwrap();
 		let (physical_size, scale_factor) = window.read_size();
@@ -152,18 +129,6 @@ impl Ui {
 			state
 		};
 
-		let raw_input = egui::RawInput {
-			pixels_per_point: Some(scale_factor as f32),
-			screen_rect: Some(Self::get_screen_rect(&physical_size, scale_factor)),
-			time: Some(0.0),
-			..Default::default()
-		};
-
-		// Create mouse pos and modifier state (These values are overwritten by handle events)
-		let mouse_pos = pos2(0.0, 0.0);
-		let modifiers_state = winit::event::ModifiersState::default();
-
-		let clipboard = ClipboardContext::new().expect("Failed to initialize ClipboardContext.");
 		let logical = window.graphics_chain().read().unwrap().logical()?;
 
 		Ok(Ui {
@@ -171,15 +136,10 @@ impl Ui {
 			scale_factor,
 
 			context,
-			raw_input,
-			mouse_pos,
-			modifiers_state,
-			clipboard,
-			current_cursor_icon: egui::CursorIcon::None,
+			egui_winit_state,
 			pending_update: PendingUpdate::default(),
 
 			window_handle,
-			start_time: None,
 			render_callbacks: Vec::new(),
 			drawable: Drawable::default().with_name("EditorUI.Gui"),
 			image_cache: ImageCache::default().with_cache_name("EditorUI.Image"),
@@ -254,122 +214,13 @@ impl Ui {
 
 impl WinitEventListener for Ui {
 	fn on_event(&mut self, event: &winit::event::Event<()>) {
-		use winit::event::{Event, WindowEvent};
-		match event {
-			Event::WindowEvent {
-				window_id: _window_id,
-				event,
-			} => match event {
-				WindowEvent::Resized(physical_size) => {
-					let pixels_per_point = self
-						.raw_input
-						.pixels_per_point
-						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(Self::get_screen_rect(
-						&physical_size,
-						pixels_per_point as f64,
-					));
-				}
-				// dpi changed
-				WindowEvent::ScaleFactorChanged {
-					scale_factor,
-					new_inner_size,
-				} => {
-					self.scale_factor = *scale_factor;
-					self.raw_input.pixels_per_point = Some(*scale_factor as f32);
-					let pixels_per_point = self
-						.raw_input
-						.pixels_per_point
-						.unwrap_or_else(|| self.context.pixels_per_point());
-					self.raw_input.screen_rect = Some(Self::get_screen_rect(
-						&new_inner_size,
-						pixels_per_point as f64,
-					));
-				}
-				// mouse click
-				WindowEvent::MouseInput { state, button, .. } => {
-					if let Some(button) = super::conversions::mouse_button(*button) {
-						self.raw_input.events.push(egui::Event::PointerButton {
-							pos: self.mouse_pos,
-							button,
-							pressed: *state == winit::event::ElementState::Pressed,
-							modifiers: super::conversions::modifiers(self.modifiers_state),
-						});
-					}
-				}
-				// mouse wheel
-				WindowEvent::MouseWheel { delta, .. } => match delta {
-					winit::event::MouseScrollDelta::LineDelta(x, y) => {
-						let line_height = 24.0;
-						// NOTE: EGui does not handle horizontal scrolling, it has to be provided a scroll event that uses the X axis.
-						// It was unknown (at time of writing) if LineDelta provides this.
-						self.raw_input
-							.events
-							.push(egui::Event::Scroll(vec2(*x, *y) * line_height));
-					}
-					winit::event::MouseScrollDelta::PixelDelta(delta) => {
-						self.raw_input
-							.events
-							.push(egui::Event::Scroll(vec2(delta.x as f32, delta.y as f32)));
-					}
-				},
-				// mouse move
-				WindowEvent::CursorMoved { position, .. } => {
-					let pixels_per_point = self
-						.raw_input
-						.pixels_per_point
-						.unwrap_or_else(|| self.context.pixels_per_point());
-					let pos = pos2(
-						position.x as f32 / pixels_per_point,
-						position.y as f32 / pixels_per_point,
-					);
-					self.raw_input.events.push(egui::Event::PointerMoved(pos));
-					self.mouse_pos = pos;
-				}
-				// mouse out
-				WindowEvent::CursorLeft { .. } => {
-					self.raw_input.events.push(egui::Event::PointerGone);
-				}
-				// modifier keys
-				WindowEvent::ModifiersChanged(input) => self.modifiers_state = *input,
-				// keyboard inputs
-				WindowEvent::KeyboardInput { input, .. } => {
-					if let Some(virtual_keycode) = input.virtual_keycode {
-						let pressed = input.state == winit::event::ElementState::Pressed;
-						if pressed {
-							let is_ctrl = self.modifiers_state.ctrl();
-							if is_ctrl && virtual_keycode == VirtualKeyCode::C {
-								self.raw_input.events.push(egui::Event::Copy);
-							} else if is_ctrl && virtual_keycode == VirtualKeyCode::X {
-								self.raw_input.events.push(egui::Event::Cut);
-							} else if is_ctrl && virtual_keycode == VirtualKeyCode::V {
-								if let Ok(contents) = self.clipboard.get_contents() {
-									self.raw_input.events.push(egui::Event::Text(contents));
-								}
-							} else if let Some(key) = super::conversions::key_code(virtual_keycode)
-							{
-								self.raw_input.events.push(egui::Event::Key {
-									key,
-									pressed: input.state == winit::event::ElementState::Pressed,
-									modifiers: super::conversions::modifiers(self.modifiers_state),
-								})
-							}
-						}
-					}
-				}
-				// receive character
-				WindowEvent::ReceivedCharacter(ch) => {
-					// remove control character
-					if ch.is_ascii_control() {
-						return;
-					}
-					self.raw_input
-						.events
-						.push(egui::Event::Text(ch.to_string()));
-				}
-				_ => (),
-			},
-			_ => {}
+		use winit::event::Event;
+		if let Event::WindowEvent {
+			window_id: _window_id,
+			event,
+		} = event
+		{
+			self.egui_winit_state.on_event(&self.context, event);
 		}
 	}
 }
@@ -483,27 +334,29 @@ impl Operation for Ui {
 	}
 
 	fn prepare_for_frame(&mut self, chain: &Chain) -> anyhow::Result<()> {
-		match self.start_time {
-			// Save the time that the first frame was rendered/processed at.
-			None => {
-				self.start_time = Some(Instant::now());
-			}
-			// Each successive frame should update the egui time to be the amount of time passed since the first frame
-			Some(time) => {
-				self.raw_input.time = Some(time.elapsed().as_secs_f64());
-			}
-		}
+		let raw_input = {
+			let arc = self.window_handle.upgrade().unwrap();
+			let window = arc.read().unwrap();
+			self.egui_winit_state.take_egui_input(&window)
+		};
 
-		self.context.begin_frame(self.raw_input.take());
+		self.context.begin_frame(raw_input);
 		for (callback, retained) in self.render_callbacks.iter_mut() {
 			*retained = callback(&self.context);
 		}
 		let egui::output::FullOutput {
 			platform_output,
-			shapes,
+			repaint_after: _,
 			textures_delta,
-			needs_repaint,
+			shapes,
 		} = self.context.end_frame();
+
+		{
+			let arc = self.window_handle.upgrade().unwrap();
+			let window = arc.read().unwrap();
+			self.egui_winit_state
+				.handle_platform_output(&window, &self.context, platform_output);
+		}
 
 		let unused_texture_ids = {
 			let egui::TexturesDelta { set, free } = textures_delta;
@@ -512,14 +365,11 @@ impl Operation for Ui {
 			free
 		};
 
-		self.handle_url_request(&platform_output.open_url);
-		self.update_clipboard(&platform_output.copied_text);
-		self.update_cursor_icon(platform_output.cursor_icon);
-
 		self.pending_update = PendingUpdate {
 			shapes,
-			needs_repaint,
 			unused_texture_ids,
+			// TODO: Should this check [`repaint_after`](https://docs.rs/egui/latest/egui/output/struct.FullOutput.html#structfield.repaint_after)?
+			needs_repaint: true,
 		};
 
 		Ok(())
@@ -541,7 +391,11 @@ impl Operation for Ui {
 		let update = self.pending_update.take();
 		// Prepare the frame with the pending update
 		{
-			let (vertices, indices, draw_calls) = self.tesselate_shapes(update.shapes);
+			let (vertices, indices, draw_calls) = self.tesselate_shapes(
+				update.shapes,
+				self.egui_winit_state.pixels_per_point(),
+				chain.resolution(),
+			);
 			let frame = &mut self.frames[frame_image];
 			frame
 				.mesh
@@ -640,7 +494,7 @@ impl Ui {
 					.iter()
 					.flat_map(|c| c.to_array())
 					.collect::<Vec<_>>(),
-				ImageData::Alpha(image) => image
+				ImageData::Font(image) => image
 					.srgba_pixels(1.0)
 					.flat_map(|c| c.to_array())
 					.collect::<Vec<_>>(),
@@ -689,41 +543,12 @@ impl Ui {
 		Ok(())
 	}
 
-	fn handle_url_request(&self, request: &Option<egui::output::OpenUrl>) {
-		if let Some(egui::output::OpenUrl { url, .. }) = request {
-			if let Err(err) = webbrowser::open(url) {
-				eprintln!("Failed to open url: {}", err);
-			}
-		}
-	}
-
-	fn update_clipboard(&mut self, copied_text: &String) {
-		if !copied_text.is_empty() {
-			if let Err(err) = self.clipboard.set_contents(copied_text.clone()) {
-				eprintln!("Copy/Cut error: {}", err);
-			}
-		}
-	}
-
-	fn update_cursor_icon(&mut self, cursor_icon: egui::output::CursorIcon) {
-		if self.current_cursor_icon != cursor_icon {
-			if let Some(arc_window) = self.window_handle.upgrade() {
-				let guard = arc_window.write().unwrap();
-				if let Some(cursor_icon) = super::conversions::cursor_icon(cursor_icon) {
-					guard.set_cursor_visible(true);
-					guard.set_cursor_icon(cursor_icon);
-				} else {
-					guard.set_cursor_visible(false);
-				}
-			}
-			self.current_cursor_icon = cursor_icon;
-		}
-	}
-
 	#[profiling::function]
 	fn tesselate_shapes(
 		&mut self,
 		shapes: Vec<egui::epaint::ClippedShape>,
+		scale_factor: f32,
+		resolution: Vector2<f32>,
 	) -> (Vec<Vertex>, Vec<u32>, Vec<DrawCall>) {
 		// Transform draw data into vertex and index buffer data (to upload later)
 		let mut vertices: Vec<Vertex> = Vec::new();
@@ -731,55 +556,70 @@ impl Ui {
 		let mut draw_calls = Vec::new();
 		let clipped_meshes = self.context.tessellate(shapes);
 		let mut idx_offset: Vector2<usize> = [0, 0].into();
-		for egui::ClippedMesh(rect, mesh) in clipped_meshes {
-			if mesh.vertices.is_empty() || mesh.indices.is_empty() {
-				continue;
+		for egui::ClippedPrimitive {
+			clip_rect,
+			primitive,
+		} in clipped_meshes
+		{
+			match primitive {
+				egui::epaint::Primitive::Mesh(mesh) => {
+					if mesh.vertices.is_empty() || mesh.indices.is_empty() {
+						continue;
+					}
+
+					let scissor = {
+						let mut min: Vector2<f32> = [clip_rect.min.x, clip_rect.min.y].into();
+						min *= scale_factor as f32;
+						min.x = f32::clamp(min.x, 0.0, resolution.x);
+						min.y = f32::clamp(min.y, 0.0, resolution.y);
+
+						let mut max: Vector2<f32> = [clip_rect.max.x, clip_rect.max.y].into();
+						max *= scale_factor as f32;
+						max.x = f32::clamp(max.x, min.x, resolution.x);
+						max.y = f32::clamp(max.y, min.y, resolution.y);
+
+						Scissor::new(
+							structs::Offset2D {
+								x: min.x.round() as i32,
+								y: min.y.round() as i32,
+							},
+							structs::Extent2D {
+								width: (max.x.round() - min.x) as u32,
+								height: (max.y.round() - min.y) as u32,
+							},
+						)
+					};
+
+					let item_counts: Vector2<usize> =
+						[mesh.vertices.len(), mesh.indices.len()].into();
+					vertices.extend(mesh.vertices.iter().map(|v| {
+						Vertex::default()
+							.with_position([v.pos.x, v.pos.y].into())
+							.with_tex_coord([v.uv.x, v.uv.y].into())
+							.with_color(
+								[
+									(v.color.r() as f32 / 255.0).powf(2.2),
+									(v.color.g() as f32 / 255.0).powf(2.2),
+									(v.color.b() as f32 / 255.0).powf(2.2),
+									(v.color.a() as f32 / 255.0).powf(2.2),
+								]
+								.into(),
+							)
+					}));
+					indices.extend(mesh.indices.iter());
+
+					draw_calls.push(DrawCall {
+						texture_id: mesh.texture_id,
+						scissor,
+						index_count: item_counts.y,
+						first_index: idx_offset.y,
+						vertex_offset: idx_offset.x,
+					});
+
+					idx_offset += item_counts;
+				}
+				_ => continue,
 			}
-			let item_counts: Vector2<usize> = [mesh.vertices.len(), mesh.indices.len()].into();
-			vertices.extend(mesh.vertices.iter().map(|v| {
-				Vertex::default()
-					.with_position([v.pos.x, v.pos.y].into())
-					.with_tex_coord([v.uv.x, v.uv.y].into())
-					.with_color(
-						[
-							(v.color.r() as f32 / 255.0).powf(2.2),
-							(v.color.g() as f32 / 255.0).powf(2.2),
-							(v.color.b() as f32 / 255.0).powf(2.2),
-							(v.color.a() as f32 / 255.0).powf(2.2),
-						]
-						.into(),
-					)
-			}));
-			indices.extend(mesh.indices.iter());
-
-			let mut min: Vector2<f32> = [rect.min.x, rect.min.y].into();
-			min *= self.scale_factor as f32;
-			min.x = f32::clamp(min.x, 0.0, self.physical_size.width as f32);
-			min.y = f32::clamp(min.y, 0.0, self.physical_size.height as f32);
-
-			let mut max: Vector2<f32> = [rect.max.x, rect.max.y].into();
-			max *= self.scale_factor as f32;
-			max.x = f32::clamp(max.x, min.x, self.physical_size.width as f32);
-			max.y = f32::clamp(max.y, min.y, self.physical_size.height as f32);
-
-			draw_calls.push(DrawCall {
-				texture_id: mesh.texture_id,
-				scissor: Scissor::new(
-					structs::Offset2D {
-						x: min.x.round() as i32,
-						y: min.y.round() as i32,
-					},
-					structs::Extent2D {
-						width: (max.x.round() - min.x) as u32,
-						height: (max.y.round() - min.y) as u32,
-					},
-				),
-				index_count: item_counts.y,
-				first_index: idx_offset.y,
-				vertex_offset: idx_offset.x,
-			});
-
-			idx_offset += item_counts;
 		}
 
 		(vertices, indices, draw_calls)

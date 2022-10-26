@@ -1,9 +1,6 @@
 use crate::{asset::build::collect_file_paths, engine::asset};
 use anyhow::Result;
-use async_zip::{
-	write::{EntryOptions, ZipFileWriter},
-	Compression,
-};
+use async_zip::{write::ZipFileWriter, Compression, ZipEntryBuilder};
 use std::path::PathBuf;
 use tokio::fs;
 
@@ -66,7 +63,7 @@ impl Pak {
 					.unwrap()
 					.to_owned();
 				let bytes = fs::read(&file_path).await?;
-				let options = EntryOptions::new(relative_path, Compression::Bz);
+				let options = ZipEntryBuilder::new(relative_path, Compression::Bz);
 				zipper.write_entry_whole(options, &bytes[..]).await?;
 			}
 

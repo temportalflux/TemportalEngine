@@ -78,7 +78,8 @@ impl Manifest {
 					if let Some(package) = &manifest.package {
 						return Some(Manifest {
 							name: package.name.clone(),
-							version: semver::Version::parse(&package.version).unwrap(),
+							version: semver::Version::parse(package.version.get().unwrap())
+								.unwrap(),
 							location: directory.canonicalize().unwrap(),
 							config,
 						});

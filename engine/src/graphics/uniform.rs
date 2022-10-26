@@ -111,7 +111,7 @@ impl Uniform {
 	where
 		TData: Sized,
 	{
-		let mut mem = self.buffers[frame].memory()?;
+		let mut mem = self.buffers[frame].clone().memory()?;
 		let wrote_all = mem.write_item(data)?;
 		assert!(wrote_all);
 		Ok(())

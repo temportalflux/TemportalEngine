@@ -6,7 +6,6 @@ use std::{
 	path::{Path, PathBuf},
 	sync::Arc,
 };
-
 use crate::asset::{BuildPath, Manager};
 
 #[derive(Debug)]
