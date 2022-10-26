@@ -158,18 +158,22 @@ impl Manager {
 				return Ok(generic.asset_type);
 			}
 			Some(SupportedFileTypes::Kdl) => {
-				let nodes = kdl::parse_document(&content)?;
-				let asset_type_node = nodes.first().ok_or(KdlParsingError::MissingField(
-					"No node named \"asset_type\".".to_owned(),
-				))?;
+				let document = content.parse::<kdl::KdlDocument>()?;
+				let asset_type_node =
+					document
+						.nodes()
+						.first()
+						.ok_or(KdlParsingError::MissingField(
+							"No node named \"asset_type\".".to_owned(),
+						))?;
 				let asset_type_value =
 					asset_type_node
-						.values
+						.entries()
 						.first()
 						.ok_or(KdlParsingError::MissingField(
 							"\"asset_type\" has no value.".to_owned(),
 						))?;
-				Ok(match asset_type_value {
+				Ok(match asset_type_value.value() {
 					kdl::KdlValue::String(asset_type) => Ok(asset_type.clone()),
 					_ => Err(KdlParsingError::MissingField(
 						"Value for \"asset_type\" is not a string.".to_owned(),

@@ -57,7 +57,7 @@ rmp = "0.8"
 # [serialization] RustMessagePack binary
 rmp-serde = "1.1"
 # [serialization] node-like syntax
-kdl = "3.0"
+kdl = "4.6"
 # [serialization] kdl wrapper for enforcing schemas
 kdl-schema = { path = "../crates/kdl-schema" }
 
