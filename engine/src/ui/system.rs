@@ -515,6 +515,7 @@ impl Operation for System {
 				format!("UI.Frame{}.Mesh", i),
 				&chain.allocator()?,
 				10,
+				false,
 			)?);
 		}
 		Ok(())

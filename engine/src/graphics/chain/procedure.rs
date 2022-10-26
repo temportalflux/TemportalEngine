@@ -16,7 +16,8 @@ pub trait ProcedureConfig {
 		let phases = Self::Phases::new(&attachments)?;
 		chain.set_procedure(
 			{
-				let mut procedure = Procedure::default();
+				use crate::graphics::utility::NameableBuilder;
+				let mut procedure = Procedure::default().with_name("RenderChain");
 				phases.apply_to(&mut procedure)?;
 				procedure
 			},

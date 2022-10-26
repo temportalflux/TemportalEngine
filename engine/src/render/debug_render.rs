@@ -161,6 +161,7 @@ impl Operation for DebugRender {
 					flags::BufferUsage::VERTEX_BUFFER,
 					std::mem::size_of::<LineSegmentVertex>() * 10,
 					None,
+					false,
 				)?,
 				index_buffer: buffer::Buffer::create_gpu(
 					format!("DebugRender.Frame{}.IndexBuffer", i),
@@ -168,6 +169,7 @@ impl Operation for DebugRender {
 					flags::BufferUsage::INDEX_BUFFER,
 					std::mem::size_of::<u32>() * 10,
 					Some(flags::IndexType::UINT32),
+					false,
 				)?,
 				index_order: Vec::new(),
 			});

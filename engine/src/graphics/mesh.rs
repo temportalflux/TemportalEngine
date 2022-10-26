@@ -27,7 +27,7 @@ where
 		item_count: usize,
 		index_type: flags::IndexType,
 	) -> anyhow::Result<Self> {
-		Self::new_internal(name, allocator, item_count, index_type)
+		Self::new_internal(name, allocator, item_count, index_type, false)
 	}
 }
 
@@ -39,8 +39,15 @@ where
 		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
+		supress_log_on_drop: bool,
 	) -> anyhow::Result<Self> {
-		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT16)
+		Self::new_internal(
+			name,
+			allocator,
+			item_count,
+			flags::IndexType::UINT16,
+			supress_log_on_drop,
+		)
 	}
 }
 
@@ -52,8 +59,15 @@ where
 		name: String,
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
+		supress_log_on_drop: bool,
 	) -> anyhow::Result<Self> {
-		Self::new_internal(name, allocator, item_count, flags::IndexType::UINT32)
+		Self::new_internal(
+			name,
+			allocator,
+			item_count,
+			flags::IndexType::UINT32,
+			supress_log_on_drop,
+		)
 	}
 }
 
@@ -67,6 +81,7 @@ where
 		allocator: &sync::Arc<alloc::Allocator>,
 		item_count: usize,
 		index_type: flags::IndexType,
+		supress_log_on_drop: bool,
 	) -> anyhow::Result<Self> {
 		Ok(Self {
 			vertex_t: std::marker::PhantomData,
@@ -77,6 +92,7 @@ where
 				flags::BufferUsage::VERTEX_BUFFER,
 				Self::vertex_buffer_size_for(item_count),
 				None,
+				supress_log_on_drop,
 			)?,
 			index_buffer: buffer::Buffer::create_gpu(
 				format!("{}.IndexBuffer", name),
@@ -84,6 +100,7 @@ where
 				flags::BufferUsage::INDEX_BUFFER,
 				Self::index_buffer_size_for(item_count),
 				Some(index_type),
+				supress_log_on_drop,
 			)?,
 			index_count: 0,
 		})

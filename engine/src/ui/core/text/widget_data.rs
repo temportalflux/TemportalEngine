@@ -95,6 +95,7 @@ impl WidgetData {
 				})
 				.with_location(flags::MemoryLocation::GpuOnly)
 				.with_sharing(flags::SharingMode::EXCLUSIVE)
+				.supress_log_on_drop()
 				.build(allocator)?,
 		))
 	}

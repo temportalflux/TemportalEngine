@@ -267,6 +267,7 @@ impl Operation for Ui {
 					format!("EditorUI.Frame{}.Mesh", i),
 					&chain.allocator()?,
 					10,
+					true,
 				)?,
 				draw_calls: Vec::new(),
 				unused_texture_ids: Vec::new(),
