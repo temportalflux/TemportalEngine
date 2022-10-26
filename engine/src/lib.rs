@@ -160,7 +160,11 @@ where
 
 	let engine = Engine::new().context("create engine")?.into_arclock();
 	Engine::set(engine.clone());
-	if runtime.initialize(engine.clone()).await.context("initialize runtime")? {
+	if runtime
+		.initialize(engine.clone())
+		.await
+		.context("initialize runtime")?
+	{
 		engine::Engine::run(engine, runtime)
 	} else {
 		Ok(())

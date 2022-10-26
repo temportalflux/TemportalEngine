@@ -176,6 +176,7 @@ impl Window {
 				)))
 				.with_swapchain(
 					khr::Swapchain::builder()
+						.with_name("Swapchain")
 						.with_logical_device(&self.logical_device)
 						.with_surface(&self.surface)
 						.with_image_count(frame_count as u32)

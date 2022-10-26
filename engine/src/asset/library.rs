@@ -132,7 +132,9 @@ impl Library {
 			path.file_name().unwrap().to_str().unwrap()
 		);
 
-		let archive = ZipFileReader::new(path.to_str().unwrap().to_owned()).await.context("open zip archive reader")?;
+		let archive = ZipFileReader::new(path.to_str().unwrap().to_owned())
+			.await
+			.context("open zip archive reader")?;
 		let entry_count = archive.entries().len();
 
 		let mut assets = HashMap::with_capacity(entry_count);
@@ -143,7 +145,10 @@ impl Library {
 			asset_paths: Vec::new(),
 		};
 		for i in 0..entry_count {
-			let item = archive.entry_reader(i).await.with_context(|| format!("read item {i}"))?;
+			let item = archive
+				.entry_reader(i)
+				.await
+				.with_context(|| format!("read item {i}"))?;
 			// If the filename of the entry ends with '/', it is treated as a directory.
 			// This is implemented by previous versions of this crate and the Python Standard Library.
 			// https://docs.rs/async_zip/0.0.8/src/async_zip/read/mod.rs.html#63-65
@@ -155,8 +160,12 @@ impl Library {
 			let item_path = Self::sanitize_file_path(item.entry().filename()).to_owned();
 			let id = asset::Id::new(module_name.as_str(), item_path.as_path().to_str().unwrap());
 			let type_id = {
-				let bytes = item.read_to_end_crc().await.context("read asset bytes for type-id")?;
-				let generic: asset::Generic = rmp_serde::from_slice(&bytes).with_context(|| format!("failed to read asset binary of {id}"))?;
+				let bytes = item
+					.read_to_end_crc()
+					.await
+					.context("read asset bytes for type-id")?;
+				let generic: asset::Generic = rmp_serde::from_slice(&bytes)
+					.with_context(|| format!("failed to read asset binary of {id}"))?;
 				generic.asset_type.to_owned()
 			};
 

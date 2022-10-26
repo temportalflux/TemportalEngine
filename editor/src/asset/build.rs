@@ -1,3 +1,4 @@
+use crate::asset::{BuildPath, Manager};
 use anyhow::Result;
 use engine::{self, asset, Application};
 use std::{
@@ -6,7 +7,6 @@ use std::{
 	path::{Path, PathBuf},
 	sync::Arc,
 };
-use crate::asset::{BuildPath, Manager};
 
 #[derive(Debug)]
 pub struct Module {
