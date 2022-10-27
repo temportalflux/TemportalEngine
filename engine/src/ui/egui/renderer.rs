@@ -207,6 +207,10 @@ impl Ui {
 		self.render_callbacks.push((Box::new(callback), true));
 	}
 
+	pub fn context(&self) -> &Context {
+		&self.context
+	}
+
 	pub fn context_mut(&mut self) -> &mut Context {
 		&mut self.context
 	}

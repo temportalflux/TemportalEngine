@@ -11,5 +11,5 @@ temportal-engine = { path = "../../../engine" }
 log = "0.4"
 semver = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tokio = "1.15"
+tokio = "1.21"
 anyhow = "1.0"

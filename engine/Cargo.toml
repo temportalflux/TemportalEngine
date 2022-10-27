@@ -35,7 +35,7 @@ futures = "0.3"
 # [async] adv async traits
 futures-util = "0.3"
 # [async] async/await syntax and multithreading
-tokio = { version = "1.15", features = ["full"] }
+tokio = { version = "1.21", features = ["full"] }
 # [async] helper for getting the number of CPS for multithreading
 num_cpus = { version = "1.8" }
 # [utility] for managing zip (and thereby pak) files
@@ -83,7 +83,7 @@ input-actions = { path = "../input-actions", features = ["winit", "log"] }
 # [math] for math interoperability
 mint = "0.5"
 # [math] for math types and functions
-nalgebra = { version = "0.27", features = ["serde-serialize"] }
+nalgebra = { version = "0.31", features = ["serde-serialize"] }
 approx = "0.5"
 
 # [window] for interoperability of winit and vulkan-rs

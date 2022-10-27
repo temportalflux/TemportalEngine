@@ -1,4 +1,4 @@
-use crate::{asset, settings};
+use crate::{asset, config::PersistentData, settings};
 use anyhow::Result;
 use engine::{
 	self,
@@ -14,6 +14,7 @@ pub struct Editor {
 	pub settings: settings::Editor,
 	pub asset_modules: Vec<Arc<asset::Module>>,
 	pub paks: Vec<Arc<asset::Pak>>,
+	pub persistent_data: PersistentData,
 }
 
 impl Application for Editor {
@@ -51,11 +52,14 @@ impl Editor {
 	pub async fn new(asset_manager: asset::Manager) -> Result<Self> {
 		log::info!(target: EDITOR_LOG, "Initializing editor");
 
+		let persistent_data = PersistentData::read_from_disk().await;
+
 		let mut editor = Self {
 			asset_manager: Arc::new(asset_manager),
 			settings: settings::Editor::load()?,
 			asset_modules: Vec::new(),
 			paks: Vec::new(),
+			persistent_data,
 		};
 		engine::asset::Library::scan_pak_directory().await?;
 

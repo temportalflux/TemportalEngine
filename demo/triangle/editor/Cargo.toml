@@ -11,5 +11,5 @@ engine = { path = "../../../engine", package = "temportal-engine" }
 editor = { path = "../../../editor", package = "temportal-engine-editor" }
 demo-triangle = { path = "../demo" }
 log = "0.4.14"
-tokio = "1.15"
+tokio = "1.21"
 anyhow = "1.0"

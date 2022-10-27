@@ -109,6 +109,16 @@ impl Window {
 		Arc::downgrade(&self.internal)
 	}
 
+	pub fn position(&self) -> [f64; 2] {
+		self.internal
+			.read()
+			.unwrap()
+			.outer_position()
+			.ok()
+			.map(|pos| [pos.x as f64, pos.y as f64])
+			.unwrap_or([0.0, 0.0])
+	}
+
 	pub fn read_size(&self) -> (winit::dpi::PhysicalSize<u32>, f64) {
 		let handle = self.internal.read().unwrap();
 		(handle.inner_size(), handle.scale_factor())

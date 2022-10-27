@@ -8,6 +8,7 @@ use winit::event_loop::EventLoop;
 
 pub struct Builder {
 	title: String,
+	position: Vector2<f64>,
 	inner_logical_size: Vector2<f64>,
 	resizable: bool,
 	app_info: AppInfo,
@@ -18,6 +19,7 @@ impl Default for Builder {
 	fn default() -> Builder {
 		Builder {
 			title: String::new(),
+			position: [0.0, 0.0].into(),
 			inner_logical_size: [0.0, 0.0].into(),
 			resizable: false,
 			app_info: AppInfo::default(),
@@ -29,6 +31,11 @@ impl Default for Builder {
 impl Builder {
 	pub fn with_title(mut self, title: &str) -> Self {
 		self.title = title.to_string();
+		self
+	}
+
+	pub fn with_position(mut self, x: f64, y: f64) -> Self {
+		self.position = [x, y].into();
 		self
 	}
 
@@ -56,10 +63,12 @@ impl Builder {
 	pub fn build(self, event_loop: &EventLoop<()>) -> Result<window::Window> {
 		log::info!(
 			target: window::LOG,
-			"Creating window \"{}\" with size <{},{}>",
+			"Creating window \"{}\" with size <{},{}> at <{}, {}>",
 			self.title,
 			self.inner_logical_size.x,
 			self.inner_logical_size.y,
+			self.position.x,
+			self.position.y,
 		);
 		let mut window = window::Window::new(
 			winit::window::WindowBuilder::new()
@@ -69,7 +78,7 @@ impl Builder {
 					self.inner_logical_size.y,
 				)))
 				.with_position(winit::dpi::Position::Logical(
-					winit::dpi::LogicalPosition::new(0.0, 0.0),
+					winit::dpi::LogicalPosition::new(self.position.x, self.position.y),
 				))
 				.with_resizable(self.resizable)
 				.build(event_loop)?,

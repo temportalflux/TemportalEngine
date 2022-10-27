@@ -11,5 +11,5 @@ temportal-engine = { path = "../../../engine" }
 temportal-engine-editor = { path = "../../../editor" }
 demo-audio = { path = "../demo" }
 log = "0.4.14"
-tokio = "1.15"
+tokio = "1.21"
 anyhow = "1.0"

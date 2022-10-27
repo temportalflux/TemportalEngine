@@ -11,4 +11,4 @@ temportal-engine = { path = "../../../engine" }
 temportal-engine-editor = { path = "../../../editor" }
 chat-room = { path = "../demo" }
 log = "0.4"
-tokio = "1.15"
+tokio = "1.21"

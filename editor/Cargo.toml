@@ -10,7 +10,7 @@ edition = "2018"
 engine = { path = "../engine", package = "temportal-engine" }
 bytemuck = "1.7"
 copypasta = "0.8"
-egui = "0.19"
+egui = { version = "0.19", features = ["default_fonts", "persistence"]}
 log = { version = "0.4", features = ["std"] }
 rmp = "0.8"
 rmp-serde = "1.1"
@@ -22,7 +22,7 @@ anyhow = "1.0"
 # [async] base async traits
 futures = "0.3"
 # [async] async/await syntax and multithreading
-tokio = { version = "1.15", features = ["full"] }
+tokio = { version = "1.21", features = ["full"] }
 # [utility] for managing zip (and thereby pak) files
 async_zip = "0.0.9"
 # [collections] similar to a bitmap but for any enum with a derive-trait implemented
