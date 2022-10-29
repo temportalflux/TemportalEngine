@@ -149,8 +149,8 @@ where
 	where
 		C: GpuOpContext,
 	{
-		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len())? {
-			*buffer = sync::Arc::new(reallocated);
+		if let Some(reallocated) = buffer.expand(std::mem::size_of::<T>() * data.len()) {
+			*buffer = sync::Arc::new(reallocated?);
 		}
 		GpuOperationBuilder::new(format!("Write({})", buffer.name()), context)?
 			.begin()?

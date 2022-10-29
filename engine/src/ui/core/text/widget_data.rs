@@ -111,15 +111,15 @@ impl WidgetData {
 		// Update the buffer objects if we need more space than is currently allocated
 		if let Some(reallocated) = self
 			.vertex_buffer
-			.expand(Self::vertex_buffer_size_for(&text.text))?
+			.expand(Self::vertex_buffer_size_for(&text.text))
 		{
-			self.vertex_buffer = sync::Arc::new(reallocated);
+			self.vertex_buffer = sync::Arc::new(reallocated?);
 		}
 		if let Some(reallocated) = self
 			.index_buffer
-			.expand(Self::index_buffer_size_for(&text.text))?
+			.expand(Self::index_buffer_size_for(&text.text))
 		{
-			self.index_buffer = sync::Arc::new(reallocated);
+			self.index_buffer = sync::Arc::new(reallocated?);
 		}
 
 		self.content = text.text.clone();

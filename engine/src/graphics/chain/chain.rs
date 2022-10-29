@@ -181,6 +181,7 @@ impl Chain {
 		T::apply_to(self)
 	}
 
+	#[profiling::function]
 	pub fn add_operation<T>(
 		&mut self,
 		phase: &Arc<Phase>,

@@ -19,7 +19,10 @@ pub use save_data::*;
 
 pub mod kdl;
 
-pub fn spawn_thread<F, R, E>(target: &'static str, f: F) -> std::io::Result<std::thread::JoinHandle<()>>
+pub fn spawn_thread<F, R, E>(
+	target: &'static str,
+	f: F,
+) -> std::io::Result<std::thread::JoinHandle<()>>
 where
 	F: Fn() -> std::result::Result<R, E> + 'static + Send,
 	E: std::fmt::Debug,

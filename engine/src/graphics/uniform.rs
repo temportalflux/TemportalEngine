@@ -15,15 +15,14 @@ pub struct Uniform {
 }
 
 impl Uniform {
-	pub fn new<TData, TStr>(
-		name: TStr,
+	pub fn new<TData>(
+		name: impl Into<String>,
 		logical: &Arc<logical::Device>,
 		allocator: &Arc<alloc::Allocator>,
 		descriptor_pool: &Arc<RwLock<descriptor::Pool>>,
 		view_count: usize,
 	) -> Result<Self>
 	where
-		TStr: Into<String>,
 		TData: Default + Sized,
 	{
 		let uniform_name: String = name.into();

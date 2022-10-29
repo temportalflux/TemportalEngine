@@ -68,7 +68,7 @@ impl DebugRender {
 		Ok(Self {
 			line_drawable: Drawable::default().with_name("DebugRender.Line"),
 			frames: Vec::new(),
-			camera_uniform: Uniform::new::<camera::ViewProjection, &str>(
+			camera_uniform: Uniform::new::<camera::ViewProjection>(
 				"DebugRender.Camera",
 				&chain.logical()?,
 				&chain.allocator()?,
@@ -290,7 +290,9 @@ impl Frame {
 
 		if vbuff_size > 0 {
 			if let Some(vbuf) = Arc::get_mut(&mut self.vertex_buffer) {
-				vbuf.expand(vbuff_size)?;
+				if let Some(buffer) = vbuf.expand(vbuff_size) {
+					*vbuf = buffer?;
+				}
 			}
 			GpuOperationBuilder::new(format!("Write({})", self.vertex_buffer.name()), context)?
 				.begin()?
@@ -302,7 +304,9 @@ impl Frame {
 
 		if ibuff_size > 0 {
 			if let Some(ibuf) = Arc::get_mut(&mut self.index_buffer) {
-				ibuf.expand(ibuff_size)?;
+				if let Some(buffer) = ibuf.expand(ibuff_size) {
+					*ibuf = buffer?;
+				}
 			}
 			GpuOperationBuilder::new(format!("Write({})", self.index_buffer.name()), context)?
 				.begin()?
