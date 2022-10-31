@@ -5,6 +5,8 @@ authors = ["Dustin Yost <dustin.yost.t@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+profile = ["profiling/profile-with-tracy", "dep:tracy-client"]
 
 [dependencies]
 temportal-engine-utilities = { path = "../utility" }
@@ -15,8 +17,8 @@ time = "0.3"
 # [metrics] for writing runtime information to log file/console
 log = { version = "0.4", features = ["std"] }
 # [metrics] for getting performance information and rendering via any chosen viewer
-profiling = { version = "1.0.7", features = ["profile-with-tracy"] }
-tracy-client = "0.14.1"
+profiling = "1.0.7"
+tracy-client = { version = "0.14.1", optional = true }
 
 # [error] collapsing any error into one result type
 anyhow = "1.0"

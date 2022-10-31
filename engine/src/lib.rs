@@ -96,6 +96,7 @@ fn create_task_thread_name(idx: usize) -> String {
 
 pub fn register_thread() {
 	// Starting the Tracy client is necessary before any invoking any of its APIs
+	#[cfg(feature = "profile")]
 	tracy_client::Client::start();
 	profiling::register_thread!();
 }
