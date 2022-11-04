@@ -16,7 +16,10 @@ pub mod channels {
 		pub type Pair<T> = (Sender<T>, Receiver<T>);
 	}
 	pub use bus as broadcast;
-	pub use crossbeam_channel as mpsc;
+	pub mod mpsc {
+		pub use crossbeam_channel::*;
+		pub type Pair<T> = (Sender<T>, Receiver<T>);
+	}
 }
 pub mod graphics;
 pub mod input;
