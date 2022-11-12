@@ -29,6 +29,11 @@ impl ValueSet {
 		self.locked().insert(value);
 	}
 
+	pub fn insert_handle<T>(self: &Arc<Self>, arc: Arc<T>) -> ArcHandle<T> where T: 'static + Send + Sync {
+		self.insert(Arc::downgrade(&arc));
+		ArcHandle(Arc::downgrade(&self), arc)
+	}
+
 	pub fn remove<T>(&self) -> Option<T>
 	where
 		T: 'static + Send + Sync,
@@ -83,5 +88,23 @@ impl ValueSet {
 		T: 'static + Send + Sync,
 	{
 		self.get_weak_upgraded::<RwLock<T>>()
+	}
+}
+
+pub struct ArcHandle<T: 'static + Send + Sync>(Weak<ValueSet>, Arc<T>);
+impl<T> ArcHandle<T> where T: 'static + Send + Sync {
+	pub fn inner(&self) -> &Arc<T> {
+		&self.1
+	}
+
+	pub fn into_inner(self) -> Arc<T> {
+		self.1.clone()
+	}
+}
+impl<T> Drop for ArcHandle<T> where T: 'static + Send + Sync {
+	fn drop(&mut self) {
+		if let Some(set) = self.0.upgrade() {
+			set.remove::<Weak<T>>();
+		}
 	}
 }
