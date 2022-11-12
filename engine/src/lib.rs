@@ -73,9 +73,11 @@ pub trait Runtime {
 		Ok(())
 	}
 
-	fn get_display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
+	fn get_display_chain(&self) -> Option<Arc<RwLock<Chain>>> {
 		None
 	}
+
+	fn update(&self, _delta_time: std::time::Duration, _has_focus: bool) {}
 
 	fn on_event_loop_complete(&self) {}
 }

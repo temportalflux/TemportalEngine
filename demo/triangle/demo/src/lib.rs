@@ -70,7 +70,9 @@ impl engine::Runtime for Runtime {
 		Ok(())
 	}
 
-	fn get_display_chain(&self) -> Option<&Arc<RwLock<Chain>>> {
-		self.window.as_ref().map(|window| window.graphics_chain())
+	fn get_display_chain(&self) -> Option<Arc<RwLock<Chain>>> {
+		self.window
+			.as_ref()
+			.map(|window| window.graphics_chain().clone())
 	}
 }

@@ -173,6 +173,7 @@ impl Engine {
 						for system in systems.into_iter() {
 							system.write().unwrap().update(delta_time, engine_has_focus);
 						}
+						runtime.update(delta_time, engine_has_focus);
 					}
 
 					if let Some(arc_chain) = runtime.get_display_chain() {
