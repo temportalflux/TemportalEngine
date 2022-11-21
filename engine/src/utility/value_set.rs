@@ -1,35 +1,47 @@
-use std::sync::{Arc, Mutex, MutexGuard, RwLock, Weak};
+use std::{
+	any::TypeId,
+	collections::HashMap,
+	sync::{Arc, Mutex, MutexGuard, RwLock, Weak},
+};
 
 type Map = anymap::Map<dyn anymap::any::Any + 'static + Send + Sync>;
-pub struct ValueSet(Mutex<Map>);
+type Inner = (Map, HashMap<TypeId, &'static str>);
+pub struct ValueSet(Mutex<Inner>);
 impl ValueSet {
 	pub fn new() -> Arc<Self> {
-		Arc::new(Self(Mutex::new(Map::new())))
+		Arc::new(Self(Mutex::new((Map::new(), HashMap::new()))))
 	}
 
-	fn locked(&self) -> MutexGuard<'_, Map> {
+	fn locked(&self) -> MutexGuard<'_, Inner> {
 		self.0.lock().unwrap()
 	}
 
 	pub fn is_empty(&self) -> bool {
-		self.locked().is_empty()
+		self.locked().0.is_empty()
 	}
 
 	pub fn contains<T>(&self) -> bool
 	where
 		T: 'static + Send + Sync,
 	{
-		self.locked().contains::<T>()
+		self.locked().0.contains::<T>()
 	}
 
 	pub fn insert<T>(&self, value: T)
 	where
 		T: 'static + Send + Sync,
 	{
-		self.locked().insert(value);
+		let mut locked = self.locked();
+		locked.0.insert(value);
+		locked
+			.1
+			.insert(TypeId::of::<T>(), std::any::type_name::<T>());
 	}
 
-	pub fn insert_handle<T>(self: &Arc<Self>, arc: Arc<T>) -> ArcHandle<T> where T: 'static + Send + Sync {
+	pub fn insert_handle<T>(self: &Arc<Self>, arc: Arc<T>) -> ArcHandle<T>
+	where
+		T: 'static + Send + Sync,
+	{
 		self.insert(Arc::downgrade(&arc));
 		ArcHandle(Arc::downgrade(&self), arc)
 	}
@@ -38,14 +50,17 @@ impl ValueSet {
 	where
 		T: 'static + Send + Sync,
 	{
-		self.locked().remove::<T>()
+		let mut locked = self.locked();
+		let value = locked.0.remove::<T>();
+		locked.1.remove(&TypeId::of::<T>());
+		value
 	}
 
 	pub fn get<T>(&self) -> Option<T>
 	where
 		T: 'static + Send + Sync + Clone,
 	{
-		self.locked().get::<T>().cloned()
+		self.locked().0.get::<T>().cloned()
 	}
 
 	pub fn get_arc<T>(&self) -> Option<Arc<T>>
@@ -91,8 +106,19 @@ impl ValueSet {
 	}
 }
 
+impl std::fmt::Debug for ValueSet {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let mut names = self.locked().1.values().map(|v| *v).collect::<Vec<_>>();
+		names.sort();
+		write!(f, "ValueSet({:?})", names)
+	}
+}
+
 pub struct ArcHandle<T: 'static + Send + Sync>(Weak<ValueSet>, Arc<T>);
-impl<T> ArcHandle<T> where T: 'static + Send + Sync {
+impl<T> ArcHandle<T>
+where
+	T: 'static + Send + Sync,
+{
 	pub fn inner(&self) -> &Arc<T> {
 		&self.1
 	}
@@ -101,7 +127,10 @@ impl<T> ArcHandle<T> where T: 'static + Send + Sync {
 		self.1.clone()
 	}
 }
-impl<T> Drop for ArcHandle<T> where T: 'static + Send + Sync {
+impl<T> Drop for ArcHandle<T>
+where
+	T: 'static + Send + Sync,
+{
 	fn drop(&mut self) {
 		if let Some(set) = self.0.upgrade() {
 			set.remove::<Weak<T>>();

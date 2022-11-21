@@ -1,6 +1,3 @@
-mod lib;
-pub use lib::*;
-
 fn main() {
-	engine::run(Runtime::new())
+	engine::run(demo_triangle::Runtime::new())
 }
