@@ -26,7 +26,7 @@ pub fn spawn_thread<F, R, E>(
 	f: F,
 ) -> std::io::Result<std::thread::JoinHandle<()>>
 where
-	F: Fn() -> std::result::Result<R, E> + 'static + Send,
+	F: FnOnce() -> std::result::Result<R, E> + 'static + Send,
 	E: std::fmt::Debug,
 {
 	std::thread::Builder::new()
